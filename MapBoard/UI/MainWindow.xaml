@@ -1,0 +1,268 @@
+﻿<Window x:Class="MapBoard.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MapBoard.UI"
+        xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
+        xmlns:win10style="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
+        xmlns:progress="clr-namespace:FzLib.Control.Progress;assembly=FzWpfControlLib"
+        xmlns:controlextended="clr-namespace:FzLib.Control.ControlExtended;assembly=FzWpfControlLib"
+        xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
+        mc:Ignorable="d"
+        Closing="WindowClosing"
+        WindowStartupLocation="CenterScreen"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="MainWindow" Height="700" Width="1000">
+    <Window.Resources>
+        <Style x:Key="undoRedoButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="4" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Button.IsDefaulted" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#FFBEE6FD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="4" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Button.IsDefaulted" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#FFBEE6FD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Effect" TargetName="border" >
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#ffc300" Opacity="0.6" RenderingBias="Quality"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <local:ArcMapView x:Name="arcMap" Grid.Column="2"/>
+
+
+        <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
+            <Grid >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Width="280" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
+                    <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="TextBox_PreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>
+
+                    <TextBlock Grid.Row="2" HorizontalAlignment="Right" Text="线宽/边框宽/点大小："/>
+                    <flatstyle:TextBox x:Name="txtLineWidth" Grid.Row="2" Grid.Column="2" Text="5"/>
+
+                    <flatstyle:CheckBox x:Name="chkStatic" Content="使用静态点/线尺寸" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="4"/>
+
+                    <TextBlock Grid.Row="6" HorizontalAlignment="Right" Text="静态尺寸（米）："/>
+                    <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2"/>
+
+                    <TextBlock Grid.Row="8"  HorizontalAlignment="Right"  Text="边框/线颜色："/>
+                    <picker:ColorPickerTextBox x:Name="lineColorPicker" Grid.Row="8 " Grid.Column="2"  />
+                    <TextBlock Grid.Row="10"  HorizontalAlignment="Right"  Text="填充/点颜色："/>
+                    <picker:ColorPickerTextBox x:Name="fillColorPicker" Grid.Row="10 " Grid.Column="2" />
+                    <TextBlock Grid.Row="12" HorizontalAlignment="Right" Text="标题："/>
+                    <flatstyle:TextBox x:Name="txtName" Grid.Row="12" Grid.Column="12"/>
+
+                    <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
+                        <flatstyle:Button x:Name="btnApplyStyle" IsEnabled="False" Content="应用样式" Click="ApplyStyleButtonClick" />
+                        <TextBlock Text="  "/>
+                        <flatstyle:Button x:Name="btnDefaultStyle" Content="默认样式" Click="DefaultStyleButtonClick"/>
+                    </StackPanel>    
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListView_PreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemsSource="{Binding Styles.Styles}">
+                        <flatstyle:ListView.View>
+                            <GridView>
+                                <GridViewColumn >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <flatstyle:CheckBox IsChecked="{Binding LayerVisible}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="标题" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="类型" DisplayMemberBinding="{Binding TypeDescription}"/>
+                                <GridViewColumn Header="图形数量" DisplayMemberBinding="{Binding FeatureCount}"/>
+                            </GridView>
+                        </flatstyle:ListView.View>
+                    </flatstyle:ListView>
+                </Grid>
+                <Grid Grid.Row="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="4"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <flatstyle:Button Content="导入" Click="ImportBtnClick"/>
+                    <flatstyle:Button Content="导出" Click="ExportBtnClick" Grid.Column="2"/>
+                    <!--<flatstyle:Button Content="优化" Click="DeleteNoFeatureShpBtnClick" Grid.Column="4"/>-->
+                    <flatstyle:Button Content="线转面" Grid.Column="4" Click="PolylineToPolygonButtonClick"/>
+
+                    <flatstyle:Button Content="复制" Grid.Row="2" Click="CopyButtonClick"/>
+                    <flatstyle:Button Content="删除" Grid.Row="2" Grid.Column="2" Click="DeleteStyleBtnClick"/>
+                    <flatstyle:Button Content="打开目录" Grid.Row="2" Grid.Column="4" Click="OpenFolderButtonClick"/>
+
+                </Grid>
+
+                <Grid   Grid.Row="6" HorizontalAlignment="Center" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <flatstyle:Button x:Name="btnUndo" Command="{Binding ElementName=arcMap,Path=SketchEditor.UndoCommand}"  Tag="0" Padding="2,2,8,4" Style="{StaticResource undoRedoButtonStyle}">
+                        <Viewbox Width="24">
+                            <Path Fill="Black" Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z"/>
+                        </Viewbox>
+                    </flatstyle:Button>
+                    <flatstyle:Button x:Name="btnRedo" Command="{Binding ElementName=arcMap,Path=SketchEditor.RedoCommand}" Grid.Column="2" Tag="1" Padding="8,2,2,4" Style="{StaticResource undoRedoButtonStyle}">
+                        <Viewbox Width="24" RenderTransformOrigin="0.5,0.5">
+                            <Viewbox.RenderTransform>
+                                <ScaleTransform ScaleX="-1"/>
+                            </Viewbox.RenderTransform>
+                            <Path Fill="Black" Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z"/>
+                        </Viewbox>
+                    </flatstyle:Button>
+                </Grid>
+                <Grid   Grid.Row="100" x:Name="grdButtons">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ToggleButton Content="直线段" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="自由线" Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="多边形" Grid.Column="6" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+
+                    <ToggleButton Content="自由面" Grid.Row="2"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="圆" Grid.Row="2"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="椭圆" Grid.Row="2"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+
+                    <ToggleButton Content="矩形" Grid.Row="4"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="三角形" Grid.Row="4"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="箭头" Grid.Row="4"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+
+                    <ToggleButton Content="点" Grid.Row="6"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="多点" Grid.Row="6"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton x:Name="btnSelect" Content="选择" Grid.Row="6"  Grid.Column="4" Click="SelectToggleButtonClick" Style="{DynamicResource ToggleButtonStyle}"/>
+
+                </Grid>
+            </Grid>
+        </win10style:ModernExpander>
+
+    </Grid>
+</Window>
