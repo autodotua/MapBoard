@@ -94,12 +94,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Code\BoardTaskManager.cs" />
     <Compile Include="Code\StyleCollection.cs" />
-    <Compile Include="UI\ArcMapView.cs" />
-    <Compile Include="BoardOperation\DrawHelper.cs" />
-    <Compile Include="BoardOperation\EditHelper.cs" />
-    <Compile Include="BoardOperation\SelectionHelper.cs" />
+    <Compile Include="UI\OperationBar\ArcMapView.cs" />
+    <Compile Include="UI\BoardOperation\DrawHelper.cs" />
+    <Compile Include="UI\BoardOperation\EditHelper.cs" />
+    <Compile Include="UI\BoardOperation\SelectionHelper.cs" />
     <Compile Include="Code\StyleInfo.cs" />
+    <Compile Include="UI\OperationBar\SelectOperationBar.xaml.cs">
+      <DependentUpon>SelectOperationBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\OperationBar\EditOperationBar.xaml.cs">
+      <DependentUpon>EditOperationBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\OperationBar\OperationBarBase.cs" />
     <Compile Include="UI\SelectStyleDialog.xaml.cs">
       <DependentUpon>SelectStyleDialog.xaml</DependentUpon>
     </Compile>
@@ -116,6 +124,18 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UI\OperationBar\SelectOperationBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\OperationBar\EditOperationBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\OperationBar\OperationBarStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\SelectStyleDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

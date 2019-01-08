@@ -1,0 +1,74 @@
+﻿<local:OperationBarBase x:Class="MapBoard.UI.OperationBar.SelectOperationBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MapBoard.UI.OperationBar"
+             mc:Ignorable="d" >
+    <Grid Margin="4,0">
+        <Grid.Resources>
+            <ResourceDictionary Source="OperationBarStyles.xaml"/>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="btnRedraw" Grid.Column="4" Style="{StaticResource barButtonStyle}" Click="ReDrawButtonClick">
+            <StackPanel Orientation="Horizontal">
+                <Viewbox Width="16">
+                    <Grid>
+                        <Path Fill="White" Data="M254.4 82.624L82.624 254.4a60.704 60.704 0 0 0 0 85.92L254.4 512l128.8-128.8-42.88-42.88-85.92 85.888-42.88-42.88 85.888-85.92-42.88-42.88-85.92 85.888-42.88-42.88 171.776-171.84 171.584 171.616L512 254.4l-171.776-171.84a60.576 60.576 0 0 0-85.76 0z m644.096 644.064l-171.808 171.808-42.88-42.912 85.888-85.888-42.88-42.88-85.92 85.856-42.88-42.88 85.888-85.888-42.912-42.912L512 769.6l171.776 171.776a60.704 60.704 0 0 0 85.92 0l171.776-171.776a60.704 60.704 0 0 0 0-85.92L769.6 512l-42.912 42.88 171.808 171.808zM680.8 211.328l131.968 131.872-43.968 44L636.8 255.2l44-43.872zM240.96 650.976l131.968 131.872-44 44-131.968-131.872 44-44zM680.704 123.424a124.544 124.544 0 0 1 176.288 0.096l43.584 43.52a124.704 124.704 0 0 1 0.096 176.16L355.264 888.416l-268.352 48.384 48.384-268.288L680.704 123.424zM334.4 821.344L857.472 298.656c23.84-23.872 23.552-63.264-0.8-87.52L813.12 167.616c-24.544-24.544-63.552-24.832-87.584-0.8L202.432 689.6l-27.52 159.424 159.52-27.616z"/>
+                    </Grid>
+                </Viewbox>
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >编辑</TextBlock>
+            </StackPanel>
+        </Button>
+        <Button x:Name="btnCut" Grid.Column="6" Style="{StaticResource barButtonStyle}" Click="CutButtonClick">
+            <StackPanel Orientation="Horizontal">
+                <Viewbox Width="16">
+                    <Grid>
+                        <Path Fill="White" Data="M981.333333 938.666667h-42.666666v42.666666a42.666667 42.666667 0 0 1-85.333334 0v-42.666666H256a170.666667 170.666667 0 0 1-170.666667-170.666667V170.666667H42.666667a42.666667 42.666667 0 0 1 0-85.333334h42.666666V42.666667a42.666667 42.666667 0 0 1 85.333334 0v42.666666h469.333333a42.666667 42.666667 0 0 1 0 85.333334H170.666667v597.333333c0 7.594667 1.322667 14.805333 3.157333 21.802667L875.648 88.021333C893.781333 69.888 921.984 68.650667 938.666667 85.333333s15.445333 44.885333-2.688 63.018667L234.197333 850.176c6.997333 1.834667 14.208 3.157333 21.802667 3.157333h597.333333V426.666667a42.666667 42.666667 0 0 1 85.333334 0v426.666666h42.666666a42.666667 42.666667 0 0 1 0 85.333334z"/>
+                    </Grid>
+                </Viewbox>
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >分割</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button Grid.Column="8" Style="{StaticResource barButtonStyle}" Click="CopyButtonClick">
+            <StackPanel Orientation="Horizontal">
+                <Viewbox Width="16">
+                    <Grid>
+                        <Path Fill="White" Data="M896 170.666667H298.666667c-70.4 0-128 57.6-128 128v597.333333c0 70.4 57.6 128 128 128h597.333333c70.4 0 128-57.6 128-128V298.666667c0-70.4-57.6-128-128-128m0 85.333333c23.125333 0 42.666667 19.541333 42.666667 42.666667v597.333333c0 23.125333-19.541333 42.666667-42.666667 42.666667H298.666667c-23.125333 0-42.666667-19.541333-42.666667-42.666667V298.666667c0-23.125333 19.541333-42.666667 42.666667-42.666667h597.333333"/>
+                        <Path Fill="White" Data="M170.666667 768h-42.666667c-23.125333 0-42.666667-19.541333-42.666667-42.666667V128c0-23.125333 19.541333-42.666667 42.666667-42.666667h597.333333c23.125333 0 42.666667 19.541333 42.666667 42.666667v42.496h85.333333V128c0-70.4-57.6-128-128-128H128C57.6 0 0 57.6 0 128v597.333333c0 70.4 57.6 128 128 128h42.666667V768z"/>
+                        <Path Fill="White" Data="M554.666667 768V426.666667c0-23.466667 19.2-42.666667 42.666666-42.666667s42.666667 19.2 42.666667 42.666667v341.333333c0 23.466667-19.2 42.666667-42.666667 42.666667s-42.666667-19.2-42.666666-42.666667"/>
+                        <Path Fill="White" Data="M768 640H426.666667c-23.466667 0-42.666667-19.2-42.666667-42.666667s19.2-42.666667 42.666667-42.666666h341.333333c23.466667 0 42.666667 19.2 42.666667 42.666666s-19.2 42.666667-42.666667 42.666667"/>
+                    </Grid>
+                </Viewbox>
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >复制到</TextBlock>
+            </StackPanel>
+        </Button>
+
+
+        <Button Grid.Column="10" Style="{StaticResource barButtonStyle}" Click="DeleteButtonClick">
+            <StackPanel Orientation="Horizontal">
+                <Viewbox Width="16">
+                    <Grid>
+                        <Path Fill="White" Data="M853.4 333.5H199.8c-3.9 0-7 3.4-6.6 7.3l60.1 630c0 29.3 23.8 53.1 53.1 53.1H747c29.3 0 53.1-23.8 53.1-53.1l60.1-630c0.2-3.9-2.8-7.3-6.8-7.3zM388.8 890.9h-19.5c-13 0-23.6-10.6-23.6-23.6l-24.3-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6l24.3 376c0 13-10.6 23.6-23.6 23.6z m171.3-23.6c0 13-10.6 23.6-23.6 23.6H517c-13 0-23.6-10.6-23.6-23.6v-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6v376z m148.3 0c0 13-10.6 23.6-23.6 23.6h-19.5c-13 0-23.6-10.6-23.6-23.6l24.3-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6l-24.3 376zM869.3 153.2l-705 162c-4 0.9-7.9-1.6-8.8-5.5l-8.8-38.5c-6.8-29.5 11.8-59.2 41.3-66L800 64.5c29.5-6.8 59.2 11.8 66 41.3l8.8 38.5c0.9 4-1.5 8-5.5 8.9zM386.5 127.3c-6.5-27.9 11-56.1 39-62.6l98.2-22.8c27.9-6.5 56.1 11 62.6 39l3.8 16.2 44.3-10.3-3.1-13.3c-11.7-50.4-62.5-82-112.8-70.3L413.6 27.6c-50.4 11.7-82 62.5-70.3 112.8l3 13.1 43.9-10.2-3.7-16z"/>
+                    </Grid>
+                </Viewbox>
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >删除</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <TextBlock  Foreground="White"  FontSize="16" VerticalAlignment="Center" FontWeight="Bold"  Text="{Binding Message}"/>
+    </Grid>
+</local:OperationBarBase>

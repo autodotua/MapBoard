@@ -9,11 +9,13 @@
         xmlns:progress="clr-namespace:FzLib.Control.Progress;assembly=FzWpfControlLib"
         xmlns:controlextended="clr-namespace:FzLib.Control.ControlExtended;assembly=FzWpfControlLib"
         xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
+        xmlns:bar="clr-namespace:MapBoard.UI.OperationBar"
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="MainWindow" Height="700" Width="1000">
+        Title="地图画板" Height="700" Width="1000">
     <Window.Resources>
         <Style x:Key="undoRedoButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -88,19 +90,30 @@
             </Setter>
         </Style>
     </Window.Resources>
+    
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+        
         <local:ArcMapView x:Name="arcMap" Grid.Column="2"/>
+        <bar:EditOperationBar x:Name="editBar" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <bar:EditOperationBar.RenderTransform>
+                <TranslateTransform Y="-24"/>
+            </bar:EditOperationBar.RenderTransform>
+        </bar:EditOperationBar>
+        <bar:SelectOperationBar x:Name="selectBar" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <bar:SelectOperationBar.RenderTransform>
+                <TranslateTransform Y="-24"/>
+            </bar:SelectOperationBar.RenderTransform>
+        </bar:SelectOperationBar>
 
 
         <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
-            <Grid >
+            <Grid x:Name="grdLeft">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
@@ -166,7 +179,7 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListView_PreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemsSource="{Binding Styles.Styles}">
+                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListView_PreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="lvw_ItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
                         <flatstyle:ListView.View>
                             <GridView>
                                 <GridViewColumn >
@@ -193,17 +206,12 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="4"/>
-                        <RowDefinition Height="Auto"/>
+                        <!--<RowDefinition Height="4"/>
+                        <RowDefinition Height="Auto"/>-->
                     </Grid.RowDefinitions>
                     <flatstyle:Button Content="导入" Click="ImportBtnClick"/>
                     <flatstyle:Button Content="导出" Click="ExportBtnClick" Grid.Column="2"/>
-                    <!--<flatstyle:Button Content="优化" Click="DeleteNoFeatureShpBtnClick" Grid.Column="4"/>-->
-                    <flatstyle:Button Content="线转面" Grid.Column="4" Click="PolylineToPolygonButtonClick"/>
-
-                    <flatstyle:Button Content="复制" Grid.Row="2" Click="CopyButtonClick"/>
-                    <flatstyle:Button Content="删除" Grid.Row="2" Grid.Column="2" Click="DeleteStyleBtnClick"/>
-                    <flatstyle:Button Content="打开目录" Grid.Row="2" Grid.Column="4" Click="OpenFolderButtonClick"/>
+                    <flatstyle:Button Content="打开目录" Grid.Row="0" Grid.Column="4" Click="OpenFolderButtonClick"/>
 
                 </Grid>
 

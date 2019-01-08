@@ -9,7 +9,6 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
-using MapBoard.BoardOperation;
 using MapBoard.Code;
 using MapBoard.UI;
 using System;
@@ -27,18 +26,19 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 
-namespace MapBoard.BoardOperation
+namespace MapBoard.UI.BoardOperation
 {
     public class DrawHelper
     {
 
-        public DrawHelper(ArcMapView mapview)
+        public DrawHelper()
         {
-            Mapview = mapview ?? throw new ArgumentNullException(nameof(mapview));
         }
 
-   
-        public ArcMapView Mapview { get; private set; }
+
+        private ArcMapView Mapview => ArcMapView.Instance;
+
+        public SketchCreationMode? LastDrawMode { get; private set; }
 
         /// <summary>
         /// 开始绘制
@@ -47,16 +47,34 @@ namespace MapBoard.BoardOperation
         /// <returns></returns>
         public async Task StartDraw(SketchCreationMode mode)
         {
+            LastDrawMode = mode;
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
             await Mapview.SketchEditor.StartAsync(mode);
         }
+
+        //private bool isDrawing;
+        //public bool IsDrawing
+        //{
+        //    get => isDrawing;
+        //    set
+        //    {
+        //        if (value != isDrawing)
+        //        {
+        //            isDrawing = value;
+        //            DrawStatusChanged?.Invoke(this, new EventArgs());
+        //        }
+        //    }
+        //}
+
+        //public event EventHandler DrawStatusChanged;
 
         /// <summary>
         /// 绘制结束
         /// </summary>
         /// <returns></returns>
-        public async Task StopDraw()
+        public async Task StopDraw(bool save=true)
         {
-            if (Mapview.SketchEditor.Geometry != null)
+            if (Mapview.SketchEditor.Geometry != null && save)
             {
                 string fileName = "";
                 ShapefileFeatureTable table = null;
@@ -75,7 +93,7 @@ namespace MapBoard.BoardOperation
                         break;
                     case SketchCreationMode.Multipoint:
                         //case SketchCreationMode.Multipoint:
-                        table = await Mapview. GetFeatureTable(GeometryType.Multipoint);
+                        table = await Mapview.GetFeatureTable(GeometryType.Multipoint);
                         if (table != null)
                         {
                             Multipoint point = Mapview.SketchEditor.Geometry as Multipoint;
@@ -126,10 +144,11 @@ namespace MapBoard.BoardOperation
                         }
                         break;
                 }
-                 StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
+                StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
 
             }
             Mapview.SketchEditor.Stop();
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
 
 

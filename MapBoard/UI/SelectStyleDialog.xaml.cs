@@ -1,5 +1,4 @@
 ﻿using FzLib.Control.Dialog;
-using MapBoard.BoardOperation;
 using MapBoard.Code;
 using System;
 using System.Collections.Generic;
@@ -31,8 +30,8 @@ namespace MapBoard.UI
             var list = styles.Styles.Where(p => p.Type == styles.Selected.Type && p!=styles.Selected);
             if (list.Count() > 0)
             {
-                SelectedStyle = list.First();
                 cbb.ItemsSource = list;
+                cbb.SelectedIndex = 1;
                 canSelect = true;
             }
         }

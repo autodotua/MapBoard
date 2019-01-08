@@ -5,11 +5,12 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
+using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
 using FzLib.IO;
-using MapBoard.BoardOperation;
 using MapBoard.Code;
+using MapBoard.UI.BoardOperation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,28 +27,36 @@ namespace MapBoard.UI
 {
     public class ArcMapView : MapView, INotifyPropertyChanged
     {
-
+        public static ArcMapView Instance { get; private set; }
         public EditHelper Editing { get; private set; }
         public SelectionHelper Selection { get; private set; }
 
         public DrawHelper Drawing { get; private set; }
         public ArcMapView()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                throw new Exception("不允许多实例");
+            }
             Loaded += ArcMapViewLoaded;
             AllowDrop = true;
             SketchEditor = new SketchEditor();
             SketchEditor.EditConfiguration.AllowMove = SketchEditor.EditConfiguration.AllowRotate = SketchEditor.EditConfiguration.AllowVertexEditing = true;
-            Editing = new EditHelper(this);
-            Selection = new SelectionHelper(this);
-            Drawing = new DrawHelper(this);
+            Editing = new EditHelper();
+            Selection = new SelectionHelper();
+            Drawing = new DrawHelper();
         }
 
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseRightButtonUp(e);
-            if (SketchEditor.Geometry != null && Selection.IsSelecting)
+            if (SketchEditor.Geometry != null && BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
-                await Selection.StopSelect(true);
+                await Selection.StopFrameSelect(true);
             }
         }
         protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
@@ -56,93 +65,182 @@ namespace MapBoard.UI
             //MapPoint point = GeometryEngine.Project(ScreenToLocation(e.GetPosition(this)), SpatialReferences.Wgs84) as MapPoint;
             //foreach (var feature in Selection.SelectedFeatures)
             //{
-            if (Editing.IsEditing)
-            {
+            //if (Editing.IsEditing)
+            //{
+            //    ContextMenu menu = new ContextMenu();
+            //    MenuItem menuOk = new MenuItem() { Header = "完成" };
+            //    menuOk.Click += async (p1, p2) => await Editing.StopEditing();
+            //    menu.Items.Add(menuOk);
 
-                MenuItem menuDelete = new MenuItem() { Header = "完成" };
-                menuDelete.Click += async (p1, p2) => await Editing.StopEditing();
+            //    MenuItem menuReset = new MenuItem() { Header = "还原" };
+            //    menuReset.Click += async (p1, p2) => await Editing.AbandonEditing();
+            //    menu.Items.Add(menuReset);
 
-                MenuItem menuEdit = new MenuItem() { Header = "还原" };
-                menuEdit.Click += async (p1, p2) => await Editing.ResetEditingFeature();
+            //    if (SketchEditor.SelectedVertex != null)
+            //    {
+            //        MenuItem menuRemoveVertex = new MenuItem() { Header = "移除节点" };
+            //        menuRemoveVertex.Click += (p1, p2) => SketchEditor.RemoveSelectedVertex();
+            //        menu.Items.Add(menuRemoveVertex);
+            //    }
+            //    menu.IsOpen = true;
+            //}
+            //else
+            //{
 
-                ContextMenu menu = new ContextMenu()
-                {
-                    Items =
-                            {
-                            menuDelete,
-                            menuEdit
-                            },
-                    IsOpen = true,
-                };
-            }
-            else
-            {
-                //if (IsMouseOverFeature(point, feature))
-                //{
-                if (Selection.SelectedFeatures.Count > 0)
-                {
-                    MenuItem menuDelete = new MenuItem() { Header = "删除" };
-                    menuDelete.Click += async (p1, p2) => await Editing.DeleteSelectedFeatures();
+            //if (IsMouseOverFeature(point, feature))
+            //{
+            //if (StyleCollection.Instance.Selected != null && Selection.SelectedFeatures.Count > 0)
+            //{
+            //    ContextMenu menu = new ContextMenu();
 
-                    MenuItem menuEdit = new MenuItem() { Header = "编辑" };
-                    menuEdit.Click += (p1, p2) => Editing.EditSelectedFeature();
+            //    MenuItem menuCount = new MenuItem() { Header = $"共{Selection.SelectedFeatures.Count.ToString()}个图形" };
+            //    menuCount.HorizontalContentAlignment = System.Windows.HorizontalAlignment.Center;
+            //    menuCount.FontWeight = FontWeights.Bold;
+            //    menu.Items.Add(menuCount);
 
-                    MenuItem menuCopy = new MenuItem() { Header = "复制" };
-                    menuCopy.Click += MenuCopyClick;
+            //    MenuItem menuDelete = new MenuItem() { Header = "删除" };
+            //    menuDelete.Click += async (p1, p2) => await Editing.DeleteSelectedFeatures();
+            //    menu.Items.Add(menuDelete);
 
-                    ContextMenu menu = new ContextMenu()
-                    {
-                        Items =
-                            {
-                            menuDelete,
-                            menuEdit,
-                            menuCopy
-                            },
-                        IsOpen = true,
-                    };
-                }
-            }
+
+            //    MenuItem menuCopy = new MenuItem() { Header = "复制" };
+            //    menuCopy.Click += MenuCopyClick;
+            //    menu.Items.Add(menuCopy);
+
+
+            //    if (Selection.SelectedFeatures.Count == 1)
+            //    {
+            //        MenuItem menuEdit = new MenuItem() { Header = "编辑" };
+            //        menuEdit.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Draw);
+            //        menu.Items.Add(menuEdit);
+
+
+            //        if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon || StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)
+            //        {
+            //            MenuItem menuCut = new MenuItem() { Header = "切割" };
+            //            menuCut.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Cut);
+            //            menu.Items.Add(menuCut);
+            //        }
+            //    }
+            //    if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
+            //    {
+            //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+            //        MenuItem menuLength = new MenuItem() { Header = "长度：" + Number.MeterToFitString(length) };
+            //        menu.Items.Add(menuLength);
+            //    }
+            //    else if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//面
+            //    {
+            //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+            //        double area = Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+            //        MenuItem menuLength = new MenuItem() { Header = "周长：" + Number.MeterToFitString(length) };
+            //        MenuItem menuArea = new MenuItem() { Header = "面积：" + Number.SquareMeterToFitString(area) };
+            //        menu.Items.Add(menuLength);
+            //        menu.Items.Add(menuArea);
+            //    }
+
+
+
+
+            //    menu.IsOpen = true;
+            //    //}
+            //}
             //}
         }
 
-        private async void MenuCopyClick(object sender, RoutedEventArgs e)
-        {
+        //private async void MenuCopyClick(object sender, RoutedEventArgs e)
+        //{
 
-            SelectStyleDialog dialog = new SelectStyleDialog(App.Current.MainWindow);
-            if (dialog.ShowDialog() == true)
-            {
-                StyleCollection.Instance.Selected.LayerVisible = false;
-                ObservableCollection<Feature> features = Selection.SelectedFeatures;
-                ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
-                foreach (var feature in features)
-                {
-                    await targetTable.AddFeatureAsync(feature);
-                }
-                await Selection.StopSelect(false);
-                dialog.SelectedStyle.UpdateFeatureCount();
-                StyleCollection.Instance.Selected = dialog.SelectedStyle;
-            }
-        }
+        //    SelectStyleDialog dialog = new SelectStyleDialog(App.Current.MainWindow);
+        //    if (dialog.ShowDialog() == true)
+        //    {
+        //        StyleCollection.Instance.Selected.LayerVisible = false;
+        //        ObservableCollection<Feature> features = Selection.SelectedFeatures;
+        //        ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
+        //        foreach (var feature in features)
+        //        {
+        //            await targetTable.AddFeatureAsync(feature);
+        //        }
+        //        await Selection.StopFrameSelect(false);
+        //        dialog.SelectedStyle.UpdateFeatureCount();
+        //        StyleCollection.Instance.Selected = dialog.SelectedStyle;
+        //    }
+        //}
 
-        protected override async void OnPreviewKeyDown(KeyEventArgs e)
+        protected async override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
-            if (e.Key == Key.Delete)
+            switch (e.Key)
             {
-                await Editing.DeleteSelectedFeatures();
+                case Key.Delete:
+                    await Editing.DeleteSelectedFeatures();
+                    break;
+
+                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
+                    await Drawing.StopDraw();
+                    break;
+                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
+                    await Editing.StopEditing();
+                    break;
+                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Ready && Drawing.LastDrawMode.HasValue:
+                    await Drawing.StartDraw(Drawing.LastDrawMode.Value);
+                    break;
+
+                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
+                    await Drawing.StopDraw(false);
+                    break;
+                case Key.Escape when Selection.SelectedFeatures.Count > 0:
+                    await Editing.StopEditing();
+                    break;
+
+                
+                case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
+                    SketchEditor.UndoCommand.Execute(null);
+                    break;
+                case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && SketchEditor.RedoCommand.CanExecute(null):
+                    SketchEditor.RedoCommand.Execute(null);
+                    break;
+                case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.RedoCommand.CanExecute(null):
+                    SketchEditor.RedoCommand.Execute(null);
+                    break;
             }
-            else if (SketchEditor.UndoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
-            {
-                SketchEditor.UndoCommand.Execute(null);
-            }
-            else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
-            {
-                SketchEditor.RedoCommand.Execute(null);
-            }
-            else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-            {
-                SketchEditor.RedoCommand.Execute(null);
-            }
+            //if (e.Key == Key.Delete)
+            //{
+            //    await Editing.DeleteSelectedFeatures();
+            //}
+            //else if (e.Key == Key.Enter)
+            //{
+            //    if (BoardTaskManager.CurrentTask == BoardTaskManager.OperationTask.Draw)
+            //    {
+            //        await Drawing.StopDraw();
+            //    }
+            //    else if (Drawing.LastDrawMode.HasValue)
+            //    {
+            //        await Drawing.StartDraw(Drawing.LastDrawMode.Value);
+            //    }
+            //}
+            //else if (e.Key == Key.Escape)
+            //{
+            //    if (BoardTaskManager.CurrentTask == BoardTaskManager.OperationTask.Draw)
+            //    {
+            //        await Drawing.StopDraw(false);
+            //    }
+            //    else if (Selection.SelectedFeatures.Count > 0)
+            //    {
+            //        Selection.ClearSelection();
+            //    }
+            //}
+            //else if (SketchEditor.UndoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+            //{
+            //    SketchEditor.UndoCommand.Execute(null);
+            //}
+            //else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
+            //{
+            //    SketchEditor.RedoCommand.Execute(null);
+            //}
+            //else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+            //{
+            //    SketchEditor.RedoCommand.Execute(null);
+            //}
         }
 
         public bool IsMouseOverFeature(MapPoint point, Feature feature)
@@ -171,15 +269,17 @@ namespace MapBoard.UI
         {
             await LoadBasemap();
             await LoadLayers();
-
-
+            if (StyleCollection.Instance.Selected != null)
+            {
+                await SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+            }
         }
 
         public async Task LoadLayers()
         {
             Map.OperationalLayers.Clear();
             Selection.SelectedFeatures.Clear();
-            Selection.IsSelecting = false;
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
 
             if (!Directory.Exists(Config.DataPath))
             {
@@ -420,8 +520,8 @@ namespace MapBoard.UI
             }
             Map = map;
 
-            await SetViewpointCenterAsync(new MapPoint(13532000, 3488400));
-            await SetViewpointScaleAsync(1000000);
+            //await SetViewpointCenterAsync(new MapPoint(13532000, 3488400));
+            //await SetViewpointScaleAsync(1000000);
         }
 
 

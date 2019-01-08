@@ -22,8 +22,12 @@ namespace MapBoard.Code
                 {
                     try
                     {
-                      instance.  Styles = JsonConvert.DeserializeObject<ObservableCollection<StyleInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
-                        if (instance.Styles==null)
+                        instance.Styles = JsonConvert.DeserializeObject<ObservableCollection<StyleInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
+                        if (instance.Styles.Count > 0)
+                        {
+                            instance.Selected = instance.Styles[0];
+                        }
+                        else if (instance.Styles == null)
                         {
                             instance.Styles = new ObservableCollection<StyleInfo>();
                         }
