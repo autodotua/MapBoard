@@ -9,7 +9,7 @@ using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
 using FzLib.IO;
-using MapBoard.Code;
+using MapBoard.Style;
 using MapBoard.UI.BoardOperation;
 using System;
 using System.Collections.Generic;
@@ -49,6 +49,8 @@ namespace MapBoard.UI
             Editing = new EditHelper();
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
+
+            Load();
         }
 
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -192,7 +194,7 @@ namespace MapBoard.UI
                     await Editing.StopEditing();
                     break;
 
-                
+
                 case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
                     SketchEditor.UndoCommand.Execute(null);
                     break;
@@ -261,11 +263,14 @@ namespace MapBoard.UI
         }
 
 
-
-
-        WebTiledLayer baseLayer;
+        private WebTiledLayer baseLayer;
         bool loaded = false;
-        private async void ArcMapViewLoaded(object sender, RoutedEventArgs e)
+        private void ArcMapViewLoaded(object sender, RoutedEventArgs e)
+        {
+            //await Load();
+        }
+
+        private async Task Load()
         {
             await LoadBasemap();
             await LoadLayers();
@@ -277,7 +282,6 @@ namespace MapBoard.UI
 
         public async Task LoadLayers()
         {
-            Map.OperationalLayers.Clear();
             Selection.SelectedFeatures.Clear();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
 
@@ -324,7 +328,6 @@ namespace MapBoard.UI
 
         public async Task LoadLayer(StyleInfo style)
         {
-
             try
             {
                 ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Config.DataPath + "\\" + style.Name + ".shp");
@@ -341,12 +344,12 @@ namespace MapBoard.UI
                     //}
                     //else
                     //{
-                    FeatureLayer layer = new FeatureLayer(featureTable);
-                    Map.OperationalLayers.Add(layer);
+                    //FeatureLayer layer = new FeatureLayer(featureTable);
+                    ////Map.OperationalLayers.Add(layer);
 
-                    style.Table = featureTable;
-                    style.UpdateFeatureCount();
-                    SetRenderer(style);
+                    //style.Table = featureTable;
+                    //style.UpdateFeatureCount();
+                    //SetRenderer(style);
                     //  }
                 }
             }
@@ -356,62 +359,7 @@ namespace MapBoard.UI
             }
         }
 
-        public void RemoveStyle(StyleInfo style, bool deleteFiles)
-        {
-            if (style.Layer != null && Map.OperationalLayers.Contains(style.Layer))
-            {
-                Map.OperationalLayers.Remove(style.Layer);
-            }
-            if (StyleCollection.Instance.Styles.Contains(style))
-            {
-                StyleCollection.Instance.Styles.Remove(style);
-            }
-            style.Table.Close();
 
-            if (deleteFiles)
-            {
-                foreach (var file in Directory.EnumerateFiles(Config.DataPath))
-                {
-                    if (Path.GetFileNameWithoutExtension(file) == style.Name)
-                    {
-                        File.Delete(file);
-                    }
-                }
-            }
-        }
-
-        public StyleInfo GetStyle(StyleInfo template, GeometryType type)
-        {
-            if (StyleCollection.Instance.Styles.Any(p => p.StyleEquals(template, type)))
-            {
-                return StyleCollection.Instance.Styles.First(p => p.StyleEquals(template, type));
-            }
-            else
-            {
-                string fileName = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
-
-                switch (type)
-                {
-                    case GeometryType.Point:
-                        Shapefile.ExportEmptyPointShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Multipoint:
-                        Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Polyline:
-                        Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Polygon:
-                        Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, fileName);
-                        break;
-                }
-                StyleInfo style = new StyleInfo();
-                style.CopyStyleFrom(template);
-                style.Name = fileName;
-                StyleCollection.Instance.Styles.Add(style);
-                return style;
-            }
-        }
         //public StyleInfo GetStyleFromConfig(string name)
         //{
         //    StyleInfo style = Config.Instance.ShapefileStyles.FirstOrDefault(p => p.Name == name)?.Clone();
@@ -480,7 +428,7 @@ namespace MapBoard.UI
 
         public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
         {
-            var style = GetStyle(StyleCollection.Instance.Current, type);
+            var style = StyleHelper.GetStyle(StyleCollection.Instance.Current, type);
             ShapefileFeatureTable table = style.Table;
 
             if (table == null)
@@ -491,7 +439,7 @@ namespace MapBoard.UI
                 {
 
                     FeatureLayer layer = new FeatureLayer(table);
-                    Map.OperationalLayers.Add(layer);
+                    //Map.OperationalLayers.Add(layer);
                     style.Table = table;
 
                     SetRenderer(style);
@@ -550,15 +498,43 @@ namespace MapBoard.UI
 
             }
 
-            FeatureLayer layer = new FeatureLayer(newTable);
 
-            newStyle.UpdateFeatureCount();
-            Map.OperationalLayers.Add(layer);
+
+            //newStyle.UpdateFeatureCount();
+            //Map.OperationalLayers.Add(layer);
 
             newStyle.Table = newTable;
-            SetRenderer(newStyle);
+            //SetRenderer(newStyle);
             StyleCollection.Instance.Styles.Add(newStyle);
 
+        }
+
+        public async void AddLayer(StyleInfo style)
+        {
+            if (style.Table == null)
+            {
+                style.Table = new ShapefileFeatureTable(style.FileName);
+                await style.Table.LoadAsync();
+            }
+            FeatureLayer layer = new FeatureLayer(style.Table);
+            Map.OperationalLayers.Add(layer);
+            SetRenderer(style);
+            style.LoadLayerVisibility();
+        }
+
+        public void RemoveLayer(StyleInfo style)
+        {
+            Map.OperationalLayers.Remove(style.Layer);
+            style.Table.Close();
+        }
+
+        public void ClearLayers()
+        {
+            foreach (var layer in Map.OperationalLayers)
+            {
+                Map.OperationalLayers.Remove(layer);
+                ((layer as FeatureLayer).FeatureTable as ShapefileFeatureTable).Close();
+            }
         }
     }
 }

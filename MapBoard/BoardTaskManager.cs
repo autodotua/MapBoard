@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Code
+namespace MapBoard
 {
     public static class BoardTaskManager
     {
@@ -16,8 +16,9 @@ namespace MapBoard.Code
             {
                 if (currentTask != value)
                 {
-                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(currentTask, value));
                     currentTask = value;
+
+                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(currentTask, value));
                 }
             }
         }

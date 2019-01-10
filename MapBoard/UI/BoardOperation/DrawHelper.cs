@@ -9,7 +9,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
-using MapBoard.Code;
+using MapBoard.Style;
 using MapBoard.UI;
 using System;
 using System;

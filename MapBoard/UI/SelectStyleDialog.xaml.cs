@@ -1,5 +1,5 @@
 ﻿using FzLib.Control.Dialog;
-using MapBoard.Code;
+using MapBoard.Style;
 using System;
 using System.Collections.Generic;
 using System.Linq;

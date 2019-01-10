@@ -5,7 +5,8 @@ using FzLib.Control.Dialog;
 using FzLib.Geography.Coordinate;
 using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
-using MapBoard.Code;
+using MapBoard.Format;
+using MapBoard.Style;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -55,8 +57,6 @@ namespace MapBoard.UI
             RegistEvents();
 
             ResetStyleSettingUI();
-            btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
-            grdButtons.IsEnabled = StyleCollection.Instance.Selected.LayerVisible;
         }
 
         private void RegistEvents()
@@ -69,10 +69,7 @@ namespace MapBoard.UI
             };
             BoardTaskManager.BoardTaskChanged += (s, e) =>
               {
-                  if (e.IsTaskChanged(BoardTaskManager.BoardTask.Edit))
-                  {
-                      JudgeControlsEnable();
-                  }
+                  JudgeControlsEnable();
 
                   if (e.IsTaskChanged(BoardTaskManager.BoardTask.Draw))
                   {
@@ -92,12 +89,12 @@ namespace MapBoard.UI
 
             var lvwHelper = new FzLib.Control.Extension.ListViewHelper<StyleInfo>(lvw);
             lvwHelper.EnableDragAndDropItem();
-            lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
+            //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
         }
 
         private void JudgeControlsEnable()
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
                 grdLeft.IsEnabled = false;
             }
@@ -195,7 +192,7 @@ namespace MapBoard.UI
             }
             else
             {
-                if(BoardTaskManager.CurrentTask==BoardTaskManager.BoardTask.Select)
+                if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
                 {
                     await arcMap.Selection.StopFrameSelect(false);
                     //btnSelect.IsChecked = false;
@@ -258,47 +255,60 @@ namespace MapBoard.UI
 
         private void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            string path = CommonFileSystemDialog.GetOpenFile(new List<(string, string)>() { ("ZIP压缩文件", "zip") }, false, true);
+            string path = CommonFileSystemDialog.GetOpenFile(new List<(string, string)>()
+            { ("mbpkg地图画板包", "mbpkg"),("GPS轨迹文件","gpx") }, false, true);
             if (path != null)
             {
-                try
+                loading.Show();
+                switch (Path.GetExtension(path))
                 {
-                    StyleCollection.Instance.Styles.ForEach(p => p.Table.Close());
-                    if (Directory.Exists(Config.DataPath))
-                    {
-                        Directory.Delete(Config.DataPath, true);
-                    }
-                    ZipFile.ExtractToDirectory(path, Config.DataPath);
+                    case ".mbpkg":
+                        try
+                        {
+                            Mbpkg.Import(path);
+                            restart = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            restart = false;
+                            TaskDialog.ShowException(this, ex, "导入失败");
+                        }
+                        break;
 
-                    restart = true;
-                    Information.Restart();
-                }
-                catch (Exception ex)
-                {
-                    TaskDialog.ShowException(this, ex, "导出失败");
+                    case ".gpx":
+
+                        try
+                        {
+                            TaskDialog.ShowWithCommandLinks(this, "请选择转换类型", "正在准备导入GPS轨迹文件",
+                           new (string, string, Action)[] {
+                                ("点","每一个轨迹点分别加入到新的样式中",()=>Gpx.Import(path,Gpx.Type.Point)),
+                                ("一条线","按时间顺序将轨迹点相连，形成一条线",()=>Gpx.Import(path,Gpx.Type.OneLine)),
+                                ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.Import(path,Gpx.Type.MultiLine)),
+                           });
+                        }
+                        catch (Exception ex)
+                        {
+                            TaskDialog.ShowException(this, ex, "导入失败");
+                        }
+                        break;
                 }
             }
+            loading.Hide();
         }
 
-        private async void ExportBtnClick(object sender, RoutedEventArgs e)
+        private void ExportBtnClick(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(Config.DataPath))
             {
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            string path = CommonFileSystemDialog.GetSaveFile(new List<(string, string)>() { ("ZIP压缩文件", "zip") }, false, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+            string path = CommonFileSystemDialog.GetSaveFile(new List<(string, string)>() { ("mbpkg地图画板包", "mbpkg") }, false, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {
                 try
                 {
-                    if (File.Exists(path))
-                    {
-                        File.Delete(path);
-                    }
-                    StyleCollection.Instance.Styles.ForEach(p => p.Table.Close());
-                    ZipFile.CreateFromDirectory(Config.DataPath, path);
-                    await arcMap.LoadLayers();
+                    Mbpkg.Export(path);
                     SnakeBar.Show("导出成功");
                 }
                 catch (Exception ex)
@@ -352,6 +362,24 @@ namespace MapBoard.UI
             }
         }
 
+        private async void SaveImage(object sender, RoutedEventArgs e)
+        {
+            RuntimeImage image = await arcMap.ExportImageAsync();
+            var bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
+           // string path=CommonFileSystemDialog.GetSaveFile()
+        }
+
+
+        public static Bitmap ConvertToBitmap(BitmapSource bitmapSource)
+        {
+            var width = bitmapSource.PixelWidth;
+            var height = bitmapSource.PixelHeight;
+            var stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
+            var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
+            bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
+            var bitmap = new Bitmap(width, height, stride, System.Drawing.Imaging.PixelFormat.Format32bppPArgb, memoryBlockPointer);
+            return bitmap;
+        }
         private void DeleteStyle(object sender, RoutedEventArgs e)
         {
             if (StyleCollection.Instance.Selected == null)
@@ -360,7 +388,7 @@ namespace MapBoard.UI
                 return;
             }
             var style = StyleCollection.Instance.Selected;
-            arcMap.RemoveStyle(style, true);
+            StyleHelper.RemoveStyle(style, true);
         }
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
@@ -415,7 +443,7 @@ namespace MapBoard.UI
                 }
                 try
                 {
-                    arcMap.RemoveStyle(StyleCollection.Instance.Selected, false);
+                    StyleHelper.RemoveStyle(StyleCollection.Instance.Selected, false);
                     foreach (var file in Directory.EnumerateFiles(Config.DataPath))
                     {
                         if (Path.GetFileNameWithoutExtension(file) == style.Name)
@@ -436,21 +464,21 @@ namespace MapBoard.UI
             {
                 arcMap.SetRenderer(style);
             }
-            Config.Save();
+            StyleCollection.Instance.Save();
         }
 
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
-           btnApplyStyle.IsEnabled = btnDefaultStyle.IsEnabled = txtName.IsEnabled = StyleCollection.Instance.Selected != null;
+            btnApplyStyle.IsEnabled = btnDefaultStyle.IsEnabled = txtName.IsEnabled = StyleCollection.Instance.Selected != null;
 
             //if (arcMap.Selection.IsSelecting)
             //{
             //    await arcMap.Selection.StopSelect(false);
             //}
-            if (btnSelect!=null)
+            if (btnSelect != null)
             {
-                btnSelect.IsEnabled = StyleCollection.Instance.Selected != null ;
-                grdButtons.IsEnabled = StyleCollection.Instance.Selected.LayerVisible;
+                btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
+                grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
             }
 
 
@@ -468,6 +496,8 @@ namespace MapBoard.UI
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
+            grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
         }
 
         private void listView1_MouseMove(object sender, MouseEventArgs e)
@@ -545,8 +575,10 @@ namespace MapBoard.UI
             (string header, RoutedEventHandler action, bool visiable)[] menus = new (string, RoutedEventHandler, bool)[]
            {
                 ("复制",CopyFeatures,true),
-                ("转线",PolylineToPolygon,style.Type==GeometryType.Polyline),
+                ("转面",PolylineToPolygon,style.Type==GeometryType.Polyline),
                 ("删除",DeleteStyle,true),
+                ("缩放",async (p1,p2)=>await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),true),
+
            };
 
             foreach (var (header, action, visiable) in menus)

@@ -272,5 +272,6 @@
             </Grid>
         </win10style:ModernExpander>
 
+        <progress:LoadingOverlay x:Name="loading" RingSize="0.1" Grid.ColumnSpan="100" Grid.RowSpan="100" />
     </Grid>
 </Window>

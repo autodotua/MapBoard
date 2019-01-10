@@ -1,4 +1,5 @@
 ﻿using FzLib.Control.Dialog;
+using MapBoard.Style;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Code
+namespace MapBoard
 {
     public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase
     {
@@ -64,6 +65,9 @@ namespace MapBoard.Code
             base.Save();
             StyleCollection.Instance.Save();
         }
+
+        public bool GCJ02 { get; set; } = true;
+
 
         //public List<StyleInfo> ShapefileStyles { get; } = new List<StyleInfo>();
 

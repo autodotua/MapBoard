@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Code
+namespace MapBoard.Style
 {
     public class StyleInfo : FzLib.Extension.ExtendedINotifyPropertyChanged, ICloneable
     {
@@ -35,13 +35,17 @@ namespace MapBoard.Code
             get => table;
             set
             {
-                if(value.FeatureLayer==null)
-                {
-                    throw new Exception("必须先加入Layer才能设置Table");
-                }
-                value.FeatureLayer.IsVisible = LayerVisible;
+                //if(value.FeatureLayer==null)
+                //{
+                //    throw new Exception("必须先加入Layer才能设置Table");
+                //}
+                //value.FeatureLayer.IsVisible = LayerVisible;
                 SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
             }
+        }
+        public void LoadLayerVisibility()
+        {
+            Layer.IsVisible = LayerVisible;
         }
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
@@ -92,7 +96,20 @@ namespace MapBoard.Code
             return result;
         }
 
-        public long FeatureCount => Table==null|| Table.LoadStatus!=Esri.ArcGISRuntime.LoadStatus.Loaded?0: Table.NumberOfFeatures;
+        public long FeatureCount
+        {
+            get
+            {
+                try
+                {
+                    return Table == null || Table.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded ? 0 : Table.NumberOfFeatures;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
 
         public string TypeDescription
         {

@@ -1,4 +1,5 @@
-﻿using MapBoard.UI;
+﻿using Esri.ArcGISRuntime.Mapping;
+using MapBoard.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,8 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FzLib.Basic.Collection.Loop;
 
-namespace MapBoard.Code
+namespace MapBoard.Style
 {
     public class StyleCollection : FzLib.Extension.ExtendedINotifyPropertyChanged
     {
@@ -32,7 +34,7 @@ namespace MapBoard.Code
                             instance.Styles = new ObservableCollection<StyleInfo>();
                         }
                     }
-                    catch
+                    catch(Exception ex)
                     {
                         instance.Styles = new ObservableCollection<StyleInfo>();
                     }
@@ -44,12 +46,49 @@ namespace MapBoard.Code
         {
             File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
         }
-        public ObservableCollection<StyleInfo> Styles { get; set; } = null;
+        private ObservableCollection<StyleInfo> styles;
+        public ObservableCollection<StyleInfo> Styles
+        {
+            get => styles;
+            set
+            {
+                styles = value;
+                if(value!=null)
+                {
+                    styles.CollectionChanged += StylesCollectionChanged;
+                    if(value.Count>0)
+                    {
+                        value.ForEach(p => ArcMapView.Instance.AddLayer(p));
+                    }
+                }
+            }
+        }
 
         private StyleInfo selected;
         private StyleCollection()
         {
         }
+
+        private void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    e.NewItems.ForEach(p => ArcMapView.Instance.AddLayer(p as StyleInfo));
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                    ArcMapView.Instance.Map.OperationalLayers.Move(e.OldStartingIndex, e.NewStartingIndex);
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    e.OldItems.ForEach(p => ArcMapView.Instance.RemoveLayer(p as StyleInfo));
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    ArcMapView.Instance.ClearLayers();
+                    break;
+
+            }
+        }
+
         public StyleInfo Selected
         {
             get => selected;

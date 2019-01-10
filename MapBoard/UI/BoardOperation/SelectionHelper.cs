@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
-using MapBoard.Code;
+using MapBoard.Style;
 using MapBoard.UI;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Control.Dialog;
-using MapBoard.Code;
+using MapBoard.Style;
 using MapBoard.UI;
 using System;
 using System.Collections.Generic;
