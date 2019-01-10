@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
+using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Coordinate;
 using FzLib.Geography.Coordinate.Convert;
@@ -47,6 +48,22 @@ namespace MapBoard.UI
         /// 控制在执行耗时工作时控件的可用性
         /// </summary>
         private bool controlsEnable = true;
+
+        private static readonly TwoWayDictionary<string, SketchCreationMode> ButtonsMode = new TwoWayDictionary<string, SketchCreationMode>()
+        {
+            { "直线段",SketchCreationMode.Polyline},
+            { "自由线", SketchCreationMode.FreehandLine},
+            { "多边形",SketchCreationMode.Polygon},
+            { "自由面",SketchCreationMode.FreehandPolygon},
+            { "圆",SketchCreationMode.Circle},
+            { "椭圆",SketchCreationMode.Ellipse},
+            { "箭头",SketchCreationMode.Arrow},
+            { "矩形", SketchCreationMode.Rectangle},
+            { "三角形",SketchCreationMode.Triangle},
+            { "点",SketchCreationMode.Point},
+            { "多点",SketchCreationMode.Multipoint},
+        };
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -71,12 +88,14 @@ namespace MapBoard.UI
               {
                   JudgeControlsEnable();
 
-                  if (e.IsTaskChanged(BoardTaskManager.BoardTask.Draw))
+                  if (e.NewTask == BoardTaskManager.BoardTask.Draw)
                   {
-                      ToggleButton btn = grdButtons.Children.Cast<ToggleButton>()
-                      .First(b => b.Content as string == ButtonsMode.First(p =>
-                      p.Mode == arcMap.Drawing.LastDrawMode).Name);
-                      btn.IsChecked = e.NewTask == BoardTaskManager.BoardTask.Draw;
+                      grdButtons.Children.Cast<ToggleButton>().First(b => b.Content.Equals(ButtonsMode.GetKey(arcMap.Drawing.LastDrawMode.Value))).IsChecked = true;
+                  }
+
+                  else if (e.OldTask == BoardTaskManager.BoardTask.Draw && e.NewTask == BoardTaskManager.BoardTask.Ready)
+                  {
+                      grdButtons.Children.Cast<ToggleButton>().First(p => p.IsChecked == true).IsChecked = false;
                   }
               };
             //arcMap.Editing.EditingStatusChanged += (p1, p2) => JudgeControlsEnable();
@@ -109,6 +128,39 @@ namespace MapBoard.UI
                     lvw.IsEnabled = true;
                 }
                 grdLeft.IsEnabled = true;
+
+
+            }
+
+
+            grdStyleSetting.IsEnabled  = StyleCollection.Instance.Selected != null;
+
+            //if (arcMap.Selection.IsSelecting)
+            //{
+            //    await arcMap.Selection.StopSelect(false);
+            //}
+            if (IsLoaded)
+            {
+                btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
+                grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
+
+                IEnumerable<ToggleButton> buttons = grdButtons.Children.Cast<ToggleButton>().Where(p => p.Tag != null);
+                buttons.ForEach(p => p.IsEnabled = false);
+                switch (StyleCollection.Instance.Selected.Type)
+                {
+                    case GeometryType.Multipoint:
+                        buttons.First(p => p.Tag.Equals("多点")).IsEnabled = true;
+                        break;
+                    case GeometryType.Point:
+                        buttons.First(p => p.Tag.Equals("点")).IsEnabled = true;
+                        break;
+                    case GeometryType.Polyline:
+                        buttons.Where(p => p.Tag.Equals("线")).ForEach(p => p.IsEnabled = true);
+                        break;
+                    case GeometryType.Polygon:
+                        buttons.Where(p => p.Tag.Equals("面")).ForEach(p => p.IsEnabled = true);
+                        break;
+                }
             }
         }
         //private StyleInfo editingStyle;
@@ -170,7 +222,7 @@ namespace MapBoard.UI
 
 
 
-        private async void TextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void UrlTextBoxPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -181,10 +233,6 @@ namespace MapBoard.UI
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
             ToggleButton btn = sender as ToggleButton;
-            if (StyleCollection.Instance.Selected == null)
-            {
-                SetStyleFromUI(Config.DefaultStyle);
-            }
             if (btn.IsChecked == false)
             {
                 await arcMap.Drawing.StopDraw();
@@ -207,25 +255,11 @@ namespace MapBoard.UI
 
                 //btn.IsChecked = true;
                 lastBtn = btn;
-                var mode = ButtonsMode.First(p => p.Name.Equals(btn.Content)).Mode;
+                var mode = ButtonsMode[btn.Content as string];
                 await arcMap.Drawing.StartDraw(mode);
             }
         }
 
-        private (string Name, SketchCreationMode Mode)[] ButtonsMode = new (string, SketchCreationMode)[]
-        {
-                    ( "直线段",SketchCreationMode.Polyline),
-                    ( "自由线", SketchCreationMode.FreehandLine),
-                    ( "多边形",SketchCreationMode.Polygon),
-                    ( "自由面",SketchCreationMode.FreehandPolygon),
-                    ( "圆",SketchCreationMode.Circle),
-                    ( "椭圆",SketchCreationMode.Ellipse),
-                    ( "箭头",SketchCreationMode.Arrow),
-                    ( "矩形", SketchCreationMode.Rectangle),
-                    ( "三角形",SketchCreationMode.Triangle),
-                    ( "点",SketchCreationMode.Point),
-                    ( "多点",SketchCreationMode.Multipoint),
-        };
 
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
         {
@@ -332,7 +366,7 @@ namespace MapBoard.UI
             await arcMap.PolylineToPolygon(StyleCollection.Instance.Selected);
         }
 
-        private void ListView_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {
@@ -366,7 +400,7 @@ namespace MapBoard.UI
         {
             RuntimeImage image = await arcMap.ExportImageAsync();
             var bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
-           // string path=CommonFileSystemDialog.GetSaveFile()
+            // string path=CommonFileSystemDialog.GetSaveFile()
         }
 
 
@@ -404,9 +438,15 @@ namespace MapBoard.UI
         }
 
 
-        private void DefaultStyleButtonClick(object sender, RoutedEventArgs e)
+        private void CreateStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            StyleCollection.Instance.Selected = null;
+            TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
+            {
+                ("线",null,()=>StyleHelper.CreateStyle(GeometryType.Polyline)),
+                ("面",null,()=>StyleHelper.CreateStyle(GeometryType.Polygon)),
+                ("点",null,()=>StyleHelper.CreateStyle(GeometryType.Point)),
+                ("多点",null,()=>StyleHelper.CreateStyle(GeometryType.Multipoint)),
+            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
         }
 
         private void SetStyleFromUI(StyleInfo style)
@@ -469,105 +509,38 @@ namespace MapBoard.UI
 
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
-            btnApplyStyle.IsEnabled = btnDefaultStyle.IsEnabled = txtName.IsEnabled = StyleCollection.Instance.Selected != null;
+          
 
-            //if (arcMap.Selection.IsSelecting)
-            //{
-            //    await arcMap.Selection.StopSelect(false);
-            //}
-            if (btnSelect != null)
-            {
-                btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
-                grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
-            }
-
-
+            JudgeControlsEnable();
             ResetStyleSettingUI();
         }
 
         private void ResetStyleSettingUI()
         {
-            txtName.Text = StyleCollection.Instance.Selected?.Name;
-
-            txtLineWidth.Text = StyleCollection.Instance.Current.LineWidth.ToString();
-            lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Current.LineColor));
-            fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Current.FillColor));
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
-            grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
-        }
-
-        private void listView1_MouseMove(object sender, MouseEventArgs e)
-        {
-            ListView listview = sender as ListView;
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (!IsLoaded || StyleCollection.Instance.Selected==null)
             {
-                System.Collections.IList list = listview.SelectedItems as System.Collections.IList;
-                DataObject data = new DataObject(typeof(System.Collections.IList), list);
-                if (list.Count > 0)
-                {
-                    DragDrop.DoDragDrop(listview, data, DragDropEffects.Move);
-                }
+                return;
+            }
+            else
+            {
+                txtName.Text = StyleCollection.Instance.Selected?.Name;
+
+                txtLineWidth.Text = StyleCollection.Instance.Selected.LineWidth.ToString();
+                lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.LineColor));
+                fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.FillColor));
+               
             }
         }
 
-        private void listView1_Drop(object sender, DragEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(System.Collections.IList)))
-            {
-                System.Collections.IList peopleList = e.Data.GetData(typeof(System.Collections.IList)) as System.Collections.IList;
-                //index为放置时鼠标下元素项的索引  
-                int index = GetCurrentIndex(new GetPositionDelegate(e.GetPosition));
-                if (index > -1)
-                {
-                    StyleInfo Logmess = peopleList[0] as StyleInfo;
-                    //拖动元素集合的第一个元素索引  
-                    int OldFirstIndex = StyleCollection.Instance.Styles.IndexOf(Logmess);
-                    //下边那个循环要求数据源必须为ObservableCollection<T>类型，T为对象  
-                    for (int i = 0; i < peopleList.Count; i++)
-                    {
-                        StyleCollection.Instance.Styles.Move(OldFirstIndex, index);
-                    }
-                    // lvw.SelectedItems.Clear();
-                }
-            }
+            //btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
+            //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
+            JudgeControlsEnable();
         }
-
-        private int GetCurrentIndex(GetPositionDelegate getPosition)
-        {
-            int index = -1;
-            for (int i = 0; i < lvw.Items.Count; ++i)
-            {
-                ListViewItem item = GetListViewItem(i);
-                if (item != null && this.IsMouseOverTarget(item, getPosition))
-                {
-                    index = i;
-                    break;
-                }
-            }
-            return index;
-        }
-
-        private bool IsMouseOverTarget(Visual target, GetPositionDelegate getPosition)
-        {
-            Rect bounds = VisualTreeHelper.GetDescendantBounds(target);
-            System.Windows.Point mousePos = getPosition((IInputElement)target);
-            return bounds.Contains(mousePos);
-        }
-
-        delegate System.Windows.Point GetPositionDelegate(IInputElement element);
-
-        ListViewItem GetListViewItem(int index)
-        {
-            if (lvw.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
-                return null;
-            return lvw.ItemContainerGenerator.ContainerFromIndex(index) as ListViewItem;
-        }
-
-        private void lvw_ItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        
+        
+        private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             var style = StyleCollection.Instance.Selected;
             ContextMenu menu = new ContextMenu();
@@ -592,6 +565,11 @@ namespace MapBoard.UI
             }
 
             menu.IsOpen = true;
+        }
+
+        private void btnBrowseMode_Click(object sender, RoutedEventArgs e)
+        {
+            StyleCollection.Instance.Selected = null;
         }
 
         //private async void DeleteNoFeatureShpBtnClick(object sender, RoutedEventArgs e)

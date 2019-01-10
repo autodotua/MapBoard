@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Style
 {
-   public static     class StyleHelper
+    public static class StyleHelper
     {
         public static void RemoveStyle(StyleInfo style, bool deleteFiles)
         {
@@ -17,7 +17,7 @@ namespace MapBoard.Style
             {
                 StyleCollection.Instance.Styles.Remove(style);
             }
-          
+
 
             if (deleteFiles)
             {
@@ -31,37 +31,33 @@ namespace MapBoard.Style
             }
         }
 
-        public static StyleInfo GetStyle(StyleInfo template, GeometryType type)
+        public static StyleInfo CreateStyle(GeometryType type)
         {
-            if (StyleCollection.Instance.Styles.Any(p => p.StyleEquals(template, type)))
-            {
-                return StyleCollection.Instance.Styles.First(p => p.StyleEquals(template, type));
-            }
-            else
-            {
-                string fileName = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
 
-                switch (type)
-                {
-                    case GeometryType.Point:
-                        Shapefile.ExportEmptyPointShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Multipoint:
-                        Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Polyline:
-                        Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, fileName);
-                        break;
-                    case GeometryType.Polygon:
-                        Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, fileName);
-                        break;
-                }
-                StyleInfo style = new StyleInfo();
-                style.CopyStyleFrom(template);
-                style.Name = fileName;
-                StyleCollection.Instance.Styles.Add(style);
-                return style;
+            string fileName = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+
+            switch (type)
+            {
+                case GeometryType.Point:
+                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, fileName);
+                    break;
+                case GeometryType.Multipoint:
+                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, fileName);
+                    break;
+                case GeometryType.Polyline:
+                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, fileName);
+                    break;
+                case GeometryType.Polygon:
+                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, fileName);
+                    break;
+                default:
+                    throw new Exception("不支持的格式");
             }
+            StyleInfo style = new StyleInfo();
+            style.Name = fileName;
+            StyleCollection.Instance.Styles.Add(style);
+            StyleCollection.Instance.Selected = style;
+            return style;
         }
 
 

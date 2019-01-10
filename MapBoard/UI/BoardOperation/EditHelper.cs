@@ -109,7 +109,7 @@ namespace MapBoard.UI.BoardOperation
                     }
 
                     SnakeBar.Show("成功分割为" + partsCount + "部分");
-                    StyleCollection.Instance.Current.UpdateFeatureCount();
+                    StyleCollection.Instance.Selected.UpdateFeatureCount();
                 }
             }
 
@@ -173,7 +173,7 @@ namespace MapBoard.UI.BoardOperation
             if (Mode == EditMode.Draw)
             {
                 await editingFeature.FeatureTable.AddFeatureAsync(editingFeature);
-                StyleCollection.Instance.Current.UpdateFeatureCount();
+                StyleCollection.Instance.Selected.UpdateFeatureCount();
             }
 
             if (lastBar != null)

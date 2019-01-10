@@ -428,7 +428,7 @@ namespace MapBoard.UI
 
         public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
         {
-            var style = StyleHelper.GetStyle(StyleCollection.Instance.Current, type);
+            var style = StyleCollection.Instance.Selected;// StyleHelper.GetStyle(StyleCollection.Instance.Selected, type);
             ShapefileFeatureTable table = style.Table;
 
             if (table == null)

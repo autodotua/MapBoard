@@ -116,8 +116,6 @@ namespace MapBoard.Style
             }
         }
 
-        public StyleInfo Current => Selected ?? Config.Instance.DefaultStyle;
-
 
 
         //public event EventHandler SelectionChanged;

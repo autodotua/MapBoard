@@ -13,7 +13,7 @@
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
-        Loaded="Window_Loaded"
+        Loaded="WindowLoaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="地图画板" Height="700" Width="1000">
     <Window.Resources>
@@ -125,7 +125,7 @@
                     <RowDefinition Height="16"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Grid Width="280" >
+                <Grid Width="280" x:Name="grdStyleSetting">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="8"/>
@@ -149,7 +149,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
-                    <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="TextBox_PreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>
+                    <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>
 
                     <TextBlock Grid.Row="2" HorizontalAlignment="Right" Text="线宽/边框宽/点大小："/>
                     <flatstyle:TextBox x:Name="txtLineWidth" Grid.Row="2" Grid.Column="2" Text="5"/>
@@ -167,9 +167,11 @@
                     <flatstyle:TextBox x:Name="txtName" Grid.Row="12" Grid.Column="12"/>
 
                     <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
-                        <flatstyle:Button x:Name="btnApplyStyle" IsEnabled="False" Content="应用样式" Click="ApplyStyleButtonClick" />
+                        <flatstyle:Button x:Name="btnBrowseMode" Content="浏览模式" Click="btnBrowseMode_Click"/>
                         <TextBlock Text="  "/>
-                        <flatstyle:Button x:Name="btnDefaultStyle" Content="默认样式" Click="DefaultStyleButtonClick"/>
+                        <flatstyle:Button x:Name="btnApplyStyle"  Content="应用样式" Click="ApplyStyleButtonClick" />
+                        <TextBlock Text="  "/>
+                        <flatstyle:Button x:Name="btnDefaultStyle" Content="新建样式" Click="CreateStyleButtonClick"/>
                     </StackPanel>    
                 </Grid>
 
@@ -179,7 +181,7 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListView_PreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="lvw_ItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
+                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
                         <flatstyle:ListView.View>
                             <GridView>
                                 <GridViewColumn >
@@ -252,20 +254,20 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <ToggleButton Content="直线段" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="自由线" Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="多边形" Grid.Column="6" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="直线段" Tag="线" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="自由线" Tag="线" Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="多边形" Tag="面" Grid.Column="6" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
 
-                    <ToggleButton Content="自由面" Grid.Row="2"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="圆" Grid.Row="2"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="椭圆" Grid.Row="2"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="自由面" Tag="面"  Grid.Row="2"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="圆" Tag="面"  Grid.Row="2"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="椭圆" Tag="面"  Grid.Row="2"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
 
-                    <ToggleButton Content="矩形" Grid.Row="4"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="三角形" Grid.Row="4"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="箭头" Grid.Row="4"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="矩形" Tag="面"  Grid.Row="4"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="三角形" Tag="面"  Grid.Row="4"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="箭头" Tag="面"  Grid.Row="4"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
 
-                    <ToggleButton Content="点" Grid.Row="6"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="多点" Grid.Row="6"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="点" Tag="点" Grid.Row="6"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton Content="多点" Tag="多点" Grid.Row="6"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
                     <ToggleButton x:Name="btnSelect" Content="选择" Grid.Row="6"  Grid.Column="4" Click="SelectToggleButtonClick" Style="{DynamicResource ToggleButtonStyle}"/>
 
                 </Grid>

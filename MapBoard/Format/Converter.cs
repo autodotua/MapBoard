@@ -18,7 +18,6 @@ namespace MapBoard.Format
 
             return new MapPoint(point.Longitude, point.Latitude);
         }
-
-        public Geometry To
+        
     }
 }

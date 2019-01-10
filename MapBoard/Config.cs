@@ -53,8 +53,6 @@ namespace MapBoard
         [JsonIgnore]
         public static string DataPath { get; set; } = "Data";
 
-        public StyleInfo DefaultStyle { get; set; } = new StyleInfo();
-
         public bool StaticEnable { get; set; } = true;
 
         public double StaticWidth { get; set; } = 100;

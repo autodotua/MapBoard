@@ -37,7 +37,6 @@ namespace MapBoard.Format
 
                 }
                 StyleInfo style = new StyleInfo();
-                style.CopyStyleFrom(Config.Instance.DefaultStyle);
                 style.Name = Path.GetFileNameWithoutExtension(newName);
                 StyleCollection.Instance.Styles.Add(style);
 

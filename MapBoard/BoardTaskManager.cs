@@ -16,9 +16,10 @@ namespace MapBoard
             {
                 if (currentTask != value)
                 {
+                    BoardTask oldTask = currentTask;
                     currentTask = value;
 
-                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(currentTask, value));
+                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(oldTask, value));
                 }
             }
         }
