@@ -115,6 +115,7 @@
     <Compile Include="UI\SelectStyleDialog.xaml.cs">
       <DependentUpon>SelectStyleDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\SplitButton\SplitButton.cs" />
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -143,6 +144,10 @@
     <Page Include="UI\SelectStyleDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\SplitButton\SplitButtonStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

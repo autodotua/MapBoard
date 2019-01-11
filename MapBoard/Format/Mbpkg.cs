@@ -27,15 +27,17 @@ namespace MapBoard.Format
             Information.Restart();
         }
 
-        public static async void Export(string path)
+        public static  void Export(string path)
         {
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
-            StyleCollection.Instance.Styles.ForEach(p => p.Table.Close());
+            var styles = StyleCollection.Instance.Styles.ToArray();
+            StyleCollection.Instance.Styles.Clear();
+            styles.ForEach(p => p.Table = null);
             ZipFile.CreateFromDirectory(Config.DataPath, path);
-            await ArcMapView.Instance.LoadLayers();
+            styles.ForEach(p => StyleCollection.Instance.Styles.Add(p));
         }
     }
 }

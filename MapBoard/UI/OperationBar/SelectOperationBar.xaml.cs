@@ -112,5 +112,10 @@ namespace MapBoard.UI.OperationBar
         {
             MapView.Editing.StartEdit(EditHelper.EditMode.Draw);
         }
+
+        private async void CancelButtonClick(object sender, RoutedEventArgs e)
+        {
+          await  MapView.Selection.StopFrameSelect(false);
+        }
     }
 }

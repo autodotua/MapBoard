@@ -25,6 +25,12 @@ namespace MapBoard.UI.OperationBar
             InitializeComponent();
 
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
+            MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
+        }
+
+        private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
+        {
+            btnDeleteSelectedVertex.IsEnabled = MapView.SketchEditor.SelectedVertex != null;
         }
 
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
@@ -93,6 +99,11 @@ namespace MapBoard.UI.OperationBar
             {
                 await MapView.Editing.AbandonEditing();
             }
+        }
+
+        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
+        {
+            MapView.SketchEditor.RemoveSelectedVertex();
         }
     }
 }

@@ -10,6 +10,7 @@
         xmlns:controlextended="clr-namespace:FzLib.Control.ControlExtended;assembly=FzWpfControlLib"
         xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
         xmlns:bar="clr-namespace:MapBoard.UI.OperationBar"
+        xmlns:splitbutton="clr-namespace:MapBoard.UI.SplitButton"
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
@@ -17,6 +18,7 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="地图画板" Height="700" Width="1000">
     <Window.Resources>
+
         <Style x:Key="undoRedoButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -89,16 +91,26 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
     </Window.Resources>
-    
-    
+
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
         <local:ArcMapView x:Name="arcMap" Grid.Column="2"/>
         <bar:EditOperationBar x:Name="editBar" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <bar:EditOperationBar.RenderTransform>
@@ -172,7 +184,7 @@
                         <flatstyle:Button x:Name="btnApplyStyle"  Content="应用样式" Click="ApplyStyleButtonClick" />
                         <TextBlock Text="  "/>
                         <flatstyle:Button x:Name="btnDefaultStyle" Content="新建样式" Click="CreateStyleButtonClick"/>
-                    </StackPanel>    
+                    </StackPanel>
                 </Grid>
 
                 <Grid Grid.Row="2">
@@ -217,7 +229,7 @@
 
                 </Grid>
 
-                <Grid   Grid.Row="6" HorizontalAlignment="Center" >
+                <!--<Grid   Grid.Row="6" HorizontalAlignment="Center" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="8"/>
@@ -236,16 +248,14 @@
                             <Path Fill="Black" Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z"/>
                         </Viewbox>
                     </flatstyle:Button>
-                </Grid>
+                </Grid>-->
                 <Grid   Grid.Row="100" x:Name="grdButtons">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
+                    <!--<Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
@@ -253,8 +263,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Content="直线段" Tag="线" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    </Grid.RowDefinitions>-->
+                    <!--<ToggleButton Visibility="Hidden" Content="直线段" Tag="线" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
                     <ToggleButton Content="自由线" Tag="线" Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
                     <ToggleButton Content="多边形" Tag="面" Grid.Column="6" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
 
@@ -268,9 +278,95 @@
 
                     <ToggleButton Content="点" Tag="点" Grid.Row="6"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
                     <ToggleButton Content="多点" Tag="多点" Grid.Row="6"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton x:Name="btnSelect" Content="选择" Grid.Row="6"  Grid.Column="4" Click="SelectToggleButtonClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <ToggleButton x:Name="btnSelect" Content="选择" Grid.Row="6"  Grid.Column="4" Click="SelectToggleButtonClick" Style="{DynamicResource ToggleButtonStyle}"/>-->
+
+                    <splitbutton:SplitButton x:Name="splBtnPolyline"  Text="多段线" Click="DrawButtonsClick">
+                        <splitbutton:SplitButton.DropDownContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="自由线" Click="DrawButtonsClick"/>
+                            </ContextMenu>
+                        </splitbutton:SplitButton.DropDownContextMenu>
+                    </splitbutton:SplitButton>
+                    <splitbutton:SplitButton x:Name="splBtnPolygon"  Text="多边形"  Click="DrawButtonsClick">
+                        <splitbutton:SplitButton.DropDownContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="自由面" Click="DrawButtonsClick"/>
+                                <MenuItem Header="圆" Click="DrawButtonsClick"/>
+                                <MenuItem Header="椭圆" Click="DrawButtonsClick"/>
+                                <MenuItem Header="矩形" Click="DrawButtonsClick"/>
+                                <MenuItem Header="三角形" Click="DrawButtonsClick"/>
+                                <MenuItem Header="箭头" Click="DrawButtonsClick"/>
+                            </ContextMenu>
+                        </splitbutton:SplitButton.DropDownContextMenu>
+                    </splitbutton:SplitButton>
+
+                    <splitbutton:SplitButton x:Name="splBtnPoint"  Text="点" Click="DrawButtonsClick"/>
+                    <splitbutton:SplitButton x:Name="splBtnMultiPoint"  Text="多点" Click="DrawButtonsClick"/>
+
+                    <Button x:Name="btnSelect" Height="32" Width="32" FocusVisualStyle="{x:Null}" BorderThickness="0" Grid.Column="2"  Click="SelectToggleButtonClick">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD"/>
+                            <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
+                            <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
+                            <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
+                            <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
+                            <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
+                            <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
+                            <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
+                            <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
+                            <Style  TargetType="{x:Type Button}">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+                                <Setter Property="Background" Value="{StaticResource Button.Static.Background}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="1"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type Button}">
+                                            <Border x:Name="border" CornerRadius="16" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
+                                                <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                                           
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsDefaulted" Value="true">
+                                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="true">
+                                                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.MouseOver.Background}"/>
+                                                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.MouseOver.Border}"/>
+                                                    <Setter Property="Effect" TargetName="border" >
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#ffc300" Opacity="0.6" RenderingBias="Quality"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="true">
+                                                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Pressed.Background}"/>
+                                                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Pressed.Border}"/>
+                                                    </Trigger>
+                                                <Trigger Property="IsEnabled" Value="false">
+                                                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
+                                                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>
+                                                    <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Resources>
+                        <Viewbox Height="26" Width="26">
+                            <Path Fill="Black" Data="M829.888 739.392L547.84 457.28 706.112 364.8l-512-170.624L364.8 706.112l92.48-158.336 282.112 282.112z"/>
+                        </Viewbox>
+                    </Button>
 
                 </Grid>
+
             </Grid>
         </win10style:ModernExpander>
 

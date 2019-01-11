@@ -51,7 +51,7 @@ namespace MapBoard.UI
 
         private static readonly TwoWayDictionary<string, SketchCreationMode> ButtonsMode = new TwoWayDictionary<string, SketchCreationMode>()
         {
-            { "直线段",SketchCreationMode.Polyline},
+            { "多段线",SketchCreationMode.Polyline},
             { "自由线", SketchCreationMode.FreehandLine},
             { "多边形",SketchCreationMode.Polygon},
             { "自由面",SketchCreationMode.FreehandPolygon},
@@ -63,6 +63,8 @@ namespace MapBoard.UI
             { "点",SketchCreationMode.Point},
             { "多点",SketchCreationMode.Multipoint},
         };
+
+        public string[] LineTypes { get; } = { "多段线", "自由线" };
 
         /// <summary>
         /// 构造函数
@@ -82,21 +84,21 @@ namespace MapBoard.UI
             arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) =>
             {
                 JudgeControlsEnable();
-                btnSelect.IsChecked = arcMap.Selection.SelectedFeatures.Count > 0;
+                //btnSelect.IsChecked = arcMap.Selection.SelectedFeatures.Count > 0;
             };
             BoardTaskManager.BoardTaskChanged += (s, e) =>
               {
                   JudgeControlsEnable();
 
-                  if (e.NewTask == BoardTaskManager.BoardTask.Draw)
-                  {
-                      grdButtons.Children.Cast<ToggleButton>().First(b => b.Content.Equals(ButtonsMode.GetKey(arcMap.Drawing.LastDrawMode.Value))).IsChecked = true;
-                  }
+                  //if (e.NewTask == BoardTaskManager.BoardTask.Draw)
+                  //{
+                  //    grdButtons.Children.Cast<ToggleButton>().First(b => b.Content.Equals(ButtonsMode.GetKey(arcMap.Drawing.LastDrawMode.Value))).IsChecked = true;
+                  //}
 
-                  else if (e.OldTask == BoardTaskManager.BoardTask.Draw && e.NewTask == BoardTaskManager.BoardTask.Ready)
-                  {
-                      grdButtons.Children.Cast<ToggleButton>().First(p => p.IsChecked == true).IsChecked = false;
-                  }
+                  //else if (e.OldTask == BoardTaskManager.BoardTask.Draw && e.NewTask == BoardTaskManager.BoardTask.Ready)
+                  //{
+                  //    grdButtons.Children.Cast<ToggleButton>().First(p => p.IsChecked == true).IsChecked = false;
+                  //}
               };
             //arcMap.Editing.EditingStatusChanged += (p1, p2) => JudgeControlsEnable();
 
@@ -113,7 +115,7 @@ namespace MapBoard.UI
 
         private void JudgeControlsEnable()
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
                 grdLeft.IsEnabled = false;
             }
@@ -144,22 +146,25 @@ namespace MapBoard.UI
                 btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
                 grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
 
-                IEnumerable<ToggleButton> buttons = grdButtons.Children.Cast<ToggleButton>().Where(p => p.Tag != null);
-                buttons.ForEach(p => p.IsEnabled = false);
-                switch (StyleCollection.Instance.Selected.Type)
+                IEnumerable<ButtonBase> buttons = grdButtons.Children.Cast<ButtonBase>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
+                buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
+                if (StyleCollection.Instance.Selected != null)
                 {
-                    case GeometryType.Multipoint:
-                        buttons.First(p => p.Tag.Equals("多点")).IsEnabled = true;
-                        break;
-                    case GeometryType.Point:
-                        buttons.First(p => p.Tag.Equals("点")).IsEnabled = true;
-                        break;
-                    case GeometryType.Polyline:
-                        buttons.Where(p => p.Tag.Equals("线")).ForEach(p => p.IsEnabled = true);
-                        break;
-                    case GeometryType.Polygon:
-                        buttons.Where(p => p.Tag.Equals("面")).ForEach(p => p.IsEnabled = true);
-                        break;
+                    switch (StyleCollection.Instance.Selected.Type)
+                    {
+                        case GeometryType.Multipoint:
+                            splBtnMultiPoint.Visibility = Visibility.Visible;
+                            break;
+                        case GeometryType.Point:
+                            splBtnPoint.Visibility = Visibility.Visible;
+                            break;
+                        case GeometryType.Polyline:
+                            splBtnPolyline.Visibility = Visibility.Visible;
+                            break;
+                        case GeometryType.Polygon:
+                            splBtnPolygon.Visibility = Visibility.Visible;
+                            break;
+                    }
                 }
             }
         }
@@ -222,67 +227,74 @@ namespace MapBoard.UI
 
 
 
-        private async void UrlTextBoxPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void UrlTextBoxPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 await arcMap.LoadBasemap();
             }
         }
-        ToggleButton lastBtn = null;
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
-            ToggleButton btn = sender as ToggleButton;
-            if (btn.IsChecked == false)
+            string text = null;
+            if(sender is SplitButton.SplitButton)
             {
-                await arcMap.Drawing.StopDraw();
-                lastBtn = null;
+                text=(sender as SplitButton.SplitButton).Text;
             }
             else
             {
+                text = (sender as MenuItem).Header as string;
+            }
+            //if (btn.IsChecked == false)
+            //{
+            //    await arcMap.Drawing.StopDraw();
+            //    lastBtn = null;
+            //}
+            //else
+            //{
                 if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
                 {
                     await arcMap.Selection.StopFrameSelect(false);
                     //btnSelect.IsChecked = false;
                 }
-                if (lastBtn != null)
-                {
-                    lastBtn.IsChecked = false;
+                //if (lastBtn != null)
+                //{
+                //    lastBtn.IsChecked = false;
 
-                    await arcMap.Drawing.StopDraw();
-                }
+                //    await arcMap.Drawing.StopDraw();
+                //}
 
 
                 //btn.IsChecked = true;
-                lastBtn = btn;
-                var mode = ButtonsMode[btn.Content as string];
+                //lastBtn = btn;
+                var mode = ButtonsMode[text];
                 await arcMap.Drawing.StartDraw(mode);
-            }
+           // }
         }
 
 
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
         {
-            if (StyleCollection.Instance.Selected == null)
-            {
-                SnakeBar.ShowError("没有选择任何样式");
-                btnSelect.IsChecked = false;
-                return;
-            }
-            if (btnSelect.IsChecked == true)
-            {
-                if (lastBtn != null)
-                {
-                    lastBtn.IsChecked = false;
-                    await arcMap.Drawing.StopDraw();
-                    lastBtn = null;
-                }
+            //if (StyleCollection.Instance.Selected == null)
+            //{
+            //    SnakeBar.ShowError("没有选择任何样式");
+            //    btnSelect.IsChecked = false;
+            //    return;
+            //}
+            //if (btnSelect.IsChecked == true)
+            //{
+                //if (lastBtn != null)
+                //{
+                //    lastBtn.IsChecked = false;
+                //    await arcMap.Drawing.StopDraw();
+                //    lastBtn = null;
+                //}
                 await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
-            }
-            else
-            {
-                await arcMap.Selection.StopFrameSelect(false);
-            }
+            //}
+            //else
+            //{
+            //    await arcMap.Selection.StopFrameSelect(false);
+            //}
 
         }
 
@@ -532,11 +544,16 @@ namespace MapBoard.UI
             }
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
             //btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
             //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
             JudgeControlsEnable();
+
+            if (StyleCollection.Instance.Selected != null)
+            {
+                await arcMap. SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+            }
         }
         
         

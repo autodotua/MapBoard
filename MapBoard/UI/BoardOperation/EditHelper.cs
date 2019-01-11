@@ -55,22 +55,20 @@ namespace MapBoard.UI.BoardOperation
 
             }
         }
-
-
-
-        private void ShowBar(string message)
-        {
-            SnakeBar bar = new SnakeBar(Application.Current.MainWindow);
-            lastBar = bar;
-            bar.ButtonClick += async (p1, p2) =>
-            {
-                await StopEditing();
-            };
-            bar.ShowButton = true;
-            bar.Duration = Duration.Forever;
-            bar.ButtonContent = "完成";
-            bar.ShowMessage(message);
-        }
+        
+        //private void ShowBar(string message)
+        //{
+        //    SnakeBar bar = new SnakeBar(Application.Current.MainWindow);
+        //    lastBar = bar;
+        //    bar.ButtonClick += async (p1, p2) =>
+        //    {
+        //        await StopEditing();
+        //    };
+        //    bar.ShowButton = true;
+        //    bar.Duration = Duration.Forever;
+        //    bar.ButtonContent = "完成";
+        //    bar.ShowMessage(message);
+        //}
 
         private void StopCut()
         {
@@ -123,7 +121,7 @@ namespace MapBoard.UI.BoardOperation
             Cut
         }
         public EditMode Mode { get; private set; }
-        private SnakeBar lastBar;
+       // private SnakeBar lastBar;
         private Feature editingFeature;
         public async Task DeleteSelectedFeatures()
         {
@@ -149,12 +147,11 @@ namespace MapBoard.UI.BoardOperation
 
         public async Task StopEditing()
         {
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
-            if (lastBar != null)
-            {
-                lastBar.Hide();
-                lastBar = null;
-            }
+            //if (lastBar != null)
+            //{
+            //    lastBar.Hide();
+            //    lastBar = null;
+            //}
             if (Mode == EditMode.Draw)
             {
                 await Mapview.Drawing.StopDraw();
@@ -164,11 +161,13 @@ namespace MapBoard.UI.BoardOperation
             {
                 StopCut();
             }
+
+            Mapview.Selection.ClearSelection();
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
 
         public async Task AbandonEditing()
         {
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
             Mapview.SketchEditor.Stop();
             if (Mode == EditMode.Draw)
             {
@@ -176,11 +175,13 @@ namespace MapBoard.UI.BoardOperation
                 StyleCollection.Instance.Selected.UpdateFeatureCount();
             }
 
-            if (lastBar != null)
-            {
-                lastBar.Hide();
-                lastBar = null;
-            }
+            //if (lastBar != null)
+            //{
+            //    lastBar.Hide();
+            //    lastBar = null;
+            //}
+            Mapview.Selection.ClearSelection();
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
 
         //private bool isEditing = false;

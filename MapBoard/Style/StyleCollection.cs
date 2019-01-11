@@ -13,50 +13,92 @@ using static FzLib.Basic.Collection.Loop;
 
 namespace MapBoard.Style
 {
-    public class StyleCollection : FzLib.Extension.ExtendedINotifyPropertyChanged
+    public class StyleCollection : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
-        private static StyleCollection instance = new StyleCollection();
+        //private static StyleCollection instance = new StyleCollection();
+        //public static StyleCollection Instance
+        //{
+        //    get
+        //    {
+        //        if (instance.Styles == null)
+        //        {
+        //            try
+        //            {
+        //                instance.Styles = JsonConvert.DeserializeObject<ObservableCollection<StyleInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
+        //                if (instance.Styles.Count > 0)
+        //                {
+        //                    instance.Selected = instance.Styles[0];
+        //                }
+        //                else if (instance.Styles == null)
+        //                {
+        //                    instance.Styles = new ObservableCollection<StyleInfo>();
+        //                }
+        //            }
+        //            catch(Exception ex)
+        //            {
+        //                instance.Styles = new ObservableCollection<StyleInfo>();
+        //            }
+        //        }
+        //        return instance;
+        //    }
+        //}
+
+        private static StyleCollection instance;
         public static StyleCollection Instance
         {
             get
             {
-                if (instance.Styles == null)
+                if (instance == null)
                 {
-                    try
+                    instance = TryOpenOrCreate<StyleCollection>(System.IO.Path.Combine(Config.DataPath, "styles.json"));
+                    if (instance.Styles.Count > 0)
                     {
-                        instance.Styles = JsonConvert.DeserializeObject<ObservableCollection<StyleInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
-                        if (instance.Styles.Count > 0)
-                        {
-                            instance.Selected = instance.Styles[0];
-                        }
-                        else if (instance.Styles == null)
-                        {
-                            instance.Styles = new ObservableCollection<StyleInfo>();
-                        }
+                        var styles = instance.Styles.ToArray();
+                        instance.styles.Clear();
+                        instance.styles.CollectionChanged += instance.StylesCollectionChanged;
+                        styles.ForEach(p => instance.Styles.Add(p));
                     }
-                    catch(Exception ex)
+                    else
                     {
-                        instance.Styles = new ObservableCollection<StyleInfo>();
+                        instance.styles.CollectionChanged += instance.StylesCollectionChanged;
                     }
+
+                    if(instance.SelectedIndex>=0 && instance.SelectedIndex<instance.Styles.Count)
+                    {
+                        instance.Selected = instance.Styles[instance.SelectedIndex];
+                    }
+                   
+                    //try
+                    //{
+                    //    instance = JsonConvert.DeserializeObject<StyleCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
+                    //    if (instance.Styles == null)
+                    //    {
+                    //        instance.Styles = new ObservableCollection<StyleInfo>();
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    instance.Styles = new ObservableCollection<StyleInfo>();
+                    //}
                 }
                 return instance;
             }
         }
-        public void Save()
-        {
-            File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
-        }
-        private ObservableCollection<StyleInfo> styles;
+        //public void Save()
+        //{
+        //    File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
+        //}
+        private ObservableCollection<StyleInfo> styles = new ObservableCollection<StyleInfo>();
         public ObservableCollection<StyleInfo> Styles
         {
             get => styles;
             set
             {
                 styles = value;
-                if(value!=null)
+                if (value != null)
                 {
-                    styles.CollectionChanged += StylesCollectionChanged;
-                    if(value.Count>0)
+
+                    if (value.Count > 0)
                     {
                         value.ForEach(p => ArcMapView.Instance.AddLayer(p));
                     }
@@ -65,9 +107,10 @@ namespace MapBoard.Style
         }
 
         private StyleInfo selected;
-        private StyleCollection()
-        {
-        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+
 
         private void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -88,7 +131,13 @@ namespace MapBoard.Style
 
             }
         }
-
+        public override void Save()
+        {
+            SelectedIndex = Styles.IndexOf(Selected);
+            base.Save();
+        }
+        public int SelectedIndex { get; set; }
+        [JsonIgnore]
         public StyleInfo Selected
         {
             get => selected;
@@ -111,8 +160,8 @@ namespace MapBoard.Style
                 //    //}
                 //}
                 //SelectionChanged?.Invoke(this, new EventArgs());
-
-                Notify(nameof(Selected));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
+                //Notify(nameof(Selected));
             }
         }
 

@@ -177,21 +177,27 @@ namespace MapBoard.UI
                     await Editing.DeleteSelectedFeatures();
                     break;
 
-                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
-                    await Drawing.StopDraw();
-                    break;
-                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
-                    await Editing.StopEditing();
-                    break;
-                case Key.Enter when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Ready && Drawing.LastDrawMode.HasValue:
-                    await Drawing.StartDraw(Drawing.LastDrawMode.Value);
+                case Key.Space:
+                case Key.Enter:
+                    switch (BoardTaskManager.CurrentTask)
+                    {
+                        case BoardTaskManager.BoardTask.Draw:
+                            await Drawing.StopDraw();
+                            break;
+                        case BoardTaskManager.BoardTask.Edit:
+                            await Editing.StopEditing();
+                            break;
+                        case BoardTaskManager.BoardTask.Ready when Drawing.LastDrawMode.HasValue:
+                            await Drawing.StartDraw(Drawing.LastDrawMode.Value);
+                            break;
+                    }
                     break;
 
                 case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
                     await Drawing.StopDraw(false);
                     break;
                 case Key.Escape when Selection.SelectedFeatures.Count > 0:
-                    await Editing.StopEditing();
+                    await Selection.StopFrameSelect(false);
                     break;
 
 
@@ -274,10 +280,7 @@ namespace MapBoard.UI
         {
             await LoadBasemap();
             await LoadLayers();
-            if (StyleCollection.Instance.Selected != null)
-            {
-                await SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
-            }
+            
         }
 
         public async Task LoadLayers()
@@ -530,7 +533,7 @@ namespace MapBoard.UI
 
         public void ClearLayers()
         {
-            foreach (var layer in Map.OperationalLayers)
+            foreach (var layer in Map.OperationalLayers.ToArray())
             {
                 Map.OperationalLayers.Remove(layer);
                 ((layer as FeatureLayer).FeatureTable as ShapefileFeatureTable).Close();
