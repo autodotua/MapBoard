@@ -120,7 +120,7 @@
   <data name="LabelJson" xml:space="preserve">
     <value>{
   "labelExpressionInfo": {
-    "expression": ""
+    "expression": "$feature.Info"
   },"maxScale": 0,
       "minScale": 0,
   "symbol": {
@@ -166,5 +166,66 @@
   },
   "scale":0
 }</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="MultipointCpg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>multipoint.cpg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MultipointDbf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>multipoint.dbf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MultipointPrj" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>multipoint.prj;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MultipointShp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>multipoint.shp;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MultipointShx" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>multipoint.shx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PointCpg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>point.cpg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PointDbf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>point.dbf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PointPrj" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>point.prj;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PointShp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>point.shp;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PointShx" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>point.shx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolygonCpg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polygon.cpg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolygonDbf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polygon.dbf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolygonPrj" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polygon.prj;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolygonShp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polygon.shp;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolygonShx" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polygon.shx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolylineCpg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polyline.cpg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolylineDbf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polyline.dbf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolylinePrj" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polyline.prj;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolylineShp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polyline.shp;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="PolylineShx" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>polyline.shx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

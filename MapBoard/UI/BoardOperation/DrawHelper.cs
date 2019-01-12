@@ -35,7 +35,7 @@ namespace MapBoard.UI.BoardOperation
         {
         }
 
-
+        public string Label { get; set; }
         private ArcMapView Mapview => ArcMapView.Instance;
 
         public SketchCreationMode? LastDrawMode { get; private set; }
@@ -52,55 +52,29 @@ namespace MapBoard.UI.BoardOperation
             await Mapview.SketchEditor.StartAsync(mode);
         }
 
-        //private bool isDrawing;
-        //public bool IsDrawing
-        //{
-        //    get => isDrawing;
-        //    set
-        //    {
-        //        if (value != isDrawing)
-        //        {
-        //            isDrawing = value;
-        //            DrawStatusChanged?.Invoke(this, new EventArgs());
-        //        }
-        //    }
-        //}
-
-        //public event EventHandler DrawStatusChanged;
 
         /// <summary>
         /// 绘制结束
         /// </summary>
         /// <returns></returns>
-        public async Task StopDraw(bool save=true)
+        public async Task StopDraw(bool save = true)
         {
             if (Mapview.SketchEditor.Geometry != null && save)
             {
                 string fileName = "";
                 ShapefileFeatureTable table = null;
+                Feature feature = null;
+                Geometry geometry = Mapview.SketchEditor.Geometry;
                 switch (Mapview.SketchEditor.CreationMode)
                 {
                     case SketchCreationMode.Point:
                         //case SketchCreationMode.Multipoint:
                         table = await Mapview.GetFeatureTable(GeometryType.Point);
-                        if (table != null)
-                        {
-                            MapPoint point = Mapview.SketchEditor.Geometry as MapPoint;
-                            Feature feature = table.CreateFeature();
-                            feature.Geometry = point;
-                            await table.AddFeatureAsync(feature);
-                        }
+
                         break;
                     case SketchCreationMode.Multipoint:
                         //case SketchCreationMode.Multipoint:
                         table = await Mapview.GetFeatureTable(GeometryType.Multipoint);
-                        if (table != null)
-                        {
-                            Multipoint point = Mapview.SketchEditor.Geometry as Multipoint;
-                            Feature feature = table.CreateFeature();
-                            feature.Geometry = point;
-                            await table.AddFeatureAsync(feature);
-                        }
                         break;
                     case SketchCreationMode.FreehandLine:
                     case SketchCreationMode.Polyline:
@@ -109,22 +83,13 @@ namespace MapBoard.UI.BoardOperation
                             table = await Mapview.GetFeatureTable(GeometryType.Polygon);
                             if (table != null)
                             {
-                                Polyline line = Mapview.SketchEditor.Geometry as Polyline;
-                                Feature feature = table.CreateFeature();
-                                feature.Geometry = GeometryEngine.Buffer(line, Config.Instance.StaticWidth);
-                                await table.AddFeatureAsync(feature);
+                                geometry = GeometryEngine.Buffer(geometry, Config.Instance.StaticWidth);
                             }
                         }
                         else
                         {
                             table = await Mapview.GetFeatureTable(GeometryType.Polyline);
-                            if (table != null)
-                            {
-                                Polyline line = Mapview.SketchEditor.Geometry as Polyline;
-                                Feature feature = table.CreateFeature();
-                                feature.Geometry = line;
-                                await table.AddFeatureAsync(feature);
-                            }
+
                         }
                         break;
                     case SketchCreationMode.Circle:
@@ -135,15 +100,20 @@ namespace MapBoard.UI.BoardOperation
                     case SketchCreationMode.Rectangle:
                     case SketchCreationMode.Triangle:
                         table = await Mapview.GetFeatureTable(GeometryType.Polygon);
-                        if (table != null)
-                        {
-                            Polygon polygon = Mapview.SketchEditor.Geometry as Polygon;
-                            Feature feature = table.CreateFeature();
-                            feature.Geometry = polygon;
-                            await table.AddFeatureAsync(feature);
-                        }
                         break;
                 }
+
+                if (table != null)
+                {
+                    feature = table.CreateFeature();
+                    feature.Geometry = geometry;
+                    if(!string.IsNullOrEmpty(Label))
+                    {
+                        feature.Attributes["Info"] = Label;
+                    }
+                    await table.AddFeatureAsync(feature);
+                }
+
                 StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
 
             }

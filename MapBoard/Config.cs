@@ -56,7 +56,6 @@ namespace MapBoard
         public bool StaticEnable { get; set; } = true;
 
         public double StaticWidth { get; set; } = 100;
-        public bool HideEditWarn { get; set; }
 
         public override void Save()
         {

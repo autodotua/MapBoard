@@ -1,5 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.Geography.Format;
+using MapBoard.Resource;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,30 +31,36 @@ namespace MapBoard.Style
             }
         }
 
-        public static StyleInfo CreateStyle(GeometryType type)
+        public static StyleInfo CreateStyle(GeometryType type,string name=null,StyleInfo template=null)
         {
-
-            string fileName = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            if (name == null)
+            {
+                 name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            }
 
             switch (type)
             {
                 case GeometryType.Point:
-                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, fileName);
+                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Multipoint:
-                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, fileName);
+                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Polyline:
-                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, fileName);
+                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Polygon:
-                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, fileName);
+                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, name);
                     break;
                 default:
                     throw new Exception("不支持的格式");
             }
             StyleInfo style = new StyleInfo();
-            style.Name = fileName;
+            if(template!=null)
+            {
+                style.CopyStyleFrom(template);
+            }
+            style.Name = name;
             StyleCollection.Instance.Styles.Add(style);
             StyleCollection.Instance.Selected = style;
             return style;

@@ -7,8 +7,8 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
-using FzLib.Geography.Format;
 using FzLib.IO;
+using MapBoard.Resource;
 using MapBoard.Style;
 using MapBoard.UI.BoardOperation;
 using System;
@@ -280,7 +280,7 @@ namespace MapBoard.UI
         {
             await LoadBasemap();
             await LoadLayers();
-            
+
         }
 
         public async Task LoadLayers()
@@ -358,7 +358,16 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                SnakeBar.ShowException(ex, $"无法加载样式{style.Name}");
+                if (SnakeBar.DefaultWindow == null)
+                {
+
+                    TaskDialog.ShowException(ex, $"无法加载样式{style.Name}");
+                }
+                else
+                {
+                    SnakeBar.ShowException(ex, $"无法加载样式{style.Name}");
+
+                }
             }
         }
 
@@ -404,7 +413,7 @@ namespace MapBoard.UI
         //    //}
         //}
 
-        public void SetRenderer(StyleInfo style)
+        public void SetLayerProperties(StyleInfo style)
         {
             SimpleLineSymbol lineSymbol;
             SimpleRenderer renderer = null;
@@ -427,6 +436,11 @@ namespace MapBoard.UI
             }
             style.Layer.Renderer = renderer;
 
+            string labelJson = Resource.Resource.LabelJson;
+            LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
+            style.Layer.LabelDefinitions.Add(labelDefinition);
+            style.Layer.LabelsEnabled = true;
+
         }
 
         public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
@@ -445,7 +459,7 @@ namespace MapBoard.UI
                     //Map.OperationalLayers.Add(layer);
                     style.Table = table;
 
-                    SetRenderer(style);
+                    SetLayerProperties(style);
                 }
             }
             return table;
@@ -466,7 +480,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(App.Current.MainWindow, ex, "加载地图失败");
+                TaskDialog.ShowException(ex, "加载地图失败");
                 return;
             }
             Map = map;
@@ -475,22 +489,12 @@ namespace MapBoard.UI
             //await SetViewpointScaleAsync(1000000);
         }
 
-
-
         public async Task PolylineToPolygon(StyleInfo style)
         {
-            StyleInfo newStyle = new StyleInfo();
-            newStyle.CopyStyleFrom(style);
-            newStyle.Name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName));
-            Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, newStyle.Name);
+            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)), style);
 
-            ShapefileFeatureTable newTable = new ShapefileFeatureTable(newStyle.FileName);
+            ShapefileFeatureTable newTable = newStyle.Table;
             await newTable.LoadAsync();
-            QueryParameters query = new QueryParameters
-            {
-                //Geometry = new Envelope(new MapPoint(-180,-88,SpatialReferences.Wgs84),new MapPoint(180,88, SpatialReferences.Wgs84)),
-                SpatialRelationship = SpatialRelationship.Contains
-            };
 
             foreach (var feature in await style.GetAllFeatures())
             {
@@ -500,12 +504,6 @@ namespace MapBoard.UI
                 await newTable.AddFeatureAsync(newFeature);
 
             }
-
-
-
-            //newStyle.UpdateFeatureCount();
-            //Map.OperationalLayers.Add(layer);
-
             newStyle.Table = newTable;
             //SetRenderer(newStyle);
             StyleCollection.Instance.Styles.Add(newStyle);
@@ -514,21 +512,37 @@ namespace MapBoard.UI
 
         public async void AddLayer(StyleInfo style)
         {
-            if (style.Table == null)
+            try
             {
-                style.Table = new ShapefileFeatureTable(style.FileName);
-                await style.Table.LoadAsync();
+
+                if (style.Table == null)
+                {
+                    style.Table = new ShapefileFeatureTable(style.FileName);
+                    await style.Table.LoadAsync();
+                }
+                FeatureLayer layer = new FeatureLayer(style.Table);
+                Map.OperationalLayers.Add(layer);
+                SetLayerProperties(style);
+                style.LoadLayerVisibility();
             }
-            FeatureLayer layer = new FeatureLayer(style.Table);
-            Map.OperationalLayers.Add(layer);
-            SetRenderer(style);
-            style.LoadLayerVisibility();
+            catch (Exception ex)
+            {
+                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "加载失败";
+                TaskDialog.ShowException(ex, error);
+            }
         }
 
         public void RemoveLayer(StyleInfo style)
         {
-            Map.OperationalLayers.Remove(style.Layer);
-            style.Table.Close();
+            try
+            {
+                Map.OperationalLayers.Remove(style.Layer);
+                style.Table.Close();
+            }
+            catch
+            {
+
+            }
         }
 
         public void ClearLayers()

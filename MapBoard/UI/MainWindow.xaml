@@ -19,113 +19,38 @@
         Title="地图画板" Height="700" Width="1000">
     <Window.Resources>
 
-        <Style x:Key="undoRedoButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="4" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Button.IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="#FFBEE6FD"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
-                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
-                            </Trigger>
-
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ToggleButtonStyle" TargetType="{x:Type ToggleButton}">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Padding" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ToggleButton}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="4" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Button.IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="#FFBEE6FD"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
-                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Effect" TargetName="border" >
-                                    <Setter.Value>
-                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#ffc300" Opacity="0.6" RenderingBias="Quality"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
+        <ResourceDictionary Source="Styles.xaml"/>
     </Window.Resources>
 
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <local:ArcMapView x:Name="arcMap" Grid.Column="2"/>
-        <bar:EditOperationBar x:Name="editBar" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <local:ArcMapView x:Name="arcMap" Grid.Column="1"/>
+        <bar:EditOperationBar x:Name="editBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <bar:EditOperationBar.RenderTransform>
                 <TranslateTransform Y="-24"/>
             </bar:EditOperationBar.RenderTransform>
         </bar:EditOperationBar>
-        <bar:SelectOperationBar x:Name="selectBar" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <bar:SelectOperationBar x:Name="selectBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <bar:SelectOperationBar.RenderTransform>
                 <TranslateTransform Y="-24"/>
             </bar:SelectOperationBar.RenderTransform>
         </bar:SelectOperationBar>
 
+        <win10style:ModernExpander Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
+            <local:SettingPanel/>
+        </win10style:ModernExpander>
+
 
         <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
-            <Grid x:Name="grdLeft">
+
+            
+<Grid x:Name="grdLeft">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
@@ -137,7 +62,9 @@
                     <RowDefinition Height="16"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Grid Width="280" x:Name="grdStyleSetting">
+
+                <StackPanel>
+                    <Grid Width="280" x:Name="grdStyleSetting">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="8"/>
@@ -178,16 +105,18 @@
                     <TextBlock Grid.Row="12" HorizontalAlignment="Right" Text="标题："/>
                     <flatstyle:TextBox x:Name="txtName" Grid.Row="12" Grid.Column="12"/>
 
+                </Grid>
+
+
                     <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
                         <flatstyle:Button x:Name="btnBrowseMode" Content="浏览模式" Click="btnBrowseMode_Click"/>
                         <TextBlock Text="  "/>
                         <flatstyle:Button x:Name="btnApplyStyle"  Content="应用样式" Click="ApplyStyleButtonClick" />
                         <TextBlock Text="  "/>
-                        <flatstyle:Button x:Name="btnDefaultStyle" Content="新建样式" Click="CreateStyleButtonClick"/>
+                        <flatstyle:Button x:Name="btnCreateStyle" Content="新建样式" Click="CreateStyleButtonClick"/>
                     </StackPanel>
-                </Grid>
-
-                <Grid Grid.Row="2">
+                </StackPanel>
+            <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="8"/>
@@ -199,7 +128,7 @@
                                 <GridViewColumn >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <flatstyle:CheckBox IsChecked="{Binding LayerVisible}"/>
+                                            <CheckBox IsChecked="{Binding LayerVisible}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -255,39 +184,30 @@
                         <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <!--<Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>-->
-                    <!--<ToggleButton Visibility="Hidden" Content="直线段" Tag="线" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="自由线" Tag="线" Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="多边形" Tag="面" Grid.Column="6" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    </Grid.RowDefinitions>
 
-                    <ToggleButton Content="自由面" Tag="面"  Grid.Row="2"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="圆" Tag="面"  Grid.Row="2"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="椭圆" Tag="面"  Grid.Row="2"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
+                    <Grid  >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Margin="0,0,8,0">标签：</TextBlock>
+                        <flatstyle:TextBox x:Name="txtLabel" Grid.Column="2" Text="{Binding ElementName=arcMap, Path=Drawing.Label}"/>
+                    </Grid>
 
-                    <ToggleButton Content="矩形" Tag="面"  Grid.Row="4"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="三角形" Tag="面"  Grid.Row="4"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="箭头" Tag="面"  Grid.Row="4"  Grid.Column="4" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-
-                    <ToggleButton Content="点" Tag="点" Grid.Row="6"  Grid.Column="0" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton Content="多点" Tag="多点" Grid.Row="6"  Grid.Column="2" Click="DrawButtonsClick" Style="{DynamicResource ToggleButtonStyle}"/>
-                    <ToggleButton x:Name="btnSelect" Content="选择" Grid.Row="6"  Grid.Column="4" Click="SelectToggleButtonClick" Style="{DynamicResource ToggleButtonStyle}"/>-->
-
-                    <splitbutton:SplitButton x:Name="splBtnPolyline"  Text="多段线" Click="DrawButtonsClick">
+                    <splitbutton:SplitButton x:Name="splBtnPolyline" Grid.Row="2"  Text="多段线" Click="DrawButtonsClick">
                         <splitbutton:SplitButton.DropDownContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="自由线" Click="DrawButtonsClick"/>
                             </ContextMenu>
                         </splitbutton:SplitButton.DropDownContextMenu>
                     </splitbutton:SplitButton>
-                    <splitbutton:SplitButton x:Name="splBtnPolygon"  Text="多边形"  Click="DrawButtonsClick">
+                    <splitbutton:SplitButton x:Name="splBtnPolygon"  Grid.Row="2" Text="多边形"  Click="DrawButtonsClick">
                         <splitbutton:SplitButton.DropDownContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="自由面" Click="DrawButtonsClick"/>
@@ -300,10 +220,10 @@
                         </splitbutton:SplitButton.DropDownContextMenu>
                     </splitbutton:SplitButton>
 
-                    <splitbutton:SplitButton x:Name="splBtnPoint"  Text="点" Click="DrawButtonsClick"/>
-                    <splitbutton:SplitButton x:Name="splBtnMultiPoint"  Text="多点" Click="DrawButtonsClick"/>
+                    <splitbutton:SplitButton x:Name="splBtnPoint" Grid.Row="2" Text="点" Click="DrawButtonsClick"/>
+                    <splitbutton:SplitButton x:Name="splBtnMultiPoint" Grid.Row="2" Text="多点" Click="DrawButtonsClick"/>
 
-                    <Button x:Name="btnSelect" Height="32" Width="32" FocusVisualStyle="{x:Null}" BorderThickness="0" Grid.Column="2"  Click="SelectToggleButtonClick">
+                    <Button x:Name="btnSelect" Grid.Row="2" Height="32" Width="32" FocusVisualStyle="{x:Null}" BorderThickness="0" Grid.Column="2"  Click="SelectToggleButtonClick">
                         <Button.Resources>
                             <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD"/>
                             <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>

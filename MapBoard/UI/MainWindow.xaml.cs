@@ -133,9 +133,9 @@ namespace MapBoard.UI
 
 
             }
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = grdStyleSetting.IsEnabled = !(btnCreateStyle.IsEnabled = StyleCollection.Instance.Selected == null);
 
 
-            grdStyleSetting.IsEnabled  = StyleCollection.Instance.Selected != null;
 
             //if (arcMap.Selection.IsSelecting)
             //{
@@ -146,7 +146,7 @@ namespace MapBoard.UI
                 btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
                 grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
 
-                IEnumerable<ButtonBase> buttons = grdButtons.Children.Cast<ButtonBase>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
+               var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (StyleCollection.Instance.Selected != null)
                 {
@@ -237,39 +237,22 @@ namespace MapBoard.UI
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
             string text = null;
-            if(sender is SplitButton.SplitButton)
+            if (sender is SplitButton.SplitButton)
             {
-                text=(sender as SplitButton.SplitButton).Text;
+                text = (sender as SplitButton.SplitButton).Text;
             }
             else
             {
                 text = (sender as MenuItem).Header as string;
             }
-            //if (btn.IsChecked == false)
-            //{
-            //    await arcMap.Drawing.StopDraw();
-            //    lastBtn = null;
-            //}
-            //else
-            //{
-                if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
-                {
-                    await arcMap.Selection.StopFrameSelect(false);
-                    //btnSelect.IsChecked = false;
-                }
-                //if (lastBtn != null)
-                //{
-                //    lastBtn.IsChecked = false;
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            {
+                await arcMap.Selection.StopFrameSelect(false);
+                //btnSelect.IsChecked = false;
+            }
 
-                //    await arcMap.Drawing.StopDraw();
-                //}
-
-
-                //btn.IsChecked = true;
-                //lastBtn = btn;
-                var mode = ButtonsMode[text];
-                await arcMap.Drawing.StartDraw(mode);
-           // }
+            var mode = ButtonsMode[text];
+            await arcMap.Drawing.StartDraw(mode);
         }
 
 
@@ -283,13 +266,13 @@ namespace MapBoard.UI
             //}
             //if (btnSelect.IsChecked == true)
             //{
-                //if (lastBtn != null)
-                //{
-                //    lastBtn.IsChecked = false;
-                //    await arcMap.Drawing.StopDraw();
-                //    lastBtn = null;
-                //}
-                await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
+            //if (lastBtn != null)
+            //{
+            //    lastBtn.IsChecked = false;
+            //    await arcMap.Drawing.StopDraw();
+            //    lastBtn = null;
+            //}
+            await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
             //}
             //else
             //{
@@ -322,7 +305,6 @@ namespace MapBoard.UI
                         break;
 
                     case ".gpx":
-
                         try
                         {
                             TaskDialog.ShowWithCommandLinks(this, "请选择转换类型", "正在准备导入GPS轨迹文件",
@@ -514,14 +496,14 @@ namespace MapBoard.UI
             }
             else
             {
-                arcMap.SetRenderer(style);
+                arcMap.SetLayerProperties(style);
             }
             StyleCollection.Instance.Save();
         }
 
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
-          
+
 
             JudgeControlsEnable();
             ResetStyleSettingUI();
@@ -529,7 +511,7 @@ namespace MapBoard.UI
 
         private void ResetStyleSettingUI()
         {
-            if (!IsLoaded || StyleCollection.Instance.Selected==null)
+            if (!IsLoaded || StyleCollection.Instance.Selected == null)
             {
                 return;
             }
@@ -540,7 +522,7 @@ namespace MapBoard.UI
                 txtLineWidth.Text = StyleCollection.Instance.Selected.LineWidth.ToString();
                 lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.LineColor));
                 fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.FillColor));
-               
+
             }
         }
 
@@ -550,26 +532,30 @@ namespace MapBoard.UI
             //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
             JudgeControlsEnable();
 
-            if (StyleCollection.Instance.Selected != null)
+            if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount>0)
             {
-                await arcMap. SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+                await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
             }
         }
-        
-        
+
+
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             var style = StyleCollection.Instance.Selected;
             ContextMenu menu = new ContextMenu();
 
-            (string header, RoutedEventHandler action, bool visiable)[] menus = new (string, RoutedEventHandler, bool)[]
+            List<(string header, RoutedEventHandler action, bool visiable)> menus =new List<(string header, RoutedEventHandler action, bool visiable)>()
            {
                 ("复制",CopyFeatures,true),
                 ("转面",PolylineToPolygon,style.Type==GeometryType.Polyline),
                 ("删除",DeleteStyle,true),
-                ("缩放",async (p1,p2)=>await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),true),
 
            };
+
+            if (StyleCollection.Instance.Selected.FeatureCount > 0)
+            {
+                menus.Add(("缩放", async (p1, p2) => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())), true));
+            }
 
             foreach (var (header, action, visiable) in menus)
             {

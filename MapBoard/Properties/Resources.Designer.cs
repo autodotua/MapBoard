@@ -59,5 +59,47 @@ namespace MapBoard.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   查找类似 {
+        ///  &quot;labelExpressionInfo&quot;: {
+        ///    &quot;expression&quot;: &quot;&quot;
+        ///  },&quot;maxScale&quot;: 0,
+        ///      &quot;minScale&quot;: 0,
+        ///  &quot;symbol&quot;: {
+        ///    &quot;angle&quot;: 0,
+        ///    &quot;backgroundColor&quot;: [
+        ///      0,
+        ///      0,
+        ///      0,
+        ///      0
+        ///    ],
+        ///    &quot;borderLineColor&quot;: [
+        ///      0,
+        ///      0,
+        ///      0,
+        ///      0
+        ///    ],
+        ///    &quot;borderLineSize&quot;: 0,
+        ///    &quot;color&quot;: [
+        ///      0,
+        ///      0,
+        ///      0,
+        ///      255
+        ///    ],
+        ///    &quot;font&quot;: {
+        ///      &quot;decoration&quot;: &quot;none&quot;,
+        ///      &quot;size&quot;: 15,
+        ///      &quot;style&quot;: &quot;normal&quot;,
+        ///      &quot;weight&quot;: &quot;normal&quot;
+        ///    },
+        ///    &quot;haloColor&quot;: [
+        ///      [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        /// </summary>
+        internal static string LabelJson {
+            get {
+                return ResourceManager.GetString("LabelJson", resourceCulture);
+            }
+        }
     }
 }

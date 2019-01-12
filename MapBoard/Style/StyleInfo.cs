@@ -23,8 +23,11 @@ namespace MapBoard.Style
         public double LineWidth { get; set; } = 5;
 
         public Color LineColor { get; set; } = Color.Red;
-        public Color FillColor { get;
-            set; } = Color.Green;
+        public Color FillColor
+        {
+            get;
+            set;
+        } = Color.Green;
         [JsonIgnore]
         public GeometryType Type => table == null ? GeometryType.Unknown : table.GeometryType;
 
@@ -49,7 +52,7 @@ namespace MapBoard.Style
         }
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
-        private bool layerVisible=true;
+        private bool layerVisible = true;
         public bool LayerVisible
         {
             get
@@ -74,9 +77,9 @@ namespace MapBoard.Style
                 Notify(nameof(LayerVisible));
             }
         }
-        
 
-        public  void UpdateFeatureCount()
+
+        public void UpdateFeatureCount()
         {
             //QueryParameters p = new QueryParameters
             //{
@@ -152,14 +155,14 @@ namespace MapBoard.Style
             return Name;
         }
 
-       public bool StyleEquals(StyleInfo style)
+        public bool StyleEquals(StyleInfo style)
         {
             return LineWidth == style.LineWidth
                 && LineColor == style.LineColor
                 && FillColor == style.FillColor
-                && Type==style.Type;
+                && Type == style.Type;
         }
-        public bool StyleEquals(StyleInfo style,GeometryType type)
+        public bool StyleEquals(StyleInfo style, GeometryType type)
         {
             return LineWidth == style.LineWidth
                 && LineColor == style.LineColor

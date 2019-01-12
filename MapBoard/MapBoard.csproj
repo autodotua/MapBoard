@@ -95,6 +95,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
+    <Compile Include="Resource\Resource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resource\Shapefile.cs" />
     <Compile Include="Format\Converter.cs" />
     <Compile Include="Format\Gpx.cs" />
     <Compile Include="Format\Mbpkg.cs" />
@@ -114,6 +120,9 @@
     <Compile Include="UI\OperationBar\OperationBarBase.cs" />
     <Compile Include="UI\SelectStyleDialog.xaml.cs">
       <DependentUpon>SelectStyleDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\SettingPanel.xaml.cs">
+      <DependentUpon>SettingPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\SplitButton\SplitButton.cs" />
     <Page Include="UI\MainWindow.xaml">
@@ -145,9 +154,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UI\SettingPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\SplitButton\SplitButtonStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -164,10 +181,34 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Resource\Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Resource\Multipoint.cpg" />
+    <None Include="Resource\Multipoint.dbf" />
+    <None Include="Resource\Multipoint.prj" />
+    <None Include="Resource\Multipoint.shp" />
+    <None Include="Resource\Multipoint.shx" />
+    <None Include="Resource\Point.cpg" />
+    <None Include="Resource\Point.dbf" />
+    <None Include="Resource\Point.prj" />
+    <None Include="Resource\Point.shp" />
+    <None Include="Resource\Point.shx" />
+    <None Include="Resource\Polygon.cpg" />
+    <None Include="Resource\Polygon.dbf" />
+    <None Include="Resource\Polygon.prj" />
+    <None Include="Resource\Polygon.shp" />
+    <None Include="Resource\Polygon.shx" />
+    <None Include="Resource\Polyline.cpg" />
+    <None Include="Resource\Polyline.dbf" />
+    <None Include="Resource\Polyline.prj" />
+    <None Include="Resource\Polyline.shp" />
+    <None Include="Resource\Polyline.shx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
