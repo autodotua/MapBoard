@@ -39,8 +39,9 @@ namespace MapBoard.UI.BoardOperation
             //}
             Mode = mode;
 
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             editingFeature = Mapview.Selection.SelectedFeatures.First();
+            Mapview.Drawing.Label = editingFeature.Attributes["Info"] as string;
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             // Config.Instance.DefaultStyle.CopyStyleFrom(StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
             if (mode == EditMode.Draw)
             {

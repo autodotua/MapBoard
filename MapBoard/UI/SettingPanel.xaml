@@ -10,5 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel>
         <flat:CheckBox Content="底图为GCJ02坐标系" IsChecked="{Binding Config.GCJ02}"/>
+        <TextBlock/>
+        <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
     </StackPanel>
 </UserControl>

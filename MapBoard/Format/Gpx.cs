@@ -25,20 +25,22 @@ namespace MapBoard.Format
             {
                 string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-                switch (type)
-                {
-                    case Type.Point:
-                        Shapefile.ExportEmptyPointShapefile(Config.DataPath, Path.GetFileName(newName));
-                        break;
-                    case Type.OneLine:
-                    case Type.MultiLine:
-                        Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, Path.GetFileName(newName));
-                        break;
+                //switch (type)
+                //{
+                //    case Type.Point:
+                //        Shapefile.ExportEmptyPointShapefile(Config.DataPath, Path.GetFileName(newName));
+                //        break;
+                //    case Type.OneLine:
+                //    case Type.MultiLine:
+                //        Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, Path.GetFileName(newName));
+                //        break;
 
-                }
-                StyleInfo style = new StyleInfo();
-                style.Name = Path.GetFileNameWithoutExtension(newName);
-                StyleCollection.Instance.Styles.Add(style);
+                //}
+
+                StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, null, Path.GetFileNameWithoutExtension(newName));
+                //StyleInfo style = new StyleInfo();
+                //style.Name = Path.GetFileNameWithoutExtension(newName);
+                //StyleCollection.Instance.Styles.Add(style);
 
                 FeatureTable table = style.Table;
 

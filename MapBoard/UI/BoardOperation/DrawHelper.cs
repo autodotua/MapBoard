@@ -107,7 +107,7 @@ namespace MapBoard.UI.BoardOperation
                 {
                     feature = table.CreateFeature();
                     feature.Geometry = geometry;
-                    if(!string.IsNullOrEmpty(Label))
+                    if(!string.IsNullOrWhiteSpace(Label))
                     {
                         feature.Attributes["Info"] = Label;
                     }
@@ -116,6 +116,10 @@ namespace MapBoard.UI.BoardOperation
 
                 StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
 
+            }
+            if(!Config.Instance.RemainLabel)
+            {
+                Label = null;
             }
             Mapview.SketchEditor.Stop();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;

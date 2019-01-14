@@ -173,7 +173,10 @@ namespace MapBoard.UI
             base.OnPreviewKeyDown(e);
             switch (e.Key)
             {
-                case Key.Delete:
+                case Key.Delete when SketchEditor.SelectedVertex != null:
+                    SketchEditor.RemoveSelectedVertex();
+                    break;
+                case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
                     await Editing.DeleteSelectedFeatures();
                     break;
 
@@ -337,10 +340,10 @@ namespace MapBoard.UI
                 await featureTable.LoadAsync();
                 if (featureTable.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
                 {
-                    if (!StyleCollection.Instance.Styles.Contains(style))
-                    {
-                        StyleCollection.Instance.Styles.Add(style);
-                    }
+                    //if (!StyleCollection.Instance.Styles.Contains(style))
+                    //{
+                    //    StyleCollection.Instance.Styles.Add(style);
+                    //}
                     //if (style.FeatureCount == 0)
                     //{
                     //    RemoveStyle(style, true);
@@ -360,7 +363,6 @@ namespace MapBoard.UI
             {
                 if (SnakeBar.DefaultWindow == null)
                 {
-
                     TaskDialog.ShowException(ex, $"无法加载样式{style.Name}");
                 }
                 else
@@ -491,7 +493,7 @@ namespace MapBoard.UI
 
         public async Task PolylineToPolygon(StyleInfo style)
         {
-            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)), style);
+            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
 
             ShapefileFeatureTable newTable = newStyle.Table;
             await newTable.LoadAsync();

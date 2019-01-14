@@ -133,7 +133,7 @@ namespace MapBoard.UI
 
 
             }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = grdStyleSetting.IsEnabled = !(btnCreateStyle.IsEnabled = StyleCollection.Instance.Selected == null);
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = grdStyleSetting.IsEnabled = StyleCollection.Instance.Selected != null;
 
 
 
@@ -146,7 +146,7 @@ namespace MapBoard.UI
                 btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
                 grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
 
-               var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
+                var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (StyleCollection.Instance.Selected != null)
                 {
@@ -215,15 +215,7 @@ namespace MapBoard.UI
             }
 
         }
-        public bool ControlsEnable
-        {
-            get => controlsEnable;
-            set
-            {
-                controlsEnable = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ControlsEnable)));
-            }
-        }
+
 
 
 
@@ -370,15 +362,10 @@ namespace MapBoard.UI
 
         private async void CopyFeatures(object sender, RoutedEventArgs e)
         {
-            if (StyleCollection.Instance.Selected == null)
-            {
-                SnakeBar.ShowError("还没有选择");
-                return;
-            }
+
             SelectStyleDialog dialog = new SelectStyleDialog(this);
             if (dialog.ShowDialog() == true)
             {
-                StyleCollection.Instance.Selected.LayerVisible = false;
                 FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
                 ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
 
@@ -492,7 +479,8 @@ namespace MapBoard.UI
                     SnakeBar.ShowException(ex, "重命名失败");
                 }
                 end:
-                await arcMap.LoadLayer(style);
+                style.Table = null;
+                StyleCollection.Instance.Styles.Add(style);
             }
             else
             {
@@ -532,7 +520,7 @@ namespace MapBoard.UI
             //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
             JudgeControlsEnable();
 
-            if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount>0)
+            if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount > 0)
             {
                 await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
             }
@@ -544,18 +532,17 @@ namespace MapBoard.UI
             var style = StyleCollection.Instance.Selected;
             ContextMenu menu = new ContextMenu();
 
-            List<(string header, RoutedEventHandler action, bool visiable)> menus =new List<(string header, RoutedEventHandler action, bool visiable)>()
+            List<(string header, RoutedEventHandler action, bool visiable)> menus = new List<(string header, RoutedEventHandler action, bool visiable)>()
            {
                 ("复制",CopyFeatures,true),
                 ("转面",PolylineToPolygon,style.Type==GeometryType.Polyline),
                 ("删除",DeleteStyle,true),
+                ("新建副本",CreateCopy,true),
+                ("缩放到图层", async (p1, p2) => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0)
 
            };
 
-            if (StyleCollection.Instance.Selected.FeatureCount > 0)
-            {
-                menus.Add(("缩放", async (p1, p2) => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())), true));
-            }
+
 
             foreach (var (header, action, visiable) in menus)
             {
@@ -568,6 +555,36 @@ namespace MapBoard.UI
             }
 
             menu.IsOpen = true;
+        }
+
+        private void CreateCopy(object sender, RoutedEventArgs e)
+        {
+            TaskDialog.ShowWithCommandLinks("是否要复制所有图形到新的样式中", "请选择副本类型", new (string, string, Action)[]
+            {
+                ("仅样式",null,()=> CopyStyle()),
+                ("样式和所有图形",null,CopyAll)
+            });
+
+            async void CopyAll()
+            {
+                FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
+
+                var style = CopyStyle();
+                ShapefileFeatureTable targetTable = style.Table;
+
+                foreach (var feature in features)
+                {
+                    await targetTable.AddFeatureAsync(feature);
+                }
+                style.UpdateFeatureCount();
+            }
+
+            StyleInfo CopyStyle()
+            {
+
+                StyleInfo style = StyleCollection.Instance.Selected;
+                return StyleHelper.CreateStyle(style.Type, style);
+            }
         }
 
         private void btnBrowseMode_Click(object sender, RoutedEventArgs e)

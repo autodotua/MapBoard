@@ -190,7 +190,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Grid  >
+                    <!--<Grid  >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="8"/>
@@ -198,7 +198,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Margin="0,0,8,0">标签：</TextBlock>
                         <flatstyle:TextBox x:Name="txtLabel" Grid.Column="2" Text="{Binding ElementName=arcMap, Path=Drawing.Label}"/>
-                    </Grid>
+                    </Grid>-->
 
                     <splitbutton:SplitButton x:Name="splBtnPolyline" Grid.Row="2"  Text="多段线" Click="DrawButtonsClick">
                         <splitbutton:SplitButton.DropDownContextMenu>

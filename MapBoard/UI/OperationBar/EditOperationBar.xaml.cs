@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapBoard.UI.BoardOperation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,7 +45,7 @@ namespace MapBoard.UI.OperationBar
                 }
                 else
                 {
-                    if (MapView.Editing.Mode == BoardOperation.EditHelper.EditMode.Draw)
+                    if (MapView.Editing.Mode == EditHelper.EditMode.Draw)
                     {
 
                         Title = "正在编辑";
@@ -55,6 +56,7 @@ namespace MapBoard.UI.OperationBar
                         Title = "正在切割（请绘制用于切割的线段）";
                     }
                 }
+                Notify(nameof(MapView));
                 Show();
             }
             else

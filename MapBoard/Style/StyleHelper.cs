@@ -31,13 +31,27 @@ namespace MapBoard.Style
             }
         }
 
-        public static StyleInfo CreateStyle(GeometryType type,string name=null,StyleInfo template=null)
+        public static StyleInfo CreateStyle(GeometryType type,StyleInfo template=null,string name=null)
         {
             if (name == null)
             {
-                 name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
             }
 
+            Export(type, name);
+            StyleInfo style = new StyleInfo();
+            if (template != null)
+            {
+                style.CopyStyleFrom(template);
+            }
+            style.Name = name;
+            StyleCollection.Instance.Styles.Add(style);
+            StyleCollection.Instance.Selected = style;
+            return style;
+        }
+
+        private static void Export(GeometryType type, string name)
+        {
             switch (type)
             {
                 case GeometryType.Point:
@@ -55,17 +69,6 @@ namespace MapBoard.Style
                 default:
                     throw new Exception("不支持的格式");
             }
-            StyleInfo style = new StyleInfo();
-            if(template!=null)
-            {
-                style.CopyStyleFrom(template);
-            }
-            style.Name = name;
-            StyleCollection.Instance.Styles.Add(style);
-            StyleCollection.Instance.Selected = style;
-            return style;
         }
-
-
     }
 }

@@ -65,6 +65,8 @@ namespace MapBoard
 
         public bool GCJ02 { get; set; } = true;
 
+        public bool RemainLabel { get; set; } = false;
+
 
         //public List<StyleInfo> ShapefileStyles { get; } = new List<StyleInfo>();
 
