@@ -121,8 +121,9 @@
     <value>{
   "labelExpressionInfo": {
     "expression": "$feature.Info"
-  },"maxScale": 0,
-      "minScale": 0,
+  },
+  "maxScale": 0,
+  "minScale": 0,
   "symbol": {
     "angle": 0,
     "backgroundColor": [
@@ -163,8 +164,7 @@
     "verticalAlignment": "middle",
     "xoffset": 0,
     "yoffset": 0
-  },
-  "scale":0
+  }
 }</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />

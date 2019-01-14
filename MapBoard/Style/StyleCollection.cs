@@ -63,11 +63,11 @@ namespace MapBoard.Style
                         instance.styles.CollectionChanged += instance.StylesCollectionChanged;
                     }
 
-                    if(instance.SelectedIndex>=0 && instance.SelectedIndex<instance.Styles.Count)
+                    if (instance.SelectedIndex >= 0 && instance.SelectedIndex < instance.Styles.Count)
                     {
                         instance.Selected = instance.Styles[instance.SelectedIndex];
                     }
-                   
+                    instance.Settings.Formatting = Formatting.Indented;
                     //try
                     //{
                     //    instance = JsonConvert.DeserializeObject<StyleCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
@@ -163,6 +163,14 @@ namespace MapBoard.Style
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
                 //Notify(nameof(Selected));
             }
+        }
+
+        public static void ResetStyles()
+        {
+            instance.Styles.Clear();
+            instance = null;
+            var useless = Instance;
+
         }
 
 

@@ -75,7 +75,6 @@ namespace MapBoard.UI
             SnakeBar.DefaultWindow = this;
             RegistEvents();
 
-            ResetStyleSettingUI();
         }
 
         private void RegistEvents()
@@ -115,7 +114,9 @@ namespace MapBoard.UI
 
         private void JudgeControlsEnable()
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw
+                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
+                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
                 grdLeft.IsEnabled = false;
             }
@@ -133,7 +134,7 @@ namespace MapBoard.UI
 
 
             }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = grdStyleSetting.IsEnabled = StyleCollection.Instance.Selected != null;
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = styleSetting.IsEnabled = StyleCollection.Instance.Selected != null;
 
 
 
@@ -200,19 +201,15 @@ namespace MapBoard.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-
-
-        bool restart = false;
+        
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
                 await arcMap.Editing.StopEditing();
             }
-            if (!restart)
-            {
+          
                 Config.Save();
-            }
 
         }
 
@@ -287,13 +284,12 @@ namespace MapBoard.UI
                         try
                         {
                             Mbpkg.Import(path);
-                            restart = true;
                         }
                         catch (Exception ex)
                         {
-                            restart = false;
                             TaskDialog.ShowException(this, ex, "导入失败");
                         }
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Styles)));
                         break;
 
                     case ".gpx":
@@ -430,62 +426,11 @@ namespace MapBoard.UI
             }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
         }
 
-        private void SetStyleFromUI(StyleInfo style)
+
+
+        private  void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            style.LineColor = FzLib.Media.Converter.MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
-            style.FillColor = FzLib.Media.Converter.MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
-
-            if (double.TryParse(txtLineWidth.Text, out double result))
-            {
-                style.LineWidth = result;
-            }
-            else
-            {
-                txtLineWidth.Text = style.LineWidth.ToString();
-            }
-        }
-
-        private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
-        {
-            var style = StyleCollection.Instance.Selected;
-            SetStyleFromUI(StyleCollection.Instance.Selected);
-
-            string newName = txtName.Text;
-            if (newName != style.Name)
-            {
-                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
-                {
-                    SnakeBar.ShowError("新文件名不合法");
-                    goto end;
-                }
-                if (File.Exists(Path.Combine(Config.DataPath, newName + ".shp")))
-                {
-                    SnakeBar.ShowError("文件已存在");
-                }
-                try
-                {
-                    StyleHelper.RemoveStyle(StyleCollection.Instance.Selected, false);
-                    foreach (var file in Directory.EnumerateFiles(Config.DataPath))
-                    {
-                        if (Path.GetFileNameWithoutExtension(file) == style.Name)
-                        {
-                            File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
-                        }
-                    }
-                    style.Name = newName;
-                }
-                catch (Exception ex)
-                {
-                    SnakeBar.ShowException(ex, "重命名失败");
-                }
-                end:
-                style.Table = null;
-                StyleCollection.Instance.Styles.Add(style);
-            }
-            else
-            {
-                arcMap.SetLayerProperties(style);
-            }
+            styleSetting.SetStyleFromUI();
             StyleCollection.Instance.Save();
         }
 
@@ -494,25 +439,10 @@ namespace MapBoard.UI
 
 
             JudgeControlsEnable();
-            ResetStyleSettingUI();
+            styleSetting.ResetStyleSettingUI();
         }
 
-        private void ResetStyleSettingUI()
-        {
-            if (!IsLoaded || StyleCollection.Instance.Selected == null)
-            {
-                return;
-            }
-            else
-            {
-                txtName.Text = StyleCollection.Instance.Selected?.Name;
 
-                txtLineWidth.Text = StyleCollection.Instance.Selected.LineWidth.ToString();
-                lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.LineColor));
-                fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(Styles.Selected.FillColor));
-
-            }
-        }
 
         private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
@@ -522,8 +452,11 @@ namespace MapBoard.UI
 
             if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount > 0)
             {
+                styleSetting.ResetStyleSettingUI();
                 await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+
             }
+
         }
 
 

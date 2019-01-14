@@ -1,4 +1,5 @@
-﻿using FzLib.Basic;
+﻿using Esri.ArcGISRuntime.Geometry;
+using FzLib.Basic;
 using MapBoard.Resource;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace MapBoard.Resource
     {
         public static void ExportEmptyPointShapefile(string folderPath, string name)
         {
-            if(!Directory.Exists(folderPath))
+            if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
@@ -57,21 +58,42 @@ namespace MapBoard.Resource
             File.WriteAllBytes(GetFileName(folderPath, name, "prj"), Resource.PolygonPrj);
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PolygonDbf);
         }
-        private static string GetFileName(string folderPath, string name,string extension)
+        private static string GetFileName(string folderPath, string name, string extension)
         {
-            if(folderPath.EndsWith("\\"))
+            if (folderPath.EndsWith("\\"))
             {
                 folderPath = folderPath.RemoveEnd("\\", true);
             }
-            if(extension.StartsWith("."))
+            if (extension.StartsWith("."))
             {
                 extension = extension.RemoveStart(".", true);
             }
-            if(name.Contains("."))
+            if (name.Contains("."))
             {
                 name = Path.GetFileNameWithoutExtension(name);
             }
             return folderPath + "\\" + name + "." + extension;
+        }
+
+        public static void ExportEmptyShapefile(GeometryType type, string name)
+        {
+            switch (type)
+            {
+                case GeometryType.Point:
+                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, name);
+                    break;
+                case GeometryType.Multipoint:
+                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, name);
+                    break;
+                case GeometryType.Polyline:
+                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, name);
+                    break;
+                case GeometryType.Polygon:
+                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, name);
+                    break;
+                default:
+                    throw new Exception("不支持的格式");
+            }
         }
     }
 }

@@ -415,34 +415,42 @@ namespace MapBoard.UI
         //    //}
         //}
 
-        public void SetLayerProperties(StyleInfo style)
+        public void ApplyStyles(StyleInfo style)
         {
-            SimpleLineSymbol lineSymbol;
-            SimpleRenderer renderer = null;
-            switch (style.Layer.FeatureTable.GeometryType)
+            try
             {
-                case GeometryType.Point:
-                case GeometryType.Multipoint:
-                    SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, style.FillColor, style.LineWidth);
-                    renderer = new SimpleRenderer(markerSymbol);
-                    break;
-                case GeometryType.Polyline:
-                    lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                    renderer = new SimpleRenderer(lineSymbol);
-                    break;
-                case GeometryType.Polygon:
-                    lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                    SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, style.FillColor, lineSymbol);
-                    renderer = new SimpleRenderer(fillSymbol);
-                    break;
+                SimpleLineSymbol lineSymbol;
+                SimpleRenderer renderer = null;
+                switch (style.Layer.FeatureTable.GeometryType)
+                {
+                    case GeometryType.Point:
+                    case GeometryType.Multipoint:
+                        SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, style.FillColor, style.LineWidth);
+                        renderer = new SimpleRenderer(markerSymbol);
+                        break;
+                    case GeometryType.Polyline:
+                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
+                        renderer = new SimpleRenderer(lineSymbol);
+                        break;
+                    case GeometryType.Polygon:
+                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
+                        SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, style.FillColor, lineSymbol);
+                        renderer = new SimpleRenderer(fillSymbol);
+                        break;
+                }
+                style.Layer.Renderer = renderer;
+
+                string labelJson = style.LabelJson;
+                LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
+                style.Layer.LabelDefinitions.Clear();
+                style.Layer.LabelDefinitions.Add(labelDefinition);
+                style.Layer.LabelsEnabled = true;
             }
-            style.Layer.Renderer = renderer;
-
-            string labelJson = Resource.Resource.LabelJson;
-            LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
-            style.Layer.LabelDefinitions.Add(labelDefinition);
-            style.Layer.LabelsEnabled = true;
-
+            catch (Exception ex)
+            {
+                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "样式加载失败";
+                TaskDialog.ShowException(ex, error);
+            }
         }
 
         public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
@@ -461,7 +469,7 @@ namespace MapBoard.UI
                     //Map.OperationalLayers.Add(layer);
                     style.Table = table;
 
-                    SetLayerProperties(style);
+                    ApplyStyles(style);
                 }
             }
             return table;
@@ -524,7 +532,7 @@ namespace MapBoard.UI
                 }
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Map.OperationalLayers.Add(layer);
-                SetLayerProperties(style);
+                ApplyStyles(style);
                 style.LoadLayerVisibility();
             }
             catch (Exception ex)

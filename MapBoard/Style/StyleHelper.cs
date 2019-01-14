@@ -31,14 +31,14 @@ namespace MapBoard.Style
             }
         }
 
-        public static StyleInfo CreateStyle(GeometryType type,StyleInfo template=null,string name=null)
+        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null, string name = null)
         {
             if (name == null)
             {
                 name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
             }
 
-            Export(type, name);
+            Shapefile.ExportEmptyShapefile(type, name);
             StyleInfo style = new StyleInfo();
             if (template != null)
             {
@@ -50,25 +50,6 @@ namespace MapBoard.Style
             return style;
         }
 
-        private static void Export(GeometryType type, string name)
-        {
-            switch (type)
-            {
-                case GeometryType.Point:
-                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, name);
-                    break;
-                case GeometryType.Multipoint:
-                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, name);
-                    break;
-                case GeometryType.Polyline:
-                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, name);
-                    break;
-                case GeometryType.Polygon:
-                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, name);
-                    break;
-                default:
-                    throw new Exception("不支持的格式");
-            }
-        }
+
     }
 }

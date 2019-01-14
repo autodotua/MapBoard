@@ -79,6 +79,9 @@ namespace MapBoard.Style
         }
 
 
+        public string LabelJson { get; set; } = Resource.Resource.LabelJson;
+
+
         public void UpdateFeatureCount()
         {
             //QueryParameters p = new QueryParameters

@@ -58,6 +58,7 @@ namespace MapBoard.UI.OperationBar
                 }
                 Notify(nameof(MapView));
                 Show();
+                txtLabel.Focus();
             }
             else
             {

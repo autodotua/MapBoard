@@ -64,8 +64,9 @@ namespace MapBoard.Resource {
         ///   查找类似 {
         ///  &quot;labelExpressionInfo&quot;: {
         ///    &quot;expression&quot;: &quot;$feature.Info&quot;
-        ///  },&quot;maxScale&quot;: 0,
-        ///      &quot;minScale&quot;: 0,
+        ///  },
+        ///  &quot;maxScale&quot;: 0,
+        ///  &quot;minScale&quot;: 0,
         ///  &quot;symbol&quot;: {
         ///    &quot;angle&quot;: 0,
         ///    &quot;backgroundColor&quot;: [

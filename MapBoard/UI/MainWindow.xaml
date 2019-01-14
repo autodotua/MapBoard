@@ -7,10 +7,10 @@
         xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
         xmlns:win10style="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
         xmlns:progress="clr-namespace:FzLib.Control.Progress;assembly=FzWpfControlLib"
-        xmlns:controlextended="clr-namespace:FzLib.Control.ControlExtended;assembly=FzWpfControlLib"
         xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
         xmlns:bar="clr-namespace:MapBoard.UI.OperationBar"
         xmlns:splitbutton="clr-namespace:MapBoard.UI.SplitButton"
+        xmlns:stylesettingpanel="clr-namespace:MapBoard.UI.StyleSettingPanel"
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
@@ -18,7 +18,6 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="地图画板" Height="700" Width="1000">
     <Window.Resources>
-
         <ResourceDictionary Source="Styles.xaml"/>
     </Window.Resources>
 
@@ -49,8 +48,8 @@
 
         <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
 
-            
-<Grid x:Name="grdLeft">
+
+            <Grid x:Name="grdLeft">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
@@ -64,49 +63,9 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-                    <Grid Width="280" x:Name="grdStyleSetting">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
-                    <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>
 
-                    <TextBlock Grid.Row="2" HorizontalAlignment="Right" Text="线宽/边框宽/点大小："/>
-                    <flatstyle:TextBox x:Name="txtLineWidth" Grid.Row="2" Grid.Column="2" Text="5"/>
-
-                    <flatstyle:CheckBox x:Name="chkStatic" Content="使用静态点/线尺寸" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="4"/>
-
-                    <TextBlock Grid.Row="6" HorizontalAlignment="Right" Text="静态尺寸（米）："/>
-                    <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2"/>
-
-                    <TextBlock Grid.Row="8"  HorizontalAlignment="Right"  Text="边框/线颜色："/>
-                    <picker:ColorPickerTextBox x:Name="lineColorPicker" Grid.Row="8 " Grid.Column="2"  />
-                    <TextBlock Grid.Row="10"  HorizontalAlignment="Right"  Text="填充/点颜色："/>
-                    <picker:ColorPickerTextBox x:Name="fillColorPicker" Grid.Row="10 " Grid.Column="2" />
-                    <TextBlock Grid.Row="12" HorizontalAlignment="Right" Text="标题："/>
-                    <flatstyle:TextBox x:Name="txtName" Grid.Row="12" Grid.Column="12"/>
-
-                </Grid>
-
+                    <stylesettingpanel:StyleSettingPanel x:Name="styleSetting"/>
+                    <TextBlock/>
 
                     <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
                         <flatstyle:Button x:Name="btnBrowseMode" Content="浏览模式" Click="btnBrowseMode_Click"/>
@@ -116,7 +75,7 @@
                         <flatstyle:Button x:Name="btnCreateStyle" Content="新建样式" Click="CreateStyleButtonClick"/>
                     </StackPanel>
                 </StackPanel>
-            <Grid Grid.Row="2">
+                <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="8"/>
@@ -249,7 +208,7 @@
                                             <Border x:Name="border" CornerRadius="16" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
                                                 <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
-                                           
+
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsDefaulted" Value="true">
@@ -268,7 +227,7 @@
                                                 <Trigger Property="IsPressed" Value="true">
                                                     <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Pressed.Background}"/>
                                                     <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Pressed.Border}"/>
-                                                    </Trigger>
+                                                </Trigger>
                                                 <Trigger Property="IsEnabled" Value="false">
                                                     <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
                                                     <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>

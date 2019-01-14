@@ -17,14 +17,15 @@ namespace MapBoard.Format
     {
         public static void Import(string path)
         {
-            StyleCollection.Instance.Styles.ForEach(p => p.Table.Close());
+            StyleCollection.Instance.Styles.Clear();
             if (Directory.Exists(Config.DataPath))
             {
                 Directory.Delete(Config.DataPath, true);
             }
             ZipFile.ExtractToDirectory(path, Config.DataPath);
 
-            Information.Restart();
+            //Information.Restart();
+            StyleCollection.ResetStyles();
         }
 
         public static  void Export(string path)
@@ -33,7 +34,8 @@ namespace MapBoard.Format
             {
                 File.Delete(path);
             }
-            var styles = StyleCollection.Instance.Styles.ToArray();
+            StyleCollection.Instance.Save();
+          var styles = StyleCollection.Instance.Styles.ToArray();
             StyleCollection.Instance.Styles.Clear();
             styles.ForEach(p => p.Table = null);
             ZipFile.CreateFromDirectory(Config.DataPath, path);
