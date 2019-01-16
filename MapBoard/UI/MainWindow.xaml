@@ -10,7 +10,7 @@
         xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
         xmlns:bar="clr-namespace:MapBoard.UI.OperationBar"
         xmlns:splitbutton="clr-namespace:MapBoard.UI.SplitButton"
-        xmlns:stylesettingpanel="clr-namespace:MapBoard.UI.StyleSettingPanel"
+        xmlns:stylesettingpanel="clr-namespace:MapBoard.UI.Panel"
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
@@ -22,14 +22,13 @@
     </Window.Resources>
 
 
-    <Grid>
+    <Grid x:Name="grdMain">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-
-        <local:ArcMapView x:Name="arcMap" Grid.Column="1"/>
+        <local:ArcMapView x:Name="arcMap" Grid.Column="1" />
         <bar:EditOperationBar x:Name="editBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <bar:EditOperationBar.RenderTransform>
                 <TranslateTransform Y="-24"/>
@@ -41,8 +40,8 @@
             </bar:SelectOperationBar.RenderTransform>
         </bar:SelectOperationBar>
 
-        <win10style:ModernExpander Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
-            <local:SettingPanel/>
+        <win10style:ModernExpander MaxWidth="240" Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
+            <stylesettingpanel:SettingPanel/>
         </win10style:ModernExpander>
 
 
@@ -68,7 +67,7 @@
                     <TextBlock/>
 
                     <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
-                        <flatstyle:Button x:Name="btnBrowseMode" Content="浏览模式" Click="btnBrowseMode_Click"/>
+                        <flatstyle:Button x:Name="btnBrowseMode" Content="浏览模式" Click="BrowseModeButtonClick"/>
                         <TextBlock Text="  "/>
                         <flatstyle:Button x:Name="btnApplyStyle"  Content="应用样式" Click="ApplyStyleButtonClick" />
                         <TextBlock Text="  "/>
@@ -84,13 +83,22 @@
                     <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
                         <flatstyle:ListView.View>
                             <GridView>
-                                <GridViewColumn >
+                                <GridViewColumn Header="显示">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox IsChecked="{Binding LayerVisible}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
+                                <GridViewColumn Header="标签">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding LabelVisible}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                
                                 <GridViewColumn Header="标题" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="类型" DisplayMemberBinding="{Binding TypeDescription}"/>
                                 <GridViewColumn Header="图形数量" DisplayMemberBinding="{Binding FeatureCount}"/>
@@ -194,7 +202,7 @@
                             <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
                             <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
                             <Style  TargetType="{x:Type Button}">
-                                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                 <Setter Property="Background" Value="{StaticResource Button.Static.Background}"/>
                                 <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>

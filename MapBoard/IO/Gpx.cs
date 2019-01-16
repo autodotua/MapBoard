@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Format
+namespace MapBoard.IO
 {
     public static class Gpx
     {

@@ -49,6 +49,8 @@ namespace MapBoard.Style
         public void LoadLayerVisibility()
         {
             Layer.IsVisible = LayerVisible;
+            Layer.LabelsEnabled = LabelVisible;
+
         }
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
@@ -75,6 +77,24 @@ namespace MapBoard.Style
                     Layer.IsVisible = value;
                 }
                 Notify(nameof(LayerVisible));
+            }
+        }
+
+        private bool labelVisible = true;
+        public bool LabelVisible
+        {
+            get
+            {
+                return labelVisible;
+            }
+            set
+            {
+                labelVisible = value;
+                if (Layer != null)
+                {
+                    Layer.LabelsEnabled = value;
+                }
+                Notify(nameof(LabelVisible));
             }
         }
 

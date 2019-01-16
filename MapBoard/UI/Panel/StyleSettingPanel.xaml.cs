@@ -19,7 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
 
-namespace MapBoard.UI.StyleSettingPanel
+namespace MapBoard.UI.Panel
 {
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
@@ -37,6 +37,7 @@ namespace MapBoard.UI.StyleSettingPanel
             get => styleName;
             set => SetValueAndNotify(ref styleName, value, nameof(StyleName));
         }
+
         private double lineWidth = 5;
         public double LineWidth
         {

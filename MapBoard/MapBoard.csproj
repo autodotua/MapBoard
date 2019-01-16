@@ -96,15 +96,16 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
+    <Compile Include="IO\IOHelper.cs" />
     <Compile Include="Resource\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
     <Compile Include="Resource\Shapefile.cs" />
-    <Compile Include="Format\Converter.cs" />
-    <Compile Include="Format\Gpx.cs" />
-    <Compile Include="Format\Mbpkg.cs" />
+    <Compile Include="IO\Converter.cs" />
+    <Compile Include="IO\Gpx.cs" />
+    <Compile Include="IO\Mbpkg.cs" />
     <Compile Include="Style\StyleCollection.cs" />
     <Compile Include="Style\StyleHelper.cs" />
     <Compile Include="UI\ArcMapView.cs" />
@@ -119,14 +120,14 @@
       <DependentUpon>EditOperationBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\OperationBar\OperationBarBase.cs" />
-    <Compile Include="UI\SelectStyleDialog.xaml.cs">
+    <Compile Include="UI\Dialog\SelectStyleDialog.xaml.cs">
       <DependentUpon>SelectStyleDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\SettingPanel.xaml.cs">
+    <Compile Include="UI\Panel\SettingPanel.xaml.cs">
       <DependentUpon>SettingPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\SplitButton\SplitButton.cs" />
-    <Compile Include="UI\StyleSettingPanel\StyleSettingPanel.xaml.cs">
+    <Compile Include="UI\Panel\StyleSettingPanel.xaml.cs">
       <DependentUpon>StyleSettingPanel.xaml</DependentUpon>
     </Compile>
     <Page Include="UI\MainWindow.xaml">
@@ -154,11 +155,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\SelectStyleDialog.xaml">
+    <Page Include="UI\Dialog\SelectStyleDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\SettingPanel.xaml">
+    <Page Include="UI\Panel\SettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -170,7 +171,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\StyleSettingPanel\StyleSettingPanel.xaml">
+    <Page Include="UI\Panel\StyleSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

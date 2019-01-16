@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using MapBoard.Style;
 using MapBoard.UI.BoardOperation;
+using MapBoard.UI.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -89,7 +90,7 @@ namespace MapBoard.UI.OperationBar
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
         {
-            SelectStyleDialog dialog = new SelectStyleDialog(App.Current.MainWindow);
+            SelectStyleDialog dialog = new SelectStyleDialog();
             if (dialog.ShowDialog() == true)
             {
                 StyleCollection.Instance.Selected.LayerVisible = false;

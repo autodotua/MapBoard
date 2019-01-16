@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MapBoard.UI
+namespace MapBoard.UI.Dialog
 {
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
@@ -22,9 +22,9 @@ namespace MapBoard.UI
     public partial class SelectStyleDialog : Window
     {
         bool canSelect = false;
-        public SelectStyleDialog(Window owner)
+        public SelectStyleDialog()
         {
-            Owner = owner;
+            Owner = Application.Current.MainWindow;
             InitializeComponent();
             var styles = StyleCollection.Instance;
             var list = styles.Styles.Where(p => p.Type == styles.Selected.Type && p!=styles.Selected);

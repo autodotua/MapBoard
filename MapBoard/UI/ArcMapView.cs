@@ -49,8 +49,8 @@ namespace MapBoard.UI
             Editing = new EditHelper();
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
-
-            Load();
+            IsAttributionTextVisible = false;
+            Load().Wait();
         }
 
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -444,7 +444,7 @@ namespace MapBoard.UI
                 LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
                 style.Layer.LabelDefinitions.Clear();
                 style.Layer.LabelDefinitions.Add(labelDefinition);
-                style.Layer.LabelsEnabled = true;
+                //style.Layer.LabelsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -477,23 +477,35 @@ namespace MapBoard.UI
 
         public async Task LoadBasemap()
         {
+            if(!Config.Instance.Url.Contains("{x}")|| !Config.Instance.Url.Contains("{y}")|| !Config.Instance.Url.Contains("{z}"))
+            {
+                TaskDialog.ShowError("瓦片地址不包含足够的信息！");
+                return;
+            }
 
             loaded = true;
             baseLayer = new WebTiledLayer(Config.Instance.Url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
 
             Basemap basemap = new Basemap(baseLayer);
             await basemap.LoadAsync();
-            Map map = new Map(basemap);
+            if (Map != null)
+            {
+                Map.Basemap = basemap;
+            }
+            else
+            {
+
+                Map = new Map(basemap);
+            }
             try
             {
-                await map.LoadAsync();
+                await Map.LoadAsync();
             }
             catch (Exception ex)
             {
                 TaskDialog.ShowException(ex, "加载地图失败");
                 return;
             }
-            Map = map;
 
             //await SetViewpointCenterAsync(new MapPoint(13532000, 3488400));
             //await SetViewpointScaleAsync(1000000);
