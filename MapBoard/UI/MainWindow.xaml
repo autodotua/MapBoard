@@ -11,6 +11,7 @@
         xmlns:bar="clr-namespace:MapBoard.UI.OperationBar"
         xmlns:splitbutton="clr-namespace:MapBoard.UI.SplitButton"
         xmlns:stylesettingpanel="clr-namespace:MapBoard.UI.Panel"
+        xmlns:map="clr-namespace:MapBoard.UI.Map"
         mc:Ignorable="d"
         Closing="WindowClosing"
         WindowStartupLocation="CenterScreen"
@@ -28,7 +29,7 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <local:ArcMapView x:Name="arcMap" Grid.Column="1" />
+        <map:ArcMapView x:Name="arcMap" Grid.Column="1" />
         <bar:EditOperationBar x:Name="editBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <bar:EditOperationBar.RenderTransform>
                 <TranslateTransform Y="-24"/>

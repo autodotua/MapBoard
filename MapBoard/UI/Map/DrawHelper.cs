@@ -26,7 +26,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 
-namespace MapBoard.UI.BoardOperation
+namespace MapBoard.UI.Map
 {
     public class DrawHelper
     {

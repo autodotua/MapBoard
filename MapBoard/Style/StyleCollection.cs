@@ -1,5 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Mapping;
 using MapBoard.UI;
+using MapBoard.UI.Map;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using static FzLib.Basic.Collection.Loop;
 
 namespace MapBoard.Style
 {
-    public class StyleCollection : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
+    public class StyleCollection : FzLib.DataStorage.Serialization.JsonSerializationBase
     {
         //private static StyleCollection instance = new StyleCollection();
         //public static StyleCollection Instance
@@ -100,15 +101,14 @@ namespace MapBoard.Style
 
                     if (value.Count > 0)
                     {
-                        value.ForEach(p => ArcMapView.Instance.AddLayer(p));
+                        value.ForEach(p => ArcMapView.Instance.Layer.AddLayer(p));
                     }
                 }
             }
         }
 
         private StyleInfo selected;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        
 
 
 
@@ -117,16 +117,16 @@ namespace MapBoard.Style
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    e.NewItems.ForEach(p => ArcMapView.Instance.AddLayer(p as StyleInfo));
+                    e.NewItems.ForEach(p => ArcMapView.Instance.Layer.AddLayer(p as StyleInfo));
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     ArcMapView.Instance.Map.OperationalLayers.Move(e.OldStartingIndex, e.NewStartingIndex);
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    e.OldItems.ForEach(p => ArcMapView.Instance.RemoveLayer(p as StyleInfo));
+                    e.OldItems.ForEach(p => ArcMapView.Instance.Layer.RemoveLayer(p as StyleInfo));
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    ArcMapView.Instance.ClearLayers();
+                    ArcMapView.Instance.Layer.ClearLayers();
                     break;
 
             }
@@ -160,7 +160,7 @@ namespace MapBoard.Style
                 //    //}
                 //}
                 //SelectionChanged?.Invoke(this, new EventArgs());
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
+                Notify(nameof(Selected));
                 //Notify(nameof(Selected));
             }
         }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace MapBoard.UI.BoardOperation
+namespace MapBoard.UI.Map
 {
     public class EditHelper
     {

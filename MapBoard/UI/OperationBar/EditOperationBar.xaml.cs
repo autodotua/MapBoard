@@ -1,4 +1,4 @@
-﻿using MapBoard.UI.BoardOperation;
+﻿using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +45,7 @@ namespace MapBoard.UI.OperationBar
                 }
                 else
                 {
-                    if (MapView.Editing.Mode == EditHelper.EditMode.Draw)
+                    if (MapView.Edit.Mode == EditHelper.EditMode.Draw)
                     {
 
                         Title = "正在编辑";
@@ -88,7 +88,7 @@ namespace MapBoard.UI.OperationBar
             }
             else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await MapView.Editing.StopEditing();
+                await MapView.Edit.StopEditing();
             }
         }
 
@@ -100,7 +100,7 @@ namespace MapBoard.UI.OperationBar
             }
             else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await MapView.Editing.AbandonEditing();
+                await MapView.Edit.AbandonEditing();
             }
         }
 

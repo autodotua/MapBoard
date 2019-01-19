@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace MapBoard.UI.BoardOperation
+namespace MapBoard.UI.Map
 {
     public class SelectionHelper
     {

@@ -1,6 +1,7 @@
 ﻿using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
 using MapBoard.Style;
+using MapBoard.UI.Map;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -146,7 +147,7 @@ namespace MapBoard.UI.Panel
             }
             else
             {
-                ArcMapView.Instance.ApplyStyles(style);
+               StyleHelper.ApplyStyles(style);
             }
 
         }

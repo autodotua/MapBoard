@@ -17,7 +17,7 @@
                     <TextBlock Text="瓦片地图地址："/>
         <FrameworkElement Height="4"/>
 
-        <TextBox Text="{Binding Config.Url}" HorizontalScrollBarVisibility="Auto"/>
+        <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
         <FrameworkElement Height="4"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >

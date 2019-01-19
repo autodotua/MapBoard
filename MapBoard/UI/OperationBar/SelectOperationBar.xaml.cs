@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using MapBoard.Style;
-using MapBoard.UI.BoardOperation;
+using MapBoard.UI.Map;
 using MapBoard.UI.Dialog;
 using System;
 using System.Collections.Generic;
@@ -85,7 +85,7 @@ namespace MapBoard.UI.OperationBar
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
-            await MapView.Editing.DeleteSelectedFeatures();
+            await MapView.Edit.DeleteSelectedFeatures();
         }
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
@@ -107,11 +107,11 @@ namespace MapBoard.UI.OperationBar
         }
         private void CutButtonClick(object sender, RoutedEventArgs e)
         {
-            MapView.Editing.StartEdit(EditHelper.EditMode.Cut);
+            MapView.Edit.StartEdit(EditHelper.EditMode.Cut);
         }
         private void ReDrawButtonClick(object sender, RoutedEventArgs e)
         {
-            MapView.Editing.StartEdit(EditHelper.EditMode.Draw);
+            MapView.Edit.StartEdit(EditHelper.EditMode.Draw);
         }
 
         private async void CancelButtonClick(object sender, RoutedEventArgs e)

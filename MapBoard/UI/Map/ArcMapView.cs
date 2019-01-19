@@ -10,7 +10,7 @@ using FzLib.Control.Dialog;
 using FzLib.IO;
 using MapBoard.Resource;
 using MapBoard.Style;
-using MapBoard.UI.BoardOperation;
+using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,15 +23,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace MapBoard.UI
+namespace MapBoard.UI.Map
 {
     public class ArcMapView : MapView, INotifyPropertyChanged
     {
-        public static ArcMapView Instance { get; private set; }
-        public EditHelper Editing { get; private set; }
-        public SelectionHelper Selection { get; private set; }
-
-        public DrawHelper Drawing { get; private set; }
         public ArcMapView()
         {
             if (Instance == null)
@@ -44,14 +39,23 @@ namespace MapBoard.UI
             }
             Loaded += ArcMapViewLoaded;
             AllowDrop = true;
+            IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
             SketchEditor.EditConfiguration.AllowMove = SketchEditor.EditConfiguration.AllowRotate = SketchEditor.EditConfiguration.AllowVertexEditing = true;
-            Editing = new EditHelper();
+
+            Edit = new EditHelper();
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
-            IsAttributionTextVisible = false;
+            Layer = new LayerHelper();
+
             Load().Wait();
         }
+
+        public static ArcMapView Instance { get; private set; }
+        public EditHelper Edit { get; private set; }
+        public SelectionHelper Selection { get; private set; }
+        public DrawHelper Drawing { get; private set; }
+        public LayerHelper Layer { get; private set; }
 
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
@@ -177,7 +181,7 @@ namespace MapBoard.UI
                     SketchEditor.RemoveSelectedVertex();
                     break;
                 case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
-                    await Editing.DeleteSelectedFeatures();
+                    await Edit.DeleteSelectedFeatures();
                     break;
 
                 case Key.Space:
@@ -188,7 +192,7 @@ namespace MapBoard.UI
                             await Drawing.StopDraw();
                             break;
                         case BoardTaskManager.BoardTask.Edit:
-                            await Editing.StopEditing();
+                            await Edit.StopEditing();
                             break;
                         case BoardTaskManager.BoardTask.Ready when Drawing.LastDrawMode.HasValue:
                             await Drawing.StartDraw(Drawing.LastDrawMode.Value);
@@ -282,96 +286,11 @@ namespace MapBoard.UI
         private async Task Load()
         {
             await LoadBasemap();
-            await LoadLayers();
+            await Layer.LoadLayers();
 
         }
 
-        public async Task LoadLayers()
-        {
-            Selection.SelectedFeatures.Clear();
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
 
-            if (!Directory.Exists(Config.DataPath))
-            {
-                Directory.CreateDirectory(Config.DataPath);
-                return;
-            }
-
-            foreach (var style in StyleCollection.Instance.Styles.ToArray())
-            {
-                if (File.Exists(Path.Combine(Config.DataPath, style.Name + ".shp")))
-                {
-                    await LoadLayer(style);
-                }
-                else
-                {
-                    StyleCollection.Instance.Styles.Remove(style);
-                }
-            }
-
-            HashSet<string> files = Directory.EnumerateFiles(Config.DataPath)
-                .Where(p => Path.GetExtension(p) == ".shp")
-                .Select(p =>
-                {
-                    int index = p.LastIndexOf('.');
-                    if (index == -1)
-                    {
-                        return p;
-                    }
-                    return p.Remove(index, p.Length - index).RemoveStart(Config.DataPath + "\\");
-                }).ToHashSet();
-
-            foreach (var name in files)
-            {
-                if (!StyleCollection.Instance.Styles.Any(p => p.Name == name))
-                {
-                    StyleInfo style = new StyleInfo();
-                    style.Name = name;
-                    await LoadLayer(style);
-                }
-            }
-        }
-
-        public async Task LoadLayer(StyleInfo style)
-        {
-            try
-            {
-                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Config.DataPath + "\\" + style.Name + ".shp");
-                await featureTable.LoadAsync();
-                if (featureTable.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
-                {
-                    //if (!StyleCollection.Instance.Styles.Contains(style))
-                    //{
-                    //    StyleCollection.Instance.Styles.Add(style);
-                    //}
-                    //if (style.FeatureCount == 0)
-                    //{
-                    //    RemoveStyle(style, true);
-                    //}
-                    //else
-                    //{
-                    //FeatureLayer layer = new FeatureLayer(featureTable);
-                    ////Map.OperationalLayers.Add(layer);
-
-                    //style.Table = featureTable;
-                    //style.UpdateFeatureCount();
-                    //SetRenderer(style);
-                    //  }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (SnakeBar.DefaultWindow == null)
-                {
-                    TaskDialog.ShowException(ex, $"无法加载样式{style.Name}");
-                }
-                else
-                {
-                    SnakeBar.ShowException(ex, $"无法加载样式{style.Name}");
-
-                }
-            }
-        }
 
 
         //public StyleInfo GetStyleFromConfig(string name)
@@ -415,43 +334,6 @@ namespace MapBoard.UI
         //    //}
         //}
 
-        public void ApplyStyles(StyleInfo style)
-        {
-            try
-            {
-                SimpleLineSymbol lineSymbol;
-                SimpleRenderer renderer = null;
-                switch (style.Layer.FeatureTable.GeometryType)
-                {
-                    case GeometryType.Point:
-                    case GeometryType.Multipoint:
-                        SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, style.FillColor, style.LineWidth);
-                        renderer = new SimpleRenderer(markerSymbol);
-                        break;
-                    case GeometryType.Polyline:
-                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                        renderer = new SimpleRenderer(lineSymbol);
-                        break;
-                    case GeometryType.Polygon:
-                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                        SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, style.FillColor, lineSymbol);
-                        renderer = new SimpleRenderer(fillSymbol);
-                        break;
-                }
-                style.Layer.Renderer = renderer;
-
-                string labelJson = style.LabelJson;
-                LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
-                style.Layer.LabelDefinitions.Clear();
-                style.Layer.LabelDefinitions.Add(labelDefinition);
-                //style.Layer.LabelsEnabled = true;
-            }
-            catch (Exception ex)
-            {
-                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "样式加载失败";
-                TaskDialog.ShowException(ex, error);
-            }
-        }
 
         public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
         {
@@ -469,7 +351,7 @@ namespace MapBoard.UI
                     //Map.OperationalLayers.Add(layer);
                     style.Table = table;
 
-                    ApplyStyles(style);
+                    StyleHelper.ApplyStyles(style);
                 }
             }
             return table;
@@ -477,16 +359,20 @@ namespace MapBoard.UI
 
         public async Task LoadBasemap()
         {
-            if(!Config.Instance.Url.Contains("{x}")|| !Config.Instance.Url.Contains("{y}")|| !Config.Instance.Url.Contains("{z}"))
+            if (!Config.Instance.Url.Contains("{x}") || !Config.Instance.Url.Contains("{y}") || !Config.Instance.Url.Contains("{z}"))
             {
                 TaskDialog.ShowError("瓦片地址不包含足够的信息！");
                 return;
             }
 
             loaded = true;
-            baseLayer = new WebTiledLayer(Config.Instance.Url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+            Basemap basemap = new Basemap();
+            foreach (var url in Config.Instance.Url.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                baseLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+                basemap.BaseLayers.Add(baseLayer);
+            }
 
-            Basemap basemap = new Basemap(baseLayer);
             await basemap.LoadAsync();
             if (Map != null)
             {
@@ -494,8 +380,7 @@ namespace MapBoard.UI
             }
             else
             {
-
-                Map = new Map(basemap);
+                Map = new Esri.ArcGISRuntime.Mapping.Map(basemap);
             }
             try
             {
@@ -507,73 +392,9 @@ namespace MapBoard.UI
                 return;
             }
 
-            //await SetViewpointCenterAsync(new MapPoint(13532000, 3488400));
-            //await SetViewpointScaleAsync(1000000);
         }
 
-        public async Task PolylineToPolygon(StyleInfo style)
-        {
-            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
 
-            ShapefileFeatureTable newTable = newStyle.Table;
-            await newTable.LoadAsync();
 
-            foreach (var feature in await style.GetAllFeatures())
-            {
-                Polyline line = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator) as Polyline;
-                Feature newFeature = newTable.CreateFeature();
-                newFeature.Geometry = GeometryEngine.Buffer(line, Config.Instance.StaticWidth);
-                await newTable.AddFeatureAsync(newFeature);
-
-            }
-            newStyle.Table = newTable;
-            //SetRenderer(newStyle);
-            StyleCollection.Instance.Styles.Add(newStyle);
-
-        }
-
-        public async void AddLayer(StyleInfo style)
-        {
-            try
-            {
-
-                if (style.Table == null)
-                {
-                    style.Table = new ShapefileFeatureTable(style.FileName);
-                    await style.Table.LoadAsync();
-                }
-                FeatureLayer layer = new FeatureLayer(style.Table);
-                Map.OperationalLayers.Add(layer);
-                ApplyStyles(style);
-                style.LoadLayerVisibility();
-            }
-            catch (Exception ex)
-            {
-                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "加载失败";
-                TaskDialog.ShowException(ex, error);
-            }
-        }
-
-        public void RemoveLayer(StyleInfo style)
-        {
-            try
-            {
-                Map.OperationalLayers.Remove(style.Layer);
-                style.Table.Close();
-            }
-            catch
-            {
-
-            }
-        }
-
-        public void ClearLayers()
-        {
-            foreach (var layer in Map.OperationalLayers.ToArray())
-            {
-                Map.OperationalLayers.Remove(layer);
-                ((layer as FeatureLayer).FeatureTable as ShapefileFeatureTable).Close();
-            }
-        }
     }
 }

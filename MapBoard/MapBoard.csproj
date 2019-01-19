@@ -96,6 +96,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
+    <Compile Include="IO\CoordinateTransformation.cs" />
     <Compile Include="IO\IOHelper.cs" />
     <Compile Include="Resource\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -108,11 +109,15 @@
     <Compile Include="IO\Mbpkg.cs" />
     <Compile Include="Style\StyleCollection.cs" />
     <Compile Include="Style\StyleHelper.cs" />
-    <Compile Include="UI\ArcMapView.cs" />
-    <Compile Include="UI\BoardOperation\DrawHelper.cs" />
-    <Compile Include="UI\BoardOperation\EditHelper.cs" />
-    <Compile Include="UI\BoardOperation\SelectionHelper.cs" />
+    <Compile Include="UI\Map\ArcMapView.cs" />
+    <Compile Include="UI\Map\DrawHelper.cs" />
+    <Compile Include="UI\Map\EditHelper.cs" />
+    <Compile Include="UI\Map\LayerHelper.cs" />
+    <Compile Include="UI\Map\SelectionHelper.cs" />
     <Compile Include="Style\StyleInfo.cs" />
+    <Compile Include="UI\Dialog\CoordinateTransformationDialog.xaml.cs">
+      <DependentUpon>CoordinateTransformationDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\OperationBar\SelectOperationBar.xaml.cs">
       <DependentUpon>SelectOperationBar.xaml</DependentUpon>
     </Compile>
@@ -130,6 +135,10 @@
     <Compile Include="UI\Panel\StyleSettingPanel.xaml.cs">
       <DependentUpon>StyleSettingPanel.xaml</DependentUpon>
     </Compile>
+    <Page Include="UI\Dialog\CoordinateTransformationDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

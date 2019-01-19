@@ -102,7 +102,7 @@ namespace MapBoard.UI
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await arcMap.Editing.StopEditing();
+                await arcMap.Edit.StopEditing();
             }
 
             Config.Save();
@@ -233,7 +233,7 @@ namespace MapBoard.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-        await    IOHelper.Export();
+            await IOHelper.Export();
         }
 
         private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
@@ -319,6 +319,7 @@ namespace MapBoard.UI
                 ("删除",DeleteStyle,true),
                 ("新建副本",StyleHelper. CreateCopy,true),
                 ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
+                ("坐标转换",CoordinateTransformate,true),
                 ("导出",  ExportSingle,true),
 
            };
@@ -350,6 +351,20 @@ namespace MapBoard.UI
                     {
                         TaskDialog.ShowException(ex, "导出失败");
                     }
+                }
+            }
+
+            async void CoordinateTransformate()
+            {
+                CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
+                if (dialog.ShowDialog() == true)
+                {
+                    loading.Show();
+
+                    string from = dialog.SelectedCoordinateSystem1;
+                    string to = dialog.SelectedCoordinateSystem2;
+                    await StyleHelper.CoordinateTransformate(StyleCollection.Instance.Selected, from, to);
+                    loading.Hide();
                 }
             }
 

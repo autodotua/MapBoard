@@ -1,10 +1,14 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.Symbology;
 using FzLib.Control.Dialog;
+using FzLib.IO;
 using MapBoard.IO;
 using MapBoard.Resource;
 using MapBoard.UI;
 using MapBoard.UI.Dialog;
+using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,10 +16,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static MapBoard.IO.CoordinateTransformation;
+
 namespace MapBoard.Style
 {
     public static class StyleHelper
     {
+
         public static void RemoveStyle(StyleInfo style, bool deleteFiles)
         {
             if (StyleCollection.Instance.Styles.Contains(style))
@@ -91,9 +98,6 @@ namespace MapBoard.Style
             target.UpdateFeatureCount();
         }
 
-
-
-
         public async static void CopyFeatures()
         {
             SelectStyleDialog dialog = new SelectStyleDialog();
@@ -113,7 +117,7 @@ namespace MapBoard.Style
                 SnakeBar.ShowError("只有线可以执行此命令");
                 return;
             }
-            await ArcMapView.Instance.PolylineToPolygon(StyleCollection.Instance.Selected);
+            await PolylineToPolygon(StyleCollection.Instance.Selected);
         }
 
         public async static void CreateCopy()
@@ -126,5 +130,85 @@ namespace MapBoard.Style
             });
             await CreatCopy(StyleCollection.Instance.Selected, includeFeatures);
         }
+
+        public static void ApplyStyles(StyleInfo style)
+        {
+            try
+            {
+                SimpleLineSymbol lineSymbol;
+                SimpleRenderer renderer = null;
+                switch (style.Layer.FeatureTable.GeometryType)
+                {
+                    case GeometryType.Point:
+                    case GeometryType.Multipoint:
+                        SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, style.FillColor, style.LineWidth);
+                        renderer = new SimpleRenderer(markerSymbol);
+                        break;
+                    case GeometryType.Polyline:
+                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
+                        renderer = new SimpleRenderer(lineSymbol);
+                        break;
+                    case GeometryType.Polygon:
+                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
+                        SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, style.FillColor, lineSymbol);
+                        renderer = new SimpleRenderer(fillSymbol);
+                        break;
+                }
+                style.Layer.Renderer = renderer;
+
+                string labelJson = style.LabelJson;
+                LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
+                style.Layer.LabelDefinitions.Clear();
+                style.Layer.LabelDefinitions.Add(labelDefinition);
+                //style.Layer.LabelsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "样式加载失败";
+                TaskDialog.ShowException(ex, error);
+            }
+        }
+
+        public async static Task PolylineToPolygon(StyleInfo style)
+        {
+            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
+
+            ShapefileFeatureTable newTable = newStyle.Table;
+            await newTable.LoadAsync();
+
+            foreach (var feature in await style.GetAllFeatures())
+            {
+                Polyline line = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator) as Polyline;
+                Feature newFeature = newTable.CreateFeature();
+                newFeature.Geometry = GeometryEngine.Buffer(line, Config.Instance.StaticWidth);
+                await newTable.AddFeatureAsync(newFeature);
+
+            }
+            newStyle.Table = newTable;
+            //SetRenderer(newStyle);
+            StyleCollection.Instance.Styles.Add(newStyle);
+
+        }
+
+        public async static Task CoordinateTransformate(StyleInfo style, string from, string to)
+        {
+            if(!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
+            {
+                throw new ArgumentException("不能识别坐标系");
+            }
+
+            CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
+
+            FeatureQueryResult features = await style.GetAllFeatures();
+
+            foreach (var feature in features)
+            {
+                coordinate.Transformate(feature);
+                await style.Table.UpdateFeatureAsync(feature);
+            }
+
+        }
+
+
     }
 }
