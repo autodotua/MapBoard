@@ -315,7 +315,7 @@ namespace MapBoard.UI
             List<(string header, Action action, bool visiable)> menus = new List<(string header, Action action, bool visiable)>()
            {
                 ("复制",StyleHelper. CopyFeatures,true),
-                ("转面",StyleHelper. PolylineToPolygon,style.Type==GeometryType.Polyline),
+                ("建立缓冲区",StyleHelper.Buffer,style.Type==GeometryType.Polyline || style.Type==GeometryType.Point|| style.Type==GeometryType.Multipoint),
                 ("删除",DeleteStyle,true),
                 ("新建副本",StyleHelper. CreateCopy,true),
                 ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
@@ -340,7 +340,7 @@ namespace MapBoard.UI
 
             void ExportSingle()
             {
-                string path = CommonFileSystemDialog.GetSaveFile(new List<(string, string)>() { ("mblpkg地图画板图层包", "mblpkg") }, false, true, "地图画板图层 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+                string path = FileSystemDialog.GetSaveFile(new List<(string, string)>() { ("mblpkg地图画板图层包", "mblpkg") }, false, true, "地图画板图层 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
                 if (path != null)
                 {
                     try

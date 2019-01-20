@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Data;
+﻿using Esri.ArcGISRuntime;
+using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Symbology;
@@ -56,7 +57,10 @@ namespace MapBoard.UI.Map
         public SelectionHelper Selection { get; private set; }
         public DrawHelper Drawing { get; private set; }
         public LayerHelper Layer { get; private set; }
-
+        /// <summary>
+        /// 左键抬起事件，用于结束框选
+        /// </summary>
+        /// <param name="e"></param>
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseRightButtonUp(e);
@@ -65,6 +69,10 @@ namespace MapBoard.UI.Map
                 await Selection.StopFrameSelect(true);
             }
         }
+        /// <summary>
+        /// 右键按下事件，用于显示右键菜单，现已废除
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseRightButtonDown(e);
@@ -153,25 +161,11 @@ namespace MapBoard.UI.Map
             //}
         }
 
-        //private async void MenuCopyClick(object sender, RoutedEventArgs e)
-        //{
 
-        //    SelectStyleDialog dialog = new SelectStyleDialog(App.Current.MainWindow);
-        //    if (dialog.ShowDialog() == true)
-        //    {
-        //        StyleCollection.Instance.Selected.LayerVisible = false;
-        //        ObservableCollection<Feature> features = Selection.SelectedFeatures;
-        //        ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
-        //        foreach (var feature in features)
-        //        {
-        //            await targetTable.AddFeatureAsync(feature);
-        //        }
-        //        await Selection.StopFrameSelect(false);
-        //        dialog.SelectedStyle.UpdateFeatureCount();
-        //        StyleCollection.Instance.Selected = dialog.SelectedStyle;
-        //    }
-        //}
-
+        /// <summary>
+        /// 键盘按下事件
+        /// </summary>
+        /// <param name="e"></param>
         protected async override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
@@ -258,104 +252,30 @@ namespace MapBoard.UI.Map
             //}
         }
 
-        public bool IsMouseOverFeature(MapPoint point, Feature feature)
-        {
-            //if (feature.Geometry.GeometryType == GeometryType.Polygon)
-            //{
-            //    if (GeometryEngine.Contains(feature.Geometry, point))
-            //    {
-            //        return true;
-            //    }
-            //    return false;
-            //}
 
-            double tolerance = MapScale / 1e8;
-            Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
-            return GeometryEngine.Intersects(feature.Geometry, envelope);
-
-        }
 
 
         private WebTiledLayer baseLayer;
         bool loaded = false;
+        /// <summary>
+        /// 地图控件加载完成事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ArcMapViewLoaded(object sender, RoutedEventArgs e)
         {
             //await Load();
         }
-
+        /// <summary>
+        /// 加载底图和图层事件
+        /// </summary>
+        /// <returns></returns>
         private async Task Load()
         {
             await LoadBasemap();
             await Layer.LoadLayers();
-
         }
 
-
-
-
-        //public StyleInfo GetStyleFromConfig(string name)
-        //{
-        //    StyleInfo style = Config.Instance.ShapefileStyles.FirstOrDefault(p => p.Name == name)?.Clone();
-        //    if (style == null)
-        //    {
-        //        style = Config.Instance.DefaultStyle.Clone();
-        //        style.Name = name;
-        //        Config.Instance.AddToShapefileStyles(style.Clone());
-        //    }
-
-        //    return style;
-        //    //try
-        //    //{
-        //    //    StyleInfo style = new StyleInfo();
-        //    //    if (name.StartsWith("Polyline"))
-        //    //    {
-        //    //        string[] parts = name.Split('_', '.');
-        //    //        style.LineWidth = double.Parse(parts[1]) / 100;
-        //    //        style.LineColor = System.Drawing.Color.FromArgb(int.Parse(parts[2]));
-        //    //    }
-        //    //    else if (name.StartsWith("Polygon"))
-        //    //    {
-        //    //        string[] parts = name.Split('_', '.');
-        //    //        style.LineWidth = double.Parse(parts[1]) / 100;
-        //    //        style.LineColor = System.Drawing.Color.FromArgb(int.Parse(parts[2]));
-        //    //        style.FillColor = System.Drawing.Color.FromArgb(int.Parse(parts[3]));
-        //    //    }
-        //    //    else if (name.StartsWith("Point"))
-        //    //    {
-        //    //        string[] parts = name.Split('_', '.');
-        //    //        style.LineWidth = double.Parse(parts[1]) / 100;
-        //    //        style.FillColor = System.Drawing.Color.FromArgb(int.Parse(parts[2]));
-        //    //    }
-        //    //    return style;
-        //    //}
-        //    //catch
-        //    //{
-        //    //    return null;
-        //    //}
-        //}
-
-
-        public async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
-        {
-            var style = StyleCollection.Instance.Selected;// StyleHelper.GetStyle(StyleCollection.Instance.Selected, type);
-            ShapefileFeatureTable table = style.Table;
-
-            if (table == null)
-            {
-                table = new ShapefileFeatureTable(Config.DataPath + "\\" + style.Name + ".shp");
-                await table.LoadAsync();
-                if (table.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
-                {
-
-                    FeatureLayer layer = new FeatureLayer(table);
-                    //Map.OperationalLayers.Add(layer);
-                    style.Table = table;
-
-                    StyleHelper.ApplyStyles(style);
-                }
-            }
-            return table;
-        }
 
         public async Task LoadBasemap()
         {
@@ -366,24 +286,25 @@ namespace MapBoard.UI.Map
             }
 
             loaded = true;
-            Basemap basemap = new Basemap();
-            foreach (var url in Config.Instance.Url.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                baseLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-                basemap.BaseLayers.Add(baseLayer);
-            }
-
-            await basemap.LoadAsync();
-            if (Map != null)
-            {
-                Map.Basemap = basemap;
-            }
-            else
-            {
-                Map = new Esri.ArcGISRuntime.Mapping.Map(basemap);
-            }
             try
             {
+                Basemap basemap = new Basemap();
+                foreach (var url in Config.Instance.Url.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    baseLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+                    basemap.BaseLayers.Add(baseLayer);
+                }
+
+                await basemap.LoadAsync();
+                if (Map != null)
+                {
+                    Map.Basemap = basemap;
+                }
+                else
+                {
+                    Map = new Esri.ArcGISRuntime.Mapping.Map(basemap);
+                }
+
                 await Map.LoadAsync();
             }
             catch (Exception ex)

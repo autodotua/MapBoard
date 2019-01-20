@@ -20,7 +20,6 @@ namespace MapBoard.UI.Map
         {
             try
             {
-
                 if (style.Table == null)
                 {
                     style.Table = new ShapefileFeatureTable(style.FileName);

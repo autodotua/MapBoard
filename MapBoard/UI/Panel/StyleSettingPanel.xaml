@@ -9,7 +9,7 @@
              xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
              xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
              mc:Ignorable="d" >
-    <StackPanel Orientation="Vertical" Width="280">
+    <StackPanel Orientation="Vertical" MinWidth="280">
         <TextBox Margin="4,8" BorderThickness="0" Text="{Binding StyleName}" FontSize="16" HorizontalContentAlignment="Center"/>
 
         <GroupBox Header="渲染器">
@@ -25,10 +25,10 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
+                    <!--<RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>-->
+                    <!--<RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>-->
                 </Grid.RowDefinitions>
                 <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
         <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>-->
@@ -42,9 +42,9 @@
                 <picker:ColorPickerTextBox x:Name="fillColorPicker" Grid.Row="4 " Grid.Column="2" />
 
 
-                <flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6"/>
+                <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6"/>
 
-                <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2"/>
+                <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2"/>-->
 
 
             </Grid>

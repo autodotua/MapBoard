@@ -23,8 +23,14 @@ namespace MapBoard.IO
         /// <returns>返回是否需要通知刷新Style</returns>
         public static bool Import()
         {
-            string path = CommonFileSystemDialog.GetOpenFile(new List<(string, string)>()
-            { ("mbmpkg地图画板包", "mbmpkg"),("mblpkg地图画板图层包", "mblpkg"),("GPS轨迹文件","gpx") }, false, true);
+            bool ok = true;
+            string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
+            { ("mbmpkg地图画板包", "mbmpkg"),
+                ("mblpkg地图画板图层包", "mblpkg"),
+                ("GPS轨迹文件","gpx") ,
+                ("Shapefile文件","shp") ,
+            }
+            , true, true);
             if (path != null)
             {
                 try
@@ -47,21 +53,39 @@ namespace MapBoard.IO
                                 ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.Import(path,Gpx.Type.MultiLine)),
                            });
                             return false;
+
+                        case ".shp":
+                            Shapefile.Import(path);
+                            return false;
+
+                        default:
+                            throw new Exception("未知文件类型");
                     }
-                    SnakeBar.Show("导入成功");
                 }
                 catch (Exception ex)
                 {
                     TaskDialog.ShowException(ex, "导入失败");
+                    ok = false;
                     return false;
+                }
+                finally
+                {
+                    if (ok)
+                    {
+                        SnakeBar.Show("导入成功");
+                    }
                 }
             }
             return false;
         }
 
+        /// <summary>
+        /// 显示对话框导出
+        /// </summary>
+        /// <returns></returns>
         public static async Task Export()
         {
-            string path = CommonFileSystemDialog.GetSaveFile(new List<(string, string)>() {
+            string path = FileSystemDialog.GetSaveFile(new List<(string, string)>() {
                 ("mbmpkg地图画板包", "mbmpkg"),  ("截图", "png")},
                 false, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
@@ -76,7 +100,7 @@ namespace MapBoard.IO
                             break;
 
                         case ".png":
-                           await SaveImage(path);
+                            await SaveImage(path);
                             break;
                     }
                     SnakeBar.Show("导出成功");
@@ -87,13 +111,17 @@ namespace MapBoard.IO
                 }
             }
         }
-
+        /// <summary>
+        /// 保存截图
+        /// </summary>
+        /// <param name="path">保存地址</param>
+        /// <returns></returns>
         private static async Task SaveImage(string path)
         {
             //ArcMapView.Instance.Width = 10000;
             //ArcMapView.Instance.Height = 10000;
             //await Task.Delay(1000);
-               RuntimeImage image = await ArcMapView.Instance.ExportImageAsync();
+            RuntimeImage image = await ArcMapView.Instance.ExportImageAsync();
             Bitmap bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
             bitmap.Save(path);
             Bitmap ConvertToBitmap(BitmapSource bitmapSource)

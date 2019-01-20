@@ -26,5 +26,10 @@
             <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
 
         </StackPanel>
+        <FrameworkElement Height="12"/>
+        <TextBlock>转为面时缓冲区大小（米）：</TextBlock>
+        <FrameworkElement Height="4"/>
+        <flat:TextBox Text="{Binding Config.StaticWidth}"/>
+        <FrameworkElement Height="12"/>
     </StackPanel>
 </extension:ExtendedUserControl>

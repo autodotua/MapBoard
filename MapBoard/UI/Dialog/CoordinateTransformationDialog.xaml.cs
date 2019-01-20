@@ -26,13 +26,19 @@ namespace MapBoard.UI.Dialog
             Owner = Application.Current.MainWindow;
             InitializeComponent();
         }
-
-        public string[] CoordinateSystems => IO.CoordinateTransformation. CoordinateSystems;
+        /// <summary>
+        /// 支持的坐标系
+        /// </summary>
+        public string[] CoordinateSystems => IO.CoordinateTransformation.CoordinateSystems;
 
         public string SelectedCoordinateSystem1 { get; set; } = "GCJ02";
-        public string SelectedCoordinateSystem2 { get; set; }="WGS84";
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public string SelectedCoordinateSystem2 { get; set; } = "WGS84";
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
             Close();
@@ -40,7 +46,7 @@ namespace MapBoard.UI.Dialog
 
         private void ComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(!IsLoaded)
+            if (!IsLoaded)
             {
                 return;
             }

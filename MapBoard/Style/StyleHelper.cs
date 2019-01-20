@@ -33,7 +33,7 @@ namespace MapBoard.Style
 
             if (deleteFiles)
             {
-                foreach (var file in Directory.EnumerateFiles(Config.DataPath))
+                foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
                 {
                     if (Path.GetFileNameWithoutExtension(file) == style.Name)
                     {
@@ -43,6 +43,15 @@ namespace MapBoard.Style
             }
         }
 
+        public static StyleInfo AddStyle(string name)
+        {
+            StyleInfo style = new StyleInfo();
+            style.Name = name ?? throw new ArgumentException();
+            StyleCollection.Instance.Styles.Add(style);
+            StyleCollection.Instance.Selected = style;
+            return style;
+        }
+
         public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null, string name = null)
         {
             if (name == null)
@@ -50,7 +59,7 @@ namespace MapBoard.Style
                 name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
             }
 
-            Shapefile.ExportEmptyShapefile(type, name);
+            ShapefileExport.ExportEmptyShapefile(type, name);
             StyleInfo style = new StyleInfo();
             if (template != null)
             {
@@ -106,29 +115,23 @@ namespace MapBoard.Style
                 await CopyAllFeatures(StyleCollection.Instance.Selected, dialog.SelectedStyle);
             }
         }
-        public async static void PolylineToPolygon()
+        public async static void Buffer()
         {
-            if (StyleCollection.Instance.Selected == null)
-            {
-                return;
-            }
-            if (StyleCollection.Instance.Selected.Table.GeometryType != GeometryType.Polyline)
-            {
-                SnakeBar.ShowError("只有线可以执行此命令");
-                return;
-            }
-            await PolylineToPolygon(StyleCollection.Instance.Selected);
+            await Buffer(StyleCollection.Instance.Selected);
         }
 
         public async static void CreateCopy()
         {
-            bool includeFeatures = false;
+            int mode = 0;
             TaskDialog.ShowWithCommandLinks("是否要复制所有图形到新的样式中", "请选择副本类型", new (string, string, Action)[]
             {
-                ("仅样式",null,null ),
-                ("样式和所有图形",null,()=>includeFeatures=true)
-            });
-            await CreatCopy(StyleCollection.Instance.Selected, includeFeatures);
+                ("仅样式",null,()=>mode=1),
+                ("样式和所有图形",null,()=>mode=2)
+            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, true);
+            if (mode > 0)
+            {
+                await CreatCopy(StyleCollection.Instance.Selected, mode == 2);
+            }
         }
 
         public static void ApplyStyles(StyleInfo style)
@@ -169,30 +172,26 @@ namespace MapBoard.Style
             }
         }
 
-        public async static Task PolylineToPolygon(StyleInfo style)
+        public async static Task Buffer(StyleInfo style)
         {
-            var newStyle = StyleHelper.CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
+            var newStyle = CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
 
             ShapefileFeatureTable newTable = newStyle.Table;
-            await newTable.LoadAsync();
 
             foreach (var feature in await style.GetAllFeatures())
             {
-                Polyline line = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator) as Polyline;
-                Feature newFeature = newTable.CreateFeature();
-                newFeature.Geometry = GeometryEngine.Buffer(line, Config.Instance.StaticWidth);
+                Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator) ;
+                var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
+                Feature newFeature = newTable.CreateFeature(feature.Attributes, geometry);
                 await newTable.AddFeatureAsync(newFeature);
 
             }
-            newStyle.Table = newTable;
-            //SetRenderer(newStyle);
-            StyleCollection.Instance.Styles.Add(newStyle);
 
         }
 
         public async static Task CoordinateTransformate(StyleInfo style, string from, string to)
         {
-            if(!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
+            if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
             {
                 throw new ArgumentException("不能识别坐标系");
             }

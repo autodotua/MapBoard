@@ -171,7 +171,14 @@ namespace MapBoard.Style
             LineWidth = style.LineWidth;
             LineColor = style.LineColor;
             FillColor = style.FillColor;
-            Notify(nameof(LineColor), nameof(LineWidth), nameof(FillColor), nameof(Type), nameof(FeatureCount), nameof(LayerVisible), nameof(TypeDescription));
+            LabelJson = style.LabelJson;
+            Notify(nameof(LineColor), 
+                nameof(LineWidth), 
+                nameof(FillColor), 
+                nameof(Type), 
+                nameof(FeatureCount), 
+                nameof(LayerVisible), 
+                nameof(TypeDescription));
         }
 
         public override string ToString()
@@ -179,19 +186,19 @@ namespace MapBoard.Style
             return Name;
         }
 
-        public bool StyleEquals(StyleInfo style)
-        {
-            return LineWidth == style.LineWidth
-                && LineColor == style.LineColor
-                && FillColor == style.FillColor
-                && Type == style.Type;
-        }
-        public bool StyleEquals(StyleInfo style, GeometryType type)
-        {
-            return LineWidth == style.LineWidth
-                && LineColor == style.LineColor
-                && FillColor == style.FillColor
-                && Type == type;
-        }
+        //public bool StyleEquals(StyleInfo style)
+        //{
+        //    return LineWidth == style.LineWidth
+        //        && LineColor == style.LineColor
+        //        && FillColor == style.FillColor
+        //        && Type == style.Type;
+        //}
+        //public bool StyleEquals(StyleInfo style, GeometryType type)
+        //{
+        //    return LineWidth == style.LineWidth
+        //        && LineColor == style.LineColor
+        //        && FillColor == style.FillColor
+        //        && Type == type;
+        //}
     }
 }

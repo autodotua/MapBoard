@@ -1,5 +1,6 @@
 ﻿using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
+using MapBoard.IO;
 using MapBoard.Style;
 using MapBoard.UI.Map;
 using Newtonsoft.Json.Linq;
@@ -116,6 +117,8 @@ namespace MapBoard.UI.Panel
             string newName = StyleName;
             if (newName != style.Name)
             {
+                int index = StyleCollection.Instance.Styles.IndexOf(StyleCollection.Instance.Selected);
+
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
                 {
                     SnakeBar.ShowError("新文件名不合法");
@@ -128,12 +131,9 @@ namespace MapBoard.UI.Panel
                 try
                 {
                     StyleHelper.RemoveStyle(StyleCollection.Instance.Selected, false);
-                    foreach (var file in Directory.EnumerateFiles(Config.DataPath))
+                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
                     {
-                        if (Path.GetFileNameWithoutExtension(file) == style.Name)
-                        {
-                            File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
-                        }
+                        File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
                     }
                     style.Name = newName;
                 }
@@ -143,11 +143,11 @@ namespace MapBoard.UI.Panel
                 }
                 end:
                 style.Table = null;
-                StyleCollection.Instance.Styles.Add(style);
+                StyleCollection.Instance.Styles.Insert(index,style);
             }
             else
             {
-               StyleHelper.ApplyStyles(style);
+                StyleHelper.ApplyStyles(style);
             }
 
         }

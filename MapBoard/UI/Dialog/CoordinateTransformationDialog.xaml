@@ -29,7 +29,7 @@
         <TextBlock Text="→" Grid.Column="2"/>
         <flat:UneditableComboBox Grid.Column="4" ItemsSource="{Binding CoordinateSystems}" SelectedItem="{Binding SelectedCoordinateSystem2}" SelectionChanged="ComboBoxSelectionChanged"/>
         <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button x:Name="btn" Click="Button_Click" Content="确定"/>
+            <flat:Button x:Name="btn" Click="OkButtonClick" Content="确定"/>
         </StackPanel>
     </Grid>
 </Window>

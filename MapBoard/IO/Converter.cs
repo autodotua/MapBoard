@@ -9,6 +9,11 @@ namespace MapBoard.IO
 {
     public static class Converter
     {
+        /// <summary>
+        /// 根据坐标系获取正确的点坐标
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public static MapPoint GetRightCoordinateSystemPoint(FzLib.Geography.Coordinate.GeoPoint point)
         {
             if (Config.Instance.GCJ02)

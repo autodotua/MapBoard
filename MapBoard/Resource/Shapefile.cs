@@ -8,7 +8,10 @@ using System.Text;
 
 namespace MapBoard.Resource
 {
-    public static class Shapefile
+    /// <summary>
+    /// 空shapefile导出类
+    /// </summary>
+    public static class ShapefileExport
     {
         public static void ExportEmptyPointShapefile(string folderPath, string name)
         {
@@ -80,16 +83,16 @@ namespace MapBoard.Resource
             switch (type)
             {
                 case GeometryType.Point:
-                    Shapefile.ExportEmptyPointShapefile(Config.DataPath, name);
+                    ShapefileExport.ExportEmptyPointShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Multipoint:
-                    Shapefile.ExportEmptyMultipointShapefile(Config.DataPath, name);
+                    ShapefileExport.ExportEmptyMultipointShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Polyline:
-                    Shapefile.ExportEmptyPolylineShapefile(Config.DataPath, name);
+                    ShapefileExport.ExportEmptyPolylineShapefile(Config.DataPath, name);
                     break;
                 case GeometryType.Polygon:
-                    Shapefile.ExportEmptyPolygonShapefile(Config.DataPath, name);
+                    ShapefileExport.ExportEmptyPolygonShapefile(Config.DataPath, name);
                     break;
                 default:
                     throw new Exception("不支持的格式");

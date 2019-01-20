@@ -15,6 +15,10 @@ namespace MapBoard.IO
 {
     public static class Mbpkg
     {
+        /// <summary>
+        /// 导入地图包
+        /// </summary>
+        /// <param name="path"></param>
         public static void ImportMap(string path)
         {
             StyleCollection.Instance.Styles.Clear();
@@ -27,6 +31,10 @@ namespace MapBoard.IO
             //Information.Restart();
             StyleCollection.ResetStyles();
         }
+        /// <summary>
+        /// 导入图层包
+        /// </summary>
+        /// <param name="path"></param>
         public static void ImportLayer(string path)
         {
             string tempDirectoryPath = Path.Combine(Config.DataPath, "temp");
@@ -39,11 +47,13 @@ namespace MapBoard.IO
             ZipFile.ExtractToDirectory(path, tempDirectoryPath);
 
             StyleInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<StyleInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
-            var files = Directory.EnumerateFiles(tempDirectoryPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name).ToArray();
-            if(files.Length<3)
-            {
-                throw new Exception("缺少文件");
-            }
+            var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
+                
+            //    Directory.EnumerateFiles(tempDirectoryPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name).ToArray();
+            //if(files.Length<3)
+            //{
+            //    throw new Exception("缺少文件");
+            //}
             List<string> copyedFiles = new List<string>();
             foreach (var file in files)
             {
@@ -59,6 +69,10 @@ namespace MapBoard.IO
 
             StyleCollection.Instance.Styles.Add(style);
         }
+        /// <summary>
+        /// 导出底涂包，实则是zip文件
+        /// </summary>
+        /// <param name="path"></param>
         public static void ExportMap(string path)
         {
             if (File.Exists(path))
@@ -72,6 +86,11 @@ namespace MapBoard.IO
             ZipFile.CreateFromDirectory(Config.DataPath, path);
             styles.ForEach(p => StyleCollection.Instance.Styles.Add(p));
         }
+        /// <summary>
+        /// 导出图层包，实则是zip文件
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="style"></param>
         public static void ExportLayer(string path, StyleInfo style)
         {
             if (File.Exists(path))
@@ -89,7 +108,7 @@ namespace MapBoard.IO
             }
             Directory.CreateDirectory(tempDirectoryPath);
 
-            foreach (var file in Directory.EnumerateFiles(Config.DataPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name))
+            foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath,style.Name))
             {
                 File.Copy(file, Path.Combine(tempDirectoryPath, Path.GetFileName(file)));
             }

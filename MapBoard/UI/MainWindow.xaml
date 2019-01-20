@@ -49,7 +49,7 @@
         <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
 
 
-            <Grid x:Name="grdLeft">
+            <Grid x:Name="grdLeft" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
@@ -63,7 +63,6 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-
                     <stylesettingpanel:StyleSettingPanel x:Name="styleSetting"/>
                     <TextBlock/>
 
@@ -100,7 +99,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 
-                                <GridViewColumn Header="标题" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="标题" Width="100" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="类型" DisplayMemberBinding="{Binding TypeDescription}"/>
                                 <GridViewColumn Header="图形数量" DisplayMemberBinding="{Binding FeatureCount}"/>
                             </GridView>
