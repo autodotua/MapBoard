@@ -273,7 +273,7 @@ namespace MapBoard.UI.Map
         private async Task Load()
         {
             await LoadBasemap();
-            await Layer.LoadLayers();
+            //await Layer.LoadLayers();
         }
 
 

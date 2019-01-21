@@ -23,7 +23,7 @@ namespace MapBoard.Style
     public static class StyleHelper
     {
 
-        public static void RemoveStyle(StyleInfo style, bool deleteFiles)
+        public static void RemoveStyle(this StyleInfo style, bool deleteFiles)
         {
             if (StyleCollection.Instance.Styles.Contains(style))
             {
@@ -71,7 +71,7 @@ namespace MapBoard.Style
             return style;
         }
 
-        public async static Task CreatCopy(StyleInfo style, bool includeFeatures)
+        public async static Task CreatCopy(this StyleInfo style, bool includeFeatures)
         {
             if (includeFeatures)
             {
@@ -134,7 +134,7 @@ namespace MapBoard.Style
             }
         }
 
-        public static void ApplyStyles(StyleInfo style)
+        public static void ApplyStyles(this StyleInfo style)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace MapBoard.Style
             }
         }
 
-        public async static Task Buffer(StyleInfo style)
+        public async static Task Buffer(this StyleInfo style)
         {
             var newStyle = CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
 
@@ -189,7 +189,7 @@ namespace MapBoard.Style
 
         }
 
-        public async static Task CoordinateTransformate(StyleInfo style, string from, string to)
+        public async static Task CoordinateTransformate(this StyleInfo style, string from, string to)
         {
             if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
             {
@@ -207,6 +207,56 @@ namespace MapBoard.Style
             }
 
         }
+
+        public async static Task SetTimeExtent(this StyleInfo style)
+        {
+            if(style.TimeExtent==null)
+            {
+                return;
+            }
+            if(!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.Resource.TimeExtentFieldName))
+            {
+                throw new Exception("shapefile没有指定的日期属性");
+            }
+            FeatureLayer layer = style.Layer;
+
+            if (style.TimeExtent.IsEnable)
+            {
+                List<Feature> visiableFeatures = new List<Feature>();
+                List<Feature> invisiableFeatures = new List<Feature>();
+
+                FeatureQueryResult features = await style.GetAllFeatures();
+
+                foreach (var feature in features)
+                {
+                    if (feature.Attributes[Resource.Resource.TimeExtentFieldName] is DateTimeOffset date)
+                    {
+                        if (date > style.TimeExtent.From && date < style.TimeExtent.To)
+                        {
+                            visiableFeatures.Add(feature);
+                        }
+                        else
+                        {
+                            invisiableFeatures.Add(feature);
+                        }
+                    }
+                    else
+                    {
+                        invisiableFeatures.Add(feature);
+                    }
+                }
+                
+                layer.SetFeaturesVisible(visiableFeatures, true);
+                layer.SetFeaturesVisible(invisiableFeatures, false);
+            }
+            else
+            {
+                layer.SetFeaturesVisible(await style.GetAllFeatures(), true);
+
+            }
+        }
+
+
 
 
     }

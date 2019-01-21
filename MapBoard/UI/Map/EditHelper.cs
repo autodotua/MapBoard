@@ -40,7 +40,15 @@ namespace MapBoard.UI.Map
             Mode = mode;
 
             editingFeature = Mapview.Selection.SelectedFeatures.First();
-            Mapview.Drawing.Label = editingFeature.Attributes["Info"] as string;
+            Mapview.Drawing.Label = editingFeature.Attributes[Resource.Resource.DisplayFieldName] as string;
+            if (editingFeature.Attributes[Resource.Resource.TimeExtentFieldName] is DateTimeOffset date)
+            {
+                Mapview.Drawing.Date = date;
+            }
+            else
+            {
+                Mapview.Drawing.Date = null;
+            }
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             // Config.Instance.DefaultStyle.CopyStyleFrom(StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
             if (mode == EditMode.Draw)
@@ -56,7 +64,7 @@ namespace MapBoard.UI.Map
 
             }
         }
-        
+
         //private void ShowBar(string message)
         //{
         //    SnakeBar bar = new SnakeBar(Application.Current.MainWindow);
@@ -122,7 +130,7 @@ namespace MapBoard.UI.Map
             Cut
         }
         public EditMode Mode { get; private set; }
-       // private SnakeBar lastBar;
+        // private SnakeBar lastBar;
         private Feature editingFeature;
         public async Task DeleteSelectedFeatures()
         {

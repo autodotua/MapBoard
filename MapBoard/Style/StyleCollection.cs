@@ -101,23 +101,31 @@ namespace MapBoard.Style
 
                     if (value.Count > 0)
                     {
-                        value.ForEach(p => ArcMapView.Instance.Layer.AddLayer(p));
+                        value.ForEachAsync(async p =>await ArcMapView.Instance.Layer.AddLayer(p));
                     }
                 }
             }
         }
 
         private StyleInfo selected;
-        
 
 
 
-        private void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+
+        private async void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    e.NewItems.ForEach(p => ArcMapView.Instance.Layer.AddLayer(p as StyleInfo));
+                    foreach (var item in e.NewItems)
+                    {
+                        if (!await ArcMapView.Instance.Layer.AddLayer(item as StyleInfo))
+                        {
+                            Styles.CollectionChanged -= instance.StylesCollectionChanged;
+                            Styles.Remove(item as StyleInfo);
+                            Styles.CollectionChanged += instance.StylesCollectionChanged;
+                        }
+                    }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     ArcMapView.Instance.Map.OperationalLayers.Move(e.OldStartingIndex, e.NewStartingIndex);
@@ -128,7 +136,6 @@ namespace MapBoard.Style
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
-
             }
         }
         public override void Save()

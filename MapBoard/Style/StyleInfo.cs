@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static MapBoard.IO.CoordinateTransformation;
+using static MapBoard.Style.StyleHelper;
 
 namespace MapBoard.Style
 {
@@ -47,11 +48,12 @@ namespace MapBoard.Style
                 SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
             }
         }
-        public void LoadLayerVisibility()
+        public async Task LayerComplete()
         {
             Layer.IsVisible = LayerVisible;
             Layer.LabelsEnabled = LabelVisible;
 
+            await this.SetTimeExtent();
         }
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
@@ -96,6 +98,32 @@ namespace MapBoard.Style
                     Layer.LabelsEnabled = value;
                 }
                 Notify(nameof(LabelVisible));
+            }
+        }
+
+        private TimeExtentInfo timeExtent;
+        public TimeExtentInfo TimeExtent
+        {
+            get => timeExtent;
+            set => SetValueAndNotify(ref timeExtent, value, nameof(TimeExtentEnable));
+        }
+
+        [JsonIgnore]
+        public bool TimeExtentEnable
+        {
+            get => TimeExtent==null?false: TimeExtent.IsEnable;
+            set
+            {
+                if (TimeExtent != null)
+                {
+                    if (value != TimeExtent.IsEnable)
+                    {
+                        TimeExtent.IsEnable = value;
+                        this.SetTimeExtent();
+                    }
+                }
+
+                Notify(nameof(TimeExtentEnable));
             }
         }
 
@@ -172,14 +200,16 @@ namespace MapBoard.Style
             LineColor = style.LineColor;
             FillColor = style.FillColor;
             LabelJson = style.LabelJson;
-            Notify(nameof(LineColor), 
-                nameof(LineWidth), 
-                nameof(FillColor), 
-                nameof(Type), 
-                nameof(FeatureCount), 
-                nameof(LayerVisible), 
+            Notify(nameof(LineColor),
+                nameof(LineWidth),
+                nameof(FillColor),
+                nameof(Type),
+                nameof(FeatureCount),
+                nameof(LayerVisible),
                 nameof(TypeDescription));
         }
+
+
 
         public override string ToString()
         {

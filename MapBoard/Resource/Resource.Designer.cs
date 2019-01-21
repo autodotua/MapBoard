@@ -61,6 +61,15 @@ namespace MapBoard.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Info 的本地化字符串。
+        /// </summary>
+        internal static string DisplayFieldName {
+            get {
+                return ResourceManager.GetString("DisplayFieldName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 {
         ///  &quot;labelExpressionInfo&quot;: {
         ///    &quot;expression&quot;: &quot;$feature.Info&quot;
@@ -299,6 +308,15 @@ namespace MapBoard.Resource {
             get {
                 object obj = ResourceManager.GetObject("PolylineShx", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Date 的本地化字符串。
+        /// </summary>
+        internal static string TimeExtentFieldName {
+            get {
+                return ResourceManager.GetString("TimeExtentFieldName", resourceCulture);
             }
         }
     }

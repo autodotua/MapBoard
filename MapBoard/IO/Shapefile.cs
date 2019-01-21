@@ -1,4 +1,5 @@
-﻿using FzLib.Basic;
+﻿using Esri.ArcGISRuntime.Data;
+using FzLib.Basic;
 using FzLib.Control.Dialog;
 using MapBoard.Style;
 using System;
@@ -58,24 +59,48 @@ namespace MapBoard.IO
         /// 导入shapefile文件
         /// </summary>
         /// <param name="path"></param>
-        public static void Import(string path)
+        public async static Task Import(string path)
         {
-            string[] files = GetExistShapefiles(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)).ToArray();
-            string[] existFiles = Directory.EnumerateFiles(Config.DataPath).Select(p => Path.GetFileName(p)).ToArray();
+            //string[] files = GetExistShapefiles(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)).ToArray();
+            //string[] existFiles = Directory.EnumerateFiles(Config.DataPath).Select(p => Path.GetFileName(p)).ToArray();
 
-            foreach (var file in files)
+            //foreach (var file in files)
+            //{
+            //    if (existFiles.Contains(Path.GetFileName(file)))
+            //    {
+            //        throw new Exception("文件名" + Path.GetFileName(file) + "与现有文件冲突");
+            //    }
+            //}
+
+            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
+            await table.LoadAsync();
+            bool info = table.Fields.Any(p => p.Name == Resource.Resource.DisplayFieldName && p.FieldType == FieldType.Text);
+            bool date = table.Fields.Any(p => p.Name == Resource.Resource.TimeExtentFieldName && p.FieldType == FieldType.Date);
+            FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
+
+            StyleInfo style = StyleHelper.CreateStyle(table.GeometryType);
+            foreach (var feature in features)
             {
-                if (existFiles.Contains(Path.GetFileName(file)))
+                Feature newFeature = style.Table.CreateFeature();
+                newFeature.Geometry = feature.Geometry;
+                if (info)
                 {
-                    throw new Exception("文件名" + Path.GetFileName(file) + "与现有文件冲突");
+                    newFeature.Attributes[Resource.Resource.DisplayFieldName] = feature.Attributes[Resource.Resource.DisplayFieldName];
                 }
-            }
+                if (date)
+                {
+                    newFeature.Attributes[Resource.Resource.TimeExtentFieldName] = feature.Attributes[Resource.Resource.TimeExtentFieldName];
+                }
 
-            foreach (var file in files)
-            {
-                File.Move(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
+                await style.Table.AddFeatureAsync(newFeature);
             }
-            StyleHelper.AddStyle(Path.GetFileNameWithoutExtension(path));
+            style.UpdateFeatureCount();
+
+            //foreach (var file in files)
+            //{
+            //    File.Move(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
+            //}
+            //StyleHelper.AddStyle(Path.GetFileNameWithoutExtension(path));
         }
     }
 }

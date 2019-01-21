@@ -1,4 +1,6 @@
-﻿<Window x:Class="MapBoard.UI.MainWindow"
+﻿<extension:ExtendedWindow
+    xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
+    x:Class="MapBoard.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -25,23 +27,27 @@
 
     <Grid x:Name="grdMain">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <map:ArcMapView x:Name="arcMap" Grid.Column="1" />
-        <bar:EditOperationBar x:Name="editBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-            <bar:EditOperationBar.RenderTransform>
-                <TranslateTransform Y="-24"/>
-            </bar:EditOperationBar.RenderTransform>
-        </bar:EditOperationBar>
-        <bar:SelectOperationBar x:Name="selectBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-            <bar:SelectOperationBar.RenderTransform>
-                <TranslateTransform Y="-24"/>
-            </bar:SelectOperationBar.RenderTransform>
-        </bar:SelectOperationBar>
+        <Grid Grid.Column="2" x:Name="grdCenter" Margin="-4,0,0,0">
+            <map:ArcMapView x:Name="arcMap"  />
+            <bar:EditOperationBar x:Name="editBar"  HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                <bar:EditOperationBar.RenderTransform>
+                    <TranslateTransform Y="-24"/>
+                </bar:EditOperationBar.RenderTransform>
+            </bar:EditOperationBar>
+            <bar:SelectOperationBar x:Name="selectBar" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                <bar:SelectOperationBar.RenderTransform>
+                    <TranslateTransform Y="-24"/>
+                </bar:SelectOperationBar.RenderTransform>
+            </bar:SelectOperationBar>
+        </Grid>
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Width="4" Background="Transparent" />
 
-        <win10style:ModernExpander MaxWidth="240" Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
+        <win10style:ModernExpander MaxWidth="240" Grid.Column="3" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
             <stylesettingpanel:SettingPanel/>
         </win10style:ModernExpander>
 
@@ -61,7 +67,6 @@
                     <RowDefinition Height="16"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-
                 <StackPanel>
                     <stylesettingpanel:StyleSettingPanel x:Name="styleSetting"/>
                     <TextBlock/>
@@ -80,7 +85,7 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <flatstyle:ListView x:Name="lvw" SelectionMode="Single" ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
+                    <flatstyle:ListView x:Name="lvw" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Single" ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
                         <flatstyle:ListView.View>
                             <GridView>
                                 <GridViewColumn Header="显示">
@@ -98,7 +103,15 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                
+
+                                <GridViewColumn Header="时间">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding TimeExtentEnable}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
                                 <GridViewColumn Header="标题" Width="100" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="类型" DisplayMemberBinding="{Binding TypeDescription}"/>
                                 <GridViewColumn Header="图形数量" DisplayMemberBinding="{Binding FeatureCount}"/>
@@ -259,4 +272,4 @@
 
         <progress:LoadingOverlay x:Name="loading" RingSize="0.1" Grid.ColumnSpan="100" Grid.RowSpan="100" />
     </Grid>
-</Window>
+</extension:ExtendedWindow>

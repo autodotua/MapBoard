@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Data;
+﻿using Esri.ArcGISRuntime;
+using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
@@ -12,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace MapBoard.UI.Map
 {
-  public  class LayerHelper
+    public class LayerHelper
     {
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async void AddLayer(StyleInfo style)
+        public async Task<bool> AddLayer(StyleInfo style)
         {
             try
             {
@@ -28,12 +29,26 @@ namespace MapBoard.UI.Map
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Mapview.Map.OperationalLayers.Add(layer);
                 StyleHelper.ApplyStyles(style);
-                style.LoadLayerVisibility();
+                await style.LayerComplete();
+                return true;
             }
             catch (Exception ex)
             {
-                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "加载失败";
+                try
+                {
+                    style.Table.Close();
+                    if (style.Layer != null)
+                    {
+                        Mapview.Map.OperationalLayers.Remove(style.Layer);
+                    }
+                }
+                catch
+                {
+
+                }
+                string error = (string.IsNullOrWhiteSpace(style.Name) ? "样式" : "样式" + style.Name) + "加载失败";
                 TaskDialog.ShowException(ex, error);
+                return false;
             }
         }
 
@@ -61,7 +76,7 @@ namespace MapBoard.UI.Map
 
         public async Task LoadLayers()
         {
-           Mapview. Selection.SelectedFeatures.Clear();
+            Mapview.Selection.SelectedFeatures.Clear();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
 
             if (!Directory.Exists(Config.DataPath))

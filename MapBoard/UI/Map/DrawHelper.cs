@@ -36,6 +36,7 @@ namespace MapBoard.UI.Map
         }
 
         public string Label { get; set; }
+        public DateTimeOffset? Date { get; set; }
         private ArcMapView Mapview => ArcMapView.Instance;
 
         public SketchCreationMode? LastDrawMode { get; private set; }
@@ -109,7 +110,16 @@ namespace MapBoard.UI.Map
                 feature.Geometry = geometry;
                 if (!string.IsNullOrWhiteSpace(Label))
                 {
-                    feature.Attributes["Info"] = Label;
+                    feature.Attributes[Resource.Resource.DisplayFieldName] = Label;
+                }
+                if (Date.HasValue)
+                {
+                    Date = new DateTimeOffset(Date.Value.DateTime,TimeSpan.Zero);
+                    feature.Attributes[Resource.Resource.TimeExtentFieldName] = Date.Value.UtcDateTime;
+                }
+                else
+                {
+                    feature.Attributes[Resource.Resource.TimeExtentFieldName] = null;
                 }
                 await table.AddFeatureAsync(feature);
 

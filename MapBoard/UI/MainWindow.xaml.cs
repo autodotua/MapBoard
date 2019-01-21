@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
+using FzLib.Control.Extension;
 using FzLib.Geography.Coordinate;
 using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
@@ -41,7 +42,7 @@ namespace MapBoard.UI
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : ExtendedWindow
     {
         #region 字段和属性
         public Config Config => Config.Instance;
@@ -94,7 +95,7 @@ namespace MapBoard.UI
               };
 
 
-            var lvwHelper = new FzLib.Control.Extension.ListViewHelper<StyleInfo>(lvw);
+            var lvwHelper = new ListViewHelper<StyleInfo>(lvw);
             lvwHelper.EnableDragAndDropItem();
             //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
         }
@@ -216,12 +217,12 @@ namespace MapBoard.UI
 
         }
 
-        private void ImportBtnClick(object sender, RoutedEventArgs e)
+        private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
             loading.Show();
-            if (IOHelper.Import())
+            if (await IOHelper.Import())
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Styles)));
+                Notify(nameof(Styles));
             }
             loading.Hide();
         }
@@ -320,6 +321,7 @@ namespace MapBoard.UI
                 ("新建副本",StyleHelper. CreateCopy,true),
                 ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
                 ("坐标转换",CoordinateTransformate,true),
+                ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.Resource.TimeExtentFieldName)),
                 ("导出",  ExportSingle,true),
 
            };
@@ -367,7 +369,15 @@ namespace MapBoard.UI
                     loading.Hide();
                 }
             }
+            void SetTimeExtent()
+            {
+                DateRangeDialog dialog = new DateRangeDialog(style);
+                if (dialog.ShowDialog() == true)
+                {
+                    StyleHelper.SetTimeExtent(style);
+                }
 
+            }
         }
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)

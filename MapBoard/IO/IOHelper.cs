@@ -21,7 +21,7 @@ namespace MapBoard.IO
         /// 显示对话框导入
         /// </summary>
         /// <returns>返回是否需要通知刷新Style</returns>
-        public static bool Import()
+        public async static Task<bool> Import()
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
@@ -55,7 +55,7 @@ namespace MapBoard.IO
                             return false;
 
                         case ".shp":
-                            Shapefile.Import(path);
+                            await Shapefile.Import(path);
                             return false;
 
                         default:

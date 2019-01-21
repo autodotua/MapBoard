@@ -9,7 +9,7 @@
              xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
              xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
              mc:Ignorable="d" >
-    <StackPanel Orientation="Vertical" MinWidth="280">
+    <StackPanel Orientation="Vertical" >
         <TextBox Margin="4,8" BorderThickness="0" Text="{Binding StyleName}" FontSize="16" HorizontalContentAlignment="Center"/>
 
         <GroupBox Header="渲染器">
