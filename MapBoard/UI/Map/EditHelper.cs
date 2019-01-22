@@ -16,9 +16,6 @@ namespace MapBoard.UI.Map
 {
     public class EditHelper
     {
-        public EditHelper()
-        {
-        }
 
         public ArcMapView Mapview => ArcMapView.Instance;
 

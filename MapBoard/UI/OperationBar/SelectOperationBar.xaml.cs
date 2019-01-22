@@ -2,8 +2,8 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using MapBoard.Style;
-using MapBoard.UI.Map;
 using MapBoard.UI.Dialog;
+using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 
 namespace MapBoard.UI.OperationBar
 {
@@ -44,7 +45,7 @@ namespace MapBoard.UI.OperationBar
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
-            else if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//面
+            else if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon)//面
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 double area = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
@@ -116,7 +117,45 @@ namespace MapBoard.UI.OperationBar
 
         private async void CancelButtonClick(object sender, RoutedEventArgs e)
         {
-          await  MapView.Selection.StopFrameSelect(false);
+            await MapView.Selection.StopFrameSelect(false);
+        }
+
+        private void BtnMenuClick(object sender, RoutedEventArgs e)
+        {
+            ContextMenu menu = new ContextMenu();
+
+            var style = StyleCollection.Instance.Selected;
+
+            List<(string header, Action action, bool visiable)> menus = new List<(string header, Action action, bool visiable)>()
+           {
+                ("合并",Union,(style.Type==GeometryType.Polygon || style.Type==GeometryType.Polyline)&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
+           };
+
+
+
+            foreach (var (header, action, visiable) in menus)
+            {
+                if (visiable)
+                {
+                    MenuItem item = new MenuItem() { Header = header };
+                    item.Click += (p1, p2) => action();
+                    menu.Items.Add(item);
+                }
+            }
+
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.PlacementTarget = sender as UIElement;
+            menu.IsOpen = true;
+
+            void Union()
+            {
+                Geometry geometry = GeometryEngine.Union(ArcMapView.Instance.Selection.SelectedFeatures.Select(p => p.Geometry));
+                var firstFeature = ArcMapView.Instance.Selection.SelectedFeatures[0];
+                firstFeature.Geometry = geometry;
+                style.Table.UpdateFeatureAsync(firstFeature);
+                style.Table.DeleteFeaturesAsync(ArcMapView.Instance.Selection.SelectedFeatures.Where(p => p != firstFeature));
+                ArcMapView.Instance.Selection.ClearSelection();
+            }
         }
     }
 }

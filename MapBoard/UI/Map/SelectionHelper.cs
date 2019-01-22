@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using MapBoard.Style;
 using MapBoard.UI;
+using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
