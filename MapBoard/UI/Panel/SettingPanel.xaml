@@ -9,27 +9,35 @@
              mc:Ignorable="d" 
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="450" d:DesignWidth="800">
-    <StackPanel>
-        <flat:CheckBox Content="底图为GCJ02坐标系" IsChecked="{Binding Config.GCJ02}"/>
-        <FrameworkElement Height="12"/>
-        <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
-        <FrameworkElement Height="12"/>
-                    <TextBlock Text="瓦片地图地址："/>
-        <FrameworkElement Height="4"/>
+    <Grid>
+        <StackPanel>
+            <flat:CheckBox Content="底图为GCJ02坐标系" IsChecked="{Binding Config.GCJ02}"/>
+            <FrameworkElement Height="12"/>
+            <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
+            <FrameworkElement Height="12"/>
+            <TextBlock Text="瓦片地图地址："/>
+            <FrameworkElement Height="4"/>
 
-        <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
-        <FrameworkElement Height="4"/>
+            <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
+            <FrameworkElement Height="4"/>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-            <flat:Button Content="默认" Click="ResetUrlButtonClick"/>
-            <FrameworkElement Width="8"/>
-            <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                <flat:Button Content="默认" Click="ResetUrlButtonClick"/>
+                <FrameworkElement Width="8"/>
+                <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
 
+            </StackPanel>
+            <FrameworkElement Height="12"/>
+            <TextBlock>转为面时缓冲区大小（米）：</TextBlock>
+            <FrameworkElement Height="4"/>
+            <flat:TextBox Text="{Binding Config.StaticWidth}"/>
+            <FrameworkElement Height="12"/>
         </StackPanel>
-        <FrameworkElement Height="12"/>
-        <TextBlock>转为面时缓冲区大小（米）：</TextBlock>
-        <FrameworkElement Height="4"/>
-        <flat:TextBox Text="{Binding Config.StaticWidth}"/>
-        <FrameworkElement Height="12"/>
-    </StackPanel>
+
+        <StackPanel VerticalAlignment="Bottom">
+            <flat:Button Content="GPX工具箱" Click="Button_Click"/>
+            <FrameworkElement Height="12"/>
+            <flat:Button Content="瓦片下载拼接" Click="Button_Click_1"/>
+        </StackPanel>
+    </Grid>
 </extension:ExtendedUserControl>

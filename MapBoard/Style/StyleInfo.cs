@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using MapBoard.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -119,7 +120,7 @@ namespace MapBoard.Style
                     if (value != TimeExtent.IsEnable)
                     {
                         TimeExtent.IsEnable = value;
-                        this.SetTimeExtent();
+                        this.SetTimeExtent().Wait();
                     }
                 }
 

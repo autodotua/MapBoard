@@ -9,6 +9,7 @@ using FzLib.Basic;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.IO;
+using MapBoard.Common;
 using MapBoard.Resource;
 using MapBoard.Style;
 using MapBoard.UI.Map;
@@ -188,8 +189,8 @@ namespace MapBoard.UI.Map
                         case BoardTaskManager.BoardTask.Edit:
                             await Edit.StopEditing();
                             break;
-                        case BoardTaskManager.BoardTask.Ready when Drawing.LastDrawMode.HasValue:
-                            await Drawing.StartDraw(Drawing.LastDrawMode.Value);
+                        case BoardTaskManager.BoardTask.Ready when Drawing.CurrentDrawMode.HasValue:
+                            await Drawing.StartDraw(Drawing.CurrentDrawMode.Value);
                             break;
                     }
                     break;
@@ -212,51 +213,10 @@ namespace MapBoard.UI.Map
                     SketchEditor.RedoCommand.Execute(null);
                     break;
             }
-            //if (e.Key == Key.Delete)
-            //{
-            //    await Editing.DeleteSelectedFeatures();
-            //}
-            //else if (e.Key == Key.Enter)
-            //{
-            //    if (BoardTaskManager.CurrentTask == BoardTaskManager.OperationTask.Draw)
-            //    {
-            //        await Drawing.StopDraw();
-            //    }
-            //    else if (Drawing.LastDrawMode.HasValue)
-            //    {
-            //        await Drawing.StartDraw(Drawing.LastDrawMode.Value);
-            //    }
-            //}
-            //else if (e.Key == Key.Escape)
-            //{
-            //    if (BoardTaskManager.CurrentTask == BoardTaskManager.OperationTask.Draw)
-            //    {
-            //        await Drawing.StopDraw(false);
-            //    }
-            //    else if (Selection.SelectedFeatures.Count > 0)
-            //    {
-            //        Selection.ClearSelection();
-            //    }
-            //}
-            //else if (SketchEditor.UndoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
-            //{
-            //    SketchEditor.UndoCommand.Execute(null);
-            //}
-            //else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
-            //{
-            //    SketchEditor.RedoCommand.Execute(null);
-            //}
-            //else if (SketchEditor.RedoCommand.CanExecute(null) && e.Key == Key.Z && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-            //{
-            //    SketchEditor.RedoCommand.Execute(null);
-            //}
+     
         }
 
 
-
-
-        private WebTiledLayer baseLayer;
-        bool loaded = false;
         /// <summary>
         /// 地图控件加载完成事件
         /// </summary>
@@ -279,43 +239,7 @@ namespace MapBoard.UI.Map
 
         public async Task LoadBasemap()
         {
-            if (!Config.Instance.Url.Contains("{x}") || !Config.Instance.Url.Contains("{y}") || !Config.Instance.Url.Contains("{z}"))
-            {
-                TaskDialog.ShowError("瓦片地址不包含足够的信息！");
-                return;
-            }
-
-            loaded = true;
-            try
-            {
-                Basemap basemap = new Basemap();
-                foreach (var url in Config.Instance.Url.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    baseLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-                    basemap.BaseLayers.Add(baseLayer);
-                }
-
-                await basemap.LoadAsync();
-                if (Map != null)
-                {
-                    Map.Basemap = basemap;
-                }
-                else
-                {
-                    Map = new Esri.ArcGISRuntime.Mapping.Map(basemap);
-                }
-
-                await Map.LoadAsync();
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.ShowException(ex, "加载地图失败");
-                return;
-            }
-
+            await this.LoadBaseMapsAsync();
         }
-
-
-
     }
 }

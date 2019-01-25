@@ -1,4 +1,5 @@
 ﻿using FzLib.Control.Extension;
+using MapBoard.Common;
 using MapBoard.UI.Map;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace MapBoard.UI.Panel
             InitializeComponent();
         }
 
-        public Config Config => Config.Instance;
+        public Config Config => MapBoard.Common.Config.Instance;
 
         private async void ApplyUrlButtonClick(object sender, RoutedEventArgs e)
         {
@@ -36,9 +37,20 @@ namespace MapBoard.UI.Panel
 
         private async void ResetUrlButtonClick(object sender, RoutedEventArgs e)
         {
-            Config.Url= "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}";
+            Config.Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}";
             Notify(nameof(Config));
             await ArcMapView.Instance.LoadBasemap();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new MapBoard.GpxToolbox.MainWindow();
+            win.Show();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            new MapBoard.TileDownloaderSplicer.MainWindow().Show();
         }
     }
 }

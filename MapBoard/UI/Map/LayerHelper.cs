@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
+using MapBoard.Common;
 using MapBoard.Style;
 using System;
 using System.Collections.Generic;

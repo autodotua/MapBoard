@@ -5,6 +5,17 @@ VisualStudioVersion = 15.0.28010.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard", "MapBoard\MapBoard.csproj", "{F45A258E-E3BE-4870-A1FB-F725EF30A852}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.GpxToolbox", "GpxToolbox\MapBoard.GpxToolbox.csproj", "{AD7451A5-7743-42E9-A988-2C292F629F76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.TileDownloaderSplicer", "TileDownloaderSplicer\MapBoard.TileDownloaderSplicer.csproj", "{14FDA3A2-C424-485F-93BB-F8D649682460}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案文件", "解决方案文件", "{79FD6694-47B7-4E50-8DE5-2C4F25780295}"
+	ProjectSection(SolutionItems) = preProject
+		日志.txt = 日志.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Common", "MapBoard.Common\MapBoard.Common.csproj", "{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +26,18 @@ Global
 		{F45A258E-E3BE-4870-A1FB-F725EF30A852}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F45A258E-E3BE-4870-A1FB-F725EF30A852}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F45A258E-E3BE-4870-A1FB-F725EF30A852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD7451A5-7743-42E9-A988-2C292F629F76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD7451A5-7743-42E9-A988-2C292F629F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD7451A5-7743-42E9-A988-2C292F629F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD7451A5-7743-42E9-A988-2C292F629F76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14FDA3A2-C424-485F-93BB-F8D649682460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14FDA3A2-C424-485F-93BB-F8D649682460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14FDA3A2-C424-485F-93BB-F8D649682460}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14FDA3A2-C424-485F-93BB-F8D649682460}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

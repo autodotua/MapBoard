@@ -1,0 +1,208 @@
+﻿<common:MainWindowBase x:Class="MapBoard.GpxToolbox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MapBoard.GpxToolbox"
+        xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+                xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
+        xmlns:win10style="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
+        mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded"
+        Title="MainWindow" Height="700" Width="1000">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="0"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <win10style:ModernExpander Header="Gpx信息">
+                <Grid DataContext="{Binding GpxInfoModel}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                    </Grid.RowDefinitions>
+
+                    <flatstyle:TextBox Grid.ColumnSpan="3" Text="{Binding Name}" FontSize="18" TextAlignment="Center"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="2" Text="时间："/>
+                    <flatstyle:TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Time}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="4" Text="描述："/>
+                    <flatstyle:TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Description}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="6" Text="作者："/>
+                    <flatstyle:TextBox Grid.Row="6" Grid.Column="2" Text="{Binding Author}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="8" Text="Url："/>
+                    <flatstyle:TextBox Grid.Row="8" Grid.Column="2" Text="{Binding Url}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="10" Text="Url名称："/>
+                    <flatstyle:TextBox Grid.Row="10" Grid.Column="2" Text="{Binding UrlName}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="12" Text="关键词："/>
+                    <flatstyle:TextBox Grid.Row="12" Grid.Column="2" Text="{Binding KeyWords}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="14" Text="距离："/>
+                    <flatstyle:TextBox Grid.Row="14" Grid.Column="2" Text="{Binding Distance}"/>
+
+                </Grid>
+            </win10style:ModernExpander>
+            <win10style:ModernExpander IsExpanded="True" Header="Gpx轨迹信息" Grid.Row="2">
+                <Grid DataContext="{Binding GpxTrackInfoModel}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <flatstyle:TextBox Grid.ColumnSpan="3" Text="{Binding Name}" FontSize="16" TextAlignment="Center"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="2" Text="描述："/>
+                    <flatstyle:TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Description}"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="4" Text="实际距离："/>
+                    <flatstyle:TextBox x:Name="txtDistance" Grid.Row="4" Grid.Column="2" IsReadOnly="True"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="6" Text="全程均速："/>
+                    <flatstyle:TextBox x:Name="txtSpeed" Grid.Row="6" Grid.Column="2" IsReadOnly="True"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="8" Text="全程时间："/>
+                    <flatstyle:TextBox  Grid.Row="8" Grid.Column="2" Text="{Binding TotalTime, Mode=OneWay}" IsReadOnly="True"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="10" Text="运动均速："/>
+                    <flatstyle:TextBox x:Name="txtMovingSpeed" Grid.Row="10" Grid.Column="2" IsReadOnly="True"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="12" Text="运动时间："/>
+                    <flatstyle:TextBox x:Name="txtMovingTime" Grid.Row="12" Grid.Column="2" IsReadOnly="True"/>
+                    <TextBlock HorizontalAlignment="Right" Grid.Row="14" Text="最大速度："/>
+                    <flatstyle:TextBox x:Name="txtMaxSpeed" Grid.Row="14" Grid.Column="2" IsReadOnly="True"/>
+                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="100" SelectionChanged="pointsGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" LoadingRow="AzureDataGrid_LoadingRow" UnloadingRow="AzureDataGrid_UnloadingRow" Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="计算速度" Click="MenuItem_Click" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Resources>
+                            <local:SpeedValueConverter x:Key="speedConverter"/>
+                        </DataGrid.Resources>
+                        <win10style:AzureDataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Time}" Header="时间"/>
+                            <DataGridTextColumn Binding="{Binding Latitude}" Header="纬度"/>
+                            <DataGridTextColumn Binding="{Binding Longitude}" Header="经度"/>
+                            <DataGridTextColumn Binding="{Binding Altitude}" Header="海拔"/>
+                            <DataGridTextColumn Binding="{Binding Speed, Converter={StaticResource speedConverter}}" Header="速度" IsReadOnly="True"/>
+                        </win10style:AzureDataGrid.Columns>
+                    </win10style:AzureDataGrid>
+
+                </Grid>
+            </win10style:ModernExpander>
+            <StackPanel Grid.Row="4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <flatstyle:Button Content="识别" Click="Button_Click"/>
+                    <flatstyle:Button Grid.Column="2" Content="速度" Click="Button_Click_1"/>
+                </Grid>
+            </StackPanel>
+            <!--<Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <flatstyle:Button Content="↑" Grid.Column="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp"/>
+                <flatstyle:Button Content="←" Grid.Row="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp"/>
+                <flatstyle:Button Content="↓" Grid.Column="1" Grid.Row="2" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp"/>
+                <flatstyle:Button Content="→" Grid.Column="2" Grid.Row="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp"/>
+
+                <TextBlock Grid.Column="4">横向偏移：</TextBlock>
+                <TextBlock Grid.Column="4" Grid.Row="2">纵向偏移：</TextBlock>
+                <flatstyle:TextBox Grid.Column="6" Text="{Binding OffsetNorth,ElementName=map}"/>
+                <flatstyle:TextBox Grid.Column="6" Grid.Row="2" Text="{Binding OffsetEast,ElementName=map}"/>
+            </Grid>-->
+
+
+        </Grid>
+        <!--<local:MapView x:Name="map" Grid.Column="2"/>-->
+        <Grid Grid.Column="2" x:Name="grd">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <local:ArcMapView x:Name="arcMap" PointSelected="arcMap_PointSelected" GpxLoaded="arcMap_GpxLoaded"/>
+            <Canvas x:Name="speedChart" MouseLeave="speedChart_MouseLeave" Grid.Row="2" ClipToBounds="True"/>
+            <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
+        </Grid>
+        <win10style:ModernExpander Header="文件" Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <flatstyle:ListView x:Name="lvwFiles" SelectionMode="Single" SelectionChanged="lvwFiles_SelectionChanged" ItemPreviewDeleteKeyDown="ListView_ItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrajectoryInfo.Trajectories}}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding FileName}" />
+                        <GridViewColumn Header="轨迹索引" DisplayMemberBinding="{Binding TrackIndex}" />
+                    </GridView>
+                </ListView.View>
+            </flatstyle:ListView>
+        </win10style:ModernExpander>
+        <win10style:ModernExpander  Header="日志" ExpandDirection="Up" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <flatstyle:ListBox Height="96" ItemsSource="{Binding  Source={x:Static local:Log.ErrorLogs}}"/>
+        </win10style:ModernExpander>
+    </Grid>
+</common:MainWindowBase>

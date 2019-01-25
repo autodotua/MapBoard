@@ -1,4 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Mapping;
+using MapBoard.Common;
 using MapBoard.UI;
 using MapBoard.UI.Map;
 using Newtonsoft.Json;
@@ -101,7 +102,7 @@ namespace MapBoard.Style
 
                     if (value.Count > 0)
                     {
-                        value.ForEachAsync(async p =>await ArcMapView.Instance.Layer.AddLayer(p));
+                        value.ForEachAsync(async p => await ArcMapView.Instance.Layer.AddLayer(p));
                     }
                 }
             }
@@ -141,7 +142,10 @@ namespace MapBoard.Style
         public override void Save()
         {
             SelectedIndex = Styles.IndexOf(Selected);
-            base.Save();
+            if (new FileInfo(Path).Directory.Exists)
+            {
+                base.Save();
+            }
         }
         public int SelectedIndex { get; set; }
         [JsonIgnore]

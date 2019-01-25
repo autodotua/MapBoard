@@ -19,12 +19,12 @@ namespace MapBoard.UI.OperationBar
             Height = 24;
             Background = new SolidColorBrush(Color.FromRgb(0x2d, 0x2d, 0x30));
 
-             ani = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
+            ani = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
             ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             Storyboard.SetTarget(ani, this);
             Storyboard.SetTargetProperty(ani, new PropertyPath("(Grid.RenderTransform).(TranslateTransform.Y)"));
-             storyboard = new Storyboard() { Children = { ani } };
-            storyboard.Begin();
+            storyboard = new Storyboard() { Children = { ani } };
+            //storyboard.Begin();
         }
         DoubleAnimation ani;
         Storyboard storyboard;

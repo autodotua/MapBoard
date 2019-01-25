@@ -1,4 +1,5 @@
-﻿<extension:ExtendedWindow
+﻿<common:MainWindowBase
+    xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
     x:Class="MapBoard.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -272,4 +273,4 @@
 
         <progress:LoadingOverlay x:Name="loading" RingSize="0.1" Grid.ColumnSpan="100" Grid.RowSpan="100" />
     </Grid>
-</extension:ExtendedWindow>
+</common:MainWindowBase>

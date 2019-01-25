@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Symbology;
 using FzLib.Control.Dialog;
 using FzLib.IO;
+using MapBoard.Common;
 using MapBoard.IO;
 using MapBoard.Resource;
 using MapBoard.UI;

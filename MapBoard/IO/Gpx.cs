@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Geography.Format;
 using FzLib.IO;
+using MapBoard.Common;
 using MapBoard.Style;
 using System;
 using System.Collections.Generic;

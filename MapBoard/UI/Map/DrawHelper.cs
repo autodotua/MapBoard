@@ -9,6 +9,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
+using MapBoard.Common;
 using MapBoard.Style;
 using MapBoard.UI;
 using System;
@@ -39,7 +40,7 @@ namespace MapBoard.UI.Map
         public DateTimeOffset? Date { get; set; }
         private ArcMapView Mapview => ArcMapView.Instance;
 
-        public SketchCreationMode? LastDrawMode { get; private set; }
+        public SketchCreationMode? CurrentDrawMode { get;  set; }
 
         /// <summary>
         /// 开始绘制
@@ -48,7 +49,6 @@ namespace MapBoard.UI.Map
         /// <returns></returns>
         public async Task StartDraw(SketchCreationMode mode)
         {
-            LastDrawMode = mode;
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
             await Mapview.SketchEditor.StartAsync(mode);
         }

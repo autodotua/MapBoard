@@ -7,6 +7,7 @@ using FzLib.Control.Extension;
 using FzLib.Geography.Coordinate;
 using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
+using MapBoard.Common;
 using MapBoard.IO;
 using MapBoard.Style;
 using MapBoard.UI.Dialog;
@@ -42,7 +43,7 @@ namespace MapBoard.UI
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : ExtendedWindow
+    public partial class MainWindow : MainWindowBase
     {
         #region 字段和属性
         public Config Config => Config.Instance;
@@ -67,8 +68,6 @@ namespace MapBoard.UI
             { "多点",SketchCreationMode.Multipoint},
         };
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         #endregion
 
         #region 窗体启动与关闭
@@ -78,7 +77,7 @@ namespace MapBoard.UI
         public MainWindow()
         {
             InitializeComponent();
-            SnakeBar.DefaultWindow = this;
+            //SnakeBar.DefaultWindow = this;
             RegistEvents();
 
         }
@@ -107,6 +106,7 @@ namespace MapBoard.UI
             }
 
             Config.Save();
+            StyleCollection.Instance.Save();
 
         }
 
@@ -155,17 +155,25 @@ namespace MapBoard.UI
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
+                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Multipoint;
                             break;
                         case GeometryType.Point:
                             splBtnPoint.Visibility = Visibility.Visible;
+                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Point;
                             break;
                         case GeometryType.Polyline:
                             splBtnPolyline.Visibility = Visibility.Visible;
+                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polyline;
                             break;
                         case GeometryType.Polygon:
                             splBtnPolygon.Visibility = Visibility.Visible;
+                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polygon;
                             break;
                     }
+                }
+                else
+                {
+                    arcMap.Drawing.CurrentDrawMode = null;
                 }
             }
         }
@@ -189,6 +197,7 @@ namespace MapBoard.UI
             }
 
             var mode = ButtonsMode[text];
+            arcMap.Drawing.CurrentDrawMode = mode;
             await arcMap.Drawing.StartDraw(mode);
         }
 
@@ -276,7 +285,6 @@ namespace MapBoard.UI
 
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
-
 
             JudgeControlsEnable();
             styleSetting.ResetStyleSettingUI();
@@ -374,7 +382,7 @@ namespace MapBoard.UI
                 DateRangeDialog dialog = new DateRangeDialog(style);
                 if (dialog.ShowDialog() == true)
                 {
-                    StyleHelper.SetTimeExtent(style);
+                    StyleHelper.SetTimeExtent(style).Wait();
                 }
 
             }
