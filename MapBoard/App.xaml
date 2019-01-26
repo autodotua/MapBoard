@@ -1,7 +1,7 @@
-﻿<Application x:Class="MapBoard.App"
+﻿<Application x:Class="MapBoard.Main.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MapBoard"
+             xmlns:local="clr-namespace:MapBoard.Main"
              Startup="Application_Startup"
              StartupUri="UI/MainWindow.xaml">
     <Application.Resources>

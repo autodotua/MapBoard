@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Common;
-using MapBoard.UI;
-using MapBoard.UI.Map;
+using MapBoard.Main.UI;
+using MapBoard.Main.UI.Map;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static FzLib.Basic.Collection.Loop;
 
-namespace MapBoard.Style
+namespace MapBoard.Main.Style
 {
     public class StyleCollection : FzLib.DataStorage.Serialization.JsonSerializationBase
     {

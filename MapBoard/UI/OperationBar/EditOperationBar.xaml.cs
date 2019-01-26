@@ -1,4 +1,4 @@
-﻿using MapBoard.UI.Map;
+﻿using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MapBoard.UI.OperationBar
+namespace MapBoard.Main.UI.OperationBar
 {
     /// <summary>
     /// EditOperationBar.xaml 的交互逻辑

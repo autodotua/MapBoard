@@ -1,9 +1,10 @@
 ﻿using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
 using MapBoard.Common;
-using MapBoard.IO;
-using MapBoard.Style;
-using MapBoard.UI.Map;
+using MapBoard.Common.Resource;
+using MapBoard.Main.IO;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI.Map;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
 
-namespace MapBoard.UI.Panel
+namespace MapBoard.Main.UI.Panel
 {
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
@@ -177,7 +178,7 @@ namespace MapBoard.UI.Panel
         private JObject labelJson;
         private void SetLabelFromUI()
         {
-            labelJson = JObject.Parse(Resource.Resource.LabelJson);
+            labelJson = JObject.Parse(Resource. LabelJson);
             SetLabelJsonValue<byte>("symbol.haloColor", GetRgbaFromColor(LabelLineColor));
             SetLabelJsonValue<byte>("symbol.color", GetRgbaFromColor(LabelFillColor));
             SetLabelJsonValue("symbol.font.size", LabelFontSize);

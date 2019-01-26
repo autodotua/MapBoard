@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MapBoard.Resource {
+namespace MapBoard.Common.Resource {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace MapBoard.Resource {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resource {
+    public class Resource {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace MapBoard.Resource {
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MapBoard.Resource.Resource", typeof(Resource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MapBoard.Common.Resource.Resource", typeof(Resource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace MapBoard.Resource {
         ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找类似 Info 的本地化字符串。
         /// </summary>
-        internal static string DisplayFieldName {
+        public static string DisplayFieldName {
             get {
                 return ResourceManager.GetString("DisplayFieldName", resourceCulture);
             }
@@ -105,7 +105,7 @@ namespace MapBoard.Resource {
         ///    },
         ///    &quot;haloCol [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
-        internal static string LabelJson {
+        public static string LabelJson {
             get {
                 return ResourceManager.GetString("LabelJson", resourceCulture);
             }
@@ -114,7 +114,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] MultipointCpg {
+        public static byte[] MultipointCpg {
             get {
                 object obj = ResourceManager.GetObject("MultipointCpg", resourceCulture);
                 return ((byte[])(obj));
@@ -124,7 +124,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] MultipointDbf {
+        public static byte[] MultipointDbf {
             get {
                 object obj = ResourceManager.GetObject("MultipointDbf", resourceCulture);
                 return ((byte[])(obj));
@@ -134,7 +134,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] MultipointPrj {
+        public static byte[] MultipointPrj {
             get {
                 object obj = ResourceManager.GetObject("MultipointPrj", resourceCulture);
                 return ((byte[])(obj));
@@ -144,7 +144,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] MultipointShp {
+        public static byte[] MultipointShp {
             get {
                 object obj = ResourceManager.GetObject("MultipointShp", resourceCulture);
                 return ((byte[])(obj));
@@ -154,7 +154,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] MultipointShx {
+        public static byte[] MultipointShx {
             get {
                 object obj = ResourceManager.GetObject("MultipointShx", resourceCulture);
                 return ((byte[])(obj));
@@ -164,7 +164,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PointCpg {
+        public static byte[] PointCpg {
             get {
                 object obj = ResourceManager.GetObject("PointCpg", resourceCulture);
                 return ((byte[])(obj));
@@ -174,7 +174,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PointDbf {
+        public static byte[] PointDbf {
             get {
                 object obj = ResourceManager.GetObject("PointDbf", resourceCulture);
                 return ((byte[])(obj));
@@ -184,7 +184,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PointPrj {
+        public static byte[] PointPrj {
             get {
                 object obj = ResourceManager.GetObject("PointPrj", resourceCulture);
                 return ((byte[])(obj));
@@ -194,7 +194,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PointShp {
+        public static byte[] PointShp {
             get {
                 object obj = ResourceManager.GetObject("PointShp", resourceCulture);
                 return ((byte[])(obj));
@@ -204,7 +204,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PointShx {
+        public static byte[] PointShx {
             get {
                 object obj = ResourceManager.GetObject("PointShx", resourceCulture);
                 return ((byte[])(obj));
@@ -214,7 +214,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolygonCpg {
+        public static byte[] PolygonCpg {
             get {
                 object obj = ResourceManager.GetObject("PolygonCpg", resourceCulture);
                 return ((byte[])(obj));
@@ -224,7 +224,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolygonDbf {
+        public static byte[] PolygonDbf {
             get {
                 object obj = ResourceManager.GetObject("PolygonDbf", resourceCulture);
                 return ((byte[])(obj));
@@ -234,7 +234,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolygonPrj {
+        public static byte[] PolygonPrj {
             get {
                 object obj = ResourceManager.GetObject("PolygonPrj", resourceCulture);
                 return ((byte[])(obj));
@@ -244,7 +244,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolygonShp {
+        public static byte[] PolygonShp {
             get {
                 object obj = ResourceManager.GetObject("PolygonShp", resourceCulture);
                 return ((byte[])(obj));
@@ -254,7 +254,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolygonShx {
+        public static byte[] PolygonShx {
             get {
                 object obj = ResourceManager.GetObject("PolygonShx", resourceCulture);
                 return ((byte[])(obj));
@@ -264,7 +264,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolylineCpg {
+        public static byte[] PolylineCpg {
             get {
                 object obj = ResourceManager.GetObject("PolylineCpg", resourceCulture);
                 return ((byte[])(obj));
@@ -274,7 +274,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolylineDbf {
+        public static byte[] PolylineDbf {
             get {
                 object obj = ResourceManager.GetObject("PolylineDbf", resourceCulture);
                 return ((byte[])(obj));
@@ -284,7 +284,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolylinePrj {
+        public static byte[] PolylinePrj {
             get {
                 object obj = ResourceManager.GetObject("PolylinePrj", resourceCulture);
                 return ((byte[])(obj));
@@ -294,7 +294,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolylineShp {
+        public static byte[] PolylineShp {
             get {
                 object obj = ResourceManager.GetObject("PolylineShp", resourceCulture);
                 return ((byte[])(obj));
@@ -304,7 +304,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] PolylineShx {
+        public static byte[] PolylineShx {
             get {
                 object obj = ResourceManager.GetObject("PolylineShx", resourceCulture);
                 return ((byte[])(obj));
@@ -314,7 +314,7 @@ namespace MapBoard.Resource {
         /// <summary>
         ///   查找类似 Date 的本地化字符串。
         /// </summary>
-        internal static string TimeExtentFieldName {
+        public static string TimeExtentFieldName {
             get {
                 return ResourceManager.GetString("TimeExtentFieldName", resourceCulture);
             }

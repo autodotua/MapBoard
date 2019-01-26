@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ctrl="clr-namespace:MapBoard.UI.SplitButton"
+                    xmlns:ctrl="clr-namespace:MapBoard.Main.UI.SplitButton"
                     xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Luna">
 
 

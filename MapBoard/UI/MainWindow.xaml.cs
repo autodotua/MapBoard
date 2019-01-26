@@ -8,9 +8,10 @@ using FzLib.Geography.Coordinate;
 using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
 using MapBoard.Common;
-using MapBoard.IO;
-using MapBoard.Style;
-using MapBoard.UI.Dialog;
+using MapBoard.Common.Resource;
+using MapBoard.Main.IO;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -38,7 +39,7 @@ using System.Windows.Media.Imaging;
 using static FzLib.Basic.Collection.Loop;
 using static FzLib.Geography.Analysis.SpeedAnalysis;
 
-namespace MapBoard.UI
+namespace MapBoard.Main.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -79,7 +80,6 @@ namespace MapBoard.UI
             InitializeComponent();
             //SnakeBar.DefaultWindow = this;
             RegistEvents();
-
         }
 
         private void RegistEvents()
@@ -314,6 +314,8 @@ namespace MapBoard.UI
 
             }
 
+            //new GpxToolbox.MainWindow().Show();
+            //Close();
         }
 
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -329,7 +331,7 @@ namespace MapBoard.UI
                 ("新建副本",StyleHelper. CreateCopy,true),
                 ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
                 ("坐标转换",CoordinateTransformate,true),
-                ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.Resource.TimeExtentFieldName)),
+                ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
                 ("导出",  ExportSingle,true),
 
            };

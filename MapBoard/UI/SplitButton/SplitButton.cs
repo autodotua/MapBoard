@@ -12,7 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MapBoard.UI.SplitButton
+namespace MapBoard.Main.UI.SplitButton
 {
     [TemplatePart(Name = "PART_Button", Type = typeof(ButtonBase))]
     public class SplitButton : ToggleButton
@@ -36,7 +36,7 @@ namespace MapBoard.UI.SplitButton
             var binding = new Binding("DropDownContextMenu.IsOpen") { Source = this };
             SetBinding(IsCheckedProperty, binding);
 
-            Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MapBoard;component/UI/SplitButton/SplitButtonStyle.xaml") });
+            Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MapBoard.Main;component/UI/SplitButton/SplitButtonStyle.xaml") });
 
         }
 

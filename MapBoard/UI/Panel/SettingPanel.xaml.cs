@@ -1,6 +1,6 @@
 ﻿using FzLib.Control.Extension;
 using MapBoard.Common;
-using MapBoard.UI.Map;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MapBoard.UI.Panel
+namespace MapBoard.Main.UI.Panel
 {
     /// <summary>
     /// SettingPanel.xaml 的交互逻辑

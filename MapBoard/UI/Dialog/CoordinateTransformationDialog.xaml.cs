@@ -1,4 +1,4 @@
-﻿using MapBoard.Style;
+﻿using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +12,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static MapBoard.IO.CoordinateTransformation;
+using static MapBoard.Main.IO.CoordinateTransformation;
 
-namespace MapBoard.UI.Dialog
+namespace MapBoard.Main.UI.Dialog
 {
     /// <summary>
     /// CoordinateTransformationDialog.xaml 的交互逻辑

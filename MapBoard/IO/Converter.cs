@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     public static class Converter
     {

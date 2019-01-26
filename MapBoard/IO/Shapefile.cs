@@ -1,7 +1,8 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
-using MapBoard.Style;
+using MapBoard.Common.Resource;
+using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     public static class Shapefile
     {
@@ -74,8 +75,8 @@ namespace MapBoard.IO
 
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            bool info = table.Fields.Any(p => p.Name == Resource.Resource.DisplayFieldName && p.FieldType == FieldType.Text);
-            bool date = table.Fields.Any(p => p.Name == Resource.Resource.TimeExtentFieldName && p.FieldType == FieldType.Date);
+            bool info = table.Fields.Any(p => p.Name == Resource.DisplayFieldName && p.FieldType == FieldType.Text);
+            bool date = table.Fields.Any(p => p.Name == Resource.TimeExtentFieldName && p.FieldType == FieldType.Date);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
             StyleInfo style = StyleHelper.CreateStyle(table.GeometryType);
@@ -85,11 +86,11 @@ namespace MapBoard.IO
                 newFeature.Geometry = feature.Geometry;
                 if (info)
                 {
-                    newFeature.Attributes[Resource.Resource.DisplayFieldName] = feature.Attributes[Resource.Resource.DisplayFieldName];
+                    newFeature.Attributes[Resource.DisplayFieldName] = feature.Attributes[Resource.DisplayFieldName];
                 }
                 if (date)
                 {
-                    newFeature.Attributes[Resource.Resource.TimeExtentFieldName] = feature.Attributes[Resource.Resource.TimeExtentFieldName];
+                    newFeature.Attributes[Resource.TimeExtentFieldName] = feature.Attributes[Resource.TimeExtentFieldName];
                 }
 
                 await style.Table.AddFeatureAsync(newFeature);

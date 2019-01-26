@@ -5,11 +5,11 @@ using Esri.ArcGISRuntime.Symbology;
 using FzLib.Control.Dialog;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.IO;
-using MapBoard.Resource;
-using MapBoard.UI;
-using MapBoard.UI.Dialog;
-using MapBoard.UI.Map;
+using MapBoard.Common.Resource;
+using MapBoard.Main.IO;
+using MapBoard.Main.UI;
+using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,9 +17,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using static MapBoard.IO.CoordinateTransformation;
+using static MapBoard.Main.IO.CoordinateTransformation;
 
-namespace MapBoard.Style
+namespace MapBoard.Main.Style
 {
     public static class StyleHelper
     {
@@ -215,7 +215,7 @@ namespace MapBoard.Style
             {
                 return;
             }
-            if(!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.Resource.TimeExtentFieldName))
+            if(!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
             {
                 throw new Exception("shapefile没有指定的日期属性");
             }
@@ -230,7 +230,7 @@ namespace MapBoard.Style
 
                 foreach (var feature in features)
                 {
-                    if (feature.Attributes[Resource.Resource.TimeExtentFieldName] is DateTimeOffset date)
+                    if (feature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
                     {
                         if (date > style.TimeExtent.From && date < style.TimeExtent.To)
                         {

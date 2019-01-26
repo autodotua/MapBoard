@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.UI;
 using FzLib.Control.Dialog;
-using MapBoard.UI;
-using MapBoard.UI.Map;
+using MapBoard.Main.UI;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     public static class IOHelper
     {

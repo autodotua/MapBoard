@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace MapBoard.UI.OperationBar
+namespace MapBoard.Main.UI.OperationBar
 {
     public abstract class OperationBarBase : Grid, INotifyPropertyChanged
     {

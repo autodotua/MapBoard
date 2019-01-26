@@ -29,6 +29,7 @@ namespace MapBoard.GpxToolbox
         }
 
         List<BorderInfo> borderInfos = new List<BorderInfo>();
+        BorderInfo border;
 
         public Canvas Sketchpad { get; set; }
 
@@ -38,9 +39,9 @@ namespace MapBoard.GpxToolbox
             Sketchpad.Children.Add(element);
         }
         #region 指示性元素
-        ToolTip tip;
-        Line mouseLine;
-        TwoWayDictionary<Ellipse, TPoint> PointItems = new TwoWayDictionary<Ellipse, TPoint>();
+        private ToolTip tip;
+        private Line mouseLine;
+        private TwoWayDictionary<Ellipse, TPoint> PointItems = new TwoWayDictionary<Ellipse, TPoint>();
         #endregion
 
 
@@ -117,20 +118,29 @@ namespace MapBoard.GpxToolbox
             {
                 return;
             }
-            Ellipse point = displayedPointsX.First().Key;
-            double min = double.MaxValue;
-            foreach (var p in displayedPointsX)
-            {
-                if (min != (min = Math.Min(Math.Abs(p.Value - e.GetPosition(Sketchpad).X), min)))
-                {
-                    point = p.Key;
-                }
-            }
+            double x = e.GetPosition(Sketchpad).X;
+            Ellipse point = GetPoint(x);
             SelectPoint(point);
             RefreshMouseLine(point);
             RefreshToolTip(point);
             MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, PointItems[point]));
         }
+
+        private Ellipse GetPoint(double x)
+        {
+            Ellipse point = displayedPointsX.First().Key;
+            double min = double.MaxValue;
+            foreach (var p in displayedPointsX)
+            {
+                if (min != (min = Math.Min(Math.Abs(p.Value - x), min)))
+                {
+                    point = p.Key;
+                }
+            }
+
+            return point;
+        }
+
         public void SelectPoint(TPoint point)
         {
             SelectPoint(PointItems.GetKey(point));
@@ -151,12 +161,18 @@ namespace MapBoard.GpxToolbox
             point.Width = point.Height = PointSize * 2;
             lastSelectedPoint = point;
         }
+        public void SetLine(DateTime time)
+        {
+            double percent = 1.0 * (time - border.minBorderTime).Ticks / (border.maxBorderTime - border.minBorderTime).Ticks;
 
-        private void RefreshMouseLine(Ellipse point)
+            double width = percent * Sketchpad.ActualWidth;
+            RefreshMouseLine(width);
+            RefreshToolTip(GetPoint(width));
+        }
+        private void RefreshMouseLine(double x)
         {
             if (MouseLineEnable)
             {
-                double x = displayedPointsX[point];
                 if (mouseLine == null)
                 {
                     mouseLine = new Line()
@@ -171,6 +187,12 @@ namespace MapBoard.GpxToolbox
                 mouseLine.X1 = mouseLine.X2 = x;
 
             }
+        }
+        private void RefreshMouseLine(Ellipse point)
+        {
+            double x = displayedPointsX[point];
+
+            RefreshMouseLine(x);
         }
 
         private void RefreshToolTip(Ellipse point)
@@ -319,7 +341,7 @@ namespace MapBoard.GpxToolbox
         }
         public int DrawBorder<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
         {
-            BorderInfo border = new BorderInfo();
+            border = new BorderInfo();
             borderInfos.Add(border);
             border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
             border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));

@@ -1,6 +1,6 @@
 ﻿using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
-using MapBoard.Style;
+using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MapBoard.UI.Dialog
+namespace MapBoard.Main.UI.Dialog
 {
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑

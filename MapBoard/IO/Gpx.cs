@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.Geography.Format;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.Style;
+using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     public static class Gpx
     {

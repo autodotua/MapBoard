@@ -1,9 +1,9 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
-using MapBoard.Style;
-using MapBoard.UI.Dialog;
-using MapBoard.UI.Map;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +21,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 
-namespace MapBoard.UI.OperationBar
+namespace MapBoard.Main.UI.OperationBar
 {
     /// <summary>
     /// EditOperationBar.xaml 的交互逻辑

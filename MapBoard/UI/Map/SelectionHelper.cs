@@ -2,9 +2,9 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
-using MapBoard.Style;
-using MapBoard.UI;
-using MapBoard.UI.Map;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace MapBoard.UI.Map
+namespace MapBoard.Main.UI.Map
 {
     public class SelectionHelper
     {

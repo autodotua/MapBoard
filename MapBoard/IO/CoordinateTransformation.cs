@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     /// <summary>
     /// 坐标转换类

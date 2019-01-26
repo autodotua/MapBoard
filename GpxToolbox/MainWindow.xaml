@@ -9,8 +9,8 @@
         xmlns:win10style="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Closing="Window_Closing"
-        Loaded="Window_Loaded"
+        Closing="WindowClosing"
+        Loaded="WindowLoaded"
         Title="MainWindow" Height="700" Width="1000">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -20,7 +20,7 @@
             <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid >
+        <Grid x:Name="grdLeft" IsEnabled="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="8"/>
@@ -28,9 +28,9 @@
                 <RowDefinition Height="8"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
+
             <win10style:ModernExpander Header="Gpx信息">
-                <Grid DataContext="{Binding GpxInfoModel}">
+                <Grid DataContext="{Binding Gpx}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="8"/>
@@ -78,7 +78,7 @@
                 </Grid>
             </win10style:ModernExpander>
             <win10style:ModernExpander IsExpanded="True" Header="Gpx轨迹信息" Grid.Row="2">
-                <Grid DataContext="{Binding GpxTrackInfoModel}">
+                <Grid DataContext="{Binding GpxTrack}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="8"/>
@@ -119,10 +119,10 @@
                     <flatstyle:TextBox x:Name="txtMovingTime" Grid.Row="12" Grid.Column="2" IsReadOnly="True"/>
                     <TextBlock HorizontalAlignment="Right" Grid.Row="14" Text="最大速度："/>
                     <flatstyle:TextBox x:Name="txtMaxSpeed" Grid.Row="14" Grid.Column="2" IsReadOnly="True"/>
-                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="100" SelectionChanged="pointsGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" LoadingRow="AzureDataGrid_LoadingRow" UnloadingRow="AzureDataGrid_UnloadingRow" Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
+                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="100" SelectionChanged="PointsGridSelectionChanged" VerticalScrollBarVisibility="Visible"  Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="计算速度" Click="MenuItem_Click" />
+                                <MenuItem Header="计算速度" Click="SpeedMenuItemClick" />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Resources>
@@ -145,9 +145,13 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <flatstyle:Button Content="识别" Click="Button_Click"/>
-                    <flatstyle:Button Grid.Column="2" Content="速度" Click="Button_Click_1"/>
+
+                    <flatstyle:Button Content="识别点" Click="IdentifyButtonClick"/>
+                    <flatstyle:Button Grid.Column="2" Content="识别轨迹" Click="IdentifyAllButtonClick"/>
+                    <flatstyle:Button Grid.Column="4" Content="速度" Click="SpeedButtonClick"/>
                 </Grid>
             </StackPanel>
             <!--<Grid >
@@ -187,12 +191,12 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <local:ArcMapView x:Name="arcMap" PointSelected="arcMap_PointSelected" GpxLoaded="arcMap_GpxLoaded"/>
-            <Canvas x:Name="speedChart" MouseLeave="speedChart_MouseLeave" Grid.Row="2" ClipToBounds="True"/>
+            <local:ArcMapView x:Name="arcMap" PointSelected="MapPointSelected" GpxLoaded="GpxLoaded"/>
+            <Canvas x:Name="speedChart" MouseLeave="SpeedChartMouseLeave" Grid.Row="2" ClipToBounds="True"/>
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
         </Grid>
         <win10style:ModernExpander Header="文件" Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <flatstyle:ListView x:Name="lvwFiles" SelectionMode="Single" SelectionChanged="lvwFiles_SelectionChanged" ItemPreviewDeleteKeyDown="ListView_ItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrajectoryInfo.Trajectories}}">
+            <flatstyle:ListView x:Name="lvwFiles" SelectionMode="Extended" SelectionChanged="FileSelectionChanged" ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrajectoryInfo.Trajectories}}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding FileName}" />

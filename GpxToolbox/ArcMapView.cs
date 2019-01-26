@@ -4,7 +4,9 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
+using FzLib.Control.Dialog;
 using FzLib.Extension;
+using FzLib.Geography.Coordinate.Convert;
 using FzLib.Geography.Format;
 using MapBoard.Common;
 using System;
@@ -18,7 +20,7 @@ using System.Windows;
 using System.Windows.Input;
 using static MapBoard.GpxToolbox.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
-using MapPoint = FzLib.Geography.Coordinate.GeoPoint;
+using GeoPoint = FzLib.Geography.Coordinate.GeoPoint;
 
 namespace MapBoard.GpxToolbox
 {
@@ -30,13 +32,14 @@ namespace MapBoard.GpxToolbox
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
         }
-        public bool EnableSelection { get; set; } = true;
+        public SelectionModes SelectionMode { get; set; } = SelectionModes.None;
         private void MapViewTapped(object sender, GeoViewInputEventArgs e)
         {
-            if (!EnableSelection)
+            if (SelectionMode == SelectionModes.None)
             {
                 return;
             }
+            PointSelecting?.Invoke(this, new EventArgs());
             var clickPoint = ScreenToLocation(e.Position);
             double tolerance = 5;
             double mapTolerance = tolerance * UnitsPerPixel;
@@ -45,19 +48,35 @@ namespace MapBoard.GpxToolbox
 
 
             ClearSelection();
-            var overlay = SelectedTrajectorie.Overlay;
-
-            foreach (var graphic in overlay.Graphics)
+            IEnumerable<TrajectoryInfo> trajectories = null;
+            if (SelectionMode == SelectionModes.SelectedLayer)
             {
-                var newPoint = GeometryEngine.Project(graphic.Geometry, SpatialReference);
-                if (GeometryEngine.Within(newPoint, envelope))
-                {
-                    SelectPoint(graphic);
-                    PointSelected?.Invoke(this, new PointSelectedEventArgs(mapPointAndGraphics.GetKey(graphic)));
-                    return;
-                }
-
+                trajectories = new TrajectoryInfo[] { SelectedTrajectorie };
             }
+            else
+            {
+                trajectories = TrajectoryInfo.Trajectories;
+            }
+            foreach (var trajectory in trajectories)
+            {
+                var overlay = trajectory.Overlay;
+
+                foreach (var graphic in overlay.Graphics)
+                {
+                    var newPoint = GeometryEngine.Project(graphic.Geometry, SpatialReference);
+                    if (GeometryEngine.Within(newPoint, envelope))
+                    {
+                        //SelectPoint(graphic);
+                        PointSelected?.Invoke(this, new PointSelectedEventArgs(trajectory, mapPointAndGraphics.GetKey(graphic)));
+                        return;
+                    }
+
+                }
+            }
+
+            PointSelected?.Invoke(this, new PointSelectedEventArgs(null, null));
+
+            SnakeBar.Show("没有识别到任何点") ;
         }
 
 
@@ -67,35 +86,42 @@ namespace MapBoard.GpxToolbox
             foreach (var file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+                try
                 {
-                    Log.ErrorLogs.Add(file + "是目录不是文件");
-                }
-                else if (!fileInfo.Exists)
-                {
-                    Log.ErrorLogs.Add(file + "不存在");
-                }
-                else if (fileInfo.Length > 10 * 1024 * 1024)
-                {
-                    Log.ErrorLogs.Add("gpx文件" + file + "大于1MB，跳过");
-                }
-                else if (fileInfo.Extension != ".gpx")
-                {
-                    Log.ErrorLogs.Add("文件" + file + "不是gpx");
-                    continue;
-                }
-                else
-                {
-                    var exist = TrajectoryInfo.Trajectories.FirstOrDefault(p => p.FilePath == file);
-                    if (exist != null)
+                    if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
                     {
-                        GraphicsOverlays.Remove(exist.Overlay);
-                        TrajectoryInfo.Trajectories.Remove(exist);
+                        Log.ErrorLogs.Add(file + "是目录不是文件");
+                    }
+                    else if (!fileInfo.Exists)
+                    {
+                        Log.ErrorLogs.Add(file + "不存在");
+                    }
+                    else if (fileInfo.Length > 10 * 1024 * 1024)
+                    {
+                        Log.ErrorLogs.Add("gpx文件" + file + "大于1MB，跳过");
+                    }
+                    else if (fileInfo.Extension != ".gpx")
+                    {
+                        Log.ErrorLogs.Add("文件" + file + "不是gpx");
+                        continue;
                     }
                     else
                     {
-                        loadedTrajectories.AddRange(await LoadGpx(file, false));
+                        var exist = TrajectoryInfo.Trajectories.FirstOrDefault(p => p.FilePath == file);
+                        if (exist != null)
+                        {
+                            GraphicsOverlays.Remove(exist.Overlay);
+                            TrajectoryInfo.Trajectories.Remove(exist);
+                        }
+                        else
+                        {
+                            loadedTrajectories.AddRange(await LoadGpx(file, false));
+                        }
                     }
+                }
+                catch(Exception ex)
+                {
+                    Log.ErrorLogs.Add(ex.Message);
                 }
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrajectories.ToArray()));
@@ -110,13 +136,14 @@ namespace MapBoard.GpxToolbox
                 //}
             }
         }
+        public TwoWayDictionary<GeoPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<GeoPoint, Graphic>();
 
-        private Dictionary<MapPoint, TrajectoryInfo> pointToTrajectoryInfo = new Dictionary<MapPoint, TrajectoryInfo>();
-        public void SelectPoint(MapPoint point)
+        private Dictionary<GeoPoint, TrajectoryInfo> pointToTrajectoryInfo = new Dictionary<GeoPoint, TrajectoryInfo>();
+        public void SelectPoint(GeoPoint point)
         {
             SelectPoint(mapPointAndGraphics[point]);
         }
-        public void SelectPointTo(MapPoint point)
+        public void SelectPointTo(GeoPoint point)
         {
             bool isOk = false;
             foreach (var p in pointToTrajectoryInfo[point].Gpx.Tracks[pointToTrajectoryInfo[point].TrackIndex].Points)
@@ -196,7 +223,13 @@ namespace MapBoard.GpxToolbox
                     foreach (var item in trajectoryInfo.Track.Points)
                     {
                         pointToTrajectoryInfo.Add(item, trajectoryInfo);
-                        var newP = FzLib.Geography.Coordinate.Convert.GeoCoordConverter.WGS84ToGCJ02(new MapPoint(item.Latitude, item.Longitude));
+                        GeoPoint newP = item;
+                        if (Config.Instance.GCJ02)
+                        {
+                            var gcj02 = GeoCoordConverter.WGS84ToGCJ02(newP);
+                            newP.Latitude = gcj02.Latitude;
+                            newP.Longitude = gcj02.Longitude;
+                        }
 
                         ArcMapPoint point = new ArcMapPoint(newP.Longitude, newP.Latitude, SpatialReferences.Wgs84);
                         Graphic graphic = new Graphic(point);
@@ -220,7 +253,6 @@ namespace MapBoard.GpxToolbox
             return loadedTrajectories;
 
         }
-        public TwoWayDictionary<MapPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<MapPoint, Graphic>();
         private TrajectoryInfo selectedTrajectorie = null;
 
         public TrajectoryInfo SelectedTrajectorie
@@ -240,15 +272,18 @@ namespace MapBoard.GpxToolbox
         public event PropertyChangedEventHandler PropertyChanged;
         public class PointSelectedEventArgs : EventArgs
         {
-            public PointSelectedEventArgs(MapPoint point)
+            public PointSelectedEventArgs(TrajectoryInfo trajectory, GeoPoint point)
             {
+                Trajectory = trajectory;
                 Point = point;
             }
 
-            public MapPoint Point { get; private set; }
+            public TrajectoryInfo Trajectory { get; private set; }
+            public GeoPoint Point { get; private set; }
         }
         public delegate void PointSelectedEventHandler(object sender, PointSelectedEventArgs e);
         public event PointSelectedEventHandler PointSelected;
+        public event EventHandler PointSelecting;
 
         public class GpxLoadedEventArgs : EventArgs
         {
@@ -261,6 +296,13 @@ namespace MapBoard.GpxToolbox
         }
         public delegate void GpxLoadedEventHandler(object sender, GpxLoadedEventArgs e);
         public event GpxLoadedEventHandler GpxLoaded;
+
+        public enum SelectionModes
+        {
+            None,
+            SelectedLayer,
+            AllLayers,
+        }
     }
 
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard
+namespace MapBoard.Main
 {
     public static class BoardTaskManager
     {

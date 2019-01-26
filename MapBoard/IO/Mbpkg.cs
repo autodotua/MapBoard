@@ -2,8 +2,8 @@
 using FzLib.Control.Dialog;
 using FzLib.Program;
 using MapBoard.Common;
-using MapBoard.Style;
-using MapBoard.UI;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.IO
+namespace MapBoard.Main.IO
 {
     public static class Mbpkg
     {

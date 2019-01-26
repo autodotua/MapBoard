@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Style
+namespace MapBoard.Main.Style
 {
     public class TimeExtentInfo
     {

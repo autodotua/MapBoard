@@ -1,4 +1,6 @@
-﻿using Esri.ArcGISRuntime.UI;
+﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.UI;
 using FzLib.Control.Dialog;
 using FzLib.DataAnalysis;
 using FzLib.Extension;
@@ -29,47 +31,50 @@ namespace MapBoard.GpxToolbox
     public partial class MainWindow : MainWindowBase
     {
         private const string TrajectoriesFilePath = "Trajectories.ini";
-        TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint> timeChartHelper;
+        private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint> chartHelper;
         public MainWindow()
         {
             InitializeComponent();
-            timeChartHelper = new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>(speedChart);
-
-            timeChartHelper.XAxisLineValueConverter = p => p.CenterTime;
-            timeChartHelper.XAxisPointValueConverter = p => p.CenterTime;
-            timeChartHelper.XAxisPolygonValueConverter = p => p.Time.Value;
-
-            timeChartHelper.YAxisPointValueConverter = p => p.Speed;
-            timeChartHelper.YAxisLineValueConverter = p => p.Speed;
-            timeChartHelper.YAxisPolygonValueConverter = p => p.Altitude ?? double.NaN;
-            timeChartHelper.XLabelFormat = p => p.ToString("HH:mm");
-            timeChartHelper.YLabelFormat = p => p + "m/s";
-            timeChartHelper.ToolTipConverter = p =>
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine(p.CenterTime.ToString("HH:mm:ss"));
-                    sb.Append(p.Speed.ToString("0.00")).AppendLine("m/s");
-                    sb.Append((3.6 * p.Speed).ToString("0.00")).AppendLine("km/h");
-                    if (p.RelatedPoints[0].Altitude.HasValue && p.RelatedPoints[1].Altitude.HasValue)
-                    {
-                        sb.Append(((p.RelatedPoints[0].Altitude + p.RelatedPoints[1].Altitude) / 2).Value.ToString("0.00") + "m");
-                    }
-                    return sb.ToString();
-                };
-
-            timeChartHelper.MouseOverPoint += (p1, p2) =>
-              {
-                  //arcMap.ClearSelection();
-                  arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
-              };
-            timeChartHelper.LinePointEnbale = p => p.Speed > 0.2;
+            InitializeChart();
 
             //TaskDialog.DefaultOwner = this;
         }
 
+        private void InitializeChart()
+        {
+            chartHelper = new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>(speedChart);
 
+            chartHelper.XAxisLineValueConverter = p => p.CenterTime;
+            chartHelper.XAxisPointValueConverter = p => p.CenterTime;
+            chartHelper.XAxisPolygonValueConverter = p => p.Time.Value;
 
-        private  void StartOffset(bool north, double value)
+            chartHelper.YAxisPointValueConverter = p => p.Speed;
+            chartHelper.YAxisLineValueConverter = p => p.Speed;
+            chartHelper.YAxisPolygonValueConverter = p => p.Altitude ?? double.NaN;
+            chartHelper.XLabelFormat = p => p.ToString("HH:mm");
+            chartHelper.YLabelFormat = p => p + "m/s";
+            chartHelper.ToolTipConverter = p =>
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(p.CenterTime.ToString("HH:mm:ss"));
+                sb.Append(p.Speed.ToString("0.00")).AppendLine("m/s");
+                sb.Append((3.6 * p.Speed).ToString("0.00")).AppendLine("km/h");
+                if (p.RelatedPoints[0].Altitude.HasValue && p.RelatedPoints[1].Altitude.HasValue)
+                {
+                    sb.Append(((p.RelatedPoints[0].Altitude + p.RelatedPoints[1].Altitude) / 2).Value.ToString("0.00") + "m");
+                }
+                return sb.ToString();
+            };
+
+            chartHelper.MouseOverPoint += (p1, p2) =>
+            {
+                //arcMap.ClearSelection();
+                arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
+            };
+            chartHelper.LinePointEnbale = p => p.Speed > 0.2;
+        }
+
+        private void StartOffset(bool north, double value)
         {
             //stop = false;
             //while(!stop)
@@ -128,13 +133,13 @@ namespace MapBoard.GpxToolbox
             //map.LoadGpxs();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void WindowClosing(object sender, CancelEventArgs e)
         {
             File.WriteAllLines(TrajectoriesFilePath, TrajectoryInfo.Trajectories.Select(p => p.FilePath));
             // map.Dispose();
         }
 
-        private void ListView_ItemPreviewDeleteKeyDown(object sender, KeyEventArgs e)
+        private void ListViewItemPreviewDeleteKeyDown(object sender, KeyEventArgs e)
         {
             foreach (var item in lvwFiles.SelectedItems.Cast<TrajectoryInfo>().ToArray())
             {
@@ -143,7 +148,7 @@ namespace MapBoard.GpxToolbox
 
             }
         }
-        private void lvwFiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
             if (arcMap.SelectedTrajectorie != null)
@@ -155,41 +160,51 @@ namespace MapBoard.GpxToolbox
                 arcMap.SelectedTrajectorie = null;
                 return;
             }
-            //foreach (var g in item.Overlay.Graphics.Where(p => p.IsSelected))
-            //{
-            //    g.IsSelected = false;
-            //}
 
-            arcMap.SelectedTrajectorie = lvwFiles.SelectedItem as TrajectoryInfo;
+            if (lvwFiles.SelectedItems.Count > 1)
+            {
+                arcMap.SelectedTrajectorie = null;
+                Gpx = null;
+                GpxTrack = null;
+            }
+            else
+            {
+                arcMap.SelectedTrajectorie = lvwFiles.SelectedItem as TrajectoryInfo;
 
-            arcMap.SelectedTrajectorie.Overlay.Renderer = GetCurrentOverlayRenderer();
+                arcMap.SelectedTrajectorie.Overlay.Renderer = GetCurrentOverlayRenderer();
 
+                arcMap.SetViewpointGeometryAsync(arcMap.SelectedTrajectorie.Overlay.Extent);
+                UpdateChart();
 
+            }
 
-            arcMap.SetViewpointGeometryAsync(arcMap.SelectedTrajectorie.Overlay.Extent);
+        }
+
+        private void UpdateChart()
+        {
             var points = GetUsableSpeeds(arcMap.SelectedTrajectorie.Track.Points);
             var lines = GetFilteredSpeeds(arcMap.SelectedTrajectorie.Track.Points, 20, 5);
-            timeChartHelper.DrawAction = () =>
-              {
-                  timeChartHelper.Initialize();
-                  timeChartHelper.DrawBorder(points, true, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>.BorderSetting<SpeedInfo>()
-                  {
-                      XAxisBorderValueConverter = p => p.CenterTime,
-                      YAxisBorderValueConverter = p => p.Speed,
-                  });
-                  timeChartHelper.DrawBorder(arcMap.SelectedTrajectorie.Track.Points.TimeOrderedPoints.Where(p => p.Altitude.HasValue), false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>.BorderSetting<GeoPoint>()
-                  {
-                      XAxisBorderValueConverter = p => p.Time.Value,
-                      YAxisBorderValueConverter = p => p.Altitude.Value,
-                  });
-                  timeChartHelper.DrawPolygon(arcMap.SelectedTrajectorie.Track.Points, 1);
-                  timeChartHelper.DrawPoints(points, 0);
-                  timeChartHelper.DrawLines(lines, 0);
-              };
-            timeChartHelper.DrawAction();
+            chartHelper.DrawAction = () =>
+            {
+                chartHelper.Initialize();
+                chartHelper.DrawBorder(points, true, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>.BorderSetting<SpeedInfo>()
+                {
+                    XAxisBorderValueConverter = p => p.CenterTime,
+                    YAxisBorderValueConverter = p => p.Speed,
+                });
+                chartHelper.DrawBorder(arcMap.SelectedTrajectorie.Track.Points.TimeOrderedPoints.Where(p => p.Altitude.HasValue), false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GeoPoint>.BorderSetting<GeoPoint>()
+                {
+                    XAxisBorderValueConverter = p => p.Time.Value,
+                    YAxisBorderValueConverter = p => p.Altitude.Value,
+                });
+                chartHelper.DrawPolygon(arcMap.SelectedTrajectorie.Track.Points, 1);
+                chartHelper.DrawPoints(points, 0);
+                chartHelper.DrawLines(lines, 0);
+            };
+            chartHelper.DrawAction();
 
-            GpxInfoModel = arcMap.SelectedTrajectorie.Gpx;
-            GpxTrackInfoModel = arcMap.SelectedTrajectorie.Track;
+            Gpx = arcMap.SelectedTrajectorie.Gpx;
+            GpxTrack = arcMap.SelectedTrajectorie.Track;
 
             var speed = arcMap.SelectedTrajectorie.Track.AverageSpeed;
 
@@ -203,10 +218,9 @@ namespace MapBoard.GpxToolbox
 
             var maxSpeed = arcMap.SelectedTrajectorie.Track.GetMaxSpeed();
             txtMaxSpeed.Text = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
-
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             if (File.Exists(TrajectoriesFilePath))
             {
@@ -215,102 +229,96 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-        private void speedChart_MouseLeave(object sender, MouseEventArgs e)
+        private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
             arcMap.ClearSelection();
         }
 
-        private void arcMap_PointSelected(object sender, ArcMapView.PointSelectedEventArgs e)
+        private void MapPointSelected(object sender, ArcMapView.PointSelectedEventArgs e)
         {
-            if (Cursor == Cursors.Help)
+            if(e.Point==null)
+            {
+                return;
+            }
+            if (arcMap.SelectionMode == ArcMapView.SelectionModes.SelectedLayer)
             {
                 pointsGrid.SelectedItem = e.Point;
                 pointsGrid.ScrollIntoView(e.Point);
-                Cursor = Cursors.Arrow;
             }
+            else
+            {
+                lvwFiles.SelectedItem = e.Trajectory;
+                SnakeBar.Show("已跳转到轨迹：" + e.Trajectory.FileName);
+            }
+            arcMap.SelectionMode = ArcMapView.SelectionModes.None;
+            Cursor = Cursors.Arrow;
+            chartHelper.SetLine(e.Point.Time.Value);
         }
 
-        private void arcMap_GpxLoaded(object sender, ArcMapView.GpxLoadedEventArgs e)
+        private void GpxLoaded(object sender, ArcMapView.GpxLoadedEventArgs e)
         {
             if (e.Trajectories.Length > 0)
             {
                 lvwFiles.SelectedItem = e.Trajectories[e.Trajectories.Length - 1];
             }
         }
-        private GpxInfo gpxInfoModel;
 
-        public GpxInfo GpxInfoModel
+        private GpxInfo gpx;
+
+        public GpxInfo Gpx
         {
-            get => gpxInfoModel;
-            set => SetValueAndNotify(ref gpxInfoModel, value, nameof(GpxInfoModel));
+            get => gpx;
+            set => SetValueAndNotify(ref gpx, value, nameof(Gpx));
         }
-        private GpxTrackInfo gpxTrackInfoModel;
+        private GpxTrackInfo gpxTrack;
 
-        public GpxTrackInfo GpxTrackInfoModel
+        public GpxTrackInfo GpxTrack
         {
-            get => gpxTrackInfoModel;
-            set => SetValueAndNotify(ref gpxTrackInfoModel, value, nameof(GpxTrackInfoModel));
-        }
-
-        private void AzureDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
-        {
-            e.Row.Header = e.Row.GetIndex() + 1;
-        }
-
-        private void AzureDataGrid_UnloadingRow(object sender, DataGridRowEventArgs e)
-        {
-            AzureDataGrid_LoadingRow(sender, e);
-            if (pointsGrid.Items != null)
+            get => gpxTrack;
+            set
             {
-                for (int i = 0; i < pointsGrid.Items.Count; i++)
-                {
-                    try
-                    {
-                        if (pointsGrid.ItemContainerGenerator.ContainerFromIndex(i) is DataGridRow row)
-                        {
-                            row.Header = (i + 1).ToString();
-                        }
-                    }
-                    catch { }
-                }
+                SetValueAndNotify(ref gpxTrack, value, nameof(GpxTrack));
+                grdLeft.IsEnabled = value != null;
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void IdentifyButtonClick(object sender, RoutedEventArgs e)
         {
+            arcMap.SelectionMode = ArcMapView.SelectionModes.SelectedLayer;
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
         }
-
-        private void pointsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void IdentifyAllButtonClick(object sender, RoutedEventArgs e)
         {
-            if (pointsGrid.SelectedItem != null)
-            {
-                arcMap.SelectPointTo(pointsGrid.SelectedItem as GeoPoint);
-            }
+            arcMap.SelectionMode = ArcMapView.SelectionModes.AllLayers;
+            Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
+        }
+        private void PointsGridSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            arcMap.SelectPointTo(pointsGrid.SelectedItem as GeoPoint);
         }
 
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void SpeedMenuItemClick(object sender, RoutedEventArgs e)
         {
             if (InputBox.GetInput("请选择单边采样率：", out string result, null, "3", "[1-9]", false, this))
             {
                 if (int.TryParse(result, out int intResult))
                 {
-                    double speed = GpxTrackInfoModel.Points.GetSpeed(pointsGrid.SelectedItem as GeoPoint, intResult);
+                    double speed = GpxTrack.Points.GetSpeed(pointsGrid.SelectedItem as GeoPoint, intResult);
                     MessageBox.ShowPrompt("速度为：" + speed.ToString("0.00") + "m/s，" + (3.6 * speed).ToString("0.00") + "km/h");
                 }
             }
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void SpeedButtonClick(object sender, RoutedEventArgs e)
         {
             if (InputBox.GetInput("请选择单边采样率：", out string result, null, "3", "[1-9]", false, this))
             {
                 if (int.TryParse(result, out int intResult))
                 {
-                    foreach (var item in GpxTrackInfoModel.Points)
+                    foreach (var item in GpxTrack.Points)
                     {
-                        double speed = GpxTrackInfoModel.Points.GetSpeed(item as GeoPoint, intResult);
+                        double speed = GpxTrack.Points.GetSpeed(item as GeoPoint, intResult);
                         item.Speed = speed;
                     }
                 }
@@ -320,6 +328,8 @@ namespace MapBoard.GpxToolbox
             pointsGrid.ItemsSource = null;
             pointsGrid.ItemsSource = source;
         }
+
+
     }
 
     public class SpeedValueConverter : IValueConverter

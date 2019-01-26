@@ -1,13 +1,12 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using MapBoard.Common;
-using MapBoard.Resource;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MapBoard.Resource
+namespace MapBoard.Common.Resource
 {
     /// <summary>
     /// 空shapefile导出类

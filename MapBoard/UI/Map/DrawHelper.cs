@@ -10,8 +10,9 @@ using FzLib.Basic;
 using FzLib.Control.Dialog;
 using FzLib.Geography.Format;
 using MapBoard.Common;
-using MapBoard.Style;
-using MapBoard.UI;
+using MapBoard.Common.Resource;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI;
 using System;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 
-namespace MapBoard.UI.Map
+namespace MapBoard.Main.UI.Map
 {
     public class DrawHelper
     {
@@ -110,16 +111,16 @@ namespace MapBoard.UI.Map
                 feature.Geometry = geometry;
                 if (!string.IsNullOrWhiteSpace(Label))
                 {
-                    feature.Attributes[Resource.Resource.DisplayFieldName] = Label;
+                    feature.Attributes[Resource.DisplayFieldName] = Label;
                 }
                 if (Date.HasValue)
                 {
                     Date = new DateTimeOffset(Date.Value.DateTime,TimeSpan.Zero);
-                    feature.Attributes[Resource.Resource.TimeExtentFieldName] = Date.Value.UtcDateTime;
+                    feature.Attributes[Resource.TimeExtentFieldName] = Date.Value.UtcDateTime;
                 }
                 else
                 {
-                    feature.Attributes[Resource.Resource.TimeExtentFieldName] = null;
+                    feature.Attributes[Resource.TimeExtentFieldName] = null;
                 }
                 await table.AddFeatureAsync(feature);
 

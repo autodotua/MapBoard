@@ -10,9 +10,8 @@ using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.Resource;
-using MapBoard.Style;
-using MapBoard.UI.Map;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,7 +24,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace MapBoard.UI.Map
+namespace MapBoard.Main.UI.Map
 {
     public class ArcMapView : MapView, INotifyPropertyChanged
     {

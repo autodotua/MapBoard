@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Common;
+using MapBoard.Common.Resource;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static MapBoard.IO.CoordinateTransformation;
-using static MapBoard.Style.StyleHelper;
+using static MapBoard.Main.IO.CoordinateTransformation;
+using static MapBoard.Main.Style.StyleHelper;
 
-namespace MapBoard.Style
+namespace MapBoard.Main.Style
 {
     public class StyleInfo : FzLib.Extension.ExtendedINotifyPropertyChanged, ICloneable
     {
@@ -129,7 +130,7 @@ namespace MapBoard.Style
         }
 
 
-        public string LabelJson { get; set; } = Resource.Resource.LabelJson;
+        public string LabelJson { get; set; } =Resource.LabelJson;
 
 
         public void UpdateFeatureCount()

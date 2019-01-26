@@ -1,8 +1,9 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Control.Dialog;
-using MapBoard.Style;
-using MapBoard.UI;
+using MapBoard.Common.Resource;
+using MapBoard.Main.Style;
+using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace MapBoard.UI.Map
+namespace MapBoard.Main.UI.Map
 {
     public class EditHelper
     {
@@ -37,8 +38,8 @@ namespace MapBoard.UI.Map
             Mode = mode;
 
             editingFeature = Mapview.Selection.SelectedFeatures.First();
-            Mapview.Drawing.Label = editingFeature.Attributes[Resource.Resource.DisplayFieldName] as string;
-            if (editingFeature.Attributes[Resource.Resource.TimeExtentFieldName] is DateTimeOffset date)
+            Mapview.Drawing.Label = editingFeature.Attributes[Resource.DisplayFieldName] as string;
+            if (editingFeature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
             {
                 Mapview.Drawing.Date = date;
             }
