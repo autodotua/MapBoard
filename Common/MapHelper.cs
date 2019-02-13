@@ -11,6 +11,11 @@ namespace MapBoard.Common
 {
     public static class MapHelper
     {
+        /// <summary>
+        /// 为ArcMapView加载底图
+        /// </summary>
+        /// <param name="map"></param>
+        /// <returns></returns>
         public async static Task<bool> LoadBaseMapsAsync(this MapView map)
         {
             if (!Config.Instance.Url.Contains("{x}") || !Config.Instance.Url.Contains("{y}") || !Config.Instance.Url.Contains("{z}"))

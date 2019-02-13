@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案文件", "解�
 		日志.txt = 日志.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Common", "MapBoard.Common\MapBoard.Common.csproj", "{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Common", "Common\MapBoard.Common.csproj", "{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

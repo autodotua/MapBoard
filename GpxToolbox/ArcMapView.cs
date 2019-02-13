@@ -76,7 +76,7 @@ namespace MapBoard.GpxToolbox
 
             PointSelected?.Invoke(this, new PointSelectedEventArgs(null, null));
 
-            SnakeBar.Show("没有识别到任何点") ;
+            SnakeBar.Show("没有识别到任何" + (SelectionMode == SelectionModes.SelectedLayer ? "点" : "轨迹"));
         }
 
 
@@ -119,22 +119,12 @@ namespace MapBoard.GpxToolbox
                         }
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.ErrorLogs.Add(ex.Message);
                 }
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrajectories.ToArray()));
-
-            if (TrajectoryInfo.Trajectories.Count > 0)
-            {
-                //var overlay = TrajectoryInfo.Trajectories.Last().Overlay;
-
-                //if (overlay.Graphics.Count > 0)
-                //{
-                //    await SetViewpointGeometryAsync(overlay.Extent);
-                //}
-            }
         }
         public TwoWayDictionary<GeoPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<GeoPoint, Graphic>();
 
@@ -145,6 +135,11 @@ namespace MapBoard.GpxToolbox
         }
         public void SelectPointTo(GeoPoint point)
         {
+            if (point == null)
+            {
+                ClearSelection();
+                return;
+            }
             bool isOk = false;
             foreach (var p in pointToTrajectoryInfo[point].Gpx.Tracks[pointToTrajectoryInfo[point].TrackIndex].Points)
             {
@@ -154,6 +149,10 @@ namespace MapBoard.GpxToolbox
                 }
                 if (isOk)
                 {
+                    if (!mapPointAndGraphics.ContainsKey(p))
+                    {
+                        continue;
+                    }
                     if (mapPointAndGraphics[p].Symbol != null)
                     {
                         mapPointAndGraphics[p].Symbol = null;

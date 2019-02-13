@@ -216,7 +216,7 @@
       <Project>{ad7451a5-7743-42e9-a988-2c292f629f76}</Project>
       <Name>MapBoard.GpxToolbox</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MapBoard.Common\MapBoard.Common.csproj">
+    <ProjectReference Include="..\Common\MapBoard.Common.csproj">
       <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
       <Name>MapBoard.Common</Name>
     </ProjectReference>

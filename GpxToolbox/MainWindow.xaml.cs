@@ -107,32 +107,6 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-        private void Button_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            double value = Keyboard.Modifiers == ModifierKeys.Control ? 1 : 10;
-            switch ((sender as Button).Content as string)
-            {
-                case "↑":
-                    StartOffset(true, value);
-                    break;
-                case "↓":
-                    StartOffset(true, -value);
-                    break;
-                case "←":
-                    StartOffset(false, -value);
-                    break;
-                case "→":
-                    StartOffset(false, +value);
-                    break;
-            }
-        }
-
-        private void Button_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            // stop = true;
-            //map.LoadGpxs();
-        }
-
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             File.WriteAllLines(TrajectoriesFilePath, TrajectoryInfo.Trajectories.Select(p => p.FilePath));
@@ -236,7 +210,7 @@ namespace MapBoard.GpxToolbox
 
         private void MapPointSelected(object sender, ArcMapView.PointSelectedEventArgs e)
         {
-            if(e.Point==null)
+            if (e.Point == null)
             {
                 return;
             }
@@ -252,7 +226,6 @@ namespace MapBoard.GpxToolbox
             }
             arcMap.SelectionMode = ArcMapView.SelectionModes.None;
             Cursor = Cursors.Arrow;
-            chartHelper.SetLine(e.Point.Time.Value);
         }
 
         private void GpxLoaded(object sender, ArcMapView.GpxLoadedEventArgs e)
@@ -294,7 +267,17 @@ namespace MapBoard.GpxToolbox
         }
         private void PointsGridSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            arcMap.SelectPointTo(pointsGrid.SelectedItem as GeoPoint);
+            if (pointsGrid.SelectedItem is GeoPoint point && point.Time.HasValue && point.Altitude != 0 && point.Latitude != 0)
+            {
+
+                chartHelper.SetLine(point.Time.Value);
+                arcMap.SelectPointTo(point);
+            }
+            else
+            {
+                arcMap.ClearSelection();
+                chartHelper.ClearLine();
+            }
         }
 
 
@@ -329,7 +312,61 @@ namespace MapBoard.GpxToolbox
             pointsGrid.ItemsSource = source;
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, false, Gpx.Name + ".gpx");
+            if (path != null)
+            {
+                try
+                {
+                    File.WriteAllText(path, gpx.ToGpxXml());
+                    SnakeBar.Show("导出成功");
+                }
+                catch (Exception ex)
+                {
+                    SnakeBar.ShowException(ex, "导出失败");
+                }
+            }
+        }
 
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            string[] files =  FileSystemDialog.GetOpenFiles(new (string, string)[] { ("GPX轨迹文件", "gpx") }, true,true);
+            if(files != null)
+            {
+                arcMap.LoadFiles(files);
+            }
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            if (InputBox.GetInput("请输入偏移值：", out string result, null, "", @"^[0-9]{0,5}(\.[0-9]+)?$", false, this))
+            {
+                if (double.TryParse(result, out double num))
+                {
+                    foreach (var point in GpxTrack.Points)
+                    {
+                        if (point.Altitude.HasValue)
+                        {
+                            point.Altitude += num;
+                        }
+                    }
+                    var temp = GpxTrack;
+                    GpxTrack = null;
+                    GpxTrack = temp;
+                }
+                else
+                {
+                    SnakeBar.ShowError("输入的不是数字");
+                }
+            }
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            arcMap.GraphicsOverlays.Clear();
+            TrajectoryInfo.Trajectories.Clear();
+        }
     }
 
     public class SpeedValueConverter : IValueConverter

@@ -197,6 +197,9 @@ namespace MapBoard.Main.UI.Map
                 case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
                     await Drawing.StopDraw(false);
                     break;
+                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
+                    await Edit.AbandonEditing();
+                    break;
                 case Key.Escape when Selection.SelectedFeatures.Count > 0:
                     await Selection.StopFrameSelect(false);
                     break;

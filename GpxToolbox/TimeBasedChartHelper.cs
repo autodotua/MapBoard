@@ -96,7 +96,6 @@ namespace MapBoard.GpxToolbox
         // string lastAction = "";
         private void SketchpadMouseLeave(object sender, MouseEventArgs e)
         {
-            Sketchpad.Children.Remove(mouseLine);
             if (lastSelectedPoint != null)
             {
                 lastSelectedPoint.Fill = PointBrush;
@@ -108,8 +107,10 @@ namespace MapBoard.GpxToolbox
                 tip.IsOpen = false;
                 tip = null;
             }
-            mouseLine = null;
+            ClearLine();
         }
+
+     
 
         Ellipse lastSelectedPoint = null;
         private void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
@@ -168,6 +169,14 @@ namespace MapBoard.GpxToolbox
             double width = percent * Sketchpad.ActualWidth;
             RefreshMouseLine(width);
             RefreshToolTip(GetPoint(width));
+        }
+        public void ClearLine()
+        {
+            if (mouseLine != null)
+            {
+                Sketchpad.Children.Remove(mouseLine);
+                mouseLine = null;
+            }
         }
         private void RefreshMouseLine(double x)
         {
