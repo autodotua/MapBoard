@@ -27,7 +27,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\Generation\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -35,6 +35,9 @@
   <ItemGroup>
     <Reference Include="Esri.ArcGISRuntime, Version=100.4.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
+    </Reference>
+    <Reference Include="FzGeographyLib">
+      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzGeographyLib.dll</HintPath>
     </Reference>
     <Reference Include="FzStandardLib">
       <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
@@ -64,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="CoordinateTransformation.cs" />
     <Compile Include="MainWindowBase.cs" />
     <Compile Include="MapHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

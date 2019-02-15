@@ -33,7 +33,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\Generation\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -96,10 +96,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
-    <Compile Include="IO\CoordinateTransformation.cs" />
     <Compile Include="IO\IOHelper.cs" />
     <Compile Include="IO\Shapefile.cs" />
-    <Compile Include="IO\Converter.cs" />
     <Compile Include="IO\Gpx.cs" />
     <Compile Include="IO\Mbpkg.cs" />
     <Compile Include="Style\StyleCollection.cs" />

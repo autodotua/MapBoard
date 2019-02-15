@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static MapBoard.Main.IO.CoordinateTransformation;
+using static MapBoard.Common.CoordinateTransformation;
 using static MapBoard.Main.Style.StyleHelper;
 
 namespace MapBoard.Main.Style

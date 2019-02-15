@@ -84,14 +84,9 @@ namespace MapBoard.Main.UI
 
         private void RegistEvents()
         {
-            arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) =>
-            {
-                JudgeControlsEnable();
-            };
-            BoardTaskManager.BoardTaskChanged += (s, e) =>
-              {
-                  JudgeControlsEnable();
-              };
+            arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
+            BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
+            StyleCollection.Instance.SelectedStyleVisibilityChanged += (s, e) => JudgeControlsEnable();
 
 
             var lvwHelper = new ListViewHelper<StyleInfo>(lvw);
@@ -147,7 +142,7 @@ namespace MapBoard.Main.UI
                 btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
                 grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
 
-                var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton);//.Cast<ToggleButton>();
+                var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton && !"always".Equals(p.Tag));//.Cast<ToggleButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (StyleCollection.Instance.Selected != null)
                 {

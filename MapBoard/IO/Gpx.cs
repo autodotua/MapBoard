@@ -33,6 +33,7 @@ namespace MapBoard.Main.IO
 
                 StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, null, Path.GetFileNameWithoutExtension(newName));
                 FeatureTable table = style.Table;
+                CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
 
                 if (type == Type.Point)
@@ -40,9 +41,9 @@ namespace MapBoard.Main.IO
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
                     {
-                        var mapP = Converter.GetRightCoordinateSystemPoint(point);
+                        MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
                         Feature feature = table.CreateFeature();
-                        feature.Geometry = mapP;
+                        feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
                     }
                     await table.AddFeaturesAsync(features);
@@ -55,11 +56,11 @@ namespace MapBoard.Main.IO
                     {
                         if (lastPoint == null)
                         {
-                            lastPoint = Converter.GetRightCoordinateSystemPoint(point);
+                            lastPoint = transformation.TransformateToMapPoint(point);
                         }
                         else
                         {
-                            var newPoint = Converter.GetRightCoordinateSystemPoint(point);
+                            var newPoint = transformation.TransformateToMapPoint(point);
                             Feature feature = table.CreateFeature();
                             feature.Geometry = new Polyline(new MapPoint[] { lastPoint, newPoint });
                             features.Add(feature);
@@ -74,7 +75,7 @@ namespace MapBoard.Main.IO
                     List<MapPoint> points = new List<MapPoint>();
                     foreach (var point in track.Points)
                     {
-                        points.Add(Converter.GetRightCoordinateSystemPoint(point));
+                        points.Add(transformation.TransformateToMapPoint(point));
                     }
                     Feature feature = table.CreateFeature();
                     feature.Geometry = new Polyline(points);

@@ -56,7 +56,7 @@ namespace MapBoard.Common
             base.Save();
         }
 
-        public bool GCJ02 { get; set; } = true;
+        public string BasemapCoordinateSystem { get; set; } = "CGCS2000";
 
         public bool RemainLabel { get; set; } = false;
 

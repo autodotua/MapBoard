@@ -38,6 +38,10 @@ namespace MapBoard.Main.UI.OperationBar
         {
             if (e.NewTask == BoardTaskManager.BoardTask.Draw || e.NewTask == BoardTaskManager.BoardTask.Edit)
             {
+                if (grdDate.Visibility == Visibility.Collapsed)
+                {
+                    grdDate.Visibility = grdLabel.Visibility = Visibility.Visible;
+                }
                 if (e.NewTask == BoardTaskManager.BoardTask.Draw)
                 {
 
@@ -52,7 +56,7 @@ namespace MapBoard.Main.UI.OperationBar
                     }
                     else
                     {
-
+                        grdDate.Visibility = grdLabel.Visibility = Visibility.Collapsed;
                         Title = "正在切割（请绘制用于切割的线段）";
                     }
                 }
@@ -65,6 +69,7 @@ namespace MapBoard.Main.UI.OperationBar
                 Hide();
             }
         }
+
 
         public ArcMapView MapView => ArcMapView.Instance;
 

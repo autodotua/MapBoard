@@ -1,4 +1,5 @@
-﻿using MapBoard.Main.Style;
+﻿using MapBoard.Common;
+using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static MapBoard.Main.IO.CoordinateTransformation;
+using static MapBoard.Common.CoordinateTransformation;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -29,7 +30,7 @@ namespace MapBoard.Main.UI.Dialog
         /// <summary>
         /// 支持的坐标系
         /// </summary>
-        public string[] CoordinateSystems => IO.CoordinateTransformation.CoordinateSystems;
+        public string[] CoordinateSystems => CoordinateTransformation.CoordinateSystems;
 
         public string SelectedCoordinateSystem1 { get; set; } = "GCJ02";
         public string SelectedCoordinateSystem2 { get; set; } = "WGS84";

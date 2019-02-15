@@ -139,6 +139,8 @@ namespace MapBoard.Main.Style
                     break;
             }
         }
+
+        public event EventHandler SelectedStyleVisibilityChanged;
         public override void Save()
         {
             SelectedIndex = Styles.IndexOf(Selected);
@@ -154,7 +156,14 @@ namespace MapBoard.Main.Style
             get => selected;
             set
             {
-
+                if (selected != null)
+                {
+                    selected.PropertyChanged += SelectedLayerPropertyChanged;
+                }
+                if (value != null)
+                {
+                    value.PropertyChanged += SelectedLayerPropertyChanged;
+                }
                 selected = value;
                 //if (value != null)
                 //{
@@ -173,6 +182,14 @@ namespace MapBoard.Main.Style
                 //SelectionChanged?.Invoke(this, new EventArgs());
                 Notify(nameof(Selected));
                 //Notify(nameof(Selected));
+            }
+        }
+
+        private void SelectedLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName== "LayerVisible")
+            {
+                SelectedStyleVisibilityChanged?.Invoke(this, new EventArgs());
             }
         }
 

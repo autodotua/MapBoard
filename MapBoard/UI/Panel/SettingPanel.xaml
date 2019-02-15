@@ -6,12 +6,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
-             mc:Ignorable="d" 
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    mc:Ignorable="d" 
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel>
-            <flat:CheckBox Content="底图为GCJ02坐标系" IsChecked="{Binding Config.GCJ02}"/>
+            <TextBlock Text="底图坐标系：" />
+            <flat:UneditableComboBox SelectedItem="{Binding Config.BasemapCoordinateSystem}" >
+                <system:String >WGS84</system:String>
+                <system:String >CGCS2000</system:String>
+                <system:String >GCJ02</system:String>
+            </flat:UneditableComboBox>
             <FrameworkElement Height="12"/>
             <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
             <FrameworkElement Height="12"/>
@@ -28,7 +34,7 @@
 
             </StackPanel>
             <FrameworkElement Height="12"/>
-            <TextBlock>转为面时缓冲区大小（米）：</TextBlock>
+            <TextBlock>缓冲区半径（米）：</TextBlock>
             <FrameworkElement Height="4"/>
             <flat:TextBox Text="{Binding Config.StaticWidth}"/>
             <FrameworkElement Height="12"/>

@@ -223,11 +223,10 @@ namespace MapBoard.GpxToolbox
                     {
                         pointToTrajectoryInfo.Add(item, trajectoryInfo);
                         GeoPoint newP = item;
-                        if (Config.Instance.GCJ02)
+                        if (Config.Instance.BasemapCoordinateSystem!="WGS84")
                         {
-                            var gcj02 = GeoCoordConverter.WGS84ToGCJ02(newP);
-                            newP.Latitude = gcj02.Latitude;
-                            newP.Longitude = gcj02.Longitude;
+                            CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
+                            transformation.TransformateSelf(newP);
                         }
 
                         ArcMapPoint point = new ArcMapPoint(newP.Longitude, newP.Latitude, SpatialReferences.Wgs84);

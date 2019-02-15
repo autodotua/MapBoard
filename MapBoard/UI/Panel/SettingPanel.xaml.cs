@@ -52,5 +52,7 @@ namespace MapBoard.Main.UI.Panel
         {
             new MapBoard.TileDownloaderSplicer.MainWindow().Show();
         }
+
+      
     }
 }

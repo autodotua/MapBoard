@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using static MapBoard.Main.IO.CoordinateTransformation;
+using static MapBoard.Common.CoordinateTransformation;
 
 namespace MapBoard.Main.Style
 {

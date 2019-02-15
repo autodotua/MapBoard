@@ -75,7 +75,7 @@
 
         <TextBlock Grid.Column="3" Foreground="White"  HorizontalAlignment="Center" FontSize="16" VerticalAlignment="Center" FontWeight="Bold"  Text="{Binding Title}"/>
 
-        <Grid Grid.Column="4" VerticalAlignment="Center">
+        <Grid x:Name="grdLabel" Grid.Column="4" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="8"/>
@@ -84,7 +84,7 @@
             <TextBlock Foreground="White">标签：</TextBlock>
             <TextBox x:Name="txtLabel" CaretBrush="White" BorderThickness="0,0,0,1" Background="Transparent" Foreground="White" MinWidth="96" Grid.Column="2" Text="{Binding MapView.Drawing.Label}"/>
         </Grid>
-        <Grid Grid.Column="6" VerticalAlignment="Center">
+        <Grid x:Name="grdDate" Grid.Column="6" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="8"/>
