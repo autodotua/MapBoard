@@ -20,9 +20,9 @@
             <RowDefinition Height="8"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <flat:TextBox Text="{Binding Number}"/>
+        <flat:TextBox x:Name="txt" Text="{Binding Number}"/>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button Click="OkButtonClick" Content="确定"/>
+            <flat:Button IsDefault="True" Click="OkButtonClick" Content="确定"/>
         </StackPanel>
     </Grid>
 </extension:ExtendedWindow>

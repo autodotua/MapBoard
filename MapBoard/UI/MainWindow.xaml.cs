@@ -36,7 +36,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static FzLib.Basic.Collection.Loop;
+using static FzLib.Basic.Loop;
 using static FzLib.Geography.Analysis.SpeedAnalysis;
 
 namespace MapBoard.Main.UI

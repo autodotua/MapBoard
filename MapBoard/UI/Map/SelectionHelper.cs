@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
+using FzLib.Basic.Collection;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
@@ -116,11 +117,6 @@ namespace MapBoard.Main.UI.Map
                 }
                 foreach (var feature in result)
                 {
-                    //Debug.WriteLine(SelectedFeatures.Any(p => p.Geometry == feature.Geometry));
-                    //Debug.WriteLine(SelectedFeatures.Any(p => p.Geometry .Equals( feature.Geometry)));
-                    //Debug.WriteLine(SelectedFeatures.Any(p => p.Geometry.ToJson() == feature.Geometry.ToJson()));
-
-                    //Debug.WriteLine("");
                     if (SelectedFeatures.Any(p => p.Geometry.ToJson() == feature.Geometry.ToJson()))
                     {
                         if (inverse)
@@ -154,6 +150,26 @@ namespace MapBoard.Main.UI.Map
         //        }
         //    }
         //}
-        public ObservableCollection<Feature> SelectedFeatures { get; } = new ObservableCollection<Feature>();
+        public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
+        public void Select(Feature feature)
+        {
+            var layer = StyleCollection.Instance.Selected?.Layer;
+            if (layer == null)
+            {
+                return;
+            }
+            layer.SelectFeature(feature);
+            ArcMapView.Instance.Selection.SelectedFeatures.Add(feature);
+        }
+        public void Select(IEnumerable<Feature> features)
+        {
+            var layer = StyleCollection.Instance.Selected?.Layer;
+            if (layer == null)
+            {
+                return;
+            }
+            layer.SelectFeatures(features);
+            ArcMapView.Instance.Selection.SelectedFeatures.AddRange(features);
+        }
     }
 }

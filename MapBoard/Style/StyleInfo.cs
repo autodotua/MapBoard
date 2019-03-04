@@ -121,7 +121,7 @@ namespace MapBoard.Main.Style
                     if (value != TimeExtent.IsEnable)
                     {
                         TimeExtent.IsEnable = value;
-                        this.SetTimeExtent().Wait();
+                        this.SetTimeExtent();
                     }
                 }
 
@@ -145,11 +145,11 @@ namespace MapBoard.Main.Style
 
         public async Task<FeatureQueryResult> GetAllFeatures()
         {
-            QueryParameters query = new QueryParameters
-            {
-                SpatialRelationship = SpatialRelationship.Contains
-            };
-            FeatureQueryResult result = await Table.QueryFeaturesAsync(query);
+            //QueryParameters query = new QueryParameters
+            //{
+            //    SpatialRelationship = SpatialRelationship.Contains
+            //};
+            FeatureQueryResult result = await Table.QueryFeaturesAsync(new QueryParameters());
             return result;
         }
 

@@ -11,6 +11,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FzLib.Basic.Loop;
 
 namespace MapBoard.Main.IO
 {

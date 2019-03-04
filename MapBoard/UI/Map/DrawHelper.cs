@@ -1,31 +1,12 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using Esri.ArcGISRuntime.Geometry;
-using Esri.ArcGISRuntime.Mapping;
-using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
-using Esri.ArcGISRuntime.UI;
-using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Basic;
-using FzLib.Control.Dialog;
-using FzLib.Geography.Format;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Style;
-using MapBoard.Main.UI;
 using System;
-using System;
-using System.Collections.Generic;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 
 namespace MapBoard.Main.UI.Map

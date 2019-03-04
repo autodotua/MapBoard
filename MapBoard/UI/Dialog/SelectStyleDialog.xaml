@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
         <flat:UneditableComboBox x:Name="cbb" SelectedItem="{Binding SelectedStyle}"/>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button Click="Button_Click" Content="确定"/>
+            <flat:Button IsDefault="True" Click="Button_Click" Content="确定"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -22,7 +22,6 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class NumberInputDialog : ExtendedWindow
     {
-        bool canSelect = false;
         public NumberInputDialog(string title)
         {
             Owner = Application.Current.MainWindow;
@@ -54,6 +53,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            txt.Focus();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace MapBoard.Main.UI.Dialog
             if (list.Count() > 0)
             {
                 cbb.ItemsSource = list;
-                cbb.SelectedIndex = 1;
+                cbb.SelectedIndex = 0;
                 canSelect = true;
             }
         }

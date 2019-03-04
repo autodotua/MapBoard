@@ -28,7 +28,7 @@
             <picker:DateRangePicker x:Name="date" DateSelectionChanged="date_DateSelectionChanged"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button x:Name="btn" IsEnabled="False" Click="OkButtonClick" Content="确定"/>
+            <flat:Button IsDefault="True" x:Name="btn" IsEnabled="False" Click="OkButtonClick" Content="确定"/>
         </StackPanel>
     </Grid>
 </extension:ExtendedWindow>
