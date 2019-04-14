@@ -280,7 +280,6 @@ namespace MapBoard.Main.UI
 
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
-
             JudgeControlsEnable();
             styleSetting.ResetStyleSettingUI();
         }
@@ -305,7 +304,7 @@ namespace MapBoard.Main.UI
             if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount > 0)
             {
                 styleSetting.ResetStyleSettingUI();
-                await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+                //await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
 
             }
 
@@ -327,6 +326,7 @@ namespace MapBoard.Main.UI
                 ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
                 ("坐标转换",CoordinateTransformate,true),
                 ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
+                ("从CSV表格导入",ImportFromCsv,true),
                 ("导出",  ExportSingle,true),
 
            };
@@ -352,7 +352,7 @@ namespace MapBoard.Main.UI
                 {
                     try
                     {
-                        Mbpkg.ExportLayer(path, StyleCollection.Instance.Selected);
+                        Package.ExportLayer(path, StyleCollection.Instance.Selected);
                     }
                     catch (Exception ex)
                     {
@@ -374,6 +374,7 @@ namespace MapBoard.Main.UI
                     loading.Hide();
                 }
             }
+
             void SetTimeExtent()
             {
                 DateRangeDialog dialog = new DateRangeDialog(style);
@@ -382,6 +383,18 @@ namespace MapBoard.Main.UI
                     StyleHelper.SetTimeExtent(style).Wait();
                 }
 
+            }
+
+            async void ImportFromCsv()
+            {
+                try
+                {
+                    await Csv.Import();
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.ShowException(ex, "导入失败");
+                }
             }
         }
 

@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
+using MapBoard.Main.IO;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
@@ -133,8 +134,10 @@ namespace MapBoard.Main.UI.OperationBar
                 ("连接",Link,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
                 ("反转",Reverse,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
                 ("加密",Densify,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
+                ("删除部分点",RemoveSomePoints,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
+
                 ("建立副本",CreateCopy, true),
-                ("导出Csv表格",ToCsv, ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
+                ("导出CSV表格",ToCsv, true),
 
             };
 
@@ -275,39 +278,70 @@ namespace MapBoard.Main.UI.OperationBar
                 await style.Table.UpdateFeatureAsync(feature);
                 ArcMapView.Instance.Selection.ClearSelection();
             }
-
         }
-        private void ToCsv(StyleInfo style)
+
+        private async void RemoveSomePoints(StyleInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-            Geometry geometry = feature.Geometry;
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("Csv表格", "csv") }, ensureExtension: true, defaultFileName: "图形");
-            IEnumerable<MapPoint> points = null;
-            if (path != null)
+            NumberInputDialog dialog = new NumberInputDialog("请输入每几个点保留一个点") { Integer = true };
+            if (dialog.ShowDialog() == true)
             {
-                switch (feature.FeatureTable.GeometryType)
+                int eachPoint = dialog.IntNumber;
+                if(eachPoint<2)
                 {
-                    case GeometryType.Multipoint:
-                        points = (geometry as Multipoint).Points;
-                        break;
-                    case GeometryType.Point:
-                        points = new MapPoint[] { geometry as MapPoint };
-                        break;
-                    case GeometryType.Polygon:
-                        points = new List<MapPoint>();
-                        (geometry as Polygon).Parts.ForEach(p => p.Points.ForEach(q => (points as List<MapPoint>).Add(q)));
-                        break;
-                    case GeometryType.Polyline:
-                        points = new List<MapPoint>();
-                        (geometry as Polyline).Parts.ForEach(p => p.Points.ForEach(q => (points as List<MapPoint>).Add(q)));
+                    TaskDialog.ShowError("输入的值不可小于2！");
+                    return;
+                }
 
-                        break;
-                }
-                if (points != null && points.Any())
+                if(style.Type==GeometryType.Polygon)
                 {
-                    FzLib.DataStorage.Serialization.CsvSerialization.ExportByPropertyNames(points, new string[] { nameof(MapPoint.X), nameof(MapPoint.Y) }, path);
+                    Polygon polygon = feature.Geometry as Polygon;
+                    List<List<MapPoint>> newParts = new List<List<MapPoint>>();
+                    foreach (var part in polygon.Parts)
+                    {
+                        List<MapPoint> points = new List<MapPoint>();
+                        for (int i=0;i< part.PointCount;i++)
+                        {
+                            if(i%eachPoint==0)
+                            {
+                                points.Add(part.Points[i]);
+                            }
+                        }
+                        newParts.Add(points);
+                    }
+                    Polygon newPolygon = new Polygon(newParts);
+                    feature.Geometry = newPolygon;
                 }
+                else
+                {
+                    Polyline polygon = feature.Geometry as Polyline;
+                    List<List<MapPoint>> newParts = new List<List<MapPoint>>();
+                    foreach (var part in polygon.Parts)
+                    {
+                        List<MapPoint> points = new List<MapPoint>();
+                        for (int i = 0; i < part.PointCount; i++)
+                        {
+                            if (i % eachPoint == 0)
+                            {
+                                points.Add(part.Points[i]);
+                            }
+                        }
+                        newParts.Add(points);
+                    }
+                    Polyline newPolygon = new Polyline(newParts);
+                    feature.Geometry = newPolygon;
+                }
+                await style.Table.UpdateFeatureAsync(feature);
+
+                //feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, dialog.Number, LinearUnits.Meters);
+                //await style.Table.UpdateFeatureAsync(feature);
+                //ArcMapView.Instance.Selection.ClearSelection();
             }
+        }
+
+        private void ToCsv(StyleInfo style)
+        {
+            Csv.Export(ArcMapView.Instance.Selection.SelectedFeatures);
 
         }
 

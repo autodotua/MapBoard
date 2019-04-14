@@ -31,7 +31,7 @@ namespace MapBoard.Main.IO
             {
                 string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-                StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, null, Path.GetFileNameWithoutExtension(newName));
+                StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
                 FeatureTable table = style.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 

@@ -26,6 +26,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             Owner = Application.Current.MainWindow;
             Title = title;
+            
             InitializeComponent();
 
         }
@@ -36,7 +37,8 @@ namespace MapBoard.Main.UI.Dialog
             Close();
         }
         public bool Plus { get; set; } = true;
-        private double number = 0;
+        public bool Integer { get; set; } = false;
+        private double number = 5;
         public double Number
         {
             get => number;
@@ -51,9 +53,37 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
+        private int intNumber = 5;
+        public int IntNumber
+        {
+            get => intNumber;
+            set
+            {
+                if (!Plus || value > 0)
+                {
+                    intNumber = value;
+                }
+
+                Notify(nameof(IntNumber));
+            }
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Binding binding = null;
+            if (Integer)
+            {
+                binding = new Binding(nameof(IntNumber));
+            }
+            else
+            {
+                binding = new Binding(nameof(Number));
+            }
+            binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            txt.SetBinding(TextBox.TextProperty, binding);
+
             txt.Focus();
+            txt.SelectAll();
         }
     }
 }

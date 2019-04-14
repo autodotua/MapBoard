@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Mapping;
+﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Common;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
@@ -70,6 +71,7 @@ namespace MapBoard.Main.Style
                         instance.Selected = instance.Styles[instance.SelectedIndex];
                     }
                     instance.Settings.Formatting = Formatting.Indented;
+                    instance.canSave = true;
                     //try
                     //{
                     //    instance = JsonConvert.DeserializeObject<StyleCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
@@ -86,6 +88,7 @@ namespace MapBoard.Main.Style
                 return instance;
             }
         }
+        private bool canSave = false;
         //public void Save()
         //{
         //    File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
@@ -102,16 +105,14 @@ namespace MapBoard.Main.Style
 
                     if (value.Count > 0)
                     {
-                        value.ForEachAsync(async p => await ArcMapView.Instance.Layer.AddLayer(p));
+                        value.ForEachAsync(async p => await ArcMapView.Instance.Layer.AddLayerAsync(p));
                     }
                 }
             }
         }
 
         private StyleInfo selected;
-
-
-
+        private (double X1, double X2, double Y1, double Y2)? lastViewpointGeometry;
 
         private async void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -120,7 +121,7 @@ namespace MapBoard.Main.Style
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach (var item in e.NewItems)
                     {
-                        if (!await ArcMapView.Instance.Layer.AddLayer(item as StyleInfo))
+                        if (!await ArcMapView.Instance.Layer.AddLayerAsync(item as StyleInfo))
                         {
                             Styles.CollectionChanged -= instance.StylesCollectionChanged;
                             Styles.Remove(item as StyleInfo);
@@ -138,12 +139,21 @@ namespace MapBoard.Main.Style
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
             }
+            if(canSave)
+            {
+                Save();
+            }
         }
 
         public event EventHandler SelectedStyleVisibilityChanged;
         public override void Save()
         {
             SelectedIndex = Styles.IndexOf(Selected);
+            Envelope envelope = ArcMapView.Instance.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
+            if(envelope!=null)
+            {
+                lastViewpointGeometry = (envelope.XMin, envelope.XMax, envelope.YMax, envelope.YMin);
+            }
             if (new FileInfo(Path).Directory.Exists)
             {
                 base.Save();
@@ -187,7 +197,7 @@ namespace MapBoard.Main.Style
 
         private void SelectedLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if(e.PropertyName== "LayerVisible")
+            if (e.PropertyName == "LayerVisible")
             {
                 SelectedStyleVisibilityChanged?.Invoke(this, new EventArgs());
             }
@@ -201,7 +211,20 @@ namespace MapBoard.Main.Style
 
         }
 
+        public (double X1,double X2,double Y1,double Y2)? LastViewpointGeometry {
+            get => lastViewpointGeometry;
+            set
+            {
+                if (lastViewpointGeometry == null)
+                {
+                    if (value.HasValue)
+                    {
+                        ArcMapView.Instance.SetViewpointGeometryAsync(new Envelope(value.Value.X1, value.Value.Y1, value.Value.X2, value.Value.Y2));
+                    }
 
+                }
+            }
+        }
 
         //public event EventHandler SelectionChanged;
     }

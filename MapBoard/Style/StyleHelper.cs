@@ -53,12 +53,20 @@ namespace MapBoard.Main.Style
             return style;
         }
 
-        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null, string name = null)
+        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null,string name=null)
         {
             if (name == null)
             {
-                name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                if (template == null)
+                {
+                    name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                }
+                else
+                {
+                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.FileName));
+                }
             }
+
 
             ShapefileExport.ExportEmptyShapefile(type, name);
             StyleInfo style = new StyleInfo();
@@ -79,7 +87,7 @@ namespace MapBoard.Main.Style
 
                 FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
 
-                style = StyleHelper.CreateStyle(style.Type, style);
+                style = CreateStyle(style.Type, style);
                 ShapefileFeatureTable targetTable = style.Table;
 
                 foreach (var feature in features)
@@ -175,13 +183,13 @@ namespace MapBoard.Main.Style
 
         public async static Task Buffer(this StyleInfo style)
         {
-            var newStyle = CreateStyle(GeometryType.Polygon, style, Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(style.FileName)));
+            var newStyle = CreateStyle(GeometryType.Polygon, style);
 
             ShapefileFeatureTable newTable = newStyle.Table;
 
             foreach (var feature in await style.GetAllFeatures())
             {
-                Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator) ;
+                Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
                 var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
                 Feature newFeature = newTable.CreateFeature(feature.Attributes, geometry);
                 await newTable.AddFeatureAsync(newFeature);
@@ -211,11 +219,11 @@ namespace MapBoard.Main.Style
 
         public async static Task SetTimeExtent(this StyleInfo style)
         {
-            if(style.TimeExtent==null)
+            if (style.TimeExtent == null)
             {
                 return;
             }
-            if(!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
+            if (!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
             {
                 throw new Exception("shapefile没有指定的日期属性");
             }
@@ -246,7 +254,7 @@ namespace MapBoard.Main.Style
                         invisiableFeatures.Add(feature);
                     }
                 }
-                
+
                 layer.SetFeaturesVisible(visiableFeatures, true);
                 layer.SetFeaturesVisible(invisiableFeatures, false);
             }

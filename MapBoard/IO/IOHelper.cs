@@ -38,11 +38,11 @@ namespace MapBoard.Main.IO
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
-                            Mbpkg.ImportMap(path);
+                            Package.ImportMap(path);
                             return true;
 
                         case ".mblpkg":
-                            Mbpkg.ImportLayer(path);
+                            Package.ImportLayer(path);
                             return false;
 
                         case ".gpx":
@@ -96,7 +96,7 @@ namespace MapBoard.Main.IO
                     {
                         case ".mbmpkg":
 
-                            Mbpkg.ExportMap(path);
+                            Package.ExportMap(path);
                             break;
 
                         case ".png":

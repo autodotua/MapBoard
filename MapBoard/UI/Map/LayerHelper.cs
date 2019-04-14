@@ -18,7 +18,7 @@ namespace MapBoard.Main.UI.Map
     {
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async Task<bool> AddLayer(StyleInfo style)
+        public async Task<bool> AddLayerAsync(StyleInfo style)
         {
             try
             {
