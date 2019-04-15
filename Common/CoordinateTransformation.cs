@@ -46,6 +46,24 @@ namespace MapBoard.Common
         /// </summary>
         public string To { get; private set; }
 
+        public SpatialReference ToSpatialReference
+        {
+            get
+            {
+                switch (To)
+                {
+                    case "WGS84":
+                        return Wgs84;
+                    case "GCJ02":
+                        return Wgs84;
+                    case "CGCS2000":
+                        return Cgcs2000;
+                    default:
+                        throw new Exception("未知坐标系");
+                }
+            }
+        }
+
         /// <summary>
         /// 对一个要素进行坐标系统的转换，无视其内置的坐标系统的描述
         /// </summary>

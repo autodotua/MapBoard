@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.Geography.Format;
 using FzLib.IO;
 using MapBoard.Common;
+using MapBoard.Main.Helper;
 using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
@@ -20,18 +21,19 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static void Import(string path, Type type)
+        public async static Task<StyleInfo> ImportToNewStyle(string path, Type type)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
             var gpx = GpxInfo.FromString(content);
+            string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
+
+            StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
-                string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-                StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
                 FeatureTable table = style.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
@@ -82,11 +84,69 @@ namespace MapBoard.Main.IO
                     await table.AddFeatureAsync(feature);
                 }
 
-                style.UpdateFeatureCount();
             }
-
+            style.UpdateFeatureCount();
+            return style;
 
         }
+
+        public async static Task<Feature[]> ImportToCurrentStyle(string path)
+        {
+            StyleInfo style = StyleCollection.Instance.Selected;
+            string name = Path.GetFileNameWithoutExtension(path);
+            string content = File.ReadAllText(path);
+
+            var gpx = GpxInfo.FromString(content);
+            FeatureTable table = style.Table;
+            CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
+            List<Feature> importedFeatures = new List<Feature>();
+
+            foreach (var track in gpx.Tracks)
+            {
+
+
+                if (style.Type == GeometryType.Point)
+                {
+                    List<Feature> features = new List<Feature>();
+                    foreach (var point in track.Points)
+                    {
+                        MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
+                        Feature feature = table.CreateFeature();
+                        feature.Geometry = TransformateToMapPoint;
+                        features.Add(feature);
+                    }
+                    importedFeatures = features;
+                    await table.AddFeaturesAsync(features);
+                }
+                else if (style.Type == GeometryType.Multipoint)
+                {
+                    //IEnumerable<MapPoint> points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
+                    //Feature feature = table.CreateFeature();
+                    //feature.Geometry = new Multipoint(points);
+                    //await table.AddFeatureAsync(feature);
+
+                    throw new Exception("由于内部BUG，多点暂不支持导入GPX");
+
+                }
+                else if (style.Type == GeometryType.Polyline)
+                {
+                    var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
+                    Feature feature = table.CreateFeature();
+                    feature.Geometry = new Polyline(points, transformation.ToSpatialReference);
+                    await table.AddFeatureAsync(feature);
+                    importedFeatures.Add(feature);
+                }
+                else
+                {
+                    throw new Exception("不支持的格式图形类型");
+                }
+
+            }
+
+            style.UpdateFeatureCount();
+            return importedFeatures.ToArray();
+        }
+
 
         /// <summary>
         /// 生成的图形的类型

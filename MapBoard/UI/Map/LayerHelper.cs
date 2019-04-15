@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.Control.Dialog;
 using MapBoard.Common;
+using MapBoard.Main.Helper;
 using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;

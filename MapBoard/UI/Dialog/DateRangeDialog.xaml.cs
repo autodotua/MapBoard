@@ -20,14 +20,13 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class DateRangeDialog : ExtendedWindow
+    public partial class DateRangeDialog : DialogWindowBase
     {
         bool canSelect = false;
         StyleInfo CurrentStyle { get; }
         public DateRangeDialog(StyleInfo style)
         {
             CurrentStyle = style;
-            Owner = Application.Current.MainWindow;
             InitializeComponent();
             if (style.TimeExtent == null)
             {

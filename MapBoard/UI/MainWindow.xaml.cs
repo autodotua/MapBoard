@@ -9,6 +9,7 @@ using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
+using MapBoard.Main.Helper;
 using MapBoard.Main.IO;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI.Dialog;
@@ -224,7 +225,7 @@ namespace MapBoard.Main.UI
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
             loading.Show();
-            if (await IOHelper.Import())
+            if (await IOHelper.ImportStyle())
             {
                 Notify(nameof(Styles));
             }
@@ -238,7 +239,7 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOHelper.Export();
+            await IOHelper.ExportStyle();
         }
 
         private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
@@ -323,10 +324,10 @@ namespace MapBoard.Main.UI
                 ("建立缓冲区",StyleHelper.Buffer,style.Type==GeometryType.Polyline || style.Type==GeometryType.Point|| style.Type==GeometryType.Multipoint),
                 ("删除",DeleteStyle,true),
                 ("新建副本",StyleHelper. CreateCopy,true),
-                ("缩放到图层", async () => await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters())),StyleCollection.Instance.Selected.FeatureCount > 0),
+                ("缩放到图层", ZoomToLayer,StyleCollection.Instance.Selected.FeatureCount > 0),
                 ("坐标转换",CoordinateTransformate,true),
                 ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
-                ("从CSV表格导入",ImportFromCsv,true),
+                ("导入",()=>IOHelper.ImportFeature(),true),
                 ("导出",  ExportSingle,true),
 
            };
@@ -361,6 +362,18 @@ namespace MapBoard.Main.UI
                 }
             }
 
+            async void ZoomToLayer()
+            {
+                try
+                {
+                    await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters()));
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.ShowException(ex, "操作失败，可能是不构成有面积的图形");
+                }
+            }
+
             async void CoordinateTransformate()
             {
                 CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
@@ -385,17 +398,7 @@ namespace MapBoard.Main.UI
 
             }
 
-            async void ImportFromCsv()
-            {
-                try
-                {
-                    await Csv.Import();
-                }
-                catch (Exception ex)
-                {
-                    TaskDialog.ShowException(ex, "导入失败");
-                }
-            }
+
         }
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)

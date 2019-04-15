@@ -19,12 +19,11 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectStyleDialog : Window
+    public partial class SelectStyleDialog : DialogWindowBase
     {
         bool canSelect = false;
         public SelectStyleDialog()
         {
-            Owner = Application.Current.MainWindow;
             InitializeComponent();
             var styles = StyleCollection.Instance;
             var list = styles.Styles.Where(p => p.Type == styles.Selected.Type && p!=styles.Selected);

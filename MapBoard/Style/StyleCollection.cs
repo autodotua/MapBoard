@@ -205,6 +205,7 @@ namespace MapBoard.Main.Style
 
         public static void ResetStyles()
         {
+            instance.canSave = false;
             instance.Styles.Clear();
             instance = null;
             var useless = Instance;

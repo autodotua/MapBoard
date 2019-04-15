@@ -20,13 +20,11 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class NumberInputDialog : ExtendedWindow
+    public partial class NumberInputDialog : DialogWindowBase
     {
-        public NumberInputDialog(string title)
+        public NumberInputDialog(string description)
         {
-            Owner = Application.Current.MainWindow;
-            Title = title;
-            
+            Description = description;
             InitializeComponent();
 
         }
@@ -67,6 +65,8 @@ namespace MapBoard.Main.UI.Dialog
                 Notify(nameof(IntNumber));
             }
         }
+
+        public string Description { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

@@ -1,5 +1,8 @@
-﻿using Esri.ArcGISRuntime.UI;
+﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.UI;
 using FzLib.Control.Dialog;
+using MapBoard.Main.IO;
+using MapBoard.Main.Style;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
 using System;
@@ -13,24 +16,86 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace MapBoard.Main.IO
+namespace MapBoard.Main.Helper
 {
     public static class IOHelper
     {
+        public async static Task ImportFeature()
+        {
+            StyleInfo style = StyleCollection.Instance.Selected;
+            string path = null;
+            if (style.Type != Esri.ArcGISRuntime.Geometry.GeometryType.Polygon)
+            {
+                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
+                {
+                    ("支持的格式", "csv,gpx"),
+                    ("CSV表格", "csv"),
+                    ("GPS轨迹文件","gpx") ,
+                }, true);
+            }
+            else
+            {
+                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
+                {
+                    ("CSV表格", "csv"),
+                }, true);
+            }
+            if (path != null)
+            {
+                try
+                {
+                    switch (Path.GetExtension(path))
+                    {
+                        case ".csv":
+                            await Csv.Import(path);
+                            SnakeBar.Show("导入CSV成功");
+                            break;
+
+                        case ".gpx":
+                            var features = await Gpx.ImportToCurrentStyle(path);
+                            if (features.Length > 1)
+                            {
+
+                                SnakeBar.Show("导入GPX成功");
+                            }
+                            else
+                            {
+                                SnakeBar snake = new SnakeBar(SnakeBar.DefaultWindow);
+                                snake.ShowButton = true;
+                                snake.ButtonContent = "查看";
+                                snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent,SpatialReferences.WebMercator));
+
+                                snake.ShowMessage("已导出到" + path);
+                            }
+                            break;
+
+                        default:
+                            throw new Exception("未知文件类型");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.ShowException(ex, "导入失败");
+                }
+            }
+        }
+
         /// <summary>
         /// 显示对话框导入
         /// </summary>
         /// <returns>返回是否需要通知刷新Style</returns>
-        public async static Task<bool> Import()
+        public async static Task<bool> ImportStyle()
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
-            { ("mbmpkg地图画板包", "mbmpkg"),
+            {
+                ("支持的格式", "mbmpkg,mblpkg,gpx,shp"),
+                ("mbmpkg地图画板包", "mbmpkg"),
                 ("mblpkg地图画板图层包", "mblpkg"),
                 ("GPS轨迹文件","gpx") ,
                 ("Shapefile文件","shp") ,
             }
-            , true, true);
+            , true);
             if (path != null)
             {
                 try
@@ -48,10 +113,10 @@ namespace MapBoard.Main.IO
                         case ".gpx":
                             TaskDialog.ShowWithCommandLinks("请选择转换类型", "正在准备导入GPS轨迹文件",
                            new (string, string, Action)[] {
-                                ("点","每一个轨迹点分别加入到新的样式中",()=>Gpx.Import(path,Gpx.Type.Point)),
-                                ("一条线","按时间顺序将轨迹点相连，形成一条线",()=>Gpx.Import(path,Gpx.Type.OneLine)),
-                                ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.Import(path,Gpx.Type.MultiLine)),
-                           });
+                                ("点","每一个轨迹点分别加入到新的样式中",()=>Gpx.ImportToNewStyle(path,Gpx.Type.Point)),
+                                ("一条线","按时间顺序将轨迹点相连，形成一条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.OneLine)),
+                                ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.MultiLine)),
+                           },cancelable:true);
                             return false;
 
                         case ".shp":
@@ -83,10 +148,12 @@ namespace MapBoard.Main.IO
         /// 显示对话框导出
         /// </summary>
         /// <returns></returns>
-        public static async Task Export()
+        public static async Task ExportStyle()
         {
             string path = FileSystemDialog.GetSaveFile(new List<(string, string)>() {
-                ("mbmpkg地图画板包", "mbmpkg"),  ("截图", "png")},
+                ("mbmpkg地图画板包", "mbmpkg"),
+                ("截图", "png")
+            },
                 false, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {

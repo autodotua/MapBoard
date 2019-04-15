@@ -1,4 +1,4 @@
-﻿<extension:ExtendedWindow
+﻿<local:DialogWindowBase
     xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
     x:Class="MapBoard.Main.UI.Dialog.NumberInputDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,21 +8,22 @@
        xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
         xmlns:local="clr-namespace:MapBoard.Main.UI.Dialog"
         mc:Ignorable="d"
-        ResizeMode="NoResize"
-        SizeToContent="WidthAndHeight"
         Loaded="Window_Loaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        WindowStartupLocation="CenterOwner"
-        Title="请选择目标"  >
+        Title="请输入数字"  
+    MinWidth="144">
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="8"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <flat:TextBox x:Name="txt" />
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
+        <TextBlock Text="{Binding Description}"/>
+        <flat:TextBox x:Name="txt" Grid.Row="2"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="8"  HorizontalAlignment="Right">
             <flat:Button IsDefault="True" Click="OkButtonClick" Content="确定"/>
         </StackPanel>
     </Grid>
-</extension:ExtendedWindow>
+</local:DialogWindowBase>

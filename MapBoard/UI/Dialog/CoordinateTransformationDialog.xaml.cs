@@ -20,11 +20,10 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// CoordinateTransformationDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class CoordinateTransformationDialog : Window
+    public partial class CoordinateTransformationDialog : DialogWindowBase
     {
         public CoordinateTransformationDialog()
         {
-            Owner = Application.Current.MainWindow;
             InitializeComponent();
         }
         /// <summary>

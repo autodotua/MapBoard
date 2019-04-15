@@ -86,7 +86,9 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <flatstyle:ListView x:Name="lvw" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Single" ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
+                    <flatstyle:ListView x:Name="lvw" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Single" 
+                                        ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" SelectedItem="{Binding Styles.Selected}" 
+                                        ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
                         <flatstyle:ListView.View>
                             <GridView>
                                 <GridViewColumn Header="显示">

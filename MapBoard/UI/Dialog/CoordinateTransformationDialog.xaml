@@ -1,4 +1,4 @@
-﻿<Window x:Class="MapBoard.Main.UI.Dialog.CoordinateTransformationDialog"
+﻿<local:DialogWindowBase x:Class="MapBoard.Main.UI.Dialog.CoordinateTransformationDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,10 +6,8 @@
         xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
         xmlns:local="clr-namespace:MapBoard.Main.UI.Dialog"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-       WindowStartupLocation="CenterOwner"
         mc:Ignorable="d"
         Title="坐标转换" 
-        SizeToContent="Height"
         Width="200">
     <Grid Margin="4">
         <Grid.RowDefinitions>
@@ -32,4 +30,4 @@
             <flat:Button IsDefault="True" x:Name="btn" Click="OkButtonClick" Content="确定"/>
         </StackPanel>
     </Grid>
-</Window>
+</local:DialogWindowBase>

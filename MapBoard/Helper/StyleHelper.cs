@@ -7,6 +7,7 @@ using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
+using MapBoard.Main.Style;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
@@ -19,7 +20,7 @@ using System.Threading.Tasks;
 
 using static MapBoard.Common.CoordinateTransformation;
 
-namespace MapBoard.Main.Style
+namespace MapBoard.Main.Helper
 {
     public static class StyleHelper
     {
@@ -87,18 +88,18 @@ namespace MapBoard.Main.Style
 
                 FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
 
-                style = CreateStyle(style.Type, style);
-                ShapefileFeatureTable targetTable = style.Table;
+               var newStyle = CreateStyle(style.Type, style);
+                ShapefileFeatureTable targetTable = newStyle.Table;
 
                 foreach (var feature in features)
                 {
                     await targetTable.AddFeatureAsync(feature);
                 }
-                style.UpdateFeatureCount();
+                newStyle.UpdateFeatureCount();
+                style.LayerVisible = false;
             }
             else
             {
-
                 StyleHelper.CreateStyle(style.Type, style);
             }
         }

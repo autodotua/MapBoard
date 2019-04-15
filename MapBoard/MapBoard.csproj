@@ -132,17 +132,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
+    <Compile Include="Helper\FeatureHelper.cs" />
     <Compile Include="IO\Csv.cs" />
-    <Compile Include="IO\IOHelper.cs" />
+    <Compile Include="Helper\IOHelper.cs" />
     <Compile Include="IO\Package.cs" />
     <Compile Include="IO\Shapefile.cs" />
     <Compile Include="IO\Gpx.cs" />
     <Compile Include="Style\StyleCollection.cs" />
-    <Compile Include="Style\StyleHelper.cs" />
+    <Compile Include="Helper\StyleHelper.cs" />
     <Compile Include="Style\TimeExtentInfo.cs" />
     <Compile Include="UI\Dialog\DateRangeDialog.xaml.cs">
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialog\DialogWindowBase.cs" />
     <Compile Include="UI\Dialog\NumberInputDialog.xaml.cs">
       <DependentUpon>NumberInputDialog.xaml</DependentUpon>
     </Compile>

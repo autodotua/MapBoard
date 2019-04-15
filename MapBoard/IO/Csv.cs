@@ -14,7 +14,7 @@ namespace MapBoard.Main.IO
 {
     public static class Csv
     {
-        public static void Export(IEnumerable<Feature> features)
+        public static string Export(IEnumerable<Feature> features)
         {
             string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("Csv表格", "csv") }, ensureExtension: true, defaultFileName: "图形");
             StringBuilder sb = new StringBuilder();
@@ -87,17 +87,18 @@ namespace MapBoard.Main.IO
 
                 }
             }
+
+            return path;
+
             void Append(string col1, string col2)
             {
                 sb.Append(col1).Append(',').Append(col2).AppendLine();
             }
         }
 
-        public async static Task Import()
+        public async static Task Import(string path)
         {
-            string path = FileSystemDialog.GetOpenFile(new (string, string)[] { ("Csv表格", "csv") }, ensureExtension: true);
-            if (path != null)
-            {
+            
                 string[] lines = File.ReadAllLines(path);
                 List<List<MapPoint>> parts = new List<List<MapPoint>>();
                 List<MapPoint> lastPoints = null;
@@ -157,7 +158,7 @@ namespace MapBoard.Main.IO
                     }
                 }
                 await style.Table.AddFeaturesAsync(features);
-            }
+            
         }
 
     }
