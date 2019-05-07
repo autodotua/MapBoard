@@ -1,0 +1,29 @@
+﻿<local:DialogWindowBase
+    xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
+    x:Class="MapBoard.Main.UI.Dialog.InputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+       xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
+        xmlns:local="clr-namespace:MapBoard.Main.UI.Dialog"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="请输入"  
+    MinWidth="144">
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding Description}"/>
+        <flat:TextBox x:Name="txt" Grid.Row="2" Text="{Binding Text}"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="8"  HorizontalAlignment="Right">
+            <flat:Button IsDefault="True" Click="OkButtonClick" Content="确定"/>
+        </StackPanel>
+    </Grid>
+</local:DialogWindowBase>

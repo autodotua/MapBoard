@@ -24,14 +24,9 @@ namespace MapBoard.Main.Style
         public string Name { get; set; }
         [JsonIgnore]
         public string FileName => Path.Combine(Config.DataPath, Name + ".shp");
-        public double LineWidth { get; set; } = 5;
 
-        public Color LineColor { get; set; } = Color.Red;
-        public Color FillColor
-        {
-            get;
-            set;
-        } = Color.Green;
+        //public RendererInfo Renderer { get; set; } = new RendererInfo();
+        public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
         [JsonIgnore]
         public GeometryType Type => table == null ? GeometryType.Unknown : table.GeometryType;
 
@@ -49,13 +44,6 @@ namespace MapBoard.Main.Style
                 //value.FeatureLayer.IsVisible = LayerVisible;
                 SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
             }
-        }
-        public async Task LayerComplete()
-        {
-            Layer.IsVisible = LayerVisible;
-            Layer.LabelsEnabled = LabelVisible;
-
-            await this.SetTimeExtent();
         }
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
@@ -113,7 +101,7 @@ namespace MapBoard.Main.Style
         [JsonIgnore]
         public bool TimeExtentEnable
         {
-            get => TimeExtent==null?false: TimeExtent.IsEnable;
+            get => TimeExtent == null ? false : TimeExtent.IsEnable;
             set
             {
                 if (TimeExtent != null)
@@ -130,7 +118,7 @@ namespace MapBoard.Main.Style
         }
 
 
-        public string LabelJson { get; set; } =Resource.LabelJson;
+        public string LabelJson { get; set; } = Resource.LabelJson;
 
 
         public void UpdateFeatureCount()
@@ -167,7 +155,7 @@ namespace MapBoard.Main.Style
                 }
             }
         }
-
+        [JsonIgnore]
         public string TypeDescription
         {
             get
@@ -196,15 +184,34 @@ namespace MapBoard.Main.Style
             return MemberwiseClone();
         }
 
+
+        public async Task LayerComplete()
+        {
+            Layer.IsVisible = LayerVisible;
+            Layer.LabelsEnabled = LabelVisible;
+
+            await this.SetTimeExtent();
+        }
         public void CopyStyleFrom(StyleInfo style)
         {
-            LineWidth = style.LineWidth;
-            LineColor = style.LineColor;
-            FillColor = style.FillColor;
+            foreach (var s in style.Symbols)
+            {
+                Symbols.Add(s.Key,new SymbolInfo()
+                {
+                    FillColor = s.Value.FillColor,
+                    LineColor = s.Value.LineColor,
+                    LineWidth = s.Value.LineWidth,
+                });
+            }
+            //Renderer.LineWidth = style.Renderer.LineWidth;
+            //Renderer.LineColor = style.Renderer.LineColor;
+            //Renderer.FillColor = style.Renderer.FillColor;
             LabelJson = style.LabelJson;
-            Notify(nameof(LineColor),
-                nameof(LineWidth),
-                nameof(FillColor),
+            Notify(
+                //nameof(Renderer.LineColor),
+                //nameof(Renderer),
+                //nameof(Renderer.LineWidth),
+                //nameof(Renderer.FillColor),
                 nameof(Type),
                 nameof(FeatureCount),
                 nameof(LayerVisible),

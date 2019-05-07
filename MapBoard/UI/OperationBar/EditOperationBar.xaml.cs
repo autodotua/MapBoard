@@ -27,6 +27,7 @@ namespace MapBoard.Main.UI.OperationBar
 
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
+            ppp.PlacementTarget = btnAttri;
         }
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
@@ -38,10 +39,11 @@ namespace MapBoard.Main.UI.OperationBar
         {
             if (e.NewTask == BoardTaskManager.BoardTask.Draw || e.NewTask == BoardTaskManager.BoardTask.Edit)
             {
-                if (grdDate.Visibility == Visibility.Collapsed)
-                {
-                    grdDate.Visibility = grdLabel.Visibility = Visibility.Visible;
-                }
+                //if (grdDate.Visibility == Visibility.Collapsed)
+                //{
+                //    grdDate.Visibility = grdLabel.Visibility = Visibility.Visible;
+                //}
+                btnAttri.Visibility = Visibility.Visible;
                 if (e.NewTask == BoardTaskManager.BoardTask.Draw)
                 {
 
@@ -56,16 +58,19 @@ namespace MapBoard.Main.UI.OperationBar
                     }
                     else
                     {
-                        grdDate.Visibility = grdLabel.Visibility = Visibility.Collapsed;
+                        //grdDate.Visibility = grdLabel.Visibility = Visibility.Collapsed;
+                        btnAttri.Visibility = Visibility.Collapsed;
+
                         Title = "正在切割（请绘制用于切割的线段）";
                     }
                 }
                 Notify(nameof(MapView));
                 Show();
-                txtLabel.Focus();
+                //txtLabel.Focus();
             }
             else
             {
+                ppp.IsOpen = false;
                 Hide();
             }
         }
@@ -112,6 +117,11 @@ namespace MapBoard.Main.UI.OperationBar
         private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
+        }
+
+        private void BtnAttri_Click(object sender, RoutedEventArgs e)
+        {
+            ppp.IsOpen = !ppp.IsOpen;
         }
     }
 }

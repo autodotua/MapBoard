@@ -140,11 +140,15 @@
     <Compile Include="IO\Gpx.cs" />
     <Compile Include="Style\StyleCollection.cs" />
     <Compile Include="Helper\StyleHelper.cs" />
+    <Compile Include="Style\SymbolInfo.cs" />
     <Compile Include="Style\TimeExtentInfo.cs" />
     <Compile Include="UI\Dialog\DateRangeDialog.xaml.cs">
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Dialog\DialogWindowBase.cs" />
+    <Compile Include="UI\Dialog\InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\NumberInputDialog.xaml.cs">
       <DependentUpon>NumberInputDialog.xaml</DependentUpon>
     </Compile>
@@ -179,6 +183,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\DateRangeDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Dialog\InputDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

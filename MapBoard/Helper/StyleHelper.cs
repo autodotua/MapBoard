@@ -54,7 +54,7 @@ namespace MapBoard.Main.Helper
             return style;
         }
 
-        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null,string name=null)
+        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null, string name = null)
         {
             if (name == null)
             {
@@ -88,7 +88,7 @@ namespace MapBoard.Main.Helper
 
                 FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
 
-               var newStyle = CreateStyle(style.Type, style);
+                var newStyle = CreateStyle(style.Type, style);
                 ShapefileFeatureTable targetTable = newStyle.Table;
 
                 foreach (var feature in features)
@@ -148,27 +148,47 @@ namespace MapBoard.Main.Helper
         {
             try
             {
-                SimpleLineSymbol lineSymbol;
-                SimpleRenderer renderer = null;
-                switch (style.Layer.FeatureTable.GeometryType)
+                UniqueValueRenderer renderer = new UniqueValueRenderer();
+                renderer.FieldNames.Add("Key");
+                if(style.Symbols.Count==0)
                 {
-                    case GeometryType.Point:
-                    case GeometryType.Multipoint:
-                        SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, style.FillColor, style.LineWidth);
-                        renderer = new SimpleRenderer(markerSymbol);
-                        break;
-                    case GeometryType.Polyline:
-                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                        renderer = new SimpleRenderer(lineSymbol);
-                        break;
-                    case GeometryType.Polygon:
-                        lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, style.LineColor, style.LineWidth);
-                        SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, style.FillColor, lineSymbol);
-                        renderer = new SimpleRenderer(fillSymbol);
-                        break;
+                    style.Symbols.Add("", new SymbolInfo());
                 }
-                style.Layer.Renderer = renderer;
+                foreach (var info in style.Symbols)
+                {
+                    var key = info.Key;
+                    var symbolInfo = info.Value;
 
+                    Symbol symbol = null;
+
+                    switch (style.Layer.FeatureTable.GeometryType)
+                    {
+                        case GeometryType.Point:
+                        case GeometryType.Multipoint:
+                            symbol= new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.LineWidth);
+
+                            break;
+                        case GeometryType.Polyline:
+                            symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
+                            break;
+                        case GeometryType.Polygon:
+                          var  lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
+                            symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, symbolInfo.FillColor, lineSymbol);
+                            break;
+                    }
+
+                    if(key=="")
+                    {
+                        renderer.DefaultSymbol = symbol;
+                    }
+                    else
+                    {
+                        renderer.UniqueValues.Add(new UniqueValue(key, key, symbol, key));
+                    }
+
+                }
+
+                style.Layer.Renderer = renderer;
                 string labelJson = style.LabelJson;
                 LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
                 style.Layer.LabelDefinitions.Clear();

@@ -3,6 +3,7 @@ using MapBoard.Common;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,8 @@ namespace MapBoard.Main.UI.Panel
             InitializeComponent();
         }
 
-        public Config Config => MapBoard.Common.Config.Instance;
+        public Config Config => Config.Instance;
+
 
         private async void ApplyUrlButtonClick(object sender, RoutedEventArgs e)
         {
@@ -53,6 +55,6 @@ namespace MapBoard.Main.UI.Panel
             new MapBoard.TileDownloaderSplicer.MainWindow().Show();
         }
 
-      
+  
     }
 }

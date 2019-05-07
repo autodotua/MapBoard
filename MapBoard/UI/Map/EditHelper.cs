@@ -39,6 +39,7 @@ namespace MapBoard.Main.UI.Map
 
             editingFeature = Mapview.Selection.SelectedFeatures.First();
             Mapview.Drawing.Label = editingFeature.Attributes[Resource.DisplayFieldName] as string;
+            Mapview.Drawing.Key = editingFeature.Attributes[Resource.KeyFieldName] as string;
             if (editingFeature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
             {
                 Mapview.Drawing.Date = date;

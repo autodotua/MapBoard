@@ -5,10 +5,12 @@ using MapBoard.Common.Resource;
 using MapBoard.Main.Helper;
 using MapBoard.Main.IO;
 using MapBoard.Main.Style;
+using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,9 +33,38 @@ namespace MapBoard.Main.UI.Panel
     /// </summary>
     public partial class StyleSettingPanel : ExtendedUserControl
     {
+        private const string defaultKeyName= "（默认）";
         public StyleSettingPanel()
         {
             InitializeComponent();
+        }
+
+        public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
+        public KeySymbolPair SelectedKey
+        {
+            get => selectedKey;
+            set
+            {
+                if(selectedKey!=null)
+                {
+                    selectedKey.Symbol.LineWidth = LineWidth;
+                    selectedKey.Symbol.LineColor = LineColor;
+                    selectedKey.Symbol.FillColor = FillColor;
+                }
+
+                SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
+
+                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled= value != null && value.Key!=defaultKeyName;
+                if(value!=null)
+                {
+                    //LineWidth = StyleCollection.Instance.Selected.Renderer.LineWidth;
+                    //LineColor = StyleCollection.Instance.Selected.Renderer.LineColor;
+                    //FillColor = StyleCollection.Instance.Selected.Renderer.FillColor;
+                    LineWidth = value.Symbol.LineWidth;
+                    LineColor = value.Symbol.LineColor;
+                    FillColor = value.Symbol.FillColor;
+                }
+            }
         }
 
         private string styleName;
@@ -110,9 +141,20 @@ namespace MapBoard.Main.UI.Panel
         public void SetStyleFromUI()
         {
             var style = StyleCollection.Instance.Selected;
-            style.LineColor = LineColor;
-            style.FillColor = FillColor;
-            style.LineWidth = LineWidth;
+            //style.Renderer.LineColor = LineColor;
+            //style.Renderer.FillColor = FillColor;
+            //style.Renderer.LineWidth = LineWidth;
+            if (SelectedKey != null)
+            {
+                SelectedKey.Symbol.LineWidth = LineWidth;
+                SelectedKey.Symbol.LineColor = LineColor;
+                SelectedKey.Symbol.FillColor = FillColor;
+            }
+            style.Symbols.Clear();
+            foreach (var keySymbol in Keys)
+            {
+                style.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
+            }
 
             SetLabelFromUI();
             //styleSetting.SetStyleFromUI(StyleCollection.Instance.Selected);
@@ -144,13 +186,13 @@ namespace MapBoard.Main.UI.Panel
                 {
                     SnakeBar.ShowException(ex, "重命名失败");
                 }
-                end:
+            end:
                 style.Table = null;
-                StyleCollection.Instance.Styles.Insert(index,style);
+                StyleCollection.Instance.Styles.Insert(index, style);
             }
             else
             {
-                StyleHelper.ApplyStyles(style);
+                style.ApplyStyles();
             }
 
         }
@@ -165,9 +207,31 @@ namespace MapBoard.Main.UI.Panel
             {
                 StyleName = StyleCollection.Instance.Selected?.Name;
 
-                LineWidth = StyleCollection.Instance.Selected.LineWidth;
-                LineColor = StyleCollection.Instance.Selected.LineColor;
-                FillColor = StyleCollection.Instance.Selected.FillColor;
+                //LineWidth = StyleCollection.Instance.Selected.Renderer.LineWidth;
+                //LineColor = StyleCollection.Instance.Selected.Renderer.LineColor;
+                //FillColor = StyleCollection.Instance.Selected.Renderer.FillColor;
+
+                Keys.Clear();
+                var style = StyleCollection.Instance.Selected;
+                foreach (var symbol in style.Symbols)
+                {
+                    if (symbol.Key == "")
+                    {
+                        Keys.Add(new KeySymbolPair(defaultKeyName, symbol.Value));
+                    }
+                    else
+                    {
+                        Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
+                    }
+                }
+                if(!Keys.Any(p=>p.Key== defaultKeyName))
+                {
+                    Keys.Add(new KeySymbolPair(defaultKeyName, new SymbolInfo()));
+
+                }
+                SelectedKey = Keys.First(p => p.Key == defaultKeyName);
+
+
                 ResetLabelSettingUI();
             }
         }
@@ -177,9 +241,11 @@ namespace MapBoard.Main.UI.Panel
             LabelMinScale = ArcMapView.Instance.MapScale;
         }
         private JObject labelJson;
+        private KeySymbolPair selectedKey;
+
         private void SetLabelFromUI()
         {
-            labelJson = JObject.Parse(Resource. LabelJson);
+            labelJson = JObject.Parse(Resource.LabelJson);
             SetLabelJsonValue<byte>("symbol.haloColor", GetRgbaFromColor(LabelLineColor));
             SetLabelJsonValue<byte>("symbol.color", GetRgbaFromColor(LabelFillColor));
             SetLabelJsonValue("symbol.font.size", LabelFontSize);
@@ -296,5 +362,78 @@ namespace MapBoard.Main.UI.Panel
         //}
 
 
+        private void KeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (ppp.IsOpen)
+            {
+                ppp.IsOpen = false;
+            }
+            else
+            {
+                ppp.PlacementTarget = sender as UIElement;
+                ppp.IsOpen = true;
+            }
+        }
+
+        private void CreateKeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            InputDialog dialog = new InputDialog("请输入键值");
+            if (dialog.ShowDialog() == true)
+            {
+                string key = dialog.Text;
+                if (Keys.Any(p => p.Key == key))
+                {
+                    TaskDialog.ShowError("该键已存在");
+                    return;
+                }
+
+                var keySymbol = new KeySymbolPair(key, new SymbolInfo());
+                Keys.Add(keySymbol);
+                SelectedKey = keySymbol;
+            }
+        }
+
+        private void CloseButtonClick(object sender, RoutedEventArgs e)
+        {
+            ppp.IsOpen = false;
+        }
+
+        private void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            InputDialog dialog = new InputDialog("请输入键值");
+            if (dialog.ShowDialog() == true)
+            {
+                string key = dialog.Text;
+                if (Keys.Any(p => p.Key == key))
+                {
+                    TaskDialog.ShowError("该键已存在");
+                    return;
+                }
+
+                SelectedKey.Key = key;
+            }
+        }
+
+        private void DeleteKeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            Keys.Remove(SelectedKey);
+            SelectedKey = Keys[0];
+        }
+    }
+
+    public class KeySymbolPair
+    {
+        public KeySymbolPair()
+        {
+        }
+
+        public KeySymbolPair(string key, SymbolInfo symbol)
+        {
+            Key = key;
+            Symbol = symbol;
+        }
+
+        public string Key { get; set; }
+        public SymbolInfo Symbol { get; set; }
     }
 }

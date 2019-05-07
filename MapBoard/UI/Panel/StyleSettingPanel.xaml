@@ -9,83 +9,124 @@
              xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
              xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
              mc:Ignorable="d" >
-    <StackPanel Orientation="Vertical" >
-        <TextBox Margin="4,8" BorderThickness="0" Text="{Binding StyleName}" FontSize="16" HorizontalContentAlignment="Center"/>
+    <Grid>
 
-        <GroupBox Header="渲染器">
-            <Grid Margin="2,10,2,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                    <!--<RowDefinition Height="8"/>
+        <StackPanel Orientation="Vertical" >
+            <TextBox Margin="4,8" BorderThickness="0" Text="{Binding StyleName}" FontSize="16" HorizontalContentAlignment="Center"/>
+
+            <GroupBox Header="渲染器">
+                <StackPanel Orientation="Vertical">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="4"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="当前分类："/>
+                        <TextBlock x:Name="txtKey" Grid.Column="2" Text="{Binding SelectedKey.Key}"/>
+                        <flatstyle:Button Content="..." Click="KeyButtonClick" Grid.Column="4"/>
+                    </Grid>
+                    <Grid Margin="2,10,2,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!--<RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>-->
-                    <!--<RowDefinition Height="8"/>
+                            <!--<RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>-->
-                </Grid.RowDefinitions>
-                <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
+                        </Grid.RowDefinitions>
+                        <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
         <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>-->
 
-                <TextBlock Grid.Row="0" HorizontalAlignment="Right" Text="线宽/边框宽/点大小："/>
-                <flatstyle:TextBox x:Name="txtLineWidth" Grid.Row="0" Grid.Column="2" Text="{Binding LineWidth}"/>
 
-                <TextBlock Grid.Row="2"  HorizontalAlignment="Right"  Text="边框/线颜色："/>
-                <picker:ColorPickerTextBox x:Name="lineColorPicker" Grid.Row="2 " Grid.Column="2"  />
-                <TextBlock Grid.Row="4"  HorizontalAlignment="Right"  Text="填充/点颜色："/>
-                <picker:ColorPickerTextBox x:Name="fillColorPicker" Grid.Row="4 " Grid.Column="2" />
+                        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Text="线宽/边框宽/点大小："/>
+                        <flatstyle:TextBox x:Name="txtLineWidth" Grid.Row="0" Grid.Column="2" Text="{Binding LineWidth}"/>
+
+                        <TextBlock Grid.Row="2"  HorizontalAlignment="Right"  Text="边框/线颜色："/>
+                        <picker:ColorPickerTextBox x:Name="lineColorPicker" Grid.Row="2 " Grid.Column="2"  />
+                        <TextBlock Grid.Row="4"  HorizontalAlignment="Right"  Text="填充/点颜色："/>
+                        <picker:ColorPickerTextBox x:Name="fillColorPicker" Grid.Row="4 " Grid.Column="2" />
 
 
-                <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6"/>
+                        <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6"/>
 
                 <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2"/>-->
 
 
-            </Grid>
-        </GroupBox>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
 
-        <TextBlock/>
-        <GroupBox Header="标签格式">
-            <Grid Margin="2,10,2,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <TextBlock/>
+            <GroupBox Header="标签格式">
+                <Grid Margin="2,10,2,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="字体颜色" Grid.Row="0"/>
+                    <picker:ColorPickerTextBox x:Name="labelFillColor" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"/>
+                    <TextBlock Text="边框颜色" Grid.Row="2"/>
+                    <picker:ColorPickerTextBox x:Name="labelLineColor" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"/>
+                    <TextBlock Text="字体大小" Grid.Row="4"/>
+                    <flatstyle:TextBox  Grid.Row="4" Grid.Column="2"  Grid.ColumnSpan="3" Text="{Binding LabelFontSize}"/>
+                    <TextBlock Text="边框宽度" Grid.Row="6"/>
+                    <flatstyle:TextBox  Grid.Row="6" Grid.Column="2"  VerticalAlignment="Center"  Grid.ColumnSpan="3" Text="{Binding LabelStrokeThickness}"/>
+                    <TextBlock Text="最小比例" Grid.Row="8"/>
+                    <flatstyle:TextBox  Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Text="{Binding LabelMinScale}"/>
+                    <flatstyle:Button HorizontalAlignment="Right" Grid.Row="8" Grid.Column="4" Content="设为当前" Click="SetScaleButtonClick"/>
+
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+        <Popup x:Name="ppp" Placement="Bottom" StaysOpen="False">
+            <Grid Background="White">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+                <flatstyle:ListBox BorderThickness="0" ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}">
+                    <flatstyle:ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Key}"/>
+                        </DataTemplate>
+                    </flatstyle:ListBox.ItemTemplate>
+                </flatstyle:ListBox>
 
-                <TextBlock Text="字体颜色" Grid.Row="0"/>
-                <picker:ColorPickerTextBox x:Name="labelFillColor" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"/>
-                <TextBlock Text="边框颜色" Grid.Row="2"/>
-                <picker:ColorPickerTextBox x:Name="labelLineColor" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"/>
-                <TextBlock Text="字体大小" Grid.Row="4"/>
-                <flatstyle:TextBox  Grid.Row="4" Grid.Column="2"  Grid.ColumnSpan="3" Text="{Binding LabelFontSize}"/>
-                <TextBlock Text="边框宽度" Grid.Row="6"/>
-                <flatstyle:TextBox  Grid.Row="6" Grid.Column="2"  VerticalAlignment="Center"  Grid.ColumnSpan="3" Text="{Binding LabelStrokeThickness}"/>
-                <TextBlock Text="最小比例" Grid.Row="8"/>
-                <flatstyle:TextBox  Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Text="{Binding LabelMinScale}"/>
-                <flatstyle:Button HorizontalAlignment="Right" Grid.Row="8" Grid.Column="4" Content="设为当前" Click="SetScaleButtonClick"/>
-
+                <StackPanel Orientation="Horizontal" Grid.Row="2">
+                    <flatstyle:Button Content="新建" Click="CreateKeyButtonClick"  Margin="2"/>
+                    <flatstyle:Button x:Name="btnChangeKey" Click="ChangeKeyButtonClick" Content="修改"  Margin="2"/>
+                    <flatstyle:Button x:Name="btnDeleteKey" Click="DeleteKeyButtonClick" Content="删除"  Margin="2"/>
+                    <flatstyle:Button Content="关闭" Click="CloseButtonClick"  Margin="2"/>
+                </StackPanel>
             </Grid>
-        </GroupBox>
-    </StackPanel>
-
+        </Popup>
+    </Grid>
 </extension:ExtendedUserControl>

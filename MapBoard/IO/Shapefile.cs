@@ -78,9 +78,10 @@ namespace MapBoard.Main.IO
             await table.LoadAsync();
             bool info = table.Fields.Any(p => p.Name == Resource.DisplayFieldName && p.FieldType == FieldType.Text);
             bool date = table.Fields.Any(p => p.Name == Resource.TimeExtentFieldName && p.FieldType == FieldType.Date);
+            bool key = table.Fields.Any(p => p.Name == Resource.KeyFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            StyleInfo style = StyleHelper.CreateStyle(table.GeometryType);
+            StyleInfo style = StyleHelper.CreateStyle(table.GeometryType,null,Path.GetFileNameWithoutExtension(path));
             foreach (var feature in features)
             {
                 Feature newFeature = style.Table.CreateFeature();
@@ -92,6 +93,10 @@ namespace MapBoard.Main.IO
                 if (date)
                 {
                     newFeature.Attributes[Resource.TimeExtentFieldName] = feature.Attributes[Resource.TimeExtentFieldName];
+                }
+                if (key)
+                {
+                    newFeature.Attributes[Resource.KeyFieldName] = feature.Attributes[Resource.KeyFieldName];
                 }
 
                 await style.Table.AddFeatureAsync(newFeature);

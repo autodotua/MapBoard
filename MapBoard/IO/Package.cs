@@ -83,10 +83,12 @@ namespace MapBoard.Main.IO
             }
             StyleCollection.Instance.Save();
             var styles = StyleCollection.Instance.Styles.ToArray();
+            StyleCollection.Instance.SaveWhenChanged = false;
             StyleCollection.Instance.Styles.Clear();
             styles.ForEach(p => p.Table = null);
             ZipFile.CreateFromDirectory(Config.DataPath, path);
             styles.ForEach(p => StyleCollection.Instance.Styles.Add(p));
+            StyleCollection.Instance.SaveWhenChanged = true;
         }
         /// <summary>
         /// 导出图层包，实则是zip文件
@@ -100,6 +102,7 @@ namespace MapBoard.Main.IO
                 File.Delete(path);
             }
             int index = StyleCollection.Instance.Styles.IndexOf(style);
+            StyleCollection.Instance.SaveWhenChanged = false;
             StyleCollection.Instance.Styles.Remove(style);
             style.Table = null;
 
@@ -118,6 +121,7 @@ namespace MapBoard.Main.IO
 
             ZipFile.CreateFromDirectory(tempDirectoryPath, path);
             StyleCollection.Instance.Styles.Insert(index, style);
+            StyleCollection.Instance.SaveWhenChanged = true;
             Directory.Delete(tempDirectoryPath, true);
         }
     }

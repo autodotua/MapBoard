@@ -120,6 +120,9 @@
   <data name="DisplayFieldName" xml:space="preserve">
     <value>Info</value>
   </data>
+  <data name="KeyFieldName" xml:space="preserve">
+    <value>Key</value>
+  </data>
   <data name="LabelJson" xml:space="preserve">
     <value>{
   "labelExpressionInfo": {

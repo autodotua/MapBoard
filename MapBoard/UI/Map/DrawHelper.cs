@@ -19,6 +19,7 @@ namespace MapBoard.Main.UI.Map
         }
 
         public string Label { get; set; }
+        public string Key { get; set; }
         public DateTimeOffset? Date { get; set; }
         private ArcMapView Mapview => ArcMapView.Instance;
 
@@ -103,6 +104,7 @@ namespace MapBoard.Main.UI.Map
                 {
                     feature.Attributes[Resource.TimeExtentFieldName] = null;
                 }
+                feature.Attributes[Resource.KeyFieldName] = Key;
                 await table.AddFeatureAsync(feature);
 
                 StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();

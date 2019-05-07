@@ -53,7 +53,9 @@ namespace MapBoard.Main.Style
             {
                 if (instance == null)
                 {
+
                     instance = TryOpenOrCreate<StyleCollection>(System.IO.Path.Combine(Config.DataPath, "styles.json"));
+                    instance.Settings.Formatting = Formatting.Indented;
                     if (instance.Styles.Count > 0)
                     {
                         var styles = instance.Styles.ToArray();
@@ -70,8 +72,7 @@ namespace MapBoard.Main.Style
                     {
                         instance.Selected = instance.Styles[instance.SelectedIndex];
                     }
-                    instance.Settings.Formatting = Formatting.Indented;
-                    instance.canSave = true;
+                    instance.SaveWhenChanged = true;
                     //try
                     //{
                     //    instance = JsonConvert.DeserializeObject<StyleCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
@@ -88,7 +89,7 @@ namespace MapBoard.Main.Style
                 return instance;
             }
         }
-        private bool canSave = false;
+        public bool SaveWhenChanged { get; set; } = false;
         //public void Save()
         //{
         //    File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
@@ -139,7 +140,7 @@ namespace MapBoard.Main.Style
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
             }
-            if(canSave)
+            if(SaveWhenChanged)
             {
                 Save();
             }
@@ -205,7 +206,7 @@ namespace MapBoard.Main.Style
 
         public static void ResetStyles()
         {
-            instance.canSave = false;
+            instance.SaveWhenChanged = false;
             instance.Styles.Clear();
             instance = null;
             var useless = Instance;
