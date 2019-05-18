@@ -37,9 +37,6 @@
     <Reference Include="Esri.ArcGISRuntime, Version=100.4.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
     </Reference>
-    <Reference Include="FzGeographyLib">
-      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzGeographyLib.dll</HintPath>
-    </Reference>
     <Reference Include="FzStandardLib">
       <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
     </Reference>
@@ -49,9 +46,13 @@
     <Reference Include="FzWpfLib">
       <HintPath>..\..\模块\Release\AnyCPU\FzWpfLib.dll</HintPath>
     </Reference>
+    <Reference Include="GIS.Core">
+      <HintPath>..\..\GIS\Release\netstandard2.1\GIS.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="netstandard" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

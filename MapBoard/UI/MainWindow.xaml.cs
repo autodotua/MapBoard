@@ -4,8 +4,6 @@ using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
-using FzLib.Geography.Coordinate;
-using FzLib.Geography.Coordinate.Convert;
 using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
@@ -38,7 +36,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static FzLib.Basic.Loop;
-using static FzLib.Geography.Analysis.SpeedAnalysis;
 
 namespace MapBoard.Main.UI
 {

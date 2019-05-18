@@ -1,20 +1,22 @@
 ﻿using Esri.ArcGISRuntime.UI;
-using FzLib.Geography.Format;
+using GIS.IO.Gpx;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace MapBoard.GpxToolbox
 {
-    public class TrajectoryInfo
+    public class TrackInfo
     {
      
-        public static ObservableCollection<TrajectoryInfo> Trajectories { get; } = new ObservableCollection<TrajectoryInfo>();
+        public static ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
   
         public string FilePath { get; set; }
         public GraphicsOverlay Overlay { get; set; }
-        public GpxInfo Gpx { get; set; }
+        public GIS.IO.Gpx.Gpx Gpx { get; set; }
         public int TrackIndex { get; set; }
         public string FileName => Path.GetFileNameWithoutExtension(FilePath);
-        public GpxTrackInfo Track => Gpx.Tracks[TrackIndex];
+        public GpxTrack Track => Gpx.Tracks[TrackIndex];
+
+
     }
 }

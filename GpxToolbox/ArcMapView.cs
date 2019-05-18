@@ -6,8 +6,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Extension;
-using FzLib.Geography.Coordinate.Convert;
-using FzLib.Geography.Format;
+using GIS.IO.Gpx;
 using MapBoard.Common;
 using System;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ using System.Windows;
 using System.Windows.Input;
 using static MapBoard.GpxToolbox.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
-using GeoPoint = FzLib.Geography.Coordinate.GeoPoint;
+using GeoPoint = GIS.Geometry.GeoPoint;
 
 namespace MapBoard.GpxToolbox
 {
@@ -48,16 +47,16 @@ namespace MapBoard.GpxToolbox
 
 
             ClearSelection();
-            IEnumerable<TrajectoryInfo> trajectories = null;
+            IEnumerable<TrackInfo> Track = null;
             if (SelectionMode == SelectionModes.SelectedLayer)
             {
-                trajectories = new TrajectoryInfo[] { SelectedTrajectorie };
+                Track = new TrackInfo[] { SelectedTrack };
             }
             else
             {
-                trajectories = TrajectoryInfo.Trajectories;
+                Track = TrackInfo.Tracks;
             }
-            foreach (var trajectory in trajectories)
+            foreach (var trajectory in Track)
             {
                 var overlay = trajectory.Overlay;
 
@@ -82,7 +81,7 @@ namespace MapBoard.GpxToolbox
 
         public async void LoadFiles(IEnumerable<string> files)
         {
-            List<TrajectoryInfo> loadedTrajectories = new List<TrajectoryInfo>();
+            List<TrackInfo> loadedTrack = new List<TrackInfo>();
             foreach (var file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
@@ -107,15 +106,15 @@ namespace MapBoard.GpxToolbox
                     }
                     else
                     {
-                        var exist = TrajectoryInfo.Trajectories.FirstOrDefault(p => p.FilePath == file);
+                        var exist = TrackInfo.Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist != null)
                         {
                             GraphicsOverlays.Remove(exist.Overlay);
-                            TrajectoryInfo.Trajectories.Remove(exist);
+                            TrackInfo.Tracks.Remove(exist);
                         }
                         else
                         {
-                            loadedTrajectories.AddRange(await LoadGpx(file, false));
+                            loadedTrack.AddRange(await LoadGpx(file, false));
                         }
                     }
                 }
@@ -124,16 +123,16 @@ namespace MapBoard.GpxToolbox
                     Log.ErrorLogs.Add(ex.Message);
                 }
             }
-            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrajectories.ToArray()));
+            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray()));
         }
-        public TwoWayDictionary<GeoPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<GeoPoint, Graphic>();
+        public TwoWayDictionary<GpxPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
-        private Dictionary<GeoPoint, TrajectoryInfo> pointToTrajectoryInfo = new Dictionary<GeoPoint, TrajectoryInfo>();
-        public void SelectPoint(GeoPoint point)
+        public Dictionary<GpxPoint, TrackInfo> pointToTrackInfo = new Dictionary<GpxPoint, TrackInfo>();
+        public void SelectPoint(GpxPoint point)
         {
             SelectPoint(mapPointAndGraphics[point]);
         }
-        public void SelectPointTo(GeoPoint point)
+        public void SelectPointTo(GpxPoint point)
         {
             if (point == null)
             {
@@ -141,8 +140,12 @@ namespace MapBoard.GpxToolbox
                 return;
             }
             bool isOk = false;
-            foreach (var p in pointToTrajectoryInfo[point].Gpx.Tracks[pointToTrajectoryInfo[point].TrackIndex].Points)
+            foreach (var p in pointToTrackInfo[point].Gpx.Tracks[pointToTrackInfo[point].TrackIndex].Points)
             {
+                if (p == null)
+                {
+                    return;
+                }
                 if (point == p)
                 {
                     isOk = true;
@@ -160,13 +163,16 @@ namespace MapBoard.GpxToolbox
                 }
                 else
                 {
-                    SelectPoint(mapPointAndGraphics[p]);
+                    if (mapPointAndGraphics.ContainsKey(p))
+
+                    {
+                        SelectPoint(mapPointAndGraphics[p]);
+                    }
                 }
             }
         }
         public void SelectPoint(Graphic point)
         {
-
             point.Symbol = GetSelectedSymbol();
             selectedPoints.Add(point);
         }
@@ -197,68 +203,104 @@ namespace MapBoard.GpxToolbox
         }
 
 
-        public async Task<List<TrajectoryInfo>> LoadGpx(string filePath, bool raiseEvent)
+        public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
         {
             string gpxContent = File.ReadAllText(filePath);
-            GpxInfo info = null;
+            Gpx gpx = null;
             await Task.Run(() =>
              {
-                 info = GpxInfo.FromString(gpxContent);
+                 gpx = Gpx.FromString(gpxContent);
              });
-            List<TrajectoryInfo> loadedTrajectories = new List<TrajectoryInfo>();
-            for (int i = 0; i < info.Tracks.Count; i++)
+            List<TrackInfo> loadedTrack = new List<TrackInfo>();
+            for (int i = 0; i < gpx.Tracks.Count; i++)
             {
                 var overlay = new GraphicsOverlay() { Renderer = GetNormalOverlayRenderer() };
-                var trajectoryInfo = new TrajectoryInfo()
+                var trackInfo = new TrackInfo()
                 {
                     FilePath = filePath,
                     Overlay = overlay,
                     TrackIndex = i,
-                    Gpx = info,
-                };
-                try
+                    Gpx = gpx,
+                }; try
                 {
-                    // List<MapPoint> points = info.Tracks[0].GetOffsetPoints(OffsetNorth, OffsetEast);
-                    foreach (var item in trajectoryInfo.Track.Points)
-                    {
-                        pointToTrajectoryInfo.Add(item, trajectoryInfo);
-                        GeoPoint newP = item;
-                        if (Config.Instance.BasemapCoordinateSystem!="WGS84")
-                        {
-                            CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
-                            transformation.TransformateSelf(newP);
-                        }
-
-                        ArcMapPoint point = new ArcMapPoint(newP.Longitude, newP.Latitude, SpatialReferences.Wgs84);
-                        Graphic graphic = new Graphic(point);
-                        mapPointAndGraphics.Add(item, graphic);
-                        overlay.Graphics.Add(graphic);
-                    }
-                    GraphicsOverlays.Add(overlay);
-                    TrajectoryInfo.Trajectories.Add(trajectoryInfo);
-                    loadedTrajectories.Add(trajectoryInfo);
+                    LoadTrack(trackInfo);
+                    loadedTrack.Add(trackInfo);
                 }
                 catch (Exception ex)
                 {
-                    Log.ErrorLogs.Add("加载gpx文件" + filePath + "的Track" + i.ToString() + "错误：" + ex.Message);
+                    Log.ErrorLogs.Add("加载gpx文件" + filePath + "的Track(" + i.ToString() + ")错误：" + ex.Message);
                 }
+
             }
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrajectories.ToArray()));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray()));
             }
 
-            return loadedTrajectories;
+            return loadedTrack;
 
         }
-        private TrajectoryInfo selectedTrajectorie = null;
 
-        public TrajectoryInfo SelectedTrajectorie
+        public void LoadTrack(TrackInfo trackInfo, bool update = false)
         {
-            get => selectedTrajectorie;
+
+            if (update)
+            {
+                trackInfo.Overlay.Graphics.Clear();
+            }
+            // List<MapPoint> points = info.Tracks[0].GetOffsetPoints(OffsetNorth, OffsetEast);
+            foreach (var p in trackInfo.Track.Points)
+            {
+                if (update)
+                {
+                    if (!pointToTrackInfo.ContainsKey(p))
+                    {
+                        pointToTrackInfo.Add(p, trackInfo);
+
+                    }
+                }
+                else
+                {
+                    pointToTrackInfo.Add(p, trackInfo);
+                }
+                GeoPoint newP = p;
+                if (Config.Instance.BasemapCoordinateSystem != "WGS84")
+                {
+                    CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
+                    transformation.TransformateSelf(newP);
+                }
+
+                ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, SpatialReferences.Wgs84);
+                Graphic graphic = new Graphic(point);
+                if (update)
+                {
+                    if (!mapPointAndGraphics.ContainsKey(p))
+                    {
+                        mapPointAndGraphics.Add(p, graphic);
+                    }
+                }
+                else
+                {
+                    mapPointAndGraphics.Add(p, graphic);
+                }
+                trackInfo.Overlay.Graphics.Add(graphic);
+            }
+            if (!update)
+            {
+                GraphicsOverlays.Add(trackInfo.Overlay);
+                TrackInfo.Tracks.Add(trackInfo);
+            }
+
+        }
+
+        private TrackInfo selectedTrack = null;
+
+        public TrackInfo SelectedTrack
+        {
+            get => selectedTrack;
             set
             {
-                selectedTrajectorie = value;
+                selectedTrack = value;
                 if (value != null && value.Overlay != GraphicsOverlays.Last())
                 {
                     GraphicsOverlays.Remove(value.Overlay);
@@ -270,14 +312,14 @@ namespace MapBoard.GpxToolbox
         public event PropertyChangedEventHandler PropertyChanged;
         public class PointSelectedEventArgs : EventArgs
         {
-            public PointSelectedEventArgs(TrajectoryInfo trajectory, GeoPoint point)
+            public PointSelectedEventArgs(TrackInfo trajectory, GpxPoint point)
             {
                 Trajectory = trajectory;
                 Point = point;
             }
 
-            public TrajectoryInfo Trajectory { get; private set; }
-            public GeoPoint Point { get; private set; }
+            public TrackInfo Trajectory { get; private set; }
+            public GpxPoint Point { get; private set; }
         }
         public delegate void PointSelectedEventHandler(object sender, PointSelectedEventArgs e);
         public event PointSelectedEventHandler PointSelected;
@@ -285,12 +327,12 @@ namespace MapBoard.GpxToolbox
 
         public class GpxLoadedEventArgs : EventArgs
         {
-            public GpxLoadedEventArgs(TrajectoryInfo[] trajectories)
+            public GpxLoadedEventArgs(TrackInfo[] track)
             {
-                Trajectories = trajectories;
+                Track = track;
             }
 
-            public TrajectoryInfo[] Trajectories { get; private set; }
+            public TrackInfo[] Track { get; private set; }
         }
         public delegate void GpxLoadedEventHandler(object sender, GpxLoadedEventArgs e);
         public event GpxLoadedEventHandler GpxLoaded;

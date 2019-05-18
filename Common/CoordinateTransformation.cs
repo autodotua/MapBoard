@@ -1,11 +1,13 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Geography.Coordinate;
+using GIS.CoordinateSystems.Transformations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FzGISGeo = GIS.Geometry;
+using GeoPoint = GIS.Geometry.GeoPoint;
 
 namespace MapBoard.Common
 {
@@ -138,11 +140,11 @@ namespace MapBoard.Common
             {
                 MapPoint wgs84 = GeoPointToWgs84(point);
                 GeoPoint newPoint = FromWgs84GeoPoint(wgs84);
-                return new MapPoint(newPoint.Longitude, newPoint.Latitude);
+                return new MapPoint(newPoint.X, newPoint.Y);
             }
             else
             {
-                return new MapPoint(point.Longitude, point.Latitude);
+                return new MapPoint(point.X, point.Y);
             }
         }
         /// <summary>
@@ -156,8 +158,8 @@ namespace MapBoard.Common
             {
                 MapPoint wgs84 = GeoPointToWgs84(point);
                 GeoPoint newPoint = FromWgs84GeoPoint(wgs84);
-                point.Latitude = newPoint.Latitude;
-                point.Longitude = newPoint.Longitude;
+                point.X = newPoint.X;
+                point.Y = newPoint.Y;
             }
         }
         /// <summary>
@@ -173,8 +175,8 @@ namespace MapBoard.Common
                     return point;
                 case "GCJ02":
                     GeoPoint geoPoint = new GeoPoint(point.Y, point.X);
-                    GeoPoint newPoint = FzLib.Geography.Coordinate.Convert.GeoCoordConverter.GCJ02ToWGS84(geoPoint);
-                    return new MapPoint(newPoint.Longitude, newPoint.Latitude, Wgs84);
+                    GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(geoPoint);
+                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
                 case "CGCS2000":
                     MapPoint cgcs2000Point = new MapPoint(point.X, point.Y, Cgcs2000);
                     return GeometryEngine.Project(cgcs2000Point, Wgs84) as MapPoint;
@@ -195,8 +197,8 @@ namespace MapBoard.Common
                     return point;
                 case "GCJ02":
                     GeoPoint geoPoint = new GeoPoint(point.Y, point.X);
-                    GeoPoint newPoint = FzLib.Geography.Coordinate.Convert.GeoCoordConverter.WGS84ToGCJ02(geoPoint);
-                    return new MapPoint(newPoint.Longitude, newPoint.Latitude, Wgs84);
+                    GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
+                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
                 case "CGCS2000":
                     return GeometryEngine.Project(point, Cgcs2000) as MapPoint;
                 default:
@@ -215,12 +217,12 @@ namespace MapBoard.Common
             switch (From)
             {
                 case "WGS84":
-                    return new MapPoint(point.Longitude, point.Latitude, Wgs84);
+                    return new MapPoint(point.X, point.Y, Wgs84);
                 case "GCJ02":
-                    GeoPoint newPoint = FzLib.Geography.Coordinate.Convert.GeoCoordConverter.GCJ02ToWGS84(point);
-                    return new MapPoint(newPoint.Longitude, newPoint.Latitude, Wgs84);
+                    GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(point);
+                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
                 case "CGCS2000":
-                    MapPoint arcPoint = new MapPoint(point.Longitude, point.Latitude, Cgcs2000);
+                    MapPoint arcPoint = new MapPoint(point.X, point.Y, Cgcs2000);
                     return GeometryEngine.Project(arcPoint, Wgs84) as MapPoint;
                 default:
                     throw new Exception("未知坐标系");
@@ -236,13 +238,13 @@ namespace MapBoard.Common
             switch (To)
             {
                 case "WGS84":
-                    return new GeoPoint(point.Y, point.X);
+                    return new GeoPoint(point.X, point.Y);
                 case "GCJ02":
-                    GeoPoint geoPoint = new GeoPoint(point.Y, point.X);
-                    return FzLib.Geography.Coordinate.Convert.GeoCoordConverter.WGS84ToGCJ02(geoPoint);
+                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
+                    return ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
                 case "CGCS2000":
                     MapPoint wgs84Point = GeometryEngine.Project(point, Wgs84) as MapPoint;
-                    return new GeoPoint(wgs84Point.Y, wgs84Point.X);
+                    return new GeoPoint(wgs84Point.X, wgs84Point.Y);
                 default:
                     throw new Exception("未知坐标系");
             }

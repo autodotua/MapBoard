@@ -106,6 +106,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <flatstyle:TextBox Grid.ColumnSpan="3" Text="{Binding Name}" FontSize="16" TextAlignment="Center"/>
@@ -123,24 +125,34 @@
                     <flatstyle:TextBox x:Name="txtMovingTime" Grid.Row="12" Grid.Column="2" IsReadOnly="True"/>
                     <TextBlock HorizontalAlignment="Right" Grid.Row="14" Text="最大速度："/>
                     <flatstyle:TextBox x:Name="txtMaxSpeed" Grid.Row="14" Grid.Column="2" IsReadOnly="True"/>
-                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="100" SelectionChanged="PointsGridSelectionChanged" VerticalScrollBarVisibility="Visible" CanUserAddRows="False" CanUserDeleteRows="False"  Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
+                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="16" SelectionChanged="PointsGridSelectionChanged" VerticalScrollBarVisibility="Visible" CanUserAddRows="False" CanUserDeleteRows="True"  Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="计算速度" Click="SpeedMenuItemClick" />
+                                <MenuItem Header="删除" Click="DeletePointMenuClick" />
+                                <MenuItem Header="在之前插入" Click="InsertPointButtonClick" Tag="Before"/>
+                                <MenuItem Header="在之后插入" Click="InsertPointButtonClick" Tag="After"/>
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Resources>
                             <local:SpeedValueConverter x:Key="speedConverter"/>
                         </DataGrid.Resources>
                         <win10style:AzureDataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Time}" Header="时间" IsReadOnly="True"/>
-                            <DataGridTextColumn Binding="{Binding Latitude}" Header="纬度" IsReadOnly="True"/>
-                            <DataGridTextColumn Binding="{Binding Longitude}" Header="经度" IsReadOnly="True"/>
-                            <DataGridTextColumn Binding="{Binding Altitude}" Header="海拔" IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding Time}" Header="时间" IsReadOnly="False"/>
+                            <DataGridTextColumn Binding="{Binding Y}" Header="纬度" IsReadOnly="False"/>
+                            <DataGridTextColumn Binding="{Binding X}" Header="经度" IsReadOnly="False"/>
+                            <DataGridTextColumn Binding="{Binding Z}" Header="海拔" IsReadOnly="False"/>
                             <DataGridTextColumn Binding="{Binding Speed, Converter={StaticResource speedConverter}}" Header="速度" IsReadOnly="True"/>
                         </win10style:AzureDataGrid.Columns>
                     </win10style:AzureDataGrid>
-
+                    <Grid Grid.Row="18" Grid.ColumnSpan="3">
+                        <Grid.ColumnDefinitions >
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <flatstyle:Button Content="刷新" Click="UpdateTrackButtonClick"/>
+                    </Grid>
                 </Grid>
             </win10style:ModernExpander>
             <StackPanel Grid.Row="4">
@@ -161,8 +173,9 @@
                     <flatstyle:Button Content="识别点" Click="IdentifyButtonClick"/>
                     <flatstyle:Button Grid.Column="2" Content="识别轨迹" Click="IdentifyAllButtonClick"/>
                     <flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick"/>
-                    <flatstyle:Button Content="高程偏移" Grid.Row="2" Click="Button_Click_2"/>
-                    <flatstyle:Button Content="导出" Grid.Row="2" Grid.Column="4" Click="Button_Click"/>
+                    <flatstyle:Button Content="高程偏移" Grid.Row="2" Click="ElevationOffsetButtonClick"/>
+                    <flatstyle:Button Content="重置" Grid.Row="2" Grid.Column="2" Click="ResetTrackButtonClick"/>
+                    <flatstyle:Button Content="导出" Grid.Row="2" Grid.Column="4" Click="SaveFileButtonClick"/>
 
                 </Grid>
             </StackPanel>
@@ -208,24 +221,33 @@
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
         </Grid>
         <win10style:ModernExpander Header="文件" Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <StackPanel Orientation="Vertical"  Background="#BBFFFFFF">
-
+            <Grid   Background="#BBFFFFFF">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <flatstyle:Button Content="导入"   Click="Button_Click_1"/>
+                    <flatstyle:Button Content="导入"   Click="OpenFilesButtonClick"/>
                     <FrameworkElement Width="8"/>
-                    <flatstyle:Button Content="清空"   Click="Button_Click_3"/>
+                    <flatstyle:Button Content="清空"   Click="ClearFileListButtonClick"/>
 
                 </StackPanel>
-                <FrameworkElement Height="8"/>
-                <flatstyle:ListView x:Name="lvwFiles" SelectionMode="Extended" SelectionChanged="FileSelectionChanged" ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrajectoryInfo.Trajectories}}">
+                <flatstyle:ListView Grid.Row="2" x:Name="lvwFiles" SelectionMode="Extended" SelectionChanged="FileSelectionChanged" ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrackInfo.Tracks}}">
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="删除" Click="RemoveTrackFileMenuClick"/>
+                            <MenuItem Header="连接" Click="LinkTrackMenuClick"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding FileName}" />
+                            <GridViewColumn Header="文件名" Width="144" DisplayMemberBinding="{Binding FileName}" />
                             <GridViewColumn Header="轨迹索引" DisplayMemberBinding="{Binding TrackIndex}" />
                         </GridView>
                     </ListView.View>
                 </flatstyle:ListView>
-            </StackPanel>
+            </Grid>
         </win10style:ModernExpander>
         <win10style:ModernExpander  Header="日志" ExpandDirection="Up" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <flatstyle:ListBox Height="96" ItemsSource="{Binding  Source={x:Static local:Log.ErrorLogs}}"/>

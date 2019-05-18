@@ -1,6 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Geography.Format;
 using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Main.Helper;
@@ -26,7 +25,7 @@ namespace MapBoard.Main.IO
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
-            var gpx = GpxInfo.FromString(content);
+            var gpx = GIS.IO.Gpx.Gpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
             StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
@@ -96,7 +95,7 @@ namespace MapBoard.Main.IO
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
-            var gpx = GpxInfo.FromString(content);
+            var gpx = GIS.IO.Gpx.Gpx.FromString(content);
             FeatureTable table = style.Table;
             CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
             List<Feature> importedFeatures = new List<Feature>();
