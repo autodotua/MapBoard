@@ -37,7 +37,7 @@
 
 1.  主界面介绍
 
-![](media/4139a2a9056eec28a5bf1a65161ae01d.png)
+![](docPic/image1.png)
 
 1.  基本操作
 
