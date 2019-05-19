@@ -51,6 +51,10 @@ namespace MapBoard.Common
 
         public double StaticWidth { get; set; } = 100;
 
+        public bool GpxHeight { get; set; } = true;
+        public double GpxHeightExaggeratedMagnification { get; set; } = 5;
+        public bool GpxRelativeHeight { get; set; } = true;
+
         public override void Save()
         {
             base.Save();

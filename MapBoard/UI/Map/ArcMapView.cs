@@ -10,6 +10,7 @@ using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.IO;
 using MapBoard.Common;
+using MapBoard.Main.IO;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI.Map;
 using System;
@@ -42,7 +43,12 @@ namespace MapBoard.Main.UI.Map
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
-            SketchEditor.EditConfiguration.AllowMove = SketchEditor.EditConfiguration.AllowRotate = SketchEditor.EditConfiguration.AllowVertexEditing = true;
+            //SketchEditor.EditConfiguration=new SketchEditConfiguration()
+            //{
+            //    AllowMove=true,
+            //    AllowRotate=true,AllowVertexEditing=true,
+            //}
+            //SketchEditor.EditConfiguration.AllowMove = SketchEditor.EditConfiguration.AllowRotate = SketchEditor.EditConfiguration.AllowVertexEditing = true;
 
             Edit = new EditHelper();
             Selection = new SelectionHelper();
@@ -215,7 +221,7 @@ namespace MapBoard.Main.UI.Map
                     SketchEditor.RedoCommand.Execute(null);
                     break;
             }
-     
+
         }
 
 
@@ -243,5 +249,6 @@ namespace MapBoard.Main.UI.Map
         {
             await this.LoadBaseMapsAsync();
         }
+
     }
 }

@@ -55,6 +55,9 @@ namespace MapBoard.Main.UI.Panel
             new MapBoard.TileDownloaderSplicer.MainWindow().Show();
         }
 
-  
+        private void GpxHeightCheckBoxCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            //stkGpxHeight.Visibility = (sender as CheckBox).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 }

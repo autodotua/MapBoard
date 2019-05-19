@@ -12,10 +12,53 @@ namespace MapBoard.Common
     public static class MapHelper
     {
         /// <summary>
-        /// 为ArcMapView加载底图
+        /// 为ArcSceneView加载底图
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
+        public async static Task<bool> LoadBaseMapsAsync(this SceneView map)
+        {
+            if (!Config.Instance.Url.Contains("{x}") || !Config.Instance.Url.Contains("{y}") || !Config.Instance.Url.Contains("{z}"))
+            {
+                TaskDialog.ShowError("瓦片地址不包含足够的信息！");
+                return false;
+            }
+
+            try
+            {
+                WebTiledLayer baseLayer;
+
+                Basemap basemap = new Basemap();
+                foreach (var url in Config.Instance.Urls)
+                {
+                    baseLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+                    basemap.BaseLayers.Add(baseLayer);
+                }
+
+                await basemap.LoadAsync();
+                if (map.Scene != null)
+                {
+                    map.Scene.Basemap = basemap;
+                }
+                else
+                {
+                    map.Scene = new Scene(basemap);
+                }
+
+                await map.Scene.LoadAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.ShowException(ex, "加载地图失败");
+                return false;
+            }
+        }
+        /// <summary>
+         /// 为ArcMapView加载底图
+         /// </summary>
+         /// <param name="map"></param>
+         /// <returns></returns>
         public async static Task<bool> LoadBaseMapsAsync(this MapView map)
         {
             if (!Config.Instance.Url.Contains("{x}") || !Config.Instance.Url.Contains("{y}") || !Config.Instance.Url.Contains("{z}"))

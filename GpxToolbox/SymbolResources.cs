@@ -10,25 +10,31 @@ namespace MapBoard.GpxToolbox
 {
    public static class SymbolResources
     {
-        public static SimpleRenderer GetNormalOverlayRenderer() => new SimpleRenderer(new SimpleMarkerSymbol()
+        public static SimpleRenderer NormalPointRenderer => null;
+        //    new SimpleRenderer(new SimpleMarkerSymbol()
+        //{
+        //    Color = Color.Red,
+        //    Size = 0,
+        //    Style = SimpleMarkerSymbolStyle.Circle,
+        //});
+        public static SimpleLineSymbol NormalLineSymbol =>
+ new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Blue, 3);
+
+        public static SimpleRenderer CurrentPointRenderer => new SimpleRenderer(new SimpleMarkerSymbol()
         {
             Color = Color.Red,
             Size = 3,
             Style = SimpleMarkerSymbolStyle.Circle,
         });
 
-        public static SimpleRenderer GetCurrentOverlayRenderer() => new SimpleRenderer(new SimpleMarkerSymbol()
-        {
-            Color = Color.Blue,
-            Size = 3,
-            Style = SimpleMarkerSymbolStyle.Circle,
-        });
 
+        public static SimpleLineSymbol CurrentLineSymbol => 
+         new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Red, 3);
 
-        public static SimpleMarkerSymbol GetSelectedSymbol() => new SimpleMarkerSymbol()
+        public static SimpleMarkerSymbol SelectedPointSymbol=> new SimpleMarkerSymbol()
         {
-            Color = Color.Green,
-            Size = 5,
+            Color = Color.Red,
+            Size = 6,
             Style = SimpleMarkerSymbolStyle.Circle,
         };
     }

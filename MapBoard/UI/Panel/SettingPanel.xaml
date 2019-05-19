@@ -12,33 +12,65 @@
              d:DesignHeight="450" d:DesignWidth="200">
     <Grid>
         <StackPanel>
-          
-            <TextBlock Text="底图坐标系：" />
-            <flat:UneditableComboBox SelectedItem="{Binding Config.BasemapCoordinateSystem}" >
-                <system:String >WGS84</system:String>
-                <system:String >CGCS2000</system:String>
-                <system:String >GCJ02</system:String>
-            </flat:UneditableComboBox>
-            <FrameworkElement Height="12"/>
-            <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
-            <FrameworkElement Height="12"/>
-            <TextBlock Text="瓦片地图地址："/>
-            <FrameworkElement Height="4"/>
+            <GroupBox Header="通用">
+                <StackPanel>
+                    <FrameworkElement Height="8"/>
 
-            <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
-            <FrameworkElement Height="4"/>
+                    <TextBlock Text="底图坐标系：" />
+                    <flat:UneditableComboBox SelectedItem="{Binding Config.BasemapCoordinateSystem}" >
+                        <system:String >WGS84</system:String>
+                        <system:String >CGCS2000</system:String>
+                        <system:String >GCJ02</system:String>
+                    </flat:UneditableComboBox>
+                    <FrameworkElement Height="12"/>
+                    <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
+                    <FrameworkElement Height="12"/>
+                    <TextBlock Text="瓦片地图地址："/>
+                    <FrameworkElement Height="4"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                <flat:Button Content="默认" Click="ResetUrlButtonClick"/>
-                <FrameworkElement Width="8"/>
-                <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
+                    <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
+                    <FrameworkElement Height="4"/>
 
-            </StackPanel>
-            <FrameworkElement Height="12"/>
-            <TextBlock>缓冲区半径（米）：</TextBlock>
-            <FrameworkElement Height="4"/>
-            <flat:TextBox Text="{Binding Config.StaticWidth}"/>
-            <FrameworkElement Height="12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                        <flat:Button Content="默认" Click="ResetUrlButtonClick"/>
+                        <FrameworkElement Width="8"/>
+                        <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
+
+                    </StackPanel>
+                    <FrameworkElement Height="12"/>
+
+
+                </StackPanel>
+
+            </GroupBox>
+
+            <FrameworkElement Height="24"/>
+            <GroupBox Header="地图画板">
+                <StackPanel>
+                    <FrameworkElement Height="8"/>
+                    <TextBlock>缓冲区半径（米）：</TextBlock>
+                    <FrameworkElement Height="4"/>
+                    <flat:TextBox Text="{Binding Config.StaticWidth}"/>
+                </StackPanel>
+            </GroupBox>
+
+            <FrameworkElement Height="24"/>
+            <GroupBox Header="GPX工具箱">
+                <StackPanel>
+                    <FrameworkElement Height="8"/>
+                    <flat:CheckBox x:Name="chkGpxHeight" Content="展示高度" IsChecked="{Binding Config.GpxHeight}" Checked="GpxHeightCheckBoxCheckedChanged" Unchecked="GpxHeightCheckBoxCheckedChanged"/>
+                    <StackPanel x:Name="stkGpxHeight" IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}">
+                    <FrameworkElement Height="12"/>
+                    <flat:CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.GpxRelativeHeight}"/>
+                    <FrameworkElement Height="12"/>
+
+                    <TextBlock>高度夸大倍率：</TextBlock>
+                    <FrameworkElement Height="4"/>
+                    <flat:TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}"/>
+                </StackPanel>
+                </StackPanel>
+            </GroupBox>
+
         </StackPanel>
 
         <StackPanel VerticalAlignment="Bottom">
@@ -46,6 +78,6 @@
             <FrameworkElement Height="12"/>
             <flat:Button Content="瓦片下载拼接" Click="Button_Click_1"/>
         </StackPanel>
-  
+
     </Grid>
 </extension:ExtendedUserControl>

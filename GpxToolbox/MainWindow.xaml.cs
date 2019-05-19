@@ -24,6 +24,7 @@ using static MapBoard.GpxToolbox.SymbolResources;
 using MessageBox = FzLib.Control.Dialog.MessageBox;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
 using FzLib.Control.Extension;
+using Esri.ArcGISRuntime.Symbology;
 
 namespace MapBoard.GpxToolbox
 {
@@ -33,14 +34,17 @@ namespace MapBoard.GpxToolbox
     public partial class MainWindow : MainWindowBase
     {
         private const string TrackFilePath = "Track.ini";
+        private string[] loadNeeded = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
-        public MainWindow()
+        public MainWindow(string[] load = null)
         {
+            loadNeeded = load;
             InitializeComponent();
             InitializeChart();
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
             //TaskDialog.DefaultOwner = this;
+
         }
 
         private void InitializeChart()
@@ -77,25 +81,6 @@ namespace MapBoard.GpxToolbox
             chartHelper.LinePointEnbale = p => p.Speed > 0.2;
         }
 
-        protected override void OnDrop(DragEventArgs e)
-        {
-            base.OnDrop(e);
-            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
-            if(files==null || files.Length==0)
-            {
-                return;
-            }
-            bool yes = true;
-            if (files.Length > 10)
-            {
-                yes = false;
-                yes = TaskDialog.ShowWithYesNoButtons("导入文件较多，是否确定导入？", $"导入{files.Length}个文件") == true;
-            }
-            if (yes)
-            {
-                arcMap.LoadFiles(files);
-            }
-        }
 
         private void WindowClosing(object sender, CancelEventArgs e)
         {
@@ -118,7 +103,7 @@ namespace MapBoard.GpxToolbox
 
             if (arcMap.SelectedTrack != null)
             {
-                arcMap.SelectedTrack.Overlay.Renderer = GetNormalOverlayRenderer();
+                arcMap.SelectedTrack.Overlay.Renderer = NormalPointRenderer;
             }
             if (lvwFiles.SelectedItem == null)
             {
@@ -136,10 +121,11 @@ namespace MapBoard.GpxToolbox
             {
                 arcMap.SelectedTrack = lvwFiles.SelectedItem as TrackInfo;
 
-                arcMap.SelectedTrack.Overlay.Renderer = GetCurrentOverlayRenderer();
+                arcMap.SelectedTrack.Overlay.Renderer = CurrentPointRenderer;
+                arcMap.SelectedTrack.Overlay.Graphics[0].Symbol = CurrentLineSymbol;
                 GIS.Geometry.Envelope extent = arcMap.SelectedTrack.Track.Points.Extent;
                 var esriExtent = new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax, SpatialReferences.Wgs84);
-                arcMap.SetViewpointGeometryAsync(esriExtent);
+                arcMap.SetViewpointAsync(new Viewpoint(esriExtent));
                 UpdateChart();
             }
 
@@ -193,11 +179,16 @@ namespace MapBoard.GpxToolbox
         }
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(TrackFilePath))
+            if (loadNeeded != null)
+            {
+                arcMap.LoadFiles(loadNeeded);
+            }
+            else if (File.Exists(TrackFilePath))
             {
                 string[] files = File.ReadAllLines(TrackFilePath);
                 arcMap.LoadFiles(files);
             }
+
         }
 
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
@@ -213,8 +204,8 @@ namespace MapBoard.GpxToolbox
             }
             if (arcMap.SelectionMode == ArcMapView.SelectionModes.SelectedLayer)
             {
-                pointsGrid.SelectedItem = e.Point;
-                pointsGrid.ScrollIntoView(e.Point);
+                grdPoints.SelectedItem = e.Point;
+                grdPoints.ScrollIntoView(e.Point);
             }
             else
             {
@@ -254,8 +245,8 @@ namespace MapBoard.GpxToolbox
 
         private void PointsGridSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var point = pointsGrid.SelectedItem as GpxPoint;
-            if (point!=null  &&!double.IsNaN( point.Z )&& point.Latitude != 0)
+            var point = grdPoints.SelectedItem as GpxPoint;
+            if (point != null && !double.IsNaN(point.Z) && point.Latitude != 0)
             {
 
                 chartHelper.SetLine(point.Time);
@@ -295,9 +286,9 @@ namespace MapBoard.GpxToolbox
                 }
             }
 
-            var source = pointsGrid.ItemsSource;
-            pointsGrid.ItemsSource = null;
-            pointsGrid.ItemsSource = source;
+            var source = grdPoints.ItemsSource;
+            grdPoints.ItemsSource = null;
+            grdPoints.ItemsSource = source;
         }
 
         private void SaveFileButtonClick(object sender, RoutedEventArgs e)
@@ -353,7 +344,6 @@ namespace MapBoard.GpxToolbox
 
         private void ClearFileListButtonClick(object sender, RoutedEventArgs e)
         {
-            arcMap.GraphicsOverlays.Clear();
             TrackInfo.Tracks.Clear();
         }
         #endregion
@@ -366,7 +356,7 @@ namespace MapBoard.GpxToolbox
             {
                 if (int.TryParse(result, out int intResult))
                 {
-                    double speed = GpxTrack.Points.GetSpeed(pointsGrid.SelectedItem as GpxPoint, intResult);
+                    double speed = GpxTrack.Points.GetSpeed(grdPoints.SelectedItem as GpxPoint, intResult);
                     MessageBox.ShowPrompt("速度为：" + speed.ToString("0.00") + "m/s，" + (3.6 * speed).ToString("0.00") + "km/h");
                 }
             }
@@ -374,7 +364,7 @@ namespace MapBoard.GpxToolbox
 
         private void DeletePointMenuClick(object sender, RoutedEventArgs e)
         {
-            var points = pointsGrid.SelectedItems.Cast<GpxPoint>().ToArray();
+            var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
             {
                 SnakeBar.ShowError("请先选择一个或多个点", this);
@@ -394,7 +384,7 @@ namespace MapBoard.GpxToolbox
 
         private void InsertPointButtonClick(object sender, RoutedEventArgs e)
         {
-            var points = pointsGrid.SelectedItems.Cast<GpxPoint>().ToArray();
+            var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
             {
                 SnakeBar.ShowError("请先选择一个或多个点", this);
@@ -405,7 +395,7 @@ namespace MapBoard.GpxToolbox
                 SnakeBar.ShowError("请只选择一个点", this);
                 return;
             }
-            int index = pointsGrid.SelectedIndex;
+            int index = grdPoints.SelectedIndex;
             if ((sender as FrameworkElement).Tag.Equals("After"))
             {
                 index++;
@@ -415,14 +405,14 @@ namespace MapBoard.GpxToolbox
             GpxTrack.Points.Insert(index, point);
             arcMap.pointToTrackInfo.Add(point, arcMap.SelectedTrack);
             //arcMap.pointToTrajectoryInfo.Add(point, arcMap.SelectedTrack);
-            pointsGrid.SelectedItem = point;
-        } 
+            grdPoints.SelectedItem = point;
+        }
         #endregion
 
         private void ResetTrackButtonClick(object sender, RoutedEventArgs e)
         {
             int index = lvwFiles.SelectedIndex;
-            if(index==-1)
+            if (index == -1)
             {
                 return;
             }
@@ -444,7 +434,7 @@ namespace MapBoard.GpxToolbox
         private void LinkTrackMenuClick(object sender, RoutedEventArgs e)
         {
             TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray();
-            if (tracks.Length<=1)
+            if (tracks.Length <= 1)
             {
                 SnakeBar.ShowError("至少要2个轨迹才能进行连接操作");
                 return;
@@ -452,7 +442,7 @@ namespace MapBoard.GpxToolbox
 
 
             Gpx gpx = tracks[0].Gpx.Clone();
-            for(int i=1;i<tracks.Length;i++)
+            for (int i = 1; i < tracks.Length; i++)
             {
                 foreach (var p in tracks[i].Track.Points)
                 {
@@ -460,12 +450,69 @@ namespace MapBoard.GpxToolbox
                 }
             }
             string filePath = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, true, tracks[0].FileName + " - 连接.gpx");
-            if(filePath!=null)
+            if (filePath != null)
             {
                 gpx.Save(filePath);
                 arcMap.LoadGpx(filePath, true);
             }
 
+        }
+
+        private void ArcMapTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
+        {
+            if (arcMap.SelectionMode == ArcMapView.SelectionModes.None && lvwFiles.SelectedItem != null && grdPoints.SelectedItems.Count == 1)
+            {
+                GpxPoint point = grdPoints.SelectedItem as GpxPoint;
+                var overlay = arcMap.TapOverlay;
+                if (overlay == null||   !arcMap.GraphicsOverlays.Contains(overlay))
+                {
+                    overlay= arcMap.TapOverlay = new GraphicsOverlay();
+                    arcMap.GraphicsOverlays.Add(overlay);
+                    overlay.Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.X, System.Drawing.Color.Red, 12));
+                }
+                while(overlay.Graphics.Count>0)
+                {
+                    overlay.Graphics.RemoveAt(overlay.Graphics.Count-1);
+                }
+                MapPoint mapPoint = e.Location;
+                overlay.Graphics.Add(new Graphic(mapPoint));
+
+                ContextMenu menu = new ContextMenu()
+                {
+                    Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint,
+                    HorizontalOffset = 20,
+                    VerticalOffset = 20,
+                };
+                MenuItem menuSetToHere = new MenuItem() { Header = "移动点到此" };
+                menuSetToHere.Click += (p1, p2) =>
+                  {
+                      double oldZ = (arcMap.mapPointAndGraphics[point].Geometry as MapPoint).Z;
+                      mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
+
+                      arcMap.mapPointAndGraphics[point].Geometry = mapPoint;
+
+                      mapPoint = GeometryEngine.Project(mapPoint, SpatialReferences.Wgs84) as MapPoint;
+                     // mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
+                      point.X = mapPoint.X;
+                      point.Y = mapPoint.Y;
+                      //point.Z = mapPoint.Z;
+                      while (overlay.Graphics.Count > 0)
+                      {
+                          overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
+                      }
+                  };
+                menu.Items.Add(menuSetToHere);
+                menu.IsOpen = true;
+                menu.Closed += (p1, p2) =>
+                  {
+                      while (overlay.Graphics.Count > 0)
+                      {
+                          overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
+                      }
+                  };
+
+
+            }
         }
     }
 

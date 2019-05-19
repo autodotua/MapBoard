@@ -72,67 +72,8 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
-    </Reference>
-    <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsvHelper.12.1.2\lib\net45\CsvHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="Esri.ArcGISRuntime, Version=100.4.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
-      <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
-    </Reference>
-    <Reference Include="FzStandardLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzStandardLib.dll</HintPath>
-    </Reference>
-    <Reference Include="FzWpfControlLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\模块\Release\AnyCPU\FzWpfControlLib.dll</HintPath>
-    </Reference>
-    <Reference Include="FzWpfLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzWpfLib.dll</HintPath>
-    </Reference>
-    <Reference Include="GIS.Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\GIS\Release\AnyCPU\netstandard2.0\GIS.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.3.3, Culture=neutral, PublicKeyToken=8985beaab7ea3f04" />
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.3.3, Culture=neutral, PublicKeyToken=8985beaab7ea3f04" />
-    <Reference Include="netstandard" />
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
     <Compile Include="Helper\FeatureHelper.cs" />
     <Compile Include="IO\Csv.cs" />
@@ -180,26 +121,6 @@
     <Compile Include="UI\Panel\StyleSettingPanel.xaml.cs">
       <DependentUpon>StyleSettingPanel.xaml</DependentUpon>
     </Compile>
-    <Page Include="UI\Dialog\CoordinateTransformationDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Dialog\DateRangeDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Dialog\InputDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Dialog\NumberInputDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -208,38 +129,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UI\OperationBar\SelectOperationBar.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\OperationBar\EditOperationBar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\OperationBar\OperationBarStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Dialog\SelectStyleDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Panel\SettingPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\SplitButton\SplitButtonStyle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Styles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Panel\StyleSettingPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -254,7 +143,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GpxToolbox\MapBoard.GpxToolbox.csproj">
@@ -284,4 +172,54 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Esri.ArcGISRuntime.WPF.100.4.0\build\net461\Esri.ArcGISRuntime.WPF.targets" Condition="Exists('..\packages\Esri.ArcGISRuntime.WPF.100.4.0\build\net461\Esri.ArcGISRuntime.WPF.targets')" />
+  <ItemGroup>
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\CsvHelper.12.1.2\lib\net45\CsvHelper.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\模块\Release\AnyCPU\FzStandardLib.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\模块\Release\AnyCPU\FzWpfControlLib.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\模块\Release\AnyCPU\FzWpfLib.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\GIS\Release\AnyCPU\netstandard2.0\GIS.Core.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\Common\bin\Debug\MapBoard.Common.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\Generation\Debug\MapBoard.GpxToolbox.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\Generation\Debug\MapBoard.TileDownloaderSplicer.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Microsoft.CSharp.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\Generation\Debug\Microsoft.WindowsAPICodePack.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\Generation\Debug\Microsoft.WindowsAPICodePack.Shell.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\mscorlib.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Facades\netstandard.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\PresentationFramework.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.ComponentModel.DataAnnotations.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Data.DataSetExtensions.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Drawing.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.IO.Compression.FileSystem.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Net.Http.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll" />
+    <ReferencePath Include="C:\Users\autod\OneDrive\同步\作品\地图画板\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xml.Linq.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\WindowsBase.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Dialog\CoordinateTransformationDialog.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Dialog\DateRangeDialog.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Dialog\InputDialog.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Dialog\NumberInputDialog.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\MainWindow.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\OperationBar\SelectOperationBar.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\OperationBar\EditOperationBar.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Dialog\SelectStyleDialog.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Panel\SettingPanel.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\UI\Panel\StyleSettingPanel.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\App.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\MapBoard.Main_Content.g.cs" />
+    <Compile Include="C:\Users\autod\OneDrive\同步\作品\地图画板\MapBoard\obj\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
 </Project>

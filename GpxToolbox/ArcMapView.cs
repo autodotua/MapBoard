@@ -10,6 +10,7 @@ using GIS.IO.Gpx;
 using MapBoard.Common;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -23,25 +24,71 @@ using GeoPoint = GIS.Geometry.GeoPoint;
 
 namespace MapBoard.GpxToolbox
 {
-    public class ArcMapView : MapView
+    public class ArcMapView : SceneView
     {
         public ArcMapView()
         {
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
+            TrackInfo.Tracks.CollectionChanged += TracksCollectionChanged;
+            
         }
-        public SelectionModes SelectionMode { get; set; } = SelectionModes.None;
-        private void MapViewTapped(object sender, GeoViewInputEventArgs e)
+
+        private void TracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (TrackInfo item in e.OldItems)
+                    {
+                        //GraphicsOverlays.Remove(item.LineOverlay);
+                        GraphicsOverlays.Remove(item.Overlay);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    GraphicsOverlays.Clear();
+                    break;
+
+
+            }
+        }
+
+        public GraphicsOverlay TapOverlay { get; set; }
+
+        protected override void OnDrop(DragEventArgs e)
+        {
+            base.OnDrop(e);
+            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
+            {
+                return;
+            }
+            bool yes = true;
+            if (files.Length > 10)
+            {
+                yes = TaskDialog.ShowWithYesNoButtons("导入文件较多，是否确定导入？", $"导入{files.Length}个文件") == true;
+            }
+            if (yes)
+            {
+                LoadFiles(files);
+            }
+        }
+
+
+        public SelectionModes SelectionMode { get; set; } = SelectionModes.None;
+
+        private async void MapViewTapped(object sender, GeoViewInputEventArgs e)
+        {
+            Console.WriteLine(Camera.Heading + "  " + Camera.Pitch);
+
             if (SelectionMode == SelectionModes.None)
             {
                 return;
             }
             PointSelecting?.Invoke(this, new EventArgs());
-            var clickPoint = ScreenToLocation(e.Position);
-            double tolerance = 5;
-            double mapTolerance = tolerance * UnitsPerPixel;
+            var clickPoint = await ScreenToLocationAsync(e.Position);
+            double tolerance = 1*Camera.Location.Z*1e-7;
+            double mapTolerance = tolerance;
             Envelope envelope = new Envelope(clickPoint.X - mapTolerance, clickPoint.Y - mapTolerance, clickPoint.X + mapTolerance, clickPoint.Y + mapTolerance, SpatialReference);
             bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
 
@@ -109,7 +156,7 @@ namespace MapBoard.GpxToolbox
                         var exist = TrackInfo.Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist != null)
                         {
-                            GraphicsOverlays.Remove(exist.Overlay);
+                            //GraphicsOverlays.Remove(exist.Overlay);
                             TrackInfo.Tracks.Remove(exist);
                         }
                         else
@@ -140,7 +187,11 @@ namespace MapBoard.GpxToolbox
                 return;
             }
             bool isOk = false;
-            foreach (var p in pointToTrackInfo[point].Gpx.Tracks[pointToTrackInfo[point].TrackIndex].Points)
+            TrackInfo track = pointToTrackInfo[point];
+            track.Overlay.Graphics[0].Symbol = null;
+
+            selectedGraphics.Add(track.Overlay.Graphics[0]);
+            foreach (var p in track.Gpx.Tracks[pointToTrackInfo[point].TrackIndex].Points)
             {
                 if (p == null)
                 {
@@ -150,46 +201,55 @@ namespace MapBoard.GpxToolbox
                 {
                     isOk = true;
                 }
+                Graphic g = mapPointAndGraphics[p];
                 if (isOk)
                 {
                     if (!mapPointAndGraphics.ContainsKey(p))
                     {
                         continue;
                     }
-                    if (mapPointAndGraphics[p].Symbol != null)
+                    if (selectedGraphics.Contains(g))
                     {
-                        mapPointAndGraphics[p].Symbol = null;
+                        g.Symbol = null;
+                        selectedGraphics.Remove(g);
                     }
                 }
                 else
                 {
-                    if (mapPointAndGraphics.ContainsKey(p))
-
+                    if (mapPointAndGraphics.ContainsKey(p) && !selectedGraphics.Contains(g))
                     {
                         SelectPoint(mapPointAndGraphics[p]);
                     }
                 }
             }
         }
-        public void SelectPoint(Graphic point)
+        public void SelectPoint(Graphic g)
         {
-            point.Symbol = GetSelectedSymbol();
-            selectedPoints.Add(point);
+            g.Symbol = SelectedPointSymbol;
+            selectedGraphics.Add(g);
         }
         public void ClearSelection()
         {
-            foreach (var point in selectedPoints)
+            foreach (var g in selectedGraphics)
             {
-                point.Symbol = null;
+                if (g.Geometry.GeometryType == GeometryType.Point)
+                {
+                    g.Symbol = null;
+                }
+                else
+                {
+                    g.Symbol= CurrentLineSymbol; 
+                }
             }
-            selectedPoints.Clear();
+
+            selectedGraphics.Clear();
         }
 
-        private List<Graphic> selectedPoints = new List<Graphic>();
+        private HashSet<Graphic> selectedGraphics = new HashSet<Graphic>();
 
         private async void ArcMapViewLoaded(object sender, RoutedEventArgs e)
         {
-            await this.LoadBaseMapsAsync();
+            //await this.LoadBaseMapsAsync();
             ////var baseLayer = new WebTiledLayer("http://online{num}.map.bdimg.com/tile/?qt=tile&x={col}&y={row}&z={level}&styles=pl&scaler=1&udt=20141103", new string[] { "1", "2", "3", "4" });
             ////baseLayer = new WebTiledLayer(@"files:///C:/Users/autod/OneDrive/同步/作品/瓦片下载拼接器/MapBoard.TileDownloaderSplicer/bin/Debug/Download/{level}/{col}-{row}.png", new string[] {  "2", "3", "4" });
             //// baseLayer = new WebTiledLayer("http://127.0.0.1:8080/{col}-{row}-{level}", new string[] {  "2", "3", "4" });
@@ -200,6 +260,13 @@ namespace MapBoard.GpxToolbox
             //Map map = new Map(basemap);
             //await map.LoadAsync();
             //Map = map;
+            var map = this;
+            await this.LoadBaseMapsAsync();
+            //Surface elevationSurface = new Surface();
+            //string _elevationServiceUrl = "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+            //ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));
+            //elevationSurface.ElevationSources.Add(elevationSource);
+            //Scene.BaseSurface = elevationSurface;
         }
 
 
@@ -214,7 +281,7 @@ namespace MapBoard.GpxToolbox
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
-                var overlay = new GraphicsOverlay() { Renderer = GetNormalOverlayRenderer() };
+                var overlay = new GraphicsOverlay() { Renderer = NormalPointRenderer };
                 var trackInfo = new TrackInfo()
                 {
                     FilePath = filePath,
@@ -248,7 +315,10 @@ namespace MapBoard.GpxToolbox
             {
                 trackInfo.Overlay.Graphics.Clear();
             }
+            double minZ = Config.Instance.GpxHeight && Config.Instance.GpxRelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
+            double mag = Config.Instance.GpxHeight ? Config.Instance.GpxHeightExaggeratedMagnification : 1;
             // List<MapPoint> points = info.Tracks[0].GetOffsetPoints(OffsetNorth, OffsetEast);
+            List<ArcMapPoint> mapPoints = new List<ArcMapPoint>();
             foreach (var p in trackInfo.Track.Points)
             {
                 if (update)
@@ -256,7 +326,6 @@ namespace MapBoard.GpxToolbox
                     if (!pointToTrackInfo.ContainsKey(p))
                     {
                         pointToTrackInfo.Add(p, trackInfo);
-
                     }
                 }
                 else
@@ -270,7 +339,8 @@ namespace MapBoard.GpxToolbox
                     transformation.TransformateSelf(newP);
                 }
 
-                ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, SpatialReferences.Wgs84);
+                ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);
+                mapPoints.Add(point);
                 Graphic graphic = new Graphic(point);
                 if (update)
                 {
@@ -284,6 +354,19 @@ namespace MapBoard.GpxToolbox
                     mapPointAndGraphics.Add(p, graphic);
                 }
                 trackInfo.Overlay.Graphics.Add(graphic);
+            }
+            Graphic lineGraphic = new Graphic(new Polyline(mapPoints));
+            //SimpleRenderer renderer = new SimpleRenderer(symbol);
+            lineGraphic.Symbol = NormalLineSymbol;
+            trackInfo.Overlay.Graphics.Insert(0,lineGraphic);
+            if (Config.Instance.GpxHeight)
+            {
+                trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
+            }
+            else
+            {
+                trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Draped;
+
             }
             if (!update)
             {

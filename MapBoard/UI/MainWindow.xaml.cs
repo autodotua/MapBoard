@@ -79,6 +79,74 @@ namespace MapBoard.Main.UI
             //SnakeBar.DefaultWindow = this;
             RegistEvents();
         }
+        protected async override void OnDrop(DragEventArgs e)
+        {
+            //if(Mouse.GetPosition(this).X<grdLeft.ActualWidth)
+            //{
+            //    return;
+            //}
+            base.OnDrop(e);
+            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
+            {
+                return;
+            }
+            bool yes = true;
+            if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
+            {
+                if (files.Length > 1)
+                {
+                    if (TaskDialog.ShowWithYesNoButtons("通过GPX工具箱打开？", "打开GPX文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                    {
+                        new GpxToolbox.MainWindow(files).Show();
+                    }
+                }
+                else
+                {
+                    TaskDialog.ShowWithCommandLinks("通过GPX工具箱打开？", "打开GPX文件", new (string, string, Action)[]{
+                    ("使用GPX工具箱打开",null,()=>new GpxToolbox.MainWindow(files).Show()),
+                    ("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
+                    ("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
+                    ("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
+                }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否覆盖当前所有样式？", "打开Mapboard Map Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    IO.Package.ImportMap(files[0]);
+                    Notify(nameof(Styles));
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否导入图层？", "打开Mapboard Layer Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    foreach (var file in files)
+                    {
+                        IO.Package.ImportLayer(file);
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".csv")) == files.Length)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否导入CSV文件？", "打开CSV", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    foreach (var file in files)
+                    {
+                        await IO.Csv.Import(file);
+                    }
+                }
+            }
+            else
+            {
+                SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
+            }
+
+
+        }
+
 
         private void RegistEvents()
         {

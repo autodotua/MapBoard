@@ -17,12 +17,13 @@
                        Width="1000">
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360"/>
+            <ColumnDefinition Width="4"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Width="4" Background="Transparent" />
         <Grid x:Name="grdLeft" IsEnabled="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -125,7 +126,7 @@
                     <flatstyle:TextBox x:Name="txtMovingTime" Grid.Row="12" Grid.Column="2" IsReadOnly="True"/>
                     <TextBlock HorizontalAlignment="Right" Grid.Row="14" Text="最大速度："/>
                     <flatstyle:TextBox x:Name="txtMaxSpeed" Grid.Row="14" Grid.Column="2" IsReadOnly="True"/>
-                    <win10style:AzureDataGrid x:Name="pointsGrid" Grid.Row="16" SelectionChanged="PointsGridSelectionChanged" VerticalScrollBarVisibility="Visible" CanUserAddRows="False" CanUserDeleteRows="True"  Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
+                    <win10style:AzureDataGrid x:Name="grdPoints" Grid.Row="16" SelectionChanged="PointsGridSelectionChanged" VerticalScrollBarVisibility="Visible" CanUserAddRows="False" CanUserDeleteRows="True"  Grid.ColumnSpan="3" AutoGenerateColumns="False" ItemsSource="{Binding Points}">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="计算速度" Click="SpeedMenuItemClick" />
@@ -216,7 +217,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <local:ArcMapView x:Name="arcMap" PointSelected="MapPointSelected" GpxLoaded="GpxLoaded"/>
+            <local:ArcMapView x:Name="arcMap" GeoViewTapped="ArcMapTapped"  PointSelected="MapPointSelected" GpxLoaded="GpxLoaded"/>
             <Canvas x:Name="speedChart" MouseLeave="SpeedChartMouseLeave" Grid.Row="2" ClipToBounds="True"/>
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
         </Grid>
