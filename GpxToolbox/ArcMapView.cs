@@ -32,7 +32,7 @@ namespace MapBoard.GpxToolbox
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
             TrackInfo.Tracks.CollectionChanged += TracksCollectionChanged;
-            
+
         }
 
         private void TracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -43,11 +43,21 @@ namespace MapBoard.GpxToolbox
                     foreach (TrackInfo item in e.OldItems)
                     {
                         //GraphicsOverlays.Remove(item.LineOverlay);
+                        foreach (var point in item.Track.Points)
+                        {
+                            gpxPointAndGraphics.Remove(point);
+                        }
                         GraphicsOverlays.Remove(item.Overlay);
+                        //foreach (var point in item.Overlay.Graphics.Select(p=>gpxPointAndGraphics.GetKey(p)).ToArray())
+                        //{
+                        //    gpxPointAndGraphics.Remove(point);
+                        //}
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     GraphicsOverlays.Clear();
+                    gpxPointAndGraphics.Clear();
+                    //pointToTrackInfo.Clear();
                     break;
 
 
@@ -75,19 +85,18 @@ namespace MapBoard.GpxToolbox
         }
 
 
-        public SelectionModes SelectionMode { get; set; } = SelectionModes.None;
+        public MapTapModes MapTapMode { get; set; } = MapTapModes.None;
 
         private async void MapViewTapped(object sender, GeoViewInputEventArgs e)
         {
-            Console.WriteLine(Camera.Heading + "  " + Camera.Pitch);
 
-            if (SelectionMode == SelectionModes.None)
+            if (MapTapMode != MapTapModes.AllLayers && MapTapMode != MapTapModes.SelectedLayer)
             {
                 return;
             }
             PointSelecting?.Invoke(this, new EventArgs());
             var clickPoint = await ScreenToLocationAsync(e.Position);
-            double tolerance = 1*Camera.Location.Z*1e-7;
+            double tolerance = 1 * Camera.Location.Z * 1e-7;
             double mapTolerance = tolerance;
             Envelope envelope = new Envelope(clickPoint.X - mapTolerance, clickPoint.Y - mapTolerance, clickPoint.X + mapTolerance, clickPoint.Y + mapTolerance, SpatialReference);
             bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
@@ -95,7 +104,7 @@ namespace MapBoard.GpxToolbox
 
             ClearSelection();
             IEnumerable<TrackInfo> Track = null;
-            if (SelectionMode == SelectionModes.SelectedLayer)
+            if (MapTapMode == MapTapModes.SelectedLayer)
             {
                 Track = new TrackInfo[] { SelectedTrack };
             }
@@ -113,7 +122,7 @@ namespace MapBoard.GpxToolbox
                     if (GeometryEngine.Within(newPoint, envelope))
                     {
                         //SelectPoint(graphic);
-                        PointSelected?.Invoke(this, new PointSelectedEventArgs(trajectory, mapPointAndGraphics.GetKey(graphic)));
+                        PointSelected?.Invoke(this, new PointSelectedEventArgs(trajectory, gpxPointAndGraphics.GetKey(graphic)));
                         return;
                     }
 
@@ -122,7 +131,7 @@ namespace MapBoard.GpxToolbox
 
             PointSelected?.Invoke(this, new PointSelectedEventArgs(null, null));
 
-            SnakeBar.Show("没有识别到任何" + (SelectionMode == SelectionModes.SelectedLayer ? "点" : "轨迹"));
+            SnakeBar.Show("没有识别到任何" + (MapTapMode == MapTapModes.SelectedLayer ? "点" : "轨迹"));
         }
 
 
@@ -172,12 +181,30 @@ namespace MapBoard.GpxToolbox
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray()));
         }
-        public TwoWayDictionary<GpxPoint, Graphic> mapPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
+        public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
-        public Dictionary<GpxPoint, TrackInfo> pointToTrackInfo = new Dictionary<GpxPoint, TrackInfo>();
+        //public Dictionary<GpxPoint, TrackInfo> pointToTrackInfo = new Dictionary<GpxPoint, TrackInfo>();
+        public void SelectPoints(IEnumerable<GpxPoint> points)
+        {
+            var graphics = SelectedTrack.Overlay.Graphics;
+            graphics[0].Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Null, Color.Red, 0); ;
+            int count = graphics.Count;
+            for (int i = 1; i < count; i++)
+            {
+                var graphic = graphics[i];
+                if (points.Contains(gpxPointAndGraphics.GetKey(graphic)))
+                {
+                    SelectPoint(graphic);
+                }
+                else
+                {
+                    UnselectPoint(graphic);
+                }
+            }
+        }
         public void SelectPoint(GpxPoint point)
         {
-            SelectPoint(mapPointAndGraphics[point]);
+            SelectPoint(gpxPointAndGraphics[point]);
         }
         public void SelectPointTo(GpxPoint point)
         {
@@ -186,62 +213,69 @@ namespace MapBoard.GpxToolbox
                 ClearSelection();
                 return;
             }
-            bool isOk = false;
-            TrackInfo track = pointToTrackInfo[point];
-            track.Overlay.Graphics[0].Symbol = null;
-
-            selectedGraphics.Add(track.Overlay.Graphics[0]);
-            foreach (var p in track.Gpx.Tracks[pointToTrackInfo[point].TrackIndex].Points)
+            TrackInfo track = SelectedTrack;
+            track.Overlay.Graphics[0].Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Null, Color.Red, 0); ;
+            if (track.Overlay.Renderer == null)
             {
-                if (p == null)
-                {
-                    return;
-                }
-                if (point == p)
-                {
-                    isOk = true;
-                }
-                Graphic g = mapPointAndGraphics[p];
-                if (isOk)
-                {
-                    if (!mapPointAndGraphics.ContainsKey(p))
-                    {
-                        continue;
-                    }
-                    if (selectedGraphics.Contains(g))
-                    {
-                        g.Symbol = null;
-                        selectedGraphics.Remove(g);
-                    }
-                }
-                else
-                {
-                    if (mapPointAndGraphics.ContainsKey(p) && !selectedGraphics.Contains(g))
-                    {
-                        SelectPoint(mapPointAndGraphics[p]);
-                    }
-                }
+                track.Overlay.Renderer = SelectionRenderer;
             }
+
+            //selectedGraphics.Add(track.Overlay.Graphics[0]);
+            int index = track.Track.Points.IndexOf(point);
+            for (int i = 1; i < index; i++)
+            {
+                var p = track.Track.Points[i];
+
+                if (gpxPointAndGraphics.ContainsKey(p) )
+                {
+                    Graphic g = gpxPointAndGraphics[p];
+                    if (!selectedGraphics.Contains(g))
+                    {
+                        SelectPoint(g);
+                    }
+                }
+
+            }
+            var count = track.Track.Points.Count;
+
+            for (int i = index; i < count; i++)
+            {
+                var p = track.Track.Points[i];
+                if (gpxPointAndGraphics.ContainsKey(p))
+                {
+                    Graphic g = gpxPointAndGraphics[p];
+
+                    //if (selectedGraphics.Contains(g))
+                    //{
+                    UnselectPoint(g);
+                    //}
+                }
+
+            }
+
         }
-        public void SelectPoint(Graphic g)
+        private void SelectPoint(Graphic g)
         {
             g.Symbol = SelectedPointSymbol;
             selectedGraphics.Add(g);
         }
+        public void UnselectPoint(Graphic g)
+        {
+            g.Symbol = NotSelectedPointSymbol;
+            selectedGraphics.Remove(g);
+        }
         public void ClearSelection()
         {
-            foreach (var g in selectedGraphics)
+            if(SelectedTrack==null)
             {
-                if (g.Geometry.GeometryType == GeometryType.Point)
-                {
-                    g.Symbol = null;
-                }
-                else
-                {
-                    g.Symbol= CurrentLineSymbol; 
-                }
+                return;
             }
-
+            SelectedTrack.Overlay.Renderer = CurrentRenderer;
+            foreach (var g in SelectedTrack.Overlay.Graphics)
+            {
+                g.Symbol = null;
+            }
+            SelectedTrack.Overlay.Graphics[0].Symbol = null;
             selectedGraphics.Clear();
         }
 
@@ -281,7 +315,7 @@ namespace MapBoard.GpxToolbox
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
-                var overlay = new GraphicsOverlay() { Renderer = NormalPointRenderer };
+                var overlay = new GraphicsOverlay() { Renderer = NormalRenderer };
                 var trackInfo = new TrackInfo()
                 {
                     FilePath = filePath,
@@ -313,6 +347,14 @@ namespace MapBoard.GpxToolbox
 
             if (update)
             {
+                //foreach (var point in trackInfo.Overlay.Graphics.Skip(1).Select(p => gpxPointAndGraphics.GetKey(p)).ToArray())
+                //{
+                //    gpxPointAndGraphics.Remove(point);
+                //}
+                foreach (var point in trackInfo.Track.Points)
+                {if(gpxPointAndGraphics.ContainsKey(point))
+                    gpxPointAndGraphics.Remove(point);
+                }
                 trackInfo.Overlay.Graphics.Clear();
             }
             double minZ = Config.Instance.GpxHeight && Config.Instance.GpxRelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
@@ -321,17 +363,17 @@ namespace MapBoard.GpxToolbox
             List<ArcMapPoint> mapPoints = new List<ArcMapPoint>();
             foreach (var p in trackInfo.Track.Points)
             {
-                if (update)
-                {
-                    if (!pointToTrackInfo.ContainsKey(p))
-                    {
-                        pointToTrackInfo.Add(p, trackInfo);
-                    }
-                }
-                else
-                {
-                    pointToTrackInfo.Add(p, trackInfo);
-                }
+                //if (update)
+                //{
+                //    if (!pointToTrackInfo.ContainsKey(p))
+                //    {
+                //        pointToTrackInfo.Add(p, trackInfo);
+                //    }
+                //}
+                //else
+                //{
+                //    pointToTrackInfo.Add(p, trackInfo);
+                //}
                 GeoPoint newP = p;
                 if (Config.Instance.BasemapCoordinateSystem != "WGS84")
                 {
@@ -342,23 +384,23 @@ namespace MapBoard.GpxToolbox
                 ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);
                 mapPoints.Add(point);
                 Graphic graphic = new Graphic(point);
-                if (update)
-                {
-                    if (!mapPointAndGraphics.ContainsKey(p))
+                //if (update)
+                //{
+                    if (!gpxPointAndGraphics.ContainsKey(p))
                     {
-                        mapPointAndGraphics.Add(p, graphic);
+                        gpxPointAndGraphics.Add(p, graphic);
                     }
-                }
-                else
-                {
-                    mapPointAndGraphics.Add(p, graphic);
-                }
+                //}
+                //else
+                //{
+                //    gpxPointAndGraphics.Add(p, graphic);
+                //}
                 trackInfo.Overlay.Graphics.Add(graphic);
             }
             Graphic lineGraphic = new Graphic(new Polyline(mapPoints));
             //SimpleRenderer renderer = new SimpleRenderer(symbol);
-            lineGraphic.Symbol = NormalLineSymbol;
-            trackInfo.Overlay.Graphics.Insert(0,lineGraphic);
+            // lineGraphic.Symbol = NormalLineSymbol;
+            trackInfo.Overlay.Graphics.Insert(0, lineGraphic);
             if (Config.Instance.GpxHeight)
             {
                 trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
@@ -375,6 +417,13 @@ namespace MapBoard.GpxToolbox
             }
 
         }
+
+
+        public void StartDraw()
+        {
+        }
+
+
 
         private TrackInfo selectedTrack = null;
 
@@ -420,11 +469,12 @@ namespace MapBoard.GpxToolbox
         public delegate void GpxLoadedEventHandler(object sender, GpxLoadedEventArgs e);
         public event GpxLoadedEventHandler GpxLoaded;
 
-        public enum SelectionModes
+        public enum MapTapModes
         {
             None,
             SelectedLayer,
             AllLayers,
+            Circle,
         }
     }
 

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MapBoard.Main.UI.Dialog
+namespace MapBoard.Common.Dialog
 {
     public class DialogWindowBase : ExtendedWindow
     {

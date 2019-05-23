@@ -36,7 +36,7 @@ namespace MapBoard.Main.UI.SplitButton
             var binding = new Binding("DropDownContextMenu.IsOpen") { Source = this };
             SetBinding(IsCheckedProperty, binding);
 
-            Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MapBoard.Main;component/UI/SplitButton/SplitButtonStyle.xaml") });
+            Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MapBoard;component/UI/SplitButton/SplitButtonStyle.xaml") });
 
         }
 

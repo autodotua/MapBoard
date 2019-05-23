@@ -7,7 +7,7 @@
     <ProjectGuid>{F45A258E-E3BE-4870-A1FB-F725EF30A852}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>MapBoard.Main</RootNamespace>
-    <AssemblyName>MapBoard.Main</AssemblyName>
+    <AssemblyName>MapBoard</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -27,8 +27,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>2.0.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -147,13 +147,6 @@
     <Compile Include="UI\Dialog\DateRangeDialog.xaml.cs">
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Dialog\DialogWindowBase.cs" />
-    <Compile Include="UI\Dialog\InputDialog.xaml.cs">
-      <DependentUpon>InputDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Dialog\NumberInputDialog.xaml.cs">
-      <DependentUpon>NumberInputDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\Map\ArcMapView.cs" />
     <Compile Include="UI\Map\DrawHelper.cs" />
     <Compile Include="UI\Map\EditHelper.cs" />
@@ -185,14 +178,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\DateRangeDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Dialog\InputDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Dialog\NumberInputDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

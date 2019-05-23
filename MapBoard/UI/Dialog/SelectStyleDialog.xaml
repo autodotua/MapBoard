@@ -1,10 +1,11 @@
-﻿<local:DialogWindowBase x:Class="MapBoard.Main.UI.Dialog.SelectStyleDialog"
+﻿<local:DialogWindowBase
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
+    x:Class="MapBoard.Main.UI.Dialog.SelectStyleDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
-        xmlns:local="clr-namespace:MapBoard.Main.UI.Dialog"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"

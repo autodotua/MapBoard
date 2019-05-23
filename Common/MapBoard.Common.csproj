@@ -70,6 +70,13 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="CoordinateTransformation.cs" />
+    <Compile Include="Dialog\DialogWindowBase.cs" />
+    <Compile Include="Dialog\InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\NumberInputDialog.xaml.cs">
+      <DependentUpon>NumberInputDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindowBase.cs" />
     <Compile Include="MapHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -109,7 +116,16 @@
       <LastGenOutput>Resource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="Dialog\InputDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\NumberInputDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Esri.ArcGISRuntime.WPF.100.4.0\build\net461\Esri.ArcGISRuntime.WPF.targets" Condition="Exists('..\packages\Esri.ArcGISRuntime.WPF.100.4.0\build\net461\Esri.ArcGISRuntime.WPF.targets')" />
-
 </Project>

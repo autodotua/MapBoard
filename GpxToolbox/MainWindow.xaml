@@ -153,6 +153,8 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <flatstyle:Button Content="刷新" Click="UpdateTrackButtonClick"/>
+                        <flatstyle:Button Content="重置"  Grid.Column="2" Click="ResetTrackButtonClick"/>
+
                     </Grid>
                 </Grid>
             </win10style:ModernExpander>
@@ -175,7 +177,7 @@
                     <flatstyle:Button Grid.Column="2" Content="识别轨迹" Click="IdentifyAllButtonClick"/>
                     <flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick"/>
                     <flatstyle:Button Content="高程偏移" Grid.Row="2" Click="ElevationOffsetButtonClick"/>
-                    <flatstyle:Button Content="重置" Grid.Row="2" Grid.Column="2" Click="ResetTrackButtonClick"/>
+                    <flatstyle:Button Content="处理" Grid.Row="2" Grid.Column="2" Click="OperationButtonClick"/>
                     <flatstyle:Button Content="导出" Grid.Row="2" Grid.Column="4" Click="SaveFileButtonClick"/>
 
                 </Grid>

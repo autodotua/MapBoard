@@ -1,4 +1,5 @@
 ﻿<local:DialogWindowBase
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
     x:Class="MapBoard.Main.UI.Dialog.DateRangeDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,7 +8,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
       xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
-    xmlns:local="clr-namespace:MapBoard.Main.UI.Dialog"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"

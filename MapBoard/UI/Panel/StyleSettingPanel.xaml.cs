@@ -1,6 +1,7 @@
 ﻿using FzLib.Control.Dialog;
 using FzLib.Control.Extension;
 using MapBoard.Common;
+using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Helper;
 using MapBoard.Main.IO;

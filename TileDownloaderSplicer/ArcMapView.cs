@@ -115,10 +115,10 @@ namespace MapBoard.TileDownloaderSplicer
                 SnakeBar.Show("开始框选");
                 if (SketchEditor == null)
                 {
-                    SketchEditor = new Esri.ArcGISRuntime.UI.SketchEditor();
+                    SketchEditor = new SketchEditor();
                 }
                 isSelecting = true;
-                await SketchEditor.StartAsync(Esri.ArcGISRuntime.UI.SketchCreationMode.Rectangle);
+                await SketchEditor.StartAsync(SketchCreationMode.Rectangle);
                 isSelecting = false;
             }
             else
