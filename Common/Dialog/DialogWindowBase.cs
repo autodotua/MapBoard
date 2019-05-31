@@ -12,7 +12,11 @@ namespace MapBoard.Common.Dialog
     {
         public DialogWindowBase()
         {
-            Owner = Application.Current.MainWindow;
+            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive); ;
+            if (Owner == null)
+            {
+                Owner = Application.Current.MainWindow;
+            }
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.ToolWindow;

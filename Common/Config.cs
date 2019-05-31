@@ -38,7 +38,7 @@ namespace MapBoard.Common
                 return instance;
             }
         }
-        
+
 
         public string Url { get; set; } = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d\r\nhttp://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d";
         [JsonIgnore]
@@ -63,6 +63,10 @@ namespace MapBoard.Common
         public string BasemapCoordinateSystem { get; set; } = "CGCS2000";
 
         public bool RemainLabel { get; set; } = false;
+
+        public bool GpxAutoSmooth { get; set; } = true;
+        public bool GpxAutoSmoothOnlyZ { get; set; } = false;
+        public int GpxAutoSmoothLevel { get; set; } = 5;
 
 
         //public List<StyleInfo> ShapefileStyles { get; } = new List<StyleInfo>();

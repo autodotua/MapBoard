@@ -176,7 +176,7 @@
                     <flatstyle:Button Content="识别点" Click="IdentifyButtonClick"/>
                     <flatstyle:Button Grid.Column="2" Content="识别轨迹" Click="IdentifyAllButtonClick"/>
                     <flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick"/>
-                    <flatstyle:Button Content="高程偏移" Grid.Row="2" Click="ElevationOffsetButtonClick"/>
+                    <!--<flatstyle:Button Content="高程偏移" Grid.Row="2" Click="ElevationOffsetButtonClick"/>-->
                     <flatstyle:Button Content="处理" Grid.Row="2" Grid.Column="2" Click="OperationButtonClick"/>
                     <flatstyle:Button Content="导出" Grid.Row="2" Grid.Column="4" Click="SaveFileButtonClick"/>
 

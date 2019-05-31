@@ -50,6 +50,12 @@ namespace MapBoard.GpxToolbox
             //TaskDialog.DefaultOwner = this;
 
         }
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            TaskDialog.DefaultOwner = this;
+        }
+
 
         private void InitializeChart()
         {
@@ -312,7 +318,7 @@ namespace MapBoard.GpxToolbox
                 try
                 {
                     File.WriteAllText(path, gpx.ToGpxXml());
-                    SnakeBar.Show("导出成功",this);
+                    SnakeBar.Show("导出成功", this);
                 }
                 catch (Exception ex)
                 {
@@ -330,26 +336,6 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-        private void ElevationOffsetButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (InputBox.GetInput("请输入偏移值：", out string result, null, "", @"^[0-9]{0,5}(\.[0-9]+)?$", false, this))
-            {
-                if (double.TryParse(result, out double num))
-                {
-                    foreach (var point in GpxTrack.Points)
-                    {
-                        point.Z += num;
-                    }
-                    var temp = GpxTrack;
-                    GpxTrack = null;
-                    GpxTrack = temp;
-                }
-                else
-                {
-                    SnakeBar.ShowError("输入的不是数字");
-                }
-            }
-        }
         #endregion
 
 
@@ -437,7 +423,7 @@ namespace MapBoard.GpxToolbox
             //arcMap.GraphicsOverlays.Remove(track.Overlay);
             TrackInfo.Tracks.Remove(track);
 
-          await  arcMap.LoadGpx(filePath, true);
+            await arcMap.LoadGpx(filePath, true);
         }
 
         private void RemoveTrackFileMenuClick(object sender, RoutedEventArgs e)
@@ -503,25 +489,25 @@ namespace MapBoard.GpxToolbox
                     if (arcMap.gpxPointAndGraphics.ContainsKey(point))
                     {
                         double oldZ = (arcMap.gpxPointAndGraphics[point].Geometry as MapPoint).Z;
-                      mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
-                    
-                          arcMap.gpxPointAndGraphics[point].Geometry = mapPoint;
-                      }
+                        mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
+
+                        arcMap.gpxPointAndGraphics[point].Geometry = mapPoint;
+                    }
                     else
                     {
                         mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, mapPoint.SpatialReference);
 
                     }
                     mapPoint = GeometryEngine.Project(mapPoint, SpatialReferences.Wgs84) as MapPoint;
-                      // mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
-                      point.X = mapPoint.X;
-                      point.Y = mapPoint.Y;
-                      //point.Z = mapPoint.Z;
-                      while (overlay.Graphics.Count > 0)
-                      {
-                          overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
-                      }
-                  };
+                    // mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
+                    point.X = mapPoint.X;
+                    point.Y = mapPoint.Y;
+                    //point.Z = mapPoint.Z;
+                    while (overlay.Graphics.Count > 0)
+                    {
+                        overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
+                    }
+                };
                 menu.Items.Add(menuSetToHere);
                 menu.IsOpen = true;
                 menu.Closed += (p1, p2) =>
@@ -539,7 +525,11 @@ namespace MapBoard.GpxToolbox
         private void OperationButtonClick(object sender, RoutedEventArgs e)
         {
             MenuItem menuHeightSmooth = new MenuItem() { Header = "高度平滑" };
-            menuHeightSmooth.Click += HeightSmoothMenuClick;
+            menuHeightSmooth.Click += (p1,p2)=>Smooth(false,true);
+            MenuItem menuSmooth = new MenuItem() { Header = "平滑" };
+            menuSmooth.Click += (p1,p2)=>Smooth(true,true);
+            MenuItem menuHeightOffset = new MenuItem() { Header = "高度整体偏移" };
+            menuHeightOffset.Click += ElevationOffsetMenuClick;
 
             //MenuItem menuDeletePoints = new MenuItem() { "删除一个区域的所有点" };
             //menuDeletePoints.Click += DeletePointsMenuClick;
@@ -548,7 +538,7 @@ namespace MapBoard.GpxToolbox
             {
                 PlacementTarget = sender as FrameworkElement,
                 Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
-                Items = { menuHeightSmooth },
+                Items = { menuSmooth,menuHeightSmooth, menuHeightOffset },
                 IsOpen = true,
             };
 
@@ -559,7 +549,9 @@ namespace MapBoard.GpxToolbox
 
         }
 
-        private void HeightSmoothMenuClick(object sender, RoutedEventArgs e)
+
+
+        private void Smooth(bool xy,bool z)
         {
             if (lvwFiles.SelectedItem == null)
             {
@@ -567,7 +559,8 @@ namespace MapBoard.GpxToolbox
                 return;
             }
             TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
-            int count = track.Track.Points.Count;
+            var points = track.Track.Points;
+            int count = points.Count;
             NumberInputDialog dialog = new NumberInputDialog($"请输入平滑度（0~{count}）") { Integer = true };
             if (dialog.ShowDialog() == true)
             {
@@ -577,21 +570,41 @@ namespace MapBoard.GpxToolbox
                     TaskDialog.ShowError("输入的数值超出范围");
                     return;
                 }
-
-                int index = 0;
-                Queue<double> queue = new Queue<double>(track.Track.Points.Count);
-
-                for (int i = 0; i < count; i++)
+                if (z)
                 {
-                    GpxPoint currentPoint = track.Track.Points[i];
-                    queue.Enqueue(currentPoint.Z);
-                    if (i < num)
+                 GpxHelper.   Smooth(points, num, p => p.Z, (p, v) => p.Z = v);
+                }
+                if(xy)
+                {
+                    GpxHelper.Smooth(points, num, p => p.X, (p, v) => p.X = v);
+                    GpxHelper.Smooth(points, num, p => p.Y, (p, v) => p.Y = v);
+                }
+                UpdateTrackButtonClick(null, null);
+            }
+        }
+
+
+        private void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
+        {
+            if (InputBox.GetInput("请输入偏移值：", out string result, null, "", @"^[0-9]{0,5}(\.[0-9]+)?$", false, this))
+            {
+                if (double.TryParse(result, out double num))
+                {
+                    foreach (var point in GpxTrack.Points)
                     {
-                        currentPoint.Z = queue.Average();
+                        point.Z += num;
                     }
+                    var temp = GpxTrack;
+                    GpxTrack = null;
+                    GpxTrack = temp;
+                }
+                else
+                {
+                    SnakeBar.ShowError("输入的不是数字");
                 }
             }
         }
+
     }
 
     public class SpeedValueConverter : IValueConverter

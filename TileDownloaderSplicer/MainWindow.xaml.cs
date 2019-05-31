@@ -72,6 +72,12 @@ namespace MapBoard.TileDownloaderSplicer
             cbbLevel.SelectedIndex = 10;
             arcMap.ViewpointChanged += ArcMapViewpointChanged;
         }
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            TaskDialog.DefaultOwner = this;
+        }
+
         /// <summary>
         /// 地图的显示区域发生改变，清空选择框
         /// </summary>

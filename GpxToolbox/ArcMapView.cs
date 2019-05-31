@@ -226,7 +226,7 @@ namespace MapBoard.GpxToolbox
             {
                 var p = track.Track.Points[i];
 
-                if (gpxPointAndGraphics.ContainsKey(p) )
+                if (gpxPointAndGraphics.ContainsKey(p))
                 {
                     Graphic g = gpxPointAndGraphics[p];
                     if (!selectedGraphics.Contains(g))
@@ -266,7 +266,7 @@ namespace MapBoard.GpxToolbox
         }
         public void ClearSelection()
         {
-            if(SelectedTrack==null)
+            if (SelectedTrack == null)
             {
                 return;
             }
@@ -352,10 +352,20 @@ namespace MapBoard.GpxToolbox
                 //    gpxPointAndGraphics.Remove(point);
                 //}
                 foreach (var point in trackInfo.Track.Points)
-                {if(gpxPointAndGraphics.ContainsKey(point))
-                    gpxPointAndGraphics.Remove(point);
+                {
+                    if (gpxPointAndGraphics.ContainsKey(point))
+                        gpxPointAndGraphics.Remove(point);
                 }
                 trackInfo.Overlay.Graphics.Clear();
+            }
+            if(Config.Instance.GpxAutoSmooth)
+            {
+                GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.Z, (p, v) => p.Z = v);
+                if(!Config.Instance.GpxAutoSmoothOnlyZ)
+                {
+                    GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.X, (p, v) => p.X = v);
+                    GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                }
             }
             double minZ = Config.Instance.GpxHeight && Config.Instance.GpxRelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
             double mag = Config.Instance.GpxHeight ? Config.Instance.GpxHeightExaggeratedMagnification : 1;
@@ -386,10 +396,10 @@ namespace MapBoard.GpxToolbox
                 Graphic graphic = new Graphic(point);
                 //if (update)
                 //{
-                    if (!gpxPointAndGraphics.ContainsKey(p))
-                    {
-                        gpxPointAndGraphics.Add(p, graphic);
-                    }
+                if (!gpxPointAndGraphics.ContainsKey(p))
+                {
+                    gpxPointAndGraphics.Add(p, graphic);
+                }
                 //}
                 //else
                 //{

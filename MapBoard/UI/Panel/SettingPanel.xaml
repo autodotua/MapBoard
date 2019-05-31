@@ -60,14 +60,22 @@
                     <FrameworkElement Height="8"/>
                     <flat:CheckBox x:Name="chkGpxHeight" Content="展示高度" IsChecked="{Binding Config.GpxHeight}" Checked="GpxHeightCheckBoxCheckedChanged" Unchecked="GpxHeightCheckBoxCheckedChanged"/>
                     <StackPanel x:Name="stkGpxHeight" IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}">
-                    <FrameworkElement Height="12"/>
-                    <flat:CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.GpxRelativeHeight}"/>
-                    <FrameworkElement Height="12"/>
+                        <FrameworkElement Height="12"/>
+                        <flat:CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.GpxRelativeHeight}"/>
+                        <FrameworkElement Height="12"/>
+                        <TextBlock>高度夸大倍率：</TextBlock>
+                        <FrameworkElement Height="4"/>
+                        <flat:TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}"/>
+                        <FrameworkElement Height="8"/>
+                        <flat:CheckBox x:Name="chkGpxAutoSmooth" Content="自动进行平滑" IsChecked="{Binding Config.GpxAutoSmooth}"/>
+                        <FrameworkElement Height="8"/>
+                        <flat:CheckBox Content="仅平滑垂直方向" IsChecked="{Binding Config.GpxAutoSmoothOnlyZ}" IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"/>
+                        <FrameworkElement Height="8"/>
+                        <TextBlock  IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}">平滑度：</TextBlock>
+                        <FrameworkElement Height="4"/>
+                        <flat:TextBox Text="{Binding Config.GpxAutoSmoothLevel}" IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"/>
 
-                    <TextBlock>高度夸大倍率：</TextBlock>
-                    <FrameworkElement Height="4"/>
-                    <flat:TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}"/>
-                </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </GroupBox>
 

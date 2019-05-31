@@ -102,8 +102,8 @@ namespace MapBoard.Main.UI
                 }
                 else
                 {
-                    TaskDialog.ShowWithCommandLinks("通过GPX工具箱打开？", "打开GPX文件", new (string, string, Action)[]{
-                    ("使用GPX工具箱打开",null,()=>new GpxToolbox.MainWindow(files).Show()),
+                    TaskDialog.ShowWithCommandLinks("选择打开GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
+                    ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
                     ("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
                     ("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
                     ("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
