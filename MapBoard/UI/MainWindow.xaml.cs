@@ -36,6 +36,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static FzLib.Basic.Loop;
+using static MapBoard.Main.UI.Dialog.MultiStylesOperationDialog;
 
 namespace MapBoard.Main.UI
 {
@@ -157,6 +158,14 @@ namespace MapBoard.Main.UI
 
             var lvwHelper = new ListViewHelper<StyleInfo>(lvw);
             lvwHelper.EnableDragAndDropItem();
+
+            StyleCollection.Instance.PropertyChanged += (p1, p2) =>
+              {
+                  if (p2.PropertyName == nameof(StyleCollection.Instance.Selected) && !changingStyle)
+                  {
+                      lvw.SelectedItem = StyleCollection.Instance.Selected;
+                  }
+              };
             //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
         }
         private async void WindowClosing(object sender, CancelEventArgs e)
@@ -344,21 +353,36 @@ namespace MapBoard.Main.UI
             StyleCollection.Instance.Save();
         }
 
+        bool changingStyle = false;
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
+            changingStyle = true;
+            if (lvw.SelectedItems.Count == 1)
+            {
+                Styles.Selected = lvw.SelectedItem as StyleInfo;
+            }
+            else
+            {
+                Styles.Selected = null;
+            }
+            changingStyle = false;
             JudgeControlsEnable();
             styleSetting.ResetStyleSettingUI();
         }
 
         private void DeleteStyle()
         {
-            if (StyleCollection.Instance.Selected == null)
+            if (lvw.SelectedItems.Count==0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            var style = StyleCollection.Instance.Selected;
-            StyleHelper.RemoveStyle(style, true);
+            foreach (StyleInfo style in lvw.SelectedItems.Cast<StyleInfo>().ToArray())
+            {
+                StyleHelper.RemoveStyle(style, true);
+            }
+            //var style = StyleCollection.Instance.Selected;
+           
         }
 
         private async void WindowLoaded(object sender, RoutedEventArgs e)
@@ -380,23 +404,34 @@ namespace MapBoard.Main.UI
 
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var style = StyleCollection.Instance.Selected;
             ContextMenu menu = new ContextMenu();
+            List<(string header, Action action, bool visiable)> menus = null;
+            StyleInfo style = StyleCollection.Instance.Selected;
+            StyleInfo[] styles = lvw.SelectedItems.Cast<StyleInfo>().ToArray();
+            if (lvw.SelectedItems.Count == 1)
+            {
+                menus = new List<(string header, Action action, bool visiable)>()
+               {
+                    ("复制",StyleHelper. CopyFeatures,true),
+                    ("建立缓冲区",StyleHelper.Buffer,style.Type==GeometryType.Polyline || style.Type==GeometryType.Point|| style.Type==GeometryType.Multipoint),
+                    ("删除",DeleteStyle,true),
+                    ("新建副本",StyleHelper. CreateCopy,true),
+                    ("缩放到图层", ZoomToLayer,StyleCollection.Instance.Selected.FeatureCount > 0),
+                    ("坐标转换",CoordinateTransformate,true),
+                    ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
+                    ("导入",async()=>await IOHelper.ImportFeature(),true),
+                    ("导出",  ExportSingle,true),
 
-            List<(string header, Action action, bool visiable)> menus = new List<(string header, Action action, bool visiable)>()
-           {
-                ("复制",StyleHelper. CopyFeatures,true),
-                ("建立缓冲区",StyleHelper.Buffer,style.Type==GeometryType.Polyline || style.Type==GeometryType.Point|| style.Type==GeometryType.Multipoint),
-                ("删除",DeleteStyle,true),
-                ("新建副本",StyleHelper. CreateCopy,true),
-                ("缩放到图层", ZoomToLayer,StyleCollection.Instance.Selected.FeatureCount > 0),
-                ("坐标转换",CoordinateTransformate,true),
-                ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
-                ("导入",()=>IOHelper.ImportFeature(),true),
-                ("导出",  ExportSingle,true),
-
-           };
-
+               };
+            }
+            else
+            {
+                menus = new List<(string header, Action action, bool visiable)>()
+               {
+                    ("合并",async()=>await StyleHelper. Union(styles),styles.Select(p=>p.Type).Distinct().Count()==1),
+                    ("删除",DeleteStyle,true),
+                };
+            }
 
 
             foreach (var (header, action, visiable) in menus)
@@ -408,8 +443,11 @@ namespace MapBoard.Main.UI
                     menu.Items.Add(item);
                 }
             }
+            if (menu.Items.Count > 0)
+            {
 
-            menu.IsOpen = true;
+                menu.IsOpen = true;
+            }
 
             void ExportSingle()
             {
@@ -471,6 +509,9 @@ namespace MapBoard.Main.UI
             StyleCollection.Instance.Selected = null;
         }
 
-
+        private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
+        {
+            new MultiStylesOperationDialog().Show();
+        }
     }
 }

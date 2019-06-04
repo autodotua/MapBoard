@@ -175,9 +175,10 @@
 
                     <flatstyle:Button Content="识别点" Click="IdentifyButtonClick"/>
                     <flatstyle:Button Grid.Column="2" Content="识别轨迹" Click="IdentifyAllButtonClick"/>
-                    <flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick"/>
-                    <!--<flatstyle:Button Content="高程偏移" Grid.Row="2" Click="ElevationOffsetButtonClick"/>-->
-                    <flatstyle:Button Content="处理" Grid.Row="2" Grid.Column="2" Click="OperationButtonClick"/>
+                    <!--<flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick"/>-->
+                    <flatstyle:Button Grid.Column="4" Content="截图" Click="CaptureScreenButtonClick"/>
+                    <flatstyle:Button Content="恢复视角" Grid.Row="2" Click="RecoverCameraButtonClick"/>
+                    <flatstyle:Button Content="操作" Grid.Row="2" Grid.Column="2" Click="OperationButtonClick"/>
                     <flatstyle:Button Content="导出" Grid.Row="2" Grid.Column="4" Click="SaveFileButtonClick"/>
 
                 </Grid>

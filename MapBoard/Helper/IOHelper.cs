@@ -35,7 +35,7 @@ namespace MapBoard.Main.Helper
             }
             else
             {
-                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
+                path =FzLib.Control.Dialog. FileSystemDialog.GetOpenFile(new List<(string, string)>()
                 {
                     ("CSV表格", "csv"),
                 }, true);
@@ -60,7 +60,7 @@ namespace MapBoard.Main.Helper
                             }
                             else
                             {
-                                SnakeBar snake = new SnakeBar(SnakeBar.DefaultWindow);
+                                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                                 snake.ShowButton = true;
                                 snake.ButtonContent = "查看";
                                 snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent,SpatialReferences.WebMercator));

@@ -1,0 +1,48 @@
+﻿<local:DialogWindowBase
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common" 
+    x:Class="MapBoard.Main.UI.Dialog.MultiStylesOperationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:win10="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
+    xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        mc:Ignorable="d"
+        Title="坐标转换" 
+        Width="200">
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <win10:AzureDataGrid ItemsSource="{Binding Styles}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+            <win10:AzureDataGrid.Resources>
+                <Style TargetType="DataGridCell">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="IsEditing" Value="True" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </win10:AzureDataGrid.Resources>
+            <win10:AzureDataGrid.Columns>
+                <DataGridCheckBoxColumn  Binding="{Binding Select}"/>
+                <DataGridTextColumn Header="标题" Binding="{Binding Style.Name}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="类型" Binding="{Binding Style.TypeDescription}" IsReadOnly="True"/>
+            </win10:AzureDataGrid.Columns>
+        </win10:AzureDataGrid>
+        <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
+            <flat:Button IsDefault="True" x:Name="btn" Click="OkButtonClick" Content="确定"/>
+        </StackPanel>
+    </Grid>
+</local:DialogWindowBase>

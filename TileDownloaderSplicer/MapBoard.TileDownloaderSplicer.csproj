@@ -55,22 +55,25 @@
     <Reference Include="Esri.ArcGISRuntime, Version=100.4.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
     </Reference>
+    <Reference Include="FzDesktopLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\模块\Release\AnyCPU\FzDesktopLib.dll</HintPath>
+    </Reference>
     <Reference Include="FzGeographyLib">
       <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzGeographyLib.dll</HintPath>
     </Reference>
-    <Reference Include="FzStandardLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzStandardLib.dll</HintPath>
+    <Reference Include="FzStandardLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
     </Reference>
     <Reference Include="FzWpfControlLib">
       <HintPath>..\..\模块\Release\AnyCPU\FzWpfControlLib.dll</HintPath>
-    </Reference>
-    <Reference Include="FzWpfLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzWpfLib.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.3.3, Culture=neutral, PublicKeyToken=8985beaab7ea3f04" />
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.3.3, Culture=neutral, PublicKeyToken=8985beaab7ea3f04" />
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>

@@ -150,7 +150,7 @@ namespace MapBoard.Main.Helper
             {
                 UniqueValueRenderer renderer = new UniqueValueRenderer();
                 renderer.FieldNames.Add("Key");
-                if(style.Symbols.Count==0)
+                if (style.Symbols.Count == 0)
                 {
                     style.Symbols.Add("", new SymbolInfo());
                 }
@@ -165,19 +165,19 @@ namespace MapBoard.Main.Helper
                     {
                         case GeometryType.Point:
                         case GeometryType.Multipoint:
-                            symbol= new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.LineWidth);
+                            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.LineWidth);
 
                             break;
                         case GeometryType.Polyline:
                             symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
                             break;
                         case GeometryType.Polygon:
-                          var  lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
+                            var lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
                             symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, symbolInfo.FillColor, lineSymbol);
                             break;
                     }
 
-                    if(key=="")
+                    if (key == "")
                     {
                         renderer.DefaultSymbol = symbol;
                     }
@@ -286,7 +286,32 @@ namespace MapBoard.Main.Helper
             }
         }
 
+        public async static Task<StyleInfo> Union(IEnumerable<StyleInfo> styles)
+        {
+            if (styles == null || !styles.Any())
+            {
+                throw new Exception("样式为空");
+            }
+            var type = styles.Select(p => p.Type).Distinct();
+            if (type.Count() != 1)
+            {
+                throw new Exception("样式的类型并非统一");
+            }
+            StyleInfo style = CreateStyle(type.First());
 
+            foreach (var oldStyle in styles)
+            {
+                var oldFeatures = await oldStyle.GetAllFeatures();
+
+                var features = oldFeatures.Select(p => style.Table.CreateFeature(p.Attributes, p.Geometry));
+                await style.Table.AddFeaturesAsync(features);
+                oldStyle.LabelVisible = false;
+            }
+            style.UpdateFeatureCount();
+            //StyleCollection.Instance.Styles.Add(style);
+            return style;
+
+        }
 
 
     }

@@ -41,7 +41,7 @@ namespace MapBoard.Main.UI.Map
 
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (StyleCollection.Instance.Selected==null || !StyleCollection.Instance.Selected.LayerVisible||  BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (BoardTaskManager.CurrentTask== BoardTaskManager.BoardTask.Draw || StyleCollection.Instance.Selected==null || !StyleCollection.Instance.Selected.LayerVisible||  BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
             }

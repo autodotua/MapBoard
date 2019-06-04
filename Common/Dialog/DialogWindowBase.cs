@@ -12,7 +12,7 @@ namespace MapBoard.Common.Dialog
     {
         public DialogWindowBase()
         {
-            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive); ;
+            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive); 
             if (Owner == null)
             {
                 Owner = Application.Current.MainWindow;

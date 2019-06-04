@@ -18,9 +18,6 @@ namespace MapBoard.Common
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
-
-            SnakeBar.DefaultWindow = this;
-            TaskDialog.DefaultOwner = this;
         }
 
 

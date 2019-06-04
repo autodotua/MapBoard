@@ -29,6 +29,8 @@ using System.Diagnostics;
 using MapBoard.Common.Dialog;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows.Media.Imaging;
+using System.Drawing;
 
 namespace MapBoard.GpxToolbox
 {
@@ -53,7 +55,6 @@ namespace MapBoard.GpxToolbox
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
-            TaskDialog.DefaultOwner = this;
         }
 
 
@@ -318,7 +319,7 @@ namespace MapBoard.GpxToolbox
                 try
                 {
                     File.WriteAllText(path, gpx.ToGpxXml());
-                    SnakeBar.Show("导出成功", this);
+                    SnakeBar.Show("导出成功");
                 }
                 catch (Exception ex)
                 {
@@ -366,7 +367,7 @@ namespace MapBoard.GpxToolbox
             var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
             {
-                SnakeBar.ShowError("请先选择一个或多个点", this);
+                SnakeBar.ShowError("请先选择一个或多个点");
                 return;
             }
             foreach (var point in points)
@@ -386,12 +387,12 @@ namespace MapBoard.GpxToolbox
             var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
             {
-                SnakeBar.ShowError("请先选择一个或多个点", this);
+                SnakeBar.ShowError("请先选择一个或多个点");
                 return;
             }
             if (points.Length > 1)
             {
-                SnakeBar.ShowError("请只选择一个点", this);
+                SnakeBar.ShowError("请只选择一个点");
                 return;
             }
             int index = grdPoints.SelectedIndex;
@@ -525,11 +526,13 @@ namespace MapBoard.GpxToolbox
         private void OperationButtonClick(object sender, RoutedEventArgs e)
         {
             MenuItem menuHeightSmooth = new MenuItem() { Header = "高度平滑" };
-            menuHeightSmooth.Click += (p1,p2)=>Smooth(false,true);
+            menuHeightSmooth.Click += (p1, p2) => Smooth(false, true);
             MenuItem menuSmooth = new MenuItem() { Header = "平滑" };
-            menuSmooth.Click += (p1,p2)=>Smooth(true,true);
+            menuSmooth.Click += (p1, p2) => Smooth(true, true);
             MenuItem menuHeightOffset = new MenuItem() { Header = "高度整体偏移" };
             menuHeightOffset.Click += ElevationOffsetMenuClick;
+            MenuItem menuSpeed = new MenuItem() { Header = "计算速度" };
+            menuSpeed.Click += SpeedButtonClick;
 
             //MenuItem menuDeletePoints = new MenuItem() { "删除一个区域的所有点" };
             //menuDeletePoints.Click += DeletePointsMenuClick;
@@ -538,7 +541,7 @@ namespace MapBoard.GpxToolbox
             {
                 PlacementTarget = sender as FrameworkElement,
                 Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
-                Items = { menuSmooth,menuHeightSmooth, menuHeightOffset },
+                Items = { menuSmooth, menuHeightSmooth, menuHeightOffset, menuSpeed },
                 IsOpen = true,
             };
 
@@ -551,7 +554,7 @@ namespace MapBoard.GpxToolbox
 
 
 
-        private void Smooth(bool xy,bool z)
+        private void Smooth(bool xy, bool z)
         {
             if (lvwFiles.SelectedItem == null)
             {
@@ -572,9 +575,9 @@ namespace MapBoard.GpxToolbox
                 }
                 if (z)
                 {
-                 GpxHelper.   Smooth(points, num, p => p.Z, (p, v) => p.Z = v);
+                    GpxHelper.Smooth(points, num, p => p.Z, (p, v) => p.Z = v);
                 }
-                if(xy)
+                if (xy)
                 {
                     GpxHelper.Smooth(points, num, p => p.X, (p, v) => p.X = v);
                     GpxHelper.Smooth(points, num, p => p.Y, (p, v) => p.Y = v);
@@ -605,6 +608,31 @@ namespace MapBoard.GpxToolbox
             }
         }
 
+        private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
+        {
+            Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
+            await arcMap.SetViewpointCameraAsync(camera);
+           
+
+        }
+
+        private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
+        {
+            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") }, defaultFileName: Gpx.Name + ".png");
+            if (path != null)
+            {
+                PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);
+                var bitmap = FzLib.Media.Converter.BitmapSourceToBitmap(export.GetBitmap());
+
+                Graphics g = Graphics.FromImage(bitmap);
+                var map = await arcMap.ExportImageAsync();
+                WriteableBitmap mapImage = await map.ToImageSourceAsync() as WriteableBitmap;
+                Bitmap image = FzLib.Media.Converter.BitmapSourceToBitmap(mapImage);
+                g.DrawImage(image, 0, 0, image.Width, image.Height);
+                g.Flush();
+                bitmap.Save(path);
+            }
+        }
     }
 
     public class SpeedValueConverter : IValueConverter

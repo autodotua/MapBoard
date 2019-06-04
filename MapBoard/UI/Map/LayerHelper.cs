@@ -151,7 +151,7 @@ namespace MapBoard.Main.UI.Map
             }
             catch (Exception ex)
             {
-                if (SnakeBar.DefaultWindow == null)
+                if (SnakeBar.DefaultOwner.Owner == null)
                 {
                     TaskDialog.ShowException(ex, $"无法加载样式{style.Name}");
                 }

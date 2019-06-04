@@ -82,15 +82,17 @@
     <Reference Include="Esri.ArcGISRuntime, Version=100.4.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.4.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
     </Reference>
-    <Reference Include="FzStandardLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzStandardLib.dll</HintPath>
+    <Reference Include="FzDesktopLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\模块\Release\AnyCPU\FzDesktopLib.dll</HintPath>
+    </Reference>
+    <Reference Include="FzStandardLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
     </Reference>
     <Reference Include="FzWpfControlLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\模块\Release\AnyCPU\FzWpfControlLib.dll</HintPath>
-    </Reference>
-    <Reference Include="FzWpfLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzWpfLib.dll</HintPath>
     </Reference>
     <Reference Include="GIS.Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -145,6 +147,9 @@
     <Compile Include="Helper\StyleHelper.cs" />
     <Compile Include="Style\SymbolInfo.cs" />
     <Compile Include="Style\TimeExtentInfo.cs" />
+    <Compile Include="UI\Dialog\MultiStylesOperationDialog.xaml.cs">
+      <DependentUpon>MultiStylesOperationDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\DateRangeDialog.xaml.cs">
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
@@ -174,6 +179,10 @@
     <Compile Include="UI\Panel\StyleSettingPanel.xaml.cs">
       <DependentUpon>StyleSettingPanel.xaml</DependentUpon>
     </Compile>
+    <Page Include="UI\Dialog\MultiStylesOperationDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Dialog\CoordinateTransformationDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

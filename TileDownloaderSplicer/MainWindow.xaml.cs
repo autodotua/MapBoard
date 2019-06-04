@@ -75,7 +75,6 @@ namespace MapBoard.TileDownloaderSplicer
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
-            TaskDialog.DefaultOwner = this;
         }
 
         /// <summary>
@@ -438,7 +437,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 if (File.Exists(savedImgPath))
                 {
-                    var file = FzLib.Control.Dialog.FileSystemDialog.GetSaveFile(new List<(string, string)>() { (Config.FormatExtension + "图片", Config.FormatExtension) }, false, true, "地图." + Config.FormatExtension);
+                    var file = FileSystemDialog.GetSaveFile(new List<(string, string)>() { (Config.FormatExtension + "图片", Config.FormatExtension) }, false, true, "地图." + Config.FormatExtension);
                     if (file != null)
                     {
                         tbkStichStatus.Text = "正在保存地图";

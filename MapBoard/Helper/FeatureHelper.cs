@@ -193,7 +193,7 @@ namespace MapBoard.Main.Helper
               string path=  Csv.Export(ArcMapView.Instance.Selection.SelectedFeatures);
                 if (path != null)
                 {
-                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultWindow);
+                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                     snake.ShowButton = true;
                     snake.ButtonContent = "打开";
                     snake.ButtonClick += (p1, p2) => Process.Start(path);

@@ -7,7 +7,7 @@ using MapBoard.Main.Style;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Windows.Input;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -33,6 +33,11 @@ namespace MapBoard.Main.UI.Map
         public async Task StartDraw(SketchCreationMode mode)
         {
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
+            //Mapview.Cursor = Cursors.Cross;
+            //Mapview.SketchEditor.PropertyChanged += (p1, p2) =>
+            //  {
+
+            //  };
             await Mapview.SketchEditor.StartAsync(mode);
         }
 
@@ -43,6 +48,7 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task StopDraw(bool save = true)
         {
+            //Mapview.Cursor = Cursors.Arrow ;
             if (Mapview.SketchEditor.Geometry != null && save)
             {
                 string fileName = "";
