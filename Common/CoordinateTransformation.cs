@@ -174,7 +174,7 @@ namespace MapBoard.Common
                 case "WGS84":
                     return point;
                 case "GCJ02":
-                    GeoPoint geoPoint = new GeoPoint(point.Y, point.X);
+                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
                     GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(geoPoint);
                     return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
                 case "CGCS2000":
@@ -196,7 +196,7 @@ namespace MapBoard.Common
                 case "WGS84":
                     return point;
                 case "GCJ02":
-                    GeoPoint geoPoint = new GeoPoint(point.Y, point.X);
+                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
                     GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
                     return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
                 case "CGCS2000":
