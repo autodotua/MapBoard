@@ -120,12 +120,28 @@
                     </flatstyle:ListBox.ItemTemplate>
                 </flatstyle:ListBox>
 
-                <StackPanel Orientation="Horizontal" Grid.Row="2">
-                    <flatstyle:Button Content="新建" Click="CreateKeyButtonClick"  Margin="2"/>
-                    <flatstyle:Button x:Name="btnChangeKey" Click="ChangeKeyButtonClick" Content="修改"  Margin="2"/>
-                    <flatstyle:Button x:Name="btnDeleteKey" Click="DeleteKeyButtonClick" Content="删除"  Margin="2"/>
-                    <flatstyle:Button Content="关闭" Click="CloseButtonClick"  Margin="2"/>
-                </StackPanel>
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="4"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <flatstyle:Button Content="新建" Click="CreateKeyButtonClick"  />
+                    <flatstyle:Button Grid.Column="2" x:Name="btnChangeKey" Click="ChangeKeyButtonClick" Content="修改"  />
+                    <flatstyle:Button Grid.Column="4" x:Name="btnDeleteKey" Click="DeleteKeyButtonClick" Content="删除"  />
+                    <flatstyle:Button Grid.Column="6" Content="关闭" Click="CloseButtonClick"  />
+                    <flatstyle:Button Grid.Row="2"  Grid.ColumnSpan="3" Content="自动生成全部" Click="GenerateKeyButtonClick"  />
+                    <flatstyle:Button Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="3" Content="随机生成颜色" Click="GenerateRandomColorButtonClick"  />
+                </Grid>
             </Grid>
         </Popup>
     </Grid>

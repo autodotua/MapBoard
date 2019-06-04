@@ -1,0 +1,27 @@
+﻿<local:DialogWindowBase
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
+    xmlns:extension="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
+    x:Class="MapBoard.Main.UI.Dialog.SelectFeatureDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+       xmlns:flat="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
+      xmlns:picker="clr-namespace:FzLib.Control.Picker;assembly=FzWpfControlLib"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="请选择日期范围"  >
+
+    <flat:ListView Margin="4" MaxHeight="200" 
+                   ItemsSource="{Binding SelectedFeatures}"
+                   SelectedItem="{Binding Selected}">
+        <flat:ListView.View>
+            <GridView>
+                <GridViewColumn Header="序号" DisplayMemberBinding="{Binding Index}"/>
+                <GridViewColumn Header="标签" DisplayMemberBinding="{Binding Label}"/>
+                <GridViewColumn Header="分类" DisplayMemberBinding="{Binding Key}"/>
+            </GridView>
+        </flat:ListView.View>
+    </flat:ListView>
+</local:DialogWindowBase>

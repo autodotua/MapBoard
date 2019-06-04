@@ -88,6 +88,7 @@ namespace MapBoard.Main.UI.Map
             //BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
 
+
         public async Task Select(Envelope envelope, SpatialRelationship relationship)
         {
             if (envelope == null)
@@ -151,13 +152,23 @@ namespace MapBoard.Main.UI.Map
         //    }
         //}
         public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
-        public void Select(Feature feature)
+        public void Select(Feature feature,bool clearAll=false)
         {
+        
             var layer = StyleCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
                 return;
             }
+            if (clearAll && SelectedFeatures.Count > 0)
+            {
+                foreach (var l in SelectedFeatures.Select(p => p.FeatureTable.FeatureLayer).Distinct().ToArray())
+                {
+                    l.ClearSelection();
+                }
+                SelectedFeatures.Clear();
+            }
+           
             layer.SelectFeature(feature);
             ArcMapView.Instance.Selection.SelectedFeatures.Add(feature);
         }

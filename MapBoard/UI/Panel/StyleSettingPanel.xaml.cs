@@ -26,6 +26,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
+using Color = System.Drawing.Color;
 
 namespace MapBoard.Main.UI.Panel
 {
@@ -34,7 +35,7 @@ namespace MapBoard.Main.UI.Panel
     /// </summary>
     public partial class StyleSettingPanel : ExtendedUserControl
     {
-        private const string defaultKeyName= "（默认）";
+        private const string defaultKeyName = "（默认）";
         public StyleSettingPanel()
         {
             InitializeComponent();
@@ -46,7 +47,7 @@ namespace MapBoard.Main.UI.Panel
             get => selectedKey;
             set
             {
-                if(selectedKey!=null)
+                if (selectedKey != null)
                 {
                     selectedKey.Symbol.LineWidth = LineWidth;
                     selectedKey.Symbol.LineColor = LineColor;
@@ -55,8 +56,8 @@ namespace MapBoard.Main.UI.Panel
 
                 SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
 
-                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled= value != null && value.Key!=defaultKeyName;
-                if(value!=null)
+                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
+                if (value != null)
                 {
                     //LineWidth = StyleCollection.Instance.Selected.Renderer.LineWidth;
                     //LineColor = StyleCollection.Instance.Selected.Renderer.LineColor;
@@ -225,7 +226,7 @@ namespace MapBoard.Main.UI.Panel
                         Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
                     }
                 }
-                if(!Keys.Any(p=>p.Key== defaultKeyName))
+                if (!Keys.Any(p => p.Key == defaultKeyName))
                 {
                     Keys.Add(new KeySymbolPair(defaultKeyName, new SymbolInfo()));
 
@@ -419,6 +420,47 @@ namespace MapBoard.Main.UI.Panel
         {
             Keys.Remove(SelectedKey);
             SelectedKey = Keys[0];
+        }
+
+        private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            var style = StyleCollection.Instance.Selected;
+            var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.KeyFieldName) as string).Distinct();
+            foreach (var key in keys)
+            {
+                if(Keys.Any(p=>p.Key==key) || key=="")
+                {
+                    continue;
+                }
+                SymbolInfo symbol = new SymbolInfo()
+                {
+                    LineColor = GetRandomColor(),
+                    FillColor = GetRandomColor(),
+                };
+                Keys.Add(new KeySymbolPair(key, symbol));
+            }
+        }
+
+        Random r = new Random();
+        private Color GetRandomColor()
+        {
+
+            int R = r.Next(255);
+            int G = r.Next(255);
+            int B = r.Next(255);
+            B = (R + G > 400) ? R + G - 400 : B;//0 : 380 - R - G;
+            B = (B > 255) ? 255 : B;
+            return Color.FromArgb(255,R, G, B);
+        }
+
+        private void GenerateRandomColorButtonClick(object sender, RoutedEventArgs e)
+        {
+            foreach (var key in Keys)
+            {
+
+                key.Symbol.LineColor = GetRandomColor();
+                key.Symbol.FillColor = GetRandomColor();
+            }
         }
     }
 

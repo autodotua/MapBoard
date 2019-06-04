@@ -94,5 +94,7 @@
 
 
         <TextBlock  Foreground="White"  FontSize="16" VerticalAlignment="Center" FontWeight="Bold"  Text="{Binding Message}"/>
+
+      
     </Grid>
 </local:OperationBarBase>

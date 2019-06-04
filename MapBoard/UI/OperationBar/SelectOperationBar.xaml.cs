@@ -35,12 +35,19 @@ namespace MapBoard.Main.UI.OperationBar
         {
             InitializeComponent();
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
+            Application.Current.MainWindow.SizeChanged += (p1,p2)=>selectFeatureDialog?.ResetLocation();
+            Application.Current.MainWindow.LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
         }
+
+
+
+        private SelectFeatureDialog selectFeatureDialog;
 
         private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            btnRedraw.IsEnabled = MapView.Selection.SelectedFeatures.Count == 1;
-            btnCut.IsEnabled = MapView.Selection.SelectedFeatures.Count == 1 &&
+            int count = MapView.Selection.SelectedFeatures.Count;
+            btnRedraw.IsEnabled = count == 1;
+            btnCut.IsEnabled = count == 1 &&
                 (StyleCollection.Instance.Selected.Type == GeometryType.Polygon || StyleCollection.Instance.Selected.Type == GeometryType.Polyline);
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count.ToString()}个图形");
             if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
@@ -56,7 +63,19 @@ namespace MapBoard.Main.UI.OperationBar
                 sb.Append("，面积：" + Number.SquareMeterToFitString(area));
             }
             Message = sb.ToString();
+
+            if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
+            {
+                var mainWindow = Application.Current.MainWindow;
+                selectFeatureDialog = new SelectFeatureDialog();
+                selectFeatureDialog.Show();
+            }
+            //else if(count==1 && selectFeatureDialog!=null && !selectFeatureDialog.IsClosed)
+            //{
+            //    selectFeatureDialog?.Close();
+            //}
         }
+
 
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
         {

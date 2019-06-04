@@ -54,7 +54,7 @@ namespace MapBoard.Main.UI.Map
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
             Layer = new LayerHelper();
-            Load();
+            Load().Wait();
         }
 
         public static ArcMapView Instance { get; private set; }
