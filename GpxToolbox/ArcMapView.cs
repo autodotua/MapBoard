@@ -8,6 +8,7 @@ using FzLib.Control.Dialog;
 using FzLib.Extension;
 using GIS.IO.Gpx;
 using MapBoard.Common;
+using MapBoard.Common.BaseLayer;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -294,8 +295,7 @@ namespace MapBoard.GpxToolbox
             //Map map = new Map(basemap);
             //await map.LoadAsync();
             //Map = map;
-            var map = this;
-            await this.LoadBaseMapsAsync();
+            await GeoViewHelper.LoadBaseGeoViewAsync(this);
             //Surface elevationSurface = new Surface();
             //string _elevationServiceUrl = "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
             //ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));

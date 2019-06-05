@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static MapBoard.Common.CoordinateTransformation;
 
+//未使用
 namespace MapBoard.Main.UI.Dialog
 {
     /// <summary>

@@ -147,6 +147,9 @@
     <Compile Include="Helper\StyleHelper.cs" />
     <Compile Include="Style\SymbolInfo.cs" />
     <Compile Include="Style\TimeExtentInfo.cs" />
+    <Compile Include="UI\Dialog\BaseLayerSettingDialog.xaml.cs">
+      <DependentUpon>BaseLayerSettingDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\SelectFeatureDialog.xaml.cs">
       <DependentUpon>SelectFeatureDialog.xaml</DependentUpon>
     </Compile>
@@ -182,6 +185,10 @@
     <Compile Include="UI\Panel\StyleSettingPanel.xaml.cs">
       <DependentUpon>StyleSettingPanel.xaml</DependentUpon>
     </Compile>
+    <Page Include="UI\Dialog\BaseLayerSettingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Dialog\SelectFeatureDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

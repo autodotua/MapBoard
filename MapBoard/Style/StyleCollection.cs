@@ -209,9 +209,11 @@ namespace MapBoard.Main.Style
             instance.SaveWhenChanged = false;
             instance.Styles.Clear();
             instance = null;
-            var useless = Instance;
-
+            _ = Instance;
+            StyleInstanceChanged?.Invoke(Instance, new EventArgs());
         }
+
+        public static event EventHandler StyleInstanceChanged;
 
         public (double X1,double X2,double Y1,double Y2)? LastViewpointGeometry {
             get => lastViewpointGeometry;

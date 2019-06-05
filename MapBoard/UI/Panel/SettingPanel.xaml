@@ -25,16 +25,21 @@
                     <FrameworkElement Height="12"/>
                     <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}"/>
                     <FrameworkElement Height="12"/>
-                    <TextBlock Text="瓦片地图地址："/>
-                    <FrameworkElement Height="4"/>
+                    <!--<TextBlock Text="瓦片地图地址："/>
+                    <FrameworkElement Height="4"/>-->
 
-                    <TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>
+                    <!--<TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"/>-->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="当前底图数量："/>
+                        <TextBlock Text="{Binding Config.BaseLayers.Count}"/>
+                    </StackPanel>
                     <FrameworkElement Height="4"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                        <flat:Button Content="默认" Click="ResetUrlButtonClick"/>
+                        <!--<flat:Button Content="默认" Click="ResetUrlButtonClick"/>
                         <FrameworkElement Width="8"/>
-                        <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>
+                        <flat:Button  Content="应用" Click="ApplyUrlButtonClick"/>-->
+                        <flat:Button  Content="设置" Click="SetBaseLayersButtonClick"/>
 
                     </StackPanel>
                     <FrameworkElement Height="12"/>
@@ -82,9 +87,9 @@
         </StackPanel>
 
         <StackPanel VerticalAlignment="Bottom">
-            <flat:Button Content="GPX工具箱" Click="Button_Click"/>
+            <flat:Button Content="GPX工具箱" Click="GpxToolboxButtonClick"/>
             <FrameworkElement Height="12"/>
-            <flat:Button Content="瓦片下载拼接" Click="Button_Click_1"/>
+            <flat:Button Content="瓦片下载拼接" Click="TileDownloaderSplicerButtonClick"/>
         </StackPanel>
 
     </Grid>

@@ -10,6 +10,7 @@ using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.IO;
 using MapBoard.Common;
+using MapBoard.Common.BaseLayer;
 using MapBoard.Main.IO;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI.Map;
@@ -246,7 +247,7 @@ namespace MapBoard.Main.UI.Map
 
         public async Task LoadBasemap()
         {
-            await this.LoadBaseMapsAsync();
+            await GeoViewHelper.LoadBaseGeoViewAsync(this);
         }
 
     }

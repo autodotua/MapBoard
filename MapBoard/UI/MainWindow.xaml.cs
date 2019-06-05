@@ -79,6 +79,11 @@ namespace MapBoard.Main.UI
             InitializeComponent();
             //SnakeBar.DefaultWindow = this;
             RegistEvents();
+
+            StyleCollection.StyleInstanceChanged += (p1, p2) =>
+              {
+                  Notify(nameof(Styles));
+              };
         }
         protected async override void OnDrop(DragEventArgs e)
         {
@@ -115,8 +120,7 @@ namespace MapBoard.Main.UI
             {
                 if (TaskDialog.ShowWithYesNoButtons("是否覆盖当前所有样式？", "打开Mapboard Map Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
                 {
-                    IO.Package.ImportMap(files[0]);
-                    Notify(nameof(Styles));
+                    Package.ImportMap(files[0]);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
@@ -125,7 +129,7 @@ namespace MapBoard.Main.UI
                 {
                     foreach (var file in files)
                     {
-                        IO.Package.ImportLayer(file);
+                        Package.ImportLayer(file);
                         await Task.Delay(500);
                     }
                 }
@@ -299,10 +303,7 @@ namespace MapBoard.Main.UI
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
             loading.Show();
-            if (await IOHelper.ImportStyle())
-            {
-                Notify(nameof(Styles));
-            }
+            await IOHelper.ImportStyle();
             loading.Hide();
         }
 
@@ -506,7 +507,7 @@ namespace MapBoard.Main.UI
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
-            StyleCollection.Instance.Selected = null;
+           lvw.SelectedItem= null;
         }
 
         private void BatchOperationButtonClick(object sender, RoutedEventArgs e)

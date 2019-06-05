@@ -11,7 +11,7 @@
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="请选择日期范围"  >
+        Title="选择图形"  >
 
     <flat:ListView Margin="4" MaxHeight="200" 
                    ItemsSource="{Binding SelectedFeatures}"

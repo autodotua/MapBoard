@@ -24,7 +24,7 @@ namespace MapBoard.Main.Helper
         {
             StyleInfo style = StyleCollection.Instance.Selected;
             string path = null;
-            if (style.Type != Esri.ArcGISRuntime.Geometry.GeometryType.Polygon)
+            if (style.Type != GeometryType.Polygon)
             {
                 path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
                 {
@@ -84,7 +84,7 @@ namespace MapBoard.Main.Helper
         /// 显示对话框导入
         /// </summary>
         /// <returns>返回是否需要通知刷新Style</returns>
-        public async static Task<bool> ImportStyle()
+        public async static Task ImportStyle()
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
@@ -104,11 +104,11 @@ namespace MapBoard.Main.Helper
                     {
                         case ".mbmpkg":
                             Package.ImportMap(path);
-                            return true;
+                            return;
 
                         case ".mblpkg":
                             Package.ImportLayer(path);
-                            return false;
+                            return;
 
                         case ".gpx":
                             TaskDialog.ShowWithCommandLinks("请选择转换类型", "正在准备导入GPS轨迹文件",
@@ -117,11 +117,11 @@ namespace MapBoard.Main.Helper
                                 ("一条线","按时间顺序将轨迹点相连，形成一条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.OneLine)),
                                 ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.MultiLine)),
                            },cancelable:true);
-                            return false;
+                            return;
 
                         case ".shp":
                             await Shapefile.Import(path);
-                            return false;
+                            return;
 
                         default:
                             throw new Exception("未知文件类型");
@@ -131,7 +131,7 @@ namespace MapBoard.Main.Helper
                 {
                     TaskDialog.ShowException(ex, "导入失败");
                     ok = false;
-                    return false;
+                    return;
                 }
                 finally
                 {
@@ -141,7 +141,7 @@ namespace MapBoard.Main.Helper
                     }
                 }
             }
-            return false;
+            return;
         }
 
         /// <summary>

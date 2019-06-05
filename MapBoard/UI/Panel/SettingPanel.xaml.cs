@@ -39,25 +39,35 @@ namespace MapBoard.Main.UI.Panel
 
         private async void ResetUrlButtonClick(object sender, RoutedEventArgs e)
         {
-            Config.Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d\r\nhttp://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d";
+            //Config.Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d\r\nhttp://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d";
             Notify(nameof(Config));
             await ArcMapView.Instance.LoadBasemap();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void GpxToolboxButtonClick(object sender, RoutedEventArgs e)
         {
-            var win = new MapBoard.GpxToolbox.MainWindow();
+            var win = new GpxToolbox.MainWindow();
             win.Show();
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void TileDownloaderSplicerButtonClick(object sender, RoutedEventArgs e)
         {
-            new MapBoard.TileDownloaderSplicer.MainWindow().Show();
+            new TileDownloaderSplicer.MainWindow().Show();
         }
 
         private void GpxHeightCheckBoxCheckedChanged(object sender, RoutedEventArgs e)
         {
             //stkGpxHeight.Visibility = (sender as CheckBox).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void SetBaseLayersButtonClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialog.BaseLayerSettingDialog();
+            dialog.Closed += (p1, p2) =>
+            {
+                Notify(nameof(Config));
+            };
+            dialog.Show();
         }
     }
 }
