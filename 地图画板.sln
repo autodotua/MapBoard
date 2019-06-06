@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.TileDownloaderSpli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案文件", "解决方案文件", "{79FD6694-47B7-4E50-8DE5-2C4F25780295}"
 	ProjectSection(SolutionItems) = preProject
-		日志.txt = 日志.txt
+		日志.md = 日志.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Common", "Common\MapBoard.Common.csproj", "{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}"
