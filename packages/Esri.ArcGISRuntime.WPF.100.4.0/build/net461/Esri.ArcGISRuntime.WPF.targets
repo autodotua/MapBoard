@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <ArcGISRuntimeVersion>100.4</ArcGISRuntimeVersion>
+    <ArcGISRuntimeFolder>ArcGISRuntime$(ArcGISRuntimeVersion)</ArcGISRuntimeFolder>
+    <ArcGISRuntimeDeploymentRoot>$(MSBuildThisFileDirectory)..\..\lib\net461\$(ArcGISRuntimeFolder)</ArcGISRuntimeDeploymentRoot>
+  </PropertyGroup>
+  
+  <Target Name="AGSProjectTypeCheck" BeforeTargets="Build;Rebuild">
+    <Error Condition="'$(ProjectTypeGuids)'!='' AND $(ProjectTypeGuids.ToLowerInvariant().Contains('{349c5851-65df-11da-9384-00065b846f21}'))"
+           Text="The 'Esri.ArcGISRuntime.WPF' nuget package is not supported for the project type 'Web Application' in the '$(MSBuildProjectName)' project." />
+  </Target>
+  
+  <!-- Link resource files, to include them in the output directory and application manifest. -->
+  <ItemGroup>
+	<Content Include="$(ArcGISRuntimeDeploymentRoot)\resources\**\*.*">
+	  <Link>$(ArcGISRuntimeFolder)\resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+  </ItemGroup>
+  
+  <!-- Link the 32-bit native DLL, if needed. -->
+  <ItemGroup Condition="'$(PlatformTarget)' == 'x86' OR '$(PlatformTarget)' == 'AnyCPU'">
+	<Content Include="$(ArcGISRuntimeDeploymentRoot)\client32\**\*.*">
+	  <Link>$(ArcGISRuntimeFolder)\client32\%(RecursiveDir)%(Filename)%(Extension)</Link>
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+  </ItemGroup>
+  
+  <!-- Link the 64-bit native DLL, if needed. -->
+  <ItemGroup Condition="('$(Prefer32Bit)' == 'false' and '$(PlatformTarget)' == 'AnyCPU') or '$(PlatformTarget)' == 'x64'">
+	<Content Include="$(ArcGISRuntimeDeploymentRoot)\client64\**\*.*">
+	  <Link>$(ArcGISRuntimeFolder)\client64\%(RecursiveDir)%(Filename)%(Extension)</Link>
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+  </ItemGroup>
+</Project>

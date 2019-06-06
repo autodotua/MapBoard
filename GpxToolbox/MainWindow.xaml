@@ -242,6 +242,7 @@
                         <ContextMenu>
                             <MenuItem Header="删除" Click="RemoveTrackFileMenuClick"/>
                             <MenuItem Header="连接" Click="LinkTrackMenuClick"/>
+                            <MenuItem Header="缩放到轨迹" Click="ZoomToTrackButtonClick"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.View>

@@ -52,10 +52,6 @@ namespace MapBoard.GpxToolbox
             //TaskDialog.DefaultOwner = this;
 
         }
-        protected override void OnActivated(EventArgs e)
-        {
-            base.OnActivated(e);
-        }
 
 
         private void InitializeChart()
@@ -89,7 +85,7 @@ namespace MapBoard.GpxToolbox
                 //arcMap.ClearSelection();
                 arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
             };
-            chartHelper.LinePointEnbale = p => p.Speed > 0.2;
+            chartHelper.LinePointEnbale = (p1,p2)=>(p2.CenterTime-p1.CenterTime) < TimeSpan.FromSeconds(200);
         }
 
 
@@ -141,12 +137,10 @@ namespace MapBoard.GpxToolbox
                 arcMap.SelectedTrack.Overlay.Renderer = CurrentRenderer;
                 //arcMap.SelectedTrack.Overlay.Graphics[0].Symbol = CurrentLineSymbol;
 
-                GIS.Geometry.Envelope extent = arcMap.SelectedTrack.Track.Points.Extent;
-                var esriExtent = new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax, SpatialReferences.Wgs84);
-                arcMap.SetViewpointAsync(new Viewpoint(esriExtent));
-
                 Gpx = arcMap.SelectedTrack.Gpx;
                 GpxTrack = arcMap.SelectedTrack.Track;
+
+
                 UpdateChart();
             }
 
@@ -156,24 +150,42 @@ namespace MapBoard.GpxToolbox
         {
             try
             {
-                var points = GetUsableSpeeds(arcMap.SelectedTrack.Track.Points);
-                var lines = GetFilteredSpeeds(arcMap.SelectedTrack.Track.Points, 20, 5);
+                var points = GetUsableSpeeds(GpxTrack.Points);
+                //var lines = GetMedianFilteredSpeeds(GpxTrack.Points, 20, 5,TimeSpan.FromSeconds(200));
+                var lines = GetMeanFilteredSpeeds(GpxTrack.Points, 20, 5);
+                //var lines = Filter.MedianValueFilter(points, p => p.Speed, 15, 1).Select(p=>p.SelectedItem);
+                //var test = Filter.MedianValueFilter(points, p => p.Speed, 5, 1).Where(p => p.SelectedItem.Speed > 100);
                 chartHelper.DrawAction = () =>
                 {
-                    chartHelper.Initialize();
-                    chartHelper.DrawBorder(points, true, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                    try
                     {
-                        XAxisBorderValueConverter = p => p.CenterTime,
-                        YAxisBorderValueConverter = p => p.Speed,
-                    });
-                    chartHelper.DrawBorder(arcMap.SelectedTrack.Track.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)), false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
+                        chartHelper.Initialize();
+                        chartHelper.DrawBorder(lines, true, 
+                            new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                        {
+                            XAxisBorderValueConverter = p => p.CenterTime,
+                            YAxisBorderValueConverter = p => p.Speed,
+                        });
+                        chartHelper.DrawBorder(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
+                            false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
+                            {
+                                XAxisBorderValueConverter = p => p.Time,
+                                YAxisBorderValueConverter = p => p.Z,
+                            });
+                        chartHelper.DrawBorder(points, false, 
+                            new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                        {
+                            XAxisBorderValueConverter = p => p.CenterTime,
+                            YAxisBorderValueConverter = p => p.Speed,
+                        });
+                        chartHelper.DrawPolygon(GpxTrack.Points, 1);
+                        chartHelper.DrawPoints(points, 0);
+                        chartHelper.DrawLines(lines, 0);
+                    }
+                    catch(Exception ex)
                     {
-                        XAxisBorderValueConverter = p => p.Time,
-                        YAxisBorderValueConverter = p => p.Z,
-                    });
-                    chartHelper.DrawPolygon(arcMap.SelectedTrack.Track.Points, 1);
-                    chartHelper.DrawPoints(points, 0);
-                    chartHelper.DrawLines(lines, 0);
+                        Log.ErrorLogs.Add("绘制图形失败："+ex.Message);
+                    }
                 };
                 chartHelper.DrawAction();
 
@@ -241,6 +253,7 @@ namespace MapBoard.GpxToolbox
             if (e.Track.Length > 0)
             {
                 lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
+                ZoomToTrackButtonClick(null,null);
             }
         }
 
@@ -632,6 +645,13 @@ namespace MapBoard.GpxToolbox
                 g.Flush();
                 bitmap.Save(path);
             }
+        }
+
+        private void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
+        {
+            GIS.Geometry.Envelope extent = GpxTrack.Points.Extent;
+            var esriExtent = new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax, SpatialReferences.Wgs84);
+            arcMap.SetViewpointAsync(new Viewpoint(esriExtent));
         }
     }
 

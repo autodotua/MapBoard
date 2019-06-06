@@ -16,6 +16,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案文件", "解�
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Common", "Common\MapBoard.Common.csproj", "{7F99EF14-0E45-4D03-99BB-F9D918A9A0AD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{416B6C02-20D7-406F-AB79-7701722B4848}"
+	ProjectSection(SolutionItems) = preProject
+		libs\FzDesktopLib.dll = libs\FzDesktopLib.dll
+		libs\FzStandardLib.dll = libs\FzStandardLib.dll
+		libs\FzWpfControlLib.dll = libs\FzWpfControlLib.dll
+		libs\GeoAPI.dll = libs\GeoAPI.dll
+		libs\GIS.Core.dll = libs\GIS.Core.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -386,7 +386,7 @@ namespace MapBoard.Main.UI
            
         }
 
-        private async void WindowLoaded(object sender, RoutedEventArgs e)
+        private  void WindowLoaded(object sender, RoutedEventArgs e)
         {
             //btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
             //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;

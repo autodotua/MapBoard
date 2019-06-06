@@ -28,7 +28,7 @@ namespace MapBoard.GpxToolbox
             canvas.Background = Brushes.White;
         }
 
-        List<BorderInfo> borderInfos = new List<BorderInfo>();
+        List<BorderInfo> borders = new List<BorderInfo>();
         BorderInfo border;
 
         public Canvas Sketchpad { get; set; }
@@ -164,7 +164,7 @@ namespace MapBoard.GpxToolbox
         }
         public void SetLine(DateTime time)
         {
-            double percent = 1.0 * (time - border.minBorderTime).Ticks / (border.maxBorderTime - border.minBorderTime).Ticks;
+            double percent = 1.0 * (time - BorderInfo.minBorderTime).Ticks / (BorderInfo.maxBorderTime - BorderInfo.minBorderTime).Ticks;
 
             double width = percent * Sketchpad.ActualWidth;
             RefreshMouseLine(width);
@@ -261,7 +261,7 @@ namespace MapBoard.GpxToolbox
         }
         public void DrawPoints(IEnumerable<TPoint> items, int borderIndex)
         {
-            BorderInfo border = borderInfos[borderIndex];
+            BorderInfo border = borders[borderIndex];
             foreach (var item in items)
             {
                 DateTime time = XAxisPointValueConverter(item);
@@ -269,7 +269,7 @@ namespace MapBoard.GpxToolbox
 
                 TimeSpan currentSpan = time - border.minTime;
 
-                double x = Sketchpad.ActualWidth * (time - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks;
+                double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
                 double y = Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
                 PointItems.Add(DrawPoint(x, y), item);
             }
@@ -278,11 +278,11 @@ namespace MapBoard.GpxToolbox
         }
         public void DrawLines(IEnumerable<TLine> items, int borderIndex)
         {
-            BorderInfo border = borderInfos[borderIndex];
+            BorderInfo border = borders[borderIndex];
             TLine last = default;
             foreach (var item in items)
             {
-                if (last != default && LinePointEnbale(item) && LinePointEnbale(last))
+                if (last != default && LinePointEnbale(last,item) )
                 {
 
                     DateTime time1 = XAxisLineValueConverter(last);
@@ -290,14 +290,14 @@ namespace MapBoard.GpxToolbox
 
                     TimeSpan currentSpan1 = time1 - border.minTime;
 
-                    double x1 = Sketchpad.ActualWidth * (time1 - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks;
+                    double x1 = Sketchpad.ActualWidth * (time1 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
                     double y1 = Sketchpad.ActualHeight * (value1 - border.minBorderValue) / border.borderValueSpan;
                     DateTime time2 = XAxisLineValueConverter(item);
                     double value2 = YAxisLineValueConverter(item);
 
                     TimeSpan currentSpan2 = time2 - border.minTime;
 
-                    double x2 = Sketchpad.ActualWidth * (time2 - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks;
+                    double x2 = Sketchpad.ActualWidth * (time2 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
                     double y2 = Sketchpad.ActualHeight * (value2 - border.minBorderValue) / border.borderValueSpan;
                     DrawLine(x1, y1, x2, y2);
                 }
@@ -309,7 +309,7 @@ namespace MapBoard.GpxToolbox
         }
         public void DrawPolygon(IEnumerable<TPolygon> items, int borderIndex)
         {
-            BorderInfo border = borderInfos[borderIndex];
+            BorderInfo border = borders[borderIndex];
             Polygon p = new Polygon()
             {
                 Fill = PolygonBrush,
@@ -323,8 +323,8 @@ namespace MapBoard.GpxToolbox
             //{
             //    yZero = Sketchpad.ActualHeight;
             //}
-            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks, yZero));
-            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks, yZero));
+            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
+            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
             foreach (var item in items)
             {
                 DateTime time = XAxisPolygonValueConverter(item);
@@ -334,7 +334,7 @@ namespace MapBoard.GpxToolbox
                     continue;
                 }
                 TimeSpan currentSpan = time - border.minTime;
-                double x = Sketchpad.ActualWidth * (time - border.minBorderTime).Ticks / border.borderTimeSpan.Ticks;
+                double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
                 double y = Sketchpad.ActualHeight - Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
                 p.Points.Add(new Point(x, y));
             }
@@ -343,15 +343,16 @@ namespace MapBoard.GpxToolbox
         }
         public void Initialize()
         {
-            borderInfos.Clear();
+            borders.Clear();
             displayedPointsX.Clear();
             Sketchpad.Children.Clear();
             PointItems.Clear();
+            BorderInfo.Initialize();
         }
         public int DrawBorder<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
         {
             border = new BorderInfo();
-            borderInfos.Add(border);
+            borders.Add(border);
             border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
             border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));
             border.minValue = items.Min(p => setting.YAxisBorderValueConverter(p));
@@ -372,17 +373,29 @@ namespace MapBoard.GpxToolbox
                 lineTimeSpan = TimeSpan.FromTicks(border.timeSpan.Ticks / 10);
             }
 
-            border.minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
-            border.maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
-            border.borderTimeSpan = border.maxBorderTime - border.minBorderTime;
+            var minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
+            var maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
+
+          if(minBorderTime<BorderInfo.minBorderTime)
+            {
+                BorderInfo.minBorderTime = minBorderTime;
+            }
+            if (maxBorderTime >BorderInfo.maxBorderTime)
+            {
+                BorderInfo.maxBorderTime = maxBorderTime;
+            }
+            BorderInfo.borderTimeSpan = BorderInfo.maxBorderTime - BorderInfo.minBorderTime;
+
+
+            //border.borderTimeSpan = border.maxBorderTime - border.minBorderTime;
             if (draw)
             {
-                int verticleBorderCount = (int)(border.borderTimeSpan.Ticks / lineTimeSpan.Ticks);
+                int verticleBorderCount = (int)(BorderInfo.borderTimeSpan.Ticks / lineTimeSpan.Ticks);
                 for (int i = 0; i < verticleBorderCount; i++)
                 {
                     double x = Sketchpad.ActualWidth * i / verticleBorderCount;
                     DrawVerticalLine(x, 1);
-                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(border.minBorderTime.Ticks + lineTimeSpan.Ticks * i)), VerticleTextBrush, true);
+                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(BorderInfo.minBorderTime.Ticks + lineTimeSpan.Ticks * i)), VerticleTextBrush, true);
                 }
             }
 
@@ -415,9 +428,13 @@ namespace MapBoard.GpxToolbox
                 }
             }
 
+            
+
             //lastBorderPoints = items;
-            return borderInfos.Count - 1;
+            return borders.Count - 1;
         }
+
+
         #endregion
 
         #region 绘制用定位相关字段
@@ -426,7 +443,7 @@ namespace MapBoard.GpxToolbox
 
 
         #region 可从外部更改的属性
-        public Func<TLine, bool> LinePointEnbale { get; set; } = p => true;
+        public Func<TLine,TLine, bool> LinePointEnbale { get; set; } = (p1,p2) => true;
         public Func<TPoint, DateTime> XAxisPointValueConverter { get; set; } = p => DateTime.MinValue;
         public Func<TLine, DateTime> XAxisLineValueConverter { get; set; } = p => DateTime.MinValue;
         public Func<TPolygon, DateTime> XAxisPolygonValueConverter { get; set; } = p => DateTime.MinValue;
@@ -557,6 +574,12 @@ namespace MapBoard.GpxToolbox
 
         private class BorderInfo
         {
+            public static void Initialize()
+            {
+                minBorderTime = DateTime.MaxValue;
+                maxBorderTime = DateTime.MinValue;
+                borderTimeSpan = TimeSpan.Zero;
+            }
             public double maxValue { get; set; }
             public double minValue { get; set; }
             public double valueSpan { get; set; }
@@ -565,9 +588,9 @@ namespace MapBoard.GpxToolbox
             public double borderValueSpan { get; set; }
             public DateTime minTime { get; set; }
             public DateTime maxTime { get; set; }
-            public DateTime minBorderTime { get; set; }
-            public DateTime maxBorderTime { get; set; }
-            public TimeSpan borderTimeSpan { get; set; }
+            public static DateTime minBorderTime { get; set; }
+            public static DateTime maxBorderTime { get; set; }
+            public static TimeSpan borderTimeSpan { get; set; }
             public TimeSpan timeSpan { get; set; }
         }
 

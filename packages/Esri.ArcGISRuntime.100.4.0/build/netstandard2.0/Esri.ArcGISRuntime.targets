@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   
+  <Target Name="AGSSTDTFMSupportedCheck" BeforeTargets="ResolveAssemblyReferences;Build;Rebuild">
+    <Error Condition="'$(TargetFrameworkIdentifier)' !='' and '$(TargetFramework)'!='' and '$(TargetFrameworkIdentifier)' != '.NETStandard'"
+           Text="The 'Esri.ArcGISRuntime' nuget package is not supported for the Target Framework '$(TargetFramework)' in the $(MSBuildProjectName) project" />
+  </Target>
+  
+</Project>
