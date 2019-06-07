@@ -94,7 +94,7 @@
     <Compile Include="GpxHelper.cs" />
     <Compile Include="SymbolResources.cs" />
     <Compile Include="TimeBasedChartHelper.cs" />
-    <Compile Include="TrajectoryInfo.cs" />
+    <Compile Include="TrackInfo.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

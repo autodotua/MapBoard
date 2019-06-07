@@ -180,7 +180,7 @@ namespace MapBoard.GpxToolbox
                     Log.ErrorLogs.Add(ex.Message);
                 }
             }
-            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray()));
+            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(),false));
         }
         public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
@@ -304,7 +304,17 @@ namespace MapBoard.GpxToolbox
         }
 
 
-        public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
+        public async Task<List<TrackInfo>> ReloadGpx(TrackInfo track, bool raiseEvent)
+        {
+            TrackInfo.Tracks.Remove(track);
+            var ts =await LoadGpx(track.FilePath,false);
+             if (raiseEvent)
+            {
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(ts.ToArray(), true));
+            }
+            return ts;
+        }
+            public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
         {
             string gpxContent = File.ReadAllText(filePath);
             Gpx gpx = null;
@@ -335,7 +345,7 @@ namespace MapBoard.GpxToolbox
             }
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray()));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(),false));
             }
 
             return loadedTrack;
@@ -366,6 +376,7 @@ namespace MapBoard.GpxToolbox
                     GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.X, (p, v) => p.X = v);
                     GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
                 }
+                trackInfo.Smoothed = true;
             }
             double minZ = Config.Instance.GpxHeight && Config.Instance.GpxRelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
             double mag = Config.Instance.GpxHeight ? Config.Instance.GpxHeightExaggeratedMagnification : 1;
@@ -469,11 +480,12 @@ namespace MapBoard.GpxToolbox
 
         public class GpxLoadedEventArgs : EventArgs
         {
-            public GpxLoadedEventArgs(TrackInfo[] track)
+            public GpxLoadedEventArgs(TrackInfo[] track,bool update)
             {
                 Track = track;
+                Update = update;
             }
-
+            public bool Update { get; private set; }
             public TrackInfo[] Track { get; private set; }
         }
         public delegate void GpxLoadedEventHandler(object sender, GpxLoadedEventArgs e);

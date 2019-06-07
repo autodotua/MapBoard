@@ -16,6 +16,6 @@ namespace MapBoard.GpxToolbox
         public string FileName => Path.GetFileNameWithoutExtension(FilePath);
         public GpxTrack Track => Gpx.Tracks[TrackIndex];
 
-
+        public bool Smoothed { get; set; } = false;
     }
 }

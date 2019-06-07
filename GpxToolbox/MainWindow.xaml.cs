@@ -85,7 +85,7 @@ namespace MapBoard.GpxToolbox
                 //arcMap.ClearSelection();
                 arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
             };
-            chartHelper.LinePointEnbale = (p1,p2)=>(p2.CenterTime-p1.CenterTime) < TimeSpan.FromSeconds(200);
+            chartHelper.LinePointEnbale = (p1, p2) => (p2.CenterTime - p1.CenterTime) < TimeSpan.FromSeconds(200);
         }
 
 
@@ -160,31 +160,32 @@ namespace MapBoard.GpxToolbox
                     try
                     {
                         chartHelper.Initialize();
-                        chartHelper.DrawBorder(lines, true, 
+                        chartHelper.DrawBorder(lines, true,
                             new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                        {
-                            XAxisBorderValueConverter = p => p.CenterTime,
-                            YAxisBorderValueConverter = p => p.Speed,
-                        });
+                            {
+                                XAxisBorderValueConverter = p => p.CenterTime,
+                                YAxisBorderValueConverter = p => p.Speed,
+                            });
                         chartHelper.DrawBorder(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
                             false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
                             {
                                 XAxisBorderValueConverter = p => p.Time,
                                 YAxisBorderValueConverter = p => p.Z,
                             });
-                        chartHelper.DrawBorder(points, false, 
+                        chartHelper.DrawBorder(points, false,
                             new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                        {
-                            XAxisBorderValueConverter = p => p.CenterTime,
-                            YAxisBorderValueConverter = p => p.Speed,
-                        });
+                            {
+                                XAxisBorderValueConverter = p => p.CenterTime,
+                                YAxisBorderValueConverter = p => p.Speed,
+                            });
                         chartHelper.DrawPolygon(GpxTrack.Points, 1);
                         chartHelper.DrawPoints(points, 0);
                         chartHelper.DrawLines(lines, 0);
+                        chartHelper.StretchToFit();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        Log.ErrorLogs.Add("绘制图形失败："+ex.Message);
+                        Log.ErrorLogs.Add("绘制图形失败：" + ex.Message);
                     }
                 };
                 chartHelper.DrawAction();
@@ -253,7 +254,10 @@ namespace MapBoard.GpxToolbox
             if (e.Track.Length > 0)
             {
                 lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
-                ZoomToTrackButtonClick(null,null);
+                if (!e.Update)
+                {
+                    ZoomToTrackButtonClick(null, null);
+                }
             }
         }
 
@@ -425,19 +429,49 @@ namespace MapBoard.GpxToolbox
 
         private async void ResetTrackButtonClick(object sender, RoutedEventArgs e)
         {
-            int index = lvwFiles.SelectedIndex;
-            if (index == -1)
+            TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
+            if (track == null)
             {
                 return;
             }
-            TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
 
-            string filePath = track.FilePath;
+            if ( Config.Instance.GpxAutoSmooth)
+            {
+                MenuItem menuResetWithSmooth = new MenuItem() { Header = "重置（仍然自动平滑）" };
+                menuResetWithSmooth.Click += async (p1, p2) =>
+                   {
+                       await arcMap.ReloadGpx(track, true);
+                   };
+                MenuItem menuResetWithoutSmooth = new MenuItem() { Header = "重置（不要自动平滑）" };
+                menuResetWithoutSmooth.Click += async (p1, p2) =>
+                   {
+                       Config.Instance.GpxAutoSmooth = false;
+                       try
+                       {
+                           await arcMap.ReloadGpx(track, true);
+                       }
+                       finally
+                       {
+                           Config.Instance.GpxAutoSmooth = true;
+                       }
+                   };
 
-            //arcMap.GraphicsOverlays.Remove(track.Overlay);
-            TrackInfo.Tracks.Remove(track);
+                ContextMenu menu = new ContextMenu()
+                {
+                    PlacementTarget = sender as UIElement,
+                    Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
+                    Items = {menuResetWithSmooth,menuResetWithoutSmooth},
+                    IsOpen=true,
+                };
+            }
+            else
+            {
 
-            await arcMap.LoadGpx(filePath, true);
+                await arcMap.ReloadGpx(track, true);
+
+            }
+
+
         }
 
         private void RemoveTrackFileMenuClick(object sender, RoutedEventArgs e)
@@ -625,7 +659,7 @@ namespace MapBoard.GpxToolbox
         {
             Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
-           
+
 
         }
 

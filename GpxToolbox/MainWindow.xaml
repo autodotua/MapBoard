@@ -213,7 +213,7 @@
 
         </Grid>
         <!--<local:MapView x:Name="map" Grid.Column="2"/>-->
-        <Grid Grid.Column="2" x:Name="grd">
+        <Grid Grid.Column="2" ClipToBounds="True" x:Name="grd">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*"/>
                 <RowDefinition Height="8"/>

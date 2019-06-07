@@ -26,10 +26,11 @@ namespace MapBoard.GpxToolbox
             canvas.PreviewMouseMove += SketchpadPreviewMouseMove;
             canvas.MouseLeave += SketchpadMouseLeave;
             canvas.Background = Brushes.White;
+            canvas.ClipToBounds = true;
         }
 
         List<BorderInfo> borders = new List<BorderInfo>();
-        BorderInfo border;
+     
 
         public Canvas Sketchpad { get; set; }
 
@@ -348,10 +349,11 @@ namespace MapBoard.GpxToolbox
             Sketchpad.Children.Clear();
             PointItems.Clear();
             BorderInfo.Initialize();
+            Sketchpad.RenderTransform = null;
         }
         public int DrawBorder<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
         {
-            border = new BorderInfo();
+            BorderInfo border = new BorderInfo();
             borders.Add(border);
             border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
             border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));
@@ -434,7 +436,24 @@ namespace MapBoard.GpxToolbox
             return borders.Count - 1;
         }
 
+        public void StretchToFit()
+        {
+            var minTime = borders.Min(p => p.minTime);
+            var maxTime = borders.Max(p => p.maxTime);
+            var minTimeToLeft = 1.0
+                *(minTime - BorderInfo.minBorderTime).Ticks
+                / BorderInfo.borderTimeSpan.Ticks
+                * Sketchpad.ActualWidth;
+            TranslateTransform translate = new TranslateTransform(-minTimeToLeft, 0);
 
+            double scaleValue =1.0* BorderInfo.borderTimeSpan.Ticks
+                / (maxTime.Ticks - minTime.Ticks);
+            ScaleTransform scale = new ScaleTransform(scaleValue, 1);
+            var group = new TransformGroup();
+            group.Children.Add(translate);
+            group.Children.Add(scale);
+            Sketchpad.RenderTransform = group;
+        }
         #endregion
 
         #region 绘制用定位相关字段
