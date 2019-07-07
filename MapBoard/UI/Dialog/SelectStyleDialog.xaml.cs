@@ -20,7 +20,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectStyleDialog : DialogWindowBase
+    public partial class SelectStyleDialog : Common.Dialog.DialogWindowBase
     {
         bool canSelect = false;
         public SelectStyleDialog()

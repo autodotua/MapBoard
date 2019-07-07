@@ -30,7 +30,7 @@ namespace MapBoard.GpxToolbox
         }
 
         List<BorderInfo> borders = new List<BorderInfo>();
-     
+
 
         public Canvas Sketchpad { get; set; }
 
@@ -111,7 +111,7 @@ namespace MapBoard.GpxToolbox
             ClearLine();
         }
 
-     
+
 
         Ellipse lastSelectedPoint = null;
         private void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
@@ -283,7 +283,7 @@ namespace MapBoard.GpxToolbox
             TLine last = default;
             foreach (var item in items)
             {
-                if (last != default && LinePointEnbale(last,item) )
+                if (last != default && LinePointEnbale(last, item))
                 {
 
                     DateTime time1 = XAxisLineValueConverter(last);
@@ -378,11 +378,11 @@ namespace MapBoard.GpxToolbox
             var minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
             var maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
 
-          if(minBorderTime<BorderInfo.minBorderTime)
+            if (minBorderTime < BorderInfo.minBorderTime)
             {
                 BorderInfo.minBorderTime = minBorderTime;
             }
-            if (maxBorderTime >BorderInfo.maxBorderTime)
+            if (maxBorderTime > BorderInfo.maxBorderTime)
             {
                 BorderInfo.maxBorderTime = maxBorderTime;
             }
@@ -397,7 +397,7 @@ namespace MapBoard.GpxToolbox
                 {
                     double x = Sketchpad.ActualWidth * i / verticleBorderCount;
                     DrawVerticalLine(x, 1);
-                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(BorderInfo.minBorderTime.Ticks + lineTimeSpan.Ticks * i)), VerticleTextBrush, true);
+                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(BorderInfo.minBorderTime.Ticks + lineTimeSpan.Ticks * i)), VerticleTextBrush, true, "xLabel");
                 }
             }
 
@@ -426,11 +426,11 @@ namespace MapBoard.GpxToolbox
                 {
                     double y = Sketchpad.ActualHeight * i / horizentalBorderCount;
                     DrawHorizentalLine(y);
-                    DrawText(0, y + FontSize * 1.2, YLabelFormat(border.minBorderValue + lineValueSpan * i), HorizentalTextBrush, false);
+                    DrawText(0, y + FontSize * 1.2, YLabelFormat(border.minBorderValue + lineValueSpan * i), HorizentalTextBrush, false, "yLabel");
                 }
             }
 
-            
+
 
             //lastBorderPoints = items;
             return borders.Count - 1;
@@ -441,14 +441,30 @@ namespace MapBoard.GpxToolbox
             var minTime = borders.Min(p => p.minTime);
             var maxTime = borders.Max(p => p.maxTime);
             var minTimeToLeft = 1.0
-                *(minTime - BorderInfo.minBorderTime).Ticks
+                * (minTime - BorderInfo.minBorderTime).Ticks
                 / BorderInfo.borderTimeSpan.Ticks
                 * Sketchpad.ActualWidth;
+
+
             TranslateTransform translate = new TranslateTransform(-minTimeToLeft, 0);
 
-            double scaleValue =1.0* BorderInfo.borderTimeSpan.Ticks
+            double scaleValue = 1.0 * BorderInfo.borderTimeSpan.Ticks
                 / (maxTime.Ticks - minTime.Ticks);
             ScaleTransform scale = new ScaleTransform(scaleValue, 1);
+
+            //重置左侧标签的X坐标
+            foreach (var tbk in Sketchpad.Children.OfType<TextBlock>().Where(p => "yLabel".Equals(p.Tag)))
+            {
+                Canvas.SetLeft(tbk, minTimeToLeft);
+            }
+            ScaleTransform scaleTextBlock = new ScaleTransform(1 / scaleValue, 1);
+
+            //防止标签吧被拉伸变形
+            foreach (var tbk in Sketchpad.Children.OfType<TextBlock>())
+            {
+                tbk.RenderTransform = scaleTextBlock;
+            }
+
             var group = new TransformGroup();
             group.Children.Add(translate);
             group.Children.Add(scale);
@@ -462,7 +478,7 @@ namespace MapBoard.GpxToolbox
 
 
         #region 可从外部更改的属性
-        public Func<TLine,TLine, bool> LinePointEnbale { get; set; } = (p1,p2) => true;
+        public Func<TLine, TLine, bool> LinePointEnbale { get; set; } = (p1, p2) => true;
         public Func<TPoint, DateTime> XAxisPointValueConverter { get; set; } = p => DateTime.MinValue;
         public Func<TLine, DateTime> XAxisLineValueConverter { get; set; } = p => DateTime.MinValue;
         public Func<TPolygon, DateTime> XAxisPolygonValueConverter { get; set; } = p => DateTime.MinValue;
@@ -551,7 +567,7 @@ namespace MapBoard.GpxToolbox
             AddSketchpadChildren(line);
         }
 
-        private void DrawText(double x, double y, string text, Brush brush, bool centerX)
+        private void DrawText(double x, double y, string text, Brush brush, bool centerX, object tag)
         {
 
             TextBlock tbk = new TextBlock()
@@ -559,7 +575,13 @@ namespace MapBoard.GpxToolbox
                 Text = text,
                 FontSize = FontSize,
                 Foreground = brush,
+                Tag = tag,
+
             };
+            if ("xLabel".Equals(tag))
+            {
+                tbk.RenderTransformOrigin = new Point(0.5, 0.5);
+            }
             if (centerX)
             {
                 tbk.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));

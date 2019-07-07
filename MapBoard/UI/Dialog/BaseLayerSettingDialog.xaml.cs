@@ -30,7 +30,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class BaseLayerSettingDialog : DialogWindowBase
+    public partial class BaseLayerSettingDialog : Common.Dialog.DialogWindowBase
     {
         public Config Config => Config.Instance;
         public BaseLayerSettingDialog()

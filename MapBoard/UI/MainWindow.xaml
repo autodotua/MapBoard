@@ -28,12 +28,11 @@
 
     <Grid x:Name="grdMain">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="2" x:Name="grdCenter" Margin="-4,0,0,0">
+        <Grid Grid.Column="1" x:Name="grdCenter" Margin="-4,0,0,0">
             <map:ArcMapView x:Name="arcMap"  />
             <bar:EditOperationBar x:Name="editBar"  HorizontalAlignment="Stretch" VerticalAlignment="Top">
                 <bar:EditOperationBar.RenderTransform>
@@ -46,17 +45,16 @@
                 </bar:SelectOperationBar.RenderTransform>
             </bar:SelectOperationBar>
         </Grid>
-        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Width="4" Background="Transparent" />
 
-        <win10style:ModernExpander MaxWidth="240" Grid.Column="3" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
+        <win10style:ModernExpander MaxWidth="240" Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
             <stylesettingpanel:SettingPanel/>
         </win10style:ModernExpander>
 
 
-        <win10style:ModernExpander  Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
+        <win10style:ModernExpander Header="工&#x000D;具" IsExpanded="True" ExpandDirection="Right">
 
 
-            <Grid x:Name="grdLeft" >
+            <Grid x:Name="grdLeft"  Width="300">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>

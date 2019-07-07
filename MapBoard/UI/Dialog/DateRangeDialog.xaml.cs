@@ -21,7 +21,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class DateRangeDialog : DialogWindowBase
+    public partial class DateRangeDialog : Common.Dialog.DialogWindowBase
     {
         bool canSelect = false;
         StyleInfo CurrentStyle { get; }

@@ -66,7 +66,7 @@ namespace MapBoard.GpxToolbox
             chartHelper.YAxisLineValueConverter = p => p.Speed;
             chartHelper.YAxisPolygonValueConverter = p => p.Z;
             chartHelper.XLabelFormat = p => p.ToString("HH:mm");
-            chartHelper.YLabelFormat = p => p + "m/s";
+            chartHelper.YLabelFormat = p => $"{p}m/s {(p*3.6).ToString(".0")}km/h";
             chartHelper.ToolTipConverter = p =>
             {
                 StringBuilder sb = new StringBuilder();
@@ -429,47 +429,90 @@ namespace MapBoard.GpxToolbox
 
         private async void ResetTrackButtonClick(object sender, RoutedEventArgs e)
         {
-            TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
-            if (track == null)
+            if (!(lvwFiles.SelectedItem is TrackInfo track))
             {
                 return;
             }
 
-            if ( Config.Instance.GpxAutoSmooth)
+            bool smooth = Config.Instance.GpxAutoSmooth;
+            bool height = Config.Instance.GpxHeight;
+
+
+            MenuItem menuReset = new MenuItem() { Header = "重置 - 不改变设置" };
+            menuReset.Click += async (p1, p2) =>
+               {
+                   await arcMap.ReloadGpx(track, true);
+               };
+            MenuItem menuResetWithSmooth = new MenuItem() { Header = "重置 - 自动平滑" };
+            menuResetWithSmooth.Click += async (p1, p2) =>
             {
-                MenuItem menuResetWithSmooth = new MenuItem() { Header = "重置（仍然自动平滑）" };
-                menuResetWithSmooth.Click += async (p1, p2) =>
+                Config.Instance.GpxAutoSmooth = true;
+                try
+                {
+                    await arcMap.ReloadGpx(track, true);
+                }
+                finally
+                {
+                    Config.Instance.GpxAutoSmooth = smooth;
+                }
+            };
+            MenuItem menuResetWithoutSmooth = new MenuItem() { Header = "重置 - 不自动平滑" };
+            menuResetWithoutSmooth.Click += async (p1, p2) =>
+               {
+                   Config.Instance.GpxAutoSmooth = false;
+                   try
                    {
                        await arcMap.ReloadGpx(track, true);
-                   };
-                MenuItem menuResetWithoutSmooth = new MenuItem() { Header = "重置（不要自动平滑）" };
-                menuResetWithoutSmooth.Click += async (p1, p2) =>
+                   }
+                   finally
                    {
-                       Config.Instance.GpxAutoSmooth = false;
-                       try
-                       {
-                           await arcMap.ReloadGpx(track, true);
-                       }
-                       finally
-                       {
-                           Config.Instance.GpxAutoSmooth = true;
-                       }
-                   };
+                       Config.Instance.GpxAutoSmooth = smooth;
+                   }
+               };
 
-                ContextMenu menu = new ContextMenu()
-                {
-                    PlacementTarget = sender as UIElement,
-                    Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
-                    Items = {menuResetWithSmooth,menuResetWithoutSmooth},
-                    IsOpen=true,
-                };
-            }
-            else
+            MenuItem menuResetWithHeight = new MenuItem() { Header = "重置 - 显示高度" };
+            menuResetWithHeight.Click += async (p1, p2) =>
+               {
+                   Config.Instance.GpxHeight = true;
+                   try
+                   {
+                       await arcMap.ReloadGpx(track, true);
+                   }
+                   finally
+                   {
+                       Config.Instance.GpxHeight = height;
+                   }
+               };
+
+            MenuItem menuResetWithoutHeight = new MenuItem() { Header = "重置 - 不显示高度" };
+            menuResetWithoutHeight.Click += async (p1, p2) =>
+               {
+                   Config.Instance.GpxHeight = false;
+                   try
+                   {
+                       await arcMap.ReloadGpx(track, true);
+                   }
+                   finally
+                   {
+                       Config.Instance.GpxHeight = height;
+                   }
+               };
+
+            ContextMenu menu = new ContextMenu()
             {
+                PlacementTarget = sender as UIElement,
+                Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
+                IsOpen = true,
+                Items =
+                {
+                    menuReset,
+                    menuResetWithHeight,
+                    menuResetWithoutHeight,
+                    menuResetWithSmooth,
+                    menuResetWithoutSmooth,
+                }
+            };
 
-                await arcMap.ReloadGpx(track, true);
-
-            }
 
 
         }
@@ -665,7 +708,7 @@ namespace MapBoard.GpxToolbox
 
         private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") }, defaultFileName: Gpx.Name + ".png");
+            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") },ensureExtension :true, defaultFileName: Gpx.Name + ".png");
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);

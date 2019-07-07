@@ -25,7 +25,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectFeatureDialog : DialogWindowBase
+    public partial class SelectFeatureDialog : Common.Dialog.DialogWindowBase
     {
 
         public ObservableCollection<FeatherSelectionInfo> SelectedFeatures { get; } = new ObservableCollection<FeatherSelectionInfo>();
