@@ -1,6 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.Geography.Coordinate;
-using FzLib.Geography.Coordinate.Convert;
+using FzLib.Geography.IO.Tile;
+using NetTopologySuite.Geometries;
 
 namespace MapBoard.TileDownloaderSplicer
 {
@@ -11,11 +11,11 @@ namespace MapBoard.TileDownloaderSplicer
             X = x;
             Y = y;
             Level = level;
-            (double lat, double lng) = TileConverter.PixelToGeoPoint(0, 0, x, y, level);
-            WestNorth = new GeoPoint(lat, lng);
+            (double lat, double lng) = TileLocation.PixelToGeoPoint(0, 0, x, y, level);
+            WestNorth = new Point( lng,lat);
            // var prj = GeometryEngine.Project(new MapPoint(lat, lng, SpatialReferences.Wgs84), SpatialReferences.WebMercator) as MapPoint;
-            ( lat,  lng) = TileConverter.PixelToGeoPoint(Config.Instance.TileSize.width, Config.Instance.TileSize.height, x, y, level);
-            EastSouth = new GeoPoint(lat, lng);
+            ( lat,  lng) = TileLocation.PixelToGeoPoint(Config.Instance.TileSize.width, Config.Instance.TileSize.height, x, y, level);
+            EastSouth = new Point(lng,lat);
 
            // PrjX = prj.X;
         }
@@ -35,8 +35,8 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        public GeoPoint WestNorth { get;private set; }
-        public GeoPoint EastSouth { get; private set; }
+        public Point WestNorth { get;private set; }
+        public Point EastSouth { get; private set; }
     }
 
 }

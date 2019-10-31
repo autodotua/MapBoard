@@ -35,7 +35,7 @@ namespace MapBoard.Main.Helper
             }
             else
             {
-                path =FzLib.Control.Dialog. FileSystemDialog.GetOpenFile(new List<(string, string)>()
+                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
                 {
                     ("CSV表格", "csv"),
                 }, true);
@@ -52,7 +52,7 @@ namespace MapBoard.Main.Helper
                             break;
 
                         case ".gpx":
-                            var features = await Gpx.ImportToCurrentStyle(path);
+                            var features = await Gpx.ImportToCurrentLayer(path);
                             if (features.Length > 1)
                             {
 
@@ -63,7 +63,7 @@ namespace MapBoard.Main.Helper
                                 SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                                 snake.ShowButton = true;
                                 snake.ButtonContent = "查看";
-                                snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent,SpatialReferences.WebMercator));
+                                snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
 
                                 snake.ShowMessage("已导出到" + path);
                             }
@@ -116,7 +116,7 @@ namespace MapBoard.Main.Helper
                                 ("点","每一个轨迹点分别加入到新的样式中",()=>Gpx.ImportToNewStyle(path,Gpx.Type.Point)),
                                 ("一条线","按时间顺序将轨迹点相连，形成一条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.OneLine)),
                                 ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",()=>Gpx.ImportToNewStyle(path,Gpx.Type.MultiLine)),
-                           },cancelable:true);
+                           }, cancelable: true);
                             return;
 
                         case ".shp":
@@ -200,6 +200,67 @@ namespace MapBoard.Main.Helper
                 bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
                 return new Bitmap(width, height, stride, System.Drawing.Imaging.PixelFormat.Format32bppPArgb, memoryBlockPointer);
             }
+        }
+
+        public async static Task DropFiles(string[] files)
+        {
+            if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
+            {
+                if (files.Length > 1)
+                {
+                    //if (TaskDialog.ShowWithYesNoButtons("通过GPX工具箱打开？", "打开GPX文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                    //{
+                        TaskDialog.ShowWithCommandLinks("选择打开多个GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
+                    ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+                    ("导入到新样式","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewStyle(files)),
+                }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);
+
+                    //}
+                }
+                else
+                {
+                    TaskDialog.ShowWithCommandLinks("选择打开GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
+                    ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+                    ("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
+                    ("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
+                    ("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
+                }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否覆盖当前所有样式？", "打开Mapboard Map Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    Package.ImportMap(files[0]);
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否导入图层？", "打开Mapboard Layer Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    foreach (var file in files)
+                    {
+                        Package.ImportLayer(file);
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            else if (files.Count(p => p.EndsWith(".csv")) == files.Length)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("是否导入CSV文件？", "打开CSV", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                {
+                    foreach (var file in files)
+                    {
+                        await IO.Csv.Import(file);
+                    }
+                }
+            }
+            else
+            {
+                SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
+            }
+
+
         }
     }
 }

@@ -19,10 +19,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{416B6C02-20D7-406F-AB79-7701722B4848}"
 	ProjectSection(SolutionItems) = preProject
 		libs\FzDesktopLib.dll = libs\FzDesktopLib.dll
+		libs\FzGeographyLib.dll = libs\FzGeographyLib.dll
 		libs\FzStandardLib.dll = libs\FzStandardLib.dll
 		libs\FzWpfControlLib.dll = libs\FzWpfControlLib.dll
+		libs\GeoAPI.CoordinateSystems.dll = libs\GeoAPI.CoordinateSystems.dll
 		libs\GeoAPI.dll = libs\GeoAPI.dll
-		libs\GIS.Core.dll = libs\GIS.Core.dll
+		libs\NetTopologySuite.dll = libs\NetTopologySuite.dll
+		libs\ProjNET.dll = libs\ProjNET.dll
 	EndProjectSection
 EndProject
 Global

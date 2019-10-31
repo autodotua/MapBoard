@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Control.Dialog;
-using FzLib.Geography.Coordinate;
-using FzLib.Geography.Coordinate.Convert;
+using FzLib.Geography.IO.Tile;
+using GIS.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static FzLib.Geography.Analysis.SpeedAnalysis;
+using GeoPoint = NetTopologySuite.Geometries.Point;
 
 namespace MapBoard.TileDownloaderSplicer
 {
@@ -181,8 +181,8 @@ namespace MapBoard.TileDownloaderSplicer
             Files.Clear();
             for (int level = CurrentDownload.MinLevel; level <= CurrentDownload.MaxLevel; level++)
             {
-                var (tile1X, tile1Y) = TileConverter.GeoPointToTile(CurrentDownload.LeftUpPoint.Latitude, CurrentDownload.LeftUpPoint.Longitude, level);
-                var (tile2X, tile2Y) = TileConverter.GeoPointToTile(CurrentDownload.RightDownPoint.Latitude, CurrentDownload.RightDownPoint.Longitude, level);
+                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(CurrentDownload.LeftUpPoint, level);
+                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(CurrentDownload.RightDownPoint, level);
                 for (int x = tile1X; x <= tile2X; x++)
                 {
                     for (int y = tile1Y; y <= tile2Y; y++)
@@ -419,8 +419,8 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 return;
             }
-            var (tile1X, tile1Y) = TileConverter.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
-            var (tile2X, tile2Y) = TileConverter.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
+            var (tile1X, tile1Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
+            var (tile2X, tile2Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
             stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
         }
 
@@ -529,8 +529,8 @@ namespace MapBoard.TileDownloaderSplicer
 
             AddToDownload();
 
-            var (tile1X, tile1Y) = TileConverter.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
-            var (tile2X, tile2Y) = TileConverter.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
+            var (tile1X, tile1Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
+            var (tile2X, tile2Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
             stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
 
         }
@@ -540,7 +540,8 @@ namespace MapBoard.TileDownloaderSplicer
             if (Config.LastDownload != null)
             {
                 CurrentDownload = Config.LastDownload;
-                downloadBoundary.SetDoubleValue(CurrentDownload.LeftUpPoint.Longitude, CurrentDownload.LeftUpPoint.Latitude, CurrentDownload.RightDownPoint.Longitude, CurrentDownload.RightDownPoint.Latitude);
+                downloadBoundary.SetDoubleValue(CurrentDownload.LeftUpPoint.X, CurrentDownload.LeftUpPoint.Y, 
+                    CurrentDownload.RightDownPoint.X, CurrentDownload.RightDownPoint.Y);
                 CalculateTileNumber(false);
             }
         }

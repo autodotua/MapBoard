@@ -1,5 +1,6 @@
 ﻿using FzLib.Control.Win10Style;
-using FzLib.Geography.Coordinate;
+using GIS.Geometry;
+using NetTopologySuite.Geometries;
 using System;
 using System.Globalization;
 using System.Windows.Data;
@@ -10,9 +11,9 @@ namespace MapBoard.TileDownloaderSplicer
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            GeoPoint point = value as GeoPoint;
+            Point point = value as Point;
 
-            return point.Latitude + "," + point.Longitude;
+            return point.X + "," + point.Y;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -157,10 +157,10 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
 
-            MapPoint wn = new MapPoint(file.WestNorth.Longitude, file.WestNorth.Latitude, SpatialReferences.Wgs84);
-            MapPoint en = new MapPoint(file.EastSouth.Longitude, file.WestNorth.Latitude, SpatialReferences.Wgs84);
-            MapPoint es = new MapPoint(file.EastSouth.Longitude, file.EastSouth.Latitude, SpatialReferences.Wgs84);
-            MapPoint ws = new MapPoint(file.WestNorth.Longitude, file.EastSouth.Latitude, SpatialReferences.Wgs84);
+            MapPoint wn = new MapPoint(file.WestNorth.X, file.WestNorth.Y, SpatialReferences.Wgs84);
+            MapPoint en = new MapPoint(file.EastSouth.X, file.WestNorth.Y, SpatialReferences.Wgs84);
+            MapPoint es = new MapPoint(file.EastSouth.X, file.EastSouth.Y, SpatialReferences.Wgs84);
+            MapPoint ws = new MapPoint(file.WestNorth.X, file.EastSouth.Y, SpatialReferences.Wgs84);
 
             Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws });
             //polygon = GeometryEngine.Project(polygon, SpatialReferences.WebMercator)  as Polygon;

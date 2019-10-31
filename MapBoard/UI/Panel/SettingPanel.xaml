@@ -72,6 +72,9 @@
                         <FrameworkElement Height="4"/>
                         <flat:TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}"/>
                         <FrameworkElement Height="8"/>
+                        
+                    </StackPanel>
+                    <StackPanel>
                         <flat:CheckBox x:Name="chkGpxAutoSmooth" Content="自动进行平滑" IsChecked="{Binding Config.GpxAutoSmooth}"/>
                         <FrameworkElement Height="8"/>
                         <flat:CheckBox Content="仅平滑垂直方向" IsChecked="{Binding Config.GpxAutoSmoothOnlyZ}" IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"/>

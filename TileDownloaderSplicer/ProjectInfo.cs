@@ -1,4 +1,5 @@
-﻿using FzLib.Geography.Coordinate.Convert;
+﻿
+using FzLib.Geography.IO.Tile;
 
 namespace MapBoard.TileDownloaderSplicer
 {
@@ -6,9 +7,9 @@ namespace MapBoard.TileDownloaderSplicer
     {
         public ProjectInfo(int level, int x, int y, int width, int height)
         {
-            (double lat, double lng) leftTop = TileConverter.PixelToGeoPoint(0, 0, x, y, level);
-            (double lat, double lng) right = TileConverter.PixelToGeoPoint(0, 0, x + 1, y, level);
-            (double lat, double lng) bottom = TileConverter.PixelToGeoPoint(0, 0, x, y + 1, level);
+            (double lat, double lng) leftTop = TileLocation.PixelToGeoPoint(0, 0, x, y, level);
+            (double lat, double lng) right = TileLocation.PixelToGeoPoint(0, 0, x + 1, y, level);
+            (double lat, double lng) bottom = TileLocation.PixelToGeoPoint(0, 0, x, y + 1, level);
             PixelPerX = (right.lng - leftTop.lng) * 1.0 / Config.Instance.TileSize.width;
             PixelPerY = (bottom.lat - leftTop.lat) * 1.0 / Config.Instance.TileSize.height;
             NorthwestLatitude = leftTop.lat;

@@ -6,6 +6,7 @@ using MapBoard.Main.Helper;
 using MapBoard.Main.Style;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -89,9 +90,19 @@ namespace MapBoard.Main.IO
 
         }
 
-        public async static Task<Feature[]> ImportToCurrentStyle(string path)
+        public async static Task<StyleInfo> ImportAllToNewStyle(string[] paths)
         {
-            StyleInfo style = StyleCollection.Instance.Selected;
+            Debug.Assert(paths.Length >= 2);
+            var style = await ImportToNewStyle(paths[0], Type.OneLine);
+            for(int i=1;i<paths.Length;i++)
+            {
+                await ImportToStyle(style, paths[i]);
+            }
+            return style;
+        }
+
+        public async static Task<Feature[]> ImportToStyle(StyleInfo style, string path)
+        {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
@@ -144,6 +155,11 @@ namespace MapBoard.Main.IO
 
             style.UpdateFeatureCount();
             return importedFeatures.ToArray();
+        }
+        public async static Task<Feature[]> ImportToCurrentLayer(string path)
+        {
+            StyleInfo style = StyleCollection.Instance.Selected;
+            return await ImportToStyle(style, path);
         }
 
 
