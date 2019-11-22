@@ -330,7 +330,7 @@ namespace MapBoard.GpxToolbox
 
         private void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, false, Gpx.Name + ".gpx");
+            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, true, Gpx.Name + ".gpx");
             if (path != null)
             {
                 try
