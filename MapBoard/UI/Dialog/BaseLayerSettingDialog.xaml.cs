@@ -103,6 +103,10 @@ namespace MapBoard.Main.UI.Dialog
                     ("Shapefile矢量图","shp") ,
                     ("TilePackage切片包","tpk") ,
                 }, true);
+            if(path==null)
+            {
+                return;
+            }
             BaseLayerInfo layerInfo;
             switch (System.IO.Path.GetExtension(path))
             {

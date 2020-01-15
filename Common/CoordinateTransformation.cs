@@ -1,13 +1,12 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using GIS.CoordinateSystems.Transformations;
+using FzLib.Geography.CoordinateSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FzGISGeo = GIS.Geometry;
-using GeoPoint = GIS.Geometry.GeoPoint;
+using GeoPoint = NetTopologySuite.Geometries.Point;
 
 namespace MapBoard.Common
 {

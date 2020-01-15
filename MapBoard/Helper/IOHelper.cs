@@ -159,11 +159,12 @@ namespace MapBoard.Main.Helper
             {
                 try
                 {
+                    SnakeBar.Show("正在导出");
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
-
-                            Package.ExportMap(path);
+                            await Package.ExportMap2(path);
+                            //Package.ExportMap(path);
                             break;
 
                         case ".png":

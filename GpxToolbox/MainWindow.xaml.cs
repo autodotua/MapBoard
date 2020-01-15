@@ -6,7 +6,6 @@ using FzLib.Control.Dialog;
 using FzLib.DataAnalysis;
 using FzLib.Extension;
 using GIS.Geometry;
-using GIS.IO.Gpx;
 using MapBoard.Common;
 using System;
 using System.ComponentModel;
@@ -19,7 +18,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using static GIS.Analysis.SpeedAnalysis;
 using static MapBoard.GpxToolbox.SymbolResources;
 using MessageBox = FzLib.Control.Dialog.MessageBox;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
@@ -31,6 +29,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 using System.Drawing;
+using static FzLib.Geography.Analysis.SpeedAnalysis;
+using FzLib.Geography.IO.Gpx;
 
 namespace MapBoard.GpxToolbox
 {
@@ -284,7 +284,7 @@ namespace MapBoard.GpxToolbox
         {
             var point = grdPoints.SelectedItem as GpxPoint;
             var points = grdPoints.SelectedItems.Cast<GpxPoint>();
-            if (point != null && !double.IsNaN(point.Z) && point.Latitude != 0)
+            if (point != null && !double.IsNaN(point.Z) && point.Y != 0)
             {
                 chartHelper.SetLine(point.Time);
                 arcMap.SelectPoints(points);
@@ -418,7 +418,7 @@ namespace MapBoard.GpxToolbox
                 index++;
             }
 
-            GpxPoint point = points[0].Clone() as GpxPoint;
+            GpxPoint point = points[0].Copy() as GpxPoint;
             GpxTrack.Points.Insert(index, point);
             //arcMap.gpxPointAndGraphics.Add(point,)
             //arcMap.pointToTrackInfo.Add(point, arcMap.SelectedTrack);
@@ -726,8 +726,8 @@ namespace MapBoard.GpxToolbox
 
         private void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
         {
-            GIS.Geometry.Envelope extent = GpxTrack.Points.Extent;
-            var esriExtent = new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax, SpatialReferences.Wgs84);
+            NetTopologySuite.Geometries.Envelope extent = GpxTrack.Points.Extent;
+            var esriExtent = new Envelope(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY, SpatialReferences.Wgs84);
             arcMap.SetViewpointAsync(new Viewpoint(esriExtent));
         }
     }

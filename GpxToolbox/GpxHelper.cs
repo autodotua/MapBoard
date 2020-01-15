@@ -1,4 +1,4 @@
-﻿using GIS.IO.Gpx;
+﻿using FzLib.Geography.IO.Gpx;
 using System;
 using System.Collections.Generic;
 using System.Linq;

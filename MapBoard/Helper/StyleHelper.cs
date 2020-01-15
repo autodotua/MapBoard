@@ -91,16 +91,17 @@ namespace MapBoard.Main.Helper
                 var newStyle = CreateStyle(style.Type, style);
                 ShapefileFeatureTable targetTable = newStyle.Table;
 
-                foreach (var feature in features)
-                {
-                    await targetTable.AddFeatureAsync(feature);
-                }
+                //foreach (var feature in features)
+                //{
+                //    await targetTable.AddFeatureAsync(feature);
+                //}
+              await  targetTable.AddFeaturesAsync(features);
                 newStyle.UpdateFeatureCount();
                 style.LayerVisible = false;
             }
             else
             {
-                StyleHelper.CreateStyle(style.Type, style);
+                CreateStyle(style.Type, style);
             }
         }
 

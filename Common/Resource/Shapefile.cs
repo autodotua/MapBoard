@@ -78,21 +78,25 @@ namespace MapBoard.Common.Resource
             return folderPath + "\\" + name + "." + extension;
         }
 
-        public static void ExportEmptyShapefile(GeometryType type, string name)
+        public static void ExportEmptyShapefile(GeometryType type, string name,string path=null)
         {
+            if(path==null)
+            {
+                path = Config.DataPath;
+            }
             switch (type)
             {
                 case GeometryType.Point:
-                    ShapefileExport.ExportEmptyPointShapefile(Config.DataPath, name);
+                    ExportEmptyPointShapefile(path, name);
                     break;
                 case GeometryType.Multipoint:
-                    ShapefileExport.ExportEmptyMultipointShapefile(Config.DataPath, name);
+                    ExportEmptyMultipointShapefile(path, name);
                     break;
                 case GeometryType.Polyline:
-                    ShapefileExport.ExportEmptyPolylineShapefile(Config.DataPath, name);
+                    ExportEmptyPolylineShapefile(path, name);
                     break;
                 case GeometryType.Polygon:
-                    ShapefileExport.ExportEmptyPolygonShapefile(Config.DataPath, name);
+                    ExportEmptyPolygonShapefile(path, name);
                     break;
                 default:
                     throw new Exception("不支持的格式");

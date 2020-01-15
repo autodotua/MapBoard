@@ -49,6 +49,7 @@ namespace MapBoard.Common.BaseLayer
             map.BaseLayers.Add(layer);
             return layer;
         }     
+
         private static ArcGISTiledLayer AddTpkLayer(Basemap map, string path)
         {
             TileCache cache = new TileCache(path);
@@ -57,7 +58,6 @@ namespace MapBoard.Common.BaseLayer
             return layer;
         }     
         
-
         private static FeatureLayer AddShapefileLayer(Basemap map, string path)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
@@ -66,7 +66,10 @@ namespace MapBoard.Common.BaseLayer
             return layer;
         }
 
-
+        public static void SetWebTiledLayerRequest(WebTiledLayer layer)
+        {
+    
+        }
 
     }
 }

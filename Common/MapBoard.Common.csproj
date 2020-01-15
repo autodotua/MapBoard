@@ -43,16 +43,26 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\模块\Release\AnyCPU\FzDesktopLib.dll</HintPath>
     </Reference>
+    <Reference Include="FzGeographyLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\FzGeographyLib.dll</HintPath>
+    </Reference>
     <Reference Include="FzStandardLib">
       <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
     </Reference>
     <Reference Include="FzWpfControlLib">
       <HintPath>..\..\模块\Release\AnyCPU\FzWpfControlLib.dll</HintPath>
     </Reference>
-    <Reference Include="GIS.Core">
-      <HintPath>..\..\GIS\Release\AnyCPU\netstandard2.0\GIS.Core.dll</HintPath>
+    <Reference Include="GeoAPI, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI.CoordinateSystems, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\GeoAPI.CoordinateSystems.dll</HintPath>
     </Reference>
     <Reference Include="netstandard" />
+    <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1" />
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>

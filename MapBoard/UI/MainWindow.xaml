@@ -29,10 +29,12 @@
     <Grid x:Name="grdMain">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="1" x:Name="grdCenter" Margin="-4,0,0,0">
+        <Grid Grid.Column="2" x:Name="grdCenter" Margin="0,0,0,0">
             <map:ArcMapView x:Name="arcMap"  />
             <bar:EditOperationBar x:Name="editBar"  HorizontalAlignment="Stretch" VerticalAlignment="Top">
                 <bar:EditOperationBar.RenderTransform>
@@ -46,7 +48,7 @@
             </bar:SelectOperationBar>
         </Grid>
 
-        <win10style:ModernExpander MaxWidth="240" Grid.Column="2" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
+        <win10style:ModernExpander MaxWidth="240" Grid.Column="4" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
             <stylesettingpanel:SettingPanel/>
         </win10style:ModernExpander>
 

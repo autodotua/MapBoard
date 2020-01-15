@@ -44,6 +44,8 @@ namespace MapBoard.Main.UI.Map
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
+            ViewInsets = new Thickness(8);
+            
             //SketchEditor.EditConfiguration=new SketchEditConfiguration()
             //{
             //    AllowMove=true,

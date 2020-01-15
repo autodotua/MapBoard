@@ -6,7 +6,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Extension;
-using GIS.IO.Gpx;
+using FzLib.Geography.IO.Gpx;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using System;
@@ -21,7 +21,7 @@ using System.Windows;
 using System.Windows.Input;
 using static MapBoard.GpxToolbox.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
-using GeoPoint = GIS.Geometry.GeoPoint;
+using GeoPoint = NetTopologySuite.Geometries.Point;
 
 namespace MapBoard.GpxToolbox
 {

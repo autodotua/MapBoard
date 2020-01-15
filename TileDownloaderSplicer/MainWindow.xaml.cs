@@ -130,8 +130,10 @@ namespace MapBoard.TileDownloaderSplicer
                 CurrentDownload = new DownloadInfo();
             }
 
-            CurrentDownload.LeftUpPoint = new GeoPoint(arcMap.Boundary.YMax, arcMap.Boundary.XMin);
-            CurrentDownload.RightDownPoint = new GeoPoint(arcMap.Boundary.YMin, arcMap.Boundary.XMax);
+            CurrentDownload.XMin = arcMap.Boundary.XMin;
+            CurrentDownload.YMin = arcMap.Boundary.YMin;
+            CurrentDownload.XMax = arcMap.Boundary.XMax;
+            CurrentDownload.YMax = arcMap.Boundary.YMax;
 
             //downloadBoundary.SetDoubleValue(leftUpPoint.X, leftUpPoint.Y, rightDownPoint.X, rightDownPoint.Y);
             downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
@@ -168,8 +170,7 @@ namespace MapBoard.TileDownloaderSplicer
                 (double left, double top, double right, double bottom)? value = downloadBoundary.GetDoubleValueGetDoubleValue();
                 if (value != null)
                 {
-                    CurrentDownload.LeftUpPoint = new GeoPoint(value.Value.top, value.Value.left);
-                    CurrentDownload.RightDownPoint = new GeoPoint(value.Value.bottom, value.Value.right);
+                    CurrentDownload.SetValue(value.Value.left, value.Value.right, value.Value.bottom, value.Value.top);
                 }
                 else
                 {
@@ -181,8 +182,8 @@ namespace MapBoard.TileDownloaderSplicer
             Files.Clear();
             for (int level = CurrentDownload.MinLevel; level <= CurrentDownload.MaxLevel; level++)
             {
-                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(CurrentDownload.LeftUpPoint, level);
-                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(CurrentDownload.RightDownPoint, level);
+                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMin, CurrentDownload.YMax), level);
+                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMax,CurrentDownload.YMin), level);
                 for (int x = tile1X; x <= tile2X; x++)
                 {
                     for (int y = tile1Y; y <= tile2Y; y++)
@@ -540,8 +541,8 @@ namespace MapBoard.TileDownloaderSplicer
             if (Config.LastDownload != null)
             {
                 CurrentDownload = Config.LastDownload;
-                downloadBoundary.SetDoubleValue(CurrentDownload.LeftUpPoint.X, CurrentDownload.LeftUpPoint.Y, 
-                    CurrentDownload.RightDownPoint.X, CurrentDownload.RightDownPoint.Y);
+                downloadBoundary.SetDoubleValue(CurrentDownload.XMin, CurrentDownload.YMax,
+                    CurrentDownload.XMax, CurrentDownload.YMin);
                 CalculateTileNumber(false);
             }
         }

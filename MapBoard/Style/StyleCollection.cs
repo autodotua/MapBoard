@@ -45,7 +45,7 @@ namespace MapBoard.Main.Style
         //        return instance;
         //    }
         //}
-
+        public static readonly string StyleFileName= "styles.json";
         private static StyleCollection instance;
         public static StyleCollection Instance
         {
@@ -54,7 +54,7 @@ namespace MapBoard.Main.Style
                 if (instance == null)
                 {
 
-                    instance = TryOpenOrCreate<StyleCollection>(System.IO.Path.Combine(Config.DataPath, "styles.json"));
+                    instance = TryOpenOrCreate<StyleCollection>(System.IO.Path.Combine(Config.DataPath, StyleFileName));
                     instance.Settings.Formatting = Formatting.Indented;
                     if (instance.Styles.Count > 0)
                     {

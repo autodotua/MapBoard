@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LibGpx = FzLib.Geography.IO.Gpx.Gpx;
 
 namespace MapBoard.Main.IO
 {
@@ -26,7 +27,7 @@ namespace MapBoard.Main.IO
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
-            var gpx = GIS.IO.Gpx.Gpx.FromString(content);
+            var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
             StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
@@ -106,7 +107,7 @@ namespace MapBoard.Main.IO
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
-            var gpx = GIS.IO.Gpx.Gpx.FromString(content);
+            var gpx = LibGpx.FromString(content);
             FeatureTable table = style.Table;
             CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
             List<Feature> importedFeatures = new List<Feature>();

@@ -1,7 +1,9 @@
-﻿using FzLib.Basic.Collection;
+﻿using Esri.ArcGISRuntime.Data;
+using FzLib.Basic.Collection;
 using FzLib.Control.Dialog;
 using FzLib.Program;
 using MapBoard.Common;
+using MapBoard.Common.Resource;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI;
 using System;
@@ -50,7 +52,7 @@ namespace MapBoard.Main.IO
 
             StyleInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<StyleInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
             var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
-                
+
             //    Directory.EnumerateFiles(tempDirectoryPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name).ToArray();
             //if(files.Length<3)
             //{
@@ -60,7 +62,7 @@ namespace MapBoard.Main.IO
             foreach (var file in files)
             {
                 string target = Path.Combine(Config.DataPath, Path.GetFileName(file));
-                if(File.Exists(target))
+                if (File.Exists(target))
                 {
                     copyedFiles.ForEach(p => File.Delete(p));
                     throw new IOException($"文件{target}已存在");
@@ -86,10 +88,35 @@ namespace MapBoard.Main.IO
             StyleCollection.Instance.SaveWhenChanged = false;
             StyleCollection.Instance.Styles.Clear();
             styles.ForEach(p => p.Table = null);
+
             ZipFile.CreateFromDirectory(Config.DataPath, path);
             styles.ForEach(p => StyleCollection.Instance.Styles.Add(p));
             StyleCollection.Instance.SaveWhenChanged = true;
         }
+        public async static Task ExportMap2(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(Path.Combine(Config.DataPath, "temp"));
+            if (directory.Exists)
+            {
+                directory.Delete(true);
+            }
+            directory.Create();
+            foreach (var style in StyleCollection.Instance.Styles)
+            {
+                ShapefileExport.ExportEmptyShapefile(style.Type, style.Name, directory.FullName);
+                StyleInfo newStyle = new StyleInfo();
+
+                ShapefileFeatureTable table = new ShapefileFeatureTable(Path.Combine(directory.FullName, style.Name + ".shp"));
+                await table.AddFeaturesAsync(await style.GetAllFeatures());
+                table.Close();
+            }
+            await Task.Delay(500);
+            StyleCollection.Instance.Save(Path.Combine(directory.FullName,StyleCollection.StyleFileName));
+            ZipFile.CreateFromDirectory(directory.FullName, path);
+        }
+
+
+
         /// <summary>
         /// 导出图层包，实则是zip文件
         /// </summary>
@@ -113,7 +140,7 @@ namespace MapBoard.Main.IO
             }
             Directory.CreateDirectory(tempDirectoryPath);
 
-            foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath,style.Name))
+            foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
             {
                 File.Copy(file, Path.Combine(tempDirectoryPath, Path.GetFileName(file)));
             }
