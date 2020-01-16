@@ -183,7 +183,7 @@ namespace MapBoard.TileDownloaderSplicer
             for (int level = CurrentDownload.MinLevel; level <= CurrentDownload.MaxLevel; level++)
             {
                 var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMin, CurrentDownload.YMax), level);
-                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMax,CurrentDownload.YMin), level);
+                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMax, CurrentDownload.YMin), level);
                 for (int x = tile1X; x <= tile2X; x++)
                 {
                     for (int y = tile1Y; y <= tile2Y; y++)
@@ -303,7 +303,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
             else
             {
-                 NetHelper.StopServer();
+                NetHelper.StopServer();
                 btnServer.Content = "开启服务器";
             }
             // 关闭服务器
@@ -545,6 +545,22 @@ namespace MapBoard.TileDownloaderSplicer
                     CurrentDownload.XMax, CurrentDownload.YMin);
                 CalculateTileNumber(false);
             }
+        }
+        bool waiting = false;
+        private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (waiting)
+            {
+                return;
+            }
+            MapPoint point = (sender as ArcMapView).ScreenToLocation(e.GetPosition(sender as IInputElement));
+            point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
+            int z = (int)(Math.Log(1e9 / (sender as ArcMapView).MapScale, 2));
+            (int x, int y) = TileLocation.GeoPointToTile(new GeoPoint(point.X, point.Y), z);
+            string l = Environment.NewLine;
+            tbkTileIndex.Text = $"Z={z}{l}X={x}{l}Y={y}";
+            waiting = true;
+            Task.Delay(250).ContinueWith(p => waiting = false);
         }
     }
 

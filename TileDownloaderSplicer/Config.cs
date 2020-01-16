@@ -84,6 +84,7 @@ namespace MapBoard.TileDownloaderSplicer
         public DownloadInfo LastDownload { get; set; }
 
         private int requestTimeOut = 1000;
+        public int ServerPort = 8080;
         public int RequestTimeOut
         {
             get => requestTimeOut;

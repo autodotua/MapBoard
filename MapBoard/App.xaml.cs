@@ -17,7 +17,9 @@ namespace MapBoard.Main
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+#if (!DEBUG)
             UnhandledException.RegistAll(true);
+#endif
         }
     }
 }
