@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class TileUrlInfo : FzLib.Extension.ExtendedINotifyPropertyChanged
+    public class TileSourceInfo : FzLib.Extension.ExtendedINotifyPropertyChanged
     {
-        public string Name { get; set; }
+        public string Name { get => name; set => SetValueAndNotify(ref name, value, nameof(Name)); }
         private string url;
+        private string name;
+
         public string Url
         {
             get => url;

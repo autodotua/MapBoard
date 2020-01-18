@@ -24,6 +24,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{416B6C02-2
 		libs\FzWpfControlLib.dll = libs\FzWpfControlLib.dll
 		libs\GeoAPI.CoordinateSystems.dll = libs\GeoAPI.CoordinateSystems.dll
 		libs\GeoAPI.dll = libs\GeoAPI.dll
+		libs\Microsoft.WindowsAPICodePack.dll = libs\Microsoft.WindowsAPICodePack.dll
+		libs\Microsoft.WindowsAPICodePack.Shell.dll = libs\Microsoft.WindowsAPICodePack.Shell.dll
+		libs\Microsoft.WindowsAPICodePack.ShellExtensions.dll = libs\Microsoft.WindowsAPICodePack.ShellExtensions.dll
 		libs\NetTopologySuite.dll = libs\NetTopologySuite.dll
 		libs\ProjNET.dll = libs\ProjNET.dll
 	EndProjectSection

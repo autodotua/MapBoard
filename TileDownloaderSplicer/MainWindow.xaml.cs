@@ -118,28 +118,29 @@ namespace MapBoard.TileDownloaderSplicer
         //    stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
 
 
-        //    //}
-        //    //   TaskDialog.ShowWithButtons(this, $"左上角点：({leftUpPoint.Y},{leftUpPoint.X}){Environment.NewLine}右下角点：({rightDownPoint.Y},{rightDownPoint.X})", "准备下载瓦片",
-        //    //      new (string, Action)[] { ("下载", () => AddToDownload(leftUpPoint, rightDownPoint)), ("取消", () => { }) });
+        //    }
+        //       TaskDialog.ShowWithButtons(this, $"左上角点：({leftUpPoint.Y},{leftUpPoint.X}){Environment.NewLine}右下角点：({rightDownPoint.Y},{rightDownPoint.X})", "准备下载瓦片",
+        //          new (string, Action)[] { ("下载", () => AddToDownload(leftUpPoint, rightDownPoint)), ("取消", () => { }) });
+        //}
         //}
 
-        private void AddToDownload()
-        {
-            if (CurrentDownload == null)
-            {
-                CurrentDownload = new DownloadInfo();
-            }
+        //private void AddToDownload()
+        //{
+        //    if (CurrentDownload == null)
+        //    {
+        //        CurrentDownload = new DownloadInfo();
+        //    }
 
-            CurrentDownload.XMin = arcMap.Boundary.XMin;
-            CurrentDownload.YMin = arcMap.Boundary.YMin;
-            CurrentDownload.XMax = arcMap.Boundary.XMax;
-            CurrentDownload.YMax = arcMap.Boundary.YMax;
+        //    CurrentDownload.MapXMin = arcMap.Boundary.XMin;
+        //    CurrentDownload.MapYMin = arcMap.Boundary.YMin;
+        //    CurrentDownload.MapXMax = arcMap.Boundary.XMax;
+        //    CurrentDownload.MapYMax = arcMap.Boundary.YMax;
 
-            //downloadBoundary.SetDoubleValue(leftUpPoint.X, leftUpPoint.Y, rightDownPoint.X, rightDownPoint.Y);
-            downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
-            CalculateTileNumber(false);
+        //    //downloadBoundary.SetDoubleValue(leftUpPoint.X, leftUpPoint.Y, rightDownPoint.X, rightDownPoint.Y);
+        //    downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
+        //    //CalculateTileNumber(false);
 
-        }
+        //}
         private DownloadInfo currentDownload;
         public DownloadInfo CurrentDownload
         {
@@ -154,56 +155,46 @@ namespace MapBoard.TileDownloaderSplicer
 
         private void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
         {
-            CalculateTileNumber(true);
+            CalculateTileNumber();
         }
 
-        private void CalculateTileNumber(bool force)
+        private void CalculateTileNumber()
         {
             if (CurrentDownload == null)
             {
                 CurrentDownload = new DownloadInfo();
-
             }
             pgb.Value = 0;
-            if (force)
+            Range<double> value = downloadBoundary.GetDoubleValue();
+            if (value != null)
             {
-                (double left, double top, double right, double bottom)? value = downloadBoundary.GetDoubleValueGetDoubleValue();
-                if (value != null)
-                {
-                    CurrentDownload.SetValue(value.Value.left, value.Value.right, value.Value.bottom, value.Value.top);
-                }
-                else
-                {
-                    TaskDialog.ShowError(this, "坐标范围不正确");
-                    return;
-                }
-            }
-            int count = 0;
-            Files.Clear();
-            for (int level = CurrentDownload.MinLevel; level <= CurrentDownload.MaxLevel; level++)
-            {
-                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMin, CurrentDownload.YMax), level);
-                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new GeoPoint(CurrentDownload.XMax, CurrentDownload.YMin), level);
-                for (int x = tile1X; x <= tile2X; x++)
-                {
-                    for (int y = tile1Y; y <= tile2Y; y++)
-                    {
-                        Files.Add(new DownloadFileInfo(x, y, level));
-                        count++;
-                    }
-                }
-            }
+                CurrentDownload.SetRange(value, (int)sldMin.Value, (int)sldMax.Value);
+                txtCount.Text = "共" + CurrentDownload.TileCount;
 
-            txtCount.Text = "共" + Files.Count.ToString();
-            Config.Save();
+                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(value.YMax_Top, value.XMin_Left, cbbLevel.SelectedIndex);
+                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(value.YMin_Bottom, value.XMax_Right, cbbLevel.SelectedIndex);
+                stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
+
+
+                Config.Save();
+            }
+            else
+            {
+                TaskDialog.ShowError(this, "坐标范围不正确");
+            }
         }
 
-        public ObservableCollection<DownloadFileInfo> Files { get; set; } = new ObservableCollection<DownloadFileInfo>();
+        //public ObservableCollection<DownloadFileInfo> Files { get; set; } = new ObservableCollection<DownloadFileInfo>();
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
         {
             if (Config.Instance.UrlCollection.SelectedUrl == null)
             {
                 TaskDialog.ShowError(this, "还未选择瓦片地址");
+                return;
+            }
+            if (CurrentDownload == null)
+            {
+                TaskDialog.ShowError(this, "还没有进行设置");
                 return;
             }
             if ((btnDownload.Content as string) == "开始下载")
@@ -212,56 +203,67 @@ namespace MapBoard.TileDownloaderSplicer
 
                 ControlsEnable = false;
                 stopDownload = false;
-                pgb.Maximum = Files.Count;
-                int count = Files.Count;
+                pgb.Maximum = CurrentDownload.TileCount;
                 int ok = 0;
                 int failed = 0;
                 int skip = 0;
                 string baseUrl = Config.UrlCollection.SelectedUrl.Url;
                 await Task.Run(() =>
                  {
-                     foreach (var file in Files)
+                     int index = 0;
+                     IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator();
+                     while (enumerator.MoveNext())
                      {
+                         TileInfo tile = enumerator.Current;
                          if (stopDownload)
                          {
                              return;
                          }
-                         string path = string.Concat(Config.DownloadFolder, "\\", file.Level, "\\", file.X, "-", file.Y, ".", Config.Instance.FormatExtension);
+                         string path = string.Concat(Config.DownloadFolder, "\\", tile.Level, "\\", tile.X, "-", tile.Y, ".", Config.Instance.FormatExtension);
 
                          try
                          {
                              if (!File.Exists(path) || Config.CoverFile)
                              {
-                                 string url = baseUrl.Replace("{x}", file.X.ToString()).Replace("{y}", file.Y.ToString()).Replace("{z}", file.Level.ToString());
-                                 arcMap.ShowPosition(file);
+                                 string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
+                                 arcMap.ShowPosition(this, tile);
                                  NetHelper.HttpDownload(url, path);
-                                 Dispatcher.Invoke(() => file.Status = "完成");
+                                 //Dispatcher.Invoke(() => tile.Status = "完成");
+                                 Dispatcher.Invoke(() => tbkCurrentTile.Text = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}");
+
                                  ok++;
                              }
                              else
                              {
-                                 Dispatcher.BeginInvoke((Action)(() => { file.Status = "文件已存在"; }));
-                                 //Dispatcher.Invoke(() => file.Status = "文件已存在");
+                                 Dispatcher.Invoke(() => tbkCurrentTile.Text = "跳过：文件已存在");
+
+                                 //Dispatcher.Invoke((Action)(() => { tile.Status = "文件已存在"; }));
+                                 //Dispatcher.Invoke(() => tile.Status = "文件已存在");
                                  skip++;
                              }
                          }
                          catch (Exception ex)
                          {
-                             Dispatcher.BeginInvoke((Action)(() => file.Status = "失败：" + ex.Message));
+                             //Dispatcher.Invoke(() => tile.Status = "失败：" + ex.Message);
+                             Dispatcher.Invoke(() => tbkCurrentTile.Text = "失败：" + ex.Message);
+
                              failed++;
                          }
-                         Dispatcher.BeginInvoke((Action)(() =>
+                         Dispatcher.Invoke((() =>
                          {
                              pgb.Value = ok + failed + skip;
-                             txtCount.Text = "成功" + ok + "/失败" + failed + "/跳过" + skip + "/共" + count;
-                             var item = Files[ok + failed + skip - 1];
-                             lvwFiles.SelectedItem = item;
-                             if (!lvwFiles.IsMouseOver)
-                             {
-                                 lvwFiles.ScrollIntoView(item);
-                             }
-
+                             txtCount.Text = $"成功{ ok }/失败{ failed}/跳过{ skip }/共{ CurrentDownload.TileCount}";
+                             //var item = Files[ok + failed + skip - 1];
+                             //lvwFiles.SelectedItem = item;
+                             //if (!lvwFiles.IsMouseOver)
+                             //{
+                             //    lvwFiles.ScrollIntoView(item);
+                             //}
                          }));
+                         if (++index % 100 == 0)
+                         {
+                             Thread.Sleep(100);
+                         }
                      }
                  });
                 try
@@ -278,7 +280,7 @@ namespace MapBoard.TileDownloaderSplicer
                 ControlsEnable = true;
                 btnDownload.Content = "开始下载";
                 btnDownload.IsEnabled = true;
-                arcMap.ShowPosition(null);
+                arcMap.ShowPosition(this, null);
             }
             else
             {
@@ -317,12 +319,16 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 int level = cbbLevel.SelectedIndex;
                 var tryBound = stichBoundary.GetIntValue();
-                if (!tryBound.HasValue)
+                if (tryBound == null)
                 {
                     TaskDialog.ShowError(this, "瓦片边界输入错误");
                     return;
                 }
-                (int left, int top, int right, int bottom) = stichBoundary.GetIntValue().Value;
+                var boundary = stichBoundary.GetIntValue();
+                int right = boundary.XMax_Right;
+                int left = boundary.XMin_Left;
+                int bottom = boundary.YMin_Bottom;
+                int top = boundary.YMax_Top;
                 int width = Config.Instance.TileSize.width * (right - left + 1);
                 int height = Config.Instance.TileSize.height * (bottom - top + 1);
 
@@ -416,13 +422,10 @@ namespace MapBoard.TileDownloaderSplicer
 
         private void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (arcMap.Boundary == null)
+            if (CurrentDownload != null)
             {
-                return;
+                CalculateTileNumber();
             }
-            var (tile1X, tile1Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
-            var (tile2X, tile2Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
-            stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
         }
 
 
@@ -528,11 +531,9 @@ namespace MapBoard.TileDownloaderSplicer
             // leftUpPoint = GeometryEngine.Project(new MapPoint(arcMap.Boundary., SpatialReferences.Wgs84) as MapPoint;
             // rightDownPoint = GeometryEngine.Project(arcMap.ScreenToLocation(cvs.SecondPoint), SpatialReferences.Wgs84) as MapPoint;
 
-            AddToDownload();
+            //AddToDownload();
+            downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
 
-            var (tile1X, tile1Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMax, arcMap.Boundary.XMin, cbbLevel.SelectedIndex);
-            var (tile2X, tile2Y) = TileLocation.GeoPointToTile(arcMap.Boundary.YMin, arcMap.Boundary.XMax, cbbLevel.SelectedIndex);
-            stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
 
         }
 
@@ -541,9 +542,15 @@ namespace MapBoard.TileDownloaderSplicer
             if (Config.LastDownload != null)
             {
                 CurrentDownload = Config.LastDownload;
-                downloadBoundary.SetDoubleValue(CurrentDownload.XMin, CurrentDownload.YMax,
-                    CurrentDownload.XMax, CurrentDownload.YMin);
-                CalculateTileNumber(false);
+                if (CurrentDownload != null)
+                {
+                    downloadBoundary.SetDoubleValue(CurrentDownload.MapRange.XMin_Left, CurrentDownload.MapRange.YMax_Top,
+                        CurrentDownload.MapRange.XMax_Right, CurrentDownload.MapRange.YMin_Bottom);
+                    CalculateTileNumber();
+                    sldMin.Value = CurrentDownload.TileMinLevel;
+                    sldMin.Value = CurrentDownload.TileMaxLevel;
+
+                }
             }
         }
         bool waiting = false;

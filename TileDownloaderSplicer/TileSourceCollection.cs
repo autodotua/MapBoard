@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class TileUrlCollection : FzLib.Extension.ExtendedINotifyPropertyChanged
+    public class TileSourceCollection : FzLib.Extension.ExtendedINotifyPropertyChanged
     {
-        public TileUrlCollection()
+        public TileSourceCollection()
         {
-            Urls.CollectionChanged += (p1, p2) =>
+            Sources.CollectionChanged += (p1, p2) =>
               {
                   if (p2.NewItems != null)
                   {
-                      (p2.NewItems[0] as TileUrlInfo).PropertyChanged += (p3, p4) =>
+                      (p2.NewItems[0] as TileSourceInfo).PropertyChanged += (p3, p4) =>
                       {
                           if (p3 == SelectedUrl)
                           {
@@ -27,7 +27,7 @@ namespace MapBoard.TileDownloaderSplicer
                   }
               };
         }
-        public ObservableCollection<TileUrlInfo> Urls { get; set; } = new ObservableCollection<TileUrlInfo>();
+        public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
         private int selectedIndex;
         public int SelectedIndex
         {
@@ -38,7 +38,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        public TileUrlInfo SelectedUrl => (SelectedIndex == -1 || SelectedIndex >= Urls.Count) ? null : Urls[SelectedIndex];
+        public TileSourceInfo SelectedUrl => (SelectedIndex == -1 || SelectedIndex >= Sources.Count) ? null : Sources[SelectedIndex];
 
     }
 }

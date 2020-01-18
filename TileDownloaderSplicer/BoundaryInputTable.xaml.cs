@@ -65,21 +65,21 @@ namespace MapBoard.TileDownloaderSplicer
             txtBottom.Text = bottom.ToString();
         }
 
-        public (int left, int top, int right, int bottom)? GetIntValue()
+        public Range<int> GetIntValue()
         {
             if (!IsIntLegal(out int left, out int right, out int top, out int bottom))
             {
                 return null;
             }
-            return (left, top, right, bottom);
+            return new Range<int>(left, right, bottom, top);
         }
-        public (double left, double top, double right, double bottom)? GetDoubleValueGetDoubleValue()
+        public Range<double> GetDoubleValue()
         {
             if (!IsDoubleLegal(out double left, out double right, out double top, out double bottom))
             {
                 return null;
             }
-            return (left, top, right, bottom);
+            return new Range<double>(left,right,bottom,top);
         }
     }
 }

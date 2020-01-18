@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 
 namespace MapBoard.GpxToolbox
 {
-    public class TimeBasedChartHelper<TPoint, TLine, TPolygon>
+    public class TimeBasedChartHelper<TPoint, TLine, TPolygon> where TPoint:class where TLine:class where TPolygon:class
     {
 
         private bool isBusy = false;

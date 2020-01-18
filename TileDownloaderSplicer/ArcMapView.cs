@@ -99,11 +99,11 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     Map.Basemap = basemap;
                 }
-                
+
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException( ex, "加载地图失败");
+                TaskDialog.ShowException(ex, "加载地图失败");
                 return;
             }
         }
@@ -149,18 +149,30 @@ namespace MapBoard.TileDownloaderSplicer
         MapPoint point = new MapPoint(0, 0);
         GraphicsOverlay overlay = new GraphicsOverlay();
         Graphic graphic = new Graphic();
-        public void ShowPosition(DownloadFileInfo file)
+        public void ShowPosition(Window win, TileInfo tile)
         {
-            if (file == null)
+            if (tile == null)
             {
                 graphic.IsVisible = false;
                 return;
             }
-
-            MapPoint wn = new MapPoint(file.WestNorth.X, file.WestNorth.Y, SpatialReferences.Wgs84);
-            MapPoint en = new MapPoint(file.EastSouth.X, file.WestNorth.Y, SpatialReferences.Wgs84);
-            MapPoint es = new MapPoint(file.EastSouth.X, file.EastSouth.Y, SpatialReferences.Wgs84);
-            MapPoint ws = new MapPoint(file.WestNorth.X, file.EastSouth.Y, SpatialReferences.Wgs84);
+            bool ignore = false;
+            win.Dispatcher.Invoke(() =>
+            {
+                if (win.WindowState == WindowState.Minimized)
+                {
+                    ignore = true; ;
+                }
+            });
+            if(ignore)
+            {
+                return;
+            }
+            var range = tile.Extent;
+            MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
+            MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
+            MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
+            MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
 
             Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws });
             //polygon = GeometryEngine.Project(polygon, SpatialReferences.WebMercator)  as Polygon;
@@ -171,7 +183,6 @@ namespace MapBoard.TileDownloaderSplicer
 
 
         }
-
     }
 
 }

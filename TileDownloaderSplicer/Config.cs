@@ -20,14 +20,14 @@ namespace MapBoard.TileDownloaderSplicer
                 if (instance == null)
                 {
                     instance = TryOpenOrCreate<Config>("MapBoard.TileDownloaderSplicerConfig.json");
-                    if (instance.UrlCollection.Urls.Count == 0)
+                    if (instance.UrlCollection.Sources.Count == 0)
                     {
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "谷歌卫星", Url = "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "谷歌卫星中国（GCJ02）", Url = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "谷歌卫星中国（WGS84）", Url = "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "天地图", Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
-                        instance.UrlCollection.Urls.Add(new TileUrlInfo() { Name = "天地图注记", Url = "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星", Url = "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（GCJ02）", Url = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（WGS84）", Url = "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图", Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
+                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图注记", Url = "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
 
                     }
                 }
@@ -40,7 +40,7 @@ namespace MapBoard.TileDownloaderSplicer
             Settings.Formatting = Newtonsoft.Json.Formatting.Indented;
         }
 
-        public TileUrlCollection UrlCollection { get; set; } = new TileUrlCollection();
+        public TileSourceCollection UrlCollection { get; set; } = new TileSourceCollection();
         /*    public string Url { get; set; } = "http://mt3.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}";
          高德地图： "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}";
          OneStreet:http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
