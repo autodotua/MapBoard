@@ -156,6 +156,8 @@ namespace MapBoard.TileDownloaderSplicer
         private void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
         {
             CalculateTileNumber();
+            lastTile = null;
+            btnDownload.Content = "开始下载";
         }
 
         private void CalculateTileNumber()
@@ -184,6 +186,8 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
+        private TileInfo lastTile = null;
+        private int lastIndex = 0;
         //public ObservableCollection<DownloadFileInfo> Files { get; set; } = new ObservableCollection<DownloadFileInfo>();
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
         {
@@ -197,7 +201,8 @@ namespace MapBoard.TileDownloaderSplicer
                 TaskDialog.ShowError(this, "还没有进行设置");
                 return;
             }
-            if ((btnDownload.Content as string) == "开始下载")
+
+            if ((btnDownload.Content as string) == "开始下载"|| (btnDownload.Content as string) == "继续下载")
             {
                 btnDownload.Content = "停止下载";
 
@@ -206,17 +211,18 @@ namespace MapBoard.TileDownloaderSplicer
                 pgb.Maximum = CurrentDownload.TileCount;
                 int ok = 0;
                 int failed = 0;
-                int skip = 0;
+                int skip = lastTile==null?0: lastIndex;
                 string baseUrl = Config.UrlCollection.SelectedUrl.Url;
                 await Task.Run(() =>
                  {
-                     int index = 0;
-                     IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator();
+                     IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
                      while (enumerator.MoveNext())
                      {
                          TileInfo tile = enumerator.Current;
                          if (stopDownload)
                          {
+                             lastTile = tile;
+                             lastIndex = ok + skip + failed;
                              return;
                          }
                          string path = string.Concat(Config.DownloadFolder, "\\", tile.Level, "\\", tile.X, "-", tile.Y, ".", Config.Instance.FormatExtension);
@@ -260,11 +266,12 @@ namespace MapBoard.TileDownloaderSplicer
                              //    lvwFiles.ScrollIntoView(item);
                              //}
                          }));
-                         if (++index % 100 == 0)
+                         if ((ok+failed+skip) % 100 == 0)
                          {
                              Thread.Sleep(100);
                          }
                      }
+                     lastTile = null;
                  });
                 try
                 {
@@ -278,7 +285,14 @@ namespace MapBoard.TileDownloaderSplicer
                     TaskDialog.ShowError("无法删除临时文件夹");
                 }
                 ControlsEnable = true;
-                btnDownload.Content = "开始下载";
+                if (lastTile == null)
+                {
+                    btnDownload.Content = "开始下载";
+                }
+                else
+                {
+                    btnDownload.Content = "继续下载";
+                }
                 btnDownload.IsEnabled = true;
                 arcMap.ShowPosition(this, null);
             }
@@ -546,9 +560,9 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     downloadBoundary.SetDoubleValue(CurrentDownload.MapRange.XMin_Left, CurrentDownload.MapRange.YMax_Top,
                         CurrentDownload.MapRange.XMax_Right, CurrentDownload.MapRange.YMin_Bottom);
-                    CalculateTileNumber();
                     sldMin.Value = CurrentDownload.TileMinLevel;
-                    sldMin.Value = CurrentDownload.TileMaxLevel;
+                    sldMax.Value = CurrentDownload.TileMaxLevel;
+                    CalculateTileNumber();
 
                 }
             }

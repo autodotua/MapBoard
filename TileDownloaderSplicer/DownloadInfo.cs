@@ -24,6 +24,8 @@ namespace MapBoard.TileDownloaderSplicer
             MapRange = range;
             int count = 0;
             tiles.Clear();
+            TileMinLevel = minLevel;
+            TileMaxLevel = maxLevel;
             for (int level = minLevel; level <= maxLevel; level++)
             {
                 var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new GeoPoint(range.XMin_Left, range.YMax_Top), level);
@@ -44,7 +46,7 @@ namespace MapBoard.TileDownloaderSplicer
         }
         public IEnumerator<TileInfo> GetEnumerator(TileInfo start)
         {
-            return new TileEnumerator(tiles,start,true);
+            return new TileEnumerator(tiles,start);
         }
 
 
@@ -52,14 +54,15 @@ namespace MapBoard.TileDownloaderSplicer
 
         public class TileEnumerator : IEnumerator<TileInfo>
         {
-            public TileEnumerator(Dictionary<int, Range<int>> ranges, TileInfo start=null,bool next=false)
+            public TileEnumerator(Dictionary<int, Range<int>> ranges, TileInfo start=null)
             {
                 Ranges = new Dictionary<int, Range<int>>(ranges);
-                current = start;
-                if(next)
+                if (start!=null)
                 {
-                    MoveNext();
+                    current = start;
+                    currentRange = ranges[current.Level];
                 }
+
             }
             private TileInfo current;
             public TileInfo Current => current;

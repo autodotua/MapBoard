@@ -69,7 +69,7 @@
 
             </win10style:ModernTabItem>
         </win10style:ModernAnimatedSingleRowTabControl>
-        <win10style:ModernExpander  MaxWidth="280" Header="下&#x000D;载" IsExpanded="True" ExpandDirection="Right">
+        <win10style:ModernExpander  MaxWidth="320" Header="下&#x000D;载" IsExpanded="True" ExpandDirection="Right">
             <Grid>
                     <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
