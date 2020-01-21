@@ -14,11 +14,12 @@ namespace MapBoard.TileDownloaderSplicer
 {
     public static class NetHelper
     {
+        private static Random rand = new Random();
         public static void HttpDownload(string url, string path)
         {
-            string tempPath = Path.GetDirectoryName(path) + @"\temp";
+            string tempPath = Path.Combine(Path.GetDirectoryName(path), "temp");
             Directory.CreateDirectory(tempPath);  //创建临时文件目录
-            string tempFile = tempPath + "\\" + Path.GetFileName(path) + ".temp"; //临时文件
+            string tempFile = Path.Combine(tempPath, rand.Next(0, int.MaxValue) + ".temp"); //临时文件
             try
             {
                 if (File.Exists(tempFile))

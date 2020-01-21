@@ -1,6 +1,7 @@
 ﻿using FzLib.Geography.IO.Tile;
 using GIS.Geometry;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,20 +14,19 @@ namespace MapBoard.TileDownloaderSplicer
     public class DownloadInfo
     {
         public Range<double> MapRange { get; private set; } = new Range<double>();
-        public int TileMinLevel { get; private set; } = 1;
-        public int TileMaxLevel { get; private set; } = 10;
+        public int TileMinLevel { get;  set; } = 2;
+        public int TileMaxLevel { get;  set; } = 12;
 
         public Dictionary<int, Range<int>> tiles = new Dictionary<int, Range<int>>();
+        [JsonIgnore]
         public IReadOnlyDictionary<int, Range<int>> Tiles { get; private set; }
 
-        public void SetRange(Range<double> range, int minLevel, int maxLevel)
+        public void SetRange(Range<double> range)
         {
             MapRange = range;
             int count = 0;
             tiles.Clear();
-            TileMinLevel = minLevel;
-            TileMaxLevel = maxLevel;
-            for (int level = minLevel; level <= maxLevel; level++)
+            for (int level = TileMinLevel; level <= TileMaxLevel; level++)
             {
                 var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new GeoPoint(range.XMin_Left, range.YMax_Top), level);
                 var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new GeoPoint(range.XMax_Right, range.YMin_Bottom), level);

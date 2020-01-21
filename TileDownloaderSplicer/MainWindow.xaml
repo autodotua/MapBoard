@@ -215,12 +215,12 @@
                         </Grid.RowDefinitions>
                         <local:BoundaryInputTable x:Name="downloadBoundary" Grid.Row="2" Grid.RowSpan="3" Grid.ColumnSpan="3"/>
                         <TextBlock Grid.Row="6" >最小缩放值：</TextBlock>
-                        <win10style:ModernSlider x:Name="sldMin" Grid.Column="2"  Grid.Row="6" 
-                                                    IsSnapToTickEnabled="True" Value="2"
+                        <win10style:ModernSlider  Grid.Column="2"  Grid.Row="6" 
+                                                    IsSnapToTickEnabled="True" Value="{Binding CurrentDownload.TileMinLevel}"
                                                     TickPlacement="TopLeft" AutoToolTipPlacement="TopLeft" TickFrequency="1" Minimum="1" Maximum="20"/>
                         <TextBlock Grid.Row="8">最大缩放值：</TextBlock>
-                        <win10style:ModernSlider x:Name="sldMax" Grid.Column="2" Grid.Row="8"   
-                                                    IsSnapToTickEnabled="True"  Value="12"
+                        <win10style:ModernSlider  Grid.Column="2" Grid.Row="8"   
+                                                    IsSnapToTickEnabled="True"  Value="{Binding CurrentDownload.TileMaxLevel}"
                                                     TickPlacement="TopLeft" AutoToolTipPlacement="TopLeft" TickFrequency="1" Minimum="1" Maximum="20"/>
                     </Grid>
                 </GroupBox>
