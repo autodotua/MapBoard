@@ -279,6 +279,10 @@
       <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
       <Name>MapBoard.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MapBoard.AfterBuild\MapBoard.AfterBuild.csproj">
+      <Project>{aaaf24f7-327d-45dd-a8d7-9750bea582e1}</Project>
+      <Name>MapBoard.AfterBuild</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TileDownloaderSplicer\MapBoard.TileDownloaderSplicer.csproj">
       <Project>{14fda3a2-c424-485f-93bb-f8d649682460}</Project>
       <Name>MapBoard.TileDownloaderSplicer</Name>
@@ -304,4 +308,11 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Esri.ArcGISRuntime.WPF.100.6.0\build\net461\Esri.ArcGISRuntime.WPF.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Esri.ArcGISRuntime.WPF.100.6.0\build\net461\Esri.ArcGISRuntime.WPF.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>call MapBoard.AfterBuild.exe</PostBuildEvent>
+  </PropertyGroup>
 </Project>

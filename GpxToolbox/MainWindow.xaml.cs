@@ -42,16 +42,20 @@ namespace MapBoard.GpxToolbox
         private const string TrackFilePath = "Track.ini";
         private string[] loadNeeded = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
-        public MainWindow(string[] load = null)
+        public MainWindow(string[] load = null) : this()
         {
             loadNeeded = load;
+           
+        }
+
+        public MainWindow()
+        {
             InitializeComponent();
             InitializeChart();
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
-            //TaskDialog.DefaultOwner = this;
-
         }
+
 
 
         private void InitializeChart()

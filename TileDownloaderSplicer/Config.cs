@@ -110,6 +110,9 @@ namespace MapBoard.TileDownloaderSplicer
                 Notify(nameof(ReadTimeOut));
             }
         }
-
+        public override void Save()
+        {
+            base.Save();
+        }
     }
 }

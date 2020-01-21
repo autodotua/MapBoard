@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,6 +20,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GeoPoint = NetTopologySuite.Geometries.Point;
@@ -188,6 +190,7 @@ namespace MapBoard.TileDownloaderSplicer
 
         private TileInfo lastTile = null;
         private int lastIndex = 0;
+        private bool downloading = false;
         //public ObservableCollection<DownloadFileInfo> Files { get; set; } = new ObservableCollection<DownloadFileInfo>();
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
         {
@@ -202,77 +205,95 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
 
-            if ((btnDownload.Content as string) == "开始下载"|| (btnDownload.Content as string) == "继续下载")
+            if ((btnDownload.Content as string) == "开始下载" || (btnDownload.Content as string) == "继续下载")
             {
-                btnDownload.Content = "停止下载";
+                await StartOrContinueDowloading();
+            }
+            else
+            {
+                StopDownloading();
+            }
+        }
 
-                ControlsEnable = false;
-                stopDownload = false;
-                pgb.Maximum = CurrentDownload.TileCount;
-                int ok = 0;
-                int failed = 0;
-                int skip = lastTile==null?0: lastIndex;
-                string baseUrl = Config.UrlCollection.SelectedUrl.Url;
-                await Task.Run(() =>
-                 {
-                     IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
-                     while (enumerator.MoveNext())
-                     {
-                         TileInfo tile = enumerator.Current;
-                         if (stopDownload)
-                         {
-                             lastTile = tile;
-                             lastIndex = ok + skip + failed;
-                             return;
-                         }
-                         string path = string.Concat(Config.DownloadFolder, "\\", tile.Level, "\\", tile.X, "-", tile.Y, ".", Config.Instance.FormatExtension);
+        private void StopDownloading()
+        {
+            btnDownload.IsEnabled = false;
+            stopDownload = true;
+        }
 
-                         try
-                         {
-                             if (!File.Exists(path) || Config.CoverFile)
-                             {
-                                 string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
-                                 arcMap.ShowPosition(this, tile);
-                                 NetHelper.HttpDownload(url, path);
-                                 //Dispatcher.Invoke(() => tile.Status = "完成");
-                                 Dispatcher.Invoke(() => tbkCurrentTile.Text = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}");
+        private async Task StartOrContinueDowloading()
+        {
+            btnDownload.Content = "停止下载";
+            downloading = true;
+            ControlsEnable = false;
+            stopDownload = false;
+            pgb.Maximum = CurrentDownload.TileCount;
+            int ok = 0;
+            int failed = 0;
+            int skip = lastTile == null ? 0 : lastIndex;
+            string baseUrl = Config.UrlCollection.SelectedUrl.Url;
+            await Task.Run(() =>
+            {
+                IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
+                while (enumerator.MoveNext())
+                {
+                    TileInfo tile = enumerator.Current;
+                    if (stopDownload)
+                    {
+                        lastTile = tile;
+                        lastIndex = ok + skip + failed;
+                        return;
+                    }
+                    string path = string.Concat(Config.DownloadFolder, "\\", tile.Level, "\\", tile.X, "-", tile.Y, ".", Config.Instance.FormatExtension);
 
-                                 ok++;
-                             }
-                             else
-                             {
-                                 Dispatcher.Invoke(() => tbkCurrentTile.Text = "跳过：文件已存在");
+                    try
+                    {
+                        if (!File.Exists(path) || Config.CoverFile)
+                        {
+                            string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
+                            arcMap.ShowPosition(this, tile);
+                            NetHelper.HttpDownload(url, path);
+                            //Dispatcher.Invoke(() => tile.Status = "完成");
+                            Dispatcher.Invoke(() => tbkCurrentTile.Text = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}");
 
-                                 //Dispatcher.Invoke((Action)(() => { tile.Status = "文件已存在"; }));
-                                 //Dispatcher.Invoke(() => tile.Status = "文件已存在");
-                                 skip++;
-                             }
-                         }
-                         catch (Exception ex)
-                         {
-                             //Dispatcher.Invoke(() => tile.Status = "失败：" + ex.Message);
-                             Dispatcher.Invoke(() => tbkCurrentTile.Text = "失败：" + ex.Message);
+                            ok++;
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() => tbkCurrentTile.Text = "跳过：文件已存在");
 
-                             failed++;
-                         }
-                         Dispatcher.Invoke((() =>
-                         {
-                             pgb.Value = ok + failed + skip;
-                             txtCount.Text = $"成功{ ok }/失败{ failed}/跳过{ skip }/共{ CurrentDownload.TileCount}";
-                             //var item = Files[ok + failed + skip - 1];
-                             //lvwFiles.SelectedItem = item;
-                             //if (!lvwFiles.IsMouseOver)
-                             //{
-                             //    lvwFiles.ScrollIntoView(item);
-                             //}
-                         }));
-                         if ((ok+failed+skip) % 100 == 0)
-                         {
-                             Thread.Sleep(100);
-                         }
-                     }
-                     lastTile = null;
-                 });
+                            //Dispatcher.Invoke((Action)(() => { tile.Status = "文件已存在"; }));
+                            //Dispatcher.Invoke(() => tile.Status = "文件已存在");
+                            skip++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //Dispatcher.Invoke(() => tile.Status = "失败：" + ex.Message);
+                        Dispatcher.Invoke(() => tbkCurrentTile.Text = "失败：" + ex.Message);
+
+                        failed++;
+                    }
+                    Dispatcher.Invoke((() =>
+                    {
+                        pgb.Value = ok + failed + skip;
+                        txtCount.Text = $"成功{ ok }/失败{ failed}/跳过{ skip }/共{ CurrentDownload.TileCount}";
+                        //var item = Files[ok + failed + skip - 1];
+                        //lvwFiles.SelectedItem = item;
+                        //if (!lvwFiles.IsMouseOver)
+                        //{
+                        //    lvwFiles.ScrollIntoView(item);
+                        //}
+                    }));
+                    if ((ok + failed + skip) % 100 == 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
+                lastTile = null;
+            });
+            await Task.Run(() =>
+            {
                 try
                 {
                     foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "*", SearchOption.AllDirectories).Where(p => p.EndsWith("temp")))
@@ -282,29 +303,26 @@ namespace MapBoard.TileDownloaderSplicer
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowError("无法删除临时文件夹");
+                    Dispatcher.Invoke(() => TaskDialog.ShowError("无法删除临时文件夹"));
                 }
-                ControlsEnable = true;
-                if (lastTile == null)
-                {
-                    btnDownload.Content = "开始下载";
-                }
-                else
-                {
-                    btnDownload.Content = "继续下载";
-                }
-                btnDownload.IsEnabled = true;
-                arcMap.ShowPosition(this, null);
+            });
+            ControlsEnable = true;
+            if (lastTile == null)
+            {
+                btnDownload.Content = "开始下载";
             }
             else
             {
-                btnDownload.IsEnabled = false;
-                stopDownload = true;
+                btnDownload.Content = "继续下载";
+            }
+            downloading = false;
+            btnDownload.IsEnabled = true;
+            arcMap.ShowPosition(this, null);
+            if (closing)
+            {
+                Close();
             }
         }
-
-
-
 
         private async void ServerButtonClick(object sender, RoutedEventArgs e)
         {
@@ -498,8 +516,18 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
+        private bool closing = false;
         private void WindowClosing(object sender, CancelEventArgs e)
         {
+            if (downloading)
+            {
+                if (TaskDialog.ShowWithYesNoButtons("正在下载瓦片，是否停止下载后关闭窗口？", "关闭") == true)
+                {
+                    closing = true;
+                    StopDownloading();
+                }
+                e.Cancel = true;
+            }
             Config.Save();
         }
         public bool ControlsEnable
@@ -583,6 +611,35 @@ namespace MapBoard.TileDownloaderSplicer
             waiting = true;
             Task.Delay(250).ContinueWith(p => waiting = false);
         }
-    }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if(dgrdUrls.SelectedIndex==-1)
+            {
+                Config.UrlCollection.Sources.Add(new TileSourceInfo());
+            }
+            else
+            {
+                Config.UrlCollection.Sources.Insert(dgrdUrls.SelectedIndex+1, new TileSourceInfo());
+            }
+        }
+
+        private void Button_Click22(object sender, RoutedEventArgs e)
+        {
+            Config.UrlCollection.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
+
+        }
+    }
+    public class IsNotNullToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value != null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
+        }
+    }
 }

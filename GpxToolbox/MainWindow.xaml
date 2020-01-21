@@ -11,10 +11,10 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Closing="WindowClosing"
         Loaded="WindowLoaded"
-                       WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen"
         Title="GPX工具箱" 
-                       Height="700"
-                       Width="1000">
+        Height="700"
+        Width="1000">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="360"/>
@@ -34,7 +34,7 @@
                 <RowDefinition Height="8"/>
             </Grid.RowDefinitions>
 
-            <win10style:ModernExpander Header="Gpx信息">
+            <win10style:ModernExpander Header="GPX信息">
                 <Grid DataContext="{Binding Gpx}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
