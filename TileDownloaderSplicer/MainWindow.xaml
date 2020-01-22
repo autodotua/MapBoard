@@ -1,4 +1,5 @@
-﻿<Window x:Class="MapBoard.TileDownloaderSplicer.MainWindow"
+﻿<controlextended:ExtendedWindow 
+    x:Class="MapBoard.TileDownloaderSplicer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -27,7 +28,7 @@
         </Grid.ColumnDefinitions>
         <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
         <GridSplitter Grid.Column="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-        <win10style:ModernAnimatedSingleRowTabControl x:Name="tab" Grid.Column="2" SelectionChanged="tab_SelectionChanged" IsEnabled="{Binding ControlsEnable}">
+        <win10style:ModernAnimatedSingleRowTabControl x:Name="tab" Grid.Column="2" SelectionChanged="tab_SelectionChanged" >
             <win10style:ModernTabItem Header="动态地图">
                 <Grid>
                     <local:ArcMapView x:Name="arcMap"  SelectBoundaryComplete="arcMap_SelectBoundaryComplete" PreviewMouseMove="arcMap_PreviewMouseMove"/>
@@ -74,7 +75,7 @@
 
             </win10style:ModernTabItem>
         </win10style:ModernAnimatedSingleRowTabControl>
-        <Grid >
+        <Grid Margin="0,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="8"/>
@@ -84,7 +85,7 @@
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock FontSize="20" Margin="8,4,0,0">下载</TextBlock>
+            <TextBlock FontSize="20" Margin="8,0,0,0">下载</TextBlock>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                      Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <Grid  x:Name="grdDownload" IsEnabled="{Binding ControlsEnable}">
@@ -146,8 +147,8 @@
                                 <ColumnDefinition Width="4"/>
                                 <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <flatstyle:Button Click="Button_Click">新增</flatstyle:Button>
-                                <flatstyle:Button Grid.Column="2" Click="Button_Click22"
+                                <flatstyle:Button Click="NewTileSourceButtonClick">新增</flatstyle:Button>
+                                <flatstyle:Button Grid.Column="2" Click="DeleteTileSourceButtonClick"
                                                     IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource notNull}}">删除</flatstyle:Button>
                             </Grid>
                         </Grid>
@@ -214,12 +215,12 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <local:BoundaryInputTable x:Name="downloadBoundary" Grid.Row="2" Grid.RowSpan="3" Grid.ColumnSpan="3"/>
-                        <TextBlock Grid.Row="6" >最小缩放值：</TextBlock>
-                        <win10style:ModernSlider  Grid.Column="2"  Grid.Row="6" 
+                            <TextBlock Grid.Row="6"  Text="{Binding ElementName=sldTileMin, Path=Value, StringFormat={}最小缩放值：{0}}"/>
+                            <win10style:ModernSlider x:Name="sldTileMin" Grid.Column="2"  Grid.Row="6" 
                                                     IsSnapToTickEnabled="True" Value="{Binding CurrentDownload.TileMinLevel}"
                                                     TickPlacement="TopLeft" AutoToolTipPlacement="TopLeft" TickFrequency="1" Minimum="1" Maximum="20"/>
-                        <TextBlock Grid.Row="8">最大缩放值：</TextBlock>
-                        <win10style:ModernSlider  Grid.Column="2" Grid.Row="8"   
+                            <TextBlock Grid.Row="8"  Text="{Binding ElementName=sldTileMax, Path=Value, StringFormat={}最大缩放值：{0}}"/>
+                            <win10style:ModernSlider x:Name="sldTileMax"  Grid.Column="2" Grid.Row="8"   
                                                     IsSnapToTickEnabled="True"  Value="{Binding CurrentDownload.TileMaxLevel}"
                                                     TickPlacement="TopLeft" AutoToolTipPlacement="TopLeft" TickFrequency="1" Minimum="1" Maximum="20"/>
                     </Grid>
@@ -230,8 +231,10 @@
             <GroupBox Header="下载文件" Grid.Row="4" >
                 <Grid   Margin="4">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="0"/>
-                        <RowDefinition Height="0"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
@@ -246,9 +249,23 @@
                             </GridView>
                         </flatstyle:ListView.View>
                     </flatstyle:ListView>-->
-                    <TextBlock x:Name="tbkCurrentTile" Grid.Row="2" Text="准备就绪"/>
-                    <ProgressBar x:Name="pgb" BorderThickness="0" Height="24" Grid.Row="4" Minimum="0"/>
-                    <TextBlock Grid.Row="4" FontSize="12" x:Name="txtCount" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock  Grid.Row="0" Text="{Binding LastDownloadingTile}"/>
+                    <TextBlock  Grid.Row="2" Text="{Binding LastDownloadingStatus}"/>
+                    <win10style:ModernExpander Header="错误列表" Grid.Row="4">
+                        
+                    <flatstyle:ListView Height="120" ItemsSource="{Binding DownloadErrors}">
+                        <flatstyle:ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="瓦片" DisplayMemberBinding="{Binding Tile}"/>
+                                <GridViewColumn Header="错误" DisplayMemberBinding="{Binding Error}"/>
+                                    <GridViewColumn Header="堆栈" DisplayMemberBinding="{Binding StackTrace}"/>
+                            </GridView>
+                        </flatstyle:ListView.View>
+                        </flatstyle:ListView>
+                    </win10style:ModernExpander>
+                    <ProgressBar x:Name="pgb" BorderThickness="0" Height="24" Grid.Row="6" Minimum="0"/>
+
+                    <TextBlock Grid.Row="6" FontSize="12"  HorizontalAlignment="Center" Text="{Binding DownloadingProgressStatus}" VerticalAlignment="Center"/>
                 </Grid>
             </GroupBox>
 
@@ -279,7 +296,7 @@
             </Grid>
 
         </Grid>
-        <Grid  Grid.Column="4">
+        <Grid  Grid.Column="4" Margin="0,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="8"/>
@@ -291,7 +308,7 @@
                 <RowDefinition Height="8"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock FontSize="20" Margin="8,4,0,0">拼接</TextBlock>
+            <TextBlock FontSize="20" Margin="8,0,0,0">拼接</TextBlock>
 
             <Grid  Grid.Row="2"  IsEnabled="{Binding ControlsEnable}">
                 <Grid.ColumnDefinitions>
@@ -311,14 +328,12 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <flatstyle:Button x:Name="btnStich" Content="开始拼接" Grid.Column="0" Click="StichButtonClick"/>
                 <flatstyle:Button  Content="保存"  IsEnabled="{Binding ControlsEnable}" Grid.Column="2" Click="SaveButtonClick"/>
 
             </Grid>
         </Grid>
-
+        <progress:LoadingOverlay x:Name="loading" RingSize="0.1" Grid.ColumnSpan="100"/>
     </Grid>
-</Window>
+</controlextended:ExtendedWindow>

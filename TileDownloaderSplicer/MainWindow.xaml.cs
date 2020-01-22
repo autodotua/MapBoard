@@ -1,5 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Control.Dialog;
+using FzLib.Control.Extension;
 using FzLib.Geography.IO.Tile;
 using GIS.Geometry;
 using System;
@@ -30,7 +31,7 @@ namespace MapBoard.TileDownloaderSplicer
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : ExtendedWindow
     {
         public Config Config => Config.Instance;
         /// <summary>
@@ -53,18 +54,53 @@ namespace MapBoard.TileDownloaderSplicer
         /// 是否有终止拼接的命令
         /// </summary>
         bool stopStich = false;
+        /// <summary>
+        /// 暂停时最后一块瓦片
+        /// </summary>
+        private TileInfo lastTile = null;
+        /// <summary>
+        /// 暂停时瓦片的序号
+        /// </summary>
+        private int lastIndex = 0;
+        /// <summary>
+        /// 是否正在下载
+        /// </summary>
+        private bool downloading = false;
 
         /// <summary>
         /// 保存的拼接完成后临时图片的位置
         /// </summary>
         private string savedImgPath = null;
-        public string[] Formats { get; } = new string[] { "jpg", "png", "bmp", "tiff" };
+        /// <summary>
+        /// 支持的格式
+        /// </summary>
+        /// 是否正在尝试关闭程序
+        private bool closing = false;
+        public IReadOnlyList<string> Formats { get; } = new List<string> { "jpg", "png", "bmp", "tiff" }.AsReadOnly();
+        /// <summary>
+        /// 当前投影信息
+        /// </summary>
+        private ProjectInfo currentProject;
+
+        public ObservableCollection<dynamic> DownloadErrors { get; } = new ObservableCollection<dynamic>();
+        private string lastdownloadingTile = "还未下载";
+        public string LastDownloadingTile { get => lastdownloadingTile; set => SetValueAndNotify(ref lastdownloadingTile, value, nameof(LastDownloadingTile)); }
+        private string lastdownloadingStatus = "准备就绪";
+        public string LastDownloadingStatus { get => lastdownloadingStatus; set => SetValueAndNotify(ref lastdownloadingStatus, value, nameof(LastDownloadingStatus)); }
+        private string downloadingProgressStatus = "准备就绪";
+        public string DownloadingProgressStatus { get => downloadingProgressStatus; set => SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus)); }
+        private int downloadingProgressValue = 0;
+        public int DownloadingProgressValue { get => downloadingProgressValue; set => SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue)); }
+
+
         /// <summary>
         /// 构造函数
         /// </summary>
         public MainWindow()
         {
             InitializeComponent();
+            BindingOperations.EnableCollectionSynchronization(DownloadErrors, DownloadErrors);
+
             // txtUrl.Text = Config.Instance.Url;
             //SnakeBar.DefaultWindow = this;
             foreach (var i in Enumerable.Range(0, 21))
@@ -88,8 +124,6 @@ namespace MapBoard.TileDownloaderSplicer
         {
             // cvs.StopDrawing(false);
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
         {
@@ -147,12 +181,7 @@ namespace MapBoard.TileDownloaderSplicer
         public DownloadInfo CurrentDownload
         {
             get => currentDownload;
-            set
-            {
-                currentDownload = value;
-                Config.Instance.LastDownload = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentDownload)));
-            }
+            set => SetValueAndNotify(ref currentDownload, value, nameof(CurrentDownload));
         }
 
         private void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
@@ -162,24 +191,27 @@ namespace MapBoard.TileDownloaderSplicer
             btnDownload.Content = "开始下载";
         }
 
-        private void CalculateTileNumber()
+        private void CalculateTileNumber(bool save = true)
         {
             if (CurrentDownload == null)
             {
                 CurrentDownload = new DownloadInfo();
             }
-            pgb.Value = 0;
+            DownloadingProgressValue = 0;
             Range<double> value = downloadBoundary.GetDoubleValue();
             if (value != null)
             {
                 CurrentDownload.SetRange(value);
-                txtCount.Text = "共" + CurrentDownload.TileCount;
+                DownloadingProgressStatus = "共" + CurrentDownload.TileCount;
 
                 var (tile1X, tile1Y) = TileLocation.GeoPointToTile(value.YMax_Top, value.XMin_Left, cbbLevel.SelectedIndex);
                 var (tile2X, tile2Y) = TileLocation.GeoPointToTile(value.YMin_Bottom, value.XMax_Right, cbbLevel.SelectedIndex);
                 stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
-
-                Config.Save();
+                if (save)
+                {
+                    Config.Instance.LastDownload = CurrentDownload;
+                    Config.Save();
+                }
             }
             else
             {
@@ -187,10 +219,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        private TileInfo lastTile = null;
-        private int lastIndex = 0;
-        private bool downloading = false;
-        //public ObservableCollection<DownloadFileInfo> Files { get; set; } = new ObservableCollection<DownloadFileInfo>();
+
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
         {
             if (Config.Instance.UrlCollection.SelectedUrl == null)
@@ -227,10 +256,12 @@ namespace MapBoard.TileDownloaderSplicer
             ControlsEnable = false;
             stopDownload = false;
             pgb.Maximum = CurrentDownload.TileCount;
+            DownloadErrors.Clear();
             int ok = 0;
             int failed = 0;
             int skip = lastTile == null ? 0 : lastIndex;
             string baseUrl = Config.UrlCollection.SelectedUrl.Url;
+            arcMap.SketchEditor.IsEnabled = false;
             await Task.Run(() =>
             {
                 IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
@@ -242,33 +273,31 @@ namespace MapBoard.TileDownloaderSplicer
 
                     try
                     {
+                        LastDownloadingTile = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}";
                         if (!File.Exists(path) || Config.CoverFile)
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                            NetHelper.HttpDownload(url, path);
+                             NetHelper.HttpDownload(url, path);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
-                            Dispatcher.Invoke(() => tbkCurrentTile.Text = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}");
+                            LastDownloadingStatus = "下载成功";
 
                             ok++;
                         }
                         else
                         {
-                            Dispatcher.Invoke(() => tbkCurrentTile.Text = "跳过：文件已存在");
+                            LastDownloadingStatus = "跳过：文件已存在";
                             skip++;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Dispatcher.Invoke(() => tbkCurrentTile.Text = "失败：" + ex.Message);
-
+                        LastDownloadingStatus = "失败：" + ex.Message;
+                        DownloadErrors.Add(new { Tile = LastDownloadingTile, Error = ex.Message, StackTrace = ex.StackTrace.Replace(Environment.NewLine, "    ") });
                         failed++;
                     }
-                    Dispatcher.Invoke((() =>
-                    {
-                        pgb.Value = ok + failed + skip;
-                        txtCount.Text = $"成功{ ok }/失败{ failed}/跳过{ skip }/共{ CurrentDownload.TileCount}";
-                    }));
+                    DownloadingProgressValue = ok + failed + skip;
+                    DownloadingProgressStatus = $"成功{ ok } 失败{ failed} 跳过{ skip } 共{ CurrentDownload.TileCount}";
                     //处理点击停止按钮后的逻辑
                     if (stopDownload)
                     {
@@ -293,6 +322,7 @@ namespace MapBoard.TileDownloaderSplicer
                     Dispatcher.Invoke(() => TaskDialog.ShowError("无法删除临时文件夹"));
                 }
             });
+            LastDownloadingStatus = "下载结束";
             ControlsEnable = true;
             if (lastTile == null)
             {
@@ -503,7 +533,6 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        private bool closing = false;
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             if (downloading)
@@ -515,23 +544,22 @@ namespace MapBoard.TileDownloaderSplicer
                 }
                 e.Cancel = true;
             }
+            Config.Instance.LastDownload = CurrentDownload;
+
             Config.Save();
         }
         public bool ControlsEnable
         {
             get => controlsEnable;
-            set
-            {
-                controlsEnable = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ControlsEnable)));
-            }
+            set => SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
         }
+
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                if(!Directory.Exists(Config.DownloadFolder))
+                if (!Directory.Exists(Config.DownloadFolder))
                 {
                     Directory.CreateDirectory(Config.DownloadFolder);
                 }
@@ -555,10 +583,6 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-
-
-        ProjectInfo currentProject;
-
         private void arcMap_SelectBoundaryComplete(object sender, EventArgs e)
         {
             downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
@@ -573,9 +597,8 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     downloadBoundary.SetDoubleValue(CurrentDownload.MapRange.XMin_Left, CurrentDownload.MapRange.YMax_Top,
                         CurrentDownload.MapRange.XMax_Right, CurrentDownload.MapRange.YMin_Bottom);
-                    //sldMin.Value = CurrentDownload.TileMinLevel;
-                    //sldMax.Value = CurrentDownload.TileMaxLevel;
-                    CalculateTileNumber();
+                    CalculateTileNumber(false);
+                    arcMap.SetBoundary(CurrentDownload.MapRange);
                 }
             }
             else
@@ -584,6 +607,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
         bool waiting = false;
+
         private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (waiting)
@@ -600,22 +624,30 @@ namespace MapBoard.TileDownloaderSplicer
             Task.Delay(250).ContinueWith(p => waiting = false);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
+            TileSourceInfo tile = new TileSourceInfo();
             if (dgrdUrls.SelectedIndex == -1)
             {
-                Config.UrlCollection.Sources.Add(new TileSourceInfo());
+                Config.UrlCollection.Sources.Add(tile);
             }
             else
             {
-                Config.UrlCollection.Sources.Insert(dgrdUrls.SelectedIndex + 1, new TileSourceInfo());
+                Config.UrlCollection.Sources.Insert(dgrdUrls.SelectedIndex + 1, tile);
             }
+            dgrdUrls.SelectedItem = tile;
+            dgrdUrls.ScrollIntoView(tile);
         }
 
-        private void Button_Click22(object sender, RoutedEventArgs e)
+        private void DeleteTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
             Config.UrlCollection.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
 
+        }
+
+        public void SetLoading(bool isLoading)
+        {
+            loading.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
         }
     }
     public class IsNotNullToBoolConverter : IValueConverter

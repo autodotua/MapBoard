@@ -11,13 +11,41 @@ using GeoPoint = NetTopologySuite.Geometries.Point;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class DownloadInfo
+    public class DownloadInfo : FzLib.Extension.ExtendedINotifyPropertyChanged
     {
         public Range<double> MapRange { get; private set; } = new Range<double>();
-        public int TileMinLevel { get;  set; } = 2;
-        public int TileMaxLevel { get;  set; } = 12;
+        //先Max后Min这样序列化的时候才不会出错
+        private int tileMaxLevel = 2;
+        public int TileMaxLevel
+        {
+            get => tileMaxLevel;
+            set
+            {
+                if (value >= TileMinLevel)
+                {
+                    tileMaxLevel = value;
+                }
+                Notify(nameof(TileMaxLevel));
+            }
+        }
+        private int tileMinLevel = 2;
+        public int TileMinLevel
+        {
+            get => tileMinLevel;
+            set
+            {
+                if(value<=TileMaxLevel)
+                {
+                    tileMinLevel = value;
+                }
+                Notify(nameof(TileMinLevel));
+            }
+        } 
+   
 
         public Dictionary<int, Range<int>> tiles = new Dictionary<int, Range<int>>();
+  
+
         [JsonIgnore]
         public IReadOnlyDictionary<int, Range<int>> Tiles { get; private set; }
 
@@ -46,7 +74,7 @@ namespace MapBoard.TileDownloaderSplicer
         }
         public IEnumerator<TileInfo> GetEnumerator(TileInfo start)
         {
-            return new TileEnumerator(tiles,start);
+            return new TileEnumerator(tiles, start);
         }
 
 
@@ -54,10 +82,10 @@ namespace MapBoard.TileDownloaderSplicer
 
         public class TileEnumerator : IEnumerator<TileInfo>
         {
-            public TileEnumerator(Dictionary<int, Range<int>> ranges, TileInfo start=null)
+            public TileEnumerator(Dictionary<int, Range<int>> ranges, TileInfo start = null)
             {
                 Ranges = new Dictionary<int, Range<int>>(ranges);
-                if (start!=null)
+                if (start != null)
                 {
                     current = start;
                     currentRange = ranges[current.Level];
@@ -92,16 +120,16 @@ namespace MapBoard.TileDownloaderSplicer
 
                 level = current.Level;
                 x = current.X;
-                y = current.Y+1;
-                
-                if(y>currentRange.YMax_Top)
+                y = current.Y + 1;
+
+                if (y > currentRange.YMax_Top)
                 {
                     y = currentRange.YMin_Bottom;
                     x++;
-                    if(x>currentRange.XMax_Right)
+                    if (x > currentRange.XMax_Right)
                     {
                         level++;
-                        if(level>Ranges.Keys.Max())
+                        if (level > Ranges.Keys.Max())
                         {
                             return false;
                         }
@@ -114,7 +142,7 @@ namespace MapBoard.TileDownloaderSplicer
                 return true;
             }
 
-        
+
 
             public void Reset()
             {
@@ -150,7 +178,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 (double yMax, double xMin) = TileLocation.PixelToGeoPoint(0, 0, X, Y, Level);
                 // var prj = GeometryEngine.Project(new MapPoint(lat, lng, SpatialReferences.Wgs84), SpatialReferences.WebMercator) as MapPoint;
-               (double yMin,double xMax) = TileLocation.PixelToGeoPoint(Config.Instance.TileSize.width, Config.Instance.TileSize.height, X, Y, Level);
+                (double yMin, double xMax) = TileLocation.PixelToGeoPoint(Config.Instance.TileSize.width, Config.Instance.TileSize.height, X, Y, Level);
 
                 return new Range<double>(xMin, xMax, yMin, yMax);
             }

@@ -24,18 +24,23 @@ namespace MapBoard.TileDownloaderSplicer
             GraphicsOverlays.Add(overlay);
             graphic.Geometry = point;
             graphic.IsVisible = false;
-            graphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, Color.FromArgb(0x77, 0xFF, 0x00, 0x00), new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Green, 5));
+            graphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, Color.FromArgb(0x77, 0xFF, 0x00, 0x00), new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Green, 12));
             overlay.Graphics.Add(graphic);
+            Map = new Map(SpatialReferences.WebMercator);
 
+             Map.LoadAsync().Wait();
 
-            Config.Instance.UrlCollection.PropertyChanged += (p1, p2) =>
-              {
-                  if (p2.PropertyName == nameof(Config.UrlCollection.SelectedUrl))
-                  {
-                      Load().Wait();
-                  }
-              };
+            Config.Instance.UrlCollection.PropertyChanged += UrlCollectionPropertyChanged;
         }
+
+        private async void UrlCollectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.UrlCollection.SelectedUrl))
+            {
+                await Load();
+            }
+        }
+
         private void MapViewTapped(object sender, GeoViewInputEventArgs e)
         {
 
@@ -87,18 +92,8 @@ namespace MapBoard.TileDownloaderSplicer
                 Basemap basemap = new Basemap(baseLayer);
                 //Basemap basemap = new Basemap(new WebTiledLayer("http://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={col}&y={row}&z={level}", new string[] { "1", "2", "3", "4" }));
                 await basemap.LoadAsync();
-                if (Map == null)
-                {
-                    Map = new Map(basemap);
-
-                    await Map.LoadAsync();
-                    //await SetViewpointCenterAsync(new MapPoint(13532000, 3488400));
-                    //await SetViewpointScaleAsync(1000000);
-                }
-                else
-                {
+           
                     Map.Basemap = basemap;
-                }
 
             }
             catch (Exception ex)
@@ -113,12 +108,9 @@ namespace MapBoard.TileDownloaderSplicer
             if (!isSelecting)
             {
                 SnakeBar.Show("开始框选");
-                if (SketchEditor == null)
-                {
-                    SketchEditor = new SketchEditor();
-                }
+           
                 isSelecting = true;
-                await SketchEditor.StartAsync(SketchCreationMode.Rectangle);
+                await SketchEditor.StartAsync(SketchCreationMode.Rectangle, GetSketchEditConfiguration());
                 isSelecting = false;
             }
             else
@@ -127,6 +119,35 @@ namespace MapBoard.TileDownloaderSplicer
                 SnakeBar.Show("终止框选");
             }
 
+        }
+
+        public void SetBoundary(Range<double> range)
+        {
+            Polygon polygon = RangeToPolygon(range);
+            Geometry geometry = GeometryEngine.Project(polygon, SpatialReference);
+            SketchEditor.StartAsync(geometry, SketchCreationMode.Rectangle, GetSketchEditConfiguration());
+            isSelecting = true;
+        }
+
+        private SketchEditConfiguration GetSketchEditConfiguration()
+        {
+            return new SketchEditConfiguration()
+            {
+                AllowRotate=false,
+                ResizeMode=SketchResizeMode.Stretch,
+                AllowVertexEditing=false
+            };
+        }
+
+        private Polygon RangeToPolygon(Range<double> range)
+        {
+            MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
+            MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
+            MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
+            MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
+
+            Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws },SpatialReferences.Wgs84);
+            return polygon;
         }
 
 
@@ -169,17 +190,18 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
             var range = tile.Extent;
-            MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
-            MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
-            MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
-            MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
+            //MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
+            ////MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
+            //MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
+            ////MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
 
-            Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws });
-            //polygon = GeometryEngine.Project(polygon, SpatialReferences.WebMercator)  as Polygon;
+            ////Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws });
+            ////polygon = GeometryEngine.Project(polygon, SpatialReferences.WebMercator)  as Polygon;
 
-
+            //Envelope envelope = new Envelope(wn, es);
             graphic.IsVisible = true;
-            graphic.Geometry = polygon;
+            //graphic.Geometry = polygon;
+            graphic.Geometry = RangeToPolygon(range) ;
 
 
         }
