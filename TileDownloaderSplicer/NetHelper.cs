@@ -33,10 +33,8 @@ namespace MapBoard.TileDownloaderSplicer
                     HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
                     request.Timeout = Config.Instance.RequestTimeOut;
                     request.UserAgent = Config.Instance.DownloadUserAgent;
-                    //发送请求并获取相应回应数据
-                    HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 
-                    //直到request.GetResponse()程序才开始向目标网页发送Post请求
+                    using HttpWebResponse response = request.GetResponse() as HttpWebResponse;
                     using Stream responseStream = response.GetResponseStream();
                     responseStream.ReadTimeout = Config.Instance.ReadTimeOut;
                     //创建本地文件写入流
@@ -47,8 +45,6 @@ namespace MapBoard.TileDownloaderSplicer
                         fs.Write(bArr, 0, size);
                         size = responseStream.Read(bArr, 0, bArr.Length);
                     }
-                    //stream.Close();
-                    response.Close();
                 }
                 if (File.Exists(path))
                 {
@@ -57,12 +53,11 @@ namespace MapBoard.TileDownloaderSplicer
                 int tryTimes = 0;
                 while (File.Exists(path))
                 {
-                    tryTimes++;
-                    if (tryTimes >= 10)
+                    if (++tryTimes >= 10)
                     {
-                        throw new Exception("尝试删除文件失败");
+                        throw new Exception("尝试删除已存在的文件失败");
                     }
-                   Thread.Sleep(100);
+                    Thread.Sleep(100);
                 }
 
                 File.Move(tempFile, path);
@@ -82,50 +77,61 @@ namespace MapBoard.TileDownloaderSplicer
         /// HTTP服务器
         /// </summary>
         private static TcpListener tcpListener;
-        public async static Task StartServer()
+        public static void StartServer()
         {
             IPAddress localaddress = IPAddress.Loopback;
 
-            // 创建可以访问的断点，49155表示端口号，如果这里设置为0，表示使用一个由系统分配的空闲的端口号
             IPEndPoint endpoint = new IPEndPoint(localaddress, Config.Instance.ServerPort);
             if (tcpListener == null)
             {
                 // 创建Tcp 监听器
                 tcpListener = new TcpListener(endpoint);
             }
-            // 启动监听
-            tcpListener.Start();
-            while (true)
+            Task.Run(async () =>
             {
-                if (tcpListener.GetType().GetRuntimeProperties().ToArray()[1].GetValue(tcpListener).Equals(false))
-                {
-                    return;
-                }
-                try
-                {
-                    // 等待客户连接
-                    TcpClient client = await tcpListener.AcceptTcpClientAsync();
-                    // 获得一个网络流对象
-                    // 该网络流对象封装了Socket的输入和输出操作
-                    // 此时通过对网络流对象进行写入来返回响应消息
-                    // 通过对网络流对象进行读取来获得请求消息
-                    Task.Run(async () =>
-                   {
-                       await SendPic(client);
-                   });
 
-                }
-                catch (Exception ex)
+                // 启动监听
+                tcpListener.Start();
+                while (true)
                 {
-                    Debug.WriteLine(ex.Message);
+                    if (tcpListener.GetType().GetRuntimeProperties().ToArray()[1].GetValue(tcpListener).Equals(false))
+                    {
+                        return;
+                    }
+                    try
+                    {
+                        // 等待客户连接
+                        TcpClient client = await tcpListener.AcceptTcpClientAsync();
+                        // 获得一个网络流对象
+                        // 该网络流对象封装了Socket的输入和输出操作
+                        // 此时通过对网络流对象进行写入来返回响应消息
+                        // 通过对网络流对象进行读取来获得请求消息
+#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+                        Task.Run(() =>
+                        {
+                            try
+                            {
+                                SendPic(client);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.Message);
+                            }
+                        });
+#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    // 关闭与客户端的连接
+                    //client.Close();
+                    // break;
                 }
-                // 关闭与客户端的连接
-                //client.Close();
-                // break;
-            }
+            });
         }
 
-        private static async Task SendPic(TcpClient client)
+        private static void SendPic(TcpClient client)
         {
             NetworkStream netstream = client.GetStream();
             // 把客户端的请求数据读入保存到一个数组中
@@ -144,8 +150,13 @@ namespace MapBoard.TileDownloaderSplicer
                 var match = r.Match(requeststring);
                 int x = int.Parse(match.Groups[1].Value);
                 int y = int.Parse(match.Groups[2].Value);
-                int level = int.Parse(match.Groups[3].Value);
-                string file = $"Download\\{level}\\{x}-{y}.{Config.Instance.FormatExtension}";
+                int z = int.Parse(match.Groups[3].Value);
+                string file = Config.Instance.ServerFormat
+                    .Replace("{x}", x.ToString())
+                    .Replace("{y}", y.ToString())
+                    .Replace("{z}", z.ToString())
+                    .Replace("{ext}", Config.Instance.FormatExtension);
+                //"Download\\{z}\\{x}-{y}.{Config.Instance.FormatExtension}";
                 byte[] responseBodyBytes = null;
                 string statusLine;
                 if (File.Exists(file))
@@ -163,23 +174,16 @@ namespace MapBoard.TileDownloaderSplicer
                 // 服务器端做出相应内容
                 // 响应的状态行;
                 byte[] responseStatusLineBytes = Encoding.UTF8.GetBytes(statusLine);
-                //string responseBody = "<html><head><title>Default Page</title></head><body><p style='font:bold;font-size:24pt'>Welcome you</p></body></html>";
-                string responseHeader =
-                     string.Format(
-                         "Content-Type: image/{0}; charset=UTf-8\r\nContent-Length: {1}\r\n", Config.Instance.FormatExtension, responseBodyBytes.Length);
-
-                byte[] responseHeaderBytes = Encoding.UTF8.GetBytes(responseHeader);
-                //byte[] responseBodyBytes = Encoding.UTF8.GetBytes(responseBody);
-
-                // 写入状态行信息
                 netstream.Write(responseStatusLineBytes, 0, responseStatusLineBytes.Length);
-                // 写入回应的头部
-                netstream.Write(responseHeaderBytes, 0, responseHeaderBytes.Length);
-                // 写入回应头部和内容之间的空行
-                netstream.Write(new byte[] { 13, 10 }, 0, 2);
-
-                // 写入回应的内容
-                netstream.Write(responseBodyBytes, 0, responseBodyBytes.Length);
+                //string responseBody = "<html><head><title>Default Page</title></head><body><p style='font:bold;font-size:24pt'>Welcome you</p></body></html>";
+                if (responseBodyBytes != null)
+                {
+                    string responseHeader = $"Content-Type: image/{Config.Instance.FormatExtension}; charset=UTf-8\r\nContent-Length: {responseBodyBytes.Length}\r\n";
+                    byte[] responseHeaderBytes = Encoding.UTF8.GetBytes(responseHeader);
+                    netstream.Write(responseHeaderBytes, 0, responseHeaderBytes.Length);
+                    netstream.Write(new byte[] { 13, 10 }, 0, 2);
+                    netstream.Write(responseBodyBytes, 0, responseBodyBytes.Length);
+                }
 
                 //}
                 //else
@@ -190,7 +194,7 @@ namespace MapBoard.TileDownloaderSplicer
 
                 //}
 
-                await netstream.FlushAsync();
+                netstream.Flush();
             }
         }
 

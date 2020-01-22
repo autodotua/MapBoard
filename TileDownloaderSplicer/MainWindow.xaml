@@ -15,8 +15,14 @@
         WindowStartupLocation="CenterScreen"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="地图瓦片下载拼接器" Height="700" Width="1000">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="taskBar" Description="地图瓦片下载拼接器" ProgressValue="{Binding DownloadingProgressPercent}"/>
+    </Window.TaskbarItemInfo>
     <Window.Resources>
         <local:IsNotNullToBoolConverter x:Key="notNull"/>
+        <local:EnumToStringConverter x:Key="e2s"/>
+        <local:EnumToBoolConverter x:Key="e2b"/>
+        <local:BoolToStringConverter x:Key="b2s"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -58,16 +64,16 @@
             </win10style:ModernTabItem>
             <win10style:ModernTabItem Header="本地地图">
                 <Grid>
-                    
-                <local:ArcMapView x:Name="arcLocalMap" PreviewMouseMove="arcMap_PreviewMouseMove" IsLocal="True"/>
-                <TextBlock Grid.Column="2" Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}"
+
+                    <local:ArcMapView x:Name="arcLocalMap" PreviewMouseMove="arcMap_PreviewMouseMove" IsLocal="True"/>
+                    <TextBlock Grid.Column="2" Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}"
                                VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="8">
-                    <TextBlock.Effect>
-                        <BlurEffect
+                        <TextBlock.Effect>
+                            <BlurEffect
                                   Radius="3.0"
                                   KernelType="Box"/>
-                    </TextBlock.Effect>
-                </TextBlock>
+                        </TextBlock.Effect>
+                    </TextBlock>
                     <TextBlock Grid.Column="2" Panel.ZIndex="1" Foreground="White"  Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}"
                                VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="8"/>
                 </Grid>
@@ -75,7 +81,7 @@
 
             </win10style:ModernTabItem>
         </win10style:ModernAnimatedSingleRowTabControl>
-        <Grid Margin="0,8">
+        <Grid Margin="4,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="8"/>
@@ -86,14 +92,14 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock FontSize="20" Margin="8,0,0,0">下载</TextBlock>
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                      Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <Grid  x:Name="grdDownload" IsEnabled="{Binding ControlsEnable}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="16"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="16"/>
+                <Grid  x:Name="grdDownload" IsEnabled="{Binding ControlsEnable}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <GroupBox Header="图层">
@@ -143,9 +149,9 @@
                                                 TextWrapping="Wrap" Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Url}"/>
                             <Grid Grid.Row="10" Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="4"/>
-                                <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <flatstyle:Button Click="NewTileSourceButtonClick">新增</flatstyle:Button>
                                 <flatstyle:Button Grid.Column="2" Click="DeleteTileSourceButtonClick"
@@ -154,8 +160,8 @@
                         </Grid>
                     </GroupBox>
                     <GroupBox Header="下载选项" Grid.Row="2">
-                            
-                    <Grid>
+
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="8"/>
@@ -181,7 +187,7 @@
                             <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
                     <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="TextBox_PreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>-->
 
-                                        <TextBlock Grid.Row="4" Text="下载路径："/>
+                            <TextBlock Grid.Row="4" Text="下载路径："/>
                             <flatstyle:TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Config.DownloadFolder}"/>
                             <TextBlock  Grid.Row="6" VerticalAlignment="Center" Text="图片格式："/>
 
@@ -193,28 +199,28 @@
                             <flatstyle:TextBox Grid.Row="12" Grid.Column="2" Text="{Binding Config.ReadTimeOut}"/>
                         </Grid>
                     </GroupBox>
-                   
-                <GroupBox Header="数据边界与缩放" Grid.Row="4" IsEnabled="{Binding ControlsEnable}">
+
+                    <GroupBox Header="数据边界与缩放" Grid.Row="4" IsEnabled="{Binding ControlsEnable}">
                         <Grid x:Name="grdDownloadInfo">
                             <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <local:BoundaryInputTable x:Name="downloadBoundary" Grid.Row="2" Grid.RowSpan="3" Grid.ColumnSpan="3"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <local:BoundaryInputTable x:Name="downloadBoundary" Grid.Row="2" Grid.RowSpan="3" Grid.ColumnSpan="3"/>
                             <TextBlock Grid.Row="6"  Text="{Binding ElementName=sldTileMin, Path=Value, StringFormat={}最小缩放值：{0}}"/>
                             <win10style:ModernSlider x:Name="sldTileMin" Grid.Column="2"  Grid.Row="6" 
                                                     IsSnapToTickEnabled="True" Value="{Binding CurrentDownload.TileMinLevel}"
@@ -223,10 +229,10 @@
                             <win10style:ModernSlider x:Name="sldTileMax"  Grid.Column="2" Grid.Row="8"   
                                                     IsSnapToTickEnabled="True"  Value="{Binding CurrentDownload.TileMaxLevel}"
                                                     TickPlacement="TopLeft" AutoToolTipPlacement="TopLeft" TickFrequency="1" Minimum="1" Maximum="20"/>
-                    </Grid>
-                </GroupBox>
-                
-            </Grid>
+                        </Grid>
+                    </GroupBox>
+
+                </Grid>
             </ScrollViewer>
             <GroupBox Header="下载文件" Grid.Row="4" >
                 <Grid   Margin="4">
@@ -252,15 +258,15 @@
                     <TextBlock  Grid.Row="0" Text="{Binding LastDownloadingTile}"/>
                     <TextBlock  Grid.Row="2" Text="{Binding LastDownloadingStatus}"/>
                     <win10style:ModernExpander Header="错误列表" Grid.Row="4">
-                        
-                    <flatstyle:ListView Height="120" ItemsSource="{Binding DownloadErrors}">
-                        <flatstyle:ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="瓦片" DisplayMemberBinding="{Binding Tile}"/>
-                                <GridViewColumn Header="错误" DisplayMemberBinding="{Binding Error}"/>
+
+                        <flatstyle:ListView Height="120" ItemsSource="{Binding DownloadErrors}">
+                            <flatstyle:ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="瓦片" DisplayMemberBinding="{Binding Tile}"/>
+                                    <GridViewColumn Header="错误" DisplayMemberBinding="{Binding Error}"/>
                                     <GridViewColumn Header="堆栈" DisplayMemberBinding="{Binding StackTrace}"/>
-                            </GridView>
-                        </flatstyle:ListView.View>
+                                </GridView>
+                            </flatstyle:ListView.View>
                         </flatstyle:ListView>
                     </win10style:ModernExpander>
                     <ProgressBar x:Name="pgb" BorderThickness="0" Height="24" Grid.Row="6" Minimum="0"/>
@@ -281,57 +287,89 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <flatstyle:Button Content="计算数据" Grid.Column="0" Click="CalculateTileNumberButtonClick"  IsEnabled="{Binding ControlsEnable}"/>
-                <flatstyle:Button x:Name="btnDownload" Content="开始下载" Grid.Column="2" Click="DownloadButtonClick"/>
-                <flatstyle:Button x:Name="btnServer"  Content="开启服务器" Grid.Row="2" Click="ServerButtonClick">
-                    <flatstyle:Button.ToolTip>
-                        <ToolTip>
-                            <StackPanel  Orientation="Vertical">
-                                <TextBlock Text="地址：http://(IP地址):8080/{x}-{y}-{level}"/>
-                                <TextBlock Text="示例：http://127.0.0.1:8080/6860-3383-13"/>
-                            </StackPanel>
-                        </ToolTip>
-                    </flatstyle:Button.ToolTip>
-                </flatstyle:Button>
+                <flatstyle:Button  Content="{Binding Path=CurrentDownloadStatus, Converter={StaticResource e2s}, 
+                    ConverterParameter=Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停}" Grid.Column="2"
+                                IsEnabled="{Binding Path=CurrentDownloadStatus, Converter={StaticResource e2b}, ConverterParameter=Pausing:false}"   Click="DownloadButtonClick"/>
+                <flatstyle:Button  Content="删除空文件" Grid.Column="0" Grid.Row="2" Click="DeleteEmptyFilesButtonClick" ToolTip="删除下载文件夹中文件大小为0的文件"/>
                 <flatstyle:Button  Content="打开目录" Grid.Column="2" Grid.Row="2" Click="OpenFolderButtonClick"/>
             </Grid>
 
         </Grid>
-        <Grid  Grid.Column="4" Margin="0,8">
+        <Grid Grid.Column="4" Margin="4,8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="8"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="8"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="8"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="8"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock FontSize="20" Margin="8,0,0,0">拼接</TextBlock>
-
-            <Grid  Grid.Row="2"  IsEnabled="{Binding ControlsEnable}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="缩放等级：" VerticalAlignment="Center"/>
-                <flatstyle:UneditableComboBox VerticalAlignment="Center" SelectionChanged="LevelSelectionChanged" Grid.Column="2" x:Name="cbbLevel"/>
-            </Grid >
-            <local:BoundaryInputTable  IsEnabled="{Binding ControlsEnable}" Grid.Row="4" x:Name="stichBoundary"/>
-            <Grid   Grid.Row="100">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <Grid  >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <flatstyle:Button x:Name="btnStich" Content="开始拼接" Grid.Column="0" Click="StichButtonClick"/>
-                <flatstyle:Button  Content="保存"  IsEnabled="{Binding ControlsEnable}" Grid.Column="2" Click="SaveButtonClick"/>
+                <TextBlock FontSize="20" Margin="8,0,0,0">拼接</TextBlock>
 
+                <Grid  Grid.Row="2"  IsEnabled="{Binding ControlsEnable}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="缩放等级：" VerticalAlignment="Center"/>
+                    <flatstyle:UneditableComboBox VerticalAlignment="Center" SelectionChanged="LevelSelectionChanged" Grid.Column="2" x:Name="cbbLevel"/>
+                </Grid >
+                <local:BoundaryInputTable  IsEnabled="{Binding ControlsEnable}" Grid.Row="4" x:Name="stichBoundary"/>
+                <Grid   Grid.Row="100">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <flatstyle:Button x:Name="btnStich" Content="开始拼接" Grid.Column="0" Click="StichButtonClick"/>
+                    <flatstyle:Button  Content="保存"  IsEnabled="{Binding ControlsEnable}" Grid.Column="2" Click="SaveButtonClick"/>
+
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock FontSize="20" Margin="8,0,0,0">服务</TextBlock>
+                <StackPanel Grid.Row="2">
+                    <TextBlock  Text="瓦片文件路径格式："/>
+                    <FrameworkElement Height="2"/>
+                    <TextBlock Text="使用{z}{x}{y}表示层级和坐标" Foreground="Gray"/>
+                    <FrameworkElement Height="2"/>
+                    <TextBlock Text="使用{ext}表示扩展名（不含.）"  Foreground="Gray"/>
+                    <FrameworkElement Height="4"/>
+                    <flatstyle:TextBox  Text="{Binding Config.ServerFormat}"/>
+                    <FrameworkElement Height="8"/>
+                    <TextBlock  Text="服务端口："/>
+                    <FrameworkElement Height="4"/>
+                    <flatstyle:TextBox x:Name="txtPort" Text="{Binding Config.ServerPort}"/>
+                    <FrameworkElement Height="8"/>
+                    <TextBlock  Text="调用网址："/>
+                    <FrameworkElement Height="4"/>
+                    <TextBlock >
+                        <Run>http://(IP):</Run>
+                        <Run Text="{Binding ElementName=txtPort, Path=Text}"/>                       
+                        <Run>/{x}-{y}-{z}</Run>
+                    </TextBlock>
+                </StackPanel>
+                <flatstyle:Button Grid.Row="99"  Content="{Binding ServerOn,Converter={StaticResource b2s}, ConverterParameter=关闭服务器:开启服务器}"  Click="ServerButtonClick"/>
             </Grid>
         </Grid>
         <progress:LoadingOverlay x:Name="loading" RingSize="0.1" Grid.ColumnSpan="100"/>

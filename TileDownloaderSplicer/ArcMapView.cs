@@ -28,7 +28,7 @@ namespace MapBoard.TileDownloaderSplicer
             overlay.Graphics.Add(graphic);
             Map = new Map(SpatialReferences.WebMercator);
 
-             Map.LoadAsync().Wait();
+            Map.LoadAsync().Wait();
 
             Config.Instance.UrlCollection.PropertyChanged += UrlCollectionPropertyChanged;
         }
@@ -72,11 +72,8 @@ namespace MapBoard.TileDownloaderSplicer
                 //baseLayer = new WebTiledLayer("file:/C:/Users/autod/Desktop/瓦片下载拼接器Debug/Download/{level}/{col}-{row}.png");
                 if (IsLocal)
                 {
-                    if (Map != null)
-                    {
-                        return;
-                    }
-                    baseLayer = new WebTiledLayer("http://127.0.0.1:8080/{col}-{row}-{level}");
+                    baseLayer = new WebTiledLayer($"http://127.0.0.1:" + Config.Instance.ServerPort + "/{col}-{row}-{level}");
+                    //baseLayer = new WebTiledLayer("files:///" + Config.Instance.DownloadFolder + "/{level}/{x}-{y}." + Config.Instance.FormatExtension);
                 }
                 else
                 {
@@ -92,8 +89,8 @@ namespace MapBoard.TileDownloaderSplicer
                 Basemap basemap = new Basemap(baseLayer);
                 //Basemap basemap = new Basemap(new WebTiledLayer("http://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={col}&y={row}&z={level}", new string[] { "1", "2", "3", "4" }));
                 await basemap.LoadAsync();
-           
-                    Map.Basemap = basemap;
+
+                Map.Basemap = basemap;
 
             }
             catch (Exception ex)
@@ -108,7 +105,7 @@ namespace MapBoard.TileDownloaderSplicer
             if (!isSelecting)
             {
                 SnakeBar.Show("开始框选");
-           
+
                 isSelecting = true;
                 await SketchEditor.StartAsync(SketchCreationMode.Rectangle, GetSketchEditConfiguration());
                 isSelecting = false;
@@ -133,9 +130,9 @@ namespace MapBoard.TileDownloaderSplicer
         {
             return new SketchEditConfiguration()
             {
-                AllowRotate=false,
-                ResizeMode=SketchResizeMode.Stretch,
-                AllowVertexEditing=false
+                AllowRotate = false,
+                ResizeMode = SketchResizeMode.Stretch,
+                AllowVertexEditing = false
             };
         }
 
@@ -144,9 +141,9 @@ namespace MapBoard.TileDownloaderSplicer
             MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
             MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
             MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
-            MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
+            MapPoint ws = new MapPoint(range.XMin_Left, range.YMin_Bottom, SpatialReferences.Wgs84);
 
-            Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws },SpatialReferences.Wgs84);
+            Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws }, SpatialReferences.Wgs84);
             return polygon;
         }
 
@@ -185,7 +182,7 @@ namespace MapBoard.TileDownloaderSplicer
                     ignore = true; ;
                 }
             });
-            if(ignore)
+            if (ignore)
             {
                 return;
             }
@@ -201,7 +198,7 @@ namespace MapBoard.TileDownloaderSplicer
             //Envelope envelope = new Envelope(wn, es);
             graphic.IsVisible = true;
             //graphic.Geometry = polygon;
-            graphic.Geometry = RangeToPolygon(range) ;
+            graphic.Geometry = RangeToPolygon(range);
 
 
         }

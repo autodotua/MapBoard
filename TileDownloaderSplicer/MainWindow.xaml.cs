@@ -47,10 +47,6 @@ namespace MapBoard.TileDownloaderSplicer
         /// </summary>
         private bool controlsEnable = true;
         /// <summary>
-        /// 是否有终止下载的命令
-        /// </summary>
-        bool stopDownload = false;
-        /// <summary>
         /// 是否有终止拼接的命令
         /// </summary>
         bool stopStich = false;
@@ -90,8 +86,29 @@ namespace MapBoard.TileDownloaderSplicer
         private string downloadingProgressStatus = "准备就绪";
         public string DownloadingProgressStatus { get => downloadingProgressStatus; set => SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus)); }
         private int downloadingProgressValue = 0;
-        public int DownloadingProgressValue { get => downloadingProgressValue; set => SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue)); }
-
+        public int DownloadingProgressValue
+        {
+            get => downloadingProgressValue;
+            set
+            {
+                SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue));
+                DownloadingProgressPercent = (double)value / CurrentDownload.TileCount;
+            }
+        }
+        private double downloadingProgressPercent = 0;
+        public double DownloadingProgressPercent { get => downloadingProgressPercent; set => SetValueAndNotify(ref downloadingProgressPercent, value, nameof(DownloadingProgressPercent)); }
+        private DownloadStatus currentDownloadStatus = DownloadStatus.Stop;
+        public DownloadStatus CurrentDownloadStatus
+        {
+            get => currentDownloadStatus;
+            set => SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
+        }
+        private bool serverOn = false;
+        public bool ServerOn
+        {
+            get => serverOn;
+            set => SetValueAndNotify(ref serverOn, value, nameof(ServerOn));
+        }
 
         /// <summary>
         /// 构造函数
@@ -128,55 +145,8 @@ namespace MapBoard.TileDownloaderSplicer
         private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
         {
             await arcMap.StartSelectAsync();
-            //if (!cvs.IsDrawing)
-            //{
-            //    cvs.StartDraw();
-            //}
-            //else
-            //{
-            //    cvs.StopDrawing(false);
-            //}
         }
-        /// <summary>
-        /// 选择区域结束时间
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        //private void ChooseAreaComplete(object sender, EventArgs e)
-        //{
-        //    leftUpPoint = GeometryEngine.Project(arcMap.ScreenToLocation(cvs.FirstPoint), SpatialReferences.Wgs84) as MapPoint;
-        //    rightDownPoint = GeometryEngine.Project(arcMap.ScreenToLocation(cvs.SecondPoint), SpatialReferences.Wgs84) as MapPoint;
 
-        //    AddToDownload(leftUpPoint, rightDownPoint);
-
-        //    var (tile1X, tile1Y) = TileConverter.GeoPointToTile(leftUpPoint.Y, leftUpPoint.X, cbbLevel.SelectedIndex);
-        //    var (tile2X, tile2Y) = TileConverter.GeoPointToTile(rightDownPoint.Y, rightDownPoint.X, cbbLevel.SelectedIndex);
-        //    stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
-
-
-        //    }
-        //       TaskDialog.ShowWithButtons(this, $"左上角点：({leftUpPoint.Y},{leftUpPoint.X}){Environment.NewLine}右下角点：({rightDownPoint.Y},{rightDownPoint.X})", "准备下载瓦片",
-        //          new (string, Action)[] { ("下载", () => AddToDownload(leftUpPoint, rightDownPoint)), ("取消", () => { }) });
-        //}
-        //}
-
-        //private void AddToDownload()
-        //{
-        //    if (CurrentDownload == null)
-        //    {
-        //        CurrentDownload = new DownloadInfo();
-        //    }
-
-        //    CurrentDownload.MapXMin = arcMap.Boundary.XMin;
-        //    CurrentDownload.MapYMin = arcMap.Boundary.YMin;
-        //    CurrentDownload.MapXMax = arcMap.Boundary.XMax;
-        //    CurrentDownload.MapYMax = arcMap.Boundary.YMax;
-
-        //    //downloadBoundary.SetDoubleValue(leftUpPoint.X, leftUpPoint.Y, rightDownPoint.X, rightDownPoint.Y);
-        //    downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
-        //    //CalculateTileNumber(false);
-
-        //}
         private DownloadInfo currentDownload;
         public DownloadInfo CurrentDownload
         {
@@ -188,7 +158,8 @@ namespace MapBoard.TileDownloaderSplicer
         {
             CalculateTileNumber();
             lastTile = null;
-            btnDownload.Content = "开始下载";
+            //btnDownload.Content = "开始下载";
+            CurrentDownloadStatus = DownloadStatus.Stop;
         }
 
         private void CalculateTileNumber(bool save = true)
@@ -233,7 +204,7 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
 
-            if ((btnDownload.Content as string) == "开始下载" || (btnDownload.Content as string) == "继续下载")
+            if (CurrentDownloadStatus == DownloadStatus.Stop || CurrentDownloadStatus == DownloadStatus.Paused)
             {
                 await StartOrContinueDowloading();
             }
@@ -245,16 +216,15 @@ namespace MapBoard.TileDownloaderSplicer
 
         private void StopDownloading()
         {
-            btnDownload.IsEnabled = false;
-            stopDownload = true;
+            CurrentDownloadStatus = DownloadStatus.Pausing;
         }
 
         private async Task StartOrContinueDowloading()
         {
-            btnDownload.Content = "停止下载";
+            CurrentDownloadStatus = DownloadStatus.Downloading;
+            taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
             downloading = true;
             ControlsEnable = false;
-            stopDownload = false;
             pgb.Maximum = CurrentDownload.TileCount;
             DownloadErrors.Clear();
             int ok = 0;
@@ -278,7 +248,7 @@ namespace MapBoard.TileDownloaderSplicer
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                             NetHelper.HttpDownload(url, path);
+                            NetHelper.HttpDownload(url, path);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
                             LastDownloadingStatus = "下载成功";
 
@@ -298,8 +268,9 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                     DownloadingProgressValue = ok + failed + skip;
                     DownloadingProgressStatus = $"成功{ ok } 失败{ failed} 跳过{ skip } 共{ CurrentDownload.TileCount}";
+                    //taskBar.ProgressValue = (ok + failed + skip) * 1d / CurrentDownload.TileCount;
                     //处理点击停止按钮后的逻辑
-                    if (stopDownload)
+                    if (CurrentDownloadStatus == DownloadStatus.Pausing)
                     {
                         lastTile = tile;
                         lastIndex = ok + skip + failed;
@@ -307,33 +278,26 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                 }
                 lastTile = null;
-            });
-            await Task.Run(() =>
-            {
+
                 try
                 {
-                    foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "*", SearchOption.AllDirectories).Where(p => p.EndsWith("temp")))
+                    foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
                     {
                         Directory.Delete(directory, true);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Dispatcher.Invoke(() => TaskDialog.ShowError("无法删除临时文件夹"));
+                    Dispatcher.Invoke(() => TaskDialog.ShowException(ex, "无法删除临时文件夹"));
                 }
             });
             LastDownloadingStatus = "下载结束";
             ControlsEnable = true;
-            if (lastTile == null)
-            {
-                btnDownload.Content = "开始下载";
-            }
-            else
-            {
-                btnDownload.Content = "继续下载";
-            }
+            CurrentDownloadStatus = lastTile == null ? DownloadStatus.Stop : DownloadStatus.Paused;
+
+            taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+
             downloading = false;
-            btnDownload.IsEnabled = true;
             arcMap.ShowPosition(this, null);
             if (closing)
             {
@@ -343,19 +307,34 @@ namespace MapBoard.TileDownloaderSplicer
 
         private async void ServerButtonClick(object sender, RoutedEventArgs e)
         {
-            if ((btnServer.Content as string) == "开启服务器")
+            if (!ServerOn)
             {
-                btnServer.Content = "关闭服务器";
-
-                await Task.Run(async () =>
-                 {
-                     await NetHelper.StartServer();
-                 });
+                ServerOn = true;
+                try
+                {
+                    NetHelper.StartServer();
+                }
+                catch (SocketException sex)
+                {
+                    switch (sex.ErrorCode)
+                    {
+                        case 10048:
+                            TaskDialog.ShowError("端口不可用，清更换端口");
+                            break;
+                        default:
+                            TaskDialog.ShowException(sex, "开启服务失败");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.ShowException(ex, "开启服务失败");
+                }
             }
             else
             {
+                ServerOn = false;
                 NetHelper.StopServer();
-                btnServer.Content = "开启服务器";
             }
             // 关闭服务器
             // tcpListener.Stop();
@@ -575,7 +554,7 @@ namespace MapBoard.TileDownloaderSplicer
         {
             if (tab.SelectedIndex == 2)
             {
-                if ((btnServer.Content as string) == "开启服务器")
+                if (!ServerOn)
                 {
                     ServerButtonClick(null, null);
                 }
@@ -649,6 +628,40 @@ namespace MapBoard.TileDownloaderSplicer
         {
             loading.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        private async void DeleteEmptyFilesButtonClick(object sender, RoutedEventArgs e)
+        {
+            loading.Show();
+            try
+            {
+                string[] files = null;
+                await Task.Run(() => files = Directory.EnumerateFiles(Config.Instance.DownloadFolder, "*", SearchOption.AllDirectories)
+                .Where(p => new FileInfo(p).Length == 0).ToArray());
+                if (files.Length == 0)
+                {
+                    TaskDialog.Show("没有空文件");
+                }
+                else
+                {
+                    if (TaskDialog.ShowWithYesNoButtons($"共找到{files.Length}个空文件，是否删除？", "删除空文件", null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                    {
+                        foreach (var file in files)
+                        {
+                            File.Delete(file);
+                        }
+                        TaskDialog.Show("删除成功");
+                    }
+                };
+            }
+            catch(Exception ex)
+            {
+                TaskDialog.ShowException(ex, "删除失败");
+            }
+            finally
+            {
+                loading.Hide();
+            }
+        }
     }
     public class IsNotNullToBoolConverter : IValueConverter
     {
@@ -661,5 +674,96 @@ namespace MapBoard.TileDownloaderSplicer
         {
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
+    }
+    /// <summary>
+    /// 通过参数将enum转换为string。
+    /// 参数格式示例：Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停
+    /// </summary>
+    public class EnumToStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string[] paras = (parameter as string).Split(';');
+            foreach (var item in paras)
+            {
+                string[] parts = item.Split(':');
+                if (parts.Length < 2)
+                {
+                    throw new Exception("参数格式错误");
+                }
+                string key = parts[0];
+                string str = parts.Length == 2 ? parts[1] : item.Substring(parts[0].Length + 1);
+                if (value.ToString() == key)
+                {
+                    return str;
+                }
+            }
+            throw new Exception("找不到指定的值");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
+        }
+    }
+    /// <summary>
+    /// 通过参数将enum转换为bool。
+    /// 参数格式示例：Pausing/Stop/Start:false
+    /// </summary>
+    public class EnumToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string[] parts = (parameter as string).Split(':');
+
+            if (parts.Length != 2)
+            {
+                throw new Exception("参数格式错误");
+            }
+            string key = parts[0];
+            if (!bool.TryParse(parts[1], out bool b))
+            {
+                throw new Exception("布尔值错误");
+            }
+            if (key.Split('/').Contains(value.ToString()))
+            {
+                return b;
+            }
+            else
+            {
+                return !b;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
+        }
+    }
+    public class BoolToStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string[] parts = (parameter as string).Replace("\\:", "{colon}").Split(':'); if (parts.Length != 2) ;
+            if (parts.Length != 2)
+            {
+                throw new Exception("参数格式错误");
+            }
+
+            return (((bool)value) ? parts[0] : parts[1]).Replace("{colon}", ":");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
+        }
+    }
+
+    public enum DownloadStatus
+    {
+        Downloading,
+        Paused,
+        Stop,
+        Pausing
     }
 }

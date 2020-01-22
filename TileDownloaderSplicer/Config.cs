@@ -19,7 +19,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>("MapBoard.TileDownloaderSplicerConfig.json");
+                    instance = TryOpenOrCreate<Config>("config_tile.json");
                     if (instance.UrlCollection.Sources.Count == 0)
                     {
                         instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
@@ -84,7 +84,8 @@ namespace MapBoard.TileDownloaderSplicer
         public DownloadInfo LastDownload { get; set; }
 
         private int requestTimeOut = 1000;
-        public int ServerPort = 8080;
+        public int ServerPort { get; set; } = 8080;
+        public string ServerFormat { get; set; } = @"Download\{z}\{x}-{y}.{ext}";
         public int RequestTimeOut
         {
             get => requestTimeOut;
