@@ -1,7 +1,8 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.Control.Dialog;
-using FzLib.Control.Extension;
+using FzLib.UI.Dialog;
+using FzLib.UI.Extension;
 using FzLib.Geography.IO.Tile;
+using FzLib.UI.Extension;
 using GIS.Geometry;
 using System;
 using System.Collections.Generic;
@@ -85,16 +86,16 @@ namespace MapBoard.TileDownloaderSplicer
         public string LastDownloadingStatus { get => lastdownloadingStatus; set => SetValueAndNotify(ref lastdownloadingStatus, value, nameof(LastDownloadingStatus)); }
         private string downloadingProgressStatus = "准备就绪";
         public string DownloadingProgressStatus { get => downloadingProgressStatus; set => SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus)); }
-        private int downloadingProgressValue = 0;
-        public int DownloadingProgressValue
-        {
-            get => downloadingProgressValue;
-            set
-            {
-                SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue));
-                DownloadingProgressPercent = (double)value / CurrentDownload.TileCount;
-            }
-        }
+        //private int downloadingProgressValue = 0;
+        //public int DownloadingProgressValue
+        //{
+        //    get => downloadingProgressValue;
+        //    set
+        //    {
+        //        SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue));
+        //        DownloadingProgressPercent = (double)value / CurrentDownload.TileCount;
+        //    }
+        //}
         private double downloadingProgressPercent = 0;
         public double DownloadingProgressPercent { get => downloadingProgressPercent; set => SetValueAndNotify(ref downloadingProgressPercent, value, nameof(DownloadingProgressPercent)); }
         private DownloadStatus currentDownloadStatus = DownloadStatus.Stop;
@@ -168,7 +169,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 CurrentDownload = new DownloadInfo();
             }
-            DownloadingProgressValue = 0;
+            DownloadingProgressPercent = 0;
             Range<double> value = downloadBoundary.GetDoubleValue();
             if (value != null)
             {
@@ -225,7 +226,7 @@ namespace MapBoard.TileDownloaderSplicer
             taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
             downloading = true;
             ControlsEnable = false;
-            pgb.Maximum = CurrentDownload.TileCount;
+            //pgb.Maximum = CurrentDownload.TileCount;
             DownloadErrors.Clear();
             int ok = 0;
             int failed = 0;
@@ -266,7 +267,8 @@ namespace MapBoard.TileDownloaderSplicer
                         DownloadErrors.Add(new { Tile = LastDownloadingTile, Error = ex.Message, StackTrace = ex.StackTrace.Replace(Environment.NewLine, "    ") });
                         failed++;
                     }
-                    DownloadingProgressValue = ok + failed + skip;
+                    //DownloadingProgressValue = ok + failed + skip;
+                    DownloadingProgressPercent = 1.0 * (ok + failed + skip) / CurrentDownload.TileCount;
                     DownloadingProgressStatus = $"成功{ ok } 失败{ failed} 跳过{ skip } 共{ CurrentDownload.TileCount}";
                     //taskBar.ProgressValue = (ok + failed + skip) * 1d / CurrentDownload.TileCount;
                     //处理点击停止按钮后的逻辑
@@ -593,9 +595,15 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 return;
             }
-            MapPoint point = (sender as ArcMapView).ScreenToLocation(e.GetPosition(sender as IInputElement));
+            ArcMapView map = sender as ArcMapView;
+            if (map.Map == null || map.Map.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded)
+            {
+                return;
+            }
+            MapPoint point = map.ScreenToLocation(e.GetPosition(sender as IInputElement));
+
             point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
-            int z = (int)(Math.Log(1e9 / (sender as ArcMapView).MapScale, 2));
+            int z = (int)(Math.Log(1e9 / map.MapScale, 2));
             (int x, int y) = TileLocation.GeoPointToTile(new GeoPoint(point.X, point.Y), z);
             string l = Environment.NewLine;
             tbkTileIndex.Text = $"Z={z}{l}X={x}{l}Y={y}";
@@ -653,7 +661,7 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 TaskDialog.ShowException(ex, "删除失败");
             }

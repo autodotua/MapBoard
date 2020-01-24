@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/FzWpfControlLib;component/FlatStyle/Styles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/FzUILib.WPF;component/FlatStyle/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

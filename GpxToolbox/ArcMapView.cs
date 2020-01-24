@@ -4,7 +4,7 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
-using FzLib.Control.Dialog;
+using FzLib.UI.Dialog;
 using FzLib.Extension;
 using FzLib.Geography.IO.Gpx;
 using MapBoard.Common;

@@ -85,9 +85,8 @@
     <Reference Include="Esri.ArcGISRuntime, Version=100.6.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.6.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
     </Reference>
-    <Reference Include="FzDesktopLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\模块\Release\AnyCPU\FzDesktopLib.dll</HintPath>
+    <Reference Include="FzDesktopLib.Windows">
+      <HintPath>..\libs\FzDesktopLib.Windows.dll</HintPath>
     </Reference>
     <Reference Include="FzGeographyLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -97,9 +96,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
     </Reference>
-    <Reference Include="FzWpfControlLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\模块\Release\AnyCPU\FzWpfControlLib.dll</HintPath>
+    <Reference Include="FzUILib.WPF">
+      <HintPath>..\libs\FzUILib.WPF.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>

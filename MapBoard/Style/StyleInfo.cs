@@ -1,11 +1,13 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -17,7 +19,7 @@ using static MapBoard.Main.Helper.StyleHelper;
 
 namespace MapBoard.Main.Style
 {
-    public class StyleInfo : FzLib.Extension.ExtendedINotifyPropertyChanged, ICloneable
+    public class StyleInfo : INotifyPropertyChanged, ICloneable
     {
 
 
@@ -42,7 +44,7 @@ namespace MapBoard.Main.Style
                 //    throw new Exception("必须先加入Layer才能设置Table");
                 //}
                 //value.FeatureLayer.IsVisible = LayerVisible;
-                SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
+                this.SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
             }
         }
         [JsonIgnore]
@@ -69,7 +71,7 @@ namespace MapBoard.Main.Style
                 {
                     Layer.IsVisible = value;
                 }
-                Notify(nameof(LayerVisible));
+                this.Notify(nameof(LayerVisible));
             }
         }
 
@@ -87,15 +89,18 @@ namespace MapBoard.Main.Style
                 {
                     Layer.LabelsEnabled = value;
                 }
-                Notify(nameof(LabelVisible));
+                this.Notify(nameof(LabelVisible));
             }
         }
 
         private TimeExtentInfo timeExtent;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public TimeExtentInfo TimeExtent
         {
             get => timeExtent;
-            set => SetValueAndNotify(ref timeExtent, value, nameof(TimeExtentEnable));
+            set => this.SetValueAndNotify(ref timeExtent, value, nameof(TimeExtentEnable));
         }
 
         [JsonIgnore]
@@ -113,7 +118,7 @@ namespace MapBoard.Main.Style
                     }
                 }
 
-                Notify(nameof(TimeExtentEnable));
+                this.Notify(nameof(TimeExtentEnable));
             }
         }
 
@@ -128,7 +133,7 @@ namespace MapBoard.Main.Style
             //    SpatialRelationship = SpatialRelationship.Contains
             //};
             //FeatureCount = (int)await Table.QueryFeatureCountAsync(p);
-            Notify(nameof(FeatureCount));
+            this.Notify(nameof(FeatureCount));
         }
 
         public async Task<FeatureQueryResult> GetAllFeatures()
@@ -196,7 +201,7 @@ namespace MapBoard.Main.Style
         {
             foreach (var s in style.Symbols)
             {
-                Symbols.Add(s.Key,new SymbolInfo()
+                Symbols.Add(s.Key, new SymbolInfo()
                 {
                     FillColor = s.Value.FillColor,
                     LineColor = s.Value.LineColor,
@@ -207,7 +212,7 @@ namespace MapBoard.Main.Style
             //Renderer.LineColor = style.Renderer.LineColor;
             //Renderer.FillColor = style.Renderer.FillColor;
             LabelJson = style.LabelJson;
-            Notify(
+            this.Notify(
                 //nameof(Renderer.LineColor),
                 //nameof(Renderer),
                 //nameof(Renderer.LineWidth),

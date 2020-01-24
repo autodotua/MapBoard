@@ -5,10 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MapBoard.TileDownloaderSplicer"
-        xmlns:flatstyle="clr-namespace:FzLib.Control.FlatStyle;assembly=FzWpfControlLib"
-        xmlns:win10style="clr-namespace:FzLib.Control.Win10Style;assembly=FzWpfControlLib"
-        xmlns:progress="clr-namespace:FzLib.Control.Progress;assembly=FzWpfControlLib"
-        xmlns:controlextended="clr-namespace:FzLib.Control.Extension;assembly=FzWpfControlLib"
+        xmlns:flatstyle="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
+        xmlns:win10style="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
+        xmlns:progress="clr-namespace:FzLib.UI.Progress;assembly=FzUILib.WPF"
+        xmlns:controlextended="clr-namespace:FzLib.UI.Extension;assembly=FzUILib.WPF"
         mc:Ignorable="d"
         Closing="WindowClosing"
         Loaded="Window_Loaded"
@@ -269,7 +269,7 @@
                             </flatstyle:ListView.View>
                         </flatstyle:ListView>
                     </win10style:ModernExpander>
-                    <ProgressBar x:Name="pgb" BorderThickness="0" Height="24" Grid.Row="6" Minimum="0"/>
+                    <ProgressBar Value="{Binding DownloadingProgressPercent}" BorderThickness="0" Height="24" Grid.Row="6" Minimum="0" Maximum="1"/>
 
                     <TextBlock Grid.Row="6" FontSize="12"  HorizontalAlignment="Center" Text="{Binding DownloadingProgressStatus}" VerticalAlignment="Center"/>
                 </Grid>

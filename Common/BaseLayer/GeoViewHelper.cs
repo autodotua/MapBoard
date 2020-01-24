@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Control.Dialog;
+using FzLib.UI.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;

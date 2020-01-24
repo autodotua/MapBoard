@@ -1,4 +1,4 @@
-﻿using FzLib.Control.Dialog;
+﻿using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Style;
 using System;

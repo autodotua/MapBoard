@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class TileSourceCollection : FzLib.Extension.ExtendedINotifyPropertyChanged
+    public class TileSourceCollection :INotifyPropertyChanged
     {
         public TileSourceCollection()
         {
@@ -21,7 +23,7 @@ namespace MapBoard.TileDownloaderSplicer
                       {
                           if (p3 == SelectedUrl)
                           {
-                              Notify(nameof(SelectedUrl));
+                              this.Notify(nameof(SelectedUrl));
                           }
                       };
                   }
@@ -29,12 +31,15 @@ namespace MapBoard.TileDownloaderSplicer
         }
         public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
         private int selectedIndex;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public int SelectedIndex
         {
             get => selectedIndex;
             set
             {
-                SetValueAndNotify(ref selectedIndex, value, nameof(SelectedUrl));
+                this.SetValueAndNotify(ref selectedIndex, value, nameof(SelectedUrl));
             }
         }
 

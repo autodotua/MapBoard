@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using FzLib.Control.Dialog;
-using FzLib.Control.Extension;
+using FzLib.Extension;
+using FzLib.UI.Dialog;
+using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
@@ -10,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -41,18 +43,18 @@ namespace MapBoard.Main.UI.Dialog
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
             new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
-           
+
         }
 
         private void ResetIndex()
         {
             for (int i = 0; i < BaseLayers.Count; i++)
             {
-                BaseLayers[i].Index = i+1 ;
+                BaseLayers[i].Index = i + 1;
             }
             //grd.Columns[0].SortMemberPath = "Index";
             //grd.Columns[0].SortDirection = System.ComponentModel.ListSortDirection.Ascending;
-            
+
         }
 
 
@@ -67,7 +69,7 @@ namespace MapBoard.Main.UI.Dialog
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
         public string[] BaseLayerTypes { get; } = { WebTiledLayerDescription, RasterLayerDescription, ShapefileLayerDescription, TpkLayerDescription };
 
-        
+
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers.Clear();
@@ -103,7 +105,7 @@ namespace MapBoard.Main.UI.Dialog
                     ("Shapefile矢量图","shp") ,
                     ("TilePackage切片包","tpk") ,
                 }, true);
-            if(path==null)
+            if (path == null)
             {
                 return;
             }
@@ -111,19 +113,19 @@ namespace MapBoard.Main.UI.Dialog
             switch (System.IO.Path.GetExtension(path))
             {
                 case ".shp":
-                     layerInfo = new BaseLayerInfo(ShapefileLayer, path);
+                    layerInfo = new BaseLayerInfo(ShapefileLayer, path);
                     break;
                 case ".tpk":
-                     layerInfo = new BaseLayerInfo(TpkLayer, path);
+                    layerInfo = new BaseLayerInfo(TpkLayer, path);
                     break;
                 default:
-                     layerInfo = new BaseLayerInfo(RasterLayer, path);
+                    layerInfo = new BaseLayerInfo(RasterLayer, path);
                     break;
             }
             BaseLayers.Add(layerInfo);
             grd.SelectedItem = layerInfo;
         }
-        public class BaseLayerInfo : FzLib.Extension.ExtendedINotifyPropertyChanged
+        public class BaseLayerInfo : INotifyPropertyChanged
         {
             private int index;
 
@@ -178,13 +180,15 @@ namespace MapBoard.Main.UI.Dialog
             public int Index
             {
                 get => index;
-                set => SetValueAndNotify(ref index, value, nameof(Index));
+                set => this.SetValueAndNotify(ref index, value, nameof(Index));
             }
+
+            public event PropertyChangedEventHandler PropertyChanged;
         }
 
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
-            if(grd.SelectedItem!=null)
+            if (grd.SelectedItem != null)
             {
                 BaseLayers.Remove(grd.SelectedItem as BaseLayerInfo);
             }

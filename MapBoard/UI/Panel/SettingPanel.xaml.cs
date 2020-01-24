@@ -1,4 +1,4 @@
-﻿using FzLib.Control.Extension;
+﻿using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Main.UI.Map;
 using System;

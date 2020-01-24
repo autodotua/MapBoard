@@ -4,7 +4,7 @@ using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Control.Dialog;
+using FzLib.UI.Dialog;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -108,12 +108,13 @@ namespace MapBoard.TileDownloaderSplicer
 
                 isSelecting = true;
                 await SketchEditor.StartAsync(SketchCreationMode.Rectangle, GetSketchEditConfiguration());
-                isSelecting = false;
+              
             }
             else
             {
                 SketchEditor.Stop();
-                SnakeBar.Show("终止框选");
+                SnakeBar.Show("终止框选"); 
+                isSelecting = false;
             }
 
         }

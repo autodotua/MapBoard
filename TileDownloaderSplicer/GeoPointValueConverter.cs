@@ -1,4 +1,4 @@
-﻿using FzLib.Control.Win10Style;
+﻿using FzLib.UI.Win10Style;
 using GIS.Geometry;
 using NetTopologySuite.Geometries;
 using System;

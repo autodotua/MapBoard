@@ -1,5 +1,5 @@
-﻿using FzLib.Control.Dialog;
-using FzLib.Control.Extension;
+﻿using FzLib.UI.Dialog;
+using FzLib.UI.Extension;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Style;
 using System;

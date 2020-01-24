@@ -1,17 +1,19 @@
-﻿using FzLib.Geography.IO.Tile;
+﻿using FzLib.Extension;
+using FzLib.Geography.IO.Tile;
 using GIS.Geometry;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using GeoPoint = NetTopologySuite.Geometries.Point;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class DownloadInfo : FzLib.Extension.ExtendedINotifyPropertyChanged
+    public class DownloadInfo : INotifyPropertyChanged
     {
         public Range<double> MapRange { get; private set; } = new Range<double>();
         //先Max后Min这样序列化的时候才不会出错
@@ -25,7 +27,7 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     tileMaxLevel = value;
                 }
-                Notify(nameof(TileMaxLevel));
+                this.Notify(nameof(TileMaxLevel));
             }
         }
         private int tileMinLevel = 2;
@@ -34,17 +36,18 @@ namespace MapBoard.TileDownloaderSplicer
             get => tileMinLevel;
             set
             {
-                if(value<=TileMaxLevel)
+                if (value <= TileMaxLevel)
                 {
                     tileMinLevel = value;
                 }
-                Notify(nameof(TileMinLevel));
+                this.Notify(nameof(TileMinLevel));
             }
-        } 
-   
+        }
+
 
         public Dictionary<int, Range<int>> tiles = new Dictionary<int, Range<int>>();
-  
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         [JsonIgnore]
         public IReadOnlyDictionary<int, Range<int>> Tiles { get; private set; }

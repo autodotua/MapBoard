@@ -2,8 +2,8 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
-using FzLib.Control.Dialog;
-using FzLib.Control.Extension;
+using FzLib.UI.Dialog;
+using FzLib.UI.Extension;
 using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;

@@ -1,6 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Control.Dialog;
+using FzLib.UI.Dialog;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Style;
 using MapBoard.Main.UI;

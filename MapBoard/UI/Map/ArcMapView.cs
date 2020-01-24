@@ -7,7 +7,7 @@ using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
-using FzLib.Control.Dialog;
+using FzLib.UI.Dialog;
 using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
