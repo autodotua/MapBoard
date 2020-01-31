@@ -4,7 +4,7 @@ using FzLib.UI.Dialog;
 using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace MapBoard.Main.IO
         /// <param name="path"></param>
         public static void ImportMap(string path)
         {
-            StyleCollection.Instance.Styles.Clear();
+            LayerCollection.Instance.Layers.Clear();
             if (Directory.Exists(Config.DataPath))
             {
                 Directory.Delete(Config.DataPath, true);
@@ -33,7 +33,7 @@ namespace MapBoard.Main.IO
             ZipFile.ExtractToDirectory(path, Config.DataPath);
 
             //Information.Restart();
-            StyleCollection.ResetStyles();
+            LayerCollection.ResetLayers();
         }
         /// <summary>
         /// 导入图层包
@@ -50,7 +50,7 @@ namespace MapBoard.Main.IO
 
             ZipFile.ExtractToDirectory(path, tempDirectoryPath);
 
-            StyleInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<StyleInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
+            LayerInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
             var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
 
             //    Directory.EnumerateFiles(tempDirectoryPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name).ToArray();
@@ -71,7 +71,7 @@ namespace MapBoard.Main.IO
                 copyedFiles.Add(target);
             }
 
-            StyleCollection.Instance.Styles.Add(style);
+            LayerCollection.Instance.Layers.Add(style);
         }
         /// <summary>
         /// 导出底涂包，实则是zip文件
@@ -83,15 +83,15 @@ namespace MapBoard.Main.IO
             {
                 File.Delete(path);
             }
-            StyleCollection.Instance.Save();
-            var styles = StyleCollection.Instance.Styles.ToArray();
-            StyleCollection.Instance.SaveWhenChanged = false;
-            StyleCollection.Instance.Styles.Clear();
-            styles.ForEach(p => p.Table = null);
+            LayerCollection.Instance.Save();
+            var Layers = LayerCollection.Instance.Layers.ToArray();
+            LayerCollection.Instance.SaveWhenChanged = false;
+            LayerCollection.Instance.Layers.Clear();
+            Layers.ForEach(p => p.Table = null);
 
             ZipFile.CreateFromDirectory(Config.DataPath, path);
-            styles.ForEach(p => StyleCollection.Instance.Styles.Add(p));
-            StyleCollection.Instance.SaveWhenChanged = true;
+            Layers.ForEach(p => LayerCollection.Instance.Layers.Add(p));
+            LayerCollection.Instance.SaveWhenChanged = true;
         }
         public async static Task ExportMap2(string path)
         {
@@ -101,17 +101,17 @@ namespace MapBoard.Main.IO
                 directory.Delete(true);
             }
             directory.Create();
-            foreach (var style in StyleCollection.Instance.Styles)
+            foreach (var style in LayerCollection.Instance.Layers)
             {
                 ShapefileExport.ExportEmptyShapefile(style.Type, style.Name, directory.FullName);
-                StyleInfo newStyle = new StyleInfo();
+                LayerInfo newStyle = new LayerInfo();
 
                 ShapefileFeatureTable table = new ShapefileFeatureTable(Path.Combine(directory.FullName, style.Name + ".shp"));
                 await table.AddFeaturesAsync(await style.GetAllFeatures());
                 table.Close();
             }
             await Task.Delay(500);
-            StyleCollection.Instance.Save(Path.Combine(directory.FullName,StyleCollection.StyleFileName));
+            LayerCollection.Instance.Save(Path.Combine(directory.FullName,LayerCollection.LayersFileName));
             ZipFile.CreateFromDirectory(directory.FullName, path);
         }
 
@@ -122,15 +122,15 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="style"></param>
-        public static void ExportLayer(string path, StyleInfo style)
+        public static void ExportLayer(string path, LayerInfo style)
         {
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
-            int index = StyleCollection.Instance.Styles.IndexOf(style);
-            StyleCollection.Instance.SaveWhenChanged = false;
-            StyleCollection.Instance.Styles.Remove(style);
+            int index = LayerCollection.Instance.Layers.IndexOf(style);
+            LayerCollection.Instance.SaveWhenChanged = false;
+            LayerCollection.Instance.Layers.Remove(style);
             style.Table = null;
 
             string tempDirectoryPath = Path.Combine(Config.DataPath, "temp");
@@ -147,8 +147,8 @@ namespace MapBoard.Main.IO
             File.WriteAllText(Path.Combine(tempDirectoryPath, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(style));
 
             ZipFile.CreateFromDirectory(tempDirectoryPath, path);
-            StyleCollection.Instance.Styles.Insert(index, style);
-            StyleCollection.Instance.SaveWhenChanged = true;
+            LayerCollection.Instance.Layers.Insert(index, style);
+            LayerCollection.Instance.SaveWhenChanged = true;
             Directory.Delete(tempDirectoryPath, true);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
@@ -14,76 +15,76 @@ using System.Text;
 using System.Threading.Tasks;
 using static FzLib.Basic.Loop;
 
-namespace MapBoard.Main.Style
+namespace MapBoard.Main.Layer
 {
-    public class StyleCollection : FzLib.DataStorage.Serialization.JsonSerializationBase
+    public class LayerCollection : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
-        //private static StyleCollection instance = new StyleCollection();
-        //public static StyleCollection Instance
+        //private static LayerCollection instance = new LayerCollection();
+        //public static LayerCollection Instance
         //{
         //    get
         //    {
-        //        if (instance.Styles == null)
+        //        if (instance.Layers == null)
         //        {
         //            try
         //            {
-        //                instance.Styles = JsonConvert.DeserializeObject<ObservableCollection<StyleInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
-        //                if (instance.Styles.Count > 0)
+        //                instance.Layers = JsonConvert.DeserializeObject<ObservableCollection<LayerInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "Layers.json")));
+        //                if (instance.Layers.Count > 0)
         //                {
-        //                    instance.Selected = instance.Styles[0];
+        //                    instance.Selected = instance.Layers[0];
         //                }
-        //                else if (instance.Styles == null)
+        //                else if (instance.Layers == null)
         //                {
-        //                    instance.Styles = new ObservableCollection<StyleInfo>();
+        //                    instance.Layers = new ObservableCollection<LayerInfo>();
         //                }
         //            }
         //            catch(Exception ex)
         //            {
-        //                instance.Styles = new ObservableCollection<StyleInfo>();
+        //                instance.Layers = new ObservableCollection<LayerInfo>();
         //            }
         //        }
         //        return instance;
         //    }
         //}
-        public static readonly string StyleFileName= "styles.json";
-        private static StyleCollection instance;
-        public static StyleCollection Instance
+        public static readonly string LayersFileName = "layers.json";
+        private static LayerCollection instance;
+        public static LayerCollection Instance
         {
             get
             {
                 if (instance == null)
                 {
 
-                    instance = TryOpenOrCreate<StyleCollection>(System.IO.Path.Combine(Config.DataPath, StyleFileName));
+                    instance = TryOpenOrCreate<LayerCollection>(System.IO.Path.Combine(Config.DataPath, LayersFileName));
                     instance.Settings.Formatting = Formatting.Indented;
-                    if (instance.Styles.Count > 0)
+                    if (instance.Layers.Count > 0)
                     {
-                        var styles = instance.Styles.ToArray();
-                        instance.styles.Clear();
-                        instance.styles.CollectionChanged += instance.StylesCollectionChanged;
-                        styles.ForEach(p => instance.Styles.Add(p));
+                        var Layers = instance.Layers.ToArray();
+                        instance.layers.Clear();
+                        instance.layers.CollectionChanged += instance.LayersCollectionChanged;
+                        Layers.ForEach(p => instance.Layers.Add(p));
                     }
                     else
                     {
-                        instance.styles.CollectionChanged += instance.StylesCollectionChanged;
+                        instance.layers.CollectionChanged += instance.LayersCollectionChanged;
                     }
 
-                    if (instance.SelectedIndex >= 0 && instance.SelectedIndex < instance.Styles.Count)
+                    if (instance.SelectedIndex >= 0 && instance.SelectedIndex < instance.Layers.Count)
                     {
-                        instance.Selected = instance.Styles[instance.SelectedIndex];
+                        instance.Selected = instance.Layers[instance.SelectedIndex];
                     }
                     instance.SaveWhenChanged = true;
                     //try
                     //{
-                    //    instance = JsonConvert.DeserializeObject<StyleCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "styles.json")));
-                    //    if (instance.Styles == null)
+                    //    instance = JsonConvert.DeserializeObject<LayerCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "Layers.json")));
+                    //    if (instance.Layers == null)
                     //    {
-                    //        instance.Styles = new ObservableCollection<StyleInfo>();
+                    //        instance.Layers = new ObservableCollection<LayerInfo>();
                     //    }
                     //}
                     //catch (Exception ex)
                     //{
-                    //    instance.Styles = new ObservableCollection<StyleInfo>();
+                    //    instance.Layers = new ObservableCollection<LayerInfo>();
                     //}
                 }
                 return instance;
@@ -92,15 +93,15 @@ namespace MapBoard.Main.Style
         public bool SaveWhenChanged { get; set; } = false;
         //public void Save()
         //{
-        //    File.WriteAllText(Path.Combine(Config.DataPath, "styles.json"), JsonConvert.SerializeObject(Styles));
+        //    File.WriteAllText(Path.Combine(Config.DataPath, "Layers.json"), JsonConvert.SerializeObject(Layers));
         //}
-        private ObservableCollection<StyleInfo> styles = new ObservableCollection<StyleInfo>();
-        public ObservableCollection<StyleInfo> Styles
+        private ObservableCollection<LayerInfo> layers = new ObservableCollection<LayerInfo>();
+        public ObservableCollection<LayerInfo> Layers
         {
-            get => styles;
+            get => layers;
             set
             {
-                styles = value;
+                layers = value;
                 if (value != null)
                 {
 
@@ -112,21 +113,26 @@ namespace MapBoard.Main.Style
             }
         }
 
-        private StyleInfo selected;
+        private LayerInfo selected;
         private (double X1, double X2, double Y1, double Y2)? lastViewpointGeometry;
 
-        private async void StylesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private async void LayersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach (var item in e.NewItems)
                     {
-                        if (!await ArcMapView.Instance.Layer.AddLayerAsync(item as StyleInfo))
+                        var layer = item as LayerInfo;
+                        if (await ArcMapView.Instance.Layer.AddLayerAsync(layer))
                         {
-                            Styles.CollectionChanged -= instance.StylesCollectionChanged;
-                            Styles.Remove(item as StyleInfo);
-                            Styles.CollectionChanged += instance.StylesCollectionChanged;
+                            layer.PropertyChanged += LayerPropertyChanged;
+                        }
+                        else
+                        {
+                            Layers.CollectionChanged -= instance.LayersCollectionChanged;
+                            Layers.Remove(item as LayerInfo);
+                            Layers.CollectionChanged += instance.LayersCollectionChanged;
                         }
                     }
                     break;
@@ -134,24 +140,28 @@ namespace MapBoard.Main.Style
                     ArcMapView.Instance.Map.OperationalLayers.Move(e.OldStartingIndex, e.NewStartingIndex);
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    e.OldItems.ForEach(p => ArcMapView.Instance.Layer.RemoveLayer(p as StyleInfo));
+                    foreach (LayerInfo layer in e.OldItems)
+                    {
+                        ArcMapView.Instance.Layer.RemoveLayer(layer);
+                        layer.PropertyChanged -= LayerPropertyChanged;
+                    }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
             }
-            if(SaveWhenChanged)
+            if (SaveWhenChanged)
             {
                 Save();
             }
         }
 
-        public event EventHandler SelectedStyleVisibilityChanged;
+        public event EventHandler StyleVisibilityChanged;
         public override void Save()
         {
-            SelectedIndex = Styles.IndexOf(Selected);
+            SelectedIndex = Layers.IndexOf(Selected);
             Envelope envelope = ArcMapView.Instance.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
-            if(envelope!=null)
+            if (envelope != null)
             {
                 lastViewpointGeometry = (envelope.XMin, envelope.XMax, envelope.YMax, envelope.YMin);
             }
@@ -162,23 +172,23 @@ namespace MapBoard.Main.Style
         }
         public int SelectedIndex { get; set; }
         [JsonIgnore]
-        public StyleInfo Selected
+        public LayerInfo Selected
         {
             get => selected;
             set
             {
-                if (selected != null)
-                {
-                    selected.PropertyChanged += SelectedLayerPropertyChanged;
-                }
-                if (value != null)
-                {
-                    value.PropertyChanged += SelectedLayerPropertyChanged;
-                }
+                //if (selected != null)
+                //{
+                //    selected.PropertyChanged += SelectedLayerPropertyChanged;
+                //}
+                //if (value != null)
+                //{
+                //    value.PropertyChanged += SelectedLayerPropertyChanged;
+                //}
                 selected = value;
                 //if (value != null)
                 //{
-                //    selected.CopyStyleFrom(Config.Instance.ShapefileStyles.First(p => p.Name == value.Name));
+                //    selected.CopyStyleFrom(Config.Instance.ShapefileLayers.First(p => p.Name == value.Name));
                 //    //if(value.FeatureCount>0)
                 //    //{
                 //    //    method();
@@ -191,31 +201,35 @@ namespace MapBoard.Main.Style
                 //    //}
                 //}
                 //SelectionChanged?.Invoke(this, new EventArgs());
-                Notify(nameof(Selected));
+
+                this.Notify();
                 //Notify(nameof(Selected));
             }
         }
 
-        private void SelectedLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "LayerVisible")
+            if (e.PropertyName == nameof(LayerInfo.LayerVisible))
             {
-                SelectedStyleVisibilityChanged?.Invoke(this, new EventArgs());
+                StyleVisibilityChanged?.Invoke(this, new EventArgs());
             }
+            Save();
         }
 
-        public static void ResetStyles()
+        public static void ResetLayers()
         {
             instance.SaveWhenChanged = false;
-            instance.Styles.Clear();
+            instance.Layers.Clear();
             instance = null;
             _ = Instance;
-            StyleInstanceChanged?.Invoke(Instance, new EventArgs());
+            LayerInstanceChanged?.Invoke(Instance, new EventArgs());
         }
 
-        public static event EventHandler StyleInstanceChanged;
+        public static event EventHandler LayerInstanceChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public (double X1,double X2,double Y1,double Y2)? LastViewpointGeometry {
+        public (double X1, double X2, double Y1, double Y2)? LastViewpointGeometry
+        {
             get => lastViewpointGeometry;
             set
             {

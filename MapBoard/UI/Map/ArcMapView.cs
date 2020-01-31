@@ -12,7 +12,7 @@ using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
@@ -111,7 +111,7 @@ namespace MapBoard.Main.UI.Map
 
             //if (IsMouseOverFeature(point, feature))
             //{
-            //if (StyleCollection.Instance.Selected != null && Selection.SelectedFeatures.Count > 0)
+            //if (LayerCollection.Instance.Selected != null && Selection.SelectedFeatures.Count > 0)
             //{
             //    ContextMenu menu = new ContextMenu();
 
@@ -137,20 +137,20 @@ namespace MapBoard.Main.UI.Map
             //        menu.Items.Add(menuEdit);
 
 
-            //        if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon || StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)
+            //        if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon || LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)
             //        {
             //            MenuItem menuCut = new MenuItem() { Header = "切割" };
             //            menuCut.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Cut);
             //            menu.Items.Add(menuCut);
             //        }
             //    }
-            //    if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
+            //    if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
             //    {
             //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
             //        MenuItem menuLength = new MenuItem() { Header = "长度：" + Number.MeterToFitString(length) };
             //        menu.Items.Add(menuLength);
             //    }
-            //    else if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//面
+            //    else if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//面
             //    {
             //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
             //        double area = Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));

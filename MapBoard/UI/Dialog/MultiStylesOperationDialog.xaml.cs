@@ -1,6 +1,6 @@
 ﻿using MapBoard.Common;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,11 +23,11 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// CoordinateTransformationDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class MultiStylesOperationDialog : DialogWindowBase
+    public partial class MultiLayersOperationDialog : DialogWindowBase
     {
-        public MultiStylesOperationDialog()
+        public MultiLayersOperationDialog()
         {
-            Styles = new ObservableCollection<StyleSelection>(StyleCollection.Instance.Styles.Select(p => new StyleSelection() { Select = false, Style = p }));
+            Layers = new ObservableCollection<Layerselection>(LayerCollection.Instance.Layers.Select(p => new Layerselection() { Select = false, Style = p }));
 
             InitializeComponent();
         }
@@ -42,11 +42,11 @@ namespace MapBoard.Main.UI.Dialog
             Close();
         }
 
-        public ObservableCollection<StyleSelection> Styles { get; }
-        public class StyleSelection
+        public ObservableCollection<Layerselection> Layers { get; }
+        public class Layerselection
         {
             public bool Select { get; set; }
-            public StyleInfo Style { get; set; }
+            public LayerInfo Style { get; set; }
         }
     }
 }

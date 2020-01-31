@@ -9,7 +9,7 @@ using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Helper;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static FzLib.Basic.Loop;
-using static MapBoard.Main.UI.Dialog.MultiStylesOperationDialog;
+using static MapBoard.Main.UI.Dialog.MultiLayersOperationDialog;
 
 namespace MapBoard.Main.UI
 {
@@ -47,7 +47,7 @@ namespace MapBoard.Main.UI
     {
         #region 字段和属性
         public Config Config => Config.Instance;
-        public StyleCollection Styles => StyleCollection.Instance;
+        public LayerCollection Layers => LayerCollection.Instance;
         /// <summary>
         /// 控制在执行耗时工作时控件的可用性
         /// </summary>
@@ -80,9 +80,9 @@ namespace MapBoard.Main.UI
             //SnakeBar.DefaultWindow = this;
             RegistEvents();
 
-            StyleCollection.StyleInstanceChanged += (p1, p2) =>
+            LayerCollection.LayerInstanceChanged += (p1, p2) =>
               {
-                  Notify(nameof(Styles));
+                  Notify(nameof(Layers));
               };
         }
         protected async override void OnDrop(DragEventArgs e)
@@ -105,17 +105,16 @@ namespace MapBoard.Main.UI
         {
             arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            StyleCollection.Instance.SelectedStyleVisibilityChanged += (s, e) => JudgeControlsEnable();
+            LayerCollection.Instance.StyleVisibilityChanged += (s, e) => JudgeControlsEnable();
 
-
-            var lvwHelper = new ListViewHelper<StyleInfo>(lvw);
+            var lvwHelper = new ListViewHelper<LayerInfo>(lvw);
             lvwHelper.EnableDragAndDropItem();
 
-            StyleCollection.Instance.PropertyChanged += (p1, p2) =>
+            LayerCollection.Instance.PropertyChanged += (p1, p2) =>
               {
-                  if (p2.PropertyName == nameof(StyleCollection.Instance.Selected) && !changingStyle)
+                  if (p2.PropertyName == nameof(LayerCollection.Instance.Selected) && !changingStyle)
                   {
-                      lvw.SelectedItem = StyleCollection.Instance.Selected;
+                      lvw.SelectedItem = LayerCollection.Instance.Selected;
                   }
               };
             //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
@@ -128,7 +127,7 @@ namespace MapBoard.Main.UI
             }
 
             Config.Save();
-            StyleCollection.Instance.Save();
+            LayerCollection.Instance.Save();
 
         }
 
@@ -156,7 +155,7 @@ namespace MapBoard.Main.UI
 
 
             }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = styleSetting.IsEnabled = StyleCollection.Instance.Selected != null;
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = LayerCollection.Instance.Selected != null;
 
 
 
@@ -166,14 +165,14 @@ namespace MapBoard.Main.UI
             //}
             if (IsLoaded)
             {
-                btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
-                grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
+                btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
+                grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
 
                 var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton && !"always".Equals(p.Tag));//.Cast<ToggleButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
-                if (StyleCollection.Instance.Selected != null)
+                if (LayerCollection.Instance.Selected != null)
                 {
-                    switch (StyleCollection.Instance.Selected.Type)
+                    switch (LayerCollection.Instance.Selected.Type)
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
@@ -225,7 +224,7 @@ namespace MapBoard.Main.UI
 
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
         {
-            //if (StyleCollection.Instance.Selected == null)
+            //if (LayerCollection.Instance.Selected == null)
             //{
             //    SnakeBar.ShowError("没有选择任何样式");
             //    btnSelect.IsChecked = false;
@@ -251,7 +250,7 @@ namespace MapBoard.Main.UI
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
             loading.Show();
-            await IOHelper.ImportStyle();
+            await IOHelper.ImportLayer();
             loading.Hide();
         }
 
@@ -262,14 +261,14 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOHelper.ExportStyle();
+            await IOHelper.ExportLayer();
         }
 
         private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {
-                DeleteStyle();
+                DeleteLayer();
             }
         }
 
@@ -289,17 +288,17 @@ namespace MapBoard.Main.UI
         {
             TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
             {
-                ("线",null,()=>StyleHelper.CreateStyle(GeometryType.Polyline)),
-                ("面",null,()=>StyleHelper.CreateStyle(GeometryType.Polygon)),
-                ("点",null,()=>StyleHelper.CreateStyle(GeometryType.Point)),
-                ("多点",null,()=>StyleHelper.CreateStyle(GeometryType.Multipoint)),
+                ("线",null,()=>LayerHelper.CreateLayer(GeometryType.Polyline)),
+                ("面",null,()=>LayerHelper.CreateLayer(GeometryType.Polygon)),
+                ("点",null,()=>LayerHelper.CreateLayer(GeometryType.Point)),
+                ("多点",null,()=>LayerHelper.CreateLayer(GeometryType.Multipoint)),
             }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
         }
 
         private void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            styleSetting.SetStyleFromUI();
-            StyleCollection.Instance.Save();
+            Layersetting.SetStyleFromUI();
+            LayerCollection.Instance.Save();
         }
 
         bool changingStyle = false;
@@ -308,42 +307,42 @@ namespace MapBoard.Main.UI
             changingStyle = true;
             if (lvw.SelectedItems.Count == 1)
             {
-                Styles.Selected = lvw.SelectedItem as StyleInfo;
+                Layers.Selected = lvw.SelectedItem as LayerInfo;
             }
             else
             {
-                Styles.Selected = null;
+                Layers.Selected = null;
             }
             changingStyle = false;
             JudgeControlsEnable();
-            styleSetting.ResetStyleSettingUI();
+            Layersetting.ResetLayersettingUI();
         }
 
-        private void DeleteStyle()
+        private void DeleteLayer()
         {
             if (lvw.SelectedItems.Count==0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            foreach (StyleInfo style in lvw.SelectedItems.Cast<StyleInfo>().ToArray())
+            foreach (LayerInfo layer in lvw.SelectedItems.Cast<LayerInfo>().ToArray())
             {
-                StyleHelper.RemoveStyle(style, true);
+                LayerHelper.RemoveLayer(layer, true);
             }
-            //var style = StyleCollection.Instance.Selected;
+            //var style = LayerCollection.Instance.Selected;
            
         }
 
         private  void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            //btnSelect.IsEnabled = StyleCollection.Instance.Selected != null;
-            //grdButtons.IsEnabled = StyleCollection.Instance.Selected == null || StyleCollection.Instance.Selected.LayerVisible;
+            //btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
+            //grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
             JudgeControlsEnable();
 
-            if (StyleCollection.Instance.Selected != null && StyleCollection.Instance.Selected.FeatureCount > 0)
+            if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)
             {
-                styleSetting.ResetStyleSettingUI();
-                //await arcMap.SetViewpointGeometryAsync(await StyleCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
+                Layersetting.ResetLayersettingUI();
+                //await arcMap.SetViewpointGeometryAsync(await LayerCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
 
             }
 
@@ -355,19 +354,19 @@ namespace MapBoard.Main.UI
         {
             ContextMenu menu = new ContextMenu();
             List<(string header, Action action, bool visiable)> menus = null;
-            StyleInfo style = StyleCollection.Instance.Selected;
-            StyleInfo[] styles = lvw.SelectedItems.Cast<StyleInfo>().ToArray();
+            LayerInfo layer = LayerCollection.Instance.Selected;
+            LayerInfo[] Layers = lvw.SelectedItems.Cast<LayerInfo>().ToArray();
             if (lvw.SelectedItems.Count == 1)
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
-                    ("复制",StyleHelper. CopyFeatures,true),
-                    ("建立缓冲区",StyleHelper.Buffer,style.Type==GeometryType.Polyline || style.Type==GeometryType.Point|| style.Type==GeometryType.Multipoint),
-                    ("删除",DeleteStyle,true),
-                    ("新建副本",StyleHelper. CreateCopy,true),
-                    ("缩放到图层", ZoomToLayer,StyleCollection.Instance.Selected.FeatureCount > 0),
+                    ("复制",LayerHelper. CopyFeatures,true),
+                    ("建立缓冲区",LayerHelper.Buffer,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
+                    ("删除",DeleteLayer,true),
+                    ("新建副本",LayerHelper. CreateCopy,true),
+                    ("缩放到图层", ZoomToLayer,LayerCollection.Instance.Selected.FeatureCount > 0),
                     ("坐标转换",CoordinateTransformate,true),
-                    ("设置时间范围",SetTimeExtent,style.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
+                    ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
                     ("导入",async()=>await IOHelper.ImportFeature(),true),
                     ("导出",  ExportSingle,true),
 
@@ -377,8 +376,8 @@ namespace MapBoard.Main.UI
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
-                    ("合并",async()=>await StyleHelper. Union(styles),styles.Select(p=>p.Type).Distinct().Count()==1),
-                    ("删除",DeleteStyle,true),
+                    ("合并",async()=>await LayerHelper. Union(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
+                    ("删除",DeleteLayer,true),
                 };
             }
 
@@ -405,7 +404,7 @@ namespace MapBoard.Main.UI
                 {
                     try
                     {
-                        Package.ExportLayer(path, StyleCollection.Instance.Selected);
+                        Package.ExportLayer(path, LayerCollection.Instance.Selected);
                     }
                     catch (Exception ex)
                     {
@@ -418,7 +417,7 @@ namespace MapBoard.Main.UI
             {
                 try
                 {
-                    await arcMap.SetViewpointGeometryAsync(await style.Table.QueryExtentAsync(new QueryParameters()));
+                    await arcMap.SetViewpointGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
                 }
                 catch (Exception ex)
                 {
@@ -435,17 +434,17 @@ namespace MapBoard.Main.UI
 
                     string from = dialog.SelectedCoordinateSystem1;
                     string to = dialog.SelectedCoordinateSystem2;
-                    await StyleHelper.CoordinateTransformate(StyleCollection.Instance.Selected, from, to);
+                    await LayerHelper.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
                     loading.Hide();
                 }
             }
 
             void SetTimeExtent()
             {
-                DateRangeDialog dialog = new DateRangeDialog(style);
+                DateRangeDialog dialog = new DateRangeDialog(layer);
                 if (dialog.ShowDialog() == true)
                 {
-                    StyleHelper.SetTimeExtent(style).Wait();
+                    LayerHelper.SetTimeExtent(layer).Wait();
                 }
 
             }
@@ -460,7 +459,7 @@ namespace MapBoard.Main.UI
 
         private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
         {
-            new MultiStylesOperationDialog().Show();
+            new MultiLayersOperationDialog().Show();
         }
     }
 }

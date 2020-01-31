@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Main.Helper;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<StyleInfo> ImportToNewStyle(string path, Type type)
+        public async static Task<LayerInfo> ImportToNewStyle(string path, Type type)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -30,7 +30,7 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            StyleInfo style = StyleHelper.CreateStyle(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
+            LayerInfo style = LayerHelper.CreateLayer(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
@@ -91,7 +91,7 @@ namespace MapBoard.Main.IO
 
         }
 
-        public async static Task<StyleInfo> ImportAllToNewStyle(string[] paths)
+        public async static Task<LayerInfo> ImportAllToNewStyle(string[] paths)
         {
             Debug.Assert(paths.Length >= 2);
             var style = await ImportToNewStyle(paths[0], Type.OneLine);
@@ -102,7 +102,7 @@ namespace MapBoard.Main.IO
             return style;
         }
 
-        public async static Task<Feature[]> ImportToStyle(StyleInfo style, string path)
+        public async static Task<Feature[]> ImportToStyle(LayerInfo style, string path)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -159,7 +159,7 @@ namespace MapBoard.Main.IO
         }
         public async static Task<Feature[]> ImportToCurrentLayer(string path)
         {
-            StyleInfo style = StyleCollection.Instance.Selected;
+            LayerInfo style = LayerCollection.Instance.Selected;
             return await ImportToStyle(style, path);
         }
 

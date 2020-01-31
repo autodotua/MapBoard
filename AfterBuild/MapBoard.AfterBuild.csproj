@@ -7,7 +7,7 @@
     <ProjectGuid>{AAAF24F7-327D-45DD-A8D7-9750BEA582E1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>MapBoard.AfterBuild</RootNamespace>
-    <AssemblyName>MapBoard.AfterBuild</AssemblyName>
+    <AssemblyName>AfterBuild</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,11 +33,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FzDesktopLib">
-      <HintPath>..\..\模块\Release\AnyCPU\FzDesktopLib.dll</HintPath>
+    <Reference Include="FzDesktopLib.Windows, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\FzDesktopLib.Windows.dll</HintPath>
     </Reference>
     <Reference Include="FzStandardLib">
       <HintPath>..\libs\FzStandardLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

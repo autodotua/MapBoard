@@ -15,11 +15,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
-using static MapBoard.Main.Helper.StyleHelper;
+using static MapBoard.Main.Helper.LayerHelper;
 
-namespace MapBoard.Main.Style
+namespace MapBoard.Main.Layer
 {
-    public class StyleInfo : INotifyPropertyChanged, ICloneable
+    public class LayerInfo : INotifyPropertyChanged, ICloneable
     {
 
 
@@ -63,9 +63,9 @@ namespace MapBoard.Main.Style
             set
             {
                 layerVisible = value;
-                //if (StyleCollection.Instance.Styles.Contains(this))
+                //if (LayerCollection.Instance.Layers.Contains(this))
                 //{
-                //    Config.Instance.ShapefileStyles.First(p => p.Name == Name).LayerVisible = value;
+                //    Config.Instance.ShapefileLayers.First(p => p.Name == Name).LayerVisible = value;
                 //}
                 if (Layer != null)
                 {
@@ -180,9 +180,9 @@ namespace MapBoard.Main.Style
                 }
             }
         }
-        public StyleInfo Clone()
+        public LayerInfo Clone()
         {
-            return MemberwiseClone() as StyleInfo;
+            return MemberwiseClone() as LayerInfo;
         }
         object ICloneable.Clone()
         {
@@ -197,9 +197,9 @@ namespace MapBoard.Main.Style
 
             await this.SetTimeExtent();
         }
-        public void CopyStyleFrom(StyleInfo style)
+        public void CopyLayerFrom(LayerInfo layer)
         {
-            foreach (var s in style.Symbols)
+            foreach (var s in layer.Symbols)
             {
                 Symbols.Add(s.Key, new SymbolInfo()
                 {
@@ -211,7 +211,7 @@ namespace MapBoard.Main.Style
             //Renderer.LineWidth = style.Renderer.LineWidth;
             //Renderer.LineColor = style.Renderer.LineColor;
             //Renderer.FillColor = style.Renderer.FillColor;
-            LabelJson = style.LabelJson;
+            LabelJson = layer.LabelJson;
             this.Notify(
                 //nameof(Renderer.LineColor),
                 //nameof(Renderer),
@@ -230,14 +230,14 @@ namespace MapBoard.Main.Style
             return Name;
         }
 
-        //public bool StyleEquals(StyleInfo style)
+        //public bool StyleEquals(LayerInfo style)
         //{
         //    return LineWidth == style.LineWidth
         //        && LineColor == style.LineColor
         //        && FillColor == style.FillColor
         //        && Type == style.Type;
         //}
-        //public bool StyleEquals(StyleInfo style, GeometryType type)
+        //public bool StyleEquals(LayerInfo style, GeometryType type)
         //{
         //    return LineWidth == style.LineWidth
         //        && LineColor == style.LineColor

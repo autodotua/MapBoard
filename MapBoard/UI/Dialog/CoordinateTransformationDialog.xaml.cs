@@ -1,6 +1,6 @@
 ﻿using MapBoard.Common;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.Linq;

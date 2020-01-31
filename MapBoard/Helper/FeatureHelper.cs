@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using System;
@@ -18,7 +18,7 @@ namespace MapBoard.Main.Helper
    public static class FeatureHelper
     {
 
-        public static async void Union(StyleInfo style)
+        public static async void Union(LayerInfo style)
         {
             Geometry geometry = GeometryEngine.Union(ArcMapView.Instance.Selection.SelectedFeatures.Select(p => p.Geometry));
             var firstFeature = ArcMapView.Instance.Selection.SelectedFeatures[0];
@@ -28,7 +28,7 @@ namespace MapBoard.Main.Helper
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async void Link(StyleInfo style)
+        public static async void Link(LayerInfo style)
         {
             var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
             List<(string, string, Action)> typeList = new List<(string, string, Action)>();
@@ -100,7 +100,7 @@ namespace MapBoard.Main.Helper
 
         }
 
-        public static async void Reverse(StyleInfo style)
+        public static async void Reverse(LayerInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
 
@@ -115,7 +115,7 @@ namespace MapBoard.Main.Helper
         }
 
 
-        public static async void Densify(StyleInfo style)
+        public static async void Densify(LayerInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             NumberInputDialog dialog = new NumberInputDialog("请输入最大间隔");
@@ -127,7 +127,7 @@ namespace MapBoard.Main.Helper
             }
         }
 
-        public static async void RemoveSomePoints(StyleInfo style)
+        public static async void RemoveSomePoints(LayerInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             NumberInputDialog dialog = new NumberInputDialog("请输入每几个点保留一个点") { Integer = true };
@@ -186,7 +186,7 @@ namespace MapBoard.Main.Helper
             }
         }
 
-        public static void ToCsv(StyleInfo style)
+        public static void ToCsv(LayerInfo style)
         {
             try
             {
@@ -208,7 +208,7 @@ namespace MapBoard.Main.Helper
 
         }
 
-        public static async void CreateCopy(StyleInfo style)
+        public static async void CreateCopy(LayerInfo style)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)

@@ -117,34 +117,34 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArcMapView.cs" />
-    <Compile Include="Range.cs" />
-    <Compile Include="TileSourceCollection.cs" />
-    <Compile Include="TileSourceInfo.cs" />
-    <Page Include="BoundaryInputTable.xaml">
+    <Compile Include="UI\ArcMapView.cs" />
+    <Compile Include="Data\Range.cs" />
+    <Compile Include="Data\TileSourceCollection.cs" />
+    <Compile Include="Data\TileSourceInfo.cs" />
+    <Page Include="UI\BoundaryInputTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="BoundaryInputTable.xaml.cs">
+    <Compile Include="UI\BoundaryInputTable.xaml.cs">
       <DependentUpon>BoundaryInputTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
-    <Compile Include="DownloadFileInfo.cs" />
-    <Compile Include="DownloadInfo.cs" />
-    <Compile Include="DrawRectCanvas.cs" />
-    <Compile Include="GeoPointValueConverter.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Data\DownloadFileInfo.cs" />
+    <Compile Include="Data\DownloadInfo.cs" />
+    <Compile Include="UI\Converters.cs" />
+    <Compile Include="UI\DrawRectCanvas.cs" />
+    <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetHelper.cs" />
-    <Compile Include="ProjectInfo.cs" />
+    <Compile Include="Data\ProjectInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

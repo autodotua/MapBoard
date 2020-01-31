@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
 using System;
@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using LayerCollection = MapBoard.Main.Layer.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -41,7 +42,7 @@ namespace MapBoard.Main.UI.Map
 
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask== BoardTaskManager.BoardTask.Draw || StyleCollection.Instance.Selected==null || !StyleCollection.Instance.Selected.LayerVisible||  BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (BoardTaskManager.CurrentTask== BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected==null || !LayerCollection.Instance.Selected.LayerVisible||  BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
             }
@@ -104,7 +105,7 @@ namespace MapBoard.Main.UI.Map
             //foreach (FeatureLayer layer in Mapview.Map.OperationalLayers)
             //{
 
-            var layer = StyleCollection.Instance.Selected?.Layer;
+            var layer = LayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
                 return;
@@ -155,7 +156,7 @@ namespace MapBoard.Main.UI.Map
         public void Select(Feature feature,bool clearAll=false)
         {
         
-            var layer = StyleCollection.Instance.Selected?.Layer;
+            var layer = LayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
                 return;
@@ -174,7 +175,7 @@ namespace MapBoard.Main.UI.Map
         }
         public void Select(IEnumerable<Feature> features)
         {
-            var layer = StyleCollection.Instance.Selected?.Layer;
+            var layer = LayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
                 return;

@@ -1,7 +1,7 @@
 ﻿using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +24,8 @@ namespace MapBoard.Main.UI.Dialog
     public partial class DateRangeDialog : Common.Dialog.DialogWindowBase
     {
         bool canSelect = false;
-        StyleInfo CurrentStyle { get; }
-        public DateRangeDialog(StyleInfo style)
+        LayerInfo CurrentStyle { get; }
+        public DateRangeDialog(LayerInfo style)
         {
             CurrentStyle = style;
             InitializeComponent();

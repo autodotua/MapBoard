@@ -31,6 +31,7 @@ using System.Windows.Media.Imaging;
 using System.Drawing;
 using static FzLib.Geography.Analysis.SpeedAnalysis;
 using FzLib.Geography.IO.Gpx;
+using FzLib.Program;
 
 namespace MapBoard.GpxToolbox
 {
@@ -39,13 +40,13 @@ namespace MapBoard.GpxToolbox
     /// </summary>
     public partial class MainWindow : MainWindowBase
     {
-        private const string TrackFilePath = "Track.ini";
+        private static readonly string TrackFilePath = Path.Combine(App.ProgramDirectoryPath, "TrackHistory.txt");
         private string[] loadNeeded = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
         public MainWindow(string[] load = null) : this()
         {
             loadNeeded = load;
-           
+
         }
 
         public MainWindow()
@@ -70,7 +71,7 @@ namespace MapBoard.GpxToolbox
             chartHelper.YAxisLineValueConverter = p => p.Speed;
             chartHelper.YAxisPolygonValueConverter = p => p.Z;
             chartHelper.XLabelFormat = p => p.ToString("HH:mm");
-            chartHelper.YLabelFormat = p => $"{p}m/s {(p*3.6).ToString(".0")}km/h";
+            chartHelper.YLabelFormat = p => $"{p}m/s {(p * 3.6).ToString(".0")}km/h";
             chartHelper.ToolTipConverter = p =>
             {
                 StringBuilder sb = new StringBuilder();
@@ -712,7 +713,7 @@ namespace MapBoard.GpxToolbox
 
         private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") },ensureExtension :true, defaultFileName: Gpx.Name + ".png");
+            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") }, ensureExtension: true, defaultFileName: Gpx.Name + ".png");
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);

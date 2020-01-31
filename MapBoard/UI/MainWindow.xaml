@@ -13,7 +13,7 @@
         xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
         xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
         xmlns:splitbutton="clr-namespace:MapBoard.Main.UI.SplitButton"
-        xmlns:stylesettingpanel="clr-namespace:MapBoard.Main.UI.Panel"
+        xmlns:LayerSettingPanel="clr-namespace:MapBoard.Main.UI.Panel"
         xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
         mc:Ignorable="d"
         Closing="WindowClosing"
@@ -49,7 +49,7 @@
         </Grid>
 
         <win10style:ModernExpander MaxWidth="240" Grid.Column="4" Header="设&#x000D;置" IsExpanded="False" ExpandDirection="Left">
-            <stylesettingpanel:SettingPanel/>
+            <LayerSettingPanel:SettingPanel/>
         </win10style:ModernExpander>
 
 
@@ -69,7 +69,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <stylesettingpanel:StyleSettingPanel x:Name="styleSetting"/>
+                    <LayerSettingPanel:LayerSettingPanel x:Name="Layersetting"/>
                     <TextBlock/>
 
                     <StackPanel Grid.Row="100" Grid.ColumnSpan="100" HorizontalAlignment="Right"  Orientation="Horizontal">
@@ -88,7 +88,7 @@
                     </Grid.RowDefinitions>
                     <flatstyle:ListView x:Name="lvw" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Extended" 
                                         ItemPreviewKeyDown="ListViewPreviewKeyDown" SelectionChanged="SelectedStyleChanged" 
-                                        ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Styles.Styles}" >
+                                        ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp" ItemsSource="{Binding Layers.Layers}" >
                         <flatstyle:ListView.View>
                             <GridView>
                                 <GridViewColumn Header="显示">

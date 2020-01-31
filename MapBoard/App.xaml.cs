@@ -1,4 +1,5 @@
 ﻿using FzLib.Program.Runtime;
+using FzLib.UI.Program;
 using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
@@ -25,18 +26,12 @@ namespace MapBoard.Main
             if (e.Args.Length > 0)
             {
                 string arg = e.Args[0];
-                switch (arg)
+                StartupUri = arg switch
                 {
-                    case "tile":
-                        StartupUri = new Uri("pack://application:,,,/MapBoard.TileDownloaderSplicer;component/MainWindow.xaml", UriKind.Absolute);
-                        break;
-                    case "gpx":
-                        StartupUri = new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/MainWindow.xaml", UriKind.Absolute);
-                        break;
-                    default:
-                        StartupUri = new Uri("UI/MainWindow.xaml", UriKind.Relative);
-                        break;
-                }
+                    "tile" => new Uri("pack://application:,,,/MapBoard.TileDownloaderSplicer;component/UI/MainWindow.xaml", UriKind.Absolute),
+                    "gpx" => new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute),
+                    _ => new Uri("UI/MainWindow.xaml", UriKind.Relative),
+                };
             }
             else
             {

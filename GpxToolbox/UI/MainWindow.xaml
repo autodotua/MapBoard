@@ -224,8 +224,9 @@
             <Canvas x:Name="speedChart" MouseLeave="SpeedChartMouseLeave" Grid.Row="2" ClipToBounds="True"/>
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
         </Grid>
-        <win10style:ModernExpander Header="文件" Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <Grid   Background="#BBFFFFFF">
+        <win10style:ModernExpander Header="文件"
+                                   Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Grid   >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
@@ -237,7 +238,10 @@
                     <flatstyle:Button Content="清空"   Click="ClearFileListButtonClick"/>
 
                 </StackPanel>
-                <flatstyle:ListView Grid.Row="2" x:Name="lvwFiles" SelectionMode="Extended" SelectionChanged="FileSelectionChanged" ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown" ItemsSource="{Binding Source={x:Static local:TrackInfo.Tracks}}">
+                <flatstyle:ListView Grid.Row="2" x:Name="lvwFiles" SelectionMode="Extended" 
+                                    SelectionChanged="FileSelectionChanged"  
+                                    ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown"
+                                    ItemsSource="{Binding Source={x:Static local:TrackInfo.Tracks}}">
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="删除" Click="RemoveTrackFileMenuClick"/>

@@ -26,12 +26,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{416B6C02-2
 		libs\GeoAPI.dll = libs\GeoAPI.dll
 		libs\Microsoft.WindowsAPICodePack.dll = libs\Microsoft.WindowsAPICodePack.dll
 		libs\Microsoft.WindowsAPICodePack.Shell.dll = libs\Microsoft.WindowsAPICodePack.Shell.dll
-		libs\Microsoft.WindowsAPICodePack.ShellExtensions.dll = libs\Microsoft.WindowsAPICodePack.ShellExtensions.dll
 		libs\NetTopologySuite.dll = libs\NetTopologySuite.dll
 		libs\ProjNET.dll = libs\ProjNET.dll
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.AfterBuild", "MapBoard.AfterBuild\MapBoard.AfterBuild.csproj", "{AAAF24F7-327D-45DD-A8D7-9750BEA582E1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.AfterBuild", "AfterBuild\MapBoard.AfterBuild.csproj", "{AAAF24F7-327D-45DD-A8D7-9750BEA582E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

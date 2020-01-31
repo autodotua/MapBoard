@@ -5,7 +5,7 @@ using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections;
@@ -67,7 +67,7 @@ namespace MapBoard.Main.UI.Dialog
 
 
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
-        public string[] BaseLayerTypes { get; } = { WebTiledLayerDescription, RasterLayerDescription, ShapefileLayerDescription, TpkLayerDescription };
+        public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
 
 
         private async void OkButtonClick(object sender, RoutedEventArgs e)
@@ -76,10 +76,11 @@ namespace MapBoard.Main.UI.Dialog
 
             foreach (var item in BaseLayers)
             {
-                Config.Instance.BaseLayers.Add((item.Type, item.Path));
+                Config.Instance.BaseLayers.Add(item);
             }
             await ArcMapView.Instance.LoadBasemap();
-            StyleCollection.ResetStyles();
+            LayerCollection.ResetLayers();
+            Config.Instance.Save();
             if ((sender as Button).Tag.Equals("1"))
             {
                 Close();
@@ -88,7 +89,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void AddButtonClick(object sender, RoutedEventArgs e)
         {
-            BaseLayerInfo layerInfo = new BaseLayerInfo(WebTiledLayer, "");
+            BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WebTiledLayer, "");
             BaseLayers.Add(layerInfo);
             grd.SelectedItem = layerInfo;
         }
@@ -109,81 +110,15 @@ namespace MapBoard.Main.UI.Dialog
             {
                 return;
             }
-            BaseLayerInfo layerInfo;
-            switch (System.IO.Path.GetExtension(path))
+
+            var layerInfo = (System.IO.Path.GetExtension(path)) switch
             {
-                case ".shp":
-                    layerInfo = new BaseLayerInfo(ShapefileLayer, path);
-                    break;
-                case ".tpk":
-                    layerInfo = new BaseLayerInfo(TpkLayer, path);
-                    break;
-                default:
-                    layerInfo = new BaseLayerInfo(RasterLayer, path);
-                    break;
-            }
+                ".shp" => new BaseLayerInfo(BaseLayerType.ShapefileLayer, path),
+                ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
+                _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
+            };
             BaseLayers.Add(layerInfo);
             grd.SelectedItem = layerInfo;
-        }
-        public class BaseLayerInfo : INotifyPropertyChanged
-        {
-            private int index;
-
-            public BaseLayerInfo(string type, string path)
-            {
-                Type = type ?? throw new ArgumentNullException(nameof(type));
-                Path = path ?? throw new ArgumentNullException(nameof(path));
-            }
-
-            public string Type { get; set; }
-            public string TypeDescription
-            {
-                get
-                {
-                    switch (Type)
-                    {
-                        case WebTiledLayer:
-                            return WebTiledLayerDescription;
-                        case RasterLayer:
-                            return RasterLayerDescription;
-                        case ShapefileLayer:
-                            return ShapefileLayerDescription;
-                        case TpkLayer:
-                            return TpkLayerDescription;
-                        default:
-                            throw new Exception("未知类型");
-
-                    }
-                }
-                set
-                {
-                    switch (value)
-                    {
-                        case WebTiledLayerDescription:
-                            Type = WebTiledLayer;
-                            break;
-                        case RasterLayerDescription:
-                            Type = RasterLayer;
-                            break;
-                        case ShapefileLayerDescription:
-                            Type = ShapefileLayer;
-                            break;
-                        case TpkLayerDescription:
-                            Type = TpkLayer;
-                            break;
-                        default:
-                            throw new Exception("未知类型");
-                    }
-                }
-            }
-            public string Path { get; set; }
-            public int Index
-            {
-                get => index;
-                set => this.SetValueAndNotify(ref index, value, nameof(Index));
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
         }
 
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
@@ -195,4 +130,23 @@ namespace MapBoard.Main.UI.Dialog
         }
     }
 
+    public class BaseLayerTypeConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return (BaseLayerType)value switch
+            {
+                BaseLayerType.RasterLayer => "栅格图",
+                BaseLayerType.TpkLayer => "切片包",
+                BaseLayerType.ShapefileLayer => "Shapefile矢量图",
+                BaseLayerType.WebTiledLayer => "网络瓦片图",
+                _ => throw new NotSupportedException()
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

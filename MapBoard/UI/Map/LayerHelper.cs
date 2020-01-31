@@ -5,13 +5,14 @@ using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.Helper;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LayerCollection = MapBoard.Main.Layer.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -19,7 +20,7 @@ namespace MapBoard.Main.UI.Map
     {
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async Task<bool> AddLayerAsync(StyleInfo style)
+        public async Task<bool> AddLayerAsync(LayerInfo style)
         {
             try
             {
@@ -30,7 +31,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Mapview.Map.OperationalLayers.Add(layer);
-                StyleHelper.ApplyStyles(style);
+                Helper.LayerHelper.ApplyLayers(style);
                 await style.LayerComplete();
                 return true;
             }
@@ -54,7 +55,7 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        public void RemoveLayer(StyleInfo style)
+        public void RemoveLayer(LayerInfo style)
         {
             try
             {
@@ -87,7 +88,7 @@ namespace MapBoard.Main.UI.Map
                 return;
             }
 
-            foreach (var style in StyleCollection.Instance.Styles.ToArray())
+            foreach (var style in LayerCollection.Instance.Layers.ToArray())
             {
                 if (File.Exists(Path.Combine(Config.DataPath, style.Name + ".shp")))
                 {
@@ -95,7 +96,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 else
                 {
-                    StyleCollection.Instance.Styles.Remove(style);
+                    LayerCollection.Instance.Layers.Remove(style);
                 }
             }
 
@@ -113,16 +114,16 @@ namespace MapBoard.Main.UI.Map
 
             foreach (var name in files)
             {
-                if (!StyleCollection.Instance.Styles.Any(p => p.Name == name))
+                if (!LayerCollection.Instance.Layers.Any(p => p.Name == name))
                 {
-                    StyleInfo style = new StyleInfo();
+                    LayerInfo style = new LayerInfo();
                     style.Name = name;
                     await LoadLayer(style);
                 }
             }
         }
 
-        public async Task LoadLayer(StyleInfo style)
+        public async Task LoadLayer(LayerInfo style)
         {
             try
             {
@@ -130,9 +131,9 @@ namespace MapBoard.Main.UI.Map
                 await featureTable.LoadAsync();
                 if (featureTable.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
                 {
-                    //if (!StyleCollection.Instance.Styles.Contains(style))
+                    //if (!LayerCollection.Instance.Layers.Contains(style))
                     //{
-                    //    StyleCollection.Instance.Styles.Add(style);
+                    //    LayerCollection.Instance.Layers.Add(style);
                     //}
                     //if (style.FeatureCount == 0)
                     //{

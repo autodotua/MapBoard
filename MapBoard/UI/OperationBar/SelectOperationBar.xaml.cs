@@ -4,7 +4,7 @@ using FzLib.Basic;
 using FzLib.Basic.Collection;
 using FzLib.UI.Dialog;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using System;
@@ -48,14 +48,14 @@ namespace MapBoard.Main.UI.OperationBar
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
             btnCut.IsEnabled = count == 1 &&
-                (StyleCollection.Instance.Selected.Type == GeometryType.Polygon || StyleCollection.Instance.Selected.Type == GeometryType.Polyline);
+                (LayerCollection.Instance.Selected.Type == GeometryType.Polygon || LayerCollection.Instance.Selected.Type == GeometryType.Polyline);
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count.ToString()}个图形");
-            if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
+            if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
-            else if (StyleCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon)//面
+            else if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon)//面
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 double area = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
@@ -113,10 +113,10 @@ namespace MapBoard.Main.UI.OperationBar
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
         {
-            SelectStyleDialog dialog = new SelectStyleDialog();
+            SelectLayerDialog dialog = new SelectLayerDialog();
             if (dialog.ShowDialog() == true)
             {
-                StyleCollection.Instance.Selected.LayerVisible = false;
+                LayerCollection.Instance.Selected.LayerVisible = false;
                 ObservableCollection<Feature> features = MapView.Selection.SelectedFeatures;
                 ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
                 foreach (var feature in features)
@@ -125,7 +125,7 @@ namespace MapBoard.Main.UI.OperationBar
                 }
                 await MapView.Selection.StopFrameSelect(false);
                 dialog.SelectedStyle.UpdateFeatureCount();
-                StyleCollection.Instance.Selected = dialog.SelectedStyle;
+                LayerCollection.Instance.Selected = dialog.SelectedStyle;
             }
         }
         private void CutButtonClick(object sender, RoutedEventArgs e)
@@ -146,9 +146,9 @@ namespace MapBoard.Main.UI.OperationBar
         {
             ContextMenu menu = new ContextMenu();
 
-            var style = StyleCollection.Instance.Selected;
+            var style = LayerCollection.Instance.Selected;
 
-            List<(string header, Action<StyleInfo> action, bool visiable)> menus = new List<(string header, Action<StyleInfo> action, bool visiable)>()
+            List<(string header, Action<LayerInfo> action, bool visiable)> menus = new List<(string header, Action<LayerInfo> action, bool visiable)>()
            {
                 ("合并",Union,(style.Type==GeometryType.Polygon || style.Type==GeometryType.Polyline)&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
                 ("连接",Link,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),

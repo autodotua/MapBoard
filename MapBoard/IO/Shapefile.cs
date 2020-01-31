@@ -3,7 +3,7 @@ using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Helper;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -81,7 +81,7 @@ namespace MapBoard.Main.IO
             bool key = table.Fields.Any(p => p.Name == Resource.KeyFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            StyleInfo style = StyleHelper.CreateStyle(table.GeometryType,null,Path.GetFileNameWithoutExtension(path));
+            LayerInfo style = LayerHelper.CreateLayer(table.GeometryType,null,Path.GetFileNameWithoutExtension(path));
             foreach (var feature in features)
             {
                 Feature newFeature = style.Table.CreateFeature();

@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ namespace MapBoard.Main.UI.Map
                 Mapview.Drawing.Date = null;
             }
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
-            // Config.Instance.DefaultStyle.CopyStyleFrom(StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
+            // Config.Instance.DefaultStyle.CopyStyleFrom(LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
             if (mode == EditMode.Draw)
             {
                 await editingFeature.FeatureTable.DeleteFeatureAsync(editingFeature);
@@ -115,7 +115,7 @@ namespace MapBoard.Main.UI.Map
                     }
 
                     SnakeBar.Show("成功分割为" + partsCount + "部分");
-                    StyleCollection.Instance.Selected.UpdateFeatureCount();
+                    LayerCollection.Instance.Selected.UpdateFeatureCount();
                 }
             }
 
@@ -148,7 +148,7 @@ namespace MapBoard.Main.UI.Map
             }
             foreach (var table in tables)
             {
-                StyleCollection.Instance.Styles.First(p => p.Table == table).UpdateFeatureCount();
+                LayerCollection.Instance.Layers.First(p => p.Table == table).UpdateFeatureCount();
             }
             Mapview.Selection.SelectedFeatures.Clear();
         }
@@ -180,7 +180,7 @@ namespace MapBoard.Main.UI.Map
             if (Mode == EditMode.Draw)
             {
                 await editingFeature.FeatureTable.AddFeatureAsync(editingFeature);
-                StyleCollection.Instance.Selected.UpdateFeatureCount();
+                LayerCollection.Instance.Selected.UpdateFeatureCount();
             }
 
             //if (lastBar != null)

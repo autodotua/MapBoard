@@ -1,6 +1,6 @@
 ﻿using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +20,18 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectStyleDialog : Common.Dialog.DialogWindowBase
+    public partial class SelectLayerDialog : Common.Dialog.DialogWindowBase
     {
         bool canSelect = false;
-        public SelectStyleDialog()
+        public SelectLayerDialog()
         {
             InitializeComponent();
-            var styles = StyleCollection.Instance;
-            var list = styles.Styles.Where(p => p.Type == styles.Selected.Type && p!=styles.Selected);
+            var Layers = LayerCollection.Instance;
+            var list = Layers.Layers.Where(p => p.Type == Layers.Selected.Type && p!=Layers.Selected);
             if (list.Count() > 0)
             {
-                cbb.ItemsSource = list;
-                cbb.SelectedIndex = 0;
+                lbx.ItemsSource = list;
+                lbx.SelectedIndex = 0;
                 canSelect = true;
             }
         }
@@ -42,7 +42,7 @@ namespace MapBoard.Main.UI.Dialog
             Close();
         }
 
-        public StyleInfo SelectedStyle { get; set; }
+        public LayerInfo SelectedStyle { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

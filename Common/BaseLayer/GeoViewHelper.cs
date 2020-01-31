@@ -26,7 +26,7 @@ namespace MapBoard.Common.BaseLayer
 
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers)
+                foreach (var item in Config.Instance.BaseLayers.Where(p=>p.Enable))
                 {
                     try
                     {

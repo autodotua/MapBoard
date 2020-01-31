@@ -9,12 +9,15 @@
     xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
       xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
     xmlns:win10="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
+    xmlns:dialog="clr-namespace:MapBoard.Main.UI.Dialog"
     mc:Ignorable="d"
         Loaded="Window_Loaded"
+    x:Name="win"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="请选择日期范围"  >
     <Window.Resources>
         <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
+        <dialog:BaseLayerTypeConverter x:Key="bl2str"/>
     </Window.Resources>
     <Grid Margin="4">
         <Grid.RowDefinitions>
@@ -45,9 +48,33 @@
             </win10:AzureDataGrid.Resources>-->
             <win10:AzureDataGrid.Columns>
                 <DataGridTextColumn SortDirection="Ascending" CanUserSort="False" Header="序号" Binding="{Binding Index}" />
-                <DataGridComboBoxColumn Header="标题"  CanUserSort="False"
-                                        SelectedItemBinding="{Binding TypeDescription}" 
-                                  ItemsSource="{Binding Source={StaticResource baseLayerTypes} }" />
+                <!--<DataGridCheckBoxColumn  CanUserSort="False" Header="启用" Binding="{Binding Enable}" />-->
+                <DataGridTemplateColumn Header="启用">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <flat:CheckBox IsChecked="{Binding Enable}" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="标题"  CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Type ,Converter={StaticResource bl2str}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <flat:UneditableComboBox    SelectedItem="{Binding Type}" 
+                                  ItemsSource="{Binding Source={StaticResource baseLayerTypes}}" >
+                                <flat:UneditableComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding .,Converter={StaticResource bl2str}}"/>
+                                    </DataTemplate>
+                                </flat:UneditableComboBox.ItemTemplate>
+                            </flat:UneditableComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn  CanUserSort="False" Width="320"  Header="地址" Binding="{Binding Path=Path}" />
             </win10:AzureDataGrid.Columns>
         </win10:AzureDataGrid>

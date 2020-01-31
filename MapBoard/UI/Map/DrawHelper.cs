@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,7 +52,7 @@ namespace MapBoard.Main.UI.Map
             if (Mapview.SketchEditor.Geometry != null && save)
             {
                 string fileName = "";
-                ShapefileFeatureTable table = StyleCollection.Instance.Selected.Table;
+                ShapefileFeatureTable table = LayerCollection.Instance.Selected.Table;
                 Feature feature = null;
                 Geometry geometry = Mapview.SketchEditor.Geometry;
                 //switch (Mapview.SketchEditor.CreationMode)
@@ -113,7 +113,7 @@ namespace MapBoard.Main.UI.Map
                 feature.Attributes[Resource.KeyFieldName] = Key;
                 await table.AddFeatureAsync(feature);
 
-                StyleCollection.Instance.Styles.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
+                LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
 
             }
             if (!Config.Instance.RemainLabel)
@@ -127,7 +127,7 @@ namespace MapBoard.Main.UI.Map
 
         //private async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
         //{
-        //    var style = StyleCollection.Instance.Selected;// StyleHelper.GetStyle(StyleCollection.Instance.Selected, type);
+        //    var style = LayerCollection.Instance.Selected;// StyleHelper.GetStyle(LayerCollection.Instance.Selected, type);
         //    ShapefileFeatureTable table = style.Table;
 
         //    if (table == null)
@@ -141,7 +141,7 @@ namespace MapBoard.Main.UI.Map
         //            //Map.OperationalLayers.Add(layer);
         //            style.Table = table;
 
-        //            StyleHelper.ApplyStyles(style);
+        //            StyleHelper.ApplyLayers(style);
         //        }
         //    }
         //    return table;

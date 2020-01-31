@@ -5,7 +5,7 @@ using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Helper;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using Newtonsoft.Json.Linq;
@@ -33,10 +33,10 @@ namespace MapBoard.Main.UI.Panel
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class StyleSettingPanel : ExtendedUserControl
+    public partial class LayerSettingPanel : ExtendedUserControl
     {
         private const string defaultKeyName = "（默认）";
-        public StyleSettingPanel()
+        public LayerSettingPanel()
         {
             InitializeComponent();
         }
@@ -59,9 +59,9 @@ namespace MapBoard.Main.UI.Panel
                 btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
                 if (value != null)
                 {
-                    //LineWidth = StyleCollection.Instance.Selected.Renderer.LineWidth;
-                    //LineColor = StyleCollection.Instance.Selected.Renderer.LineColor;
-                    //FillColor = StyleCollection.Instance.Selected.Renderer.FillColor;
+                    //LineWidth = LayerCollection.Instance.Selected.Renderer.LineWidth;
+                    //LineColor = LayerCollection.Instance.Selected.Renderer.LineColor;
+                    //FillColor = LayerCollection.Instance.Selected.Renderer.FillColor;
                     LineWidth = value.Symbol.LineWidth;
                     LineColor = value.Symbol.LineColor;
                     FillColor = value.Symbol.FillColor;
@@ -142,7 +142,7 @@ namespace MapBoard.Main.UI.Panel
 
         public void SetStyleFromUI()
         {
-            var style = StyleCollection.Instance.Selected;
+            var style = LayerCollection.Instance.Selected;
             //style.Renderer.LineColor = LineColor;
             //style.Renderer.FillColor = FillColor;
             //style.Renderer.LineWidth = LineWidth;
@@ -159,12 +159,12 @@ namespace MapBoard.Main.UI.Panel
             }
 
             SetLabelFromUI();
-            //styleSetting.SetStyleFromUI(StyleCollection.Instance.Selected);
+            //Layersetting.SetStyleFromUI(LayerCollection.Instance.Selected);
 
             string newName = StyleName;
             if (newName != style.Name)
             {
-                int index = StyleCollection.Instance.Styles.IndexOf(StyleCollection.Instance.Selected);
+                int index = LayerCollection.Instance.Layers.IndexOf(LayerCollection.Instance.Selected);
 
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
                 {
@@ -177,7 +177,7 @@ namespace MapBoard.Main.UI.Panel
                 }
                 try
                 {
-                    StyleHelper.RemoveStyle(StyleCollection.Instance.Selected, false);
+                    Helper.LayerHelper.RemoveLayer(LayerCollection.Instance.Selected, false);
                     foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
                     {
                         File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
@@ -190,31 +190,31 @@ namespace MapBoard.Main.UI.Panel
                 }
             end:
                 style.Table = null;
-                StyleCollection.Instance.Styles.Insert(index, style);
+                LayerCollection.Instance.Layers.Insert(index, style);
             }
             else
             {
-                style.ApplyStyles();
+                style.ApplyLayers();
             }
 
         }
 
-        public void ResetStyleSettingUI()
+        public void ResetLayersettingUI()
         {
-            if (!IsLoaded || StyleCollection.Instance.Selected == null)
+            if (!IsLoaded || LayerCollection.Instance.Selected == null)
             {
                 return;
             }
             else
             {
-                StyleName = StyleCollection.Instance.Selected?.Name;
+                StyleName = LayerCollection.Instance.Selected?.Name;
 
-                //LineWidth = StyleCollection.Instance.Selected.Renderer.LineWidth;
-                //LineColor = StyleCollection.Instance.Selected.Renderer.LineColor;
-                //FillColor = StyleCollection.Instance.Selected.Renderer.FillColor;
+                //LineWidth = LayerCollection.Instance.Selected.Renderer.LineWidth;
+                //LineColor = LayerCollection.Instance.Selected.Renderer.LineColor;
+                //FillColor = LayerCollection.Instance.Selected.Renderer.FillColor;
 
                 Keys.Clear();
-                var style = StyleCollection.Instance.Selected;
+                var style = LayerCollection.Instance.Selected;
                 foreach (var symbol in style.Symbols)
                 {
                     if (symbol.Key == "")
@@ -253,11 +253,11 @@ namespace MapBoard.Main.UI.Panel
             SetLabelJsonValue("symbol.font.size", LabelFontSize);
             SetLabelJsonValue("symbol.haloSize", LabelStrokeThickness);
             SetLabelJsonValue("minScale", LabelMinScale);
-            StyleCollection.Instance.Selected.LabelJson = labelJson.ToString();
+            LayerCollection.Instance.Selected.LabelJson = labelJson.ToString();
         }
         private void ResetLabelSettingUI()
         {
-            labelJson = JObject.Parse(StyleCollection.Instance.Selected.LabelJson);
+            labelJson = JObject.Parse(LayerCollection.Instance.Selected.LabelJson);
             LabelLineColor = GetColorFromArgb(GetLabelJsonValue<byte>("symbol.haloColor", new byte[] { 0, 0, 0, 0 }));
             LabelFillColor = GetColorFromArgb(GetLabelJsonValue<byte>("symbol.color", new byte[] { 0, 0, 0, 0 }));
             LabelFontSize = GetLabelJsonValue("symbol.font.size", 9);
@@ -424,7 +424,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var style = StyleCollection.Instance.Selected;
+            var style = LayerCollection.Instance.Selected;
             var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.KeyFieldName) as string).Distinct();
             foreach (var key in keys)
             {

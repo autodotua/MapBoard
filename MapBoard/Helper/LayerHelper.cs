@@ -7,7 +7,7 @@ using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
-using MapBoard.Main.Style;
+using MapBoard.Main.Layer;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
@@ -19,25 +19,26 @@ using System.Text;
 using System.Threading.Tasks;
 
 using static MapBoard.Common.CoordinateTransformation;
+using LayerCollection = MapBoard.Main.Layer.LayerCollection;
 
 namespace MapBoard.Main.Helper
 {
-    public static class StyleHelper
+    public static class LayerHelper
     {
 
-        public static void RemoveStyle(this StyleInfo style, bool deleteFiles)
+        public static void RemoveLayer(this LayerInfo layer, bool deleteFiles)
         {
-            if (StyleCollection.Instance.Styles.Contains(style))
+            if (LayerCollection.Instance.Layers.Contains(layer))
             {
-                StyleCollection.Instance.Styles.Remove(style);
+                LayerCollection.Instance.Layers.Remove(layer);
             }
 
 
             if (deleteFiles)
             {
-                foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
+                foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                 {
-                    if (Path.GetFileNameWithoutExtension(file) == style.Name)
+                    if (Path.GetFileNameWithoutExtension(file) == layer.Name)
                     {
                         File.Delete(file);
                     }
@@ -45,16 +46,16 @@ namespace MapBoard.Main.Helper
             }
         }
 
-        public static StyleInfo AddStyle(string name)
+        public static LayerInfo AddLayer(string name)
         {
-            StyleInfo style = new StyleInfo();
-            style.Name = name ?? throw new ArgumentException();
-            StyleCollection.Instance.Styles.Add(style);
-            StyleCollection.Instance.Selected = style;
-            return style;
+            LayerInfo layer = new LayerInfo();
+            layer.Name = name ?? throw new ArgumentException();
+            LayerCollection.Instance.Layers.Add(layer);
+            LayerCollection.Instance.Selected = layer;
+            return layer;
         }
 
-        public static StyleInfo CreateStyle(GeometryType type, StyleInfo template = null, string name = null)
+        public static LayerInfo CreateLayer(GeometryType type, LayerInfo template = null, string name = null)
         {
             if (name == null)
             {
@@ -70,42 +71,42 @@ namespace MapBoard.Main.Helper
 
 
             ShapefileExport.ExportEmptyShapefile(type, name);
-            StyleInfo style = new StyleInfo();
+            LayerInfo layer = new LayerInfo();
             if (template != null)
             {
-                style.CopyStyleFrom(template);
+                layer.CopyLayerFrom(template);
             }
-            style.Name = name;
-            StyleCollection.Instance.Styles.Add(style);
-            StyleCollection.Instance.Selected = style;
-            return style;
+            layer.Name = name;
+            LayerCollection.Instance.Layers.Add(layer);
+            LayerCollection.Instance.Selected = layer;
+            return layer;
         }
 
-        public async static Task CreatCopy(this StyleInfo style, bool includeFeatures)
+        public async static Task CreatCopy(this LayerInfo layer, bool includeFeatures)
         {
             if (includeFeatures)
             {
 
-                FeatureQueryResult features = await StyleCollection.Instance.Selected.GetAllFeatures();
+                FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeatures();
 
-                var newStyle = CreateStyle(style.Type, style);
-                ShapefileFeatureTable targetTable = newStyle.Table;
+                var newLayer = CreateLayer(layer.Type, layer);
+                ShapefileFeatureTable targetTable = newLayer.Table;
 
                 //foreach (var feature in features)
                 //{
                 //    await targetTable.AddFeatureAsync(feature);
                 //}
               await  targetTable.AddFeaturesAsync(features);
-                newStyle.UpdateFeatureCount();
-                style.LayerVisible = false;
+                newLayer.UpdateFeatureCount();
+                layer.LayerVisible = false;
             }
             else
             {
-                CreateStyle(style.Type, style);
+                CreateLayer(layer.Type, layer);
             }
         }
 
-        public async static Task CopyAllFeatures(StyleInfo source, StyleInfo target)
+        public async static Task CopyAllFeatures(LayerInfo source, LayerInfo target)
         {
 
             FeatureQueryResult features = await source.GetAllFeatures();
@@ -120,15 +121,15 @@ namespace MapBoard.Main.Helper
 
         public async static void CopyFeatures()
         {
-            SelectStyleDialog dialog = new SelectStyleDialog();
+            SelectLayerDialog dialog = new SelectLayerDialog();
             if (dialog.ShowDialog() == true)
             {
-                await CopyAllFeatures(StyleCollection.Instance.Selected, dialog.SelectedStyle);
+                await CopyAllFeatures(LayerCollection.Instance.Selected, dialog.SelectedStyle);
             }
         }
         public async static void Buffer()
         {
-            await Buffer(StyleCollection.Instance.Selected);
+            await Buffer(LayerCollection.Instance.Selected);
         }
 
         public async static void CreateCopy()
@@ -141,28 +142,28 @@ namespace MapBoard.Main.Helper
             }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, true);
             if (mode > 0)
             {
-                await CreatCopy(StyleCollection.Instance.Selected, mode == 2);
+                await CreatCopy(LayerCollection.Instance.Selected, mode == 2);
             }
         }
 
-        public static void ApplyStyles(this StyleInfo style)
+        public static void ApplyLayers(this LayerInfo layer)
         {
             try
             {
                 UniqueValueRenderer renderer = new UniqueValueRenderer();
                 renderer.FieldNames.Add("Key");
-                if (style.Symbols.Count == 0)
+                if (layer.Symbols.Count == 0)
                 {
-                    style.Symbols.Add("", new SymbolInfo());
+                    layer.Symbols.Add("", new SymbolInfo());
                 }
-                foreach (var info in style.Symbols)
+                foreach (var info in layer.Symbols)
                 {
                     var key = info.Key;
                     var symbolInfo = info.Value;
 
                     Symbol symbol = null;
 
-                    switch (style.Layer.FeatureTable.GeometryType)
+                    switch (layer.Layer.FeatureTable.GeometryType)
                     {
                         case GeometryType.Point:
                         case GeometryType.Multipoint:
@@ -189,27 +190,27 @@ namespace MapBoard.Main.Helper
 
                 }
 
-                style.Layer.Renderer = renderer;
-                string labelJson = style.LabelJson;
+                layer.Layer.Renderer = renderer;
+                string labelJson = layer.LabelJson;
                 LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
-                style.Layer.LabelDefinitions.Clear();
-                style.Layer.LabelDefinitions.Add(labelDefinition);
+                layer.Layer.LabelDefinitions.Clear();
+                layer.Layer.LabelDefinitions.Add(labelDefinition);
                 //style.Layer.LabelsEnabled = true;
             }
             catch (Exception ex)
             {
-                string error = (string.IsNullOrWhiteSpace(style.Name) ? "图层" + style.Name : "图层") + "样式加载失败";
+                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" + layer.Name : "图层") + "样式加载失败";
                 TaskDialog.ShowException(ex, error);
             }
         }
 
-        public async static Task Buffer(this StyleInfo style)
+        public async static Task Buffer(this LayerInfo layer)
         {
-            var newStyle = CreateStyle(GeometryType.Polygon, style);
+            var newLayer = CreateLayer(GeometryType.Polygon, layer);
 
-            ShapefileFeatureTable newTable = newStyle.Table;
+            ShapefileFeatureTable newTable = newLayer.Table;
 
-            foreach (var feature in await style.GetAllFeatures())
+            foreach (var feature in await layer.GetAllFeatures())
             {
                 Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
                 var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
@@ -220,7 +221,7 @@ namespace MapBoard.Main.Helper
 
         }
 
-        public async static Task CoordinateTransformate(this StyleInfo style, string from, string to)
+        public async static Task CoordinateTransformate(this LayerInfo layer, string from, string to)
         {
             if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
             {
@@ -229,40 +230,40 @@ namespace MapBoard.Main.Helper
 
             CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
 
-            FeatureQueryResult features = await style.GetAllFeatures();
+            FeatureQueryResult features = await layer.GetAllFeatures();
 
             foreach (var feature in features)
             {
                 coordinate.Transformate(feature);
-                await style.Table.UpdateFeatureAsync(feature);
+                await layer.Table.UpdateFeatureAsync(feature);
             }
 
         }
 
-        public async static Task SetTimeExtent(this StyleInfo style)
+        public async static Task SetTimeExtent(this LayerInfo layer)
         {
-            if (style.TimeExtent == null)
+            if (layer.TimeExtent == null)
             {
                 return;
             }
-            if (!style.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
+            if (!layer.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
             {
                 throw new Exception("shapefile没有指定的日期属性");
             }
-            FeatureLayer layer = style.Layer;
+            FeatureLayer  featureLayer = layer.Layer;
 
-            if (style.TimeExtent.IsEnable)
+            if (layer.TimeExtent.IsEnable)
             {
                 List<Feature> visiableFeatures = new List<Feature>();
                 List<Feature> invisiableFeatures = new List<Feature>();
 
-                FeatureQueryResult features = await style.GetAllFeatures();
+                FeatureQueryResult features = await layer.GetAllFeatures();
 
                 foreach (var feature in features)
                 {
                     if (feature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
                     {
-                        if (date > style.TimeExtent.From && date < style.TimeExtent.To)
+                        if (date > layer.TimeExtent.From && date < layer.TimeExtent.To)
                         {
                             visiableFeatures.Add(feature);
                         }
@@ -277,40 +278,40 @@ namespace MapBoard.Main.Helper
                     }
                 }
 
-                layer.SetFeaturesVisible(visiableFeatures, true);
-                layer.SetFeaturesVisible(invisiableFeatures, false);
+                featureLayer.SetFeaturesVisible(visiableFeatures, true);
+                featureLayer.SetFeaturesVisible(invisiableFeatures, false);
             }
             else
             {
-                layer.SetFeaturesVisible(await style.GetAllFeatures(), true);
+                featureLayer.SetFeaturesVisible(await layer.GetAllFeatures(), true);
 
             }
         }
 
-        public async static Task<StyleInfo> Union(IEnumerable<StyleInfo> styles)
+        public async static Task<LayerInfo> Union(IEnumerable<LayerInfo> Layers)
         {
-            if (styles == null || !styles.Any())
+            if (Layers == null || !Layers.Any())
             {
                 throw new Exception("样式为空");
             }
-            var type = styles.Select(p => p.Type).Distinct();
+            var type = Layers.Select(p => p.Type).Distinct();
             if (type.Count() != 1)
             {
                 throw new Exception("样式的类型并非统一");
             }
-            StyleInfo style = CreateStyle(type.First());
+            LayerInfo layer = CreateLayer(type.First());
 
-            foreach (var oldStyle in styles)
+            foreach (var oldLayer in Layers)
             {
-                var oldFeatures = await oldStyle.GetAllFeatures();
+                var oldFeatures = await oldLayer.GetAllFeatures();
 
-                var features = oldFeatures.Select(p => style.Table.CreateFeature(p.Attributes, p.Geometry));
-                await style.Table.AddFeaturesAsync(features);
-                oldStyle.LabelVisible = false;
+                var features = oldFeatures.Select(p => layer.Table.CreateFeature(p.Attributes, p.Geometry));
+                await layer.Table.AddFeaturesAsync(features);
+                oldLayer.LabelVisible = false;
             }
-            style.UpdateFeatureCount();
-            //StyleCollection.Instance.Styles.Add(style);
-            return style;
+            layer.UpdateFeatureCount();
+            //LayerCollection.Instance.Layers.Add(style);
+            return layer;
 
         }
 

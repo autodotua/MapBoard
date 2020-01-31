@@ -59,10 +59,10 @@ namespace MapBoard.TileDownloaderSplicer
         /// 暂停时瓦片的序号
         /// </summary>
         private int lastIndex = 0;
-        /// <summary>
-        /// 是否正在下载
-        /// </summary>
-        private bool downloading = false;
+        ///// <summary>
+        ///// 是否正在下载
+        ///// </summary>
+        //private bool downloading = false;
 
         /// <summary>
         /// 保存的拼接完成后临时图片的位置
@@ -102,7 +102,25 @@ namespace MapBoard.TileDownloaderSplicer
         public DownloadStatus CurrentDownloadStatus
         {
             get => currentDownloadStatus;
-            set => SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
+            set
+            {
+                SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
+                switch (value)
+                {
+                    case DownloadStatus.Downloading:
+                        taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+                        ControlsEnable = false;
+                        break;
+                    case DownloadStatus.Paused:
+                    case DownloadStatus.Stop:
+                        ControlsEnable = true;
+                        taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+                        DownloadingProgressPercent = 0;
+                        break;
+                    case DownloadStatus.Pausing:
+                        break;
+                }
+            }
         }
         private bool serverOn = false;
         public bool ServerOn
@@ -154,6 +172,12 @@ namespace MapBoard.TileDownloaderSplicer
             get => currentDownload;
             set => SetValueAndNotify(ref currentDownload, value, nameof(CurrentDownload));
         }
+        public bool ControlsEnable
+        {
+            get => controlsEnable;
+            set => SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
+        }
+        bool waiting = false;
 
         private void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
         {
@@ -223,9 +247,6 @@ namespace MapBoard.TileDownloaderSplicer
         private async Task StartOrContinueDowloading()
         {
             CurrentDownloadStatus = DownloadStatus.Downloading;
-            taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
-            downloading = true;
-            ControlsEnable = false;
             //pgb.Maximum = CurrentDownload.TileCount;
             DownloadErrors.Clear();
             int ok = 0;
@@ -294,20 +315,16 @@ namespace MapBoard.TileDownloaderSplicer
                 }
             });
             LastDownloadingStatus = "下载结束";
-            ControlsEnable = true;
             CurrentDownloadStatus = lastTile == null ? DownloadStatus.Stop : DownloadStatus.Paused;
-
-            taskBar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
-
-            downloading = false;
             arcMap.ShowPosition(this, null);
+            arcMap.SketchEditor.IsEnabled = true;
             if (closing)
             {
                 Close();
             }
         }
 
-        private async void ServerButtonClick(object sender, RoutedEventArgs e)
+        private void ServerButtonClick(object sender, RoutedEventArgs e)
         {
             if (!ServerOn)
             {
@@ -516,7 +533,7 @@ namespace MapBoard.TileDownloaderSplicer
 
         private void WindowClosing(object sender, CancelEventArgs e)
         {
-            if (downloading)
+            if (CurrentDownloadStatus == DownloadStatus.Downloading)
             {
                 if (TaskDialog.ShowWithYesNoButtons("正在下载瓦片，是否停止下载后关闭窗口？", "关闭") == true)
                 {
@@ -529,11 +546,7 @@ namespace MapBoard.TileDownloaderSplicer
 
             Config.Save();
         }
-        public bool ControlsEnable
-        {
-            get => controlsEnable;
-            set => SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
-        }
+
 
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
@@ -587,7 +600,6 @@ namespace MapBoard.TileDownloaderSplicer
                 CurrentDownload = new DownloadInfo();
             }
         }
-        bool waiting = false;
 
         private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
@@ -669,101 +681,6 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 loading.Hide();
             }
-        }
-    }
-    public class IsNotNullToBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value != null;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
-        }
-    }
-    /// <summary>
-    /// 通过参数将enum转换为string。
-    /// 参数格式示例：Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停
-    /// </summary>
-    public class EnumToStringConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            string[] paras = (parameter as string).Split(';');
-            foreach (var item in paras)
-            {
-                string[] parts = item.Split(':');
-                if (parts.Length < 2)
-                {
-                    throw new Exception("参数格式错误");
-                }
-                string key = parts[0];
-                string str = parts.Length == 2 ? parts[1] : item.Substring(parts[0].Length + 1);
-                if (value.ToString() == key)
-                {
-                    return str;
-                }
-            }
-            throw new Exception("找不到指定的值");
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
-        }
-    }
-    /// <summary>
-    /// 通过参数将enum转换为bool。
-    /// 参数格式示例：Pausing/Stop/Start:false
-    /// </summary>
-    public class EnumToBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            string[] parts = (parameter as string).Split(':');
-
-            if (parts.Length != 2)
-            {
-                throw new Exception("参数格式错误");
-            }
-            string key = parts[0];
-            if (!bool.TryParse(parts[1], out bool b))
-            {
-                throw new Exception("布尔值错误");
-            }
-            if (key.Split('/').Contains(value.ToString()))
-            {
-                return b;
-            }
-            else
-            {
-                return !b;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
-        }
-    }
-    public class BoolToStringConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            string[] parts = (parameter as string).Replace("\\:", "{colon}").Split(':'); if (parts.Length != 2) ;
-            if (parts.Length != 2)
-            {
-                throw new Exception("参数格式错误");
-            }
-
-            return (((bool)value) ? parts[0] : parts[1]).Replace("{colon}", ":");
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
 

@@ -45,8 +45,7 @@ namespace MapBoard.TileDownloaderSplicer
                 && double.TryParse(txtLeft.Text, out left)
                 && double.TryParse(txtRight.Text, out right)
                 && double.TryParse(txtBottom.Text, out bottom) &&
-                !(left < 0 || right < 0 || top < 0 || bottom < 0
-                || left > right || bottom > top));
+                !( left > right || bottom > top));
 
         }
 

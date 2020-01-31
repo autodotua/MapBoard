@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.Style
+namespace MapBoard.Main.Layer
 {
     public class SymbolInfo
     {

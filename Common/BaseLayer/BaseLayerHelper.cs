@@ -14,26 +14,18 @@ namespace MapBoard.Common.BaseLayer
         public const string RasterLayer = nameof(RasterLayer);
         public const string ShapefileLayer = nameof(ShapefileLayer);
         public const string TpkLayer = nameof(TpkLayer);
-        public const string WebTiledLayerDescription = "网络切片";
-        public const string RasterLayerDescription = "位图";
-        public const string ShapefileLayerDescription = "Shp矢量图层";
-        public const string TpkLayerDescription = "切片包";
 
-        public static Layer AddLayer(Basemap map,string type,string arg)
+
+        public static Layer AddLayer(Basemap map,BaseLayerType type,string arg)
         {
-            switch(type)
+            return type switch
             {
-                case WebTiledLayer:
-                  return  AddTiledLayer(map, arg);
-                case RasterLayer:
-                    return AddRasterLayer(map, arg);
-                case ShapefileLayer:
-                    return AddShapefileLayer(map, arg);
-                case TpkLayer:
-                    return AddTpkLayer(map, arg);
-                default:
-                    throw new Exception("未知类型");
-            }
+             BaseLayerType.WebTiledLayer => AddTiledLayer(map, arg),
+             BaseLayerType.RasterLayer => AddRasterLayer(map, arg),
+             BaseLayerType.ShapefileLayer => AddShapefileLayer(map, arg),
+             BaseLayerType.TpkLayer => AddTpkLayer(map, arg),
+                _ => throw new Exception("未知类型"),
+            };
         }
 
         private static WebTiledLayer AddTiledLayer(Basemap map, string url)

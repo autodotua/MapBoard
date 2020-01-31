@@ -1,6 +1,8 @@
-﻿using System;
+﻿using FzLib.Extension;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase
+    public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
         private static Config instance;
 
@@ -19,17 +21,17 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>("config_tile.json");
-                    if (instance.UrlCollection.Sources.Count == 0)
-                    {
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星", Url = "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（GCJ02）", Url = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（WGS84）", Url = "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}" });
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图", Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
-                        instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图注记", Url = "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
+                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config_tile.json")));
+                    //if (instance.UrlCollection.Sources.Count == 0)
+                    //{
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星", Url = "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" });
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（GCJ02）", Url = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}" });
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "谷歌卫星中国（WGS84）", Url = "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}" });
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图", Url = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
+                    //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "天地图注记", Url = "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d" });
 
-                    }
+                    //}
                 }
                 return instance;
             }
@@ -56,9 +58,9 @@ namespace MapBoard.TileDownloaderSplicer
          */
 
         public string DownloadUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-        public string DownloadFolder { get; set; } = "Download";
-        public bool CoverFile { get; set; } = true;
-        public string FormatExtension { get; set; } = "jpg";
+        public string DownloadFolder { get; set; } = @"..\Download";
+        public bool CoverFile { get; set; } = false;
+        public string FormatExtension { get; set; } = "png";
         public (int width, int height) TileSize { get; set; } = (256, 256);
         public ImageFormat ImageFormat
         {
@@ -85,20 +87,23 @@ namespace MapBoard.TileDownloaderSplicer
 
         private int requestTimeOut = 1000;
         public int ServerPort { get; set; } = 8080;
-        public string ServerFormat { get; set; } = @"Download\{z}\{x}-{y}.{ext}";
+        public string ServerFormat { get; set; } = @"..\Download\{z}/{x}-{y}.{ext}";
         public int RequestTimeOut
         {
             get => requestTimeOut;
             set
             {
-                if(value>0)
+                if (value > 0)
                 {
                     requestTimeOut = value;
                 }
-                Notify(nameof(RequestTimeOut));
+                this.Notify();
             }
         }
         private int readTimeOut = 1000;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public int ReadTimeOut
         {
             get => readTimeOut;
@@ -108,7 +113,7 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     readTimeOut = value;
                 }
-                Notify(nameof(ReadTimeOut));
+                this.Notify();
             }
         }
         public override void Save()

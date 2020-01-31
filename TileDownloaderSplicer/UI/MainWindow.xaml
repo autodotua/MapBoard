@@ -14,16 +14,20 @@
         Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="地图瓦片下载拼接器" Height="700" Width="1000">
+    Height="700" Width="1000">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="taskBar" Description="地图瓦片下载拼接器" ProgressValue="{Binding DownloadingProgressPercent}"/>
     </Window.TaskbarItemInfo>
     <Window.Resources>
+        <local:TitleConverter x:Key="titleConverter"/>
         <local:IsNotNullToBoolConverter x:Key="notNull"/>
         <local:EnumToStringConverter x:Key="e2s"/>
         <local:EnumToBoolConverter x:Key="e2b"/>
         <local:BoolToStringConverter x:Key="b2s"/>
     </Window.Resources>
+    <Window.Title>
+        <Binding Path="DownloadingProgressPercent" Converter="{StaticResource titleConverter}"/>
+    </Window.Title>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
