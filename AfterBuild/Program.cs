@@ -31,7 +31,7 @@ namespace MapBoard.AfterBuild
                 MoveFiles();
                 Console.WriteLine("文件和文件夹移动完成");
             }
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
 #endif
         }
 

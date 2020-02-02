@@ -301,12 +301,13 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                 }
                 lastTile = null;
-
+                Dispatcher?.Invoke(() => loading.Show());
                 try
                 {
                     foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
                     {
-                        Directory.Delete(directory, true);
+                        FzLib.IO.FileSystem.DeleteFileOrFolder(directory, true);
+                        //Directory.Delete(directory, true);
                     }
                 }
                 catch (Exception ex)
@@ -314,6 +315,7 @@ namespace MapBoard.TileDownloaderSplicer
                     Dispatcher.Invoke(() => TaskDialog.ShowException(ex, "无法删除临时文件夹"));
                 }
             });
+            loading.Hide();
             LastDownloadingStatus = "下载结束";
             CurrentDownloadStatus = lastTile == null ? DownloadStatus.Stop : DownloadStatus.Paused;
             arcMap.ShowPosition(this, null);
