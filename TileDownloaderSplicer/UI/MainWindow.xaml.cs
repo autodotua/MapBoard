@@ -301,25 +301,34 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                 }
                 lastTile = null;
-                Dispatcher?.Invoke(() => loading.Show());
-                try
-                {
-                    foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
-                    {
-                        FzLib.IO.FileSystem.DeleteFileOrFolder(directory, true);
-                        //Directory.Delete(directory, true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Dispatcher.Invoke(() => TaskDialog.ShowException(ex, "无法删除临时文件夹"));
-                }
             });
-            loading.Hide();
             LastDownloadingStatus = "下载结束";
             CurrentDownloadStatus = lastTile == null ? DownloadStatus.Stop : DownloadStatus.Paused;
             arcMap.ShowPosition(this, null);
             arcMap.SketchEditor.IsEnabled = true;
+
+
+            if (TaskDialog.ShowWithYesNoButtons("下载完成，是否删除临时文件夹？", "下载完成") == true)
+            {
+                loading.Show();
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        foreach (var directory in Directory.EnumerateDirectories(Config.DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
+                        {
+                            FzLib.IO.FileSystem.DeleteFileOrFolder(directory, true,false);
+                            //Directory.Delete(directory, true);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() => TaskDialog.ShowException(ex, "无法删除临时文件夹"));
+                    }
+                });
+                loading.Hide();
+            }
+           
             if (closing)
             {
                 Close();

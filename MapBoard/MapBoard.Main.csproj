@@ -275,6 +275,10 @@
     <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AfterBuild\MapBoard.AfterBuild.csproj">
+      <Project>{aaaf24f7-327d-45dd-a8d7-9750bea582e1}</Project>
+      <Name>MapBoard.AfterBuild</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GpxToolbox\MapBoard.GpxToolbox.csproj">
       <Project>{ad7451a5-7743-42e9-a988-2c292f629f76}</Project>
       <Name>MapBoard.GpxToolbox</Name>
