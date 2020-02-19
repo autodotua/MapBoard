@@ -19,18 +19,15 @@ namespace MapBoard.Common.BaseLayer
         /// <returns></returns>
         public async static Task<bool> LoadBaseGeoViewAsync(GeoView map)
         {
-
-
             try
             {
-
                 Basemap basemap = new Basemap();
 
                 foreach (var item in Config.Instance.BaseLayers.Where(p=>p.Enable))
                 {
                     try
                     {
-                        BaseLayerHelper.AddLayer(basemap, item.Type, item.Path);
+                        BaseLayerHelper.AddLayer(basemap, item);
                     }
                     catch (Exception ex)
                     {

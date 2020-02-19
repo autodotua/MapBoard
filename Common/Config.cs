@@ -86,7 +86,7 @@ namespace MapBoard.Common
         //    ShapefileStyles.Add(style);
         //}
     }
-    public class BaseLayerInfo : INotifyPropertyChanged
+    public class BaseLayerInfo : INotifyPropertyChanged, ICloneable
     {
         private int index;
 
@@ -103,9 +103,37 @@ namespace MapBoard.Common
             get => index;
             set => this.SetValueAndNotify(ref index, value, nameof(Index));
         }
-        public bool Enable { get; set; } = true;
+        private bool enable = true;
+        public bool Enable
+        {
+            get => enable;
+            set
+            {
+                enable = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enable)));
+            }
+        }
+        private double opacity = 1;
+        public double Opacity
+        {
+            get => opacity;
+            set
+            {
+                opacity = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Opacity)));
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public BaseLayerInfo Clone()
+        {
+            return MemberwiseClone() as BaseLayerInfo;
+        }
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 
     public enum BaseLayerType

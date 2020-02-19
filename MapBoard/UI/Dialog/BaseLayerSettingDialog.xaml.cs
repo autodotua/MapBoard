@@ -38,7 +38,7 @@ namespace MapBoard.Main.UI.Dialog
         public BaseLayerSettingDialog()
         {
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
-                Config.Instance.BaseLayers.Select(p => new BaseLayerInfo(p.Type, p.Path)));
+                Config.Instance.BaseLayers.Select(p => p.Clone()));
             ResetIndex();
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();

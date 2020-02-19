@@ -16,9 +16,11 @@ namespace MapBoard.Common.BaseLayer
         public const string TpkLayer = nameof(TpkLayer);
 
 
-        public static Layer AddLayer(Basemap map,BaseLayerType type,string arg)
+        public static Layer AddLayer(Basemap map,BaseLayerInfo baseLayer)
         {
-            return type switch
+            var type = baseLayer.Type;
+            var arg = baseLayer.Path;
+            Layer layer= type switch
             {
              BaseLayerType.WebTiledLayer => AddTiledLayer(map, arg),
              BaseLayerType.RasterLayer => AddRasterLayer(map, arg),
@@ -26,6 +28,8 @@ namespace MapBoard.Common.BaseLayer
              BaseLayerType.TpkLayer => AddTpkLayer(map, arg),
                 _ => throw new Exception("未知类型"),
             };
+            layer.Opacity = baseLayer.Opacity;
+            return layer;
         }
 
         private static WebTiledLayer AddTiledLayer(Basemap map, string url)
