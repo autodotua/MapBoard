@@ -499,7 +499,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 if (File.Exists(savedImgPath))
                 {
-                    var file = FileSystemDialog.GetSaveFile(new List<(string, string)>() { (Config.FormatExtension + "图片", Config.FormatExtension) }, false, true, "地图." + Config.FormatExtension);
+                    var file = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add (Config.FormatExtension + "图片", Config.FormatExtension) , true, "地图." + Config.FormatExtension);
                     if (file != null)
                     {
                         tbkStichStatus.Text = "正在保存地图";

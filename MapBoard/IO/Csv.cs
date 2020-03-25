@@ -16,7 +16,7 @@ namespace MapBoard.Main.IO
     {
         public static string Export(IEnumerable<Feature> features)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("Csv表格", "csv") }, ensureExtension: true, defaultFileName: "图形");
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv") , ensureExtension: true, defaultFileName: "图形");
             StringBuilder sb = new StringBuilder();
 
             List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();

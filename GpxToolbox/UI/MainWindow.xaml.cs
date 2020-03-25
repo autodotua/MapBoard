@@ -335,7 +335,7 @@ namespace MapBoard.GpxToolbox
 
         private void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, true, Gpx.Name + ".gpx");
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add ("GPX轨迹文件", "gpx"), true, Gpx.Name + ".gpx");
             if (path != null)
             {
                 try
@@ -352,7 +352,7 @@ namespace MapBoard.GpxToolbox
 
         private void OpenFilesButtonClick(object sender, RoutedEventArgs e)
         {
-            string[] files = FileSystemDialog.GetOpenFiles(new (string, string)[] { ("GPX轨迹文件", "gpx") }, true, true);
+            string[] files = FileSystemDialog.GetOpenFiles(new FileFilterCollection().Add ("GPX轨迹文件", "gpx") );
             if (files != null)
             {
                 arcMap.LoadFiles(files);
@@ -545,7 +545,7 @@ namespace MapBoard.GpxToolbox
                     gpx.Tracks[0].Points.Add(p);
                 }
             }
-            string filePath = FileSystemDialog.GetSaveFile(new (string, string)[] { ("GPX轨迹文件", "gpx") }, false, true, tracks[0].FileName + " - 连接.gpx");
+            string filePath = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx") , true, tracks[0].FileName + " - 连接.gpx");
             if (filePath != null)
             {
                 gpx.Save(filePath);
@@ -713,7 +713,7 @@ namespace MapBoard.GpxToolbox
 
         private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new (string, string)[] { ("PNG图片", "png") }, ensureExtension: true, defaultFileName: Gpx.Name + ".png");
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add ("PNG图片", "png") , ensureExtension: true, defaultFileName: Gpx.Name + ".png");
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);

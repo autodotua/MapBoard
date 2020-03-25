@@ -82,6 +82,9 @@
     <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.12.2.1\lib\net47\CsvHelper.dll</HintPath>
     </Reference>
+    <Reference Include="DotNetZip, Version=1.13.7.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.13.7\lib\net40\DotNetZip.dll</HintPath>
+    </Reference>
     <Reference Include="Esri.ArcGISRuntime, Version=100.6.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <HintPath>..\packages\Esri.ArcGISRuntime.WPF.100.6.0\lib\net461\Esri.ArcGISRuntime.dll</HintPath>
     </Reference>
@@ -148,6 +151,8 @@
     <Compile Include="Helper\FeatureHelper.cs" />
     <Compile Include="IO\Csv.cs" />
     <Compile Include="Helper\IOHelper.cs" />
+    <Compile Include="IO\IOUtilities.cs" />
+    <Compile Include="IO\MobileGISToolBox.cs" />
     <Compile Include="IO\Package.cs" />
     <Compile Include="IO\Shapefile.cs" />
     <Compile Include="IO\Gpx.cs" />

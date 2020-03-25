@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.UI.Dialog;
 using MapBoard.Main.IO;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using static FzLib.UI.Common;
 
 namespace MapBoard.Main.Helper
 {
@@ -23,63 +25,81 @@ namespace MapBoard.Main.Helper
         public async static Task ImportFeature()
         {
             LayerInfo style = LayerCollection.Instance.Selected;
-            string path = null;
+            FileFilterCollection filter = null;
+
             if (style.Type != GeometryType.Polygon)
             {
-                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
-                {
-                    ("支持的格式", "csv,gpx"),
-                    ("CSV表格", "csv"),
-                    ("GPS轨迹文件","gpx") ,
-                }, true);
+                filter = new FileFilterCollection()
+                    .Add("CSV表格", "csv")
+                    .Add("GPS轨迹文件", "gpx")
+                    .AddUnion();
             }
             else
             {
-                path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
-                {
-                    ("CSV表格", "csv"),
-                }, true);
+                filter = new FileFilterCollection()
+                  .Add("CSV表格", "csv");
+
             }
+            string path = FileSystemDialog.GetOpenFile(filter);
+            try
+            {
+                switch (Path.GetExtension(path))
+                {
+                    case ".gpx":
+                        Feature[] features = await Gpx.ImportToCurrentLayer(path);
+                        if (features.Length > 1)
+                        {
+                            SnakeBar.Show("导入GPX成功");
+                        }
+                        else
+                        {
+                            SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
+                            snake.ShowButton = true;
+                            snake.ButtonContent = "查看";
+                            snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
+
+                            snake.ShowMessage("已导出到" + path);
+                        }
+                        break;
+                    case ".csv":
+                        await Csv.Import(path);
+                        SnakeBar.Show("导入CSV成功");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.ShowException(ex, "导入失败");
+            }
+        }
+        public async static Task ExportLayer()
+        {
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
+                .Add("地图画板图层包", "mblpkg")
+                .Add("GIS工具箱图层", "zip")
+                , true, "地图画板图层 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {
                 try
                 {
                     switch (Path.GetExtension(path))
                     {
-                        case ".csv":
-                            await Csv.Import(path);
-                            SnakeBar.Show("导入CSV成功");
+                        case ".mblpkg":
+                            await Package.ExportLayer2(path, LayerCollection.Instance.Selected);
                             break;
-
-                        case ".gpx":
-                            var features = await Gpx.ImportToCurrentLayer(path);
-                            if (features.Length > 1)
-                            {
-
-                                SnakeBar.Show("导入GPX成功");
-                            }
-                            else
-                            {
-                                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
-                                snake.ShowButton = true;
-                                snake.ButtonContent = "查看";
-                                snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
-
-                                snake.ShowMessage("已导出到" + path);
-                            }
+                        case ".zip":
+                            await MobileGISToolBox.ExportLayer(path, LayerCollection.Instance.Selected);
                             break;
-
                         default:
                             throw new Exception("未知文件类型");
                     }
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "导入失败");
+                    TaskDialog.ShowException(ex, "导出失败");
                 }
             }
         }
-
         /// <summary>
         /// 显示对话框导入
         /// </summary>
@@ -87,15 +107,14 @@ namespace MapBoard.Main.Helper
         public async static Task ImportLayer()
         {
             bool ok = true;
-            string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
-            {
-                ("支持的格式", "mbmpkg,mblpkg,gpx,shp"),
-                ("mbmpkg地图画板包", "mbmpkg"),
-                ("mblpkg地图画板图层包", "mblpkg"),
-                ("GPS轨迹文件","gpx") ,
-                ("Shapefile文件","shp") ,
-            }
-            , true);
+            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
+
+                    .Add("支持的格式", "mbmpkg,mblpkg,gpx,shp")
+                   .Add("mbmpkg地图画板包", "mbmpkg")
+                    .Add("mblpkg地图画板图层包", "mblpkg")
+                   .Add("GPS轨迹文件", "gpx")
+                 .Add("Shapefile文件", "shp"));
+
             if (path != null)
             {
                 try
@@ -104,19 +123,19 @@ namespace MapBoard.Main.Helper
                     {
                         case ".mbmpkg":
                             Package.ImportMap(path);
-                            return  ;
+                            return;
 
                         case ".mblpkg":
                             Package.ImportLayer(path);
-                            return ;
+                            return;
 
                         case ".gpx":
-                            string result= TaskDialog.ShowWithCommandLinks("请选择转换类型", "正在准备导入GPS轨迹文件",
+                            string result = TaskDialog.ShowWithCommandLinks("请选择转换类型", "正在准备导入GPS轨迹文件",
                            new (string, string, Action)[] {
                                 ("点","每一个轨迹点分别加入到新的样式中",null),
                                 ("一条线","按时间顺序将轨迹点相连，形成一条线",null),
                                 ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",null) }, cancelable: true);
-                            switch(result)
+                            switch (result)
                             {
                                 case "点":
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.Point);
@@ -134,7 +153,7 @@ namespace MapBoard.Main.Helper
                             break;
                         case ".shp":
                             await Shapefile.Import(path);
-                            return  ;
+                            return;
 
                         default:
                             throw new Exception("未知文件类型");
@@ -160,18 +179,18 @@ namespace MapBoard.Main.Helper
         /// 显示对话框导出
         /// </summary>
         /// <returns></returns>
-        public static async Task ExportLayer()
+        public static async Task ExportMap()
         {
-            string path = FileSystemDialog.GetSaveFile(new List<(string, string)>() {
-                ("mbmpkg地图画板包", "mbmpkg"),
-                ("截图", "png")
-            },
-                false, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
+                   .Add("mbmpkg地图画板包", "mbmpkg")
+                .Add("GIS工具箱图层", "zip")
+                 .Add("截图", "png"),
+                 true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {
                 try
                 {
-                    SnakeBar.Show("正在导出");
+                    SnakeBar.ShowError("正在导出，请勿关闭程序");
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
@@ -181,6 +200,10 @@ namespace MapBoard.Main.Helper
 
                         case ".png":
                             await SaveImage(path);
+                            break;
+
+                        case ".zip":
+                            await MobileGISToolBox.ExportMap(path);
                             break;
                     }
                     SnakeBar.Show("导出成功");
@@ -223,7 +246,7 @@ namespace MapBoard.Main.Helper
                 {
                     //if (TaskDialog.ShowWithYesNoButtons("通过GPX工具箱打开？", "打开GPX文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
                     //{
-                        TaskDialog.ShowWithCommandLinks("选择打开多个GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
+                    TaskDialog.ShowWithCommandLinks("选择打开多个GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
                     ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
                     ("导入到新样式","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewStyle(files)),
                 }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);

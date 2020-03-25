@@ -13,53 +13,61 @@ namespace MapBoard.Common.Resource
     /// </summary>
     public static class ShapefileExport
     {
-        public static void ExportEmptyPointShapefile(string folderPath, string name)
+        public static string ExportEmptyPointShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
+            string path = GetFileName(folderPath, name, "shp");
             File.WriteAllBytes(GetFileName(folderPath, name, "cpg"), Resource.PointCpg);
-            File.WriteAllBytes(GetFileName(folderPath, name, "shp"), Resource.PointShp);
+            File.WriteAllBytes(path, Resource.PointShp);
             File.WriteAllBytes(GetFileName(folderPath, name, "shx"), Resource.PointShx);
             File.WriteAllBytes(GetFileName(folderPath, name, "prj"), Resource.PointPrj);
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PointDbf);
+            return path;
         }
-        public static void ExportEmptyMultipointShapefile(string folderPath, string name)
+        public static string ExportEmptyMultipointShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
+            string path = GetFileName(folderPath, name, "shp");
             File.WriteAllBytes(GetFileName(folderPath, name, "cpg"), Resource.MultipointCpg);
-            File.WriteAllBytes(GetFileName(folderPath, name, "shp"), Resource.MultipointShp);
+            File.WriteAllBytes(path, Resource.MultipointShp);
             File.WriteAllBytes(GetFileName(folderPath, name, "shx"), Resource.MultipointShx);
             File.WriteAllBytes(GetFileName(folderPath, name, "prj"), Resource.MultipointPrj);
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.MultipointDbf);
+            return path;
         }
-        public static void ExportEmptyPolylineShapefile(string folderPath, string name)
+        public static string ExportEmptyPolylineShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
+            string path = GetFileName(folderPath, name, "shp");
             File.WriteAllBytes(GetFileName(folderPath, name, "cpg"), Resource.PolylineCpg);
-            File.WriteAllBytes(GetFileName(folderPath, name, "shp"), Resource.PolylineShp);
+            File.WriteAllBytes(path, Resource.PolylineShp);
             File.WriteAllBytes(GetFileName(folderPath, name, "shx"), Resource.PolylineShx);
             File.WriteAllBytes(GetFileName(folderPath, name, "prj"), Resource.PolylinePrj);
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PolylineDbf);
+            return path;
         }
-        public static void ExportEmptyPolygonShapefile(string folderPath, string name)
+        public static string ExportEmptyPolygonShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
             }
+            string path = GetFileName(folderPath, name, "shp");
             File.WriteAllBytes(GetFileName(folderPath, name, "cpg"), Resource.PolygonCpg);
-            File.WriteAllBytes(GetFileName(folderPath, name, "shp"), Resource.PolygonShp);
+            File.WriteAllBytes(path, Resource.PolygonShp);
             File.WriteAllBytes(GetFileName(folderPath, name, "shx"), Resource.PolygonShx);
             File.WriteAllBytes(GetFileName(folderPath, name, "prj"), Resource.PolygonPrj);
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PolygonDbf);
+            return path;
         }
         private static string GetFileName(string folderPath, string name, string extension)
         {
@@ -78,26 +86,22 @@ namespace MapBoard.Common.Resource
             return folderPath + "\\" + name + "." + extension;
         }
 
-        public static void ExportEmptyShapefile(GeometryType type, string name,string path=null)
+        public static string ExportEmptyShapefile(GeometryType type, string name, string path = null)
         {
-            if(path==null)
+            if (path == null)
             {
                 path = Config.DataPath;
             }
             switch (type)
             {
                 case GeometryType.Point:
-                    ExportEmptyPointShapefile(path, name);
-                    break;
+                    return ExportEmptyPointShapefile(path, name);
                 case GeometryType.Multipoint:
-                    ExportEmptyMultipointShapefile(path, name);
-                    break;
+                    return ExportEmptyMultipointShapefile(path, name);
                 case GeometryType.Polyline:
-                    ExportEmptyPolylineShapefile(path, name);
-                    break;
+                    return ExportEmptyPolylineShapefile(path, name);
                 case GeometryType.Polygon:
-                    ExportEmptyPolygonShapefile(path, name);
-                    break;
+                    return ExportEmptyPolygonShapefile(path, name);
                 default:
                     throw new Exception("不支持的格式");
             }

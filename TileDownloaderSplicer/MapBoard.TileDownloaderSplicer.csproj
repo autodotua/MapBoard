@@ -84,9 +84,6 @@
     <Reference Include="Microsoft.WindowsAPICodePack.Shell">
       <HintPath>..\libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.ShellExtensions">
-      <HintPath>..\libs\Microsoft.WindowsAPICodePack.ShellExtensions.dll</HintPath>
-    </Reference>
     <Reference Include="NetTopologySuite">
       <HintPath>..\libs\NetTopologySuite.dll</HintPath>
     </Reference>

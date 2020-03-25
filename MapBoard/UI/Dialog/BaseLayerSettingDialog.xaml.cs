@@ -96,16 +96,14 @@ namespace MapBoard.Main.UI.Dialog
 
         private void BrowseButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetOpenFile(new List<(string, string)>()
-                {
-                    ("支持的格式", "jpg,jpeg,png,bmp,tif,tiff,shp,tpk"),
-                    ("JPEG图片", "jpg,jpeg"),
-                    ("PNG图片","png") ,
-                    ("BMP图片","bmp") ,
-                    ("TIFF图片","tif,tiff") ,
-                    ("Shapefile矢量图","shp") ,
-                    ("TilePackage切片包","tpk") ,
-                }, true);
+            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
+                 .Add   ("JPEG图片", "jpg,jpeg")
+                 .Add   ("PNG图片","png") 
+                 .Add   ("BMP图片","bmp") 
+                 .Add   ("TIFF图片","tif,tiff") 
+                 .Add   ("Shapefile矢量图","shp") 
+                 .Add   ("TilePackage切片包","tpk") 
+                 .AddUnion());
             if (path == null)
             {
                 return;

@@ -261,7 +261,7 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOHelper.ExportLayer();
+            await IOHelper.ExportMap();
         }
 
         private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
@@ -280,7 +280,7 @@ namespace MapBoard.Main.UI
             }
             else
             {
-                SnakeBar.ShowError("目录不存在");
+                Process.Start(FzLib.Program.App.ProgramDirectoryPath);
             }
         }
 
@@ -320,7 +320,7 @@ namespace MapBoard.Main.UI
 
         private void DeleteLayer()
         {
-            if (lvw.SelectedItems.Count==0)
+            if (lvw.SelectedItems.Count == 0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
@@ -330,10 +330,10 @@ namespace MapBoard.Main.UI
                 LayerHelper.RemoveLayer(layer, true);
             }
             //var style = LayerCollection.Instance.Selected;
-           
+
         }
 
-        private  void WindowLoaded(object sender, RoutedEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             //btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
             //grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
@@ -397,20 +397,11 @@ namespace MapBoard.Main.UI
                 menu.IsOpen = true;
             }
 
-            void ExportSingle()
+            async void ExportSingle()
             {
-                string path = FileSystemDialog.GetSaveFile(new List<(string, string)>() { ("mblpkg地图画板图层包", "mblpkg") }, false, true, "地图画板图层 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-                if (path != null)
-                {
-                    try
-                    {
-                        Package.ExportLayer(path, LayerCollection.Instance.Selected);
-                    }
-                    catch (Exception ex)
-                    {
-                        TaskDialog.ShowException(ex, "导出失败");
-                    }
-                }
+                loading.Show();
+                await IOHelper.ExportLayer();
+                loading.Hide();
             }
 
             async void ZoomToLayer()
@@ -454,7 +445,7 @@ namespace MapBoard.Main.UI
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
-           lvw.SelectedItem= null;
+            lvw.SelectedItem = null;
         }
 
         private void BatchOperationButtonClick(object sender, RoutedEventArgs e)

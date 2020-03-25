@@ -95,25 +95,17 @@ namespace MapBoard.Main.IO
         }
         public async static Task ExportMap2(string path)
         {
-            DirectoryInfo directory = new DirectoryInfo(Path.Combine(Config.DataPath, "temp"));
-            if (directory.Exists)
+            DirectoryInfo directory = IOUtilities.GetTempDir();
+            foreach (var layer in LayerCollection.Instance.Layers)
             {
-                directory.Delete(true);
-            }
-            directory.Create();
-            foreach (var style in LayerCollection.Instance.Layers)
-            {
-                ShapefileExport.ExportEmptyShapefile(style.Type, style.Name, directory.FullName);
-                LayerInfo newStyle = new LayerInfo();
-
-                ShapefileFeatureTable table = new ShapefileFeatureTable(Path.Combine(directory.FullName, style.Name + ".shp"));
-                await table.AddFeaturesAsync(await style.GetAllFeatures());
-                table.Close();
+                await IOUtilities.CloneFeatureToNewShp(directory.FullName, layer);
             }
             await Task.Delay(500);
-            LayerCollection.Instance.Save(Path.Combine(directory.FullName,LayerCollection.LayersFileName));
+            LayerCollection.Instance.Save(Path.Combine(directory.FullName, LayerCollection.LayersFileName));
             ZipFile.CreateFromDirectory(directory.FullName, path);
         }
+
+
 
 
 
@@ -150,6 +142,17 @@ namespace MapBoard.Main.IO
             LayerCollection.Instance.Layers.Insert(index, style);
             LayerCollection.Instance.SaveWhenChanged = true;
             Directory.Delete(tempDirectoryPath, true);
+        }
+
+        public async static Task ExportLayer2(string path, LayerInfo layer)
+        {
+            DirectoryInfo directory = IOUtilities.GetTempDir();
+            await IOUtilities.CloneFeatureToNewShp(directory.FullName, layer);
+            await Task.Delay(500);
+            File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
+
+            LayerCollection.Instance.Save(Path.Combine(directory.FullName, LayerCollection.LayersFileName));
+            ZipFile.CreateFromDirectory(directory.FullName, path);
         }
     }
 }
