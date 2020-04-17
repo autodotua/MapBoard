@@ -4,7 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
-using MapBoard.Main.Helper;
+using MapBoard.Main.Util;
 using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Mapview.Map.OperationalLayers.Add(layer);
-                Helper.LayerHelper.ApplyLayers(style);
+                LayerUtility.ApplyLayers(style);
                 await style.LayerComplete();
                 return true;
             }

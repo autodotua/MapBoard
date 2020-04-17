@@ -3,7 +3,7 @@ using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Helper;
+using MapBoard.Main.Util;
 using MapBoard.Main.IO;
 using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
@@ -27,7 +27,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
 using Color = System.Drawing.Color;
-
+using static FzLib.Media.Converter;
 namespace MapBoard.Main.UI.Panel
 {
     /// <summary>
@@ -41,41 +41,6 @@ namespace MapBoard.Main.UI.Panel
             InitializeComponent();
         }
 
-        public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
-        public KeySymbolPair SelectedKey
-        {
-            get => selectedKey;
-            set
-            {
-                if (selectedKey != null)
-                {
-                    selectedKey.Symbol.LineWidth = LineWidth;
-                    selectedKey.Symbol.LineColor = LineColor;
-                    selectedKey.Symbol.FillColor = FillColor;
-                }
-
-                SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
-
-                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
-                if (value != null)
-                {
-                    //LineWidth = LayerCollection.Instance.Selected.Renderer.LineWidth;
-                    //LineColor = LayerCollection.Instance.Selected.Renderer.LineColor;
-                    //FillColor = LayerCollection.Instance.Selected.Renderer.FillColor;
-                    LineWidth = value.Symbol.LineWidth;
-                    LineColor = value.Symbol.LineColor;
-                    FillColor = value.Symbol.FillColor;
-                }
-            }
-        }
-
-        private string styleName;
-        public string StyleName
-        {
-            get => styleName;
-            set => SetValueAndNotify(ref styleName, value, nameof(StyleName));
-        }
-
         private double lineWidth = 5;
         public double LineWidth
         {
@@ -83,86 +48,99 @@ namespace MapBoard.Main.UI.Panel
             set => SetValueAndNotify(ref lineWidth, value, nameof(LineWidth));
         }
 
-        public System.Drawing.Color LineColor
-        {
-            get => FzLib.Media.Converter.MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
-            set => lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        }
+        //public System.Drawing.Color LineColor
+        //{
+        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
+        //    set => lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
+        //}
 
 
-        public System.Drawing.Color FillColor
-        {
-            get => FzLib.Media.Converter.MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
-            set => fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        }
+        //public System.Drawing.Color FillColor
+        //{
+        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
+        //    set => fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
+        //}
 
-        public System.Drawing.Color LabelLineColor
-        {
-            get => FzLib.Media.Converter.MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
-            set => labelLineColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        }
+        //public System.Drawing.Color LabelLineColor
+        //{
+        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
+        //    set => labelLineColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
+        //}
 
 
-        public System.Drawing.Color LabelFillColor
-        {
-            get => FzLib.Media.Converter.MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
-            set => labelFillColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        }
+        //public Color LabelFillColor
+        //{
+        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
+        //    set => labelFillColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
+        //}
 
-        private double labelFontSize;
-        public double LabelFontSize
+        public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
+        public KeySymbolPair SelectedKey
         {
-            get => labelFontSize;
-            set => SetValueAndNotify(ref labelFontSize, value, nameof(LabelFontSize));
-        }
-        private double labelStrokeThickness;
-        public double LabelStrokeThickness
-        {
-            get => labelStrokeThickness;
-            set => SetValueAndNotify(ref labelStrokeThickness, value, nameof(LabelStrokeThickness));
-        }
-
-        private double labelMinScale;
-        public double LabelMinScale
-        {
-            get => labelMinScale;
+            get => selectedKey;
             set
             {
-                if (value >= 0)
+                //保存旧值
+                if (selectedKey != null)
                 {
-                    labelMinScale = value;
+                    selectedKey.Symbol.LineWidth = LineWidth;
+                    selectedKey.Symbol.LineColor = MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
+                    selectedKey.Symbol.FillColor = MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
                 }
-                else
+
+                SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
+
+                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
+                if (value != null)
                 {
-                    labelMinScale = 0;
+                    //应用新值
+                    LineWidth = value.Symbol.LineWidth;
+                    lineColorPicker.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(value.Symbol.LineColor));
+                    fillColorPicker.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(value.Symbol.FillColor));
                 }
-                Notify(nameof(LabelMinScale));
             }
         }
 
+        private string layerName;
+        public string LayerName
+        {
+            get => layerName;
+            set => SetValueAndNotify(ref layerName, value, nameof(LayerName));
+        }
+        private LabelInfo label;
+        public LabelInfo Label
+        {
+            get => label;
+            set => SetValueAndNotify(ref label, value, nameof(Label));
+        }
+
+
         public void SetStyleFromUI()
         {
-            var style = LayerCollection.Instance.Selected;
+            var layer = LayerCollection.Instance.Selected;
             //style.Renderer.LineColor = LineColor;
             //style.Renderer.FillColor = FillColor;
             //style.Renderer.LineWidth = LineWidth;
             if (SelectedKey != null)
             {
                 SelectedKey.Symbol.LineWidth = LineWidth;
-                SelectedKey.Symbol.LineColor = LineColor;
-                SelectedKey.Symbol.FillColor = FillColor;
+                SelectedKey.Symbol.LineColor = MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
+                SelectedKey.Symbol.FillColor = MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
             }
-            style.Symbols.Clear();
+            layer.Symbols.Clear();
             foreach (var keySymbol in Keys)
             {
-                style.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
+                layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
             }
+            Label.LineColor = MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
+            Label.FillColor = MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
 
-            SetLabelFromUI();
+            layer.ApplyLabel();
+            //SetLabelFromUI(Label.GetExpression());
             //Layersetting.SetStyleFromUI(LayerCollection.Instance.Selected);
 
-            string newName = StyleName;
-            if (newName != style.Name)
+            string newName = LayerName;
+            if (newName != layer.Name)
             {
                 int index = LayerCollection.Instance.Layers.IndexOf(LayerCollection.Instance.Selected);
 
@@ -177,47 +155,43 @@ namespace MapBoard.Main.UI.Panel
                 }
                 try
                 {
-                    Helper.LayerHelper.RemoveLayer(LayerCollection.Instance.Selected, false);
-                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, style.Name))
+                    Util.LayerUtility.RemoveLayer(LayerCollection.Instance.Selected, false);
+                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                     {
                         File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
                     }
-                    style.Name = newName;
+                    layer.Name = newName;
                 }
                 catch (Exception ex)
                 {
                     SnakeBar.ShowException(ex, "重命名失败");
                 }
             end:
-                style.Table = null;
-                LayerCollection.Instance.Layers.Insert(index, style);
+                layer.Table = null;
+                LayerCollection.Instance.Layers.Insert(index, layer);
             }
             else
             {
-                style.ApplyLayers();
+                layer.ApplyLayers();
             }
 
         }
 
-        public void ResetLayersettingUI()
+        public void ResetLayerSettingUI()
         {
-            if (!IsLoaded || LayerCollection.Instance.Selected == null)
+            LayerInfo layer = LayerCollection.Instance.Selected;
+            if (!IsLoaded || layer == null)
             {
                 return;
             }
             else
             {
-                StyleName = LayerCollection.Instance.Selected?.Name;
-
-                //LineWidth = LayerCollection.Instance.Selected.Renderer.LineWidth;
-                //LineColor = LayerCollection.Instance.Selected.Renderer.LineColor;
-                //FillColor = LayerCollection.Instance.Selected.Renderer.FillColor;
-
+                LayerName = layer?.Name;
+                Label = layer.Label;
                 Keys.Clear();
-                var style = LayerCollection.Instance.Selected;
-                foreach (var symbol in style.Symbols)
+                foreach (var symbol in layer.Symbols)
                 {
-                    if (symbol.Key == "")
+                    if (symbol.Key.Length == 0)
                     {
                         Keys.Add(new KeySymbolPair(defaultKeyName, symbol.Value));
                     }
@@ -229,140 +203,22 @@ namespace MapBoard.Main.UI.Panel
                 if (!Keys.Any(p => p.Key == defaultKeyName))
                 {
                     Keys.Add(new KeySymbolPair(defaultKeyName, new SymbolInfo()));
-
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
 
-
-                ResetLabelSettingUI();
             }
+
+            labelLineColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.LineColor));
+            labelFillColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.FillColor));
+
         }
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
-            LabelMinScale = ArcMapView.Instance.MapScale;
+            Label.MinScale = ArcMapView.Instance.MapScale;
         }
         private JObject labelJson;
         private KeySymbolPair selectedKey;
-
-        private void SetLabelFromUI()
-        {
-            labelJson = JObject.Parse(Resource.LabelJson);
-            SetLabelJsonValue<byte>("symbol.haloColor", GetRgbaFromColor(LabelLineColor));
-            SetLabelJsonValue<byte>("symbol.color", GetRgbaFromColor(LabelFillColor));
-            SetLabelJsonValue("symbol.font.size", LabelFontSize);
-            SetLabelJsonValue("symbol.haloSize", LabelStrokeThickness);
-            SetLabelJsonValue("minScale", LabelMinScale);
-            LayerCollection.Instance.Selected.LabelJson = labelJson.ToString();
-        }
-        private void ResetLabelSettingUI()
-        {
-            labelJson = JObject.Parse(LayerCollection.Instance.Selected.LabelJson);
-            LabelLineColor = GetColorFromArgb(GetLabelJsonValue<byte>("symbol.haloColor", new byte[] { 0, 0, 0, 0 }));
-            LabelFillColor = GetColorFromArgb(GetLabelJsonValue<byte>("symbol.color", new byte[] { 0, 0, 0, 0 }));
-            LabelFontSize = GetLabelJsonValue("symbol.font.size", 9);
-            LabelStrokeThickness = GetLabelJsonValue("symbol.haloSize", 1);
-            LabelMinScale = GetLabelJsonValue("minScale", 0);
-        }
-        private static byte[] GetRgbaFromColor(System.Drawing.Color color)
-        {
-            return new byte[] { color.R, color.G, color.B, color.A };
-        }
-        private static System.Drawing.Color GetColorFromArgb(IList<byte> argb)
-        {
-            return System.Drawing.Color.FromArgb(argb[3], argb[0], argb[1], argb[2]);
-        }
-
-        public void SetLabelJsonValue<T>(string path, IList<T> value)
-        {
-            string[] paths = path.Split('.');
-
-            JToken token = labelJson[paths[0]];
-            for (int i = 1; i < paths.Length; i++)
-            {
-                token = token[paths[i]];
-            }
-
-            for (int i = 0; i < value.Count; i++)
-            {
-                (token as JArray)[i] = new JValue(value[i]);
-            }
-
-        }
-        public void SetLabelJsonValue<T>(string path, T value)
-        {
-            string[] paths = path.Split('.');
-
-            JToken token = labelJson[paths[0]];
-            for (int i = 1; i < paths.Length; i++)
-            {
-                token = token[paths[i]];
-            }
-
-           (token as JValue).Value = value;
-
-        }
-
-        public T[] GetLabelJsonValue<T>(string path, IEnumerable<T> defaultValue)
-        {
-            try
-            {
-                string[] paths = path.Split('.');
-
-                JToken token = labelJson[paths[0]];
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    token = token[paths[i]];
-                }
-
-                if (token is JArray value)
-                {
-                    if (value[0] is JValue)
-                    {
-
-                        return value.Select(p => (p as JValue).Value<T>()).ToArray();
-
-                    }
-                }
-                return defaultValue.ToArray();
-            }
-            catch (Exception ex)
-            {
-                return defaultValue.ToArray();
-            }
-        }
-        public T GetLabelJsonValue<T>(string path, T defaultValue)
-        {
-            try
-            {
-                string[] paths = path.Split('.');
-
-                JToken token = labelJson[paths[0]];
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    token = token[paths[i]];
-                }
-
-                if (token is JValue value)
-                {
-                    return value.Value<T>();
-                }
-                return defaultValue;
-            }
-            catch (Exception ex)
-            {
-                return defaultValue;
-            }
-        }
-
-
-        //private bool useStatic = false;
-        //public bool UseStatic
-        //{
-        //    get => useStatic;
-        //    set => SetValueAndNotify(ref useStatic, value, nameof(UseStatic));
-        //}
-
 
         private void KeyButtonClick(object sender, RoutedEventArgs e)
         {
@@ -428,7 +284,7 @@ namespace MapBoard.Main.UI.Panel
             var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.KeyFieldName) as string).Distinct();
             foreach (var key in keys)
             {
-                if(Keys.Any(p=>p.Key==key) || key=="")
+                if (Keys.Any(p => p.Key == key) || key == "")
                 {
                     continue;
                 }
@@ -450,7 +306,7 @@ namespace MapBoard.Main.UI.Panel
             int B = r.Next(255);
             B = (R + G > 400) ? R + G - 400 : B;//0 : 380 - R - G;
             B = (B > 255) ? 255 : B;
-            return Color.FromArgb(255,R, G, B);
+            return Color.FromArgb(255, R, G, B);
         }
 
         private void GenerateRandomColorButtonClick(object sender, RoutedEventArgs e)

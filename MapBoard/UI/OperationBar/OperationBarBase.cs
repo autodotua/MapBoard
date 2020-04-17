@@ -13,10 +13,11 @@ namespace MapBoard.Main.UI.OperationBar
 {
     public abstract class OperationBarBase : Grid, INotifyPropertyChanged
     {
+        public  abstract double BarHeight { get; }
         public OperationBarBase() : base()
         {
             DataContext = this;
-            Height = 24;
+            Height = BarHeight;
             Background = new SolidColorBrush(Color.FromRgb(0x2d, 0x2d, 0x30));
 
             ani = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
@@ -36,7 +37,7 @@ namespace MapBoard.Main.UI.OperationBar
 
         public void Hide()
         {
-            ani.To = -24;
+            ani.To = -BarHeight;
             storyboard.Begin();
         }
 

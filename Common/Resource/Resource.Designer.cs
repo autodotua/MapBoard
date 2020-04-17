@@ -81,7 +81,7 @@ namespace MapBoard.Common.Resource {
         /// <summary>
         ///   查找类似 {
         ///  &quot;labelExpressionInfo&quot;: {
-        ///    &quot;expression&quot;: &quot;$feature.Info&quot;
+        ///    &quot;expression&quot;: &quot;$expression&quot;
         ///  },
         ///  &quot;maxScale&quot;: 0,
         ///  &quot;minScale&quot;: 0,
@@ -112,7 +112,7 @@ namespace MapBoard.Common.Resource {
         ///      &quot;style&quot;: &quot;normal&quot;,
         ///      &quot;weight&quot;: &quot;normal&quot;
         ///    },
-        ///    &quot;haloCol [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///    &quot;haloColor [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         public static string LabelJson {
             get {

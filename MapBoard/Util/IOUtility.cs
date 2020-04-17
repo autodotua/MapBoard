@@ -18,9 +18,9 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using static FzLib.UI.Common;
 
-namespace MapBoard.Main.Helper
+namespace MapBoard.Main.Util
 {
-    public static class IOHelper
+    public static class IOUtility
     {
         public async static Task ImportFeature()
         {

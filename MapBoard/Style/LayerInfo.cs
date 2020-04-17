@@ -15,14 +15,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
-using static MapBoard.Main.Helper.LayerHelper;
+using static MapBoard.Main.Util.LayerUtility;
+using static FzLib.Extension.ExtendedINotifyPropertyChanged;
+using Newtonsoft.Json.Linq;
 
 namespace MapBoard.Main.Layer
 {
     public class LayerInfo : INotifyPropertyChanged, ICloneable
     {
-
-
         public string Name { get; set; }
         [JsonIgnore]
         public string FileName => Path.Combine(Config.DataPath, Name + ".shp");
@@ -75,23 +75,23 @@ namespace MapBoard.Main.Layer
             }
         }
 
-        private bool labelVisible = true;
-        public bool LabelVisible
-        {
-            get
-            {
-                return labelVisible;
-            }
-            set
-            {
-                labelVisible = value;
-                if (Layer != null)
-                {
-                    Layer.LabelsEnabled = value;
-                }
-                this.Notify(nameof(LabelVisible));
-            }
-        }
+        //private LabelDisplay label = new LabelDisplay();
+        //public LabelDisplay Label
+        //{
+        //    get
+        //    {
+        //        return label;
+        //    }
+        //    set
+        //    {
+        //        label = value;
+        //        if (Layer != null)
+        //        {
+        //            Layer.LabelsEnabled = Label.Enable;
+        //        }
+        //        this.Notify(nameof(Label));
+        //    }
+        //}
 
         private TimeExtentInfo timeExtent;
 
@@ -121,27 +121,16 @@ namespace MapBoard.Main.Layer
                 this.Notify(nameof(TimeExtentEnable));
             }
         }
-
-
-        public string LabelJson { get; set; } = Resource.LabelJson;
-
+        public LabelInfo Label { get; set; } = new LabelInfo();
+        //public string LabelJson { get; set; }
 
         public void UpdateFeatureCount()
         {
-            //QueryParameters p = new QueryParameters
-            //{
-            //    SpatialRelationship = SpatialRelationship.Contains
-            //};
-            //FeatureCount = (int)await Table.QueryFeatureCountAsync(p);
             this.Notify(nameof(FeatureCount));
         }
 
         public async Task<FeatureQueryResult> GetAllFeatures()
         {
-            //QueryParameters query = new QueryParameters
-            //{
-            //    SpatialRelationship = SpatialRelationship.Contains
-            //};
             FeatureQueryResult result = await Table.QueryFeaturesAsync(new QueryParameters());
             return result;
         }
@@ -190,13 +179,7 @@ namespace MapBoard.Main.Layer
         }
 
 
-        public async Task LayerComplete()
-        {
-            Layer.IsVisible = LayerVisible;
-            Layer.LabelsEnabled = LabelVisible;
 
-            await this.SetTimeExtent();
-        }
         public void CopyLayerFrom(LayerInfo layer)
         {
             foreach (var s in layer.Symbols)
@@ -211,7 +194,7 @@ namespace MapBoard.Main.Layer
             //Renderer.LineWidth = style.Renderer.LineWidth;
             //Renderer.LineColor = style.Renderer.LineColor;
             //Renderer.FillColor = style.Renderer.FillColor;
-            LabelJson = layer.LabelJson;
+            Label = layer.Label;
             this.Notify(
                 //nameof(Renderer.LineColor),
                 //nameof(Renderer),

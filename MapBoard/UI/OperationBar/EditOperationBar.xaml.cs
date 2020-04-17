@@ -27,7 +27,7 @@ namespace MapBoard.Main.UI.OperationBar
 
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
-            ppp.PlacementTarget = btnAttri;
+            //ppp.PlacementTarget = btnAttri;
         }
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
@@ -70,7 +70,7 @@ namespace MapBoard.Main.UI.OperationBar
             }
             else
             {
-                ppp.IsOpen = false;
+                //ppp.IsOpen = false;
                 Hide();
             }
         }
@@ -89,6 +89,8 @@ namespace MapBoard.Main.UI.OperationBar
                 Notify(nameof(Title));
             }
         }
+
+        public override double BarHeight { get; } = 48;
 
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
@@ -121,7 +123,7 @@ namespace MapBoard.Main.UI.OperationBar
 
         private void BtnAttri_Click(object sender, RoutedEventArgs e)
         {
-            ppp.IsOpen = !ppp.IsOpen;
+            //ppp.IsOpen = !ppp.IsOpen;
         }
     }
 }

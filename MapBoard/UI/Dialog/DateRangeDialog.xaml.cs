@@ -25,21 +25,22 @@ namespace MapBoard.Main.UI.Dialog
     {
         bool canSelect = false;
         LayerInfo CurrentStyle { get; }
-        public DateRangeDialog(LayerInfo style)
+        public DateRangeDialog(LayerInfo layer)
         {
-            CurrentStyle = style;
+            CurrentStyle = layer;
             InitializeComponent();
-            if (style.TimeExtent == null)
+            if (layer.TimeExtent == null)
             {
-                EnableDateRange = true;
+                EnableDateRange = false;
                 date.DateFrom = DateTime.Now.AddYears(-1);
                 date.DateTo = DateTime.Now;
             }
             else
             {
-                EnableDateRange = style.TimeExtent.IsEnable;
-                date.DateFrom = style.TimeExtent.From.Date;
-                date.DateTo = style.TimeExtent.To.Date;
+                EnableDateRange = true;
+                EnableDateRange = layer.TimeExtent.IsEnable;
+                date.DateFrom = layer.TimeExtent.From.Date;
+                date.DateTo = layer.TimeExtent.To.Date;
             }
         }
 

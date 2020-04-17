@@ -22,7 +22,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
-using static MapBoard.Main.Helper.FeatureHelper;
+using static MapBoard.Main.Util.FeatureUtility;
 
 namespace MapBoard.Main.UI.OperationBar
 {
@@ -105,6 +105,8 @@ namespace MapBoard.Main.UI.OperationBar
                 Notify(nameof(Message));
             }
         }
+
+        public override double BarHeight { get; } = 24;
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {

@@ -7,7 +7,7 @@ using FzLib.UI.Extension;
 using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Helper;
+using MapBoard.Main.Util;
 using MapBoard.Main.IO;
 using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
@@ -97,7 +97,7 @@ namespace MapBoard.Main.UI
                 return;
             }
             //bool yes = true;
-            await IOHelper.DropFiles(files);
+            await IOUtility.DropFiles(files);
         }
 
 
@@ -250,7 +250,7 @@ namespace MapBoard.Main.UI
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
             loading.Show();
-            await IOHelper.ImportLayer();
+            await IOUtility.ImportLayer();
             loading.Hide();
         }
 
@@ -261,7 +261,7 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOHelper.ExportMap();
+            await IOUtility.ExportMap();
         }
 
         private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
@@ -288,10 +288,10 @@ namespace MapBoard.Main.UI
         {
             TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
             {
-                ("线",null,()=>LayerHelper.CreateLayer(GeometryType.Polyline)),
-                ("面",null,()=>LayerHelper.CreateLayer(GeometryType.Polygon)),
-                ("点",null,()=>LayerHelper.CreateLayer(GeometryType.Point)),
-                ("多点",null,()=>LayerHelper.CreateLayer(GeometryType.Multipoint)),
+                ("线",null,()=>LayerUtility.CreateLayer(GeometryType.Polyline)),
+                ("面",null,()=>LayerUtility.CreateLayer(GeometryType.Polygon)),
+                ("点",null,()=>LayerUtility.CreateLayer(GeometryType.Point)),
+                ("多点",null,()=>LayerUtility.CreateLayer(GeometryType.Multipoint)),
             }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
         }
 
@@ -315,7 +315,7 @@ namespace MapBoard.Main.UI
             }
             changingStyle = false;
             JudgeControlsEnable();
-            Layersetting.ResetLayersettingUI();
+            Layersetting.ResetLayerSettingUI();
         }
 
         private void DeleteLayer()
@@ -327,7 +327,7 @@ namespace MapBoard.Main.UI
             }
             foreach (LayerInfo layer in lvw.SelectedItems.Cast<LayerInfo>().ToArray())
             {
-                LayerHelper.RemoveLayer(layer, true);
+                LayerUtility.RemoveLayer(layer, true);
             }
             //var style = LayerCollection.Instance.Selected;
 
@@ -341,7 +341,7 @@ namespace MapBoard.Main.UI
 
             if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)
             {
-                Layersetting.ResetLayersettingUI();
+                Layersetting.ResetLayerSettingUI();
                 //await arcMap.SetViewpointGeometryAsync(await LayerCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
 
             }
@@ -360,14 +360,14 @@ namespace MapBoard.Main.UI
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
-                    ("复制",LayerHelper. CopyFeatures,true),
-                    ("建立缓冲区",LayerHelper.Buffer,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
+                    ("复制",LayerUtility. CopyFeatures,true),
+                    ("建立缓冲区",LayerUtility.Buffer,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
                     ("删除",DeleteLayer,true),
-                    ("新建副本",LayerHelper. CreateCopy,true),
+                    ("新建副本",LayerUtility. CreateCopy,true),
                     ("缩放到图层", ZoomToLayer,LayerCollection.Instance.Selected.FeatureCount > 0),
                     ("坐标转换",CoordinateTransformate,true),
                     ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
-                    ("导入",async()=>await IOHelper.ImportFeature(),true),
+                    ("导入",async()=>await IOUtility.ImportFeature(),true),
                     ("导出",  ExportSingle,true),
 
                };
@@ -376,7 +376,7 @@ namespace MapBoard.Main.UI
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
-                    ("合并",async()=>await LayerHelper. Union(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
+                    ("合并",async()=>await LayerUtility. Union(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
                     ("删除",DeleteLayer,true),
                 };
             }
@@ -400,7 +400,7 @@ namespace MapBoard.Main.UI
             async void ExportSingle()
             {
                 loading.Show();
-                await IOHelper.ExportLayer();
+                await IOUtility.ExportLayer();
                 loading.Hide();
             }
 
@@ -425,7 +425,7 @@ namespace MapBoard.Main.UI
 
                     string from = dialog.SelectedCoordinateSystem1;
                     string to = dialog.SelectedCoordinateSystem2;
-                    await LayerHelper.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
+                    await LayerUtility.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
                     loading.Hide();
                 }
             }
@@ -435,7 +435,7 @@ namespace MapBoard.Main.UI
                 DateRangeDialog dialog = new DateRangeDialog(layer);
                 if (dialog.ShowDialog() == true)
                 {
-                    LayerHelper.SetTimeExtent(layer).Wait();
+                    LayerUtility.SetTimeExtent(layer);
                 }
 
             }

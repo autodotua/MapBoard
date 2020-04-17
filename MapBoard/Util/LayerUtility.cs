@@ -21,9 +21,9 @@ using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
 using LayerCollection = MapBoard.Main.Layer.LayerCollection;
 
-namespace MapBoard.Main.Helper
+namespace MapBoard.Main.Util
 {
-    public static class LayerHelper
+    public static class LayerUtility
     {
 
         public static void RemoveLayer(this LayerInfo layer, bool deleteFiles)
@@ -52,6 +52,7 @@ namespace MapBoard.Main.Helper
             layer.Name = name ?? throw new ArgumentException();
             LayerCollection.Instance.Layers.Add(layer);
             LayerCollection.Instance.Selected = layer;
+            layer.ApplyLabel();
             return layer;
         }
 
@@ -151,7 +152,7 @@ namespace MapBoard.Main.Helper
             try
             {
                 UniqueValueRenderer renderer = new UniqueValueRenderer();
-                renderer.FieldNames.Add("Key");
+                renderer.FieldNames.Add(Resource.KeyFieldName);
                 if (layer.Symbols.Count == 0)
                 {
                     layer.Symbols.Add("", new SymbolInfo());
@@ -189,12 +190,8 @@ namespace MapBoard.Main.Helper
                     }
 
                 }
-
                 layer.Layer.Renderer = renderer;
-                string labelJson = layer.LabelJson;
-                LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
-                layer.Layer.LabelDefinitions.Clear();
-                layer.Layer.LabelDefinitions.Add(labelDefinition);
+                layer.ApplyLabel();
                 //style.Layer.LabelsEnabled = true;
             }
             catch (Exception ex)
@@ -203,7 +200,21 @@ namespace MapBoard.Main.Helper
                 TaskDialog.ShowException(ex, error);
             }
         }
+        public static void ApplyLabel(this LayerInfo layer)
+        {
+            string labelJson = layer.Label.ToJson();
+            LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
+            layer.Layer.LabelDefinitions.Clear();
+            layer.Layer.LabelDefinitions.Add(labelDefinition);
+            layer.Layer.LabelsEnabled = true;
+        }
+        public static async Task LayerComplete(this LayerInfo layer)
+        {
+            layer. Layer.IsVisible = layer.LayerVisible;
+            //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
 
+            await layer.SetTimeExtent();
+        }
         public async static Task Buffer(this LayerInfo layer)
         {
             var newLayer = CreateLayer(GeometryType.Polygon, layer);
@@ -221,25 +232,6 @@ namespace MapBoard.Main.Helper
 
         }
 
-        public async static Task CoordinateTransformate(this LayerInfo layer, string from, string to)
-        {
-            if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
-            {
-                throw new ArgumentException("不能识别坐标系");
-            }
-
-            CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
-
-            FeatureQueryResult features = await layer.GetAllFeatures();
-
-            foreach (var feature in features)
-            {
-                coordinate.Transformate(feature);
-                await layer.Table.UpdateFeatureAsync(feature);
-            }
-
-        }
-
         public async static Task SetTimeExtent(this LayerInfo layer)
         {
             if (layer.TimeExtent == null)
@@ -250,7 +242,7 @@ namespace MapBoard.Main.Helper
             {
                 throw new Exception("shapefile没有指定的日期属性");
             }
-            FeatureLayer  featureLayer = layer.Layer;
+            FeatureLayer featureLayer = layer.Layer;
 
             if (layer.TimeExtent.IsEnable)
             {
@@ -288,6 +280,26 @@ namespace MapBoard.Main.Helper
             }
         }
 
+        public async static Task CoordinateTransformate(this LayerInfo layer, string from, string to)
+        {
+            if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
+            {
+                throw new ArgumentException("不能识别坐标系");
+            }
+
+            CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
+
+            FeatureQueryResult features = await layer.GetAllFeatures();
+
+            foreach (var feature in features)
+            {
+                coordinate.Transformate(feature);
+                await layer.Table.UpdateFeatureAsync(feature);
+            }
+
+        }
+
+
         public async static Task<LayerInfo> Union(IEnumerable<LayerInfo> Layers)
         {
             if (Layers == null || !Layers.Any())
@@ -307,7 +319,7 @@ namespace MapBoard.Main.Helper
 
                 var features = oldFeatures.Select(p => layer.Table.CreateFeature(p.Attributes, p.Geometry));
                 await layer.Table.AddFeaturesAsync(features);
-                oldLayer.LabelVisible = false;
+                oldLayer.LayerVisible = false;
             }
             layer.UpdateFeatureCount();
             //LayerCollection.Instance.Layers.Add(style);

@@ -13,9 +13,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.Helper
+namespace MapBoard.Main.Util
 {
-   public static class FeatureHelper
+   public static class FeatureUtility
     {
 
         public static async void Union(LayerInfo style)

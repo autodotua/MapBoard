@@ -38,7 +38,7 @@
             <map:ArcMapView x:Name="arcMap"  />
             <bar:EditOperationBar x:Name="editBar"  HorizontalAlignment="Stretch" VerticalAlignment="Top">
                 <bar:EditOperationBar.RenderTransform>
-                    <TranslateTransform Y="-24"/>
+                    <TranslateTransform Y="-48"/>
                 </bar:EditOperationBar.RenderTransform>
             </bar:EditOperationBar>
             <bar:SelectOperationBar x:Name="selectBar" HorizontalAlignment="Stretch" VerticalAlignment="Top">
@@ -99,7 +99,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="标签">
+                                <!--<GridViewColumn Header="标签">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox IsChecked="{Binding LabelVisible}"/>
@@ -113,7 +113,7 @@
                                             <CheckBox IsChecked="{Binding TimeExtentEnable}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
+                                </GridViewColumn>-->
 
                                 <GridViewColumn Header="标题" Width="100" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="类型" DisplayMemberBinding="{Binding TypeDescription}"/>

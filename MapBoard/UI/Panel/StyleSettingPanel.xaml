@@ -12,7 +12,7 @@
     <Grid>
 
         <StackPanel Orientation="Vertical" >
-            <TextBox Margin="4,8" BorderThickness="0" Text="{Binding StyleName}" FontSize="16" HorizontalContentAlignment="Center"/>
+            <TextBox Margin="4,8" Background="Transparent" BorderThickness="0" Text="{Binding LayerName}" FontSize="16" HorizontalContentAlignment="Center"/>
 
             <GroupBox Header="渲染器">
                 <StackPanel Orientation="Vertical">
@@ -88,6 +88,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="字体颜色" Grid.Row="0"/>
@@ -95,13 +97,25 @@
                     <TextBlock Text="边框颜色" Grid.Row="2"/>
                     <picker:ColorPickerTextBox x:Name="labelLineColor" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"/>
                     <TextBlock Text="字体大小" Grid.Row="4"/>
-                    <flatstyle:TextBox  Grid.Row="4" Grid.Column="2"  Grid.ColumnSpan="3" Text="{Binding LabelFontSize}"/>
+                    <flatstyle:TextBox  Grid.Row="4" Grid.Column="2"  Grid.ColumnSpan="3" Text="{Binding Label.FontSize}"/>
                     <TextBlock Text="边框宽度" Grid.Row="6"/>
-                    <flatstyle:TextBox  Grid.Row="6" Grid.Column="2"  VerticalAlignment="Center"  Grid.ColumnSpan="3" Text="{Binding LabelStrokeThickness}"/>
+                    <flatstyle:TextBox  Grid.Row="6" Grid.Column="2"  VerticalAlignment="Center"  Grid.ColumnSpan="3" Text="{Binding Label.StrokeThickness}"/>
                     <TextBlock Text="最小比例" Grid.Row="8"/>
-                    <flatstyle:TextBox  Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Text="{Binding LabelMinScale}"/>
+                    <flatstyle:TextBox  Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Text="{Binding Label.MinScale}"/>
                     <flatstyle:Button HorizontalAlignment="Right" Grid.Row="8" Grid.Column="4" Content="设为当前" Click="SetScaleButtonClick"/>
-
+                    <TextBlock Text="显示内容" Grid.Row="10"/>
+                    <Grid Grid.Column="2" Grid.ColumnSpan="99" Grid.Row="10"  >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <flatstyle:CheckBox IsChecked="{Binding Label.Info}">标签</flatstyle:CheckBox>
+                        <flatstyle:CheckBox Grid.Column="2" IsChecked="{Binding Label.Date}">日期</flatstyle:CheckBox>
+                        <flatstyle:CheckBox Grid.Column="4" IsChecked="{Binding Label.Class}">备注</flatstyle:CheckBox>
+                    </Grid>
                 </Grid>
             </GroupBox>
         </StackPanel>

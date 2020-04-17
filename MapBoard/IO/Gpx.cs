@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.Main.Helper;
+using MapBoard.Main.Util;
 using MapBoard.Main.Layer;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            LayerInfo style = LayerHelper.CreateLayer(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
+            LayerInfo style = LayerUtility.CreateLayer(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {

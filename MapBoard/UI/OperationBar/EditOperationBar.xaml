@@ -10,6 +10,19 @@
             <ResourceDictionary Source="OperationBarStyles.xaml"/>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="4"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.RowSpan="3" Foreground="White"  HorizontalAlignment="Center" FontSize="16" VerticalAlignment="Center" FontWeight="Bold"  Text="{Binding Title}"/>
+
+        <Grid Grid.Column="2">
+
+            <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="8"/>
             <ColumnDefinition Width="Auto"/>
@@ -22,7 +35,7 @@
             <ColumnDefinition Width="8"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-
+      
         <Button Command="{Binding MapView.SketchEditor.UndoCommand}" Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <Viewbox Width="16">
@@ -42,8 +55,7 @@
                 <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >恢复</TextBlock>
             </StackPanel>
         </Button>
-        
-
+  
         <Button x:Name="btnDeleteSelectedVertex" Grid.Column="6" Style="{StaticResource barButtonStyle}" Click="RemoveSelectedVertexButtonClick" IsEnabled="False">
             <StackPanel Orientation="Horizontal">
                 <Viewbox Width="14">
@@ -71,7 +83,6 @@
             </StackPanel>
         </Button>
 
-        <TextBlock Grid.Column="3" Foreground="White"  HorizontalAlignment="Center" FontSize="16" VerticalAlignment="Center" FontWeight="Bold"  Text="{Binding Title}"/>
 
         <Button x:Name="btnAttri" Grid.Column="4" Style="{StaticResource barButtonStyle}" Click="BtnAttri_Click">
             <StackPanel Orientation="Horizontal">
@@ -81,30 +92,43 @@
                 <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" >属性</TextBlock>
             </StackPanel>
         </Button>
-        <Popup x:Name="ppp" Placement="Bottom" StaysOpen="False" PlacementTarget="{Binding ElementName=btnAttri}">
-            <Grid Background="{Binding  Path=Background}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="4"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="4"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="99" HorizontalAlignment="Right">
 
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>  
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>  
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="CaretBrush" Value="White"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="MinWidth" Value="96"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+            </Grid.Resources>
                 <TextBlock Foreground="White" VerticalAlignment="Center" Text="标签："/>
-                <TextBox x:Name="txtLabel" CaretBrush="White" BorderThickness="0,0,0,1" Background="Transparent" Foreground="White" MinWidth="96" Grid.Column="2" Text="{Binding MapView.Drawing.Label}"/>
-                <TextBlock Foreground="White" VerticalAlignment="Center" Grid.Row="2" Text="日期："/>
-                <TextBox x:Name="txtDate" Grid.Row="2" CaretBrush="White" BorderThickness="0,0,0,1" Background="Transparent" Foreground="White" MinWidth="96" Grid.Column="2" Text="{Binding MapView.Drawing.Date, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                <TextBlock Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Right"  Grid.Row="4" Text="分类："/>
-                <TextBox x:Name="txtKey" Grid.Row="4" CaretBrush="White" BorderThickness="0,0,0,1" Background="Transparent" Foreground="White" MinWidth="96" Grid.Column="2" Text="{Binding MapView.Drawing.Key}"/>
+                <TextBox x:Name="txtLabel"  Grid.Column="2" Text="{Binding MapView.Drawing.Label}"/>
+                <TextBlock Foreground="White" VerticalAlignment="Center" Grid.Row="2" Grid.Column="4" Text="日期："/>
+                <TextBox x:Name="txtDate" Grid.Row="2" Grid.Column="6" Text="{Binding MapView.Drawing.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                <TextBlock Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Right"  Grid.Row="4" Text="分类：" Grid.Column="8"/>
+                <TextBox x:Name="txtKey" Grid.Row="4"     Grid.Column="10" Text="{Binding MapView.Drawing.Key}"/>
             </Grid>
-        </Popup>
+        
         <!--<Grid x:Name="grdLabel" Grid.Column="4" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

@@ -70,7 +70,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -148,16 +148,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
-    <Compile Include="Helper\FeatureHelper.cs" />
+    <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
-    <Compile Include="Helper\IOHelper.cs" />
+    <Compile Include="Util\IOUtility.cs" />
     <Compile Include="IO\IOUtilities.cs" />
     <Compile Include="IO\MobileGISToolBox.cs" />
     <Compile Include="IO\Package.cs" />
     <Compile Include="IO\Shapefile.cs" />
     <Compile Include="IO\Gpx.cs" />
+    <Compile Include="Style\LabelInfo.cs" />
     <Compile Include="Style\LayerCollection.cs" />
-    <Compile Include="Helper\LayerHelper.cs" />
+    <Compile Include="Util\LayerUtility.cs" />
     <Compile Include="Style\SymbolInfo.cs" />
     <Compile Include="Style\TimeExtentInfo.cs" />
     <Compile Include="UI\Dialog\BaseLayerSettingDialog.xaml.cs">

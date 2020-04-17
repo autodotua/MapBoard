@@ -126,7 +126,7 @@
   <data name="LabelJson" xml:space="preserve">
     <value>{
   "labelExpressionInfo": {
-    "expression": "$feature.Info"
+    "expression": "$expression"
   },
   "maxScale": 0,
   "minScale": 0,
