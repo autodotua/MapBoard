@@ -14,7 +14,7 @@
         <StackPanel Orientation="Vertical" >
             <TextBox Margin="4,8" Background="Transparent" BorderThickness="0" Text="{Binding LayerName}" FontSize="16" HorizontalContentAlignment="Center"/>
 
-            <GroupBox Header="渲染器">
+            <GroupBox Header="符号">
                 <StackPanel Orientation="Vertical">
                     <Grid>
                         <Grid.ColumnDefinitions>

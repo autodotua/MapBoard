@@ -174,8 +174,8 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="0"/>
                                 <RowDefinition Height="0"/>
-                                <RowDefinition Height="0"/>
-                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="Auto"/>
@@ -191,8 +191,10 @@
                             <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址："/>
                     <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="TextBox_PreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}"/>-->
 
-                            <TextBlock Grid.Row="4" Text="下载路径："/>
-                            <flatstyle:TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Config.DownloadFolder}"/>
+                            <TextBlock Grid.Row="2" Text="下载路径："/>
+                            <flatstyle:TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Config.DownloadFolder}"/>
+                            <TextBlock Grid.Row="4" Text="用户代理："/>
+                            <flatstyle:TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Config.DownloadUserAgent}"/>
                             <TextBlock  Grid.Row="6" VerticalAlignment="Center" Text="图片格式："/>
 
                             <flatstyle:UneditableComboBox Grid.Row="6" Grid.Column="2" ItemsSource="{Binding Formats}" SelectedItem="{Binding Config.FormatExtension}"/>
