@@ -22,17 +22,19 @@ using System.Windows.Input;
 using static MapBoard.GpxToolbox.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
 using GeoPoint = NetTopologySuite.Geometries.Point;
+using System.Collections.ObjectModel;
 
 namespace MapBoard.GpxToolbox
 {
     public class ArcMapView : SceneView
     {
+        public ObservableCollection<TrackInfo> Tracks { get; set; }
+
         public ArcMapView()
         {
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
-            TrackInfo.Tracks.CollectionChanged += TracksCollectionChanged;
 
         }
 
@@ -111,7 +113,7 @@ namespace MapBoard.GpxToolbox
             }
             else
             {
-                Track = TrackInfo.Tracks;
+                Track = Tracks;
             }
             foreach (var trajectory in Track)
             {
@@ -163,11 +165,11 @@ namespace MapBoard.GpxToolbox
                     }
                     else
                     {
-                        var exist = TrackInfo.Tracks.FirstOrDefault(p => p.FilePath == file);
+                        var exist = Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist != null)
                         {
                             //GraphicsOverlays.Remove(exist.Overlay);
-                            TrackInfo.Tracks.Remove(exist);
+                            Tracks.Remove(exist);
                         }
                         else
                         {
@@ -180,7 +182,7 @@ namespace MapBoard.GpxToolbox
                     Log.ErrorLogs.Add(ex.Message);
                 }
             }
-            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(),false));
+            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
         }
         public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
@@ -284,37 +286,39 @@ namespace MapBoard.GpxToolbox
 
         private async void ArcMapViewLoaded(object sender, RoutedEventArgs e)
         {
-            //await this.LoadBaseMapsAsync();
-            ////var baseLayer = new WebTiledLayer("http://online{num}.map.bdimg.com/tile/?qt=tile&x={col}&y={row}&z={level}&styles=pl&scaler=1&udt=20141103", new string[] { "1", "2", "3", "4" });
-            ////baseLayer = new WebTiledLayer(@"files:///C:/Users/autod/OneDrive/同步/作品/瓦片下载拼接器/MapBoard.TileDownloaderSplicer/bin/Debug/Download/{level}/{col}-{row}.png", new string[] {  "2", "3", "4" });
-            //// baseLayer = new WebTiledLayer("http://127.0.0.1:8080/{col}-{row}-{level}", new string[] {  "2", "3", "4" });
-            //baseLayer = new WebTiledLayer("http://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={col}&y={row}&z={level}", new string[] { "1", "2", "3", "4" });
-            //Basemap basemap = new Basemap(baseLayer);
-            ////Basemap basemap = new Basemap(new WebTiledLayer("http://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={col}&y={row}&z={level}", new string[] { "1", "2", "3", "4" }));
-            //await basemap.LoadAsync();
-            //Map map = new Map(basemap);
-            //await map.LoadAsync();
-            //Map = map;
+            if (Tracks != null)
+            {
+                Tracks.CollectionChanged += TracksCollectionChanged;
+            }
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
-            //Surface elevationSurface = new Surface();
-            //string _elevationServiceUrl = "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
-            //ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));
-            //elevationSurface.ElevationSources.Add(elevationSource);
-            //Scene.BaseSurface = elevationSurface;
+
         }
 
+        GraphicsOverlay browseOverlay;
+        public void SetLocation(GeoPoint p)
+        {
+            if (browseOverlay == null)
+            {
+                browseOverlay = new GraphicsOverlay();
+                GraphicsOverlays.Add(browseOverlay);
+                browseOverlay.Renderer = BrowsePointRenderer;
+            }
+            var point = new ArcMapPoint(p.X, p.Y, p.Z);
+            browseOverlay.Graphics.Clear();
+            browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
+        }
 
         public async Task<List<TrackInfo>> ReloadGpx(TrackInfo track, bool raiseEvent)
         {
-            TrackInfo.Tracks.Remove(track);
-            var ts =await LoadGpx(track.FilePath,false);
-             if (raiseEvent)
+            Tracks.Remove(track);
+            var ts = await LoadGpx(track.FilePath, false);
+            if (raiseEvent)
             {
                 GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(ts.ToArray(), true));
             }
             return ts;
         }
-            public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
+        public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
         {
             string gpxContent = File.ReadAllText(filePath);
             Gpx gpx = null;
@@ -332,9 +336,10 @@ namespace MapBoard.GpxToolbox
                     Overlay = overlay,
                     TrackIndex = i,
                     Gpx = gpx,
-                }; try
+                };
+                try
                 {
-                    LoadTrack(trackInfo);
+                    LoadTrack(trackInfo, false, true);
                     loadedTrack.Add(trackInfo);
                 }
                 catch (Exception ex)
@@ -345,22 +350,18 @@ namespace MapBoard.GpxToolbox
             }
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(),false));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
             }
 
             return loadedTrack;
 
         }
 
-        public void LoadTrack(TrackInfo trackInfo, bool update = false)
+        public void LoadTrack(TrackInfo trackInfo, bool update = false, bool raiseEvent = false, bool? gpxHeight = null)
         {
 
             if (update)
             {
-                //foreach (var point in trackInfo.Overlay.Graphics.Skip(1).Select(p => gpxPointAndGraphics.GetKey(p)).ToArray())
-                //{
-                //    gpxPointAndGraphics.Remove(point);
-                //}
                 foreach (var point in trackInfo.Track.Points)
                 {
                     if (gpxPointAndGraphics.ContainsKey(point))
@@ -368,10 +369,10 @@ namespace MapBoard.GpxToolbox
                 }
                 trackInfo.Overlay.Graphics.Clear();
             }
-            if(Config.Instance.GpxAutoSmooth)
+            if (Config.Instance.GpxAutoSmooth)
             {
                 GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.Z, (p, v) => p.Z = v);
-                if(!Config.Instance.GpxAutoSmoothOnlyZ)
+                if (!Config.Instance.GpxAutoSmoothOnlyZ)
                 {
                     GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.X, (p, v) => p.X = v);
                     GpxHelper.Smooth(trackInfo.Track.Points, Config.Instance.GpxAutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
@@ -384,17 +385,7 @@ namespace MapBoard.GpxToolbox
             List<ArcMapPoint> mapPoints = new List<ArcMapPoint>();
             foreach (var p in trackInfo.Track.Points)
             {
-                //if (update)
-                //{
-                //    if (!pointToTrackInfo.ContainsKey(p))
-                //    {
-                //        pointToTrackInfo.Add(p, trackInfo);
-                //    }
-                //}
-                //else
-                //{
-                //    pointToTrackInfo.Add(p, trackInfo);
-                //}
+
                 GeoPoint newP = p;
                 if (Config.Instance.BasemapCoordinateSystem != "WGS84")
                 {
@@ -405,46 +396,33 @@ namespace MapBoard.GpxToolbox
                 ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);
                 mapPoints.Add(point);
                 Graphic graphic = new Graphic(point);
-                //if (update)
-                //{
                 if (!gpxPointAndGraphics.ContainsKey(p))
                 {
                     gpxPointAndGraphics.Add(p, graphic);
                 }
-                //}
-                //else
-                //{
-                //    gpxPointAndGraphics.Add(p, graphic);
-                //}
+
                 trackInfo.Overlay.Graphics.Add(graphic);
             }
             Graphic lineGraphic = new Graphic(new Polyline(mapPoints));
-            //SimpleRenderer renderer = new SimpleRenderer(symbol);
-            // lineGraphic.Symbol = NormalLineSymbol;
             trackInfo.Overlay.Graphics.Insert(0, lineGraphic);
-            if (Config.Instance.GpxHeight)
+            if (gpxHeight == true || (!gpxHeight.HasValue) && Config.Instance.GpxHeight)
             {
                 trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
             }
             else
             {
                 trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Draped;
-
             }
             if (!update)
             {
                 GraphicsOverlays.Add(trackInfo.Overlay);
-                TrackInfo.Tracks.Add(trackInfo);
+                Tracks?.Add(trackInfo);
             }
-
+            if (raiseEvent)
+            {
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(new TrackInfo[] { trackInfo }, false));
+            }
         }
-
-
-        public void StartDraw()
-        {
-        }
-
-
 
         private TrackInfo selectedTrack = null;
 
@@ -480,7 +458,7 @@ namespace MapBoard.GpxToolbox
 
         public class GpxLoadedEventArgs : EventArgs
         {
-            public GpxLoadedEventArgs(TrackInfo[] track,bool update)
+            public GpxLoadedEventArgs(TrackInfo[] track, bool update)
             {
                 Track = track;
                 Update = update;

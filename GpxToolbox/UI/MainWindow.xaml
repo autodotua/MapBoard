@@ -225,15 +225,15 @@
             <Canvas x:Name="speedChart" MouseLeave="SpeedChartMouseLeave" Grid.Row="2" ClipToBounds="True"/>
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2"/>-->
         </Grid>
-        <win10style:ModernExpander Header="文件"
+        <win10style:ModernExpander Header="文件"  Padding="0"
                                    Grid.Column="2" IsExpanded="True" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <Grid   >
+            <Grid   Background="White" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
                     <flatstyle:Button Content="导入"   Click="OpenFilesButtonClick"/>
                     <FrameworkElement Width="8"/>
                     <flatstyle:Button Content="清空"   Click="ClearFileListButtonClick"/>
@@ -242,12 +242,13 @@
                 <flatstyle:ListView Grid.Row="2" x:Name="lvwFiles" SelectionMode="Extended" 
                                     SelectionChanged="FileSelectionChanged"  
                                     ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown"
-                                    ItemsSource="{Binding Source={x:Static local:TrackInfo.Tracks}}">
+                                    ItemsSource="{Binding Tracks}">
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="删除" Click="RemoveTrackFileMenuClick"/>
                             <MenuItem Header="连接" Click="LinkTrackMenuClick"/>
                             <MenuItem Header="缩放到轨迹" Click="ZoomToTrackButtonClick"/>
+                            <MenuItem Header="浏览" Click="BrowseButtonClick"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.View>
@@ -259,8 +260,8 @@
                 </flatstyle:ListView>
             </Grid>
         </win10style:ModernExpander>
-        <win10style:ModernExpander  Header="日志" ExpandDirection="Up" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <flatstyle:ListBox Height="96" ItemsSource="{Binding  Source={x:Static local:Log.ErrorLogs}}"/>
+        <win10style:ModernExpander Padding="0" Header="日志" ExpandDirection="Up" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <flatstyle:ListBox BorderThickness="0" Height="96" ItemsSource="{Binding  Source={x:Static local:Log.ErrorLogs}}"/>
         </win10style:ModernExpander>
     </Grid>
 </common:MainWindowBase>

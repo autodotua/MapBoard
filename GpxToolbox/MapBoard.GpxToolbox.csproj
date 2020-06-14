@@ -55,7 +55,7 @@
     </Reference>
     <Reference Include="FzStandardLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
+      <HintPath>..\libs\FzStandardLib.dll</HintPath>
     </Reference>
     <Reference Include="FzUILib.WPF">
       <HintPath>..\libs\FzUILib.WPF.dll</HintPath>
@@ -84,6 +84,10 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="ProjNET, Version=1.4.0.0, Culture=neutral, PublicKeyToken=a1f5bdcd9c6f5740, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\ProjNET.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -105,8 +109,15 @@
     <Compile Include="UI\ArcMapView.cs" />
     <Compile Include="GpxHelper.cs" />
     <Compile Include="Data\SymbolResources.cs" />
+    <Compile Include="UI\BrowseWindow.xaml.cs">
+      <DependentUpon>BrowseWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\TimeBasedChartHelper.cs" />
     <Compile Include="Data\TrackInfo.cs" />
+    <Page Include="UI\BrowseWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

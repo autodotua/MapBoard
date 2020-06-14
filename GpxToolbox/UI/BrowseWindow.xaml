@@ -1,0 +1,52 @@
+﻿<common:MainWindowBase 
+    x:Class="MapBoard.GpxToolbox.BrowseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MapBoard.GpxToolbox"
+        xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+                xmlns:flatstyle="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
+        xmlns:win10style="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
+        mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Closing="WindowClosing"
+        Loaded="WindowLoaded"
+        WindowStartupLocation="CenterScreen"
+        Title="GPX工具箱" 
+        Height="700"
+        Width="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <flatstyle:Button x:Name="btnPlay" Click="Button_Click">播放</flatstyle:Button>
+            <TextBlock VerticalAlignment="Center" Text="{Binding ElementName=sldSpeed, Path=Value, StringFormat={}速度：{0:#}倍}" Grid.Column="2"/>
+            <win10style:Slider VerticalAlignment="Center"  x:Name="sldSpeed" Interval="1" IsSnapToTickEnabled="True" Grid.Column="4" Minimum="1" 
+                               Maximum="100" Width="180" Value="{Binding BrowseInfo.Speed}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding ElementName=sldZoom, Path=Value, StringFormat={}视角高度：{0:#}米}" Grid.Column="6"/>
+            <win10style:Slider VerticalAlignment="Center"  x:Name="sldZoom" Interval="1" IsSnapToTickEnabled="True" Grid.Column="8" Minimum="1"
+                               Maximum="2500" Width="180" Value="{Binding BrowseInfo.Zoom}" />
+            <ProgressBar Grid.Column="99" Minimum="0" Maximum="1" Value="{Binding Progress,Mode=OneWay}"/>
+        </Grid>
+        <local:ArcMapView Grid.Row="2" x:Name="arcMap"
+                          GpxLoaded="GpxLoaded"/>
+
+    </Grid>
+</common:MainWindowBase>

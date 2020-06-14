@@ -32,6 +32,7 @@ using System.Drawing;
 using static FzLib.Geography.Analysis.SpeedAnalysis;
 using FzLib.Geography.IO.Gpx;
 using FzLib.Program;
+using System.Collections.ObjectModel;
 
 namespace MapBoard.GpxToolbox
 {
@@ -40,6 +41,8 @@ namespace MapBoard.GpxToolbox
     /// </summary>
     public partial class MainWindow : MainWindowBase
     {
+        public  ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
+
         private static readonly string TrackFilePath = Path.Combine(App.ProgramDirectoryPath, "TrackHistory.txt");
         private string[] loadNeeded = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
@@ -52,6 +55,7 @@ namespace MapBoard.GpxToolbox
         public MainWindow()
         {
             InitializeComponent();
+            arcMap.Tracks = Tracks;
             InitializeChart();
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
@@ -96,8 +100,8 @@ namespace MapBoard.GpxToolbox
 
         private void WindowClosing(object sender, CancelEventArgs e)
         {
-            File.WriteAllLines(TrackFilePath, TrackInfo.Tracks.Select(p => p.FilePath).ToArray());
-            TrackInfo.Tracks.Clear();
+            File.WriteAllLines(TrackFilePath, Tracks.Select(p => p.FilePath).ToArray());
+            Tracks.Clear();
             // map.Dispose();
         }
 
@@ -106,7 +110,7 @@ namespace MapBoard.GpxToolbox
             foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray())
             {
                 arcMap.GraphicsOverlays.Remove(item.Overlay);
-                TrackInfo.Tracks.Remove(item);
+                Tracks.Remove(item);
 
             }
         }
@@ -366,7 +370,7 @@ namespace MapBoard.GpxToolbox
 
         private void ClearFileListButtonClick(object sender, RoutedEventArgs e)
         {
-            TrackInfo.Tracks.Clear();
+            Tracks.Clear();
         }
         #endregion
 
@@ -734,6 +738,12 @@ namespace MapBoard.GpxToolbox
             NetTopologySuite.Geometries.Envelope extent = GpxTrack.Points.Extent;
             var esriExtent = new Envelope(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY, SpatialReferences.Wgs84);
             arcMap.SetViewpointAsync(new Viewpoint(esriExtent));
+        }
+
+        private void BrowseButtonClick(object sender, RoutedEventArgs e)
+        {
+            BrowseWindow window = new BrowseWindow(lvwFiles.SelectedItem as TrackInfo);
+            window.Show();
         }
     }
 

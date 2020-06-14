@@ -20,7 +20,15 @@ namespace MapBoard.Main
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-#if (!DEBUG)
+#if (DEBUG)
+            //StartupUri = new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute);
+            var win = new GpxToolbox.MainWindow();
+            win.Show();
+            win.Loaded += (p1, p2) =>
+            {
+            };
+            return;
+#else
             UnhandledException.RegistAll(true);
 #endif
             if (e.Args.Length > 0)

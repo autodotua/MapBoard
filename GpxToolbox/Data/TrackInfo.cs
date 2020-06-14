@@ -1,13 +1,13 @@
 ﻿using Esri.ArcGISRuntime.UI;
 using FzLib.Geography.IO.Gpx;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace MapBoard.GpxToolbox
 {
-    public class TrackInfo
+    public class TrackInfo:ICloneable
     {
-        public static ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
   
         public string FilePath { get; set; }
         public GraphicsOverlay Overlay { get; set; }
@@ -17,5 +17,15 @@ namespace MapBoard.GpxToolbox
         public GpxTrack Track => Gpx.Tracks[TrackIndex];
 
         public bool Smoothed { get; set; } = false;
+
+        public TrackInfo Clone()
+        {
+            return MemberwiseClone() as TrackInfo;
+        }
+
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
     }
 }

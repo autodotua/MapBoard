@@ -17,25 +17,6 @@ namespace MapBoard.Common
             {
                 if (instance == null)
                 {
-                    // DataPath = "Data";
-                    //try
-                    //{
-                    //    DataPath = File.ReadLines("DataPath.ini").First();
-                    //}
-                    //catch
-                    //{
-
-                    //}
-                    //try
-                    //{
-                    //    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(DataPath,"config.json"));
-                    //}
-                    //catch
-                    //{
-                    //    DataPath = "Data";
-                    //    TaskDialog.ShowError(null,"无法识别指定的数据目录，将使用默认的Data目录");
-                    //    instance = TryOpenOrCreate<Config>();
-                    //}
                     instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config.json"));
                     instance.Settings.Formatting = Formatting.Indented;
                 }
@@ -44,13 +25,6 @@ namespace MapBoard.Common
         }
 
         public List<BaseLayerInfo> BaseLayers { get; } = new List<BaseLayerInfo>();
-
-        //public string Url { get; set; } = "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d\r\nhttp://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=9396357d4b92e8e197eafa646c3c541d";
-        //[JsonIgnore]
-        //public string[] Urls => Url.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-        [JsonIgnore]
-        //public static string DataPath => IOPath.Combine(IOPath.GetDirectoryName(App.ProgramDirectoryPath), "Data");
-
         public static string DataPath { get; } = @"..\Data";
 
         public bool StaticEnable { get; set; } = true;
@@ -60,7 +34,7 @@ namespace MapBoard.Common
         public bool GpxHeight { get; set; } = true;
         public double GpxHeightExaggeratedMagnification { get; set; } = 5;
         public bool GpxRelativeHeight { get; set; } = true;
-
+        public BrowseInfo BrowseInfo { get; set; } = new BrowseInfo();
         public override void Save()
         {
             base.Save();
@@ -86,6 +60,56 @@ namespace MapBoard.Common
         //    ShapefileStyles.Add(style);
         //}
     }
+
+    public class BrowseInfo : INotifyPropertyChanged
+    {
+        private double zoom = 200;
+        public double Zoom
+        {
+            get => zoom;
+            set
+            {
+                zoom = value;
+                this.Notify(nameof(Zoom));
+            }
+        }
+        private double sensitivity = 5;
+        public double Sensitivity
+        {
+            get => sensitivity;
+            set
+            {
+                sensitivity = value;
+                this.Notify(nameof(Sensitivity));
+            }
+        }
+        private double fps = 20;
+        public double FPS
+        {
+            get => fps;
+            set
+            {
+                fps = value;
+                this.Notify(nameof(FPS));
+            }
+        }
+
+        private double speed = 16;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public double Speed
+        {
+            get => speed;
+            set
+            {
+                speed = value;
+                this.Notify(nameof(Speed));
+            }
+        }
+
+    }
+
     public class BaseLayerInfo : INotifyPropertyChanged, ICloneable
     {
         private int index;
