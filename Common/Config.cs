@@ -25,6 +25,7 @@ namespace MapBoard.Common
         }
 
         public List<BaseLayerInfo> BaseLayers { get; } = new List<BaseLayerInfo>();
+        public static string RecordPath { get; } = @"..\Records";
         public static string DataPath { get; } = @"..\Data";
 
         public bool StaticEnable { get; set; } = true;
@@ -107,6 +108,42 @@ namespace MapBoard.Common
                 this.Notify(nameof(Speed));
             }
         }
+
+
+        private int recordInterval = 1000;
+        public int RecordInterval
+        {
+            get => recordInterval;
+            set
+            {
+                if (value < 1000)
+                {
+                    value = value / 10 * 10;
+                }
+                else if (value < 10000)
+                {
+                    value = value / 500 * 500;
+                }
+                else
+                {
+                    value = value / 1000 * 1000;
+                }
+                recordInterval = value;
+                this.Notify(nameof(RecordInterval));
+            }
+        }
+        private int angle = 60;
+        public int Angle
+        {
+            get => angle;
+            set
+            {
+                angle = value;
+                this.Notify(nameof(Angle));
+            }
+        }
+
+
 
     }
 

@@ -304,8 +304,23 @@ namespace MapBoard.GpxToolbox
                 browseOverlay.Renderer = BrowsePointRenderer;
             }
             var point = new ArcMapPoint(p.X, p.Y, p.Z);
-            browseOverlay.Graphics.Clear();
-            browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
+            //browseOverlay.Graphics.Clear();
+            //browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
+           if (browseOverlay.Graphics.Count==0)
+            {
+                browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
+            }
+            else
+            {
+                browseOverlay.Graphics[0].Geometry = point;
+
+            }
+            //EventHandler<DrawStatusChangedEventArgs> handler = null;
+            //handler= new EventHandler<DrawStatusChangedEventArgs>((s, e) => {
+            //    DrawStatusChanged -= handler;
+
+            //});
+            //DrawStatusChanged += handler;
         }
 
         public async Task<List<TrackInfo>> ReloadGpx(TrackInfo track, bool raiseEvent)

@@ -82,21 +82,27 @@ namespace MapBoard.GpxToolbox
             arcMap.ClearSelection();
         }
         bool stopping = false;
-        bool playing = false;
+        bool working = false;
+
+        private void SetToFirstPoint()
+        {
+            var points = track.Track.Points;
+            var curve = Calculate.CalculateGeodeticCurve(Ellipsoid.WGS84, points[0], points[1]);
+            var cameraPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, points[0], curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
+            var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
+            arcMap.SetLocation(points[0]);
+            arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
+
+        }
         public async Task Play()
         {
-            playing = true;
+            working = true;
             DispatcherTimer timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromSeconds(1.0 / BrowseInfo.FPS),
             };
             var points = track.Track.Points;
 
-            var curve = Calculate.CalculateGeodeticCurve(Ellipsoid.WGS84, points[0], points[1]);
-            var cameraPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, points[0], curve.ReverseAzimuth, Math.Sqrt(3) * BrowseInfo.Zoom);
-            var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, 60, 0);
-            arcMap.SetLocation(points[0]);
-            await arcMap.SetViewpointCameraAsync(camera, TimeSpan.FromSeconds(2));
 
             int i = 0;
             DateTime startTime = DateTime.Now;
@@ -111,7 +117,7 @@ namespace MapBoard.GpxToolbox
                  }
                  if (i >= points.Count - 2 || stopping)
                  {
-                     Stop();
+                     StopPlay();
                      timer.Stop();
                      return;
                  }
@@ -127,8 +133,8 @@ namespace MapBoard.GpxToolbox
                      (BrowseInfo.Speed * (now - startTime).Ticks - (point.Time - startGpxTime).Ticks)
                      / (nextPoint.Time - point.Time).Ticks;
                      interPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, point, curve.Azimuth, curve.Length * percent);
-                     var cameraPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, point, curve.ReverseAzimuth, Math.Sqrt(3) * BrowseInfo.Zoom);
-                     camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, 60, 0);
+                     var cameraPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, point, curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
+                     camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
                  });
                  arcMap.SetLocation(interPoint);
                  if (viewIndex++ % BrowseInfo.Sensitivity == 0)
@@ -139,17 +145,103 @@ namespace MapBoard.GpxToolbox
             timer.Start();
         }
 
-        private void Stop()
+        public async Task Record()
+        {
+            working = true;
+            if (!Directory.Exists(GetRecordPath()))
+            {
+                Directory.CreateDirectory(GetRecordPath());
+            }
+            var points = track.Track.Points;
+            DateTime startTime = points.First().Time;
+            int i = 0;
+            int count = 0;
+            bool useTimeFileName = rbtnFormatTime.IsChecked.Value;
+            for (DateTime time = startTime; ; time = time.AddMilliseconds(BrowseInfo.RecordInterval))
+            {
+                while (i < points.Count - 2 && points[i + 1].Time < time)
+                {
+                    i++;
+                }
+                if (i >= points.Count - 2 || stopping)
+                {
+                    StopRecord();
+                    return;
+                }
+                NetTopologySuite.Geometries.Point interPoint = null;
+                Camera camera = null;
+                await Task.Run(() =>
+                {
+                    GpxPoint point = points[i];
+                    GpxPoint nextPoint = points[i + 1];
+                    Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[points.Count - 1].Time - points[0].Time).Ticks;
+                    var curve = Calculate.CalculateGeodeticCurve(Ellipsoid.WGS84, point, nextPoint);
+                    double percent = 1.0 * (time - point.Time).Ticks / (nextPoint.Time - point.Time).Ticks;
+                    interPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, point, curve.Azimuth, curve.Length * percent);
+                    var cameraPoint = Calculate.CalculateEndingGlobalCoordinates(Ellipsoid.WGS84, point, curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
+                    camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
+                });
+                arcMap.SetLocation(interPoint);
+                await arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
+                await Task.Delay(100);
+                await Task.Run(() =>
+                {
+                    var image = arcMap.ExportImageAsync().Result.ToImageSourceAsync().Result as BitmapSource;
+                    string filePath = null;
+                    if (useTimeFileName)
+                    {
+                        filePath = Path.Combine(Config.RecordPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
+                    }
+                    else
+                    {
+                        filePath = Path.Combine(Config.RecordPath, Track.FileName, ++count + ".png");
+                    }
+                    using var fileStream = new FileStream(filePath, FileMode.Create);
+                    BitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(image));
+                    encoder.Save(fileStream);
+                });
+            }
+
+        }
+
+        private string GetRecordPath()
+        {
+            return Path.Combine(Config.RecordPath, Track.FileName);
+        }
+
+        private void StopPlay()
         {
             stopping = false;
-            playing = false;
-            sldSpeed.IsEnabled = true;
+            working = false;
+            SetUIEnabled(false, false);
 
+        }
+
+        private void StopRecord()
+        {
+            stopping = false;
+            SetUIEnabled(false, false);
+            ResizeMode = ResizeMode.CanResize;
+            if (TaskDialog.ShowWithYesNoButtons("是否打开目录？", "录制结束") == true)
+            {
+                Process.Start("explorer.exe", GetRecordPath());
+            }
         }
 
         private void GpxLoaded(object sender, ArcMapView.GpxLoadedEventArgs e)
         {
-            ZoomToTrackButtonClick(null, null);
+            //ZoomToTrackButtonClick(null, null); 
+            SetToFirstPoint();
+
+            BrowseInfo.PropertyChanged += (p1, p2) =>
+            {
+                if (p2.PropertyName == nameof(BrowseInfo.Zoom)
+                || p2.PropertyName == nameof(BrowseInfo.Angle))
+                {
+                    SetToFirstPoint();
+                }
+            };
         }
 
 
@@ -202,16 +294,40 @@ namespace MapBoard.GpxToolbox
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (playing)
+            if (working)
             {
                 stopping = true;
                 btnPlay.Content = "播放";
+                SetUIEnabled(false, false);
             }
             else
             {
                 Play();
                 btnPlay.Content = "停止";
-                sldSpeed.IsEnabled = false;
+                SetUIEnabled(true, false);
+            }
+        }
+        private void SetUIEnabled(bool working, bool record)
+        {
+            grdPlay.IsEnabled = !stopping && (!working || !record);
+            grdRecord.IsEnabled = !stopping && (!working || record);
+            sldSpeed.IsEnabled = !working;
+            grdCommon.IsEnabled = !working && !stopping;
+        }
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (working)
+            {
+                stopping = true;
+                btnRecord.Content = "录制";
+                SetUIEnabled(false, true);
+            }
+            else
+            {
+                Record();
+                btnRecord.Content = "停止";
+                SetUIEnabled(true, true);
+                ResizeMode = ResizeMode.NoResize;
             }
         }
     }
