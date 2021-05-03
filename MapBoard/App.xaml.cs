@@ -1,6 +1,7 @@
 ﻿using FzLib.Program.Runtime;
 using FzLib.UI.Program;
 using MapBoard.Main.UI;
+using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -44,6 +45,12 @@ namespace MapBoard.Main
             else
             {
                 StartupUri = new Uri("UI/MainWindow.xaml", UriKind.Relative);
+            }
+
+            var xcr = Resources.MergedDictionaries.OfType<XamlControlsResources>().FirstOrDefault();
+            if (xcr != null)
+            {
+                xcr.UseCompactResources = true;
             }
         }
     }

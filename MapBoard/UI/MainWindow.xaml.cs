@@ -11,6 +11,7 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
+using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -110,14 +111,14 @@ namespace MapBoard.Main.UI
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             LayerCollection.Instance.StyleVisibilityChanged += (s, e) => JudgeControlsEnable();
 
-            var lvwHelper = new ListViewHelper<LayerInfo>(lvw);
+            var lvwHelper = new DataGridHelper<LayerInfo>(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
             LayerCollection.Instance.PropertyChanged += (p1, p2) =>
               {
                   if (p2.PropertyName == nameof(LayerCollection.Instance.Selected) && !changingStyle)
                   {
-                      lvw.SelectedItem = LayerCollection.Instance.Selected;
+                      dataGrid.SelectedItem = LayerCollection.Instance.Selected;
                   }
               };
             //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
@@ -148,11 +149,11 @@ namespace MapBoard.Main.UI
             {
                 if (arcMap.Selection.SelectedFeatures.Count > 0)
                 {
-                    lvw.IsEnabled = false;
+                    dataGrid.IsEnabled = false;
                 }
                 else
                 {
-                    lvw.IsEnabled = true;
+                    dataGrid.IsEnabled = true;
                 }
                 grdLeft.IsEnabled = true;
             }
@@ -167,7 +168,7 @@ namespace MapBoard.Main.UI
                 btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
                 grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
 
-                var buttons = grdButtons.Children.Cast<FrameworkElement>().Where(p => p is SplitButton.SplitButton && !"always".Equals(p.Tag));//.Cast<ToggleButton>();
+                var buttons = grdButtons.Children.OfType<SplitButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (LayerCollection.Instance.Selected != null)
                 {
@@ -201,12 +202,17 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private async void DrawButtonsClick(object sender, RoutedEventArgs e)
+        private async void DrawButtonsClick(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        {
+            await StartDraw(sender);
+        }
+
+        private async Task StartDraw(object sender)
         {
             string text = null;
-            if (sender is SplitButton.SplitButton)
+            if (sender is SplitButton)
             {
-                text = (sender as SplitButton.SplitButton).Text;
+                text = (sender as SplitButton).Content as string;
             }
             else
             {
@@ -303,12 +309,12 @@ namespace MapBoard.Main.UI
 
         private bool changingStyle = false;
 
-        private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
+        private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
         {
             changingStyle = true;
-            if (lvw.SelectedItems.Count == 1)
+            if (dataGrid.SelectedItems.Count == 1)
             {
-                Layers.Selected = lvw.SelectedItem as LayerInfo;
+                Layers.Selected = dataGrid.SelectedItem as LayerInfo;
             }
             else
             {
@@ -321,12 +327,12 @@ namespace MapBoard.Main.UI
 
         private void DeleteLayer()
         {
-            if (lvw.SelectedItems.Count == 0)
+            if (dataGrid.SelectedItems.Count == 0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            foreach (LayerInfo layer in lvw.SelectedItems.Cast<LayerInfo>().ToArray())
+            foreach (LayerInfo layer in dataGrid.SelectedItems.Cast<LayerInfo>().ToArray())
             {
                 LayerUtility.RemoveLayer(layer, true);
             }
@@ -354,8 +360,8 @@ namespace MapBoard.Main.UI
             ContextMenu menu = new ContextMenu();
             List<(string header, Action action, bool visiable)> menus = null;
             LayerInfo layer = LayerCollection.Instance.Selected;
-            LayerInfo[] Layers = lvw.SelectedItems.Cast<LayerInfo>().ToArray();
-            if (lvw.SelectedItems.Count == 1)
+            LayerInfo[] Layers = dataGrid.SelectedItems.Cast<LayerInfo>().ToArray();
+            if (dataGrid.SelectedItems.Count == 1)
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
@@ -438,12 +444,35 @@ namespace MapBoard.Main.UI
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
-            lvw.SelectedItem = null;
+            dataGrid.SelectedItem = null;
         }
 
         private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
         {
             new MultiLayersOperationDialog().Show();
+        }
+
+        private async void DrawButtonsClick(object sender, RoutedEventArgs e)
+        {
+            await StartDraw(sender);
+        }
+
+        private void lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if(dataGrid.SelectedItems.Count>1)
+            {
+                return;
+            }
+            var obj = e.OriginalSource as FrameworkElement;
+            while (obj != null && !(obj.DataContext is LayerInfo))
+            {
+                obj = obj.Parent as FrameworkElement;
+            }
+            var layer = obj.DataContext as LayerInfo;
+            if (layer != null)
+            {
+                dataGrid.SelectedItem = layer;
+            }
         }
     }
 }

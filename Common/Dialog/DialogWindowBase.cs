@@ -16,7 +16,6 @@ namespace MapBoard.Common.Dialog
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.ToolWindow;
-            SizeToContent = SizeToContent.WidthAndHeight;
             ShowInTaskbar = false;
         }
     }

@@ -9,9 +9,13 @@
     xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:win10="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
     x:Name="win"
-    Title="请选择日期范围"
+    Title="底图设置"
+    Width="640"
+    Height="320"
+    ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"
     mc:Ignorable="d">
@@ -21,59 +25,46 @@
     </Window.Resources>
     <Grid Margin="4">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="8" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="8" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <win10:AzureDataGrid
+        <DataGrid
             x:Name="grd"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="True"
             ItemsSource="{Binding BaseLayers}"
             SelectionMode="Single">
-            <!--<win10:AzureDataGrid.Resources>
-                <Style TargetType="DataGridCell">
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="IsEditing" Value="True" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </win10:AzureDataGrid.Resources>-->
-            <win10:AzureDataGrid.Columns>
+            <DataGrid.Columns>
                 <DataGridTextColumn
                     Binding="{Binding Index}"
                     CanUserSort="False"
                     Header="序号"
+                    IsReadOnly="True"
                     SortDirection="Ascending" />
-                <!--<DataGridCheckBoxColumn  CanUserSort="False" Header="启用" Binding="{Binding Enable}" />-->
                 <DataGridCheckBoxColumn Binding="{Binding Enable}" Header="启用" />
 
                 <DataGridTemplateColumn CanUserSort="False" Header="类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Type, Converter={StaticResource bl2str}}" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Type, Converter={StaticResource bl2str}}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
 
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <flat:UneditableComboBox ItemsSource="{Binding Source={StaticResource baseLayerTypes}}" SelectedItem="{Binding Type}">
-                                <flat:UneditableComboBox.ItemTemplate>
+                            <ComboBox
+                                VerticalAlignment="Center"
+                                ItemsSource="{Binding Source={StaticResource baseLayerTypes}}"
+                                SelectedItem="{Binding Type}">
+                                <ComboBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ., Converter={StaticResource bl2str}}" />
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding ., Converter={StaticResource bl2str}}" />
                                     </DataTemplate>
-                                </flat:UneditableComboBox.ItemTemplate>
-                            </flat:UneditableComboBox>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
@@ -81,13 +72,16 @@
                 <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Margin="8,0,0,0" Text="{Binding Opacity, StringFormat=P0}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="{Binding Opacity, StringFormat=P0}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
 
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <win10:ModernSlider
+                            <Slider
                                 Width="120"
                                 Maximum="1"
                                 Minimum="0"
@@ -101,26 +95,26 @@
                     Binding="{Binding Path=Path}"
                     CanUserSort="False"
                     Header="地址" />
-            </win10:AzureDataGrid.Columns>
-        </win10:AzureDataGrid>
+            </DataGrid.Columns>
+        </DataGrid>
         <StackPanel
             Grid.Row="2"
             Grid.ColumnSpan="5"
             Margin="8"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
-            <flat:Button Click="BrowseButtonClick" Content="浏览.." />
+            <Button Click="BrowseButtonClick" Content="浏览.." />
             <FrameworkElement Width="8" />
-            <flat:Button Click="AddButtonClick" Content="新增" />
+            <Button Click="AddButtonClick" Content="新增" />
             <FrameworkElement Width="8" />
-            <flat:Button Click="DeleteButtonClick" Content="删除" />
+            <Button Click="DeleteButtonClick" Content="删除" />
             <FrameworkElement Width="8" />
-            <flat:Button
+            <Button
                 Click="OkButtonClick"
                 Content="应用"
                 Tag="0" />
             <FrameworkElement Width="8" />
-            <flat:Button
+            <Button
                 Click="OkButtonClick"
                 Content="确定"
                 IsDefault="True"

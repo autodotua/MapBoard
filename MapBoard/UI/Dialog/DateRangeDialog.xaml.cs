@@ -23,35 +23,34 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class DateRangeDialog : Common.Dialog.DialogWindowBase
     {
-        private bool canSelect = false;
-        private LayerInfo CurrentStyle { get; }
+        private LayerInfo Layer { get; }
 
         public DateRangeDialog(LayerInfo layer)
         {
-            CurrentStyle = layer;
+            Layer = layer;
             InitializeComponent();
             if (layer.TimeExtent == null)
             {
                 EnableDateRange = false;
-                date.DateFrom = DateTime.Now.AddYears(-1);
-                date.DateTo = DateTime.Now;
+                dateFrom.SelectedDate = DateTime.Now.AddYears(-1);
+                dateTo.SelectedDate = DateTime.Now;
             }
             else
             {
                 EnableDateRange = true;
                 EnableDateRange = layer.TimeExtent.IsEnable;
-                date.DateFrom = layer.TimeExtent.From.Date;
-                date.DateTo = layer.TimeExtent.To.Date;
+                dateFrom.SelectedDate = layer.TimeExtent.From.Date;
+                dateTo.SelectedDate = layer.TimeExtent.To.Date;
             }
         }
 
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
-            CurrentStyle.TimeExtent = new TimeExtentInfo()
+            Layer.TimeExtent = new TimeExtentInfo()
             {
                 IsEnable = EnableDateRange,
-                From = date.DateFrom.Value,
-                To = date.DateTo.Value,
+                From = dateFrom.SelectedDate.Value,
+                To = dateTo.SelectedDate.Value,
             };
             DialogResult = true;
             Close();
@@ -70,13 +69,13 @@ namespace MapBoard.Main.UI.Dialog
             {
                 enableDateRange = value;
                 Notify(nameof(EnableDateRange));
-                btn.IsEnabled = !EnableDateRange || date.DateFrom.HasValue && date.DateTo.HasValue;
+                btn.IsEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
             }
         }
 
-        private void date_DateSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            btn.IsEnabled = !EnableDateRange || date.DateFrom.HasValue && date.DateTo.HasValue;
+            btn.IsEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
         }
     }
 }

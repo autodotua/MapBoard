@@ -8,19 +8,21 @@
     xmlns:local="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
     <Grid>
 
         <StackPanel Orientation="Vertical">
             <TextBox
                 Margin="4,8"
+                HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
                 FontSize="16"
                 Text="{Binding LayerName}" />
 
-            <GroupBox Header="符号">
+            <Expander Padding="0,8" Header="符号样式">
                 <StackPanel Orientation="Vertical">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -36,7 +38,7 @@
                             x:Name="txtKey"
                             Grid.Column="2"
                             Text="{Binding SelectedKey.Key}" />
-                        <flatstyle:Button
+                        <Button
                             Grid.Column="4"
                             Click="KeyButtonClick"
                             Content="..." />
@@ -59,13 +61,13 @@
                     <RowDefinition Height="Auto" />-->
                         </Grid.RowDefinitions>
                         <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址：" />
-        <flatstyle:TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}" />-->
+        <TextBox Grid.Column="2" PreviewKeyDown="UrlTextBoxPreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}" />-->
 
                         <TextBlock
                             Grid.Row="0"
                             HorizontalAlignment="Right"
                             Text="线宽/边框宽/点大小：" />
-                        <flatstyle:TextBox
+                        <TextBox
                             x:Name="txtLineWidth"
                             Grid.Row="0"
                             Grid.Column="2"
@@ -90,13 +92,12 @@
 
                         <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6" />
 
-                <flatstyle:TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2" />-->
+                <TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2" />-->
                     </Grid>
                 </StackPanel>
-            </GroupBox>
+            </Expander>
 
-            <TextBlock />
-            <GroupBox Header="标签格式">
+            <Expander Padding="0,8" Header="标签样式">
                 <Grid Margin="2,10,2,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -132,35 +133,31 @@
                         Grid.Column="2"
                         Grid.ColumnSpan="3" />
                     <TextBlock Grid.Row="4" Text="字体大小" />
-                    <flatstyle:TextBox
+                    <TextBox
                         Grid.Row="4"
                         Grid.Column="2"
                         Grid.ColumnSpan="3"
                         Text="{Binding Label.FontSize}" />
                     <TextBlock Grid.Row="6" Text="边框宽度" />
-                    <flatstyle:TextBox
+                    <TextBox
                         Grid.Row="6"
                         Grid.Column="2"
                         Grid.ColumnSpan="3"
                         VerticalAlignment="Center"
                         Text="{Binding Label.StrokeThickness}" />
                     <TextBlock Grid.Row="8" Text="最小比例" />
-                    <flatstyle:TextBox
+                    <TextBox
                         Grid.Row="8"
                         Grid.Column="2"
                         VerticalAlignment="Center"
                         Text="{Binding Label.MinScale}" />
-                    <flatstyle:Button
+                    <Button
                         Grid.Row="8"
                         Grid.Column="4"
                         HorizontalAlignment="Right"
                         Click="SetScaleButtonClick"
                         Content="设为当前" />
-                    <TextBlock Grid.Row="10" Text="显示内容" />
-                    <Grid
-                        Grid.Row="10"
-                        Grid.Column="2"
-                        Grid.ColumnSpan="99">
+                    <Grid Grid.Row="10" Grid.ColumnSpan="99">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
@@ -168,33 +165,33 @@
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <flatstyle:CheckBox IsChecked="{Binding Label.Info}">标签</flatstyle:CheckBox>
-                        <flatstyle:CheckBox Grid.Column="2" IsChecked="{Binding Label.Date}">日期</flatstyle:CheckBox>
-                        <flatstyle:CheckBox Grid.Column="4" IsChecked="{Binding Label.Class}">备注</flatstyle:CheckBox>
+                        <ui:ToggleSwitch IsOn="{Binding Label.Info}">标签</ui:ToggleSwitch>
+                        <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding Label.Date}">日期</ui:ToggleSwitch>
+                        <ui:ToggleSwitch Grid.Column="4" IsOn="{Binding Label.Class}">备注</ui:ToggleSwitch>
                     </Grid>
                 </Grid>
-            </GroupBox>
+            </Expander>
         </StackPanel>
         <Popup
             x:Name="ppp"
             Placement="Bottom"
             StaysOpen="False">
-            <Grid Background="White">
+            <Grid Margin="8" Background="{Binding Background}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <flatstyle:ListBox
+                <ListBox
                     BorderThickness="0"
                     ItemsSource="{Binding Keys}"
                     SelectedItem="{Binding SelectedKey}">
-                    <flatstyle:ListBox.ItemTemplate>
+                    <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Key}" />
                         </DataTemplate>
-                    </flatstyle:ListBox.ItemTemplate>
-                </flatstyle:ListBox>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
                 <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
@@ -211,27 +208,27 @@
                         <ColumnDefinition Width="4" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <flatstyle:Button Click="CreateKeyButtonClick" Content="新建" />
-                    <flatstyle:Button
+                    <Button Click="CreateKeyButtonClick" Content="新建" />
+                    <Button
                         x:Name="btnChangeKey"
                         Grid.Column="2"
                         Click="ChangeKeyButtonClick"
                         Content="修改" />
-                    <flatstyle:Button
+                    <Button
                         x:Name="btnDeleteKey"
                         Grid.Column="4"
                         Click="DeleteKeyButtonClick"
                         Content="删除" />
-                    <flatstyle:Button
+                    <Button
                         Grid.Column="6"
                         Click="CloseButtonClick"
                         Content="关闭" />
-                    <flatstyle:Button
+                    <Button
                         Grid.Row="2"
                         Grid.ColumnSpan="3"
                         Click="GenerateKeyButtonClick"
                         Content="自动生成全部" />
-                    <flatstyle:Button
+                    <Button
                         Grid.Row="2"
                         Grid.Column="4"
                         Grid.ColumnSpan="3"

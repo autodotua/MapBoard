@@ -6,11 +6,18 @@
     xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
     xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="坐标转换"
-    Width="200"
+    Width="260"
+    Height="200"
+    ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    SizeToContent="Manual"
     mc:Ignorable="d">
-    <Grid Margin="4">
+    <Grid
+        Margin="8"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="8" />
@@ -24,13 +31,18 @@
             <ColumnDefinition Width="8" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <flat:UneditableComboBox
+        <ComboBox
+            HorizontalAlignment="Stretch"
             ItemsSource="{Binding CoordinateSystems}"
             SelectedItem="{Binding SelectedCoordinateSystem1}"
             SelectionChanged="ComboBoxSelectionChanged" />
-        <TextBlock Grid.Column="2" Text="→" />
-        <flat:UneditableComboBox
+        <TextBlock
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Text="转换到" />
+        <ComboBox
             Grid.Column="4"
+            HorizontalAlignment="Stretch"
             ItemsSource="{Binding CoordinateSystems}"
             SelectedItem="{Binding SelectedCoordinateSystem2}"
             SelectionChanged="ComboBoxSelectionChanged" />
@@ -40,7 +52,7 @@
             Margin="8"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
-            <flat:Button
+            <Button
                 x:Name="btn"
                 Click="OkButtonClick"
                 Content="确定"

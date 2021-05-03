@@ -6,98 +6,96 @@
     xmlns:extension="clr-namespace:FzLib.UI.Extension;assembly=FzUILib.WPF"
     xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="450"
     d:DesignWidth="200"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
     <Grid>
-        <StackPanel>
-            <GroupBox Header="通用">
-                <StackPanel>
-                    <FrameworkElement Height="8" />
+        <Grid.RowDefinitions>
+            <RowDefinition   Height="*" />
+            <RowDefinition   Height="12" />
+            <RowDefinition   Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="0,0,24,0">
+            <StackPanel>
+                <GroupBox Header="通用">
+                    <StackPanel>
+                        <FrameworkElement Height="8" />
 
-                    <TextBlock Text="底图坐标系：" />
-                    <flat:UneditableComboBox SelectedItem="{Binding Config.BasemapCoordinateSystem}">
-                        <system:String>WGS84</system:String>
-                        <system:String>CGCS2000</system:String>
-                        <system:String>GCJ02</system:String>
-                    </flat:UneditableComboBox>
-                    <FrameworkElement Height="12" />
-                    <flat:CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}" />
-                    <FrameworkElement Height="12" />
-                    <!--<TextBlock Text="瓦片地图地址：" />
+                        <TextBlock Text="底图坐标系：" />
+                        <ComboBox SelectedItem="{Binding Config.BasemapCoordinateSystem}">
+                            <system:String>WGS84</system:String>
+                            <system:String>CGCS2000</system:String>
+                            <system:String>GCJ02</system:String>
+                        </ComboBox>
+                        <FrameworkElement Height="12" />
+                        <CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}" />
+                        <FrameworkElement Height="12" />
+                        <!--<TextBlock Text="瓦片地图地址：" />
                     <FrameworkElement Height="4" />-->
 
-                    <!--<TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" />-->
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="当前底图数量：" />
-                        <TextBlock Text="{Binding Config.BaseLayers.Count}" />
-                    </StackPanel>
-                    <FrameworkElement Height="4" />
+                        <!--<TextBox Text="{Binding Config.Url}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" />-->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="当前底图数量：" />
+                            <TextBlock Text="{Binding Config.BaseLayers.Count}" />
+                        </StackPanel>
+                        <FrameworkElement Height="4" />
 
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                        <!--<flat:Button Content="默认" Click="ResetUrlButtonClick" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <!--<Button Content="默认" Click="ResetUrlButtonClick" />
                         <FrameworkElement Width="8" />
-                        <flat:Button  Content="应用" Click="ApplyUrlButtonClick" />-->
-                        <flat:Button Click="SetBaseLayersButtonClick" Content="设置" />
+                        <Button  Content="应用" Click="ApplyUrlButtonClick" />-->
+                            <Button Click="SetBaseLayersButtonClick" Content="设置" />
+                        </StackPanel>
                     </StackPanel>
-                    <FrameworkElement Height="12" />
-                </StackPanel>
-            </GroupBox>
+                </GroupBox>
 
-            <FrameworkElement Height="24" />
-            <GroupBox Header="地图画板">
-                <StackPanel>
-                    <FrameworkElement Height="8" />
-                    <TextBlock>缓冲区半径（米）：</TextBlock>
-                    <FrameworkElement Height="4" />
-                    <flat:TextBox Text="{Binding Config.StaticWidth}" />
-                </StackPanel>
-            </GroupBox>
+                <GroupBox Header="地图画板">
+                    <StackPanel>
+                        <FrameworkElement Height="8" />
+                        <TextBlock>缓冲区半径（米）：</TextBlock>
+                        <FrameworkElement Height="4" />
+                        <TextBox Text="{Binding Config.StaticWidth}" />
+                    </StackPanel>
+                </GroupBox>
 
-            <FrameworkElement Height="24" />
-            <GroupBox Header="GPX工具箱">
-                <StackPanel>
-                    <FrameworkElement Height="8" />
-                    <flat:CheckBox
+                <GroupBox Header="GPX工具箱">
+                    <ui:SimpleStackPanel Spacing="8">
+                        <CheckBox
                         x:Name="chkGpxHeight"
                         Checked="GpxHeightCheckBoxCheckedChanged"
                         Content="展示高度"
                         IsChecked="{Binding Config.GpxHeight}"
                         Unchecked="GpxHeightCheckBoxCheckedChanged" />
-                    <StackPanel x:Name="stkGpxHeight" IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}">
-                        <FrameworkElement Height="12" />
-                        <flat:CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.GpxRelativeHeight}" />
-                        <FrameworkElement Height="12" />
-                        <TextBlock>高度夸大倍率：</TextBlock>
-                        <FrameworkElement Height="4" />
-                        <flat:TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}" />
-                        <FrameworkElement Height="8" />
-                    </StackPanel>
-                    <StackPanel>
-                        <flat:CheckBox
+                        <StackPanel x:Name="stkGpxHeight" IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}">
+                            <FrameworkElement Height="12" />
+                            <CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.GpxRelativeHeight}" />
+                            <FrameworkElement Height="12" />
+                            <TextBlock>高度夸大倍率：</TextBlock>
+                            <FrameworkElement Height="4" />
+                            <TextBox Text="{Binding Config.GpxHeightExaggeratedMagnification}" />
+                            <FrameworkElement Height="8" />
+                        </StackPanel>
+                        <ui:SimpleStackPanel Spacing="8">
+                            <CheckBox
                             x:Name="chkGpxAutoSmooth"
                             Content="自动进行平滑"
                             IsChecked="{Binding Config.GpxAutoSmooth}" />
-                        <FrameworkElement Height="8" />
-                        <flat:CheckBox
+                            <CheckBox
                             Content="仅平滑垂直方向"
                             IsChecked="{Binding Config.GpxAutoSmoothOnlyZ}"
                             IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" />
-                        <FrameworkElement Height="8" />
-                        <TextBlock IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}">平滑度：</TextBlock>
-                        <FrameworkElement Height="4" />
-                        <flat:TextBox IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" Text="{Binding Config.GpxAutoSmoothLevel}" />
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
-        </StackPanel>
-
-        <StackPanel VerticalAlignment="Bottom">
-            <flat:Button Click="GpxToolboxButtonClick" Content="GPX工具箱" />
-            <FrameworkElement Height="12" />
-            <flat:Button Click="TileDownloaderSplicerButtonClick" Content="瓦片下载拼接" />
-        </StackPanel>
+                            <TextBlock IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}">平滑度：</TextBlock>
+                            <TextBox IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" Text="{Binding Config.GpxAutoSmoothLevel}" />
+                        </ui:SimpleStackPanel>
+                    </ui:SimpleStackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+        <ui:SimpleStackPanel Spacing="8" VerticalAlignment="Bottom" Grid.Row="2">
+            <Button Click="GpxToolboxButtonClick" Content="GPX工具箱"  HorizontalAlignment="Stretch" />
+            <Button Click="TileDownloaderSplicerButtonClick" Content="瓦片下载拼接" HorizontalAlignment="Stretch" />
+        </ui:SimpleStackPanel>
     </Grid>
 </extension:ExtendedUserControl>

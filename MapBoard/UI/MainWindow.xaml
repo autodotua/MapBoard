@@ -2,7 +2,6 @@
     x:Class="MapBoard.Main.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:LayerSettingPanel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,10 +10,11 @@
     xmlns:local="clr-namespace:MapBoard.Main.UI"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
     xmlns:progress="clr-namespace:FzLib.UI.Progress;assembly=FzUILib.WPF"
-    xmlns:splitbutton="clr-namespace:MapBoard.Main.UI.SplitButton"
-    xmlns:win10style="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    ui:WindowHelper.UseModernWindowStyle="True"
     Title="地图画板"
     Width="1000"
     Height="700"
@@ -23,11 +23,8 @@
     Loaded="WindowLoaded"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Window.Resources>
-        <ResourceDictionary Source="Styles.xaml" />
-    </Window.Resources>
 
-    <Grid x:Name="grdMain">
+    <Grid x:Name="grdMain" ClipToBounds="True">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="0" />
@@ -58,21 +55,26 @@
             </bar:SelectOperationBar>
         </Grid>
 
-        <win10style:ModernExpander
+        <Expander
             Grid.Column="4"
             MaxWidth="240"
+            Padding="4"
             ExpandDirection="Left"
             Header="设&#x000D;置"
             IsExpanded="False">
-            <LayerSettingPanel:SettingPanel />
-        </win10style:ModernExpander>
+            <panel:SettingPanel Margin="4" />
+        </Expander>
 
-        <win10style:ModernExpander
+        <Expander
+            Padding="4"
             ExpandDirection="Right"
             Header="工&#x000D;具"
             IsExpanded="True">
 
-            <Grid x:Name="grdLeft" Width="300">
+            <Grid
+                x:Name="grdLeft"
+                Width="300"
+                Margin="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="16" />
@@ -85,7 +87,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <LayerSettingPanel:LayerSettingPanel x:Name="Layersetting" />
+                    <panel:LayerSettingPanel x:Name="Layersetting" />
                     <TextBlock />
 
                     <StackPanel
@@ -93,17 +95,17 @@
                         Grid.ColumnSpan="100"
                         HorizontalAlignment="Right"
                         Orientation="Horizontal">
-                        <flatstyle:Button
+                        <Button
                             x:Name="btnBrowseMode"
                             Click="BrowseModeButtonClick"
                             Content="浏览模式" />
                         <TextBlock Text="  " />
-                        <flatstyle:Button
+                        <Button
                             x:Name="btnApplyStyle"
                             Click="ApplyStyleButtonClick"
                             Content="应用样式" />
                         <TextBlock Text="  " />
-                        <flatstyle:Button
+                        <Button
                             x:Name="btnCreateStyle"
                             Click="CreateStyleButtonClick"
                             Content="新建样式" />
@@ -115,49 +117,40 @@
                         <RowDefinition Height="8" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <flatstyle:ListView
-                        x:Name="lvw"
-                        ItemPreviewKeyDown="ListViewPreviewKeyDown"
-                        ItemPreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
+                    <DataGrid
+                        x:Name="dataGrid"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        HeadersVisibility="Column"
                         ItemsSource="{Binding Layers.Layers}"
+                        PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
+                        PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        SelectionChanged="SelectedStyleChanged"
-                        SelectionMode="Extended">
-                        <flatstyle:ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="显示">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox IsChecked="{Binding LayerVisible}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-
-                                <!--<GridViewColumn Header="标签">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox IsChecked="{Binding LabelVisible}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-
-                                <GridViewColumn Header="时间">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox IsChecked="{Binding TimeExtentEnable}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>-->
-
-                                <GridViewColumn
-                                    Width="100"
-                                    DisplayMemberBinding="{Binding Name}"
-                                    Header="标题" />
-                                <GridViewColumn DisplayMemberBinding="{Binding TypeDescription}" Header="类型" />
-                                <GridViewColumn DisplayMemberBinding="{Binding FeatureCount}" Header="图形数量" />
-                            </GridView>
-                        </flatstyle:ListView.View>
-                    </flatstyle:ListView>
+                        SelectionChanged="SelectedLayerChanged"
+                        SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Width="64" Header="显示">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Margin="16,0,0,0" IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn
+                                Binding="{Binding Name}"
+                                Header="图层名"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Binding="{Binding TypeDescription}"
+                                Header="类型"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Binding="{Binding FeatureCount}"
+                                Header="图形数量"
+                                IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
                 <Grid Grid.Row="4">
                     <Grid.ColumnDefinitions>
@@ -174,39 +167,23 @@
                         <!--<RowDefinition Height="4" />
                         <RowDefinition Height="Auto" />-->
                     </Grid.RowDefinitions>
-                    <flatstyle:Button Click="ImportBtnClick" Content="导入" />
-                    <flatstyle:Button
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        Click="ImportBtnClick"
+                        Content="导入" />
+                    <Button
                         Grid.Column="2"
+                        HorizontalAlignment="Stretch"
                         Click="ExportBtnClick"
                         Content="导出" />
-                    <!--<flatstyle:Button Content="批量" Click="BatchOperationButtonClick" Grid.Column="4" />-->
-                    <flatstyle:Button
+                    <!--<Button Content="批量" Click="BatchOperationButtonClick" Grid.Column="4" />-->
+                    <Button
                         Grid.Row="0"
                         Grid.Column="6"
+                        HorizontalAlignment="Stretch"
                         Click="OpenFolderButtonClick"
                         Content="打开目录" />
                 </Grid>
-
-                <!--<Grid   Grid.Row="6" HorizontalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <flatstyle:Button x:Name="btnUndo" Command="{Binding ElementName=arcMap,Path=SketchEditor.UndoCommand}"  Tag="0" Padding="2,2,8,4" Style="{StaticResource undoRedoButtonStyle}">
-                        <Viewbox Width="24">
-                            <Path Fill="Black" Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z" />
-                        </Viewbox>
-                    </flatstyle:Button>
-                    <flatstyle:Button x:Name="btnRedo" Command="{Binding ElementName=arcMap,Path=SketchEditor.RedoCommand}" Grid.Column="2" Tag="1" Padding="8,2,2,4" Style="{StaticResource undoRedoButtonStyle}">
-                        <Viewbox Width="24" RenderTransformOrigin="0.5,0.5">
-                            <Viewbox.RenderTransform>
-                                <ScaleTransform ScaleX="-1" />
-                            </Viewbox.RenderTransform>
-                            <Path Fill="Black" Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z" />
-                        </Viewbox>
-                    </flatstyle:Button>
-                </Grid>-->
                 <Grid x:Name="grdButtons" Grid.Row="100">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -219,147 +196,67 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!--<Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Margin="0,0,8,0">标签：</TextBlock>
-                        <flatstyle:TextBox x:Name="txtLabel" Grid.Column="2" Text="{Binding ElementName=arcMap, Path=Drawing.Label}" />
-                    </Grid>-->
-                    <splitbutton:SplitButton
+                    <ui:SplitButton
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
+                        Content="绘制"
                         IsEnabled="False"
-                        Tag="always"
-                        Text="绘制" />
+                        Tag="always" />
 
-                    <splitbutton:SplitButton
+                    <ui:SplitButton
                         x:Name="splBtnPolyline"
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
-                        Text="多段线">
-                        <splitbutton:SplitButton.DropDownContextMenu>
-                            <ContextMenu>
+                        Content="多段线">
+                        <ui:SplitButton.Flyout>
+                            <ui:MenuFlyout>
                                 <MenuItem Click="DrawButtonsClick" Header="自由线" />
-                            </ContextMenu>
-                        </splitbutton:SplitButton.DropDownContextMenu>
-                    </splitbutton:SplitButton>
-                    <splitbutton:SplitButton
+                            </ui:MenuFlyout>
+                        </ui:SplitButton.Flyout>
+                    </ui:SplitButton>
+                    <ui:SplitButton
                         x:Name="splBtnPolygon"
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
-                        Text="多边形">
-                        <splitbutton:SplitButton.DropDownContextMenu>
-                            <ContextMenu>
+                        Content="多边形">
+                        <ui:SplitButton.Flyout>
+                            <ui:MenuFlyout>
                                 <MenuItem Click="DrawButtonsClick" Header="自由面" />
                                 <MenuItem Click="DrawButtonsClick" Header="圆" />
                                 <MenuItem Click="DrawButtonsClick" Header="椭圆" />
                                 <MenuItem Click="DrawButtonsClick" Header="矩形" />
                                 <MenuItem Click="DrawButtonsClick" Header="三角形" />
                                 <MenuItem Click="DrawButtonsClick" Header="箭头" />
-                            </ContextMenu>
-                        </splitbutton:SplitButton.DropDownContextMenu>
-                    </splitbutton:SplitButton>
+                            </ui:MenuFlyout>
+                        </ui:SplitButton.Flyout>
+                    </ui:SplitButton>
 
-                    <splitbutton:SplitButton
+                    <ui:SplitButton
                         x:Name="splBtnPoint"
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
-                        Text="点" />
-                    <splitbutton:SplitButton
+                        Content="点" />
+                    <ui:SplitButton
                         x:Name="splBtnMultiPoint"
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
-                        Text="多点" />
+                        Content="多点" />
 
                     <Button
                         x:Name="btnSelect"
                         Grid.Row="2"
                         Grid.Column="2"
-                        Width="32"
-                        Height="32"
-                        BorderThickness="0"
                         Click="SelectToggleButtonClick"
                         FocusVisualStyle="{x:Null}">
-                        <Button.Resources>
-                            <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD" />
-                            <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070" />
-                            <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD" />
-                            <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1" />
-                            <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6" />
-                            <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B" />
-                            <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4" />
-                            <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5" />
-                            <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383" />
-                            <Style TargetType="{x:Type Button}">
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                <Setter Property="Background" Value="{StaticResource Button.Static.Background}" />
-                                <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}" />
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
-                                <Setter Property="BorderThickness" Value="1" />
-                                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                <Setter Property="VerticalContentAlignment" Value="Center" />
-                                <Setter Property="Padding" Value="1" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type Button}">
-                                            <Border
-                                                x:Name="border"
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="16"
-                                                SnapsToDevicePixels="true">
-                                                <ContentPresenter
-                                                    x:Name="contentPresenter"
-                                                    Margin="{TemplateBinding Padding}"
-                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                    Focusable="False"
-                                                    RecognizesAccessKey="True"
-                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsDefaulted" Value="true">
-                                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                                                </Trigger>
-                                                <Trigger Property="IsMouseOver" Value="true">
-                                                    <Setter TargetName="border" Property="Background" Value="{StaticResource Button.MouseOver.Background}" />
-                                                    <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.MouseOver.Border}" />
-                                                    <Setter TargetName="border" Property="Effect">
-                                                        <Setter.Value>
-                                                            <DropShadowEffect
-                                                                BlurRadius="8"
-                                                                Opacity="0.6"
-                                                                RenderingBias="Quality"
-                                                                ShadowDepth="0"
-                                                                Color="#ffc300" />
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="true">
-                                                    <Setter TargetName="border" Property="Background" Value="{StaticResource Button.Pressed.Background}" />
-                                                    <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.Pressed.Border}" />
-                                                </Trigger>
-                                                <Trigger Property="IsEnabled" Value="false">
-                                                    <Setter TargetName="border" Property="Background" Value="{StaticResource Button.Disabled.Background}" />
-                                                    <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.Disabled.Border}" />
-                                                    <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{StaticResource Button.Disabled.Foreground}" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Resources>
-                        <Viewbox Width="26" Height="26">
-                            <Path Data="M829.888 739.392L547.84 457.28 706.112 364.8l-512-170.624L364.8 706.112l92.48-158.336 282.112 282.112z" Fill="Black" />
-                        </Viewbox>
+                        <ui:SymbolIcon Symbol="SelectAll" />
                     </Button>
                 </Grid>
             </Grid>
-        </win10style:ModernExpander>
+        </Expander>
 
         <progress:LoadingOverlay
             x:Name="loading"

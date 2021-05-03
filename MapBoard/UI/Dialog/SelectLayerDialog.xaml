@@ -6,17 +6,21 @@
     xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
     xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="请选择目标"
+    Width="280"
+    Height="360"
+    ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"
     mc:Ignorable="d">
     <Grid Margin="4">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="8" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <flat:ListBox
+        <ListView
             x:Name="lbx"
             MinWidth="240"
             MaxHeight="480"
@@ -26,7 +30,7 @@
             Margin="8"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
-            <flat:Button
+            <Button
                 Click="Button_Click"
                 Content="确定"
                 IsDefault="True" />

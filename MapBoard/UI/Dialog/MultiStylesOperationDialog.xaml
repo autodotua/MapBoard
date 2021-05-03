@@ -6,9 +6,11 @@
     xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
     xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:win10="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
     Title="坐标转换"
     Width="200"
+    ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
     <Grid Margin="4">
@@ -25,13 +27,13 @@
             <ColumnDefinition Width="8" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <win10:AzureDataGrid
+        <DataGrid
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
             ItemsSource="{Binding Layers}"
             SelectionMode="Single">
-            <win10:AzureDataGrid.Resources>
+            <DataGrid.Resources>
                 <Style TargetType="DataGridCell">
                     <Style.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -39,8 +41,8 @@
                         </Trigger>
                     </Style.Triggers>
                 </Style>
-            </win10:AzureDataGrid.Resources>
-            <win10:AzureDataGrid.Columns>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
                 <DataGridCheckBoxColumn Binding="{Binding Select}" />
                 <DataGridTextColumn
                     Binding="{Binding Style.Name}"
@@ -50,15 +52,15 @@
                     Binding="{Binding Style.TypeDescription}"
                     Header="类型"
                     IsReadOnly="True" />
-            </win10:AzureDataGrid.Columns>
-        </win10:AzureDataGrid>
+            </DataGrid.Columns>
+        </DataGrid>
         <StackPanel
             Grid.Row="2"
             Grid.ColumnSpan="5"
             Margin="8"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
-            <flat:Button
+            <Button
                 x:Name="btn"
                 Click="OkButtonClick"
                 Content="确定"
