@@ -2,8 +2,8 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.Main.Util;
 using MapBoard.Main.Layer;
+using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,10 +34,8 @@ namespace MapBoard.Main.IO
 
             foreach (var track in gpx.Tracks)
             {
-
                 FeatureTable table = style.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
-
 
                 if (type == Type.Point)
                 {
@@ -84,18 +82,16 @@ namespace MapBoard.Main.IO
                     feature.Geometry = new Polyline(points);
                     await table.AddFeatureAsync(feature);
                 }
-
             }
             style.UpdateFeatureCount();
             return style;
-
         }
 
         public async static Task<LayerInfo> ImportAllToNewStyle(string[] paths)
         {
             Debug.Assert(paths.Length >= 2);
             var style = await ImportToNewStyle(paths[0], Type.OneLine);
-            for(int i=1;i<paths.Length;i++)
+            for (int i = 1; i < paths.Length; i++)
             {
                 await ImportToStyle(style, paths[i]);
             }
@@ -114,8 +110,6 @@ namespace MapBoard.Main.IO
 
             foreach (var track in gpx.Tracks)
             {
-
-
                 if (style.Type == GeometryType.Point)
                 {
                     List<Feature> features = new List<Feature>();
@@ -137,7 +131,6 @@ namespace MapBoard.Main.IO
                     //await table.AddFeatureAsync(feature);
 
                     throw new Exception("由于内部BUG，多点暂不支持导入GPX");
-
                 }
                 else if (style.Type == GeometryType.Polyline)
                 {
@@ -151,18 +144,17 @@ namespace MapBoard.Main.IO
                 {
                     throw new Exception("不支持的格式图形类型");
                 }
-
             }
 
             style.UpdateFeatureCount();
             return importedFeatures.ToArray();
         }
+
         public async static Task<Feature[]> ImportToCurrentLayer(string path)
         {
             LayerInfo style = LayerCollection.Instance.Selected;
             return await ImportToStyle(style, path);
         }
-
 
         /// <summary>
         /// 生成的图形的类型
@@ -173,10 +165,12 @@ namespace MapBoard.Main.IO
             /// 每一个点就是一个点
             /// </summary>
             Point,
+
             /// <summary>
             /// 连点成线，所有点生成一条线
             /// </summary>
             OneLine,
+
             /// <summary>
             /// 每两个点之间生成一条线
             /// </summary>

@@ -46,14 +46,12 @@ namespace MapBoard.Main.UI.OperationBar
                 btnAttri.Visibility = Visibility.Visible;
                 if (e.NewTask == BoardTaskManager.BoardTask.Draw)
                 {
-
                     Title = "正在绘制";
                 }
                 else
                 {
                     if (MapView.Edit.Mode == EditHelper.EditMode.Draw)
                     {
-
                         Title = "正在编辑";
                     }
                     else
@@ -75,11 +73,10 @@ namespace MapBoard.Main.UI.OperationBar
             }
         }
 
-
         public ArcMapView MapView => ArcMapView.Instance;
 
-
         private string title = "正在编辑";
+
         public string Title
         {
             get => title;

@@ -2,8 +2,8 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Symbology;
-using FzLib.UI.Dialog;
 using FzLib.IO;
+using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
@@ -17,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using static MapBoard.Common.CoordinateTransformation;
 using LayerCollection = MapBoard.Main.Layer.LayerCollection;
 
@@ -25,14 +24,12 @@ namespace MapBoard.Main.Util
 {
     public static class LayerUtility
     {
-
         public static void RemoveLayer(this LayerInfo layer, bool deleteFiles)
         {
             if (LayerCollection.Instance.Layers.Contains(layer))
             {
                 LayerCollection.Instance.Layers.Remove(layer);
             }
-
 
             if (deleteFiles)
             {
@@ -70,7 +67,6 @@ namespace MapBoard.Main.Util
                 }
             }
 
-
             ShapefileExport.ExportEmptyShapefile(type, name);
             LayerInfo layer = new LayerInfo();
             if (template != null)
@@ -87,7 +83,6 @@ namespace MapBoard.Main.Util
         {
             if (includeFeatures)
             {
-
                 FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeatures();
 
                 var newLayer = CreateLayer(layer.Type, layer);
@@ -97,7 +92,7 @@ namespace MapBoard.Main.Util
                 //{
                 //    await targetTable.AddFeatureAsync(feature);
                 //}
-              await  targetTable.AddFeaturesAsync(features);
+                await targetTable.AddFeaturesAsync(features);
                 newLayer.UpdateFeatureCount();
                 layer.LayerVisible = false;
             }
@@ -109,7 +104,6 @@ namespace MapBoard.Main.Util
 
         public async static Task CopyAllFeatures(LayerInfo source, LayerInfo target)
         {
-
             FeatureQueryResult features = await source.GetAllFeatures();
             ShapefileFeatureTable targetTable = target.Table;
 
@@ -128,6 +122,7 @@ namespace MapBoard.Main.Util
                 await CopyAllFeatures(LayerCollection.Instance.Selected, dialog.SelectedStyle);
             }
         }
+
         public async static void Buffer()
         {
             await Buffer(LayerCollection.Instance.Selected);
@@ -171,9 +166,11 @@ namespace MapBoard.Main.Util
                             symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.LineWidth);
 
                             break;
+
                         case GeometryType.Polyline:
                             symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
                             break;
+
                         case GeometryType.Polygon:
                             var lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
                             symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, symbolInfo.FillColor, lineSymbol);
@@ -188,7 +185,6 @@ namespace MapBoard.Main.Util
                     {
                         renderer.UniqueValues.Add(new UniqueValue(key, key, symbol, key));
                     }
-
                 }
                 layer.Layer.Renderer = renderer;
                 layer.ApplyLabel();
@@ -200,6 +196,7 @@ namespace MapBoard.Main.Util
                 TaskDialog.ShowException(ex, error);
             }
         }
+
         public static void ApplyLabel(this LayerInfo layer)
         {
             string labelJson = layer.Label.ToJson();
@@ -208,13 +205,15 @@ namespace MapBoard.Main.Util
             layer.Layer.LabelDefinitions.Add(labelDefinition);
             layer.Layer.LabelsEnabled = true;
         }
+
         public static async Task LayerComplete(this LayerInfo layer)
         {
-            layer. Layer.IsVisible = layer.LayerVisible;
+            layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
 
             await layer.SetTimeExtent();
         }
+
         public async static Task Buffer(this LayerInfo layer)
         {
             var newLayer = CreateLayer(GeometryType.Polygon, layer);
@@ -227,9 +226,7 @@ namespace MapBoard.Main.Util
                 var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
                 Feature newFeature = newTable.CreateFeature(feature.Attributes, geometry);
                 await newTable.AddFeatureAsync(newFeature);
-
             }
-
         }
 
         public async static Task SetTimeExtent(this LayerInfo layer)
@@ -276,7 +273,6 @@ namespace MapBoard.Main.Util
             else
             {
                 featureLayer.SetFeaturesVisible(await layer.GetAllFeatures(), true);
-
             }
         }
 
@@ -296,9 +292,7 @@ namespace MapBoard.Main.Util
                 coordinate.Transformate(feature);
                 await layer.Table.UpdateFeatureAsync(feature);
             }
-
         }
-
 
         public async static Task<LayerInfo> Union(IEnumerable<LayerInfo> Layers)
         {
@@ -324,9 +318,6 @@ namespace MapBoard.Main.Util
             layer.UpdateFeatureCount();
             //LayerCollection.Instance.Layers.Add(style);
             return layer;
-
         }
-
-
     }
 }

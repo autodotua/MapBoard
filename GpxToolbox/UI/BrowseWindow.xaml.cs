@@ -1,42 +1,23 @@
-﻿using Esri.ArcGISRuntime.Data;
-using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
+using FzLib.Geography.Analysis;
+using FzLib.Geography.IO.Gpx;
 using FzLib.UI.Dialog;
-using FzLib.DataAnalysis;
-using FzLib.Extension;
-using GIS.Geometry;
 using MapBoard.Common;
+using ProjNet.CoordinateSystems;
 using System;
 using System.ComponentModel;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Media;
-using static MapBoard.GpxToolbox.SymbolResources;
-using MessageBox = FzLib.UI.Dialog.MessageBox;
-using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
-using FzLib.UI.Extension;
-using Esri.ArcGISRuntime.Symbology;
-using System.Diagnostics;
-using MapBoard.Common.Dialog;
-using System.Collections;
-using System.Collections.Generic;
-using System.Windows.Media.Imaging;
-using System.Drawing;
-using static FzLib.Geography.Analysis.SpeedAnalysis;
-using FzLib.Geography.IO.Gpx;
-using FzLib.Program;
-using System.Windows.Threading;
-using ProjNet.CoordinateSystems;
-using FzLib.Geography.Analysis;
 using System.Threading.Tasks;
-using Esri.ArcGISRuntime.Tasks.NetworkAnalysis;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using static MapBoard.GpxToolbox.SymbolResources;
+using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
 
 namespace MapBoard.GpxToolbox
 {
@@ -45,7 +26,6 @@ namespace MapBoard.GpxToolbox
     /// </summary>
     public partial class BrowseWindow : MainWindowBase
     {
-
         public BrowseWindow(TrackInfo track)
         {
             BrowseInfo = Config.Instance.BrowseInfo;
@@ -54,9 +34,10 @@ namespace MapBoard.GpxToolbox
             InitializeComponent();
 
             arcMap.InteractionOptions = new SceneViewInteractionOptions() { IsEnabled = false };
-
         }
+
         public BrowseInfo BrowseInfo { get; set; } = new BrowseInfo();
+
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             Config.Instance.Save();
@@ -65,9 +46,10 @@ namespace MapBoard.GpxToolbox
         private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(Track, false, true, false);
-
         }
+
         private double progress = 0;
+
         public double Progress
         {
             get => progress;
@@ -77,12 +59,14 @@ namespace MapBoard.GpxToolbox
                 this.Notify(nameof(Progress));
             }
         }
+
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
             arcMap.ClearSelection();
         }
-        bool stopping = false;
-        bool working = false;
+
+        private bool stopping = false;
+        private bool working = false;
 
         private void SetToFirstPoint()
         {
@@ -92,8 +76,8 @@ namespace MapBoard.GpxToolbox
             var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
             arcMap.SetLocation(points[0]);
             arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
-
         }
+
         public async Task Play()
         {
             working = true;
@@ -102,7 +86,6 @@ namespace MapBoard.GpxToolbox
                 Interval = TimeSpan.FromSeconds(1.0 / BrowseInfo.FPS),
             };
             var points = track.Track.Points;
-
 
             int i = 0;
             DateTime startTime = DateTime.Now;
@@ -202,7 +185,6 @@ namespace MapBoard.GpxToolbox
                     encoder.Save(fileStream);
                 });
             }
-
         }
 
         private string GetRecordPath()
@@ -215,12 +197,13 @@ namespace MapBoard.GpxToolbox
             stopping = false;
             working = false;
             SetUIEnabled(false, false);
-
         }
 
         private void StopRecord()
         {
+            btnRecord.Content = "录制";
             stopping = false;
+            working = false;
             SetUIEnabled(false, false);
             ResizeMode = ResizeMode.CanResize;
             if (TaskDialog.ShowWithYesNoButtons("是否打开目录？", "录制结束") == true)
@@ -231,7 +214,7 @@ namespace MapBoard.GpxToolbox
 
         private void GpxLoaded(object sender, ArcMapView.GpxLoadedEventArgs e)
         {
-            //ZoomToTrackButtonClick(null, null); 
+            //ZoomToTrackButtonClick(null, null);
             SetToFirstPoint();
 
             BrowseInfo.PropertyChanged += (p1, p2) =>
@@ -244,7 +227,6 @@ namespace MapBoard.GpxToolbox
             };
         }
 
-
         private TrackInfo track;
 
         public TrackInfo Track
@@ -256,7 +238,6 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-
         #region 左下角按钮
 
         private void IdentifyButtonClick(object sender, RoutedEventArgs e)
@@ -264,6 +245,7 @@ namespace MapBoard.GpxToolbox
             arcMap.MapTapMode = ArcMapView.MapTapModes.SelectedLayer;
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
         }
+
         private void IdentifyAllButtonClick(object sender, RoutedEventArgs e)
         {
             arcMap.MapTapMode = ArcMapView.MapTapModes.AllLayers;
@@ -276,8 +258,6 @@ namespace MapBoard.GpxToolbox
         {
             Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
-
-
         }
 
         private void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
@@ -289,7 +269,6 @@ namespace MapBoard.GpxToolbox
 
         private void ArcMapTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -307,6 +286,7 @@ namespace MapBoard.GpxToolbox
                 SetUIEnabled(true, false);
             }
         }
+
         private void SetUIEnabled(bool working, bool record)
         {
             grdPlay.IsEnabled = !stopping && (!working || !record);
@@ -314,6 +294,7 @@ namespace MapBoard.GpxToolbox
             sldSpeed.IsEnabled = !working;
             grdCommon.IsEnabled = !working && !stopping;
         }
+
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             if (working)
@@ -331,5 +312,4 @@ namespace MapBoard.GpxToolbox
             }
         }
     }
-
 }

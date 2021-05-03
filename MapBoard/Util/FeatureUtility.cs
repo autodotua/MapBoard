@@ -15,9 +15,8 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Main.Util
 {
-   public static class FeatureUtility
+    public static class FeatureUtility
     {
-
         public static async void Union(LayerInfo style)
         {
             Geometry geometry = GeometryEngine.Union(ArcMapView.Instance.Selection.SelectedFeatures.Select(p => p.Geometry));
@@ -64,19 +63,21 @@ namespace MapBoard.Main.Util
                         points1.Reverse();
                         points1.AddRange(points2);
                         break;
+
                     case 2:
                         points2.Reverse();
                         points1.AddRange(points2);
                         break;
+
                     case 3:
                         points1.AddRange(points2);
                         break;
+
                     case 4:
                         points1.InsertRange(0, points2);
                         break;
                 }
                 points = points1;
-
             }
             else
             {
@@ -97,7 +98,6 @@ namespace MapBoard.Main.Util
 
             await style.Table.DeleteFeaturesAsync(features.Where(p => p != features[0]));
             ArcMapView.Instance.Selection.ClearSelection();
-
         }
 
         public static async void Reverse(LayerInfo style)
@@ -111,9 +111,7 @@ namespace MapBoard.Main.Util
             await style.Table.DeleteFeatureAsync(feature);
             await style.Table.AddFeatureAsync(style.Table.CreateFeature(feature.Attributes, new Polyline(points)));
             ArcMapView.Instance.Selection.ClearSelection();
-
         }
-
 
         public static async void Densify(LayerInfo style)
         {
@@ -190,22 +188,21 @@ namespace MapBoard.Main.Util
         {
             try
             {
-              string path=  Csv.Export(ArcMapView.Instance.Selection.SelectedFeatures);
+                string path = Csv.Export(ArcMapView.Instance.Selection.SelectedFeatures);
                 if (path != null)
                 {
                     SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                     snake.ShowButton = true;
                     snake.ButtonContent = "打开";
                     snake.ButtonClick += (p1, p2) => Process.Start(path);
-                    
+
                     snake.ShowMessage("已导出到" + path);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 TaskDialog.ShowException(ex, "导出失败");
             }
-
         }
 
         public static async void CreateCopy(LayerInfo style)
@@ -220,9 +217,7 @@ namespace MapBoard.Main.Util
             ArcMapView.Instance.Selection.ClearSelection();
             ArcMapView.Instance.Selection.Select(newFeatures);
             style.UpdateFeatureCount();
-
         }
-
 
         public static List<MapPoint> GetPoints(Feature feature)
         {

@@ -1,18 +1,6 @@
-﻿using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MapBoard.Common.Dialog
 {
@@ -25,7 +13,6 @@ namespace MapBoard.Common.Dialog
         {
             Description = description;
             InitializeComponent();
-
         }
 
         private void OkButtonClick(object sender, RoutedEventArgs e)
@@ -33,9 +20,11 @@ namespace MapBoard.Common.Dialog
             DialogResult = true;
             Close();
         }
+
         public bool Plus { get; set; } = true;
         public bool Integer { get; set; } = false;
         private double number = 5;
+
         public double Number
         {
             get => number;
@@ -51,6 +40,7 @@ namespace MapBoard.Common.Dialog
         }
 
         private int intNumber = 5;
+
         public int IntNumber
         {
             get => intNumber;

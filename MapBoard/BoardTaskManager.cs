@@ -12,6 +12,7 @@ namespace MapBoard.Main
         /// 画板当前任务
         /// </summary>
         private static BoardTask currentTask = BoardTask.Ready;
+
         /// <summary>
         /// 画板当前任务
         /// </summary>
@@ -29,6 +30,7 @@ namespace MapBoard.Main
                 }
             }
         }
+
         /// <summary>
         /// 画板任务类型
         /// </summary>
@@ -41,7 +43,9 @@ namespace MapBoard.Main
         }
 
         public delegate void BoardTaskChangedEventHandler(object sender, BoardTaskChangedEventArgs e);
+
         public static event BoardTaskChangedEventHandler BoardTaskChanged;
+
         /// <summary>
         /// 画板任务改变事件参数
         /// </summary>
@@ -52,10 +56,12 @@ namespace MapBoard.Main
                 OldTask = oldTask;
                 NewTask = newTask;
             }
+
             /// <summary>
             /// 旧任务
             /// </summary>
             public BoardTask OldTask { get; private set; }
+
             /// <summary>
             /// 新任务
             /// </summary>

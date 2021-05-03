@@ -1,4 +1,5 @@
 ﻿using FzLib.Extension;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +23,8 @@ namespace MapBoard.TileDownloaderSplicer
                 if (instance == null)
                 {
                     instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config_tile.json")));
+                    instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
+
                     //if (instance.UrlCollection.Sources.Count == 0)
                     //{
                     //    instance.UrlCollection.Sources.Add(new TileSourceInfo() { Name = "高德地图", Url = "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}" });
@@ -39,7 +42,6 @@ namespace MapBoard.TileDownloaderSplicer
 
         public Config()
         {
-            Settings.Formatting = Newtonsoft.Json.Formatting.Indented;
         }
 
         public TileSourceCollection UrlCollection { get; set; } = new TileSourceCollection();
@@ -62,6 +64,7 @@ namespace MapBoard.TileDownloaderSplicer
         public bool CoverFile { get; set; } = false;
         public string FormatExtension { get; set; } = "png";
         public (int width, int height) TileSize { get; set; } = (256, 256);
+
         public ImageFormat ImageFormat
         {
             get
@@ -70,15 +73,18 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     case "jpg":
                         return ImageFormat.Jpeg;
+
                     case "png":
                         return ImageFormat.Png;
+
                     case "tiff":
                         return ImageFormat.Tiff;
+
                     case "bmp":
                         return ImageFormat.Bmp;
+
                     default:
                         throw new Exception("无法识别后缀名" + FormatExtension);
-
                 }
             }
         }
@@ -88,6 +94,7 @@ namespace MapBoard.TileDownloaderSplicer
         private int requestTimeOut = 1000;
         public int ServerPort { get; set; } = 8080;
         public string ServerFormat { get; set; } = @"..\Download\{z}/{x}-{y}.{ext}";
+
         public int RequestTimeOut
         {
             get => requestTimeOut;
@@ -100,6 +107,7 @@ namespace MapBoard.TileDownloaderSplicer
                 this.Notify();
             }
         }
+
         private int readTimeOut = 1000;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -116,6 +124,7 @@ namespace MapBoard.TileDownloaderSplicer
                 this.Notify();
             }
         }
+
         public override void Save()
         {
             base.Save();

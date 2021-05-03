@@ -16,8 +16,10 @@ namespace MapBoard.TileDownloaderSplicer
     public class DownloadInfo : INotifyPropertyChanged
     {
         public Range<double> MapRange { get; private set; } = new Range<double>();
+
         //先Max后Min这样序列化的时候才不会出错
         private int tileMaxLevel = 2;
+
         public int TileMaxLevel
         {
             get => tileMaxLevel;
@@ -30,7 +32,9 @@ namespace MapBoard.TileDownloaderSplicer
                 this.Notify(nameof(TileMaxLevel));
             }
         }
+
         private int tileMinLevel = 2;
+
         public int TileMinLevel
         {
             get => tileMinLevel;
@@ -43,7 +47,6 @@ namespace MapBoard.TileDownloaderSplicer
                 this.Notify(nameof(TileMinLevel));
             }
         }
-
 
         public Dictionary<int, Range<int>> tiles = new Dictionary<int, Range<int>>();
 
@@ -65,7 +68,6 @@ namespace MapBoard.TileDownloaderSplicer
                 tiles.Add(level, new Range<int>(tile1X, tile2X, tile1Y, tile2Y));
 
                 count += (tile2X - tile1X + 1) * (tile2Y - tile1Y + 1);
-
             }
             Tiles = new ReadOnlyDictionary<int, Range<int>>(tiles);
             TileCount = count;
@@ -75,11 +77,11 @@ namespace MapBoard.TileDownloaderSplicer
         {
             return new TileEnumerator(tiles);
         }
+
         public IEnumerator<TileInfo> GetEnumerator(TileInfo start)
         {
             return new TileEnumerator(tiles, start);
         }
-
 
         public int TileCount { get; private set; }
 
@@ -93,8 +95,8 @@ namespace MapBoard.TileDownloaderSplicer
                     current = start;
                     currentRange = ranges[current.Level];
                 }
-
             }
+
             private TileInfo current;
             public TileInfo Current => current;
             public Dictionary<int, Range<int>> Ranges { get; }
@@ -145,8 +147,6 @@ namespace MapBoard.TileDownloaderSplicer
                 return true;
             }
 
-
-
             public void Reset()
             {
                 current = null;
@@ -162,8 +162,8 @@ namespace MapBoard.TileDownloaderSplicer
     {
         public TileInfo()
         {
-
         }
+
         public TileInfo(int level, int x, int y)
         {
             Level = level;

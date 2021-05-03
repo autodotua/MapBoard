@@ -21,6 +21,7 @@ namespace MapBoard.Main.UI.Map
     public class SelectionHelper
     {
         private SelectionHelper instance;
+
         public SelectionHelper()
         {
             instance = this;
@@ -38,26 +39,25 @@ namespace MapBoard.Main.UI.Map
               };
         }
 
-
-
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask== BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected==null || !LayerCollection.Instance.Selected.LayerVisible||  BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected == null || !LayerCollection.Instance.Selected.LayerVisible || BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
             }
-           if(BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
                 Mapview.SketchEditor.Stop();
             }
             MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
             double tolerance = Mapview.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
-           
+
             await Select(envelope, SpatialRelationship.Intersects);
         }
 
         public ArcMapView Mapview => ArcMapView.Instance;
+
         public async Task StartSelect(SketchCreationMode mode)
         {
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Select;
@@ -73,9 +73,9 @@ namespace MapBoard.Main.UI.Map
             }
             SelectedFeatures.Clear();
         }
+
         public async Task StopFrameSelect(bool save)
         {
-
             ClearSelection();
             if (save)
             {
@@ -88,7 +88,6 @@ namespace MapBoard.Main.UI.Map
 
             //BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
-
 
         public async Task Select(Envelope envelope, SpatialRelationship relationship)
         {
@@ -104,7 +103,6 @@ namespace MapBoard.Main.UI.Map
             query.SpatialRelationship = relationship;
             //foreach (FeatureLayer layer in Mapview.Map.OperationalLayers)
             //{
-
             var layer = LayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
@@ -135,7 +133,6 @@ namespace MapBoard.Main.UI.Map
                 }
             }
             //}
-
         }
 
         //public event EventHandler SelectingStatusChanged;
@@ -153,9 +150,9 @@ namespace MapBoard.Main.UI.Map
         //    }
         //}
         public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
-        public void Select(Feature feature,bool clearAll=false)
+
+        public void Select(Feature feature, bool clearAll = false)
         {
-        
             var layer = LayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
@@ -169,10 +166,11 @@ namespace MapBoard.Main.UI.Map
                 }
                 SelectedFeatures.Clear();
             }
-           
+
             layer.SelectFeature(feature);
             ArcMapView.Instance.Selection.SelectedFeatures.Add(feature);
         }
+
         public void Select(IEnumerable<Feature> features)
         {
             var layer = LayerCollection.Instance.Selected?.Layer;

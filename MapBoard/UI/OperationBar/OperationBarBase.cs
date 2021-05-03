@@ -13,7 +13,8 @@ namespace MapBoard.Main.UI.OperationBar
 {
     public abstract class OperationBarBase : Grid, INotifyPropertyChanged
     {
-        public  abstract double BarHeight { get; }
+        public abstract double BarHeight { get; }
+
         public OperationBarBase() : base()
         {
             DataContext = this;
@@ -27,8 +28,10 @@ namespace MapBoard.Main.UI.OperationBar
             storyboard = new Storyboard() { Children = { ani } };
             //storyboard.Begin();
         }
-        DoubleAnimation ani;
-        Storyboard storyboard;
+
+        private DoubleAnimation ani;
+        private Storyboard storyboard;
+
         public void Show()
         {
             ani.To = 0;
@@ -48,6 +51,7 @@ namespace MapBoard.Main.UI.OperationBar
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             }
         }
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

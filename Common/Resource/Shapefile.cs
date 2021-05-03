@@ -1,10 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
-using MapBoard.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace MapBoard.Common.Resource
 {
@@ -27,6 +24,7 @@ namespace MapBoard.Common.Resource
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PointDbf);
             return path;
         }
+
         public static string ExportEmptyMultipointShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
@@ -41,6 +39,7 @@ namespace MapBoard.Common.Resource
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.MultipointDbf);
             return path;
         }
+
         public static string ExportEmptyPolylineShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
@@ -55,6 +54,7 @@ namespace MapBoard.Common.Resource
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PolylineDbf);
             return path;
         }
+
         public static string ExportEmptyPolygonShapefile(string folderPath, string name)
         {
             if (!Directory.Exists(folderPath))
@@ -69,6 +69,7 @@ namespace MapBoard.Common.Resource
             File.WriteAllBytes(GetFileName(folderPath, name, "dbf"), Resource.PolygonDbf);
             return path;
         }
+
         private static string GetFileName(string folderPath, string name, string extension)
         {
             if (folderPath.EndsWith("\\"))
@@ -96,12 +97,16 @@ namespace MapBoard.Common.Resource
             {
                 case GeometryType.Point:
                     return ExportEmptyPointShapefile(path, name);
+
                 case GeometryType.Multipoint:
                     return ExportEmptyMultipointShapefile(path, name);
+
                 case GeometryType.Polyline:
                     return ExportEmptyPolylineShapefile(path, name);
+
                 case GeometryType.Polygon:
                     return ExportEmptyPolygonShapefile(path, name);
+
                 default:
                     throw new Exception("不支持的格式");
             }

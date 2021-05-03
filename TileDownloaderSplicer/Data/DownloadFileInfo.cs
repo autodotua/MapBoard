@@ -38,5 +38,4 @@ namespace MapBoard.TileDownloaderSplicer
     //    public Point WestNorth { get;private set; }
     //    public Point EastSouth { get; private set; }
     //}
-
 }

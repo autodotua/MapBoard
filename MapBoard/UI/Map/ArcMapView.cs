@@ -7,8 +7,8 @@ using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
-using FzLib.UI.Dialog;
 using FzLib.IO;
+using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.Main.IO;
@@ -45,7 +45,7 @@ namespace MapBoard.Main.UI.Map
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
             ViewInsets = new Thickness(8);
-            
+
             //SketchEditor.EditConfiguration=new SketchEditConfiguration()
             //{
             //    AllowMove=true,
@@ -65,6 +65,7 @@ namespace MapBoard.Main.UI.Map
         public SelectionHelper Selection { get; private set; }
         public DrawHelper Drawing { get; private set; }
         public LayerHelper Layer { get; private set; }
+
         /// <summary>
         /// 左键抬起事件，用于结束框选
         /// </summary>
@@ -77,6 +78,7 @@ namespace MapBoard.Main.UI.Map
                 await Selection.StopFrameSelect(true);
             }
         }
+
         /// <summary>
         /// 右键按下事件，用于显示右键菜单，现已废除
         /// </summary>
@@ -108,7 +110,6 @@ namespace MapBoard.Main.UI.Map
             //}
             //else
             //{
-
             //if (IsMouseOverFeature(point, feature))
             //{
             //if (LayerCollection.Instance.Selected != null && Selection.SelectedFeatures.Count > 0)
@@ -124,18 +125,15 @@ namespace MapBoard.Main.UI.Map
             //    menuDelete.Click += async (p1, p2) => await Editing.DeleteSelectedFeatures();
             //    menu.Items.Add(menuDelete);
 
-
             //    MenuItem menuCopy = new MenuItem() { Header = "复制" };
             //    menuCopy.Click += MenuCopyClick;
             //    menu.Items.Add(menuCopy);
-
 
             //    if (Selection.SelectedFeatures.Count == 1)
             //    {
             //        MenuItem menuEdit = new MenuItem() { Header = "编辑" };
             //        menuEdit.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Draw);
             //        menu.Items.Add(menuEdit);
-
 
             //        if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon || LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)
             //        {
@@ -160,15 +158,11 @@ namespace MapBoard.Main.UI.Map
             //        menu.Items.Add(menuArea);
             //    }
 
-
-
-
             //    menu.IsOpen = true;
             //    //}
             //}
             //}
         }
-
 
         /// <summary>
         /// 键盘按下事件
@@ -182,6 +176,7 @@ namespace MapBoard.Main.UI.Map
                 case Key.Delete when SketchEditor.SelectedVertex != null:
                     SketchEditor.RemoveSelectedVertex();
                     break;
+
                 case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
                     await Edit.DeleteSelectedFeatures();
                     break;
@@ -193,9 +188,11 @@ namespace MapBoard.Main.UI.Map
                         case BoardTaskManager.BoardTask.Draw:
                             await Drawing.StopDraw();
                             break;
+
                         case BoardTaskManager.BoardTask.Edit:
                             await Edit.StopEditing();
                             break;
+
                         case BoardTaskManager.BoardTask.Ready when Drawing.CurrentDrawMode.HasValue:
                             await Drawing.StartDraw(Drawing.CurrentDrawMode.Value);
                             break;
@@ -205,27 +202,28 @@ namespace MapBoard.Main.UI.Map
                 case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
                     await Drawing.StopDraw(false);
                     break;
+
                 case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
                     await Edit.AbandonEditing();
                     break;
+
                 case Key.Escape when Selection.SelectedFeatures.Count > 0:
                     await Selection.StopFrameSelect(false);
                     break;
 
-
                 case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
                     SketchEditor.UndoCommand.Execute(null);
                     break;
+
                 case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && SketchEditor.RedoCommand.CanExecute(null):
                     SketchEditor.RedoCommand.Execute(null);
                     break;
+
                 case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.RedoCommand.CanExecute(null):
                     SketchEditor.RedoCommand.Execute(null);
                     break;
             }
-
         }
-
 
         /// <summary>
         /// 地图控件加载完成事件
@@ -236,6 +234,7 @@ namespace MapBoard.Main.UI.Map
         {
             //await Load();
         }
+
         /// <summary>
         /// 加载底图和图层事件
         /// </summary>
@@ -246,11 +245,9 @@ namespace MapBoard.Main.UI.Map
             //await Layer.LoadLayers();
         }
 
-
         public async Task LoadBasemap()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
         }
-
     }
 }

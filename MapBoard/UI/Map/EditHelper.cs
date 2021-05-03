@@ -17,7 +17,6 @@ namespace MapBoard.Main.UI.Map
 {
     public class EditHelper
     {
-
         public ArcMapView Mapview => ArcMapView.Instance;
 
         /// <summary>
@@ -60,7 +59,6 @@ namespace MapBoard.Main.UI.Map
             {
                 //ShowBar("请画一条直线用于切割");
                 await Mapview.SketchEditor.StartAsync(Esri.ArcGISRuntime.UI.SketchCreationMode.Polyline);
-
             }
         }
 
@@ -100,7 +98,6 @@ namespace MapBoard.Main.UI.Map
                                 feature.Geometry = new Polyline(part);
                                 editingFeature.FeatureTable.AddFeatureAsync(feature);
                             }
-
                         }
                         else if (newPolyline.GeometryType == GeometryType.Polygon)
                         {
@@ -128,9 +125,12 @@ namespace MapBoard.Main.UI.Map
             Draw,
             Cut
         }
+
         public EditMode Mode { get; private set; }
+
         // private SnakeBar lastBar;
         private Feature editingFeature;
+
         public async Task DeleteSelectedFeatures()
         {
             HashSet<FeatureTable> tables = new HashSet<FeatureTable>();

@@ -31,6 +31,7 @@ namespace MapBoard.Main.UI.Dialog
 
             InitializeComponent();
         }
+
         /// <summary>
         /// 单击确定按钮
         /// </summary>
@@ -43,6 +44,7 @@ namespace MapBoard.Main.UI.Dialog
         }
 
         public ObservableCollection<Layerselection> Layers { get; }
+
         public class Layerselection
         {
             public bool Select { get; set; }

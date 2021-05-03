@@ -23,6 +23,7 @@ namespace MapBoard.Main.IO
             directory.Create();
             return directory;
         }
+
         public static async Task<string> CloneFeatureToNewShp(string directory, LayerInfo layer)
         {
             string path = ShapefileExport.ExportEmptyShapefile(layer.Type, layer.Name, directory);

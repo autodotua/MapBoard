@@ -1,14 +1,12 @@
 ﻿using Esri.ArcGISRuntime.UI;
 using FzLib.Geography.IO.Gpx;
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 
 namespace MapBoard.GpxToolbox
 {
-    public class TrackInfo:ICloneable
+    public class TrackInfo : ICloneable
     {
-  
         public string FilePath { get; set; }
         public GraphicsOverlay Overlay { get; set; }
         public Gpx Gpx { get; set; }

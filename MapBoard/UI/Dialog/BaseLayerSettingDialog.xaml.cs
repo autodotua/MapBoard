@@ -35,6 +35,7 @@ namespace MapBoard.Main.UI.Dialog
     public partial class BaseLayerSettingDialog : Common.Dialog.DialogWindowBase
     {
         public Config Config => Config.Instance;
+
         public BaseLayerSettingDialog()
         {
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
@@ -43,7 +44,6 @@ namespace MapBoard.Main.UI.Dialog
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
             new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
-
         }
 
         private void ResetIndex()
@@ -54,21 +54,14 @@ namespace MapBoard.Main.UI.Dialog
             }
             //grd.Columns[0].SortMemberPath = "Index";
             //grd.Columns[0].SortDirection = System.ComponentModel.ListSortDirection.Ascending;
-
         }
-
-
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
         }
-
-
 
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
         public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
-
 
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
@@ -97,12 +90,12 @@ namespace MapBoard.Main.UI.Dialog
         private void BrowseButtonClick(object sender, RoutedEventArgs e)
         {
             string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
-                 .Add   ("JPEG图片", "jpg,jpeg")
-                 .Add   ("PNG图片","png") 
-                 .Add   ("BMP图片","bmp") 
-                 .Add   ("TIFF图片","tif,tiff") 
-                 .Add   ("Shapefile矢量图","shp") 
-                 .Add   ("TilePackage切片包","tpk") 
+                 .Add("JPEG图片", "jpg,jpeg")
+                 .Add("PNG图片", "png")
+                 .Add("BMP图片", "bmp")
+                 .Add("TIFF图片", "tif,tiff")
+                 .Add("Shapefile矢量图", "shp")
+                 .Add("TilePackage切片包", "tpk")
                  .AddUnion());
             if (path == null)
             {

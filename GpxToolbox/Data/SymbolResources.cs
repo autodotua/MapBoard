@@ -1,10 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Symbology;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapBoard.GpxToolbox
 {
@@ -12,10 +7,13 @@ namespace MapBoard.GpxToolbox
     {
         public static SimpleRenderer NormalRenderer =>
         new SimpleRenderer(NormalLineSymbol);
+
         public static SimpleRenderer CurrentRenderer =>
             new SimpleRenderer(CurrentLineSymbol);
+
         public static SimpleRenderer SelectionRenderer =>
             new SimpleRenderer(NotSelectedPointSymbol);
+
         public static SimpleRenderer BrowsePointRenderer =>
             new SimpleRenderer(BrowsePointSymbol);
 
@@ -30,14 +28,16 @@ namespace MapBoard.GpxToolbox
             Color = Color.Blue,
             Size = 3,
             Style = SimpleMarkerSymbolStyle.Circle,
-        };     
+        };
+
         public static SimpleMarkerSymbol BrowsePointSymbol { get; } = new SimpleMarkerSymbol()
         {
             Color = Color.Blue,
             Size = 12,
-            Outline=new SimpleLineSymbol(SimpleLineSymbolStyle.Solid,Color.White,2),
+            Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2),
             Style = SimpleMarkerSymbolStyle.Circle,
         };
+
         public static SimpleMarkerSymbol SelectedPointSymbol { get; } = new SimpleMarkerSymbol()
         {
             Color = Color.Red,

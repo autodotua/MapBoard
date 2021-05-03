@@ -21,8 +21,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 using static MapBoard.Main.Util.FeatureUtility;
+using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 
 namespace MapBoard.Main.UI.OperationBar
 {
@@ -35,11 +35,9 @@ namespace MapBoard.Main.UI.OperationBar
         {
             InitializeComponent();
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
-            Application.Current.MainWindow.SizeChanged += (p1,p2)=>selectFeatureDialog?.ResetLocation();
+            Application.Current.MainWindow.SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             Application.Current.MainWindow.LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
         }
-
-
 
         private SelectFeatureDialog selectFeatureDialog;
 
@@ -76,7 +74,6 @@ namespace MapBoard.Main.UI.OperationBar
             //}
         }
 
-
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
         {
             if (e.NewTask == BoardTaskManager.BoardTask.Select)
@@ -94,8 +91,8 @@ namespace MapBoard.Main.UI.OperationBar
 
         public ArcMapView MapView => ArcMapView.Instance;
 
-
         private string message = "正在编辑";
+
         public string Message
         {
             get => message;
@@ -130,10 +127,12 @@ namespace MapBoard.Main.UI.OperationBar
                 LayerCollection.Instance.Selected = dialog.SelectedStyle;
             }
         }
+
         private void CutButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.Edit.StartEdit(EditHelper.EditMode.Cut);
         }
+
         private void ReDrawButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.Edit.StartEdit(EditHelper.EditMode.Draw);
@@ -160,10 +159,7 @@ namespace MapBoard.Main.UI.OperationBar
 
                 ("建立副本",CreateCopy, true),
                 ("导出CSV表格",ToCsv, true),
-
             };
-
-
 
             foreach (var (header, action, visiable) in menus)
             {
@@ -178,11 +174,6 @@ namespace MapBoard.Main.UI.OperationBar
             menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;
-
-
         }
-
-
-
     }
 }

@@ -1,42 +1,45 @@
 ﻿<local:DialogWindowBase
-    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
-    xmlns:extension="clr-namespace:FzLib.UI.Extension;assembly=FzUILib.WPF"
     x:Class="MapBoard.Main.UI.Dialog.BaseLayerSettingDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
-      xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
-    xmlns:win10="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialog="clr-namespace:MapBoard.Main.UI.Dialog"
-    mc:Ignorable="d"
-        Loaded="Window_Loaded"
+    xmlns:extension="clr-namespace:FzLib.UI.Extension;assembly=FzUILib.WPF"
+    xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
+    xmlns:win10="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
     x:Name="win"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="请选择日期范围"  >
+    Title="请选择日期范围"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    Loaded="Window_Loaded"
+    mc:Ignorable="d">
     <Window.Resources>
         <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
-        <dialog:BaseLayerTypeConverter x:Key="bl2str"/>
+        <dialog:BaseLayerTypeConverter x:Key="bl2str" />
     </Window.Resources>
     <Grid Margin="4">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="8"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <win10:AzureDataGrid x:Name="grd"
-                             ItemsSource="{Binding BaseLayers}"
-                             AutoGenerateColumns="False" CanUserAddRows="False" 
-                             CanUserDeleteRows="True" SelectionMode="Single">
+        <win10:AzureDataGrid
+            x:Name="grd"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CanUserDeleteRows="True"
+            ItemsSource="{Binding BaseLayers}"
+            SelectionMode="Single">
             <!--<win10:AzureDataGrid.Resources>
                 <Style TargetType="DataGridCell">
                     <Style.Triggers>
@@ -47,60 +50,81 @@
                 </Style>
             </win10:AzureDataGrid.Resources>-->
             <win10:AzureDataGrid.Columns>
-                <DataGridTextColumn SortDirection="Ascending" CanUserSort="False" Header="序号" Binding="{Binding Index}" />
+                <DataGridTextColumn
+                    Binding="{Binding Index}"
+                    CanUserSort="False"
+                    Header="序号"
+                    SortDirection="Ascending" />
                 <!--<DataGridCheckBoxColumn  CanUserSort="False" Header="启用" Binding="{Binding Enable}" />-->
-                <DataGridCheckBoxColumn Header="启用" Binding="{Binding Enable}"/>
+                <DataGridCheckBoxColumn Binding="{Binding Enable}" Header="启用" />
 
-                <DataGridTemplateColumn Header="类型"  CanUserSort="False">
+                <DataGridTemplateColumn CanUserSort="False" Header="类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Type ,Converter={StaticResource bl2str}}"/>
+                            <TextBlock Text="{Binding Type, Converter={StaticResource bl2str}}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
 
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <flat:UneditableComboBox    SelectedItem="{Binding Type}" 
-                                  ItemsSource="{Binding Source={StaticResource baseLayerTypes}}" >
+                            <flat:UneditableComboBox ItemsSource="{Binding Source={StaticResource baseLayerTypes}}" SelectedItem="{Binding Type}">
                                 <flat:UneditableComboBox.ItemTemplate>
-                                    <DataTemplate >
-                                        <TextBlock Text="{Binding .,Converter={StaticResource bl2str}}"/>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ., Converter={StaticResource bl2str}}" />
                                     </DataTemplate>
                                 </flat:UneditableComboBox.ItemTemplate>
                             </flat:UneditableComboBox>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
-                
-                <DataGridTemplateColumn Header="不透明度"  CanUserSort="False">
+
+                <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Margin="8,0,0,0" Text="{Binding Opacity ,StringFormat=P0}"/>
+                            <TextBlock Margin="8,0,0,0" Text="{Binding Opacity, StringFormat=P0}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
 
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <win10:ModernSlider Minimum="0" Maximum="1"
-                                          Value="{Binding Opacity}" Width="120"/>
+                            <win10:ModernSlider
+                                Width="120"
+                                Maximum="1"
+                                Minimum="0"
+                                Value="{Binding Opacity}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
-                
-                <DataGridTextColumn  CanUserSort="False" Width="320"  Header="地址" Binding="{Binding Path=Path}" />
+
+                <DataGridTextColumn
+                    Width="320"
+                    Binding="{Binding Path=Path}"
+                    CanUserSort="False"
+                    Header="地址" />
             </win10:AzureDataGrid.Columns>
         </win10:AzureDataGrid>
-        <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button   Click="BrowseButtonClick" Content="浏览.." />
-            <FrameworkElement Width="8"/>
-            <flat:Button   Click="AddButtonClick" Content="新增" />
-            <FrameworkElement Width="8"/>          
-            <flat:Button   Click="DeleteButtonClick" Content="删除" />
-            <FrameworkElement Width="8"/>
-            <flat:Button Click="OkButtonClick" Content="应用" Tag="0"/>
-            <FrameworkElement Width="8"/>
-            <flat:Button IsDefault="True" Click="OkButtonClick" Content="确定" Tag="1"/>
+        <StackPanel
+            Grid.Row="2"
+            Grid.ColumnSpan="5"
+            Margin="8"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <flat:Button Click="BrowseButtonClick" Content="浏览.." />
+            <FrameworkElement Width="8" />
+            <flat:Button Click="AddButtonClick" Content="新增" />
+            <FrameworkElement Width="8" />
+            <flat:Button Click="DeleteButtonClick" Content="删除" />
+            <FrameworkElement Width="8" />
+            <flat:Button
+                Click="OkButtonClick"
+                Content="应用"
+                Tag="0" />
+            <FrameworkElement Width="8" />
+            <flat:Button
+                Click="OkButtonClick"
+                Content="确定"
+                IsDefault="True"
+                Tag="1" />
         </StackPanel>
     </Grid>
-
 </local:DialogWindowBase>

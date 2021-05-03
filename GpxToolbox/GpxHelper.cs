@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapBoard.GpxToolbox
 {
-   public static class GpxHelper
+    public static class GpxHelper
     {
         public static void Smooth(GpxPointCollection points, int level, Func<GpxPoint, double> get, Action<GpxPoint, double> set)
         {
@@ -37,6 +35,5 @@ namespace MapBoard.GpxToolbox
                 set(points[tailIndex + (count - tailIndex) / 2], queue.Average());
             }
         }
-
     }
 }

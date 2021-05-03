@@ -2,23 +2,18 @@
 
 using FzLib.Program;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using static FzLib.IO.Shortcut;
 
 namespace MapBoard.AfterBuild
 {
-    class Program
+    internal class Program
     {
         private const string appPath = "App";
-        static void Main(string[] args)
-        {
 
+        private static void Main(string[] args)
+        {
 #if !DEBUG || TEST
             DeleteUselessFolders();
             Console.WriteLine("无用目录删除完成");
@@ -92,7 +87,6 @@ namespace MapBoard.AfterBuild
             else
             {
                 shortcut.TargetPath = Path.Combine(App.ProgramDirectoryPath, appPath, "Mapboard.exe");
-
             }
             shortcut.ShortcutFilePath = GetPath("地图画板.lnk");
             CreateShortcut(shortcut);
@@ -112,7 +106,6 @@ namespace MapBoard.AfterBuild
                     return Path.Combine(Path.GetDirectoryName(App.ProgramDirectoryPath), name);
                 }
                 return Path.Combine(App.ProgramDirectoryPath, name);
-
             }
         }
 

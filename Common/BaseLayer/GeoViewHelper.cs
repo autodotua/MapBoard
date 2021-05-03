@@ -3,9 +3,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.UI.Dialog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MapBoard.Common.BaseLayer
@@ -23,7 +21,7 @@ namespace MapBoard.Common.BaseLayer
             {
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers.Where(p=>p.Enable))
+                foreach (var item in Config.Instance.BaseLayers.Where(p => p.Enable))
                 {
                     try
                     {
@@ -45,7 +43,6 @@ namespace MapBoard.Common.BaseLayer
                 }
                 if (map is SceneView)
                 {
-
                     (map as SceneView).Scene = basemap == null ? new Scene() : new Scene(basemap);
                     await (map as SceneView).Scene.LoadAsync();
                 }
@@ -63,9 +60,5 @@ namespace MapBoard.Common.BaseLayer
                 return false;
             }
         }
-
     }
-
-
-
 }

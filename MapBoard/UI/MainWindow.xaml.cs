@@ -2,15 +2,15 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
+using FzLib.Program;
 using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
-using FzLib.Program;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Util;
 using MapBoard.Main.IO;
 using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -46,8 +46,10 @@ namespace MapBoard.Main.UI
     public partial class MainWindow : MainWindowBase
     {
         #region 字段和属性
+
         public Config Config => Config.Instance;
         public LayerCollection Layers => LayerCollection.Instance;
+
         /// <summary>
         /// 控制在执行耗时工作时控件的可用性
         /// </summary>
@@ -71,6 +73,7 @@ namespace MapBoard.Main.UI
         #endregion
 
         #region 窗体启动与关闭
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -85,6 +88,7 @@ namespace MapBoard.Main.UI
                   Notify(nameof(Layers));
               };
         }
+
         protected async override void OnDrop(DragEventArgs e)
         {
             //if(Mouse.GetPosition(this).X<grdLeft.ActualWidth)
@@ -99,7 +103,6 @@ namespace MapBoard.Main.UI
             //bool yes = true;
             await IOUtility.DropFiles(files);
         }
-
 
         private void RegistEvents()
         {
@@ -119,6 +122,7 @@ namespace MapBoard.Main.UI
               };
             //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
         }
+
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
@@ -128,11 +132,10 @@ namespace MapBoard.Main.UI
 
             Config.Save();
             LayerCollection.Instance.Save();
-
         }
 
-
         #endregion
+
         private void JudgeControlsEnable()
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw
@@ -152,12 +155,8 @@ namespace MapBoard.Main.UI
                     lvw.IsEnabled = true;
                 }
                 grdLeft.IsEnabled = true;
-
-
             }
             btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = LayerCollection.Instance.Selected != null;
-
-
 
             //if (arcMap.Selection.IsSelecting)
             //{
@@ -178,14 +177,17 @@ namespace MapBoard.Main.UI
                             splBtnMultiPoint.Visibility = Visibility.Visible;
                             arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Multipoint;
                             break;
+
                         case GeometryType.Point:
                             splBtnPoint.Visibility = Visibility.Visible;
                             arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Point;
                             break;
+
                         case GeometryType.Polyline:
                             splBtnPolyline.Visibility = Visibility.Visible;
                             arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polyline;
                             break;
+
                         case GeometryType.Polygon:
                             splBtnPolygon.Visibility = Visibility.Visible;
                             arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polygon;
@@ -198,7 +200,6 @@ namespace MapBoard.Main.UI
                 }
             }
         }
-
 
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
@@ -244,7 +245,6 @@ namespace MapBoard.Main.UI
             //{
             //    await arcMap.Selection.StopFrameSelect(false);
             //}
-
         }
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
@@ -301,7 +301,8 @@ namespace MapBoard.Main.UI
             LayerCollection.Instance.Save();
         }
 
-        bool changingStyle = false;
+        private bool changingStyle = false;
+
         private void SelectedStyleChanged(object sender, SelectionChangedEventArgs e)
         {
             changingStyle = true;
@@ -330,7 +331,6 @@ namespace MapBoard.Main.UI
                 LayerUtility.RemoveLayer(layer, true);
             }
             //var style = LayerCollection.Instance.Selected;
-
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
@@ -343,7 +343,6 @@ namespace MapBoard.Main.UI
             {
                 Layersetting.ResetLayerSettingUI();
                 //await arcMap.SetViewpointGeometryAsync(await LayerCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
-
             }
 
             //new GpxToolbox.MainWindow().Show();
@@ -369,7 +368,6 @@ namespace MapBoard.Main.UI
                     ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
                     ("导入",async()=>await IOUtility.ImportFeature(),true),
                     ("导出",  ExportSingle,true),
-
                };
             }
             else
@@ -380,7 +378,6 @@ namespace MapBoard.Main.UI
                     ("删除",DeleteLayer,true),
                 };
             }
-
 
             foreach (var (header, action, visiable) in menus)
             {
@@ -393,7 +390,6 @@ namespace MapBoard.Main.UI
             }
             if (menu.Items.Count > 0)
             {
-
                 menu.IsOpen = true;
             }
 
@@ -437,10 +433,7 @@ namespace MapBoard.Main.UI
                 {
                     LayerUtility.SetTimeExtent(layer);
                 }
-
             }
-
-
         }
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)

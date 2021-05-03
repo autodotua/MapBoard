@@ -47,16 +47,17 @@ namespace MapBoard.Main.Layer
         //    }
         //}
         public static readonly string LayersFileName = "layers.json";
+
         private static LayerCollection instance;
+
         public static LayerCollection Instance
         {
             get
             {
                 if (instance == null)
                 {
-
                     instance = TryOpenOrCreate<LayerCollection>(System.IO.Path.Combine(Config.DataPath, LayersFileName));
-                    instance.Settings.Formatting = Formatting.Indented;
+                    instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
                     if (instance.Layers.Count > 0)
                     {
                         var Layers = instance.Layers.ToArray();
@@ -90,12 +91,15 @@ namespace MapBoard.Main.Layer
                 return instance;
             }
         }
+
         public bool SaveWhenChanged { get; set; } = false;
+
         //public void Save()
         //{
         //    File.WriteAllText(Path.Combine(Config.DataPath, "Layers.json"), JsonConvert.SerializeObject(Layers));
         //}
         private ObservableCollection<LayerInfo> layers = new ObservableCollection<LayerInfo>();
+
         public ObservableCollection<LayerInfo> Layers
         {
             get => layers;
@@ -104,7 +108,6 @@ namespace MapBoard.Main.Layer
                 layers = value;
                 if (value != null)
                 {
-
                     if (value.Count > 0)
                     {
                         value.ForEachAsync(async p => await ArcMapView.Instance.Layer.AddLayerAsync(p));
@@ -136,9 +139,11 @@ namespace MapBoard.Main.Layer
                         }
                     }
                     break;
+
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     ArcMapView.Instance.Map.OperationalLayers.Move(e.OldStartingIndex, e.NewStartingIndex);
                     break;
+
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     foreach (LayerInfo layer in e.OldItems)
                     {
@@ -146,6 +151,7 @@ namespace MapBoard.Main.Layer
                         layer.PropertyChanged -= LayerPropertyChanged;
                     }
                     break;
+
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
@@ -157,6 +163,7 @@ namespace MapBoard.Main.Layer
         }
 
         public event EventHandler StyleVisibilityChanged;
+
         public override void Save()
         {
             SelectedIndex = Layers.IndexOf(Selected);
@@ -170,7 +177,9 @@ namespace MapBoard.Main.Layer
                 base.Save();
             }
         }
+
         public int SelectedIndex { get; set; }
+
         [JsonIgnore]
         public LayerInfo Selected
         {
@@ -226,6 +235,7 @@ namespace MapBoard.Main.Layer
         }
 
         public static event EventHandler LayerInstanceChanged;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public (double X1, double X2, double Y1, double Y2)? LastViewpointGeometry
@@ -239,7 +249,6 @@ namespace MapBoard.Main.Layer
                     {
                         ArcMapView.Instance.SetViewpointGeometryAsync(new Envelope(value.Value.X1, value.Value.Y1, value.Value.X2, value.Value.Y2));
                     }
-
                 }
             }
         }

@@ -1,9 +1,5 @@
 ﻿using FzLib.UI.Extension;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace MapBoard.Common.Dialog
@@ -12,7 +8,7 @@ namespace MapBoard.Common.Dialog
     {
         public DialogWindowBase()
         {
-            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive); 
+            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
             if (Owner == null)
             {
                 Owner = Application.Current.MainWindow;

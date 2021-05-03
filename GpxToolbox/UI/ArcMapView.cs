@@ -4,13 +4,13 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
-using FzLib.UI.Dialog;
-using FzLib.Extension;
 using FzLib.Geography.IO.Gpx;
+using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
@@ -22,7 +22,6 @@ using System.Windows.Input;
 using static MapBoard.GpxToolbox.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
 using GeoPoint = NetTopologySuite.Geometries.Point;
-using System.Collections.ObjectModel;
 
 namespace MapBoard.GpxToolbox
 {
@@ -35,7 +34,6 @@ namespace MapBoard.GpxToolbox
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
-
         }
 
         private void TracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -57,13 +55,12 @@ namespace MapBoard.GpxToolbox
                         //}
                     }
                     break;
+
                 case NotifyCollectionChangedAction.Reset:
                     GraphicsOverlays.Clear();
                     gpxPointAndGraphics.Clear();
                     //pointToTrackInfo.Clear();
                     break;
-
-
             }
         }
 
@@ -87,12 +84,10 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-
         public MapTapModes MapTapMode { get; set; } = MapTapModes.None;
 
         private async void MapViewTapped(object sender, GeoViewInputEventArgs e)
         {
-
             if (MapTapMode != MapTapModes.AllLayers && MapTapMode != MapTapModes.SelectedLayer)
             {
                 return;
@@ -103,7 +98,6 @@ namespace MapBoard.GpxToolbox
             double mapTolerance = tolerance;
             Envelope envelope = new Envelope(clickPoint.X - mapTolerance, clickPoint.Y - mapTolerance, clickPoint.X + mapTolerance, clickPoint.Y + mapTolerance, SpatialReference);
             bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
-
 
             ClearSelection();
             IEnumerable<TrackInfo> Track = null;
@@ -128,7 +122,6 @@ namespace MapBoard.GpxToolbox
                         PointSelected?.Invoke(this, new PointSelectedEventArgs(trajectory, gpxPointAndGraphics.GetKey(graphic)));
                         return;
                     }
-
                 }
             }
 
@@ -136,7 +129,6 @@ namespace MapBoard.GpxToolbox
 
             SnakeBar.Show("没有识别到任何" + (MapTapMode == MapTapModes.SelectedLayer ? "点" : "轨迹"));
         }
-
 
         public async void LoadFiles(IEnumerable<string> files)
         {
@@ -184,6 +176,7 @@ namespace MapBoard.GpxToolbox
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
         }
+
         public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
         //public Dictionary<GpxPoint, TrackInfo> pointToTrackInfo = new Dictionary<GpxPoint, TrackInfo>();
@@ -205,10 +198,12 @@ namespace MapBoard.GpxToolbox
                 }
             }
         }
+
         public void SelectPoint(GpxPoint point)
         {
             SelectPoint(gpxPointAndGraphics[point]);
         }
+
         public void SelectPointTo(GpxPoint point)
         {
             if (point == null)
@@ -237,7 +232,6 @@ namespace MapBoard.GpxToolbox
                         SelectPoint(g);
                     }
                 }
-
             }
             var count = track.Track.Points.Count;
 
@@ -253,20 +247,21 @@ namespace MapBoard.GpxToolbox
                     UnselectPoint(g);
                     //}
                 }
-
             }
-
         }
+
         private void SelectPoint(Graphic g)
         {
             g.Symbol = SelectedPointSymbol;
             selectedGraphics.Add(g);
         }
+
         public void UnselectPoint(Graphic g)
         {
             g.Symbol = NotSelectedPointSymbol;
             selectedGraphics.Remove(g);
         }
+
         public void ClearSelection()
         {
             if (SelectedTrack == null)
@@ -291,10 +286,10 @@ namespace MapBoard.GpxToolbox
                 Tracks.CollectionChanged += TracksCollectionChanged;
             }
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
-
         }
 
-        GraphicsOverlay browseOverlay;
+        private GraphicsOverlay browseOverlay;
+
         public void SetLocation(GeoPoint p)
         {
             if (browseOverlay == null)
@@ -306,14 +301,13 @@ namespace MapBoard.GpxToolbox
             var point = new ArcMapPoint(p.X, p.Y, p.Z);
             //browseOverlay.Graphics.Clear();
             //browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
-           if (browseOverlay.Graphics.Count==0)
+            if (browseOverlay.Graphics.Count == 0)
             {
                 browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
             }
             else
             {
                 browseOverlay.Graphics[0].Geometry = point;
-
             }
             //EventHandler<DrawStatusChangedEventArgs> handler = null;
             //handler= new EventHandler<DrawStatusChangedEventArgs>((s, e) => {
@@ -333,6 +327,7 @@ namespace MapBoard.GpxToolbox
             }
             return ts;
         }
+
         public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
         {
             string gpxContent = File.ReadAllText(filePath);
@@ -361,7 +356,6 @@ namespace MapBoard.GpxToolbox
                 {
                     Log.ErrorLogs.Add("加载gpx文件" + filePath + "的Track(" + i.ToString() + ")错误：" + ex.Message);
                 }
-
             }
             if (raiseEvent)
             {
@@ -369,12 +363,10 @@ namespace MapBoard.GpxToolbox
             }
 
             return loadedTrack;
-
         }
 
         public void LoadTrack(TrackInfo trackInfo, bool update = false, bool raiseEvent = false, bool? gpxHeight = null)
         {
-
             if (update)
             {
                 foreach (var point in trackInfo.Track.Points)
@@ -400,7 +392,6 @@ namespace MapBoard.GpxToolbox
             List<ArcMapPoint> mapPoints = new List<ArcMapPoint>();
             foreach (var p in trackInfo.Track.Points)
             {
-
                 GeoPoint newP = p;
                 if (Config.Instance.BasemapCoordinateSystem != "WGS84")
                 {
@@ -455,7 +446,9 @@ namespace MapBoard.GpxToolbox
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedTrajectorie.Gpx.Name"));
             }
         }
+
         public event PropertyChangedEventHandler PropertyChanged;
+
         public class PointSelectedEventArgs : EventArgs
         {
             public PointSelectedEventArgs(TrackInfo trajectory, GpxPoint point)
@@ -467,8 +460,11 @@ namespace MapBoard.GpxToolbox
             public TrackInfo Trajectory { get; private set; }
             public GpxPoint Point { get; private set; }
         }
+
         public delegate void PointSelectedEventHandler(object sender, PointSelectedEventArgs e);
+
         public event PointSelectedEventHandler PointSelected;
+
         public event EventHandler PointSelecting;
 
         public class GpxLoadedEventArgs : EventArgs
@@ -478,10 +474,13 @@ namespace MapBoard.GpxToolbox
                 Track = track;
                 Update = update;
             }
+
             public bool Update { get; private set; }
             public TrackInfo[] Track { get; private set; }
         }
+
         public delegate void GpxLoadedEventHandler(object sender, GpxLoadedEventArgs e);
+
         public event GpxLoadedEventHandler GpxLoaded;
 
         public enum MapTapModes
@@ -492,5 +491,4 @@ namespace MapBoard.GpxToolbox
             Circle,
         }
     }
-
 }

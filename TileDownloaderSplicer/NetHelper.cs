@@ -61,7 +61,6 @@ namespace MapBoard.TileDownloaderSplicer
                 }
 
                 File.Move(tempFile, path);
-
             }
             catch (Exception ex)
             {
@@ -69,14 +68,14 @@ namespace MapBoard.TileDownloaderSplicer
             }
             finally
             {
-
             }
-
         }
+
         /// <summary>
         /// HTTP服务器
         /// </summary>
         private static TcpListener tcpListener;
+
         public static void StartServer()
         {
             IPAddress localaddress = IPAddress.Loopback;
@@ -89,7 +88,6 @@ namespace MapBoard.TileDownloaderSplicer
             }
             Task.Run(async () =>
             {
-
                 // 启动监听
                 tcpListener.Start();
                 while (true)
@@ -119,7 +117,6 @@ namespace MapBoard.TileDownloaderSplicer
                             }
                         });
 #pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
-
                     }
                     catch (Exception ex)
                     {
@@ -146,7 +143,6 @@ namespace MapBoard.TileDownloaderSplicer
             Regex r = new Regex("GET /([0-9]+)-([0-9]+)-([0-9]+) HTTP");
             if (r.IsMatch(requeststring))
             {
-
                 var match = r.Match(requeststring);
                 int x = int.Parse(match.Groups[1].Value);
                 int y = int.Parse(match.Groups[2].Value);
@@ -161,7 +157,6 @@ namespace MapBoard.TileDownloaderSplicer
                 string statusLine;
                 if (File.Exists(file))
                 {
-
                     statusLine = "HTTP/1.1 200 OK\r\n";
                     responseBodyBytes = File.ReadAllBytes(file);
                 }
@@ -200,7 +195,6 @@ namespace MapBoard.TileDownloaderSplicer
 
         public static void StopServer()
         {
-
             tcpListener.Stop();
         }
     }

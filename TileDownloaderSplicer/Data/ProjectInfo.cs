@@ -1,9 +1,8 @@
-﻿
-using FzLib.Geography.IO.Tile;
+﻿using FzLib.Geography.IO.Tile;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    class ProjectInfo
+    internal class ProjectInfo
     {
         public ProjectInfo(int level, int x, int y, int width, int height)
         {
@@ -15,6 +14,7 @@ namespace MapBoard.TileDownloaderSplicer
             NorthwestLatitude = leftTop.lat;
             NorthwestLongitude = leftTop.lng;
         }
+
         public double PixelPerX { get; set; }
         public double PixelPerY { get; set; }
         public double NorthwestLatitude { get; set; }
@@ -30,5 +30,4 @@ namespace MapBoard.TileDownloaderSplicer
 {NorthwestLatitude.ToString()}";
         }
     }
-
 }

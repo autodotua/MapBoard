@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Basic.Collection;
-using FzLib.UI.Dialog;
 using FzLib.Program;
+using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.Layer;
@@ -35,6 +35,7 @@ namespace MapBoard.Main.IO
             //Information.Restart();
             LayerCollection.ResetLayers();
         }
+
         /// <summary>
         /// 导入图层包
         /// </summary>
@@ -73,6 +74,7 @@ namespace MapBoard.Main.IO
 
             LayerCollection.Instance.Layers.Add(style);
         }
+
         /// <summary>
         /// 导出底涂包，实则是zip文件
         /// </summary>
@@ -93,6 +95,7 @@ namespace MapBoard.Main.IO
             Layers.ForEach(p => LayerCollection.Instance.Layers.Add(p));
             LayerCollection.Instance.SaveWhenChanged = true;
         }
+
         public async static Task ExportMap2(string path)
         {
             DirectoryInfo directory = IOUtilities.GetTempDir();
@@ -104,10 +107,6 @@ namespace MapBoard.Main.IO
             LayerCollection.Instance.Save(Path.Combine(directory.FullName, LayerCollection.LayersFileName));
             ZipFile.CreateFromDirectory(directory.FullName, path);
         }
-
-
-
-
 
         /// <summary>
         /// 导出图层包，实则是zip文件

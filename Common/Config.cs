@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using IOPath = System.IO.Path;
 
 namespace MapBoard.Common
 {
@@ -18,7 +17,7 @@ namespace MapBoard.Common
                 if (instance == null)
                 {
                     instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config.json"));
-                    instance.Settings.Formatting = Formatting.Indented;
+                    instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
                 }
                 return instance;
             }
@@ -36,6 +35,7 @@ namespace MapBoard.Common
         public double GpxHeightExaggeratedMagnification { get; set; } = 5;
         public bool GpxRelativeHeight { get; set; } = true;
         public BrowseInfo BrowseInfo { get; set; } = new BrowseInfo();
+
         public override void Save()
         {
             base.Save();
@@ -48,7 +48,6 @@ namespace MapBoard.Common
         public bool GpxAutoSmooth { get; set; } = true;
         public bool GpxAutoSmoothOnlyZ { get; set; } = false;
         public int GpxAutoSmoothLevel { get; set; } = 5;
-
 
         //public List<StyleInfo> ShapefileStyles { get; } = new List<StyleInfo>();
 
@@ -65,6 +64,7 @@ namespace MapBoard.Common
     public class BrowseInfo : INotifyPropertyChanged
     {
         private double zoom = 200;
+
         public double Zoom
         {
             get => zoom;
@@ -74,7 +74,9 @@ namespace MapBoard.Common
                 this.Notify(nameof(Zoom));
             }
         }
+
         private double sensitivity = 5;
+
         public double Sensitivity
         {
             get => sensitivity;
@@ -84,7 +86,9 @@ namespace MapBoard.Common
                 this.Notify(nameof(Sensitivity));
             }
         }
+
         private double fps = 20;
+
         public double FPS
         {
             get => fps;
@@ -109,8 +113,8 @@ namespace MapBoard.Common
             }
         }
 
-
         private int recordInterval = 1000;
+
         public int RecordInterval
         {
             get => recordInterval;
@@ -132,7 +136,9 @@ namespace MapBoard.Common
                 this.Notify(nameof(RecordInterval));
             }
         }
+
         private int angle = 60;
+
         public int Angle
         {
             get => angle;
@@ -142,9 +148,6 @@ namespace MapBoard.Common
                 this.Notify(nameof(Angle));
             }
         }
-
-
-
     }
 
     public class BaseLayerInfo : INotifyPropertyChanged, ICloneable
@@ -159,12 +162,15 @@ namespace MapBoard.Common
 
         public BaseLayerType Type { get; set; }
         public string Path { get; set; }
+
         public int Index
         {
             get => index;
             set => this.SetValueAndNotify(ref index, value, nameof(Index));
         }
+
         private bool enable = true;
+
         public bool Enable
         {
             get => enable;
@@ -174,7 +180,9 @@ namespace MapBoard.Common
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enable)));
             }
         }
+
         private double opacity = 1;
+
         public double Opacity
         {
             get => opacity;
@@ -186,6 +194,7 @@ namespace MapBoard.Common
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         public BaseLayerInfo Clone()
         {
             return MemberwiseClone() as BaseLayerInfo;
@@ -205,4 +214,3 @@ namespace MapBoard.Common
         TpkLayer
     }
 }
-

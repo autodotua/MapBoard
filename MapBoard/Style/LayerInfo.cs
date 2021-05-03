@@ -5,6 +5,7 @@ using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,25 +15,27 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 using static MapBoard.Common.CoordinateTransformation;
 using static MapBoard.Main.Util.LayerUtility;
-using static FzLib.Extension.ExtendedINotifyPropertyChanged;
-using Newtonsoft.Json.Linq;
 
 namespace MapBoard.Main.Layer
 {
     public class LayerInfo : INotifyPropertyChanged, ICloneable
     {
         public string Name { get; set; }
+
         [JsonIgnore]
         public string FileName => Path.Combine(Config.DataPath, Name + ".shp");
 
         //public RendererInfo Renderer { get; set; } = new RendererInfo();
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
+
         [JsonIgnore]
         public GeometryType Type => table == null ? GeometryType.Unknown : table.GeometryType;
 
         private ShapefileFeatureTable table;
+
         [JsonIgnore]
         public ShapefileFeatureTable Table
         {
@@ -47,9 +50,12 @@ namespace MapBoard.Main.Layer
                 this.SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
             }
         }
+
         [JsonIgnore]
         public FeatureLayer Layer => Table?.FeatureLayer;
+
         private bool layerVisible = true;
+
         public bool LayerVisible
         {
             get
@@ -121,6 +127,7 @@ namespace MapBoard.Main.Layer
                 this.Notify(nameof(TimeExtentEnable));
             }
         }
+
         public LabelInfo Label { get; set; } = new LabelInfo();
         //public string LabelJson { get; set; }
 
@@ -149,6 +156,7 @@ namespace MapBoard.Main.Layer
                 }
             }
         }
+
         [JsonIgnore]
         public string TypeDescription
         {
@@ -158,27 +166,31 @@ namespace MapBoard.Main.Layer
                 {
                     case GeometryType.Point:
                         return "点";
+
                     case GeometryType.Polygon:
                         return "面";
+
                     case GeometryType.Polyline:
                         return "线";
+
                     case GeometryType.Multipoint:
                         return "多点";
+
                     default:
                         return "未知";
                 }
             }
         }
+
         public LayerInfo Clone()
         {
             return MemberwiseClone() as LayerInfo;
         }
+
         object ICloneable.Clone()
         {
             return MemberwiseClone();
         }
-
-
 
         public void CopyLayerFrom(LayerInfo layer)
         {
@@ -205,8 +217,6 @@ namespace MapBoard.Main.Layer
                 nameof(LayerVisible),
                 nameof(TypeDescription));
         }
-
-
 
         public override string ToString()
         {

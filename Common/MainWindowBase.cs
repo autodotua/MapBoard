@@ -1,11 +1,5 @@
-﻿using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
+﻿using FzLib.UI.Extension;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace MapBoard.Common
 {
@@ -19,7 +13,5 @@ namespace MapBoard.Common
         {
             base.OnActivated(e);
         }
-
-
     }
 }

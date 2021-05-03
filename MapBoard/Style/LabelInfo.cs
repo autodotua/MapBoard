@@ -5,6 +5,7 @@ using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,10 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 using static MapBoard.Common.CoordinateTransformation;
 using static MapBoard.Main.Util.LayerUtility;
-using static FzLib.Extension.ExtendedINotifyPropertyChanged;
-using Newtonsoft.Json.Linq;
 
 namespace MapBoard.Main.Layer
 {
@@ -28,8 +28,8 @@ namespace MapBoard.Main.Layer
         public bool Class { get; set; }
         public bool Enable => Info || Date || Class;
 
-
         private Color lineColor = Color.FromArgb(255, 248, 220);
+
         public Color LineColor
         {
             get => lineColor;
@@ -37,21 +37,23 @@ namespace MapBoard.Main.Layer
         }
 
         private Color fillColor = Color.Black;
+
         public Color FillColor
         {
             get => fillColor;
             set => this.SetValueAndNotify(ref fillColor, value, nameof(FillColor));
         }
 
-
-
         private double fontSize = 12;
+
         public double FontSize
         {
             get => fontSize;
             set => this.SetValueAndNotify(ref fontSize, value, nameof(FontSize));
         }
-        private double strokeThickness=3;
+
+        private double strokeThickness = 3;
+
         public double StrokeThickness
         {
             get => strokeThickness;
@@ -109,6 +111,7 @@ namespace MapBoard.Main.Layer
             SetLabelJsonValue(labelJson, "labelExpressionInfo.expression", GetExpression());
             return labelJson.ToString();
         }
+
         //private static LabelInfo FromJson(string json)
         //{
         //    JObject labelJson = JObject.Parse(json);
@@ -128,6 +131,7 @@ namespace MapBoard.Main.Layer
         {
             return new byte[] { color.R, color.G, color.B, color.A };
         }
+
         private static Color GetColorFromArgb(IList<byte> argb)
         {
             return Color.FromArgb(argb[3], argb[0], argb[1], argb[2]);
@@ -147,8 +151,8 @@ namespace MapBoard.Main.Layer
             {
                 (token as JArray)[i] = new JValue(value[i]);
             }
-
         }
+
         public void SetLabelJsonValue<T>(JObject labelJson, string path, T value)
         {
             string[] paths = path.Split('.');
@@ -160,7 +164,6 @@ namespace MapBoard.Main.Layer
             }
 
            (token as JValue).Value = value;
-
         }
 
         public T[] GetLabelJsonValue<T>(JObject labelJson, string path, IEnumerable<T> defaultValue)
@@ -179,9 +182,7 @@ namespace MapBoard.Main.Layer
                 {
                     if (value[0] is JValue)
                     {
-
                         return value.Select(p => (p as JValue).Value<T>()).ToArray();
-
                     }
                 }
                 return defaultValue.ToArray();
@@ -191,6 +192,7 @@ namespace MapBoard.Main.Layer
                 return defaultValue.ToArray();
             }
         }
+
         public T GetLabelJsonValue<T>(JObject labelJson, string path, T defaultValue)
         {
             try
@@ -214,7 +216,5 @@ namespace MapBoard.Main.Layer
                 return defaultValue;
             }
         }
-
-
     }
 }

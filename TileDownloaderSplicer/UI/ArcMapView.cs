@@ -43,13 +43,13 @@ namespace MapBoard.TileDownloaderSplicer
 
         private void MapViewTapped(object sender, GeoViewInputEventArgs e)
         {
-
         }
+
         public bool IsLocal { get; set; } = false;
 
+        private Layer baseLayer;
+        private bool loaded = false;
 
-        Layer baseLayer;
-        bool loaded = false;
         private async void ArcMapViewLoaded(object sender, RoutedEventArgs e)
         {
             if (loaded)
@@ -64,7 +64,6 @@ namespace MapBoard.TileDownloaderSplicer
 
         public async Task Load()
         {
-
             loaded = true;
             try
             {
@@ -91,7 +90,6 @@ namespace MapBoard.TileDownloaderSplicer
                 await basemap.LoadAsync();
 
                 Map.Basemap = basemap;
-
             }
             catch (Exception ex)
             {
@@ -99,7 +97,9 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
         }
-        bool isSelecting = false;
+
+        private bool isSelecting = false;
+
         public async Task StartSelectAsync()
         {
             if (!isSelecting)
@@ -108,15 +108,13 @@ namespace MapBoard.TileDownloaderSplicer
 
                 isSelecting = true;
                 await SketchEditor.StartAsync(SketchCreationMode.Rectangle, GetSketchEditConfiguration());
-              
             }
             else
             {
                 SketchEditor.Stop();
-                SnakeBar.Show("终止框选"); 
+                SnakeBar.Show("终止框选");
                 isSelecting = false;
             }
-
         }
 
         public void SetBoundary(Range<double> range)
@@ -148,8 +146,6 @@ namespace MapBoard.TileDownloaderSplicer
             return polygon;
         }
 
-
-
         protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonUp(e);
@@ -161,13 +157,15 @@ namespace MapBoard.TileDownloaderSplicer
                 SelectBoundaryComplete?.Invoke(this, new EventArgs());
             }
         }
+
         public Envelope Boundary { get; private set; }
 
         public event EventHandler SelectBoundaryComplete;
 
-        MapPoint point = new MapPoint(0, 0);
-        GraphicsOverlay overlay = new GraphicsOverlay();
-        Graphic graphic = new Graphic();
+        private MapPoint point = new MapPoint(0, 0);
+        private GraphicsOverlay overlay = new GraphicsOverlay();
+        private Graphic graphic = new Graphic();
+
         public void ShowPosition(Window win, TileInfo tile)
         {
             if (tile == null)
@@ -200,9 +198,6 @@ namespace MapBoard.TileDownloaderSplicer
             graphic.IsVisible = true;
             //graphic.Geometry = polygon;
             graphic.Geometry = RangeToPolygon(range);
-
-
         }
     }
-
 }

@@ -23,8 +23,9 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class DateRangeDialog : Common.Dialog.DialogWindowBase
     {
-        bool canSelect = false;
-        LayerInfo CurrentStyle { get; }
+        private bool canSelect = false;
+        private LayerInfo CurrentStyle { get; }
+
         public DateRangeDialog(LayerInfo layer)
         {
             CurrentStyle = layer;
@@ -61,6 +62,7 @@ namespace MapBoard.Main.UI.Dialog
         }
 
         private bool enableDateRange;
+
         public bool EnableDateRange
         {
             get => enableDateRange;
@@ -69,7 +71,6 @@ namespace MapBoard.Main.UI.Dialog
                 enableDateRange = value;
                 Notify(nameof(EnableDateRange));
                 btn.IsEnabled = !EnableDateRange || date.DateFrom.HasValue && date.DateTo.HasValue;
-
             }
         }
 

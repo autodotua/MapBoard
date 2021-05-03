@@ -20,6 +20,7 @@ namespace MapBoard.TileDownloaderSplicer
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
+
     /// <summary>
     /// 通过参数将enum转换为string。
     /// 参数格式示例：Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停
@@ -51,6 +52,7 @@ namespace MapBoard.TileDownloaderSplicer
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
+
     /// <summary>
     /// 通过参数将enum转换为bool。
     /// 参数格式示例：Pausing/Stop/Start:false
@@ -85,6 +87,7 @@ namespace MapBoard.TileDownloaderSplicer
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
+
     public class BoolToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -103,6 +106,7 @@ namespace MapBoard.TileDownloaderSplicer
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
+
     public class TitleConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -120,5 +124,4 @@ namespace MapBoard.TileDownloaderSplicer
             throw new NotSupportedException("Two-way binding not supported by IsNotNullToBoolConverter");
         }
     }
-
 }

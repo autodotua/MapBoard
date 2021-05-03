@@ -22,12 +22,13 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class SelectLayerDialog : Common.Dialog.DialogWindowBase
     {
-        bool canSelect = false;
+        private bool canSelect = false;
+
         public SelectLayerDialog()
         {
             InitializeComponent();
             var Layers = LayerCollection.Instance;
-            var list = Layers.Layers.Where(p => p.Type == Layers.Selected.Type && p!=Layers.Selected);
+            var list = Layers.Layers.Where(p => p.Type == Layers.Selected.Type && p != Layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;
@@ -46,7 +47,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if(!canSelect)
+            if (!canSelect)
             {
                 SnakeBar.ShowError("没有可选目标");
                 Close();

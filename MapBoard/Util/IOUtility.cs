@@ -38,7 +38,6 @@ namespace MapBoard.Main.Util
             {
                 filter = new FileFilterCollection()
                   .Add("CSV表格", "csv");
-
             }
             string path = FileSystemDialog.GetOpenFile(filter);
             try
@@ -61,6 +60,7 @@ namespace MapBoard.Main.Util
                             snake.ShowMessage("已导出到" + path);
                         }
                         break;
+
                     case ".csv":
                         await Csv.Import(path);
                         SnakeBar.Show("导入CSV成功");
@@ -72,6 +72,7 @@ namespace MapBoard.Main.Util
                 TaskDialog.ShowException(ex, "导入失败");
             }
         }
+
         public async static Task ExportLayer()
         {
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
@@ -87,9 +88,11 @@ namespace MapBoard.Main.Util
                         case ".mblpkg":
                             await Package.ExportLayer2(path, LayerCollection.Instance.Selected);
                             break;
+
                         case ".zip":
                             await MobileGISToolBox.ExportLayer(path, LayerCollection.Instance.Selected);
                             break;
+
                         default:
                             throw new Exception("未知文件类型");
                     }
@@ -100,6 +103,7 @@ namespace MapBoard.Main.Util
                 }
             }
         }
+
         /// <summary>
         /// 显示对话框导入
         /// </summary>
@@ -140,17 +144,21 @@ namespace MapBoard.Main.Util
                                 case "点":
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.Point);
                                     break;
+
                                 case "一条线":
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.OneLine);
                                     break;
+
                                 case "多条线":
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.MultiLine);
                                     break;
+
                                 case null:
                                     ok = false;
                                     break;
                             }
                             break;
+
                         case ".shp":
                             await Shapefile.Import(path);
                             return;
@@ -214,6 +222,7 @@ namespace MapBoard.Main.Util
                 }
             }
         }
+
         /// <summary>
         /// 保存截图
         /// </summary>
@@ -295,8 +304,6 @@ namespace MapBoard.Main.Util
             {
                 SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
             }
-
-
         }
     }
 }

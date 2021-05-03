@@ -13,7 +13,6 @@ namespace MapBoard.Main.UI.Map
 {
     public class DrawHelper
     {
-
         public DrawHelper()
         {
         }
@@ -23,7 +22,7 @@ namespace MapBoard.Main.UI.Map
         public DateTimeOffset? Date { get; set; }
         private ArcMapView Mapview => ArcMapView.Instance;
 
-        public SketchCreationMode? CurrentDrawMode { get;  set; }
+        public SketchCreationMode? CurrentDrawMode { get; set; }
 
         /// <summary>
         /// 开始绘制
@@ -36,11 +35,9 @@ namespace MapBoard.Main.UI.Map
             //Mapview.Cursor = Cursors.Cross;
             //Mapview.SketchEditor.PropertyChanged += (p1, p2) =>
             //  {
-
             //  };
             await Mapview.SketchEditor.StartAsync(mode);
         }
-
 
         /// <summary>
         /// 绘制结束
@@ -103,7 +100,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 if (Date.HasValue)
                 {
-                    Date = new DateTimeOffset(Date.Value.DateTime,TimeSpan.Zero);
+                    Date = new DateTimeOffset(Date.Value.DateTime, TimeSpan.Zero);
                     feature.Attributes[Resource.TimeExtentFieldName] = Date.Value.UtcDateTime;
                 }
                 else
@@ -114,7 +111,6 @@ namespace MapBoard.Main.UI.Map
                 await table.AddFeatureAsync(feature);
 
                 LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();
-
             }
             if (!Config.Instance.RemainLabel)
             {
@@ -123,7 +119,6 @@ namespace MapBoard.Main.UI.Map
             Mapview.SketchEditor.Stop();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
-
 
         //private async Task<ShapefileFeatureTable> GetFeatureTable(GeometryType type)
         //{
@@ -136,7 +131,6 @@ namespace MapBoard.Main.UI.Map
         //        await table.LoadAsync();
         //        if (table.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
         //        {
-
         //            FeatureLayer layer = new FeatureLayer(table);
         //            //Map.OperationalLayers.Add(layer);
         //            style.Table = table;
@@ -146,6 +140,5 @@ namespace MapBoard.Main.UI.Map
         //    }
         //    return table;
         //}
-
     }
 }

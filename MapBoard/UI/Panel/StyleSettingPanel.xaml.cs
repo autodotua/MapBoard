@@ -3,11 +3,11 @@ using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Util;
 using MapBoard.Main.IO;
 using MapBoard.Main.Layer;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.Util;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -25,9 +25,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Path = System.IO.Path;
-using Color = System.Drawing.Color;
 using static FzLib.Media.Converter;
+using Color = System.Drawing.Color;
+using Path = System.IO.Path;
+
 namespace MapBoard.Main.UI.Panel
 {
     /// <summary>
@@ -36,12 +37,14 @@ namespace MapBoard.Main.UI.Panel
     public partial class LayerSettingPanel : ExtendedUserControl
     {
         private const string defaultKeyName = "（默认）";
+
         public LayerSettingPanel()
         {
             InitializeComponent();
         }
 
         private double lineWidth = 5;
+
         public double LineWidth
         {
             get => lineWidth;
@@ -53,7 +56,6 @@ namespace MapBoard.Main.UI.Panel
         //    get => FzLib.Media.Converter.MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
         //    set => lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
         //}
-
 
         //public System.Drawing.Color FillColor
         //{
@@ -67,7 +69,6 @@ namespace MapBoard.Main.UI.Panel
         //    set => labelLineColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
         //}
 
-
         //public Color LabelFillColor
         //{
         //    get => FzLib.Media.Converter.MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
@@ -75,6 +76,7 @@ namespace MapBoard.Main.UI.Panel
         //}
 
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
+
         public KeySymbolPair SelectedKey
         {
             get => selectedKey;
@@ -102,18 +104,20 @@ namespace MapBoard.Main.UI.Panel
         }
 
         private string layerName;
+
         public string LayerName
         {
             get => layerName;
             set => SetValueAndNotify(ref layerName, value, nameof(LayerName));
         }
+
         private LabelInfo label;
+
         public LabelInfo Label
         {
             get => label;
             set => SetValueAndNotify(ref label, value, nameof(Label));
         }
-
 
         public void SetStyleFromUI()
         {
@@ -174,7 +178,6 @@ namespace MapBoard.Main.UI.Panel
             {
                 layer.ApplyLayers();
             }
-
         }
 
         public void ResetLayerSettingUI()
@@ -205,18 +208,17 @@ namespace MapBoard.Main.UI.Panel
                     Keys.Add(new KeySymbolPair(defaultKeyName, new SymbolInfo()));
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
-
             }
 
             labelLineColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.LineColor));
             labelFillColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.FillColor));
-
         }
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
             Label.MinScale = ArcMapView.Instance.MapScale;
         }
+
         private JObject labelJson;
         private KeySymbolPair selectedKey;
 
@@ -297,10 +299,10 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        Random r = new Random();
+        private Random r = new Random();
+
         private Color GetRandomColor()
         {
-
             int R = r.Next(255);
             int G = r.Next(255);
             int B = r.Next(255);
@@ -313,7 +315,6 @@ namespace MapBoard.Main.UI.Panel
         {
             foreach (var key in Keys)
             {
-
                 key.Symbol.LineColor = GetRandomColor();
                 key.Symbol.FillColor = GetRandomColor();
             }

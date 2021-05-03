@@ -22,12 +22,12 @@ namespace MapBoard.Main
         {
 #if (DEBUG)
             //StartupUri = new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute);
-            var win = new GpxToolbox.MainWindow();
-            win.Show();
-            win.Loaded += (p1, p2) =>
-            {
-            };
-            return;
+            //var win = new GpxToolbox.MainWindow();
+            //win.Show();
+            //win.Loaded += (p1, p2) =>
+            //{
+            //};
+            //return;
 #else
             UnhandledException.RegistAll(true);
 #endif
@@ -46,6 +46,5 @@ namespace MapBoard.Main
                 StartupUri = new Uri("UI/MainWindow.xaml", UriKind.Relative);
             }
         }
-
     }
 }

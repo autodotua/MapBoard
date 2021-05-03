@@ -27,22 +27,23 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class SelectFeatureDialog : Common.Dialog.DialogWindowBase
     {
-
         public ObservableCollection<FeatherSelectionInfo> SelectedFeatures { get; } = new ObservableCollection<FeatherSelectionInfo>();
 
         private FeatherSelectionInfo selected;
+
         public FeatherSelectionInfo Selected
         {
             get => selected;
             set
             {
                 selected = value;
-                if(value!=null)
+                if (value != null)
                 {
-                    ArcMapView.Instance.Selection.Select(value.Feature,true);
+                    ArcMapView.Instance.Selection.Select(value.Feature, true);
                 }
             }
         }
+
         public SelectFeatureDialog()
         {
             var mainWindow = Application.Current.MainWindow;
@@ -55,7 +56,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if(ArcMapView.Instance.Selection.SelectedFeatures.Count<2)
+            if (ArcMapView.Instance.Selection.SelectedFeatures.Count < 2)
             {
                 return;
             }
@@ -67,8 +68,6 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
-
-
         public void ResetLocation()
         {
             if (IsClosed)
@@ -78,18 +77,14 @@ namespace MapBoard.Main.UI.Dialog
             var mainWindow = Application.Current.MainWindow;
             double left = mainWindow.Left;
             double top = mainWindow.Top;
-            if (mainWindow.WindowState==WindowState.Maximized)
+            if (mainWindow.WindowState == WindowState.Maximized)
             {
                 left = top = 0;
             }
 
             Left = left + mainWindow.ActualWidth - ActualWidth;
             Top = top + 24/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
-
         }
-
-
-
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -98,14 +93,12 @@ namespace MapBoard.Main.UI.Dialog
             mainWindow.Focus();
         }
 
-
-
         public class FeatherSelectionInfo
         {
-            public FeatherSelectionInfo(Feature feature,int index)
+            public FeatherSelectionInfo(Feature feature, int index)
             {
                 Feature = feature;
-                   Index = index;
+                Index = index;
                 Label = feature.GetAttributeValue(Resource.DisplayFieldName) as string;
                 Key = feature.GetAttributeValue(Resource.KeyFieldName) as string;
             }

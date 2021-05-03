@@ -31,7 +31,6 @@ namespace MapBoard.Main.UI.Panel
 
         public Config Config => Config.Instance;
 
-
         private async void ApplyUrlButtonClick(object sender, RoutedEventArgs e)
         {
             await ArcMapView.Instance.LoadBasemap();

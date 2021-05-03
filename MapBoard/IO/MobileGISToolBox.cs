@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Main.IO
 {
-    class MobileGISToolBox
+    internal class MobileGISToolBox
     {
         public static async Task ExportLayer(string path, LayerInfo layer)
         {
@@ -37,6 +37,7 @@ namespace MapBoard.Main.IO
             //zip.Save();
             //}
         }
+
         public static async Task ExportMap(string path)
         {
             //ZipFile zip;
@@ -55,7 +56,6 @@ namespace MapBoard.Main.IO
                 await IOUtilities.CloneFeatureToNewShp(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
-
             }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
             //foreach (var file in tempShpDir.EnumerateFiles())

@@ -11,7 +11,7 @@ using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 
 namespace MapBoard.TileDownloaderSplicer
 {
-    public class TileSourceCollection :INotifyPropertyChanged
+    public class TileSourceCollection : INotifyPropertyChanged
     {
         public TileSourceCollection()
         {
@@ -29,6 +29,7 @@ namespace MapBoard.TileDownloaderSplicer
                   }
               };
         }
+
         public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
         private int selectedIndex;
 
@@ -44,6 +45,5 @@ namespace MapBoard.TileDownloaderSplicer
         }
 
         public TileSourceInfo SelectedUrl => (SelectedIndex == -1 || SelectedIndex >= Sources.Count) ? null : Sources[SelectedIndex];
-
     }
 }

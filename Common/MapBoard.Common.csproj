@@ -20,7 +20,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\AppData\Local\Temp\MapBoard\Debug\</OutputPath>
+    <OutputPath>..\Generation\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -46,8 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FzGeographyLib.dll</HintPath>
     </Reference>
-    <Reference Include="FzStandardLib">
-      <HintPath>..\..\模块\Release\AnyCPU\netstandard2.0\FzStandardLib.dll</HintPath>
+    <Reference Include="FzStandardLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\FzStandardLib.dll</HintPath>
     </Reference>
     <Reference Include="FzUILib.WPF">
       <HintPath>..\libs\FzUILib.WPF.dll</HintPath>

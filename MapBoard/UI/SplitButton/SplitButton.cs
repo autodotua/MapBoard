@@ -25,19 +25,18 @@ namespace MapBoard.Main.UI.SplitButton
         public static readonly DependencyProperty TargetProperty = DependencyProperty.Register("Target", typeof(UIElement), typeof(SplitButton));
         public static readonly DependencyProperty MainButtonCommandProperty = DependencyProperty.Register("MainButtonCommand", typeof(ICommand), typeof(SplitButton), new FrameworkPropertyMetadata(null));
         public static readonly DependencyProperty DropDownButtonCommandProperty = DependencyProperty.Register("DropDownButtonCommand", typeof(ICommand), typeof(SplitButton), new FrameworkPropertyMetadata(null));
-       
+
         #endregion
 
         #region Constructors
 
         public SplitButton()
         {
-            // Bind the ToogleButton.IsChecked property to the drop-down's IsOpen property 
+            // Bind the ToogleButton.IsChecked property to the drop-down's IsOpen property
             var binding = new Binding("DropDownContextMenu.IsOpen") { Source = this };
             SetBinding(IsCheckedProperty, binding);
 
             Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri("pack://application:,,,/MapBoard;component/UI/SplitButton/SplitButtonStyle.xaml") });
-
         }
 
         #endregion
@@ -85,7 +84,7 @@ namespace MapBoard.Main.UI.SplitButton
         #region Public Override Methods
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void OnApplyTemplate()
         {
@@ -113,10 +112,10 @@ namespace MapBoard.Main.UI.SplitButton
             if (DropDownContextMenu == null)
                 return;
 
-            if (DropDownButtonCommand != null) 
+            if (DropDownButtonCommand != null)
                 DropDownButtonCommand.Execute(null);
 
-            // If there is a drop-down assigned to this button, then position and display it 
+            // If there is a drop-down assigned to this button, then position and display it
             DropDownContextMenu.PlacementTarget = this;
             DropDownContextMenu.Placement = PlacementMode.Bottom;
             DropDownContextMenu.IsOpen = !DropDownContextMenu.IsOpen;

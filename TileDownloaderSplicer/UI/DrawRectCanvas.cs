@@ -15,7 +15,6 @@ namespace MapBoard.TileDownloaderSplicer
     {
         public DrawRectCanvas()
         {
-
         }
 
         public bool IsDrawing { get; private set; }
@@ -28,7 +27,9 @@ namespace MapBoard.TileDownloaderSplicer
             Cursor = Cursors.Cross;
             Background = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF));
         }
+
         private int pointIndex = 0;
+
         public void StopDrawing(bool raiseEvent)
         {
             Cursor = Cursors.Arrow;
@@ -43,13 +44,12 @@ namespace MapBoard.TileDownloaderSplicer
             else
             {
                 Children.Clear();
-
             }
         }
 
-        
         public Point FirstPoint { get; private set; }
         public Point SecondPoint { get; private set; }
+
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonDown(e);
@@ -97,6 +97,5 @@ namespace MapBoard.TileDownloaderSplicer
                 }
             }
         }
-
     }
 }

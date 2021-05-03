@@ -4,8 +4,8 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
-using MapBoard.Main.Util;
 using MapBoard.Main.Layer;
+using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -47,7 +47,6 @@ namespace MapBoard.Main.UI.Map
                 }
                 catch
                 {
-
                 }
                 string error = (string.IsNullOrWhiteSpace(style.Name) ? "样式" : "样式" + style.Name) + "加载失败";
                 TaskDialog.ShowException(ex, error);
@@ -64,7 +63,6 @@ namespace MapBoard.Main.UI.Map
             }
             catch
             {
-
             }
         }
 
@@ -159,7 +157,6 @@ namespace MapBoard.Main.UI.Map
                 else
                 {
                     SnakeBar.ShowException(ex, $"无法加载样式{style.Name}");
-
                 }
             }
         }

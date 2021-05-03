@@ -27,6 +27,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             InitializeComponent();
         }
+
         /// <summary>
         /// 支持的坐标系
         /// </summary>
@@ -34,6 +35,7 @@ namespace MapBoard.Main.UI.Dialog
 
         public string SelectedCoordinateSystem1 { get; set; } = "GCJ02";
         public string SelectedCoordinateSystem2 { get; set; } = "WGS84";
+
         /// <summary>
         /// 单击确定按钮
         /// </summary>

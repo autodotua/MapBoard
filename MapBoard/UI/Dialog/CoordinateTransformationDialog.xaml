@@ -1,33 +1,50 @@
 ﻿<local:DialogWindowBase
-    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common" x:Class="MapBoard.Main.UI.Dialog.CoordinateTransformationDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        mc:Ignorable="d"
-        Title="坐标转换" 
-        Width="200">
+    x:Class="MapBoard.Main.UI.Dialog.CoordinateTransformationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
+    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="坐标转换"
+    Width="200"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    mc:Ignorable="d">
     <Grid Margin="4">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="8"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <flat:UneditableComboBox ItemsSource="{Binding CoordinateSystems}" SelectedItem="{Binding SelectedCoordinateSystem1}" SelectionChanged="ComboBoxSelectionChanged"/>
-        <TextBlock Text="→" Grid.Column="2"/>
-        <flat:UneditableComboBox Grid.Column="4" ItemsSource="{Binding CoordinateSystems}" SelectedItem="{Binding SelectedCoordinateSystem2}" SelectionChanged="ComboBoxSelectionChanged"/>
-        <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal" Grid.Row="2" Margin="8"  HorizontalAlignment="Right">
-            <flat:Button IsDefault="True" x:Name="btn" Click="OkButtonClick" Content="确定"/>
+        <flat:UneditableComboBox
+            ItemsSource="{Binding CoordinateSystems}"
+            SelectedItem="{Binding SelectedCoordinateSystem1}"
+            SelectionChanged="ComboBoxSelectionChanged" />
+        <TextBlock Grid.Column="2" Text="→" />
+        <flat:UneditableComboBox
+            Grid.Column="4"
+            ItemsSource="{Binding CoordinateSystems}"
+            SelectedItem="{Binding SelectedCoordinateSystem2}"
+            SelectionChanged="ComboBoxSelectionChanged" />
+        <StackPanel
+            Grid.Row="2"
+            Grid.ColumnSpan="5"
+            Margin="8"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <flat:Button
+                x:Name="btn"
+                Click="OkButtonClick"
+                Content="确定"
+                IsDefault="True" />
         </StackPanel>
     </Grid>
 </local:DialogWindowBase>
