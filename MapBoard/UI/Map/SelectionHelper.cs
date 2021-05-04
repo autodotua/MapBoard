@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
 using System;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using LayerCollection = MapBoard.Main.Layer.LayerCollection;
+using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {

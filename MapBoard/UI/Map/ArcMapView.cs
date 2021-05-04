@@ -12,7 +12,7 @@ using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;

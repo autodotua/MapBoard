@@ -4,7 +4,7 @@ using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
@@ -103,7 +103,7 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private string layerName;
+        private string layerName = "图层名称";
 
         public string LayerName
         {

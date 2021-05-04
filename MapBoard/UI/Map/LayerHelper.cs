@@ -4,7 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LayerCollection = MapBoard.Main.Layer.LayerCollection;
+using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {

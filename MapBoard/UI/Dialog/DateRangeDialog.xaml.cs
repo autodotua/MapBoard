@@ -1,7 +1,7 @@
 ﻿using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

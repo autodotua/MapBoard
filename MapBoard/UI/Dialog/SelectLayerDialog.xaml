@@ -24,7 +24,7 @@
             x:Name="lbx"
             MinWidth="240"
             MaxHeight="480"
-            SelectedItem="{Binding SelectedStyle}" />
+            SelectedItem="{Binding SelectedLayer}" />
         <StackPanel
             Grid.Row="2"
             Margin="8"

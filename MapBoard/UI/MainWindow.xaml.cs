@@ -8,7 +8,7 @@ using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
@@ -35,6 +35,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using static FzLib.Basic.Loop;
 using static MapBoard.Main.UI.Dialog.MultiLayersOperationDialog;
@@ -47,14 +48,6 @@ namespace MapBoard.Main.UI
     public partial class MainWindow : MainWindowBase
     {
         #region 字段和属性
-
-        public Config Config => Config.Instance;
-        public LayerCollection Layers => LayerCollection.Instance;
-
-        /// <summary>
-        /// 控制在执行耗时工作时控件的可用性
-        /// </summary>
-        private bool controlsEnable = true;
 
         private static readonly TwoWayDictionary<string, SketchCreationMode> ButtonsMode = new TwoWayDictionary<string, SketchCreationMode>()
         {
@@ -70,6 +63,14 @@ namespace MapBoard.Main.UI
             { "点",SketchCreationMode.Point},
             { "多点",SketchCreationMode.Multipoint},
         };
+
+        /// <summary>
+        /// 控制在执行耗时工作时控件的可用性
+        /// </summary>
+        private bool controlsEnable = true;
+
+        public Config Config => Config.Instance;
+        public LayerCollection Layers => LayerCollection.Instance;
 
         #endregion
 
@@ -92,10 +93,6 @@ namespace MapBoard.Main.UI
 
         protected async override void OnDrop(DragEventArgs e)
         {
-            //if(Mouse.GetPosition(this).X<grdLeft.ActualWidth)
-            //{
-            //    return;
-            //}
             base.OnDrop(e);
             if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
             {
@@ -136,6 +133,85 @@ namespace MapBoard.Main.UI
         }
 
         #endregion
+
+        private bool changingStyle = false;
+
+        private void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
+        {
+            Layersetting.SetStyleFromUI();
+            LayerCollection.Instance.Save();
+        }
+
+        private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
+        {
+            new MultiLayersOperationDialog().Show();
+        }
+
+        private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
+        {
+            dataGrid.SelectedItem = null;
+        }
+
+        private void CreateStyleButtonClick(object sender, RoutedEventArgs e)
+        {
+            TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
+            {
+                ("线",null,()=>LayerUtility.CreateLayer(GeometryType.Polyline)),
+                ("面",null,()=>LayerUtility.CreateLayer(GeometryType.Polygon)),
+                ("点",null,()=>LayerUtility.CreateLayer(GeometryType.Point)),
+                ("多点",null,()=>LayerUtility.CreateLayer(GeometryType.Multipoint)),
+            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
+        }
+
+        private void DeleteLayer()
+        {
+            if (dataGrid.SelectedItems.Count == 0)
+            {
+                SnakeBar.ShowError("没有选择任何样式");
+                return;
+            }
+            foreach (LayerInfo layer in dataGrid.SelectedItems.Cast<LayerInfo>().ToArray())
+            {
+                LayerUtility.RemoveLayer(layer, true);
+            }
+        }
+
+        private async void DrawButtonsClick(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        {
+            await StartDraw(sender);
+        }
+
+        private async void DrawButtonsClick(object sender, RoutedEventArgs e)
+        {
+            await StartDraw(sender);
+        }
+
+        private void ExpanderSettings_Collapsed(object sender, RoutedEventArgs e)
+        {
+            xpdSettings.Background = System.Windows.Media.Brushes.Transparent;
+        }
+
+        private void ExpanderSettings_Expanded(object sender, RoutedEventArgs e)
+        {
+            xpdSettings.SetResourceReference(BackgroundProperty, "SystemControlBackgroundAltHighBrush");
+        }
+
+        private async void ExportBtnClick(object sender, RoutedEventArgs e)
+        {
+            if (!Directory.Exists(Config.DataPath))
+            {
+                SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
+                return;
+            }
+            await IOUtility.ExportMap();
+        }
+
+        private async void ImportBtnClick(object sender, RoutedEventArgs e)
+        {
+            loading.Show();
+            await IOUtility.ImportLayer();
+            loading.Hide();
+        }
 
         private void JudgeControlsEnable()
         {
@@ -202,157 +278,33 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private async void DrawButtonsClick(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        private void LayerSettingOpenCloseButton_Click(object sender, RoutedEventArgs e)
         {
-            await StartDraw(sender);
-        }
-
-        private async Task StartDraw(object sender)
-        {
-            string text = null;
-            if (sender is SplitButton)
+            Button btn = sender as Button;
+            btn.IsEnabled = false;
+            DoubleAnimation ani;
+            if (grdLeft.ActualWidth == 0)
             {
-                text = (sender as SplitButton).Content as string;
+                ani = new DoubleAnimation(0, 300, TimeSpan.FromSeconds(0.5));
+                grdLeftArea.SetResourceReference(BackgroundProperty, "SystemControlPageBackgroundAltHighBrush");
+                grdCenter.Margin = new Thickness(0);
             }
             else
             {
-                text = (sender as MenuItem).Header as string;
+                ani = new DoubleAnimation(grdLeft.ActualWidth, 0, TimeSpan.FromSeconds(0.5)); // { EasingFunction = EasingMode.EaseInOut };
             }
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            ani.Completed += (p1, p2) =>
             {
-                await arcMap.Selection.StopFrameSelect(false);
-                //btnSelect.IsChecked = false;
-            }
+                btn.IsEnabled = true;
+                if (((p1 as AnimationClock).Timeline as DoubleAnimation).To == 0)
+                {
+                    grdLeftArea.Background = System.Windows.Media.Brushes.Transparent;
+                    grdCenter.Margin = new Thickness(-30, 0, 0, 0);
+                }
+            };
+            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
 
-            var mode = ButtonsMode[text];
-            arcMap.Drawing.CurrentDrawMode = mode;
-            await arcMap.Drawing.StartDraw(mode);
-        }
-
-        private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
-        {
-            //if (LayerCollection.Instance.Selected == null)
-            //{
-            //    SnakeBar.ShowError("没有选择任何样式");
-            //    btnSelect.IsChecked = false;
-            //    return;
-            //}
-            //if (btnSelect.IsChecked == true)
-            //{
-            //if (lastBtn != null)
-            //{
-            //    lastBtn.IsChecked = false;
-            //    await arcMap.Drawing.StopDraw();
-            //    lastBtn = null;
-            //}
-            await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
-            //}
-            //else
-            //{
-            //    await arcMap.Selection.StopFrameSelect(false);
-            //}
-        }
-
-        private async void ImportBtnClick(object sender, RoutedEventArgs e)
-        {
-            loading.Show();
-            await IOUtility.ImportLayer();
-            loading.Hide();
-        }
-
-        private async void ExportBtnClick(object sender, RoutedEventArgs e)
-        {
-            if (!Directory.Exists(Config.DataPath))
-            {
-                SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
-                return;
-            }
-            await IOUtility.ExportMap();
-        }
-
-        private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Delete)
-            {
-                DeleteLayer();
-            }
-        }
-
-        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (Directory.Exists(Config.DataPath))
-            {
-                Process.Start(Config.DataPath);
-            }
-            else
-            {
-                Process.Start(FzLib.Program.App.ProgramDirectoryPath);
-            }
-        }
-
-        private void CreateStyleButtonClick(object sender, RoutedEventArgs e)
-        {
-            TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
-            {
-                ("线",null,()=>LayerUtility.CreateLayer(GeometryType.Polyline)),
-                ("面",null,()=>LayerUtility.CreateLayer(GeometryType.Polygon)),
-                ("点",null,()=>LayerUtility.CreateLayer(GeometryType.Point)),
-                ("多点",null,()=>LayerUtility.CreateLayer(GeometryType.Multipoint)),
-            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
-        }
-
-        private void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
-        {
-            Layersetting.SetStyleFromUI();
-            LayerCollection.Instance.Save();
-        }
-
-        private bool changingStyle = false;
-
-        private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
-        {
-            changingStyle = true;
-            if (dataGrid.SelectedItems.Count == 1)
-            {
-                Layers.Selected = dataGrid.SelectedItem as LayerInfo;
-            }
-            else
-            {
-                Layers.Selected = null;
-            }
-            changingStyle = false;
-            JudgeControlsEnable();
-            Layersetting.ResetLayerSettingUI();
-        }
-
-        private void DeleteLayer()
-        {
-            if (dataGrid.SelectedItems.Count == 0)
-            {
-                SnakeBar.ShowError("没有选择任何样式");
-                return;
-            }
-            foreach (LayerInfo layer in dataGrid.SelectedItems.Cast<LayerInfo>().ToArray())
-            {
-                LayerUtility.RemoveLayer(layer, true);
-            }
-            //var style = LayerCollection.Instance.Selected;
-        }
-
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            //btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
-            //grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
-            JudgeControlsEnable();
-
-            if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)
-            {
-                Layersetting.ResetLayerSettingUI();
-                //await arcMap.SetViewpointGeometryAsync(await LayerCollection.Instance.Selected.Table.QueryExtentAsync(new QueryParameters()));
-            }
-
-            //new GpxToolbox.MainWindow().Show();
-            //Close();
+            grdLeft.BeginAnimation(WidthProperty, ani);
         }
 
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -442,24 +394,17 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
+        private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            dataGrid.SelectedItem = null;
-        }
-
-        private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
-        {
-            new MultiLayersOperationDialog().Show();
-        }
-
-        private async void DrawButtonsClick(object sender, RoutedEventArgs e)
-        {
-            await StartDraw(sender);
+            if (e.Key == Key.Delete)
+            {
+                DeleteLayer();
+            }
         }
 
         private void lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if(dataGrid.SelectedItems.Count>1)
+            if (dataGrid.SelectedItems.Count > 1)
             {
                 return;
             }
@@ -472,6 +417,71 @@ namespace MapBoard.Main.UI
             if (layer != null)
             {
                 dataGrid.SelectedItem = layer;
+            }
+        }
+
+        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (Directory.Exists(Config.DataPath))
+            {
+                Process.Start(Config.DataPath);
+            }
+            else
+            {
+                Process.Start(FzLib.Program.App.ProgramDirectoryPath);
+            }
+        }
+
+        private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
+        {
+            changingStyle = true;
+            if (dataGrid.SelectedItems.Count == 1)
+            {
+                Layers.Selected = dataGrid.SelectedItem as LayerInfo;
+            }
+            else
+            {
+                Layers.Selected = null;
+            }
+            changingStyle = false;
+            JudgeControlsEnable();
+            Layersetting.ResetLayerSettingUI();
+        }
+
+        private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
+        {
+            await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
+        }
+
+        private async Task StartDraw(object sender)
+        {
+            string text = null;
+            if (sender is SplitButton)
+            {
+                text = (sender as SplitButton).Content as string;
+            }
+            else
+            {
+                text = (sender as MenuItem).Header as string;
+            }
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            {
+                await arcMap.Selection.StopFrameSelect(false);
+                //btnSelect.IsChecked = false;
+            }
+
+            var mode = ButtonsMode[text];
+            arcMap.Drawing.CurrentDrawMode = mode;
+            await arcMap.Drawing.StartDraw(mode);
+        }
+
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            JudgeControlsEnable();
+
+            if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)
+            {
+                Layersetting.ResetLayerSettingUI();
             }
         }
     }

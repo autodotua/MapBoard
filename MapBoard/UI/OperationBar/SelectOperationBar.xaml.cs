@@ -2,9 +2,11 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
+using FzLib.Extension;
 using FzLib.UI.Dialog;
+using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using System;
@@ -68,10 +70,23 @@ namespace MapBoard.Main.UI.OperationBar
                 selectFeatureDialog = new SelectFeatureDialog();
                 selectFeatureDialog.Show();
             }
-            //else if(count==1 && selectFeatureDialog!=null && !selectFeatureDialog.IsClosed)
-            //{
-            //    selectFeatureDialog?.Close();
-            //}
+
+            if (count == 1)
+            {
+                Attributes = FeatureAttributes.FromFeature(MapView.Selection.SelectedFeatures[0]);
+            }
+            else
+            {
+                Attributes = null;
+            }
+        }
+
+        private FeatureAttributes attributes;
+
+        public FeatureAttributes Attributes
+        {
+            get => attributes;
+            set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
         }
 
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
@@ -103,7 +118,7 @@ namespace MapBoard.Main.UI.OperationBar
             }
         }
 
-        public override double BarHeight { get; } = 24;
+        public override double BarHeight { get; } = 48;
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
@@ -116,15 +131,18 @@ namespace MapBoard.Main.UI.OperationBar
             if (dialog.ShowDialog() == true)
             {
                 LayerCollection.Instance.Selected.LayerVisible = false;
-                ObservableCollection<Feature> features = MapView.Selection.SelectedFeatures;
-                ShapefileFeatureTable targetTable = dialog.SelectedStyle.Table;
-                foreach (var feature in features)
-                {
-                    await targetTable.AddFeatureAsync(feature);
-                }
+                List<Feature> features = MapView.Selection.SelectedFeatures.ToList();
+                ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
+                var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
+                await targetTable.AddFeaturesAsync(newFeatures);
                 await MapView.Selection.StopFrameSelect(false);
-                dialog.SelectedStyle.UpdateFeatureCount();
-                LayerCollection.Instance.Selected = dialog.SelectedStyle;
+                if (TaskDialog.ShowWithYesNoButtons("是否保留原图层中选中的图形？", "复制/移动") == false)
+                {
+                    await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
+                    LayerCollection.Instance.Selected.UpdateFeatureCount();
+                }
+                dialog.SelectedLayer.UpdateFeatureCount();
+                LayerCollection.Instance.Selected = dialog.SelectedLayer;
             }
         }
 

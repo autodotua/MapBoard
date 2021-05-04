@@ -14,10 +14,10 @@
     xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
     xmlns:progress="clr-namespace:FzLib.UI.Progress;assembly=FzUILib.WPF"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    ui:WindowHelper.UseModernWindowStyle="True"
     Title="地图画板"
     Width="1000"
     Height="700"
+    ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="WindowLoaded"
@@ -32,10 +32,7 @@
             <ColumnDefinition Width="0" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Grid
-            x:Name="grdCenter"
-            Grid.Column="2"
-            Margin="0,0,0,0">
+        <Grid x:Name="grdCenter" Grid.Column="2">
             <map:ArcMapView x:Name="arcMap" />
             <bar:EditOperationBar
                 x:Name="editBar"
@@ -50,27 +47,41 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top">
                 <bar:SelectOperationBar.RenderTransform>
-                    <TranslateTransform Y="-24" />
+                    <TranslateTransform Y="-48" />
                 </bar:SelectOperationBar.RenderTransform>
             </bar:SelectOperationBar>
         </Grid>
 
         <Expander
-            Grid.Column="4"
+            x:Name="xpdSettings"
+            Grid.Column="2"
             MaxWidth="240"
             Padding="4"
-            ExpandDirection="Left"
-            Header="设&#x000D;置"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Background="Transparent"
+            Collapsed="ExpanderSettings_Collapsed"
+            ExpandDirection="Up"
+            Expanded="ExpanderSettings_Expanded"
+            FocusVisualStyle="{x:Null}"
+            Header="设置"
             IsExpanded="False">
             <panel:SettingPanel Margin="4" />
         </Expander>
 
-        <Expander
-            Padding="4"
-            ExpandDirection="Right"
-            Header="工&#x000D;具"
-            IsExpanded="True">
+        <Grid x:Name="grdLeftArea">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
+            <Button
+                Grid.Column="2"
+                Width="10"
+                Height="80"
+                Margin="4,0,8,0"
+                VerticalAlignment="Center"
+                Click="LayerSettingOpenCloseButton_Click" />
             <Grid
                 x:Name="grdLeft"
                 Width="300"
@@ -159,13 +170,9 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="*" />
-                        <!--<ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="2*" />-->
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <!--<RowDefinition Height="4" />
-                        <RowDefinition Height="Auto" />-->
                     </Grid.RowDefinitions>
                     <Button
                         HorizontalAlignment="Stretch"
@@ -176,7 +183,6 @@
                         HorizontalAlignment="Stretch"
                         Click="ExportBtnClick"
                         Content="导出" />
-                    <!--<Button Content="批量" Click="BatchOperationButtonClick" Grid.Column="4" />-->
                     <Button
                         Grid.Row="0"
                         Grid.Column="6"
@@ -190,14 +196,8 @@
                         <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
 
                     <ui:SplitButton
-                        Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         Content="绘制"
                         IsEnabled="False"
@@ -205,7 +205,6 @@
 
                     <ui:SplitButton
                         x:Name="splBtnPolyline"
-                        Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
                         Content="多段线">
@@ -217,7 +216,6 @@
                     </ui:SplitButton>
                     <ui:SplitButton
                         x:Name="splBtnPolygon"
-                        Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
                         Content="多边形">
@@ -235,20 +233,17 @@
 
                     <ui:SplitButton
                         x:Name="splBtnPoint"
-                        Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
                         Content="点" />
                     <ui:SplitButton
                         x:Name="splBtnMultiPoint"
-                        Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         Click="DrawButtonsClick"
                         Content="多点" />
 
                     <Button
                         x:Name="btnSelect"
-                        Grid.Row="2"
                         Grid.Column="2"
                         Click="SelectToggleButtonClick"
                         FocusVisualStyle="{x:Null}">
@@ -256,7 +251,7 @@
                     </Button>
                 </Grid>
             </Grid>
-        </Expander>
+        </Grid>
 
         <progress:LoadingOverlay
             x:Name="loading"

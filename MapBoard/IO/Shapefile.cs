@@ -2,7 +2,7 @@
 using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;

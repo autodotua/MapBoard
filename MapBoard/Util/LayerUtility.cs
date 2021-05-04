@@ -7,7 +7,7 @@ using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
-using LayerCollection = MapBoard.Main.Layer.LayerCollection;
+using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.Util
 {
@@ -119,7 +119,7 @@ namespace MapBoard.Main.Util
             SelectLayerDialog dialog = new SelectLayerDialog();
             if (dialog.ShowDialog() == true)
             {
-                await CopyAllFeatures(LayerCollection.Instance.Selected, dialog.SelectedStyle);
+                await CopyAllFeatures(LayerCollection.Instance.Selected, dialog.SelectedLayer);
             }
         }
 

@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.IO;
 using MapBoard.Common;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;

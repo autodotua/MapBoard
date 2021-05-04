@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Resource;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI;
 using System;
 using System.Collections.Generic;
@@ -24,29 +24,11 @@ namespace MapBoard.Main.UI.Map
         /// </summary>
         public async void StartEdit(EditMode mode)
         {
-            //if (Mapview.Selection.SelectedFeatures.Count > 1)
-            //{
-            //    if (!Config.Instance.HideEditWarn)
-            //    {
-            //        if (TaskDialog.ShowWithCheckBox(App.Current.MainWindow, "编辑时，只能同时编辑一个要素", "警告", "不再提醒") == true)
-            //        {
-            //            Config.Instance.HideEditWarn = true;
-            //        }
-            //    }
-            //}
             Mode = mode;
 
             editingFeature = Mapview.Selection.SelectedFeatures.First();
-            Mapview.Drawing.Label = editingFeature.Attributes[Resource.DisplayFieldName] as string;
-            Mapview.Drawing.Key = editingFeature.Attributes[Resource.KeyFieldName] as string;
-            if (editingFeature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
-            {
-                Mapview.Drawing.Date = date;
-            }
-            else
-            {
-                Mapview.Drawing.Date = null;
-            }
+            Mapview.Drawing.Attributes = FeatureAttributes.FromFeature(editingFeature);
+
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             // Config.Instance.DefaultStyle.CopyStyleFrom(LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
             if (mode == EditMode.Draw)
@@ -61,20 +43,6 @@ namespace MapBoard.Main.UI.Map
                 await Mapview.SketchEditor.StartAsync(Esri.ArcGISRuntime.UI.SketchCreationMode.Polyline);
             }
         }
-
-        //private void ShowBar(string message)
-        //{
-        //    SnakeBar bar = new SnakeBar(Application.Current.MainWindow);
-        //    lastBar = bar;
-        //    bar.ButtonClick += async (p1, p2) =>
-        //    {
-        //        await StopEditing();
-        //    };
-        //    bar.ShowButton = true;
-        //    bar.Duration = Duration.Forever;
-        //    bar.ButtonContent = "完成";
-        //    bar.ShowMessage(message);
-        //}
 
         private void StopCut()
         {

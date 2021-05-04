@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.IO;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using System;

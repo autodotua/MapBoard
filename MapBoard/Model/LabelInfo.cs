@@ -19,7 +19,7 @@ using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 using static MapBoard.Common.CoordinateTransformation;
 using static MapBoard.Main.Util.LayerUtility;
 
-namespace MapBoard.Main.Layer
+namespace MapBoard.Main.Model
 {
     public class LabelInfo : INotifyPropertyChanged
     {

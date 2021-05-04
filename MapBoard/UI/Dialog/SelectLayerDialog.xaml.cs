@@ -1,6 +1,6 @@
 ﻿using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
-using MapBoard.Main.Layer;
+using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace MapBoard.Main.UI.Dialog
             Close();
         }
 
-        public LayerInfo SelectedStyle { get; set; }
+        public LayerInfo SelectedLayer { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

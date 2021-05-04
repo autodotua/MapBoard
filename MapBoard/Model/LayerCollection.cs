@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static FzLib.Basic.Loop;
 
-namespace MapBoard.Main.Layer
+namespace MapBoard.Main.Model
 {
     public class LayerCollection : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {

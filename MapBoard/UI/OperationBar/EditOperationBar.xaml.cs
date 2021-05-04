@@ -39,11 +39,6 @@ namespace MapBoard.Main.UI.OperationBar
         {
             if (e.NewTask == BoardTaskManager.BoardTask.Draw || e.NewTask == BoardTaskManager.BoardTask.Edit)
             {
-                //if (grdDate.Visibility == Visibility.Collapsed)
-                //{
-                //    grdDate.Visibility = grdLabel.Visibility = Visibility.Visible;
-                //}
-                btnAttri.Visibility = Visibility.Visible;
                 if (e.NewTask == BoardTaskManager.BoardTask.Draw)
                 {
                     Title = "正在绘制";
@@ -56,19 +51,14 @@ namespace MapBoard.Main.UI.OperationBar
                     }
                     else
                     {
-                        //grdDate.Visibility = grdLabel.Visibility = Visibility.Collapsed;
-                        btnAttri.Visibility = Visibility.Collapsed;
-
                         Title = "正在切割（请绘制用于切割的线段）";
                     }
                 }
                 Notify(nameof(MapView));
                 Show();
-                //txtLabel.Focus();
             }
             else
             {
-                //ppp.IsOpen = false;
                 Hide();
             }
         }
@@ -120,7 +110,6 @@ namespace MapBoard.Main.UI.OperationBar
 
         private void BtnAttri_Click(object sender, RoutedEventArgs e)
         {
-            //ppp.IsOpen = !ppp.IsOpen;
         }
     }
 }

@@ -44,6 +44,8 @@ namespace MapBoard.Common
         public string BasemapCoordinateSystem { get; set; } = "WGS84";
 
         public bool RemainLabel { get; set; } = false;
+        public bool RemainKey { get; set; } = false;
+        public bool RemainDate { get; set; } = false;
 
         public bool GpxAutoSmooth { get; set; } = true;
         public bool GpxAutoSmoothOnlyZ { get; set; } = false;
