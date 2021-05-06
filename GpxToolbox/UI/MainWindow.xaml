@@ -7,10 +7,11 @@
     xmlns:flatstyle="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
     xmlns:local="clr-namespace:MapBoard.GpxToolbox"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:win10style="clr-namespace:FzLib.UI.Win10Style;assembly=FzUILib.WPF"
-    Title="GPX工具箱"
-    Width="1000"
+    Title="GPX工具箱" Width="1000"
     Height="700"
+    ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="WindowLoaded"
@@ -25,11 +26,12 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <GridSplitter
-            Grid.Column="1"
-            Width="4"
+            Grid.Column="1" Width="4"
             HorizontalAlignment="Center"
             Background="Transparent" />
-        <Grid x:Name="grdLeft" IsEnabled="False">
+        <Grid
+            x:Name="grdLeft" Margin="8"
+            IsEnabled="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="8" />
@@ -39,8 +41,8 @@
                 <RowDefinition Height="8" />
             </Grid.RowDefinitions>
 
-            <win10style:ModernExpander Header="GPX信息">
-                <Grid DataContext="{Binding Gpx}">
+            <Expander  Header="GPX信息">
+                <Grid DataContext="{Binding Gpx}"  Margin="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -69,74 +71,59 @@
                         <RowDefinition Height="8" />
                     </Grid.RowDefinitions>
 
-                    <flatstyle:TextBox
-                        Grid.ColumnSpan="3"
-                        FontSize="18"
+                    <TextBox
+                        Grid.ColumnSpan="3" FontSize="18"
                         Text="{Binding Name}"
                         TextAlignment="Center" />
                     <TextBlock
-                        Grid.Row="2"
-                        HorizontalAlignment="Right"
+                        Grid.Row="2" HorizontalAlignment="Right"
                         Text="时间：" />
-                    <flatstyle:TextBox
-                        Grid.Row="2"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="2" Grid.Column="2"
                         Text="{Binding Time}" />
                     <TextBlock
-                        Grid.Row="4"
-                        HorizontalAlignment="Right"
+                        Grid.Row="4" HorizontalAlignment="Right"
                         Text="描述：" />
-                    <flatstyle:TextBox
-                        Grid.Row="4"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="4" Grid.Column="2"
                         Text="{Binding Description}" />
                     <TextBlock
-                        Grid.Row="6"
-                        HorizontalAlignment="Right"
+                        Grid.Row="6" HorizontalAlignment="Right"
                         Text="作者：" />
-                    <flatstyle:TextBox
-                        Grid.Row="6"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="6" Grid.Column="2"
                         Text="{Binding Author}" />
                     <TextBlock
-                        Grid.Row="8"
-                        HorizontalAlignment="Right"
+                        Grid.Row="8" HorizontalAlignment="Right"
                         Text="Url：" />
-                    <flatstyle:TextBox
-                        Grid.Row="8"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="8" Grid.Column="2"
                         Text="{Binding Url}" />
                     <TextBlock
                         Grid.Row="10"
                         HorizontalAlignment="Right"
                         Text="Url名称：" />
-                    <flatstyle:TextBox
-                        Grid.Row="10"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="10" Grid.Column="2"
                         Text="{Binding UrlName}" />
                     <TextBlock
                         Grid.Row="12"
-                        HorizontalAlignment="Right"
-                        Text="关键词：" />
-                    <flatstyle:TextBox
-                        Grid.Row="12"
-                        Grid.Column="2"
+                        HorizontalAlignment="Right" Text="关键词：" />
+                    <TextBox
+                        Grid.Row="12" Grid.Column="2"
                         Text="{Binding KeyWords}" />
                     <TextBlock
                         Grid.Row="14"
-                        HorizontalAlignment="Right"
-                        Text="距离：" />
-                    <flatstyle:TextBox
-                        Grid.Row="14"
-                        Grid.Column="2"
+                        HorizontalAlignment="Right" Text="距离：" />
+                    <TextBox
+                        Grid.Row="14" Grid.Column="2"
                         Text="{Binding Distance}" />
                 </Grid>
-            </win10style:ModernExpander>
-            <win10style:ModernExpander
-                Grid.Row="2"
-                Header="Gpx轨迹信息"
+            </Expander>
+            <Expander
+                Grid.Row="2" Header="Gpx轨迹信息"
                 IsExpanded="True">
-                <Grid DataContext="{Binding GpxTrack}">
+                <Grid Margin="8" DataContext="{Binding GpxTrack}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -164,76 +151,55 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <flatstyle:TextBox
-                        Grid.ColumnSpan="3"
-                        FontSize="16"
+                    <TextBox
+                        Grid.ColumnSpan="3" FontSize="16"
                         Text="{Binding Name}"
                         TextAlignment="Center" />
                     <TextBlock
-                        Grid.Row="2"
-                        HorizontalAlignment="Right"
+                        Grid.Row="2" HorizontalAlignment="Right"
                         Text="描述：" />
-                    <flatstyle:TextBox
-                        Grid.Row="2"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="2" Grid.Column="2"
                         Text="{Binding Description}" />
                     <TextBlock
-                        Grid.Row="4"
-                        HorizontalAlignment="Right"
+                        Grid.Row="4" HorizontalAlignment="Right"
                         Text="实际距离：" />
-                    <flatstyle:TextBox
-                        x:Name="txtDistance"
-                        Grid.Row="4"
-                        Grid.Column="2"
-                        IsReadOnly="True" />
+                    <TextBox
+                        x:Name="txtDistance" Grid.Row="4"
+                        Grid.Column="2" IsReadOnly="True" />
                     <TextBlock
-                        Grid.Row="6"
-                        HorizontalAlignment="Right"
+                        Grid.Row="6" HorizontalAlignment="Right"
                         Text="全程均速：" />
-                    <flatstyle:TextBox
-                        x:Name="txtSpeed"
-                        Grid.Row="6"
-                        Grid.Column="2"
-                        IsReadOnly="True" />
+                    <TextBox
+                        x:Name="txtSpeed" Grid.Row="6"
+                        Grid.Column="2" IsReadOnly="True" />
                     <TextBlock
-                        Grid.Row="8"
-                        HorizontalAlignment="Right"
+                        Grid.Row="8" HorizontalAlignment="Right"
                         Text="全程时间：" />
-                    <flatstyle:TextBox
-                        Grid.Row="8"
-                        Grid.Column="2"
+                    <TextBox
+                        Grid.Row="8" Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding TotalTime, Mode=OneWay}" />
                     <TextBlock
                         Grid.Row="10"
-                        HorizontalAlignment="Right"
-                        Text="运动均速：" />
-                    <flatstyle:TextBox
-                        x:Name="txtMovingSpeed"
-                        Grid.Row="10"
-                        Grid.Column="2"
-                        IsReadOnly="True" />
+                        HorizontalAlignment="Right" Text="运动均速：" />
+                    <TextBox
+                        x:Name="txtMovingSpeed" Grid.Row="10"
+                        Grid.Column="2" IsReadOnly="True" />
                     <TextBlock
                         Grid.Row="12"
-                        HorizontalAlignment="Right"
-                        Text="运动时间：" />
-                    <flatstyle:TextBox
-                        x:Name="txtMovingTime"
-                        Grid.Row="12"
-                        Grid.Column="2"
-                        IsReadOnly="True" />
+                        HorizontalAlignment="Right" Text="运动时间：" />
+                    <TextBox
+                        x:Name="txtMovingTime" Grid.Row="12"
+                        Grid.Column="2" IsReadOnly="True" />
                     <TextBlock
                         Grid.Row="14"
-                        HorizontalAlignment="Right"
-                        Text="最大速度：" />
-                    <flatstyle:TextBox
-                        x:Name="txtMaxSpeed"
-                        Grid.Row="14"
-                        Grid.Column="2"
-                        IsReadOnly="True" />
-                    <win10style:AzureDataGrid
-                        x:Name="grdPoints"
-                        Grid.Row="16"
+                        HorizontalAlignment="Right" Text="最大速度：" />
+                    <TextBox
+                        x:Name="txtMaxSpeed" Grid.Row="14"
+                        Grid.Column="2" IsReadOnly="True" />
+                    <DataGrid
+                        x:Name="grdPoints" Grid.Row="16"
                         Grid.ColumnSpan="3"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
@@ -247,54 +213,51 @@
                                 <MenuItem Click="DeletePointMenuClick" Header="删除" />
                                 <MenuItem
                                     Click="InsertPointButtonClick"
-                                    Header="在之前插入"
-                                    Tag="Before" />
+                                    Header="在之前插入" Tag="Before" />
                                 <MenuItem
                                     Click="InsertPointButtonClick"
-                                    Header="在之后插入"
-                                    Tag="After" />
+                                    Header="在之后插入" Tag="After" />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Resources>
                             <local:SpeedValueConverter x:Key="speedConverter" />
                         </DataGrid.Resources>
-                        <win10style:AzureDataGrid.Columns>
+                        <DataGrid.Columns>
                             <DataGridTextColumn
                                 Binding="{Binding Time}"
-                                Header="时间"
-                                IsReadOnly="False" />
+                                Header="时间" IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Y}"
-                                Header="纬度"
-                                IsReadOnly="False" />
+                                Header="纬度" IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding X}"
-                                Header="经度"
-                                IsReadOnly="False" />
+                                Header="经度" IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Z}"
-                                Header="海拔"
-                                IsReadOnly="False" />
+                                Header="海拔" IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Speed, Converter={StaticResource speedConverter}}"
-                                Header="速度"
-                                IsReadOnly="True" />
-                        </win10style:AzureDataGrid.Columns>
-                    </win10style:AzureDataGrid>
+                                Header="速度" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                     <Grid Grid.Row="18" Grid.ColumnSpan="3">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <flatstyle:Button Click="UpdateTrackButtonClick" Content="刷新" />
-                        <flatstyle:Button
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="UpdateTrackButtonClick"
+                            Content="刷新" />
+                        <Button
                             Grid.Column="2"
+                            HorizontalAlignment="Stretch"
                             Click="ResetTrackButtonClick"
                             Content="重置" />
                     </Grid>
                 </Grid>
-            </win10style:ModernExpander>
+            </Expander>
             <StackPanel Grid.Row="4">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -310,63 +273,40 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <flatstyle:Button Click="IdentifyButtonClick" Content="识别点" />
-                    <flatstyle:Button
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        Click="IdentifyButtonClick"
+                        Content="识别点" />
+                    <Button
                         Grid.Column="2"
+                        HorizontalAlignment="Stretch"
                         Click="IdentifyAllButtonClick"
                         Content="识别轨迹" />
-                    <!--<flatstyle:Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick" />-->
-                    <flatstyle:Button
+                    <!--<Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick" />-->
+                    <Button
                         Grid.Column="4"
+                        HorizontalAlignment="Stretch"
                         Click="CaptureScreenButtonClick"
                         Content="截图" />
-                    <flatstyle:Button
+                    <Button
                         Grid.Row="2"
+                        HorizontalAlignment="Stretch"
                         Click="RecoverCameraButtonClick"
                         Content="恢复视角" />
-                    <flatstyle:Button
-                        Grid.Row="2"
-                        Grid.Column="2"
+                    <Button
+                        Grid.Row="2" Grid.Column="2"
+                        HorizontalAlignment="Stretch"
                         Click="OperationButtonClick"
                         Content="操作" />
-                    <flatstyle:Button
-                        Grid.Row="2"
-                        Grid.Column="4"
-                        Click="SaveFileButtonClick"
-                        Content="导出" />
+                    <Button
+                        Grid.Row="2" Grid.Column="4"
+                        HorizontalAlignment="Stretch"
+                        Click="SaveFileButtonClick" Content="导出" />
                 </Grid>
             </StackPanel>
-            <!--<Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <flatstyle:Button Content="↑" Grid.Column="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp" />
-                <flatstyle:Button Content="←" Grid.Row="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp" />
-                <flatstyle:Button Content="↓" Grid.Column="1" Grid.Row="2" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp" />
-                <flatstyle:Button Content="→" Grid.Column="2" Grid.Row="1" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseUp="Button_PreviewMouseUp" />
-
-                <TextBlock Grid.Column="4">横向偏移：</TextBlock>
-                <TextBlock Grid.Column="4" Grid.Row="2">纵向偏移：</TextBlock>
-                <flatstyle:TextBox Grid.Column="6" Text="{Binding OffsetNorth,ElementName=map}" />
-                <flatstyle:TextBox Grid.Column="6" Grid.Row="2" Text="{Binding OffsetEast,ElementName=map}" />
-            </Grid>-->
         </Grid>
-        <!--<local:MapView x:Name="map" Grid.Column="2" />-->
         <Grid
-            x:Name="grd"
-            Grid.Column="2"
+            x:Name="grd" Grid.Column="2"
             ClipToBounds="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*" />
@@ -375,26 +315,24 @@
             </Grid.RowDefinitions>
             <Border ClipToBounds="True">
                 <local:ArcMapView
-                x:Name="arcMap"
-                GeoViewTapped="ArcMapTapped"
-                GpxLoaded="GpxLoaded"
-                PointSelected="MapPointSelected" />
+                    x:Name="arcMap"
+                    GeoViewTapped="ArcMapTapped"
+                    GpxLoaded="GpxLoaded"
+                    PointSelected="MapPointSelected" />
             </Border>
             <Canvas
-                x:Name="speedChart"
-                Grid.Row="2"
+                x:Name="speedChart" Grid.Row="2"
                 ClipToBounds="True"
                 MouseLeave="SpeedChartMouseLeave" />
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2" />-->
         </Grid>
-        <win10style:ModernExpander
-            Grid.Column="2"
-            Padding="0"
+        <Expander
+            Grid.Column="2" Padding="0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Header="文件"
-            IsExpanded="True">
-            <Grid Background="White">
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Header="文件" IsExpanded="True">
+            <Grid Margin="0,8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="8" />
@@ -404,17 +342,17 @@
                     Margin="0,8,0,0"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
-                    <flatstyle:Button Click="OpenFilesButtonClick" Content="导入" />
+                    <Button Click="OpenFilesButtonClick" Content="导入" />
                     <FrameworkElement Width="8" />
-                    <flatstyle:Button Click="ClearFileListButtonClick" Content="清空" />
+                    <Button Click="ClearFileListButtonClick" Content="清空" />
                 </StackPanel>
-                <flatstyle:ListView
-                    x:Name="lvwFiles"
-                    Grid.Row="2"
-                    ItemPreviewDeleteKeyDown="ListViewItemPreviewDeleteKeyDown"
+                <ListView
+                    x:Name="lvwFiles" Grid.Row="2"
                     ItemsSource="{Binding Tracks}"
+                    PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
                     SelectionChanged="FileSelectionChanged"
                     SelectionMode="Extended">
+
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Click="RemoveTrackFileMenuClick" Header="删除" />
@@ -432,20 +370,17 @@
                             <GridViewColumn DisplayMemberBinding="{Binding TrackIndex}" Header="轨迹索引" />
                         </GridView>
                     </ListView.View>
-                </flatstyle:ListView>
+                </ListView>
             </Grid>
-        </win10style:ModernExpander>
-        <win10style:ModernExpander
-            Grid.Column="2"
-            Padding="0"
+        </Expander>
+        <Expander
+            Grid.Column="2" Padding="0"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            ExpandDirection="Up"
-            Header="日志">
-            <flatstyle:ListBox
-                Height="96"
-                BorderThickness="0"
+            ExpandDirection="Up" Header="日志">
+            <ListBox
+                Height="96" BorderThickness="0"
                 ItemsSource="{Binding Source={x:Static local:Log.ErrorLogs}}" />
-        </win10style:ModernExpander>
+        </Expander>
     </Grid>
 </common:MainWindowBase>

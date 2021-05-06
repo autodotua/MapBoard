@@ -41,15 +41,15 @@ namespace MapBoard.GpxToolbox
     /// </summary>
     public partial class MainWindow : MainWindowBase
     {
-        public  ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
+        public ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
 
         private static readonly string TrackFilePath = Path.Combine(App.ProgramDirectoryPath, "TrackHistory.txt");
         private string[] loadNeeded = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
+
         public MainWindow(string[] load = null) : this()
         {
             loadNeeded = load;
-
         }
 
         public MainWindow()
@@ -60,8 +60,6 @@ namespace MapBoard.GpxToolbox
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
         }
-
-
 
         private void InitializeChart()
         {
@@ -97,7 +95,6 @@ namespace MapBoard.GpxToolbox
             chartHelper.LinePointEnbale = (p1, p2) => (p2.CenterTime - p1.CenterTime) < TimeSpan.FromSeconds(200);
         }
 
-
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             File.WriteAllLines(TrackFilePath, Tracks.Select(p => p.FilePath).ToArray());
@@ -107,16 +104,18 @@ namespace MapBoard.GpxToolbox
 
         private void ListViewItemPreviewDeleteKeyDown(object sender, KeyEventArgs e)
         {
-            foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray())
+            if (e == null || e.Key == Key.Delete)
             {
-                arcMap.GraphicsOverlays.Remove(item.Overlay);
-                Tracks.Remove(item);
-
+                foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray())
+                {
+                    arcMap.GraphicsOverlays.Remove(item.Overlay);
+                    Tracks.Remove(item);
+                }
             }
         }
+
         private void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
             if (arcMap.SelectedTrack != null)
             {
                 arcMap.SelectedTrack.Overlay.Renderer = null;
@@ -149,10 +148,8 @@ namespace MapBoard.GpxToolbox
                 Gpx = arcMap.SelectedTrack.Gpx;
                 GpxTrack = arcMap.SelectedTrack.Track;
 
-
                 UpdateChart();
             }
-
         }
 
         private void UpdateChart()
@@ -199,7 +196,6 @@ namespace MapBoard.GpxToolbox
                 };
                 chartHelper.DrawAction();
 
-
                 var speed = arcMap.SelectedTrack.Track.AverageSpeed;
 
                 txtSpeed.Text = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
@@ -215,9 +211,9 @@ namespace MapBoard.GpxToolbox
             }
             catch (Exception ex)
             {
-
             }
         }
+
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             if (loadNeeded != null)
@@ -229,7 +225,6 @@ namespace MapBoard.GpxToolbox
                 string[] files = File.ReadAllLines(TrackFilePath);
                 arcMap.LoadFiles(files);
             }
-
         }
 
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
@@ -277,6 +272,7 @@ namespace MapBoard.GpxToolbox
             get => gpx;
             set => SetValueAndNotify(ref gpx, value, nameof(Gpx));
         }
+
         private GpxTrack gpxTrack;
 
         public GpxTrack GpxTrack
@@ -312,6 +308,7 @@ namespace MapBoard.GpxToolbox
             arcMap.MapTapMode = ArcMapView.MapTapModes.SelectedLayer;
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
         }
+
         private void IdentifyAllButtonClick(object sender, RoutedEventArgs e)
         {
             arcMap.MapTapMode = ArcMapView.MapTapModes.AllLayers;
@@ -339,7 +336,7 @@ namespace MapBoard.GpxToolbox
 
         private void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add ("GPX轨迹文件", "gpx"), true, Gpx.Name + ".gpx");
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx"), true, Gpx.Name + ".gpx");
             if (path != null)
             {
                 try
@@ -356,15 +353,14 @@ namespace MapBoard.GpxToolbox
 
         private void OpenFilesButtonClick(object sender, RoutedEventArgs e)
         {
-            string[] files = FileSystemDialog.GetOpenFiles(new FileFilterCollection().Add ("GPX轨迹文件", "gpx") );
+            string[] files = FileSystemDialog.GetOpenFiles(new FileFilterCollection().Add("GPX轨迹文件", "gpx"));
             if (files != null)
             {
                 arcMap.LoadFiles(files);
             }
         }
 
-        #endregion
-
+        #endregion 左下角按钮
 
         #region 文件操作
 
@@ -372,7 +368,8 @@ namespace MapBoard.GpxToolbox
         {
             Tracks.Clear();
         }
-        #endregion
+
+        #endregion 文件操作
 
         #region 点菜单
 
@@ -434,7 +431,8 @@ namespace MapBoard.GpxToolbox
             //arcMap.pointToTrajectoryInfo.Add(point, arcMap.SelectedTrack);
             grdPoints.SelectedItem = point;
         }
-        #endregion
+
+        #endregion 点菜单
 
         private async void ResetTrackButtonClick(object sender, RoutedEventArgs e)
         {
@@ -445,7 +443,6 @@ namespace MapBoard.GpxToolbox
 
             bool smooth = Config.Instance.GpxAutoSmooth;
             bool height = Config.Instance.GpxHeight;
-
 
             MenuItem menuReset = new MenuItem() { Header = "重置 - 不改变设置" };
             menuReset.Click += async (p1, p2) =>
@@ -521,9 +518,6 @@ namespace MapBoard.GpxToolbox
                     menuResetWithoutSmooth,
                 }
             };
-
-
-
         }
 
         private void RemoveTrackFileMenuClick(object sender, RoutedEventArgs e)
@@ -540,7 +534,6 @@ namespace MapBoard.GpxToolbox
                 return;
             }
 
-
             Gpx gpx = tracks[0].Gpx.Clone();
             for (int i = 1; i < tracks.Length; i++)
             {
@@ -549,13 +542,12 @@ namespace MapBoard.GpxToolbox
                     gpx.Tracks[0].Points.Add(p);
                 }
             }
-            string filePath = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx") , true, tracks[0].FileName + " - 连接.gpx");
+            string filePath = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx"), true, tracks[0].FileName + " - 连接.gpx");
             if (filePath != null)
             {
                 gpx.Save(filePath);
                 await arcMap.LoadGpx(filePath, true);
             }
-
         }
 
         private void ArcMapTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
@@ -596,7 +588,6 @@ namespace MapBoard.GpxToolbox
                     else
                     {
                         mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, mapPoint.SpatialReference);
-
                     }
                     mapPoint = GeometryEngine.Project(mapPoint, SpatialReferences.Wgs84) as MapPoint;
                     // mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
@@ -617,8 +608,6 @@ namespace MapBoard.GpxToolbox
                           overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
                       }
                   };
-
-
             }
         }
 
@@ -643,15 +632,11 @@ namespace MapBoard.GpxToolbox
                 Items = { menuSmooth, menuHeightSmooth, menuHeightOffset, menuSpeed },
                 IsOpen = true,
             };
-
         }
 
         private void DeletePointsMenuClick(object sender, RoutedEventArgs e)
         {
-
         }
-
-
 
         private void Smooth(bool xy, bool z)
         {
@@ -685,7 +670,6 @@ namespace MapBoard.GpxToolbox
             }
         }
 
-
         private void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
         {
             if (InputBox.GetInput("请输入偏移值：", out string result, null, "", @"^[0-9]{0,5}(\.[0-9]+)?$", false, this))
@@ -711,13 +695,11 @@ namespace MapBoard.GpxToolbox
         {
             Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
-
-
         }
 
         private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add ("PNG图片", "png") , ensureExtension: true, defaultFileName: Gpx.Name + ".png");
+            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("PNG图片", "png"), ensureExtension: true, defaultFileName: Gpx.Name + ".png");
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);

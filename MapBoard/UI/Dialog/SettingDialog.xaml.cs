@@ -53,9 +53,9 @@ namespace MapBoard.Main.UI.Dialog
             {
                 ArcMapView.Instance.SetHideWatermark();
             }
-            if (GpxToolbox.ArcMapView.Instance != null)
+            foreach (var map in GpxToolbox.ArcMapView.Instances)
             {
-                GpxToolbox.ArcMapView.Instance.SetHideWatermark();
+                map.SetHideWatermark();
             }
         }
     }

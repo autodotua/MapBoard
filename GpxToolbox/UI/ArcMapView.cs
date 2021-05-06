@@ -31,21 +31,14 @@ namespace MapBoard.GpxToolbox
 
         public ArcMapView()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                throw new Exception("不允许多实例");
-            }
+            Instances.Add(this);
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
             SetHideWatermark();
         }
 
-        public static ArcMapView Instance { get; private set; }
+        public static List<ArcMapView> Instances { get; } = new List<ArcMapView>();
 
         public void SetHideWatermark()
         {

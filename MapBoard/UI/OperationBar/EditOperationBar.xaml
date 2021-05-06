@@ -22,8 +22,7 @@
         <TextBlock
             Grid.RowSpan="3"
             HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="16"
+            VerticalAlignment="Center" FontSize="16"
             FontWeight="Bold"
             Text="{Binding Title}" />
 
@@ -81,8 +80,7 @@
             </Button>
 
             <Button
-                Grid.Column="8"
-                Click="OkButtonClick"
+                Grid.Column="8" Click="OkButtonClick"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <Viewbox Width="14">
@@ -106,8 +104,7 @@
 
         </Grid>
         <Grid
-            Grid.Row="1"
-            Grid.RowSpan="99"
+            Grid.Row="1" Grid.RowSpan="99"
             Grid.Column="2"
             HorizontalAlignment="Right">
 
@@ -132,32 +129,23 @@
                     <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Grid.Resources>
-            <TextBlock
-                VerticalAlignment="Center"
-                Text="标签：" />
+            <TextBlock VerticalAlignment="Center" Text="标签：" />
             <TextBox
-                x:Name="txtLabel"
-                Grid.Column="2"
+                x:Name="txtLabel" Grid.Column="2"
                 Text="{Binding MapView.Drawing.Attributes.Label}" />
             <TextBlock
-                Grid.Row="2"
-                Grid.Column="4"
-                VerticalAlignment="Center"
-                Text="日期：" />
+                Grid.Row="2" Grid.Column="4"
+                VerticalAlignment="Center" Text="日期：" />
             <TextBox
-                x:Name="txtDate"
-                Grid.Row="2"
+                x:Name="txtDate" Grid.Row="2"
                 Grid.Column="6"
                 Text="{Binding MapView.Drawing.Attributes.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}" />
             <TextBlock
-                Grid.Row="4"
-                Grid.Column="8"
+                Grid.Row="4" Grid.Column="8"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Text="分类：" />
+                VerticalAlignment="Center" Text="分类：" />
             <TextBox
-                x:Name="txtKey"
-                Grid.Row="4"
+                x:Name="txtKey" Grid.Row="4"
                 Grid.Column="10"
                 Text="{Binding MapView.Drawing.Attributes.Key}" />
         </Grid>
