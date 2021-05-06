@@ -168,7 +168,7 @@
                     <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <ListBox
+                <ListView
                     BorderThickness="0"
                     ItemsSource="{Binding Keys}"
                     SelectedItem="{Binding SelectedKey}">
@@ -177,7 +177,7 @@
                             <TextBlock Text="{Binding Key}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-                </ListBox>
+                </ListView>
 
                 <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
