@@ -18,8 +18,7 @@
             LostKeyboardFocus="txt_LostKeyboardFocus"
             Text="{Binding CurrentColor, ElementName=colorPicker, Mode=TwoWay}" />
         <local:ColorPicker
-            x:Name="colorPicker"
-            Grid.Column="2"
+            x:Name="colorPicker" Grid.Column="2"
             SelectionColorChanged="colorPicker_SelectionColorChanged" />
     </Grid>
 </UserControl>

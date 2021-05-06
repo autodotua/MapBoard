@@ -31,9 +31,25 @@ namespace MapBoard.GpxToolbox
 
         public ArcMapView()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                throw new Exception("不允许多实例");
+            }
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
+            SetHideWatermark();
+        }
+
+        public static ArcMapView Instance { get; private set; }
+
+        public void SetHideWatermark()
+        {
+            Margin = new Thickness(Config.Instance.HideWatermark ? -72 : 0);
         }
 
         private void TracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -160,7 +176,6 @@ namespace MapBoard.GpxToolbox
                         var exist = Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist != null)
                         {
-                            //GraphicsOverlays.Remove(exist.Overlay);
                             Tracks.Remove(exist);
                         }
                         else
@@ -179,7 +194,6 @@ namespace MapBoard.GpxToolbox
 
         public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
 
-        //public Dictionary<GpxPoint, TrackInfo> pointToTrackInfo = new Dictionary<GpxPoint, TrackInfo>();
         public void SelectPoints(IEnumerable<GpxPoint> points)
         {
             var graphics = SelectedTrack.Overlay.Graphics;
@@ -218,7 +232,6 @@ namespace MapBoard.GpxToolbox
                 track.Overlay.Renderer = SelectionRenderer;
             }
 
-            //selectedGraphics.Add(track.Overlay.Graphics[0]);
             int index = track.Track.Points.IndexOf(point);
             for (int i = 1; i < index; i++)
             {
@@ -242,10 +255,7 @@ namespace MapBoard.GpxToolbox
                 {
                     Graphic g = gpxPointAndGraphics[p];
 
-                    //if (selectedGraphics.Contains(g))
-                    //{
                     UnselectPoint(g);
-                    //}
                 }
             }
         }
@@ -299,8 +309,6 @@ namespace MapBoard.GpxToolbox
                 browseOverlay.Renderer = BrowsePointRenderer;
             }
             var point = new ArcMapPoint(p.X, p.Y, p.Z);
-            //browseOverlay.Graphics.Clear();
-            //browseOverlay.Graphics.Add(new Graphic() { Geometry = point });
             if (browseOverlay.Graphics.Count == 0)
             {
                 browseOverlay.Graphics.Add(new Graphic() { Geometry = point });

@@ -45,19 +45,17 @@ namespace MapBoard.Main.UI.Map
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
             ViewInsets = new Thickness(8);
-
-            //SketchEditor.EditConfiguration=new SketchEditConfiguration()
-            //{
-            //    AllowMove=true,
-            //    AllowRotate=true,AllowVertexEditing=true,
-            //}
-            //SketchEditor.EditConfiguration.AllowMove = SketchEditor.EditConfiguration.AllowRotate = SketchEditor.EditConfiguration.AllowVertexEditing = true;
-
+            SetHideWatermark();
             Edit = new EditHelper();
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
             Layer = new LayerHelper();
             Load().Wait();
+        }
+
+        public void SetHideWatermark()
+        {
+            Margin = new Thickness(Config.Instance.HideWatermark ? -72 : 0);
         }
 
         public static ArcMapView Instance { get; private set; }

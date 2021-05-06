@@ -72,7 +72,7 @@ namespace MapBoard.Main.UI
         public Config Config => Config.Instance;
         public LayerCollection Layers => LayerCollection.Instance;
 
-        #endregion
+        #endregion 字段和属性
 
         #region 窗体启动与关闭
 
@@ -132,7 +132,7 @@ namespace MapBoard.Main.UI
             LayerCollection.Instance.Save();
         }
 
-        #endregion
+        #endregion 窗体启动与关闭
 
         private bool changingStyle = false;
 
@@ -184,16 +184,6 @@ namespace MapBoard.Main.UI
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
             await StartDraw(sender);
-        }
-
-        private void ExpanderSettings_Collapsed(object sender, RoutedEventArgs e)
-        {
-            xpdSettings.Background = System.Windows.Media.Brushes.Transparent;
-        }
-
-        private void ExpanderSettings_Expanded(object sender, RoutedEventArgs e)
-        {
-            xpdSettings.SetResourceReference(BackgroundProperty, "SystemControlBackgroundAltHighBrush");
         }
 
         private async void ExportBtnClick(object sender, RoutedEventArgs e)
@@ -362,7 +352,7 @@ namespace MapBoard.Main.UI
             {
                 try
                 {
-                    await arcMap.SetViewpointGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
+                    await arcMap.SetViewpointGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()), Config.HideWatermark ? 72 : 0);
                 }
                 catch (Exception ex)
                 {
@@ -483,6 +473,21 @@ namespace MapBoard.Main.UI
             {
                 Layersetting.ResetLayerSettingUI();
             }
+        }
+
+        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            new SettingDialog() { Owner = this }.ShowDialog();
+        }
+
+        private void GpxMenu_Click(object sender, RoutedEventArgs e)
+        {
+            new GpxToolbox.MainWindow().Show();
+        }
+
+        private void TileMenu_Click(object sender, RoutedEventArgs e)
+        {
+            new TileDownloaderSplicer.MainWindow().Show();
         }
     }
 }

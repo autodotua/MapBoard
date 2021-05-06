@@ -17,8 +17,7 @@
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Background="Transparent"
-                BorderThickness="0"
-                FontSize="16"
+                BorderThickness="0" FontSize="16"
                 Text="{Binding LayerName}" />
 
             <Expander Padding="0,8" Header="符号样式">
@@ -38,13 +37,11 @@
 
                             <TextBlock Text="当前分类：" />
                             <TextBlock
-                            x:Name="txtKey"
-                            Grid.Column="2"
-                            Text="{Binding SelectedKey.Key}" />
+                                x:Name="txtKey" Grid.Column="2"
+                                Text="{Binding SelectedKey.Key}" />
                             <Button
-                            Grid.Column="4"
-                            Click="KeyButtonClick"
-                            Content="..." />
+                                Grid.Column="4" Click="KeyButtonClick"
+                                Content="..." />
                         </Grid>
                         <Grid Margin="2,10,2,4">
                             <Grid.ColumnDefinitions>
@@ -61,31 +58,25 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock
-                            Grid.Row="0"
-                            HorizontalAlignment="Right"
-                            Text="线宽/边框宽/点大小：" />
+                                Grid.Row="0" HorizontalAlignment="Right"
+                                Text="线宽/边框宽/点大小：" />
                             <TextBox
-                            x:Name="txtLineWidth"
-                            Grid.Row="0"
-                            Grid.Column="2"
-                            Text="{Binding LineWidth}" />
+                                x:Name="txtLineWidth" Grid.Row="0"
+                                Grid.Column="2"
+                                Text="{Binding LineWidth}" />
 
                             <TextBlock
-                            Grid.Row="2"
-                            HorizontalAlignment="Right"
-                            Text="边框/线颜色：" />
+                                Grid.Row="2" HorizontalAlignment="Right"
+                                Text="边框/线颜色：" />
                             <compoment:ColorPickerTextBox
-                            x:Name="lineColorPicker"
-                            Grid.Row="2 "
-                            Grid.Column="2" />
+                                x:Name="lineColorPicker" Grid.Row="2 "
+                                Grid.Column="2" />
                             <TextBlock
-                            Grid.Row="4"
-                            HorizontalAlignment="Right"
-                            Text="填充/点颜色：" />
+                                Grid.Row="4" HorizontalAlignment="Right"
+                                Text="填充/点颜色：" />
                             <compoment:ColorPickerTextBox
-                            x:Name="fillColorPicker"
-                            Grid.Row="4 "
-                            Grid.Column="2" />
+                                x:Name="fillColorPicker" Grid.Row="4 "
+                                Grid.Column="2" />
 
                             <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6" />
 
@@ -124,38 +115,31 @@
 
                         <TextBlock Grid.Row="0" Text="字体颜色" />
                         <compoment:ColorPickerTextBox
-                            x:Name="labelFillColor"
-                            Grid.Row="0"
-                            Grid.Column="2"
-                            Grid.ColumnSpan="3" />
+                            x:Name="labelFillColor" Grid.Row="0"
+                            Grid.Column="2" Grid.ColumnSpan="3" />
                         <TextBlock Grid.Row="2" Text="边框颜色" />
                         <compoment:ColorPickerTextBox
-                            x:Name="labelLineColor"
-                            Grid.Row="2"
-                            Grid.Column="2"
-                            Grid.ColumnSpan="3" />
+                            x:Name="labelLineColor" Grid.Row="2"
+                            Grid.Column="2" Grid.ColumnSpan="3" />
                         <TextBlock Grid.Row="4" Text="字体大小" />
                         <TextBox
-                            Grid.Row="4"
-                            Grid.Column="2"
+                            Grid.Row="4" Grid.Column="2"
                             Grid.ColumnSpan="3"
                             Text="{Binding Label.FontSize}" />
                         <TextBlock Grid.Row="6" Text="边框宽度" />
                         <TextBox
-                            Grid.Row="6"
-                            Grid.Column="2"
+                            Grid.Row="6" Grid.Column="2"
                             Grid.ColumnSpan="3"
                             VerticalAlignment="Center"
                             Text="{Binding Label.StrokeThickness}" />
                         <TextBlock Grid.Row="8" Text="最小比例" />
                         <TextBox
-                            Grid.Row="8"
-                            Grid.Column="2"
+                            Grid.Row="8" Grid.Column="2"
                             VerticalAlignment="Center"
                             Text="{Binding Label.MinScale}" />
                         <Button
-                            Grid.Row="8"
-                            Grid.Column="4" Height="24" Padding="8,0"
+                            Grid.Row="8" Grid.Column="4"
+                            Height="24" Padding="8,0"
                             HorizontalAlignment="Right"
                             Click="SetScaleButtonClick"
                             Content="设为当前" />
@@ -176,8 +160,7 @@
             </Expander>
         </StackPanel>
         <Popup
-            x:Name="ppp"
-            Placement="Bottom"
+            x:Name="ppp" Placement="Bottom"
             StaysOpen="False">
             <Grid Margin="8" Background="{Binding Background}">
                 <Grid.RowDefinitions>
@@ -213,27 +196,22 @@
                     </Grid.ColumnDefinitions>
                     <Button Click="CreateKeyButtonClick" Content="新建" />
                     <Button
-                        x:Name="btnChangeKey"
-                        Grid.Column="2"
+                        x:Name="btnChangeKey" Grid.Column="2"
                         Click="ChangeKeyButtonClick"
                         Content="修改" />
                     <Button
-                        x:Name="btnDeleteKey"
-                        Grid.Column="4"
+                        x:Name="btnDeleteKey" Grid.Column="4"
                         Click="DeleteKeyButtonClick"
                         Content="删除" />
                     <Button
-                        Grid.Column="6"
-                        Click="CloseButtonClick"
+                        Grid.Column="6" Click="CloseButtonClick"
                         Content="关闭" />
                     <Button
-                        Grid.Row="2"
-                        Grid.ColumnSpan="3"
+                        Grid.Row="2" Grid.ColumnSpan="3"
                         Click="GenerateKeyButtonClick"
                         Content="自动生成全部" />
                     <Button
-                        Grid.Row="2"
-                        Grid.Column="4"
+                        Grid.Row="2" Grid.Column="4"
                         Grid.ColumnSpan="3"
                         Click="GenerateRandomColorButtonClick"
                         Content="随机生成颜色" />

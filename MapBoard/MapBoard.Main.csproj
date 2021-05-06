@@ -141,6 +141,9 @@
     <Compile Include="UI\Component\ColorPickerTextBox.xaml.cs">
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
+      <DependentUpon>SettingDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
     <Compile Include="Util\IOUtility.cs" />
@@ -185,9 +188,6 @@
     <Compile Include="UI\Dialog\SelectLayerDialog.xaml.cs">
       <DependentUpon>SelectLayerDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Panel\SettingPanel.xaml.cs">
-      <DependentUpon>SettingPanel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\Panel\LayerSettingPanel.xaml.cs">
       <DependentUpon>LayerSettingPanel.xaml</DependentUpon>
     </Compile>
@@ -223,6 +223,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UI\Dialog\SettingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -248,10 +252,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\SelectLayerDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Panel\SettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

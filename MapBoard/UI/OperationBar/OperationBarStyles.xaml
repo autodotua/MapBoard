@@ -23,8 +23,7 @@
                         Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                         SnapsToDevicePixels="True">
                         <Border
-                            x:Name="Border"
-                            Padding="8,0"
+                            x:Name="Border" Padding="8,0"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                             <ContentPresenter
