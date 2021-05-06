@@ -285,7 +285,7 @@ namespace MapBoard.TileDownloaderSplicer
 
                     try
                     {
-                        LastDownloadingTile = $"Z{tile.Level}/X{tile.X}/Y{tile.Y}";
+                        LastDownloadingTile = $"Z={tile.Level}  X={tile.X}  Y={tile.Y}";
                         if (!File.Exists(path) || Config.CoverFile)
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());

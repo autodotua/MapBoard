@@ -40,27 +40,27 @@ namespace MapBoard.AfterBuild
                         Sources = new dynamic[] {
             new   {
         Name= "高德地图",
-        Url= "http=//webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}"
+        Url= "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}"
       },
      new {
         Name= "谷歌卫星",
-        Url= "http=//mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+        Url= "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
       },
      new {
         Name= "谷歌卫星中国（GCJ02）",
-        Url= "http=//mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}"
+        Url= "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}"
       },
     new  {
         Name= "谷歌卫星中国（WGS84）",
-        Url= "http=//mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}"
+        Url= "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}"
       },
   new    {
         Name= "天地图",
-        Url= "http=//t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
+        Url= "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
       },
    new   {
         Name= "天地图注记",
-        Url= "http=//t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
+        Url= "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
       }
                     }
                     }

@@ -10,10 +10,9 @@
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:progress="clr-namespace:FzLib.UI.Progress;assembly=FzUILib.WPF"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="地图画板"
-    Width="1000"
+    Title="地图画板" Width="1000"
     Height="700"
-        ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
+    ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -57,15 +56,16 @@
                     </ui:TitleBarButton.Content>
                     <ui:FlyoutService.Flyout>
                         <ui:MenuFlyout Placement="Bottom">
-                            <MenuItem
-                                Click="GpxMenu_Click" Header="GPX工具箱" />
+                            <MenuItem Click="GpxMenu_Click" Header="GPX工具箱" />
                             <MenuItem Click="TileMenu_Click" Header="地图瓦片下载器" />
                         </ui:MenuFlyout>
                     </ui:FlyoutService.Flyout>
                 </ui:TitleBarButton>
                 <ui:TitleBarButton
                     Grid.Column="4" Width="NaN"
-                    Padding="16,0" FontSize="13" Click="SettingButton_Click"
+                    Padding="16,0"
+                    Click="SettingButton_Click"
+                    FontSize="13"
                     Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}"
                     Style="{StaticResource AppTitleBarButtonStyle}">
                     <ui:TitleBarButton.Content>
@@ -74,7 +74,9 @@
                 </ui:TitleBarButton>
             </Grid>
         </Border>
-        <Grid x:Name="grdMain" ClipToBounds="True" Grid.Row="2">
+        <Grid
+            x:Name="grdMain" Grid.Row="2"
+            ClipToBounds="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="0" />
@@ -84,21 +86,21 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="grdCenter" Grid.Column="2">
                 <Border ClipToBounds="True">
-                    <map:ArcMapView  x:Name="arcMap" />
+                    <map:ArcMapView x:Name="arcMap" />
                 </Border>
 
                 <bar:EditOperationBar
-                x:Name="editBar"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top">
+                    x:Name="editBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top">
                     <bar:EditOperationBar.RenderTransform>
                         <TranslateTransform Y="-48" />
                     </bar:EditOperationBar.RenderTransform>
                 </bar:EditOperationBar>
                 <bar:SelectOperationBar
-                x:Name="selectBar"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top">
+                    x:Name="selectBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top">
                     <bar:SelectOperationBar.RenderTransform>
                         <TranslateTransform Y="-48" />
                     </bar:SelectOperationBar.RenderTransform>
@@ -112,16 +114,13 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                Grid.Column="2"
-                Width="10"
-                Height="80"
-                Margin="4,0,8,0"
-                VerticalAlignment="Center"
-                Click="LayerSettingOpenCloseButton_Click" />
+                    Grid.Column="2" Width="10"
+                    Height="80" Margin="4,0,8,0"
+                    VerticalAlignment="Center"
+                    Click="LayerSettingOpenCloseButton_Click" />
                 <Grid
-                x:Name="grdLeft"
-                Width="300"
-                Margin="4">
+                    x:Name="grdLeft" Width="300"
+                    Margin="4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="16" />
@@ -138,24 +137,23 @@
                         <TextBlock />
 
                         <StackPanel
-                        Grid.Row="100"
-                        Grid.ColumnSpan="100"
-                        HorizontalAlignment="Right"
-                        Orientation="Horizontal">
+                            Grid.Row="100" Grid.ColumnSpan="100"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
                             <Button
-                            x:Name="btnBrowseMode"
-                            Click="BrowseModeButtonClick"
-                            Content="浏览模式" />
+                                x:Name="btnBrowseMode"
+                                Click="BrowseModeButtonClick"
+                                Content="浏览模式" />
                             <TextBlock Text="  " />
                             <Button
-                            x:Name="btnApplyStyle"
-                            Click="ApplyStyleButtonClick"
-                            Content="应用样式" />
+                                x:Name="btnApplyStyle"
+                                Click="ApplyStyleButtonClick"
+                                Content="应用样式" />
                             <TextBlock Text="  " />
                             <Button
-                            x:Name="btnCreateStyle"
-                            Click="CreateStyleButtonClick"
-                            Content="新建样式" />
+                                x:Name="btnCreateStyle"
+                                Click="CreateStyleButtonClick"
+                                Content="新建样式" />
                         </StackPanel>
                     </StackPanel>
                     <Grid Grid.Row="2">
@@ -165,17 +163,17 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <DataGrid
-                        x:Name="dataGrid"
-                        AutoGenerateColumns="False"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        HeadersVisibility="Column"
-                        ItemsSource="{Binding Layers.Layers}"
-                        PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
-                        PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
-                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        SelectionChanged="SelectedLayerChanged"
-                        SelectionUnit="FullRow">
+                            x:Name="dataGrid"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            HeadersVisibility="Column"
+                            ItemsSource="{Binding Layers.Layers}"
+                            PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
+                            PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            SelectionChanged="SelectedLayerChanged"
+                            SelectionUnit="FullRow">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Width="64" Header="显示">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -185,17 +183,14 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn
-                                Binding="{Binding Name}"
-                                Header="图层名"
-                                IsReadOnly="True" />
+                                    Binding="{Binding Name}"
+                                    Header="图层名" IsReadOnly="True" />
                                 <DataGridTextColumn
-                                Binding="{Binding TypeDescription}"
-                                Header="类型"
-                                IsReadOnly="True" />
+                                    Binding="{Binding TypeDescription}"
+                                    Header="类型" IsReadOnly="True" />
                                 <DataGridTextColumn
-                                Binding="{Binding FeatureCount}"
-                                Header="图形数量"
-                                IsReadOnly="True" />
+                                    Binding="{Binding FeatureCount}"
+                                    Header="图形数量" IsReadOnly="True" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
@@ -211,20 +206,17 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Button
-                        HorizontalAlignment="Stretch"
-                        Click="ImportBtnClick"
-                        Content="导入" />
+                            HorizontalAlignment="Stretch"
+                            Click="ImportBtnClick" Content="导入" />
                         <Button
-                        Grid.Column="2"
-                        HorizontalAlignment="Stretch"
-                        Click="ExportBtnClick"
-                        Content="导出" />
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="ExportBtnClick" Content="导出" />
                         <Button
-                        Grid.Row="0"
-                        Grid.Column="6"
-                        HorizontalAlignment="Stretch"
-                        Click="OpenFolderButtonClick"
-                        Content="打开目录" />
+                            Grid.Row="0" Grid.Column="6"
+                            HorizontalAlignment="Stretch"
+                            Click="OpenFolderButtonClick"
+                            Content="打开目录" />
                     </Grid>
                     <Grid x:Name="grdButtons" Grid.Row="100">
                         <Grid.ColumnDefinitions>
@@ -234,16 +226,14 @@
                         </Grid.ColumnDefinitions>
 
                         <ui:SplitButton
-                        HorizontalAlignment="Stretch"
-                        Content="绘制"
-                        IsEnabled="False"
-                        Tag="always" />
+                            HorizontalAlignment="Stretch"
+                            Content="绘制" IsEnabled="False"
+                            Tag="always" />
 
                         <ui:SplitButton
-                        x:Name="splBtnPolyline"
-                        HorizontalAlignment="Stretch"
-                        Click="DrawButtonsClick"
-                        Content="多段线">
+                            x:Name="splBtnPolyline"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick" Content="多段线">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由线" />
@@ -251,10 +241,9 @@
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
                         <ui:SplitButton
-                        x:Name="splBtnPolygon"
-                        HorizontalAlignment="Stretch"
-                        Click="DrawButtonsClick"
-                        Content="多边形">
+                            x:Name="splBtnPolygon"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick" Content="多边形">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由面" />
@@ -268,21 +257,18 @@
                         </ui:SplitButton>
 
                         <ui:SplitButton
-                        x:Name="splBtnPoint"
-                        HorizontalAlignment="Stretch"
-                        Click="DrawButtonsClick"
-                        Content="点" />
+                            x:Name="splBtnPoint"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick" Content="点" />
                         <ui:SplitButton
-                        x:Name="splBtnMultiPoint"
-                        HorizontalAlignment="Stretch"
-                        Click="DrawButtonsClick"
-                        Content="多点" />
+                            x:Name="splBtnMultiPoint"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick" Content="多点" />
 
                         <Button
-                        x:Name="btnSelect"
-                        Grid.Column="2"
-                        Click="SelectToggleButtonClick"
-                        FocusVisualStyle="{x:Null}">
+                            x:Name="btnSelect" Grid.Column="2"
+                            Click="SelectToggleButtonClick"
+                            FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
                         </Button>
                     </Grid>
@@ -290,10 +276,8 @@
             </Grid>
 
             <progress:LoadingOverlay
-            x:Name="loading"
-            Grid.RowSpan="100"
-            Grid.ColumnSpan="100"
-            RingSize="0.1" />
+                x:Name="loading" Grid.RowSpan="100"
+                Grid.ColumnSpan="100" RingSize="0.1" />
         </Grid>
     </Grid>
 </common:MainWindowBase>
