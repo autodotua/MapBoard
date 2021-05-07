@@ -4,28 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+    xmlns:component="clr-namespace:MapBoard.Main.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
-    xmlns:progress="clr-namespace:FzLib.UI.Progress;assembly=FzUILib.WPF"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
     Height="700"
-    ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
-    ui:TitleBar.Style="{DynamicResource AppTitleBarStyle}"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="WindowLoaded"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Window.Resources>
-        <Style x:Key="AppTitleBarButtonStyle" TargetType="ui:TitleBarButton">
-            <Setter Property="IsActive" Value="{Binding IsActive, ElementName=Window}" />
-        </Style>
-    </Window.Resources>
+    <Window.Resources />
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -49,8 +43,7 @@
                 <ui:TitleBarButton
                     Grid.Column="2" Width="NaN"
                     Padding="16,0" FontSize="13"
-                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}"
-                    Style="{StaticResource AppTitleBarButtonStyle}">
+                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
                     </ui:TitleBarButton.Content>
@@ -66,8 +59,7 @@
                     Padding="16,0"
                     Click="SettingButton_Click"
                     FontSize="13"
-                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}"
-                    Style="{StaticResource AppTitleBarButtonStyle}">
+                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="Setting" />
                     </ui:TitleBarButton.Content>
@@ -274,10 +266,9 @@
                     </Grid>
                 </Grid>
             </Grid>
-
-            <progress:LoadingOverlay
+            <component:ProgressRingOverlay
                 x:Name="loading" Grid.RowSpan="100"
-                Grid.ColumnSpan="100" RingSize="0.1" />
+                Grid.ColumnSpan="100" />
         </Grid>
     </Grid>
 </common:MainWindowBase>

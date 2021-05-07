@@ -135,6 +135,10 @@
       <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
       <Name>MapBoard.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj">
+      <Project>{f5d99d6b-c794-4e2d-bb07-172d2ee954bb}</Project>
+      <Name>ModernWpf.FzExtension</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ControlzEx">

@@ -33,6 +33,8 @@ using static FzLib.Geography.Analysis.SpeedAnalysis;
 using FzLib.Geography.IO.Gpx;
 using FzLib.Program;
 using System.Collections.ObjectModel;
+using ModernWpf.FzExtension.CommonDialog;
+using System.Threading.Tasks;
 
 namespace MapBoard.GpxToolbox
 {
@@ -638,7 +640,7 @@ namespace MapBoard.GpxToolbox
         {
         }
 
-        private void Smooth(bool xy, bool z)
+        private async Task Smooth(bool xy, bool z)
         {
             if (lvwFiles.SelectedItem == null)
             {
@@ -648,10 +650,10 @@ namespace MapBoard.GpxToolbox
             TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
             var points = track.Track.Points;
             int count = points.Count;
-            NumberInputDialog dialog = new NumberInputDialog($"请输入平滑度（0~{count}）") { Integer = true };
-            if (dialog.ShowDialog() == true)
+            int? result = await CommonDialog.ShowIntInputDialogAsync("请输入平滑度（0~{count}）");
+            if (result.HasValue)
             {
-                int num = dialog.IntNumber;
+                int num = result.Value;
                 if (num < 2 || num >= count)
                 {
                     TaskDialog.ShowError("输入的数值超出范围");

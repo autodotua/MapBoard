@@ -11,6 +11,7 @@ using MapBoard.Main.Model;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,18 +132,19 @@ namespace MapBoard.Main.Util
         public async static void CreateCopy()
         {
             int mode = 0;
-            TaskDialog.ShowWithCommandLinks("是否要复制所有图形到新的样式中", "请选择副本类型", new (string, string, Action)[]
+            await CommonDialog.ShowSelectItemDialogAsync("请选择副本类型",
+                new DialogItem[]
             {
-                ("仅样式",null,()=>mode=1),
-                ("样式和所有图形",null,()=>mode=2)
-            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, true);
+              new  ("仅样式",null,()=>mode=1),
+               new ("样式和所有图形",null,()=>mode=2)
+            });
             if (mode > 0)
             {
                 await CreatCopy(LayerCollection.Instance.Selected, mode == 2);
             }
         }
 
-        public static void ApplyLayers(this LayerInfo layer)
+        public static async Task ApplyLayers(this LayerInfo layer)
         {
             try
             {
@@ -193,7 +195,7 @@ namespace MapBoard.Main.Util
             catch (Exception ex)
             {
                 string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" + layer.Name : "图层") + "样式加载失败";
-                TaskDialog.ShowException(ex, error);
+                await CommonDialog.ShowErrorDialogAsync(ex, error);
             }
         }
 

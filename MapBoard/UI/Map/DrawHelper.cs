@@ -56,6 +56,10 @@ namespace MapBoard.Main.UI.Map
                     Attributes.Date = null;
                 }
             }
+            else
+            {
+                Attributes = FeatureAttributes.Empty;
+            }
             await Mapview.SketchEditor.StartAsync(mode);
         }
 
@@ -74,7 +78,7 @@ namespace MapBoard.Main.UI.Map
 
                 feature = table.CreateFeature();
                 feature.Geometry = geometry;
-                attributes.SaveToFeature(feature);
+                Attributes.SaveToFeature(feature);
                 await table.AddFeatureAsync(feature);
 
                 LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table == table).UpdateFeatureCount();

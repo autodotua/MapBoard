@@ -6,6 +6,7 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -69,7 +70,7 @@ namespace MapBoard.Main.Util
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(ex, "导入失败");
+                CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
 
@@ -99,7 +100,7 @@ namespace MapBoard.Main.Util
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "导出失败");
+                    CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }
         }
@@ -134,26 +135,26 @@ namespace MapBoard.Main.Util
                             return;
 
                         case ".gpx":
-                            string result = TaskDialog.ShowWithCommandLinks("请选择转换类型", "正在准备导入GPS轨迹文件",
-                           new (string, string, Action)[] {
-                                ("点","每一个轨迹点分别加入到新的样式中",null),
-                                ("一条线","按时间顺序将轨迹点相连，形成一条线",null),
-                                ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",null) }, cancelable: true);
+                            int result = await CommonDialog.ShowSelectItemDialogAsync("请选择转换类型",
+                           new DialogItem[] {
+                              new DialogItem ("点","每一个轨迹点分别加入到新的样式中",null),
+                              new DialogItem ("一条线","按时间顺序将轨迹点相连，形成一条线",null),
+                              new DialogItem ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",null) });
                             switch (result)
                             {
-                                case "点":
+                                case 0:
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.Point);
                                     break;
 
-                                case "一条线":
+                                case 1:
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.OneLine);
                                     break;
 
-                                case "多条线":
+                                case 2:
                                     await Gpx.ImportToNewStyle(path, Gpx.Type.MultiLine);
                                     break;
 
-                                case null:
+                                default:
                                     ok = false;
                                     break;
                             }
@@ -169,7 +170,7 @@ namespace MapBoard.Main.Util
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "导入失败");
+                    CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
                     ok = false;
                 }
                 finally
@@ -218,7 +219,7 @@ namespace MapBoard.Main.Util
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "导出失败");
+                    CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }
         }
@@ -253,35 +254,33 @@ namespace MapBoard.Main.Util
             {
                 if (files.Length > 1)
                 {
-                    //if (TaskDialog.ShowWithYesNoButtons("通过GPX工具箱打开？", "打开GPX文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
-                    //{
-                    TaskDialog.ShowWithCommandLinks("选择打开多个GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
-                    ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
-                    ("导入到新样式","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewStyle(files)),
-                }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);
-
-                    //}
+                    await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式",
+                           new DialogItem[]{
+             new DialogItem       ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+          new DialogItem          ("导入到新样式","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewStyle(files)),
+                   });
                 }
                 else
                 {
-                    TaskDialog.ShowWithCommandLinks("选择打开GPX文件的方式", "打开GPX文件", new (string, string, Action)[]{
-                    ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
-                    ("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
-                    ("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
-                    ("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
-                }, icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information, cancelable: true);
+                    CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式",
+                        new DialogItem[]{
+                new("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+                new("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
+                new("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
+                new("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
+                });
                 }
             }
             else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
             {
-                if (TaskDialog.ShowWithYesNoButtons("是否覆盖当前所有样式？", "打开Mapboard Map Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？", "打开Mapboard Map Package文件") == true)
                 {
                     Package.ImportMap(files[0]);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
             {
-                if (TaskDialog.ShowWithYesNoButtons("是否导入图层？", "打开Mapboard Layer Package文件", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否导入图层？", "打开Mapboard Layer Package文件") == true)
                 {
                     foreach (var file in files)
                     {
@@ -292,7 +291,7 @@ namespace MapBoard.Main.Util
             }
             else if (files.Count(p => p.EndsWith(".csv")) == files.Length)
             {
-                if (TaskDialog.ShowWithYesNoButtons("是否导入CSV文件？", "打开CSV", icon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？", "打开CSV") == true)
                 {
                     foreach (var file in files)
                     {

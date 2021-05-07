@@ -141,6 +141,9 @@
     <Compile Include="UI\Component\ColorPickerTextBox.xaml.cs">
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Component\ProgressRingOverlay.xaml.cs">
+      <DependentUpon>ProgressRingOverlay.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
@@ -202,6 +205,10 @@
     <Page Include="UI\Component\ColorPickerTextBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Component\ProgressRingOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\BaseLayerSettingDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -285,6 +292,10 @@
     <ProjectReference Include="..\Common\MapBoard.Common.csproj">
       <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
       <Name>MapBoard.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj">
+      <Project>{f5d99d6b-c794-4e2d-bb07-172d2ee954bb}</Project>
+      <Name>ModernWpf.FzExtension</Name>
     </ProjectReference>
     <ProjectReference Include="..\TileDownloaderSplicer\MapBoard.TileDownloaderSplicer.csproj">
       <Project>{14fda3a2-c424-485f-93bb-f8d649682460}</Project>

@@ -6,6 +6,7 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,22 +31,22 @@ namespace MapBoard.Main.Util
         public static async void Link(LayerInfo style)
         {
             var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
-            List<(string, string, Action)> typeList = new List<(string, string, Action)>();
+            List<DialogItem> typeList = new List<DialogItem>();
             int type = 0;
             if (ArcMapView.Instance.Selection.SelectedFeatures.Count == 2)
             {
-                typeList.Add(("尾1头——头2尾", "起始点与起始点相连接", () => type = 1));
-                typeList.Add(("头1尾——尾2头", "终结点与终结点相连接", () => type = 2));
-                typeList.Add(("头1尾——头2尾", "第一个要素的终结点与第二个要素的起始点相连接", () => type = 3));
-                typeList.Add(("头2尾——头1尾", "第一个要素的起始点与第二个要素的终结点相连接", () => type = 4));
+                typeList.Add(new DialogItem("尾1头——头2尾", "起始点与起始点相连接", () => type = 1));
+                typeList.Add(new DialogItem("头1尾——尾2头", "终结点与终结点相连接", () => type = 2));
+                typeList.Add(new DialogItem("头1尾——头2尾", "第一个要素的终结点与第二个要素的起始点相连接", () => type = 3));
+                typeList.Add(new DialogItem("头2尾——头1尾", "第一个要素的起始点与第二个要素的终结点相连接", () => type = 4));
             }
             else
             {
-                typeList.Add(("头n尾——头n+1尾", "每一个要素的终结点与前一个要素的起始点相连接", () => type = 5));
-                typeList.Add(("头n尾——头n-1尾", "每一个要素的起始点与前一个要素的终结点相连接", () => type = 6));
+                typeList.Add(new DialogItem("头n尾——头n+1尾", "每一个要素的终结点与前一个要素的起始点相连接", () => type = 5));
+                typeList.Add(new DialogItem("头n尾——头n-1尾", "每一个要素的起始点与前一个要素的终结点相连接", () => type = 6));
             }
 
-            TaskDialog.ShowWithCommandLinks("连接类型", "请选择连接类型", typeList, cancelable: true);
+            await CommonDialog.ShowSelectItemDialogAsync("请选择连接类型", typeList);
 
             if (type == 0)
             {
@@ -116,10 +117,11 @@ namespace MapBoard.Main.Util
         public static async void Densify(LayerInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-            NumberInputDialog dialog = new NumberInputDialog("请输入最大间隔");
-            if (dialog.ShowDialog() == true)
+
+            int? num = await CommonDialog.ShowIntInputDialogAsync("请输入最大间隔");
+            if (num.HasValue)
             {
-                feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, dialog.Number, LinearUnits.Meters);
+                feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, num.Value, LinearUnits.Meters);
                 await style.Table.UpdateFeatureAsync(feature);
                 ArcMapView.Instance.Selection.ClearSelection();
             }
@@ -128,13 +130,14 @@ namespace MapBoard.Main.Util
         public static async void RemoveSomePoints(LayerInfo style)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-            NumberInputDialog dialog = new NumberInputDialog("请输入每几个点保留一个点") { Integer = true };
-            if (dialog.ShowDialog() == true)
+            int? num = await CommonDialog.ShowIntInputDialogAsync("请输入每几个点保留一个点");
+
+            if (num.HasValue)
             {
-                int eachPoint = dialog.IntNumber;
+                int eachPoint = num.Value;
                 if (eachPoint < 2)
                 {
-                    TaskDialog.ShowError("输入的值不可小于2！");
+                    await CommonDialog.ShowErrorDialogAsync("输入的值不可小于2！");
                     return;
                 }
 
@@ -201,7 +204,7 @@ namespace MapBoard.Main.Util
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(ex, "导出失败");
+                CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
 

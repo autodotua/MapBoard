@@ -9,6 +9,7 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -136,7 +137,7 @@ namespace MapBoard.Main.UI.OperationBar
                 var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
                 await targetTable.AddFeaturesAsync(newFeatures);
                 await MapView.Selection.StopFrameSelect(false);
-                if (TaskDialog.ShowWithYesNoButtons("是否保留原图层中选中的图形？", "复制/移动") == false)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？", "复制/移动") == false)
                 {
                     await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
                     LayerCollection.Instance.Selected.UpdateFeatureCount();

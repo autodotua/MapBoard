@@ -6,6 +6,7 @@ using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.Model;
 using MapBoard.Main.Util;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +32,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Mapview.Map.OperationalLayers.Add(layer);
-                LayerUtility.ApplyLayers(style);
+                await LayerUtility.ApplyLayers(style);
                 await style.LayerComplete();
                 return true;
             }
@@ -49,7 +50,7 @@ namespace MapBoard.Main.UI.Map
                 {
                 }
                 string error = (string.IsNullOrWhiteSpace(style.Name) ? "样式" : "样式" + style.Name) + "加载失败";
-                TaskDialog.ShowException(ex, error);
+                await CommonDialog.ShowErrorDialogAsync(ex, error);
                 return false;
             }
         }
@@ -129,34 +130,17 @@ namespace MapBoard.Main.UI.Map
                 await featureTable.LoadAsync();
                 if (featureTable.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
                 {
-                    //if (!LayerCollection.Instance.Layers.Contains(style))
-                    //{
-                    //    LayerCollection.Instance.Layers.Add(style);
-                    //}
-                    //if (style.FeatureCount == 0)
-                    //{
-                    //    RemoveStyle(style, true);
-                    //}
-                    //else
-                    //{
-                    //FeatureLayer layer = new FeatureLayer(featureTable);
-                    ////Map.OperationalLayers.Add(layer);
-
-                    //style.Table = featureTable;
-                    //style.UpdateFeatureCount();
-                    //SetRenderer(style);
-                    //  }
                 }
             }
             catch (Exception ex)
             {
                 if (SnakeBar.DefaultOwner.Owner == null)
                 {
-                    TaskDialog.ShowException(ex, $"无法加载样式{style.Name}");
+                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载样式{style.Name}");
                 }
                 else
                 {
-                    SnakeBar.ShowException(ex, $"无法加载样式{style.Name}");
+                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载样式{style.Name}");
                 }
             }
         }

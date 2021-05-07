@@ -1,0 +1,35 @@
+﻿<local:CommonDialog
+    x:Class="ModernWpf.FzExtension.CommonDialog.InputDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ModernWpf.FzExtension.CommonDialog"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    IsPrimaryButtonEnabled="True"
+    IsSecondaryButtonEnabled="True"
+    PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
+    PrimaryButtonText="确定"
+    SecondaryButtonText="取消"
+    mc:Ignorable="d">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <TextBox
+            x:Name="txt" Grid.Row="2"
+            Text="{Binding InputContent, UpdateSourceTrigger=PropertyChanged}"
+            TextInput="txt_TextInput" />
+        <ui:FontIcon
+            x:Name="errorIcon" Grid.Row="2"
+            Margin="0,0,36,0"
+            HorizontalAlignment="Left" FontSize="12"
+            Foreground="Red"
+            Glyph="&#xE783;"
+            Visibility="Collapsed" />
+    </Grid>
+</local:CommonDialog>

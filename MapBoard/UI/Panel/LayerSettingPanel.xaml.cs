@@ -8,6 +8,7 @@ using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
+using ModernWpf.FzExtension.CommonDialog;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -119,7 +120,7 @@ namespace MapBoard.Main.UI.Panel
             set => SetValueAndNotify(ref label, value, nameof(Label));
         }
 
-        public void SetStyleFromUI()
+        public async Task SetStyleFromUI()
         {
             var layer = LayerCollection.Instance.Selected;
             //style.Renderer.LineColor = LineColor;
@@ -176,7 +177,7 @@ namespace MapBoard.Main.UI.Panel
             }
             else
             {
-                layer.ApplyLayers();
+                await layer.ApplyLayers();
             }
         }
 
@@ -235,15 +236,14 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private void CreateKeyButtonClick(object sender, RoutedEventArgs e)
+        private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            InputDialog dialog = new InputDialog("请输入键值");
-            if (dialog.ShowDialog() == true)
+            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
+            if (key != null)
             {
-                string key = dialog.Text;
                 if (Keys.Any(p => p.Key == key))
                 {
-                    TaskDialog.ShowError("该键已存在");
+                    await CommonDialog.ShowErrorDialogAsync("该分类已存在");
                     return;
                 }
 
@@ -258,15 +258,14 @@ namespace MapBoard.Main.UI.Panel
             ppp.IsOpen = false;
         }
 
-        private void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
+        private async void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            InputDialog dialog = new InputDialog("请输入键值");
-            if (dialog.ShowDialog() == true)
+            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
+            if (key != null)
             {
-                string key = dialog.Text;
                 if (Keys.Any(p => p.Key == key))
                 {
-                    TaskDialog.ShowError("该键已存在");
+                    await CommonDialog.ShowErrorDialogAsync("该分类已存在");
                     return;
                 }
 

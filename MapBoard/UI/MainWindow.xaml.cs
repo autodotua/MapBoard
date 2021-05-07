@@ -12,6 +12,7 @@ using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -84,7 +85,7 @@ namespace MapBoard.Main.UI
             InitializeComponent();
             //SnakeBar.DefaultWindow = this;
             RegistEvents();
-
+            SnakeBar.DefaultOwner = new WindowOwner(this);
             LayerCollection.LayerInstanceChanged += (p1, p2) =>
               {
                   Notify(nameof(Layers));
@@ -98,7 +99,6 @@ namespace MapBoard.Main.UI
             {
                 return;
             }
-            //bool yes = true;
             await IOUtility.DropFiles(files);
         }
 
@@ -136,9 +136,9 @@ namespace MapBoard.Main.UI
 
         private bool changingStyle = false;
 
-        private void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
+        private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            Layersetting.SetStyleFromUI();
+            await Layersetting.SetStyleFromUI();
             LayerCollection.Instance.Save();
         }
 
@@ -152,15 +152,15 @@ namespace MapBoard.Main.UI
             dataGrid.SelectedItem = null;
         }
 
-        private void CreateStyleButtonClick(object sender, RoutedEventArgs e)
+        private async void CreateStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            TaskDialog.ShowWithCommandLinks(null, "请选择类型", new (string, string, Action)[]
-            {
-                ("线",null,()=>LayerUtility.CreateLayer(GeometryType.Polyline)),
-                ("面",null,()=>LayerUtility.CreateLayer(GeometryType.Polygon)),
-                ("点",null,()=>LayerUtility.CreateLayer(GeometryType.Point)),
-                ("多点",null,()=>LayerUtility.CreateLayer(GeometryType.Multipoint)),
-            }, null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.None, true);
+            await CommonDialog.ShowSelectItemDialogAsync("请选择需要创建的图层类型", new DialogItem[]
+              {
+                new DialogItem(){Title="点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polyline)},
+                new DialogItem(){Title="多点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Multipoint)},
+                new DialogItem(){Title="线",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polyline)},
+                new DialogItem(){Title="面",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polygon)},
+              });
         }
 
         private void DeleteLayer()
@@ -198,9 +198,7 @@ namespace MapBoard.Main.UI
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            loading.Show();
-            await IOUtility.ImportLayer();
-            loading.Hide();
+            await Do(IOUtility.ImportLayer);
         }
 
         private void JudgeControlsEnable()
@@ -225,10 +223,6 @@ namespace MapBoard.Main.UI
             }
             btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = LayerCollection.Instance.Selected != null;
 
-            //if (arcMap.Selection.IsSelecting)
-            //{
-            //    await arcMap.Selection.StopSelect(false);
-            //}
             if (IsLoaded)
             {
                 btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
@@ -343,9 +337,7 @@ namespace MapBoard.Main.UI
 
             async void ExportSingle()
             {
-                loading.Show();
-                await IOUtility.ExportLayer();
-                loading.Hide();
+                await Do(IOUtility.ExportLayer);
             }
 
             async void ZoomToLayer()
@@ -356,7 +348,7 @@ namespace MapBoard.Main.UI
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "操作失败，可能是不构成有面积的图形");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "操作失败，可能是不构成有面积的图形");
                 }
             }
 
@@ -365,21 +357,21 @@ namespace MapBoard.Main.UI
                 CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
                 if (dialog.ShowDialog() == true)
                 {
-                    loading.Show();
-
-                    string from = dialog.SelectedCoordinateSystem1;
-                    string to = dialog.SelectedCoordinateSystem2;
-                    await LayerUtility.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
-                    loading.Hide();
+                    await Do(async () =>
+                     {
+                         string from = dialog.SelectedCoordinateSystem1;
+                         string to = dialog.SelectedCoordinateSystem2;
+                         await LayerUtility.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
+                     });
                 }
             }
 
-            void SetTimeExtent()
+            async void SetTimeExtent()
             {
                 DateRangeDialog dialog = new DateRangeDialog(layer);
                 if (dialog.ShowDialog() == true)
                 {
-                    LayerUtility.SetTimeExtent(layer);
+                    await LayerUtility.SetTimeExtent(layer);
                 }
             }
         }
@@ -445,7 +437,7 @@ namespace MapBoard.Main.UI
 
         private async Task StartDraw(object sender)
         {
-            string text = null;
+            string text;
             if (sender is SplitButton)
             {
                 text = (sender as SplitButton).Content as string;
@@ -457,7 +449,6 @@ namespace MapBoard.Main.UI
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
                 await arcMap.Selection.StopFrameSelect(false);
-                //btnSelect.IsChecked = false;
             }
 
             var mode = ButtonsMode[text];
@@ -488,6 +479,13 @@ namespace MapBoard.Main.UI
         private void TileMenu_Click(object sender, RoutedEventArgs e)
         {
             new TileDownloaderSplicer.MainWindow().Show();
+        }
+
+        public async Task Do(Func<Task> action)
+        {
+            loading.IsActive = true;
+            await action();
+            loading.IsActive = false;
         }
     }
 }

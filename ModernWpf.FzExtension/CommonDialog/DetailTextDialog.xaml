@@ -1,0 +1,43 @@
+﻿<local:CommonDialog
+    x:Class="ModernWpf.FzExtension.CommonDialog.DetailTextDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="clr-namespace:FzLib.UI.Converter;assembly=FzUILib.WPF"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ModernWpf.FzExtension.CommonDialog"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    mc:Ignorable="d">
+    <local:CommonDialog.Resources>
+        <cvt:Null2InvisiableConverter x:Key="n2ic" />
+    </local:CommonDialog.Resources>
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <Expander
+            Grid.Row="2" Margin="0,16,0,0"
+            HorizontalAlignment="Stretch"
+            Header="详情"
+            Visibility="{Binding Detail, Converter={StaticResource n2ic}}">
+            <TextBlock
+                Margin="0,8,0,0"
+                Text="{Binding Detail}"
+                TextWrapping="Wrap" />
+        </Expander>
+        <ui:FontIcon
+            Grid.RowSpan="99" Grid.Column="2"
+            VerticalAlignment="Top" FontSize="30"
+            Foreground="{Binding IconBrush}"
+            Glyph="{Binding Icon}"
+            Visibility="{Binding Icon, Converter={StaticResource n2ic}}" />
+    </Grid>
+</local:CommonDialog>

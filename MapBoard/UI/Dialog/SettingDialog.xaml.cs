@@ -58,5 +58,10 @@ namespace MapBoard.Main.UI.Dialog
                 map.SetHideWatermark();
             }
         }
+
+        private void DialogWindowBase_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Config.Instance.Save();
+        }
     }
 }
