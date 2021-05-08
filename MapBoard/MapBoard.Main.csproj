@@ -382,6 +382,7 @@
   <ItemGroup>
     <Resource Include="UI\Component\colorChart.PNG" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

@@ -118,7 +118,6 @@ namespace MapBoard.Main.UI
                       dataGrid.SelectedItem = LayerCollection.Instance.Selected;
                   }
               };
-            //lvwHelper.SingleItemDragDroped += (s, e) => arcMap.Map.OperationalLayers.Move(e.OldIndex, e.NewIndex);
         }
 
         private async void WindowClosing(object sender, CancelEventArgs e)

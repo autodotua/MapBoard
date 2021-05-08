@@ -174,8 +174,7 @@ namespace MapBoard.Main.UI.OperationBar
                 ("连接",Link,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
                 ("反转",Reverse,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
                 ("加密",Densify,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
-                ("删除部分点",RemoveSomePoints,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
-
+                ("简化",Simplify,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
                 ("建立副本",CreateCopy, true),
                 ("导出CSV表格",ToCsv, true),
             };

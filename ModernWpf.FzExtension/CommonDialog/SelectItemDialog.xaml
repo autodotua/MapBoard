@@ -18,7 +18,9 @@
         <ListView ItemsSource="{Binding Items}" SelectionChanged="ListView_SelectionChanged">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="48" VerticalAlignment="Center">
+                    <Grid
+                        Width="300" MinHeight="48"
+                        VerticalAlignment="Center">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
@@ -31,6 +33,7 @@
                             Grid.Row="2" Margin="0,4"
                             VerticalAlignment="Center" Opacity="0.8"
                             Text="{Binding Detail}"
+                            TextWrapping="Wrap"
                             Visibility="{Binding Detail, Converter={StaticResource n2ic}}" />
                     </Grid>
                 </DataTemplate>

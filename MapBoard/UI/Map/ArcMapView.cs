@@ -59,10 +59,10 @@ namespace MapBoard.Main.UI.Map
         }
 
         public static ArcMapView Instance { get; private set; }
-        public EditHelper Edit { get; private set; }
-        public SelectionHelper Selection { get; private set; }
-        public DrawHelper Drawing { get; private set; }
-        public LayerHelper Layer { get; private set; }
+        public EditHelper Edit { get; }
+        public SelectionHelper Selection { get; }
+        public DrawHelper Drawing { get; }
+        public LayerHelper Layer { get; }
 
         /// <summary>
         /// 左键抬起事件，用于结束框选
@@ -84,82 +84,6 @@ namespace MapBoard.Main.UI.Map
         protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseRightButtonDown(e);
-            //MapPoint point = GeometryEngine.Project(ScreenToLocation(e.GetPosition(this)), SpatialReferences.Wgs84) as MapPoint;
-            //foreach (var feature in Selection.SelectedFeatures)
-            //{
-            //if (Editing.IsEditing)
-            //{
-            //    ContextMenu menu = new ContextMenu();
-            //    MenuItem menuOk = new MenuItem() { Header = "完成" };
-            //    menuOk.Click += async (p1, p2) => await Editing.StopEditing();
-            //    menu.Items.Add(menuOk);
-
-            //    MenuItem menuReset = new MenuItem() { Header = "还原" };
-            //    menuReset.Click += async (p1, p2) => await Editing.AbandonEditing();
-            //    menu.Items.Add(menuReset);
-
-            //    if (SketchEditor.SelectedVertex != null)
-            //    {
-            //        MenuItem menuRemoveVertex = new MenuItem() { Header = "移除节点" };
-            //        menuRemoveVertex.Click += (p1, p2) => SketchEditor.RemoveSelectedVertex();
-            //        menu.Items.Add(menuRemoveVertex);
-            //    }
-            //    menu.IsOpen = true;
-            //}
-            //else
-            //{
-            //if (IsMouseOverFeature(point, feature))
-            //{
-            //if (LayerCollection.Instance.Selected != null && Selection.SelectedFeatures.Count > 0)
-            //{
-            //    ContextMenu menu = new ContextMenu();
-
-            //    MenuItem menuCount = new MenuItem() { Header = $"共{Selection.SelectedFeatures.Count.ToString()}个图形" };
-            //    menuCount.HorizontalContentAlignment = System.Windows.HorizontalAlignment.Center;
-            //    menuCount.FontWeight = FontWeights.Bold;
-            //    menu.Items.Add(menuCount);
-
-            //    MenuItem menuDelete = new MenuItem() { Header = "删除" };
-            //    menuDelete.Click += async (p1, p2) => await Editing.DeleteSelectedFeatures();
-            //    menu.Items.Add(menuDelete);
-
-            //    MenuItem menuCopy = new MenuItem() { Header = "复制" };
-            //    menuCopy.Click += MenuCopyClick;
-            //    menu.Items.Add(menuCopy);
-
-            //    if (Selection.SelectedFeatures.Count == 1)
-            //    {
-            //        MenuItem menuEdit = new MenuItem() { Header = "编辑" };
-            //        menuEdit.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Draw);
-            //        menu.Items.Add(menuEdit);
-
-            //        if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon || LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)
-            //        {
-            //            MenuItem menuCut = new MenuItem() { Header = "切割" };
-            //            menuCut.Click += (p1, p2) => Editing.StartEdit(EditHelper.EditMode.Cut);
-            //            menu.Items.Add(menuCut);
-            //        }
-            //    }
-            //    if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
-            //    {
-            //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
-            //        MenuItem menuLength = new MenuItem() { Header = "长度：" + Number.MeterToFitString(length) };
-            //        menu.Items.Add(menuLength);
-            //    }
-            //    else if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//面
-            //    {
-            //        double length = Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
-            //        double area = Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
-            //        MenuItem menuLength = new MenuItem() { Header = "周长：" + Number.MeterToFitString(length) };
-            //        MenuItem menuArea = new MenuItem() { Header = "面积：" + Number.SquareMeterToFitString(area) };
-            //        menu.Items.Add(menuLength);
-            //        menu.Items.Add(menuArea);
-            //    }
-
-            //    menu.IsOpen = true;
-            //    //}
-            //}
-            //}
         }
 
         /// <summary>

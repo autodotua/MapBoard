@@ -127,7 +127,99 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static async void RemoveSomePoints(LayerInfo style)
+        public static async void Simplify(LayerInfo layer)
+        {
+            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
+            int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
+               {
+                new DialogItem("间隔取点法","或每几个点保留一点"),
+                new DialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
+                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作")
+               });
+            switch (i)
+            {
+                case 0:
+                    await RemoveSomePoints(layer);
+                    break;
+
+                case 1:
+                    await VerticalDistanceSimplify(layer);
+                    break;
+
+                case 2:
+                    await DouglasPeuckerSimplify(layer);
+                    break;
+            }
+        }
+
+        private static async Task VerticalDistanceSimplify(LayerInfo layer)
+        {
+            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
+
+            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
+            double? num = await CommonDialog.ShowFloatInputDialogAsync("请输入最大垂距（米）");
+
+            if (num.HasValue)
+            {
+                IReadOnlyList<ReadOnlyPart> parts = null;
+                if (layer.Type == GeometryType.Polygon)
+                {
+                    parts = (feature.Geometry as Polygon).Parts;
+                }
+                else if (layer.Type == GeometryType.Polyline)
+                {
+                    parts = (feature.Geometry as Polyline).Parts;
+                }
+
+                List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+                foreach (var part in parts)
+                {
+                    HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
+                    for (int i = 2; i < part.PointCount; i += 2)
+                    {
+                        var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
+                        if (dist < num)
+                        {
+                            deletedPoints.Add(part.Points[i - 1]);
+                        }
+                    }
+
+                    newParts.Add(part.Points.Except(deletedPoints));
+                }
+                if (layer.Type == GeometryType.Polygon)
+                {
+                    feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
+                }
+                else if (layer.Type == GeometryType.Polyline)
+                {
+                    feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
+                }
+             await   layer.Table.UpdateFeatureAsync(feature);
+            }
+        }
+
+        /// <summary>
+        /// 获取一个点到两点连线的垂距
+        /// </summary>
+        /// <param name="p1">点1</param>
+        /// <param name="p2">点2</param>
+        /// <param name="pc">中心点</param>
+        /// <returns></returns>
+        private static double GetVerticleDistance(MapPoint p1, MapPoint p2, MapPoint pc)
+        {
+            var p1P2Line = new Polyline(new MapPoint[] { p1, p2 });
+            var nearestPoint = GeometryEngine.NearestCoordinate(p1P2Line, pc);
+            var dist = GeometryEngine.DistanceGeodetic(pc, nearestPoint.Coordinate, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.NormalSection);
+            return dist.Distance;
+        }
+
+        private static async Task DouglasPeuckerSimplify(LayerInfo layer)
+        {
+            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
+            await CommonDialog.ShowErrorDialogAsync("暂未实现");
+        }
+
+        public static async Task RemoveSomePoints(LayerInfo layer)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             int? num = await CommonDialog.ShowIntInputDialogAsync("请输入每几个点保留一个点");
@@ -141,7 +233,7 @@ namespace MapBoard.Main.Util
                     return;
                 }
 
-                if (style.Type == GeometryType.Polygon)
+                if (layer.Type == GeometryType.Polygon)
                 {
                     Polygon polygon = feature.Geometry as Polygon;
                     List<List<MapPoint>> newParts = new List<List<MapPoint>>();
@@ -179,11 +271,7 @@ namespace MapBoard.Main.Util
                     Polyline newPolygon = new Polyline(newParts);
                     feature.Geometry = newPolygon;
                 }
-                await style.Table.UpdateFeatureAsync(feature);
-
-                //feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, dialog.Number, LinearUnits.Meters);
-                //await style.Table.UpdateFeatureAsync(feature);
-                //ArcMapView.Instance.Selection.ClearSelection();
+                await layer.Table.UpdateFeatureAsync(feature);
             }
         }
 

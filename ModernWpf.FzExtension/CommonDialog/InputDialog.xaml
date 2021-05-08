@@ -9,25 +9,28 @@
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="True"
     IsSecondaryButtonEnabled="True"
+    Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
     PrimaryButtonText="确定"
     SecondaryButtonText="取消"
     mc:Ignorable="d">
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+    <Grid
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        FocusManager.FocusedElement="{Binding ElementName=txt}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <TextBox
-            x:Name="txt" Grid.Row="2"
-            Text="{Binding InputContent, UpdateSourceTrigger=PropertyChanged}"
-            TextInput="txt_TextInput" />
+            x:Name="txt" VerticalAlignment="Center"
+            PreviewTextInput="txt_TextInput"
+            Text="{Binding InputContent, UpdateSourceTrigger=PropertyChanged}" />
         <ui:FontIcon
-            x:Name="errorIcon" Grid.Row="2"
-            Margin="0,0,36,0"
-            HorizontalAlignment="Left" FontSize="12"
+            x:Name="errorIcon" Grid.Column="2"
+            Margin="16,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center" FontSize="18"
             Foreground="Red"
             Glyph="&#xE783;"
             Visibility="Collapsed" />

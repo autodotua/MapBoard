@@ -28,14 +28,6 @@ namespace ModernWpf.FzExtension.CommonDialog
             InitializeComponent();
         }
 
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
         private string inputContent;
 
         public string InputContent
@@ -69,6 +61,13 @@ namespace ModernWpf.FzExtension.CommonDialog
             {
                 e.Handled = true;
             }
+        }
+
+        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            //txt.Focus();
+            //Keyboard.Focus(txt);
+            //MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
         }
     }
 }

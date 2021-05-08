@@ -23,12 +23,11 @@ namespace ModernWpf.FzExtension.CommonDialog
             return dialog.ShowAsync();
         }
 
-        public async static Task<int?> ShowIntInputDialogAsync(string title, string message = null)
+        public async static Task<int?> ShowIntInputDialogAsync(string title)
         {
             InputDialog dialog = new InputDialog(p => int.TryParse(p, out int _), "1234567890")
             {
                 Title = title,
-                Message = message,
             };
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
@@ -37,12 +36,24 @@ namespace ModernWpf.FzExtension.CommonDialog
             return null;
         }
 
-        public async static Task<string> ShowInputDialogAsync(string title, string message = null)
+        public async static Task<double?> ShowFloatInputDialogAsync(string title)
+        {
+            InputDialog dialog = new InputDialog(p => double.TryParse(p, out double _), "1234567890.")
+            {
+                Title = title,
+            };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                return double.Parse(dialog.InputContent);
+            }
+            return null;
+        }
+
+        public async static Task<string> ShowInputDialogAsync(string title)
         {
             InputDialog dialog = new InputDialog()
             {
                 Title = title,
-                Message = message,
             };
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
