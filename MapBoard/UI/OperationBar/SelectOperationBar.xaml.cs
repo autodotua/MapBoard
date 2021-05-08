@@ -50,7 +50,7 @@ namespace MapBoard.Main.UI.OperationBar
             btnRedraw.IsEnabled = count == 1;
             btnCut.IsEnabled = count == 1 &&
                 (LayerCollection.Instance.Selected.Type == GeometryType.Polygon || LayerCollection.Instance.Selected.Type == GeometryType.Polyline);
-            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count.ToString()}个图形");
+            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
             if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
@@ -128,23 +128,26 @@ namespace MapBoard.Main.UI.OperationBar
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
         {
-            SelectLayerDialog dialog = new SelectLayerDialog();
-            if (dialog.ShowDialog() == true)
+            await (Window.GetWindow(this) as MainWindow).Do(async () =>
             {
-                LayerCollection.Instance.Selected.LayerVisible = false;
-                List<Feature> features = MapView.Selection.SelectedFeatures.ToList();
-                ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
-                var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
-                await targetTable.AddFeaturesAsync(newFeatures);
-                await MapView.Selection.StopFrameSelect(false);
-                if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？", "复制/移动") == false)
+                SelectLayerDialog dialog = new SelectLayerDialog();
+                if (dialog.ShowDialog() == true)
                 {
-                    await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
-                    LayerCollection.Instance.Selected.UpdateFeatureCount();
+                    LayerCollection.Instance.Selected.LayerVisible = false;
+                    List<Feature> features = MapView.Selection.SelectedFeatures.ToList();
+                    ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
+                    var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
+                    await targetTable.AddFeaturesAsync(newFeatures);
+                    await MapView.Selection.StopFrameSelect(false);
+                    if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？", "复制/移动") == false)
+                    {
+                        await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
+                        LayerCollection.Instance.Selected.UpdateFeatureCount();
+                    }
+                    dialog.SelectedLayer.UpdateFeatureCount();
+                    LayerCollection.Instance.Selected = dialog.SelectedLayer;
                 }
-                dialog.SelectedLayer.UpdateFeatureCount();
-                LayerCollection.Instance.Selected = dialog.SelectedLayer;
-            }
+            });
         }
 
         private void CutButtonClick(object sender, RoutedEventArgs e)
@@ -168,7 +171,7 @@ namespace MapBoard.Main.UI.OperationBar
 
             var style = LayerCollection.Instance.Selected;
 
-            List<(string header, Action<LayerInfo> action, bool visiable)> menus = new List<(string header, Action<LayerInfo> action, bool visiable)>()
+            List<(string header, Func<LayerInfo, Task> action, bool visiable)> menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)>()
            {
                 ("合并",Union,(style.Type==GeometryType.Polygon || style.Type==GeometryType.Polyline)&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
                 ("连接",Link,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
@@ -184,7 +187,7 @@ namespace MapBoard.Main.UI.OperationBar
                 if (visiable)
                 {
                     MenuItem item = new MenuItem() { Header = header };
-                    item.Click += (p1, p2) => action(style);
+                    item.Click += async (p1, p2) => await (Window.GetWindow(this) as MainWindow).Do(() => action(style));
                     menu.Items.Add(item);
                 }
             }

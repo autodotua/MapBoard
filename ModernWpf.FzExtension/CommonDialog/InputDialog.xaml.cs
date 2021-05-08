@@ -63,10 +63,11 @@ namespace ModernWpf.FzExtension.CommonDialog
             }
         }
 
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
+        private async void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            //txt.Focus();
-            //Keyboard.Focus(txt);
+            await Task.Delay(100);
+            txt.Focus();
+            Keyboard.Focus(txt);
             //MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
         }
     }

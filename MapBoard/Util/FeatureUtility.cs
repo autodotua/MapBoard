@@ -18,17 +18,17 @@ namespace MapBoard.Main.Util
 {
     public static class FeatureUtility
     {
-        public static async void Union(LayerInfo style)
+        public static async Task Union(LayerInfo layer)
         {
             Geometry geometry = GeometryEngine.Union(ArcMapView.Instance.Selection.SelectedFeatures.Select(p => p.Geometry));
             var firstFeature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             firstFeature.Geometry = geometry;
-            await style.Table.UpdateFeatureAsync(firstFeature);
-            await style.Table.DeleteFeaturesAsync(ArcMapView.Instance.Selection.SelectedFeatures.Where(p => p != firstFeature));
+            await layer.Table.UpdateFeatureAsync(firstFeature);
+            await layer.Table.DeleteFeaturesAsync(ArcMapView.Instance.Selection.SelectedFeatures.Where(p => p != firstFeature));
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async void Link(LayerInfo style)
+        public static async Task Link(LayerInfo layer)
         {
             var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
             List<DialogItem> typeList = new List<DialogItem>();
@@ -95,13 +95,13 @@ namespace MapBoard.Main.Util
             }
             features[0].Geometry = new Polyline(points);
 
-            await style.Table.UpdateFeatureAsync(features[0]);
+            await layer.Table.UpdateFeatureAsync(features[0]);
 
-            await style.Table.DeleteFeaturesAsync(features.Where(p => p != features[0]));
+            await layer.Table.DeleteFeaturesAsync(features.Where(p => p != features[0]));
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async void Reverse(LayerInfo style)
+        public static async Task Reverse(LayerInfo layer)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
 
@@ -109,12 +109,12 @@ namespace MapBoard.Main.Util
             List<MapPoint> points = GetPoints(feature);
             points.Reverse();
             //feature.Geometry = new Polyline(points);
-            await style.Table.DeleteFeatureAsync(feature);
-            await style.Table.AddFeatureAsync(style.Table.CreateFeature(feature.Attributes, new Polyline(points)));
+            await layer.Table.DeleteFeatureAsync(feature);
+            await layer.Table.AddFeatureAsync(layer.Table.CreateFeature(feature.Attributes, new Polyline(points)));
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async void Densify(LayerInfo style)
+        public static async Task Densify(LayerInfo layer)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
 
@@ -122,12 +122,12 @@ namespace MapBoard.Main.Util
             if (num.HasValue)
             {
                 feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, num.Value, LinearUnits.Meters);
-                await style.Table.UpdateFeatureAsync(feature);
+                await layer.Table.UpdateFeatureAsync(feature);
                 ArcMapView.Instance.Selection.ClearSelection();
             }
         }
 
-        public static async void Simplify(LayerInfo layer)
+        public static async Task Simplify(LayerInfo layer)
         {
             Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
             int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
@@ -152,50 +152,58 @@ namespace MapBoard.Main.Util
             }
         }
 
-        private static async Task VerticalDistanceSimplify(LayerInfo layer)
+        private async static Task VerticalDistanceSimplify(LayerInfo layer)
         {
-            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
-
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             double? num = await CommonDialog.ShowFloatInputDialogAsync("请输入最大垂距（米）");
 
             if (num.HasValue)
             {
-                IReadOnlyList<ReadOnlyPart> parts = null;
-                if (layer.Type == GeometryType.Polygon)
-                {
-                    parts = (feature.Geometry as Polygon).Parts;
-                }
-                else if (layer.Type == GeometryType.Polyline)
-                {
-                    parts = (feature.Geometry as Polyline).Parts;
-                }
-
-                List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
-                foreach (var part in parts)
-                {
-                    HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
-                    for (int i = 2; i < part.PointCount; i += 2)
-                    {
-                        var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
-                        if (dist < num)
-                        {
-                            deletedPoints.Add(part.Points[i - 1]);
-                        }
-                    }
-
-                    newParts.Add(part.Points.Except(deletedPoints));
-                }
-                if (layer.Type == GeometryType.Polygon)
-                {
-                    feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
-                }
-                else if (layer.Type == GeometryType.Polyline)
-                {
-                    feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
-                }
-             await   layer.Table.UpdateFeatureAsync(feature);
+                await SimplyBase(layer, part =>
+             {
+                 HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
+                 for (int i = 2; i < part.PointCount; i += 2)
+                 {
+                     var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
+                     if (dist < num)
+                     {
+                         deletedPoints.Add(part.Points[i - 1]);
+                     }
+                 }
+                 return part.Points.Except(deletedPoints);
+             });
             }
+        }
+
+        private static async Task SimplyBase(LayerInfo layer, Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
+        {
+            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
+
+            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
+
+            IReadOnlyList<ReadOnlyPart> parts = null;
+            if (layer.Type == GeometryType.Polygon)
+            {
+                parts = (feature.Geometry as Polygon).Parts;
+            }
+            else if (layer.Type == GeometryType.Polyline)
+            {
+                parts = (feature.Geometry as Polyline).Parts;
+            }
+
+            List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+            foreach (var part in parts)
+            {
+                newParts.Add(func(part));
+            }
+            if (layer.Type == GeometryType.Polygon)
+            {
+                feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
+            }
+            else if (layer.Type == GeometryType.Polyline)
+            {
+                feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
+            }
+            await layer.Table.UpdateFeatureAsync(feature);
         }
 
         /// <summary>
@@ -208,15 +216,55 @@ namespace MapBoard.Main.Util
         private static double GetVerticleDistance(MapPoint p1, MapPoint p2, MapPoint pc)
         {
             var p1P2Line = new Polyline(new MapPoint[] { p1, p2 });
-            var nearestPoint = GeometryEngine.NearestCoordinate(p1P2Line, pc);
+            return GetVerticleDistance(p1P2Line, pc);
+        }
+
+        private static double GetVerticleDistance(Polyline line, MapPoint pc)
+        {
+            var nearestPoint = GeometryEngine.NearestCoordinate(line, pc);
             var dist = GeometryEngine.DistanceGeodetic(pc, nearestPoint.Coordinate, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.NormalSection);
             return dist.Distance;
         }
 
         private static async Task DouglasPeuckerSimplify(LayerInfo layer)
         {
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-            await CommonDialog.ShowErrorDialogAsync("暂未实现");
+            double? num = await CommonDialog.ShowFloatInputDialogAsync("请输入最大垂距（米）");
+
+            if (num.HasValue)
+            {
+                await SimplyBase(layer, part =>
+                {
+                    var ps = part.Points;
+                    IList<MapPoint> Recurse(int from, int to)
+                    {
+                        if (to - 1 == from)
+                        {
+                            return ps.Skip(from).Take(2).ToList();
+                        }
+                        var line = new Polyline(new MapPoint[] { ps[from], ps[to] });
+                        double maxDist = 0;
+                        int maxDistPointIndex = -1;
+                        for (int i = from + 1; i < to; i++)
+                        {
+                            double dist = GetVerticleDistance(line, ps[i]);
+                            if (dist > maxDist)
+                            {
+                                maxDist = dist;
+                                maxDistPointIndex = i;
+                            }
+                        }
+                        if (maxDist < num)
+                        {
+                            return new MapPoint[] { ps[from], ps[to] };
+                        }
+                        return Recurse(from, maxDistPointIndex)
+                        .Concat(Recurse(maxDistPointIndex, to).Skip(1))//中间那个点大家都会取到，所以要去掉
+                        .ToList();
+                    }
+                    var result = Recurse(0, part.PointCount - 1);
+                    return result;
+                });
+            }
         }
 
         public static async Task RemoveSomePoints(LayerInfo layer)
@@ -275,7 +323,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static void ToCsv(LayerInfo style)
+        public static async Task ToCsv(LayerInfo layer)
         {
             try
             {
@@ -292,11 +340,11 @@ namespace MapBoard.Main.Util
             }
             catch (Exception ex)
             {
-                CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
 
-        public static async void CreateCopy(LayerInfo style)
+        public static async Task CreateCopy(LayerInfo style)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)

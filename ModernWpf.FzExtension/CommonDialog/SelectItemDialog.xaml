@@ -18,24 +18,26 @@
         <ListView ItemsSource="{Binding Items}" SelectionChanged="ListView_SelectionChanged">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid
-                        Width="300" MinHeight="48"
-                        VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Style="{DynamicResource BaseTextBlockStyle}"
-                            Text="{Binding Title}" />
-                        <TextBlock
-                            Grid.Row="2" Margin="0,4"
-                            VerticalAlignment="Center" Opacity="0.8"
-                            Text="{Binding Detail}"
-                            TextWrapping="Wrap"
-                            Visibility="{Binding Detail, Converter={StaticResource n2ic}}" />
-                    </Grid>
+                    <Border Padding="0,8">
+                        <Grid
+                            Width="300" MinHeight="32"
+                            VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{DynamicResource BaseTextBlockStyle}"
+                                Text="{Binding Title}" />
+                            <TextBlock
+                                Grid.Row="2" Margin="0,4"
+                                VerticalAlignment="Center" Opacity="0.8"
+                                Text="{Binding Detail}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding Detail, Converter={StaticResource n2ic}}" />
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

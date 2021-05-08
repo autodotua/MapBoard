@@ -47,10 +47,14 @@ namespace MapBoard.Main.UI.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!canSelect)
+            if(canSelect==false)
             {
-                SnakeBar.ShowError("没有可选目标");
-                Close();
+                Content = new TextBlock()
+                {
+                    Text = "没有可选择的图层",
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
             }
         }
     }
