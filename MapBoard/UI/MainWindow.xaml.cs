@@ -483,8 +483,18 @@ namespace MapBoard.Main.UI
         public async Task Do(Func<Task> action)
         {
             loading.IsActive = true;
-            await action();
-            loading.IsActive = false;
+            try
+            {
+                await action();
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                loading.IsActive = false;
+            }
         }
     }
 }

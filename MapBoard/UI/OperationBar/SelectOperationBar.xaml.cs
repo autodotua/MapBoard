@@ -9,10 +9,12 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +26,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using static MapBoard.Main.Util.FeatureUtility;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 
 namespace MapBoard.Main.UI.OperationBar
@@ -169,15 +170,16 @@ namespace MapBoard.Main.UI.OperationBar
         {
             ContextMenu menu = new ContextMenu();
 
-            var style = LayerCollection.Instance.Selected;
+            var layer = LayerCollection.Instance.Selected;
 
-            List<(string header, Func<LayerInfo, Task> action, bool visiable)> menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)>()
+            ExtendedObservableCollection<Feature> features = ArcMapView.Instance.Selection.SelectedFeatures;
+            List<(string header, Func<Task> action, bool visiable)> menus = new List<(string header, Func<Task> action, bool visiable)>()
            {
-                ("合并",Union,(style.Type==GeometryType.Polygon || style.Type==GeometryType.Polyline)&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
-                ("连接",Link,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count>1),
-                ("反转",Reverse,style.Type==GeometryType.Polyline&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
-                ("加密",Densify,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
-                ("简化",Simplify,(style.Type==GeometryType.Polyline||style.Type==GeometryType.Polygon)&& ArcMapView.Instance.Selection.SelectedFeatures.Count==1),
+                ("合并",Union,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)&& features.Count>1),
+                ("连接",Link,layer.Type==GeometryType.Polyline&& features.Count>1),
+                ("反转",Reverse,layer.Type==GeometryType.Polyline),
+                ("加密",Densify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
+                ("简化",Simplify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)&& features.Count==1),
                 ("建立副本",CreateCopy, true),
                 ("导出CSV表格",ToCsv, true),
             };
@@ -187,7 +189,17 @@ namespace MapBoard.Main.UI.OperationBar
                 if (visiable)
                 {
                     MenuItem item = new MenuItem() { Header = header };
-                    item.Click += async (p1, p2) => await (Window.GetWindow(this) as MainWindow).Do(() => action(style));
+                    item.Click += async (p1, p2) =>
+                    {
+                        try
+                        {
+                            await (Window.GetWindow(this) as MainWindow).Do(action);
+                        }
+                        catch (Exception ex)
+                        {
+                            await CommonDialog.ShowErrorDialogAsync(ex);
+                        }
+                    };
                     menu.Items.Add(item);
                 }
             }
@@ -195,6 +207,111 @@ namespace MapBoard.Main.UI.OperationBar
             menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;
+
+            Task Union()
+            {
+                return FeatureUtility.Union(layer, features);
+            }
+
+            async Task Link()
+            {
+                List<DialogItem> typeList = new List<DialogItem>();
+                bool headToHead = false;
+                bool reverse = false;
+                if (ArcMapView.Instance.Selection.SelectedFeatures.Count == 2)
+                {
+                    typeList.Add(new DialogItem("起点相连", "起始点与起始点相连接", () => headToHead = true));
+                    typeList.Add(new DialogItem("终点相连", "终结点与终结点相连接", () => headToHead = reverse = true));
+                    typeList.Add(new DialogItem("头尾相连", "第一个要素的终结点与第二个要素的起始点相连接", null));
+                    typeList.Add(new DialogItem("头尾相连（反转）", "第一个要素的起始点与第二个要素的终结点相连接", () => reverse = true));
+                }
+                else
+                {
+                    typeList.Add(new DialogItem("头尾相连", "每一个要素的终结点与前一个要素的起始点相连接", null));
+                    typeList.Add(new DialogItem("头尾相连（反转）", "每一个要素的起始点与前一个要素的终结点相连接", () => reverse = true));
+                }
+
+                int result = await CommonDialog.ShowSelectItemDialogAsync("请选择连接类型", typeList);
+
+                if (result < 0)
+                {
+                    return;
+                }
+
+                await FeatureUtility.Link(layer, features, headToHead, reverse);
+            }
+
+            Task Reverse()
+            {
+                return FeatureUtility.Reverse(layer, features);
+            }
+
+            async Task Densify()
+            {
+                double? num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大间隔（米）");
+                if (num.HasValue)
+                {
+                    await FeatureUtility.Densify(layer, features, num.Value);
+                }
+            }
+            async Task Simplify()
+            {
+                int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
+                   {
+                new DialogItem("间隔取点法","或每几个点保留一点"),
+                new DialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
+                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作")
+                   });
+                double? num = null;
+                switch (i)
+                {
+                    case 0:
+                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入间隔几点取一点");
+
+                        if (num.HasValue)
+                        {
+                            await FeatureUtility.IntervalTakePointsSimplify(layer, features, num.Value);
+                        }
+                        break;
+
+                    case 1:
+                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）");
+
+                        if (num.HasValue)
+                        {
+                            await FeatureUtility.VerticalDistanceSimplify(layer, features, num.Value);
+                        }
+                        break;
+
+                    case 2:
+                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）");
+
+                        if (num.HasValue)
+                        {
+                            await FeatureUtility.DouglasPeuckerSimplify(layer, features, num.Value);
+                        }
+                        break;
+                }
+            }
+            Task CreateCopy()
+            {
+                return FeatureUtility.CreateCopy(layer, features);
+            }
+            async Task ToCsv()
+            {
+                string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv"), ensureExtension: true, defaultFileName: "图形");
+                if (path != null)
+                {
+                    await Csv.ExportAsync(ArcMapView.Instance.Selection.SelectedFeatures, path);
+
+                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
+                    snake.ShowButton = true;
+                    snake.ButtonContent = "打开";
+                    snake.ButtonClick += (p1, p2) => Process.Start(path);
+
+                    snake.ShowMessage("已导出到" + path);
+                }
+            }
         }
     }
 }

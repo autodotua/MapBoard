@@ -40,7 +40,6 @@ namespace MapBoard.Main.UI.Map
             {
                 throw new Exception("不允许多实例");
             }
-            Loaded += ArcMapViewLoaded;
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
@@ -148,23 +147,12 @@ namespace MapBoard.Main.UI.Map
         }
 
         /// <summary>
-        /// 地图控件加载完成事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ArcMapViewLoaded(object sender, RoutedEventArgs e)
-        {
-            //await Load();
-        }
-
-        /// <summary>
         /// 加载底图和图层事件
         /// </summary>
         /// <returns></returns>
         private async Task Load()
         {
             await LoadBasemap();
-            //await Layer.LoadLayers();
         }
 
         public async Task LoadBasemap()

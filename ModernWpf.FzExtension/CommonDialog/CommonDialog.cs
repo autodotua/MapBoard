@@ -36,7 +36,7 @@ namespace ModernWpf.FzExtension.CommonDialog
             return null;
         }
 
-        public async static Task<double?> ShowFloatInputDialogAsync(string title)
+        public async static Task<double?> ShowDoubleInputDialogAsync(string title)
         {
             InputDialog dialog = new InputDialog(p => double.TryParse(p, out double _), "1234567890.")
             {

@@ -14,9 +14,16 @@ namespace MapBoard.Main.IO
 {
     public static class Csv
     {
-        public static string Export(IEnumerable<Feature> features)
+        public static Task ExportAsync(IEnumerable<Feature> features, string path)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv"), ensureExtension: true, defaultFileName: "图形");
+            return Task.Run(() =>
+            {
+                Export(features, path);
+            });
+        }
+
+        public static void Export(IEnumerable<Feature> features, string path)
+        {
             StringBuilder sb = new StringBuilder();
 
             List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();
@@ -89,8 +96,6 @@ namespace MapBoard.Main.IO
                 {
                 }
             }
-
-            return path;
 
             void Append(string col1, string col2)
             {

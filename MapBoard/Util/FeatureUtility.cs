@@ -18,72 +18,52 @@ namespace MapBoard.Main.Util
 {
     public static class FeatureUtility
     {
-        public static async Task Union(LayerInfo layer)
+        public static async Task Union(LayerInfo layer, IEnumerable<Feature> features)
         {
-            Geometry geometry = GeometryEngine.Union(ArcMapView.Instance.Selection.SelectedFeatures.Select(p => p.Geometry));
-            var firstFeature = ArcMapView.Instance.Selection.SelectedFeatures[0];
+            Geometry geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
+            var firstFeature = features.First();
             firstFeature.Geometry = geometry;
             await layer.Table.UpdateFeatureAsync(firstFeature);
             await layer.Table.DeleteFeaturesAsync(ArcMapView.Instance.Selection.SelectedFeatures.Where(p => p != firstFeature));
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async Task Link(LayerInfo layer)
+        public static async Task Link(LayerInfo layer, IList<Feature> features, bool headToHead, bool reverse)
         {
-            var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
-            List<DialogItem> typeList = new List<DialogItem>();
-            int type = 0;
-            if (ArcMapView.Instance.Selection.SelectedFeatures.Count == 2)
-            {
-                typeList.Add(new DialogItem("尾1头——头2尾", "起始点与起始点相连接", () => type = 1));
-                typeList.Add(new DialogItem("头1尾——尾2头", "终结点与终结点相连接", () => type = 2));
-                typeList.Add(new DialogItem("头1尾——头2尾", "第一个要素的终结点与第二个要素的起始点相连接", () => type = 3));
-                typeList.Add(new DialogItem("头2尾——头1尾", "第一个要素的起始点与第二个要素的终结点相连接", () => type = 4));
-            }
-            else
-            {
-                typeList.Add(new DialogItem("头n尾——头n+1尾", "每一个要素的终结点与前一个要素的起始点相连接", () => type = 5));
-                typeList.Add(new DialogItem("头n尾——头n-1尾", "每一个要素的起始点与前一个要素的终结点相连接", () => type = 6));
-            }
-
-            await CommonDialog.ShowSelectItemDialogAsync("请选择连接类型", typeList);
-
-            if (type == 0)
-            {
-                return;
-            }
             List<MapPoint> points = null;
-
-            if (type <= 4)
+            if (features.Count <= 1)
+            {
+                throw new ArgumentException("要素数量小于2");
+            }
+            if (features.Count == 2)
             {
                 List<MapPoint> points1 = GetPoints(features[0]);
                 List<MapPoint> points2 = GetPoints(features[1]);
-                switch (type)
+                if (headToHead && !reverse)
                 {
-                    case 1:
-                        points1.Reverse();
-                        points1.AddRange(points2);
-                        break;
-
-                    case 2:
-                        points2.Reverse();
-                        points1.AddRange(points2);
-                        break;
-
-                    case 3:
-                        points1.AddRange(points2);
-                        break;
-
-                    case 4:
-                        points1.InsertRange(0, points2);
-                        break;
+                    points1.Reverse();
+                    points1.AddRange(points2);
                 }
+                else if (headToHead && reverse)
+                {
+                    points2.Reverse();
+                    points1.AddRange(points2);
+                }
+                else if (!headToHead && !reverse)
+                {
+                    points1.AddRange(points2);
+                }
+                else if (!headToHead && reverse)
+                {
+                    points1.InsertRange(0, points2);
+                }
+
                 points = points1;
             }
             else
             {
                 IEnumerable<List<MapPoint>> pointsGroup = features.Select(p => GetPoints(p));
-                if (type == 6)
+                if (reverse)
                 {
                     pointsGroup = pointsGroup.Reverse();
                 }
@@ -101,84 +81,60 @@ namespace MapBoard.Main.Util
             ArcMapView.Instance.Selection.ClearSelection();
         }
 
-        public static async Task Reverse(LayerInfo layer)
+        public static async Task Reverse(LayerInfo layer, IEnumerable<Feature> features)
         {
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-
-            Polyline line = feature.Geometry as Polyline;
-            List<MapPoint> points = GetPoints(feature);
-            points.Reverse();
-            //feature.Geometry = new Polyline(points);
-            await layer.Table.DeleteFeatureAsync(feature);
-            await layer.Table.AddFeatureAsync(layer.Table.CreateFeature(feature.Attributes, new Polyline(points)));
-            ArcMapView.Instance.Selection.ClearSelection();
-        }
-
-        public static async Task Densify(LayerInfo layer)
-        {
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-
-            int? num = await CommonDialog.ShowIntInputDialogAsync("请输入最大间隔");
-            if (num.HasValue)
+            foreach (var feature in features.ToList())
             {
-                feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, num.Value, LinearUnits.Meters);
-                await layer.Table.UpdateFeatureAsync(feature);
+                List<MapPoint> points = GetPoints(feature);
+                points.Reverse();
+                Geometry newGeo = null;
+                if (layer.Table.GeometryType == GeometryType.Polygon)
+                {
+                    newGeo = new Polygon(points.ToList());
+                }
+                else if (layer.Table.GeometryType == GeometryType.Polyline)
+                {
+                    newGeo = new Polyline(points.ToList());
+                }
+                await layer.Table.DeleteFeatureAsync(feature);
+                await layer.Table.AddFeatureAsync(layer.Table.CreateFeature(feature.Attributes, newGeo));
                 ArcMapView.Instance.Selection.ClearSelection();
             }
         }
 
-        public static async Task Simplify(LayerInfo layer)
+        public static async Task Densify(LayerInfo layer, IEnumerable<Feature> features, double max)
         {
-            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
-            int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
-               {
-                new DialogItem("间隔取点法","或每几个点保留一点"),
-                new DialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
-                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作")
-               });
-            switch (i)
+            foreach (var feature in features.ToList())
             {
-                case 0:
-                    await RemoveSomePoints(layer);
-                    break;
+                feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
+                await layer.Table.UpdateFeatureAsync(feature);
+            }
+            ArcMapView.Instance.Selection.ClearSelection();
+        }
 
-                case 1:
-                    await VerticalDistanceSimplify(layer);
-                    break;
-
-                case 2:
-                    await DouglasPeuckerSimplify(layer);
-                    break;
+        public async static Task VerticalDistanceSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        {
+            foreach (var feature in features)
+            {
+                await SimplyBase(layer, feature, part =>
+                {
+                    HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
+                    for (int i = 2; i < part.PointCount; i += 2)
+                    {
+                        var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
+                        if (dist < max)
+                        {
+                            deletedPoints.Add(part.Points[i - 1]);
+                        }
+                    }
+                    return part.Points.Except(deletedPoints);
+                });
             }
         }
 
-        private async static Task VerticalDistanceSimplify(LayerInfo layer)
-        {
-            double? num = await CommonDialog.ShowFloatInputDialogAsync("请输入最大垂距（米）");
-
-            if (num.HasValue)
-            {
-                await SimplyBase(layer, part =>
-             {
-                 HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
-                 for (int i = 2; i < part.PointCount; i += 2)
-                 {
-                     var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
-                     if (dist < num)
-                     {
-                         deletedPoints.Add(part.Points[i - 1]);
-                     }
-                 }
-                 return part.Points.Except(deletedPoints);
-             });
-            }
-        }
-
-        private static async Task SimplyBase(LayerInfo layer, Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
+        private static async Task SimplyBase(LayerInfo layer, Feature feature, Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
-
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
 
             IReadOnlyList<ReadOnlyPart> parts = null;
             if (layer.Type == GeometryType.Polygon)
@@ -226,13 +182,11 @@ namespace MapBoard.Main.Util
             return dist.Distance;
         }
 
-        private static async Task DouglasPeuckerSimplify(LayerInfo layer)
+        public static async Task DouglasPeuckerSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
         {
-            double? num = await CommonDialog.ShowFloatInputDialogAsync("请输入最大垂距（米）");
-
-            if (num.HasValue)
+            foreach (var feature in features)
             {
-                await SimplyBase(layer, part =>
+                await SimplyBase(layer, feature, part =>
                 {
                     var ps = part.Points;
                     IList<MapPoint> Recurse(int from, int to)
@@ -253,7 +207,7 @@ namespace MapBoard.Main.Util
                                 maxDistPointIndex = i;
                             }
                         }
-                        if (maxDist < num)
+                        if (maxDist < max)
                         {
                             return new MapPoint[] { ps[from], ps[to] };
                         }
@@ -267,7 +221,34 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static async Task RemoveSomePoints(LayerInfo layer)
+        public static async Task IntervalTakePointsSimplify(LayerInfo layer, IEnumerable<Feature> features, double interval)
+        {
+            foreach (var feature in features)
+            {
+                if (interval < 2)
+                {
+                    throw new Exception("间隔不应小于2");
+                }
+                await SimplyBase(layer, feature, part =>
+                {
+                    List<MapPoint> points = new List<MapPoint>();
+                    for (int i = 0; i < part.PointCount; i++)
+                    {
+                        if (i % interval == 0)
+                        {
+                            points.Add(part.Points[i]);
+                        }
+                    }
+                    if (part.PointCount % interval != 0)
+                    {
+                        points.Add(part.Points[part.PointCount - 1]);
+                    }
+                    return points;
+                });
+            }
+        }
+
+        public static async Task IntervalTakePointsSimplify(LayerInfo layer)
         {
             Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
             int? num = await CommonDialog.ShowIntInputDialogAsync("请输入每几个点保留一个点");
@@ -323,46 +304,37 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static async Task ToCsv(LayerInfo layer)
-        {
-            try
-            {
-                string path = Csv.Export(ArcMapView.Instance.Selection.SelectedFeatures);
-                if (path != null)
-                {
-                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
-                    snake.ShowButton = true;
-                    snake.ButtonContent = "打开";
-                    snake.ButtonClick += (p1, p2) => Process.Start(path);
-
-                    snake.ShowMessage("已导出到" + path);
-                }
-            }
-            catch (Exception ex)
-            {
-                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
-            }
-        }
-
-        public static async Task CreateCopy(LayerInfo style)
+        public static async Task CreateCopy(LayerInfo layer, IEnumerable<Feature> features)
         {
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)
+            foreach (var feature in features)
             {
-                Feature newFeature = style.Table.CreateFeature(feature.Attributes, feature.Geometry);
+                Feature newFeature = layer.Table.CreateFeature(feature.Attributes, feature.Geometry);
                 newFeatures.Add(newFeature);
             }
-            await style.Table.AddFeaturesAsync(newFeatures);
+            await layer.Table.AddFeaturesAsync(newFeatures);
             ArcMapView.Instance.Selection.ClearSelection();
             ArcMapView.Instance.Selection.Select(newFeatures);
-            style.UpdateFeatureCount();
+            layer.UpdateFeatureCount();
         }
 
-        public static List<MapPoint> GetPoints(Feature feature)
+        private static List<MapPoint> GetPoints(Feature feature)
         {
-            Polyline line = feature.Geometry as Polyline;
+            IReadOnlyList<ReadOnlyPart> parts = null;
+            if (feature.Geometry is Polyline line)
+            {
+                parts = line.Parts;
+            }
+            else if (feature.Geometry is Polygon polygon)
+            {
+                parts = polygon.Parts;
+            }
+            if (parts.Count > 1)
+            {
+                throw new Exception("不支持操作拥有多个部分的要素");
+            }
             List<MapPoint> points = new List<MapPoint>();
-            foreach (var part in line.Parts)
+            foreach (var part in parts)
             {
                 points.AddRange(part.Points);
             }
