@@ -111,6 +111,10 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Text="字体颜色" />
@@ -143,7 +147,30 @@
                             HorizontalAlignment="Right"
                             Click="SetScaleButtonClick"
                             Content="设为当前" />
-                        <Grid Grid.Row="10" Grid.ColumnSpan="99">
+                        <TextBlock Grid.Row="10" Text="布局" />
+                        <ComboBox
+                            Grid.Row="10" Grid.Column="2"
+                            Grid.ColumnSpan="99"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="{Binding Label.Layout}">
+                            <ComboBoxItem>自动</ComboBoxItem>
+                            <ComboBoxItem>水平</ComboBoxItem>
+                            <ComboBoxItem>垂直</ComboBoxItem>
+                            <ComboBoxItem>直线</ComboBoxItem>
+                            <ComboBoxItem>跟随图形</ComboBoxItem>
+                        </ComboBox>
+
+                        <Grid Grid.Row="12" Grid.ColumnSpan="99">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ui:ToggleSwitch IsOn="{Binding Label.AllowRepeat}">允许重复显示</ui:ToggleSwitch>
+                            <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding Label.AllowOverlap}">允许重叠显示</ui:ToggleSwitch>
+
+                        </Grid>
+                        <Grid Grid.Row="99" Grid.ColumnSpan="99">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="8" />
@@ -153,7 +180,7 @@
                             </Grid.ColumnDefinitions>
                             <ui:ToggleSwitch IsOn="{Binding Label.Info}">标签</ui:ToggleSwitch>
                             <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding Label.Date}">日期</ui:ToggleSwitch>
-                            <ui:ToggleSwitch Grid.Column="4" IsOn="{Binding Label.Class}">备注</ui:ToggleSwitch>
+                            <ui:ToggleSwitch Grid.Column="4" IsOn="{Binding Label.Class}">分类</ui:ToggleSwitch>
                         </Grid>
                     </Grid>
                 </Border>

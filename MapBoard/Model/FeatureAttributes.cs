@@ -45,9 +45,9 @@ namespace MapBoard.Main.Model
         public static FeatureAttributes FromFeature(Feature feature)
         {
             FeatureAttributes attributes = new FeatureAttributes();
-            attributes.Label = feature.Attributes[Resource.DisplayFieldName] as string;
-            attributes.Key = feature.Attributes[Resource.KeyFieldName] as string;
-            if (feature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
+            attributes.Label = feature.Attributes[Resource.LabelFieldName] as string;
+            attributes.Key = feature.Attributes[Resource.ClassFieldName] as string;
+            if (feature.Attributes[Resource.DateFieldName] is DateTimeOffset date)
             {
                 attributes.Date = date;
             }
@@ -64,18 +64,18 @@ namespace MapBoard.Main.Model
         {
             if (!string.IsNullOrWhiteSpace(Label))
             {
-                feature.Attributes[Resource.DisplayFieldName] = Label;
+                feature.Attributes[Resource.LabelFieldName] = Label;
             }
             if (Date.HasValue)
             {
                 Date = new DateTimeOffset(Date.Value.DateTime, TimeSpan.Zero);
-                feature.Attributes[Resource.TimeExtentFieldName] = Date.Value.UtcDateTime;
+                feature.Attributes[Resource.DateFieldName] = Date.Value.UtcDateTime;
             }
             else
             {
-                feature.Attributes[Resource.TimeExtentFieldName] = null;
+                feature.Attributes[Resource.DateFieldName] = null;
             }
-            feature.Attributes[Resource.KeyFieldName] = Key;
+            feature.Attributes[Resource.ClassFieldName] = Key;
         }
     }
 }

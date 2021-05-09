@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.Mapping.Labeling;
 using Esri.ArcGISRuntime.Symbology;
 using FzLib.IO;
 using FzLib.UI.Dialog;
@@ -149,7 +150,7 @@ namespace MapBoard.Main.Util
             try
             {
                 UniqueValueRenderer renderer = new UniqueValueRenderer();
-                renderer.FieldNames.Add(Resource.KeyFieldName);
+                renderer.FieldNames.Add(Resource.ClassFieldName);
                 if (layer.Symbols.Count == 0)
                 {
                     layer.Symbols.Add("", new SymbolInfo());
@@ -201,8 +202,22 @@ namespace MapBoard.Main.Util
 
         public static void ApplyLabel(this LayerInfo layer)
         {
-            string labelJson = layer.Label.ToJson();
-            LabelDefinition labelDefinition = LabelDefinition.FromJson(labelJson);
+            LabelInfo label = layer.Label;
+            var exp = new ArcadeLabelExpression(label.GetExpression());
+            TextSymbol symbol = new TextSymbol()
+            {
+                HaloColor = label.LineColor,
+                Color = label.FillColor,
+                Size = label.FontSize,
+                HaloWidth = label.StrokeThickness,
+            };
+            LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
+            {
+                MinScale = label.MinScale,
+                TextLayout = (LabelTextLayout)label.Layout,
+                RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,
+                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude
+            };
             layer.Layer.LabelDefinitions.Clear();
             layer.Layer.LabelDefinitions.Add(labelDefinition);
             layer.Layer.LabelsEnabled = true;
@@ -237,7 +252,7 @@ namespace MapBoard.Main.Util
             {
                 return;
             }
-            if (!layer.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.TimeExtentFieldName))
+            if (!layer.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.DateFieldName))
             {
                 throw new Exception("shapefile没有指定的日期属性");
             }
@@ -252,7 +267,7 @@ namespace MapBoard.Main.Util
 
                 foreach (var feature in features)
                 {
-                    if (feature.Attributes[Resource.TimeExtentFieldName] is DateTimeOffset date)
+                    if (feature.Attributes[Resource.DateFieldName] is DateTimeOffset date)
                     {
                         if (date > layer.TimeExtent.From && date < layer.TimeExtent.To)
                         {

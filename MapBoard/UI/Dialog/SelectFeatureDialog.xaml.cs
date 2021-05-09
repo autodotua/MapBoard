@@ -99,8 +99,8 @@ namespace MapBoard.Main.UI.Dialog
             {
                 Feature = feature;
                 Index = index;
-                Label = feature.GetAttributeValue(Resource.DisplayFieldName) as string;
-                Key = feature.GetAttributeValue(Resource.KeyFieldName) as string;
+                Label = feature.GetAttributeValue(Resource.LabelFieldName) as string;
+                Key = feature.GetAttributeValue(Resource.ClassFieldName) as string;
             }
 
             public Feature Feature { get; }

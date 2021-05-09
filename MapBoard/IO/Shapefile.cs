@@ -74,9 +74,9 @@ namespace MapBoard.Main.IO
 
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            bool info = table.Fields.Any(p => p.Name == Resource.DisplayFieldName && p.FieldType == FieldType.Text);
-            bool date = table.Fields.Any(p => p.Name == Resource.TimeExtentFieldName && p.FieldType == FieldType.Date);
-            bool key = table.Fields.Any(p => p.Name == Resource.KeyFieldName && p.FieldType == FieldType.Text);
+            bool info = table.Fields.Any(p => p.Name == Resource.LabelFieldName && p.FieldType == FieldType.Text);
+            bool date = table.Fields.Any(p => p.Name == Resource.DateFieldName && p.FieldType == FieldType.Date);
+            bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
             LayerInfo style = LayerUtility.CreateLayer(table.GeometryType, null, Path.GetFileNameWithoutExtension(path));
@@ -86,26 +86,20 @@ namespace MapBoard.Main.IO
                 newFeature.Geometry = feature.Geometry;
                 if (info)
                 {
-                    newFeature.Attributes[Resource.DisplayFieldName] = feature.Attributes[Resource.DisplayFieldName];
+                    newFeature.Attributes[Resource.LabelFieldName] = feature.Attributes[Resource.LabelFieldName];
                 }
                 if (date)
                 {
-                    newFeature.Attributes[Resource.TimeExtentFieldName] = feature.Attributes[Resource.TimeExtentFieldName];
+                    newFeature.Attributes[Resource.DateFieldName] = feature.Attributes[Resource.DateFieldName];
                 }
                 if (key)
                 {
-                    newFeature.Attributes[Resource.KeyFieldName] = feature.Attributes[Resource.KeyFieldName];
+                    newFeature.Attributes[Resource.ClassFieldName] = feature.Attributes[Resource.ClassFieldName];
                 }
 
                 await style.Table.AddFeatureAsync(newFeature);
             }
             style.UpdateFeatureCount();
-
-            //foreach (var file in files)
-            //{
-            //    File.Move(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
-            //}
-            //StyleHelper.AddStyle(Path.GetFileNameWithoutExtension(path));
         }
     }
 }

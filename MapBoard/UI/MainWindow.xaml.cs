@@ -304,7 +304,7 @@ namespace MapBoard.Main.UI
                     ("新建副本",LayerUtility. CreateCopy,true),
                     ("缩放到图层", ZoomToLayer,LayerCollection.Instance.Selected.FeatureCount > 0),
                     ("坐标转换",CoordinateTransformate,true),
-                    ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.TimeExtentFieldName)),
+                    ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
                     ("导入",async()=>await IOUtility.ImportFeature(),true),
                     ("导出",  ExportSingle,true),
                };

@@ -52,29 +52,6 @@ namespace MapBoard.Main.UI.Panel
             set => SetValueAndNotify(ref lineWidth, value, nameof(LineWidth));
         }
 
-        //public System.Drawing.Color LineColor
-        //{
-        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
-        //    set => lineColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        //}
-
-        //public System.Drawing.Color FillColor
-        //{
-        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
-        //    set => fillColorPicker.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        //}
-
-        //public System.Drawing.Color LabelLineColor
-        //{
-        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
-        //    set => labelLineColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        //}
-
-        //public Color LabelFillColor
-        //{
-        //    get => FzLib.Media.Converter.MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
-        //    set => labelFillColor.ColorBrush = new SolidColorBrush(FzLib.Media.Converter.DrawingColorToMeidaColor(value));
-        //}
 
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
 
@@ -123,9 +100,7 @@ namespace MapBoard.Main.UI.Panel
         public async Task SetStyleFromUI()
         {
             var layer = LayerCollection.Instance.Selected;
-            //style.Renderer.LineColor = LineColor;
-            //style.Renderer.FillColor = FillColor;
-            //style.Renderer.LineWidth = LineWidth;
+
             if (SelectedKey != null)
             {
                 SelectedKey.Symbol.LineWidth = LineWidth;
@@ -139,10 +114,6 @@ namespace MapBoard.Main.UI.Panel
             }
             Label.LineColor = MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
             Label.FillColor = MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
-
-            layer.ApplyLabel();
-            //SetLabelFromUI(Label.GetExpression());
-            //Layersetting.SetStyleFromUI(LayerCollection.Instance.Selected);
 
             string newName = LayerName;
             if (newName != layer.Name)
@@ -175,10 +146,7 @@ namespace MapBoard.Main.UI.Panel
                 layer.Table = null;
                 LayerCollection.Instance.Layers.Insert(index, layer);
             }
-            else
-            {
                 await layer.ApplyLayers();
-            }
         }
 
         public void ResetLayerSettingUI()
@@ -282,7 +250,7 @@ namespace MapBoard.Main.UI.Panel
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
             var style = LayerCollection.Instance.Selected;
-            var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.KeyFieldName) as string).Distinct();
+            var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {
                 if (Keys.Any(p => p.Key == key) || key == "")

@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.Mapping.Labeling;
 using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
@@ -27,6 +28,21 @@ namespace MapBoard.Main.Model
         public bool Date { get; set; }
         public bool Class { get; set; }
         public bool Enable => Info || Date || Class;
+
+        /// <summary>
+        /// 标签布局
+        /// </summary>
+        public int Layout { get; set; } = 0;
+
+        /// <summary>
+        /// 是否允许重叠
+        /// </summary>
+        public bool AllowOverlap { get; set; }
+
+        /// <summary>
+        /// 是否允许重复
+        /// </summary>
+        public bool AllowRepeat { get; set; }
 
         private Color lineColor = Color.FromArgb(255, 248, 220);
 
@@ -83,18 +99,59 @@ namespace MapBoard.Main.Model
 
         public string GetExpression()
         {
+            string l = Resource.LabelFieldName;
+            string d = Resource.DateFieldName;
+            string c = Resource.ClassFieldName;
             List<string> exps = new List<string>();
             if (Info)
             {
-                exps.Add("$feature." + Resource.DisplayFieldName);
+                exps.Add("$feature." + l);
             }
             if (Date)
             {
-                exps.Add("$feature." + Resource.TimeExtentFieldName);
+                string field = "$feature." + d;
+                exps.Add($"{field}==null");
             }
             if (Class)
             {
-                exps.Add("$feature." + Resource.KeyFieldName);
+                exps.Add("$feature." + c);
+            }
+            string exp = string.Join("+'\\n'+", exps);
+            exp = @$"
+var exp='';
+if({Info})
+{{
+    exp=exp+$feature.{ l}+'\n';
+}}
+if({Date})
+{{
+if($feature.{ d}!=null)
+{{
+    exp=exp+Year($feature.{d})+'-'+Month($feature.{d})+'-'+Day($feature.{d})+'\n';
+}}
+}}
+if({Class})
+{{
+    exp=exp+$feature.{ c}+'\n';
+}}
+exp";
+            return exp;
+        }
+
+        public string Get11Expression()
+        {
+            List<string> exps = new List<string>();
+            if (Info)
+            {
+                exps.Add($"[{ Resource.LabelFieldName}]");
+            }
+            if (Date)
+            {
+                exps.Add($"[{ Resource.DateFieldName}]");
+            }
+            if (Class)
+            {
+                exps.Add($"[{ Resource.ClassFieldName}]");
             }
             string exp = string.Join("+\"\\n\"+", exps);
             return exp;
@@ -111,21 +168,6 @@ namespace MapBoard.Main.Model
             SetLabelJsonValue(labelJson, "labelExpressionInfo.expression", GetExpression());
             return labelJson.ToString();
         }
-
-        //private static LabelInfo FromJson(string json)
-        //{
-        //    JObject labelJson = JObject.Parse(json);
-
-        //    LineColor = GetColorFromArgb(GetLabelJsonValue<byte>(labelJson,"symbol.haloColor", new byte[] { 0, 0, 0, 0 }));
-        //    FillColor = GetColorFromArgb(GetLabelJsonValue<byte>(labelJson, "symbol.color", new byte[] { 0, 0, 0, 0 }));
-        //    FontSize = GetLabelJsonValue(labelJson, "symbol.font.size", 9);
-        //    StrokeThickness = GetLabelJsonValue(labelJson, "symbol.haloSize", 1);
-        //    MinScale = GetLabelJsonValue(labelJson, "minScale", 0);
-        //    string exp = GetLabelJsonValue(labelJson, "labelExpressionInfo.expression", "");
-        //    Info = exp.Contains(Resource.DisplayFieldName);
-        //    Date = exp.Contains(Resource.TimeExtentFieldName);
-        //    Class = exp.Contains(Resource.KeyFieldName);
-        //}
 
         private static byte[] GetRgbaFromColor(Color color)
         {

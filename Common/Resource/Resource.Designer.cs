@@ -47,8 +47,8 @@ namespace MapBoard.Common.Resource {
         }
         
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性
-        ///   重写当前线程的 CurrentUICulture 属性。
+        ///   重写当前线程的 CurrentUICulture 属性，对
+        ///   使用此强类型资源类的所有资源查找执行重写。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         public static global::System.Globalization.CultureInfo Culture {
@@ -61,20 +61,29 @@ namespace MapBoard.Common.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Info 的本地化字符串。
+        ///   查找类似 Key 的本地化字符串。
         /// </summary>
-        public static string DisplayFieldName {
+        public static string ClassFieldName {
             get {
-                return ResourceManager.GetString("DisplayFieldName", resourceCulture);
+                return ResourceManager.GetString("ClassFieldName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Key 的本地化字符串。
+        ///   查找类似 Date 的本地化字符串。
         /// </summary>
-        public static string KeyFieldName {
+        public static string DateFieldName {
             get {
-                return ResourceManager.GetString("KeyFieldName", resourceCulture);
+                return ResourceManager.GetString("DateFieldName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Info 的本地化字符串。
+        /// </summary>
+        public static string LabelFieldName {
+            get {
+                return ResourceManager.GetString("LabelFieldName", resourceCulture);
             }
         }
         
@@ -317,15 +326,6 @@ namespace MapBoard.Common.Resource {
             get {
                 object obj = ResourceManager.GetObject("PolylineShx", resourceCulture);
                 return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Date 的本地化字符串。
-        /// </summary>
-        public static string TimeExtentFieldName {
-            get {
-                return ResourceManager.GetString("TimeExtentFieldName", resourceCulture);
             }
         }
     }
