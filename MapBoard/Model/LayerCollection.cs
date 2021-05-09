@@ -19,34 +19,8 @@ namespace MapBoard.Main.Model
 {
     public class LayerCollection : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
-        //private static LayerCollection instance = new LayerCollection();
-        //public static LayerCollection Instance
-        //{
-        //    get
-        //    {
-        //        if (instance.Layers == null)
-        //        {
-        //            try
-        //            {
-        //                instance.Layers = JsonConvert.DeserializeObject<ObservableCollection<LayerInfo>>(File.ReadAllText(Path.Combine(Config.DataPath, "Layers.json")));
-        //                if (instance.Layers.Count > 0)
-        //                {
-        //                    instance.Selected = instance.Layers[0];
-        //                }
-        //                else if (instance.Layers == null)
-        //                {
-        //                    instance.Layers = new ObservableCollection<LayerInfo>();
-        //                }
-        //            }
-        //            catch(Exception ex)
-        //            {
-        //                instance.Layers = new ObservableCollection<LayerInfo>();
-        //            }
-        //        }
-        //        return instance;
-        //    }
-        //}
         public static readonly string LayersFileName = "layers.json";
+        private bool canSave = false;
 
         private static LayerCollection instance;
 
@@ -56,8 +30,9 @@ namespace MapBoard.Main.Model
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<LayerCollection>(System.IO.Path.Combine(Config.DataPath, LayersFileName));
-                    instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
+                    var settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
+
+                    instance = TryOpenOrCreate<LayerCollection>(System.IO.Path.Combine(Config.DataPath, LayersFileName), settings);
                     if (instance.Layers.Count > 0)
                     {
                         var Layers = instance.Layers.ToArray();
@@ -75,29 +50,14 @@ namespace MapBoard.Main.Model
                         instance.Selected = instance.Layers[instance.SelectedIndex];
                     }
                     instance.SaveWhenChanged = true;
-                    //try
-                    //{
-                    //    instance = JsonConvert.DeserializeObject<LayerCollection>(File.ReadAllText(Path.Combine(Config.DataPath, "Layers.json")));
-                    //    if (instance.Layers == null)
-                    //    {
-                    //        instance.Layers = new ObservableCollection<LayerInfo>();
-                    //    }
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    instance.Layers = new ObservableCollection<LayerInfo>();
-                    //}
                 }
+                instance.canSave = true;
                 return instance;
             }
         }
 
         public bool SaveWhenChanged { get; set; } = false;
 
-        //public void Save()
-        //{
-        //    File.WriteAllText(Path.Combine(Config.DataPath, "Layers.json"), JsonConvert.SerializeObject(Layers));
-        //}
         private ObservableCollection<LayerInfo> layers = new ObservableCollection<LayerInfo>();
 
         public ObservableCollection<LayerInfo> Layers
@@ -117,7 +77,6 @@ namespace MapBoard.Main.Model
         }
 
         private LayerInfo selected;
-        private (double X1, double X2, double Y1, double Y2)? lastViewpointGeometry;
 
         private async void LayersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -156,22 +115,18 @@ namespace MapBoard.Main.Model
                     ArcMapView.Instance.Layer.ClearLayers();
                     break;
             }
-            if (SaveWhenChanged)
+            if (SaveWhenChanged && canSave)
             {
                 Save();
             }
         }
 
-        public event EventHandler StyleVisibilityChanged;
+        public event EventHandler LayerVisibilityChanged;
 
         public override void Save()
         {
             SelectedIndex = Layers.IndexOf(Selected);
-            Envelope envelope = ArcMapView.Instance.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
-            if (envelope != null)
-            {
-                lastViewpointGeometry = (envelope.XMin, envelope.XMax, envelope.YMax, envelope.YMin);
-            }
+
             if (new FileInfo(Path).Directory.Exists)
             {
                 base.Save();
@@ -186,33 +141,8 @@ namespace MapBoard.Main.Model
             get => selected;
             set
             {
-                //if (selected != null)
-                //{
-                //    selected.PropertyChanged += SelectedLayerPropertyChanged;
-                //}
-                //if (value != null)
-                //{
-                //    value.PropertyChanged += SelectedLayerPropertyChanged;
-                //}
                 selected = value;
-                //if (value != null)
-                //{
-                //    selected.CopyStyleFrom(Config.Instance.ShapefileLayers.First(p => p.Name == value.Name));
-                //    //if(value.FeatureCount>0)
-                //    //{
-                //    //    method();
-                //    //    //这里写一个本地方法是因为属性无法调用异步方法，
-                //    //    //SetViewpointGeometryAsync方法的参数必须使用await
-                //    //    async void method()
-                //    //    {
-                //    //        await Mapview.SetViewpointGeometryAsync(await value.Table.QueryExtentAsync(new Esri.ArcGISRuntime.Data.QueryParameters()));
-                //    //    }
-                //    //}
-                //}
-                //SelectionChanged?.Invoke(this, new EventArgs());
-
                 this.Notify();
-                //Notify(nameof(Selected));
             }
         }
 
@@ -220,7 +150,7 @@ namespace MapBoard.Main.Model
         {
             if (e.PropertyName == nameof(LayerInfo.LayerVisible))
             {
-                StyleVisibilityChanged?.Invoke(this, new EventArgs());
+                LayerVisibilityChanged?.Invoke(this, new EventArgs());
             }
             Save();
         }
@@ -238,21 +168,6 @@ namespace MapBoard.Main.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public (double X1, double X2, double Y1, double Y2)? LastViewpointGeometry
-        {
-            get => lastViewpointGeometry;
-            set
-            {
-                if (lastViewpointGeometry == null)
-                {
-                    if (value.HasValue)
-                    {
-                        ArcMapView.Instance.SetViewpointGeometryAsync(new Envelope(value.Value.X1, value.Value.Y1, value.Value.X2, value.Value.Y2));
-                    }
-                }
-            }
-        }
-
-        //public event EventHandler SelectionChanged;
+        public string MapViewExtentJson { get; set; }
     }
 }

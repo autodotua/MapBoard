@@ -19,6 +19,8 @@
             Text="{Binding CurrentColor, ElementName=colorPicker, Mode=TwoWay}" />
         <local:ColorPicker
             x:Name="colorPicker" Grid.Column="2"
+            Width="16" Height="16"
+            VerticalAlignment="Center"
             SelectionColorChanged="colorPicker_SelectionColorChanged" />
     </Grid>
 </UserControl>

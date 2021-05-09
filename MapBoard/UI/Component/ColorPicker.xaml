@@ -262,8 +262,7 @@
                 Width="{Binding Width, ElementName=picker}"
                 Height="{Binding Height, ElementName=picker}"
                 Background="{Binding Path=CurrentColor, Mode=TwoWay}"
-                BorderBrush="#b4b4b5"
-                BorderThickness="0" Focusable="False" />
+                Focusable="False" />
         </ToggleButton>
         <Popup
             x:Name="popup" AllowsTransparency="True"

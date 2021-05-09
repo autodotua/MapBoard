@@ -176,10 +176,12 @@ namespace MapBoard.Main.UI.OperationBar
             List<(string header, Func<Task> action, bool visiable)> menus = new List<(string header, Func<Task> action, bool visiable)>()
            {
                 ("合并",Union,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)&& features.Count>1),
-                ("连接",Link,layer.Type==GeometryType.Polyline&& features.Count>1),
+                ("连接",Link,layer.Type==GeometryType.Polyline
+                && features.Count>1
+                && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
                 ("反转",Reverse,layer.Type==GeometryType.Polyline),
                 ("加密",Densify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
-                ("简化",Simplify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)&& features.Count==1),
+                ("简化",Simplify,layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon),
                 ("建立副本",CreateCopy, true),
                 ("导出CSV表格",ToCsv, true),
             };
@@ -231,7 +233,25 @@ namespace MapBoard.Main.UI.OperationBar
                     typeList.Add(new DialogItem("头尾相连（反转）", "每一个要素的起始点与前一个要素的终结点相连接", () => reverse = true));
                 }
 
-                int result = await CommonDialog.ShowSelectItemDialogAsync("请选择连接类型", typeList);
+                int result = await CommonDialog.ShowSelectItemDialogAsync(
+                    "请选择连接类型", typeList, "查看图形起点和终点", async () =>
+                     {
+                         await ArcMapView.Instance.Overlay.ShowHeadAndTailOfFeatures(features);
+                         SnakeBar snake = new SnakeBar(Window.GetWindow(this))
+                         {
+                             ShowButton = true,
+                             ButtonContent = "继续",
+                             Duration = Duration.Forever
+                         };
+                         snake.ButtonClick += async (p1, p2) =>
+                          {
+                              ArcMapView.Instance.Overlay.ClearHeadAndTail();
+                              snake.Hide();
+                              await Link();
+                          };
+
+                         snake.ShowMessage("正在显示图形起点和终点");
+                     });
 
                 if (result < 0)
                 {

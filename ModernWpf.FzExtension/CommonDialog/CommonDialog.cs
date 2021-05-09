@@ -115,13 +115,19 @@ namespace ModernWpf.FzExtension.CommonDialog
             return ShowErrorDialogAsync(null, message);
         }
 
-        public async static Task<int> ShowSelectItemDialogAsync(string title, IEnumerable<DialogItem> items)
+        public async static Task<int> ShowSelectItemDialogAsync(string title, IEnumerable<DialogItem> items, string extraButtonText = null, Action extraButtonAction = null)
         {
             SelectItemDialog dialog = new SelectItemDialog()
             {
                 Title = title,
-                Items = new ObservableCollection<DialogItem>(items)
+                Items = new ObservableCollection<DialogItem>(items),
             };
+            if (extraButtonText != null)
+            {
+                dialog.IsShadowEnabled = true;
+                dialog.SecondaryButtonText = extraButtonText;
+                dialog.SecondaryButtonClick += (p1, p2) => extraButtonAction();
+            }
             await dialog.ShowAsync();
             return dialog.SelectedIndex;
         }

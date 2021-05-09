@@ -50,17 +50,6 @@ namespace MapBoard.Common
         public bool GpxAutoSmooth { get; set; } = true;
         public bool GpxAutoSmoothOnlyZ { get; set; } = false;
         public int GpxAutoSmoothLevel { get; set; } = 5;
-
-        //public List<StyleInfo> ShapefileStyles { get; } = new List<StyleInfo>();
-
-        //public void AddToShapefileStyles(StyleInfo style)
-        //{
-        //    if(ShapefileStyles.Any(p=>p.Name==style.Name))
-        //    {
-        //        ShapefileStyles.Remove(ShapefileStyles.First(p => p.Name == style.Name));
-        //    }
-        //    ShapefileStyles.Add(style);
-        //}
     }
 
     public class BrowseInfo : INotifyPropertyChanged

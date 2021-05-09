@@ -7,9 +7,8 @@
     xmlns:local="clr-namespace:ModernWpf.FzExtension.CommonDialog"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    IsSecondaryButtonEnabled="True"
-    SecondaryButtonText="取消"
     mc:Ignorable="d">
     <local:CommonDialog.Resources>
         <cvt:Null2InvisiableConverter x:Key="n2ic" />

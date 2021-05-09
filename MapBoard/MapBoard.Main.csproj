@@ -147,6 +147,7 @@
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Map\OverlayHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
     <Compile Include="Util\IOUtility.cs" />

@@ -156,6 +156,7 @@
                         </Grid.RowDefinitions>
                         <DataGrid
                             x:Name="dataGrid"
+                            SelectedItem="{Binding Layers.Selected, Mode=OneWay}"
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"

@@ -104,7 +104,7 @@ namespace MapBoard.Main.UI
         {
             arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            LayerCollection.Instance.StyleVisibilityChanged += (s, e) => JudgeControlsEnable();
+            LayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
             var lvwHelper = new DataGridHelper<LayerInfo>(dataGrid);
             lvwHelper.EnableDragAndDropItem();
@@ -341,7 +341,7 @@ namespace MapBoard.Main.UI
             {
                 try
                 {
-                    await arcMap.SetViewpointGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()), Config.HideWatermark ? 72 : 0);
+                    await arcMap.ZoomToGeometry(await layer.Table.QueryExtentAsync(new QueryParameters()));
                 }
                 catch (Exception ex)
                 {

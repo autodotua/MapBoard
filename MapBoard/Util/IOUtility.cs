@@ -56,7 +56,7 @@ namespace MapBoard.Main.Util
                             SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                             snake.ShowButton = true;
                             snake.ButtonContent = "查看";
-                            snake.ButtonClick += (p1, p2) => ArcMapView.Instance.SetViewpointGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
+                            snake.ButtonClick += async (p1, p2) => await ArcMapView.Instance.ZoomToGeometry(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
 
                             snake.ShowMessage("已导出到" + path);
                         }

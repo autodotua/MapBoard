@@ -49,7 +49,17 @@ namespace MapBoard.Main.UI.Map
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
             Layer = new LayerHelper();
-            Load().Wait();
+            Overlay = new OverlayHelper();
+            ViewpointChanged += ArcMapView_ViewpointChanged;
+            Load();
+        }
+
+        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
+        {
+            if (GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                Model.LayerCollection.Instance.MapViewExtentJson = envelope.ToJson();
+            }
         }
 
         public void SetHideWatermark()
@@ -62,6 +72,12 @@ namespace MapBoard.Main.UI.Map
         public SelectionHelper Selection { get; }
         public DrawHelper Drawing { get; }
         public LayerHelper Layer { get; }
+        public OverlayHelper Overlay { get; set; }
+
+        public async Task ZoomToGeometry(Geometry geometry, bool autoExtent = true)
+        {
+            await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? 72 : 0);
+        }
 
         /// <summary>
         /// 左键抬起事件，用于结束框选
@@ -153,6 +169,16 @@ namespace MapBoard.Main.UI.Map
         private async Task Load()
         {
             await LoadBasemap();
+            if (Model.LayerCollection.Instance.MapViewExtentJson != null)
+            {
+                try
+                {
+                    await ZoomToGeometry(Envelope.FromJson(Model.LayerCollection.Instance.MapViewExtentJson), false);
+                }
+                catch
+                {
+                }
+            }
         }
 
         public async Task LoadBasemap()

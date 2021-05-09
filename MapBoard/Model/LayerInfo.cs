@@ -28,7 +28,6 @@ namespace MapBoard.Main.Model
         [JsonIgnore]
         public string FileName => Path.Combine(Config.DataPath, Name + ".shp");
 
-        //public RendererInfo Renderer { get; set; } = new RendererInfo();
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
 
         [JsonIgnore]
@@ -129,7 +128,6 @@ namespace MapBoard.Main.Model
         }
 
         public LabelInfo Label { get; set; } = new LabelInfo();
-        //public string LabelJson { get; set; }
 
         public void UpdateFeatureCount()
         {
@@ -142,6 +140,7 @@ namespace MapBoard.Main.Model
             return result;
         }
 
+        [JsonIgnore]
         public long FeatureCount
         {
             get
@@ -222,20 +221,5 @@ namespace MapBoard.Main.Model
         {
             return Name;
         }
-
-        //public bool StyleEquals(LayerInfo style)
-        //{
-        //    return LineWidth == style.LineWidth
-        //        && LineColor == style.LineColor
-        //        && FillColor == style.FillColor
-        //        && Type == style.Type;
-        //}
-        //public bool StyleEquals(LayerInfo style, GeometryType type)
-        //{
-        //    return LineWidth == style.LineWidth
-        //        && LineColor == style.LineColor
-        //        && FillColor == style.FillColor
-        //        && Type == type;
-        //}
     }
 }
