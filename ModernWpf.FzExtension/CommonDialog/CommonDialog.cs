@@ -11,7 +11,7 @@ namespace ModernWpf.FzExtension.CommonDialog
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public static Task ShowOkDialogAsync(string title, string message)
+        public static Task ShowOkDialogAsync(string title, string message = null)
         {
             DetailTextDialog dialog = new DetailTextDialog()
             {
@@ -62,7 +62,7 @@ namespace ModernWpf.FzExtension.CommonDialog
             return null;
         }
 
-        public static async Task<bool> ShowYesNoDialogAsync(string title, string message, string detail = null)
+        public static async Task<bool> ShowYesNoDialogAsync(string title, string message = null, string detail = null)
         {
             DetailTextDialog dialog = new DetailTextDialog()
             {

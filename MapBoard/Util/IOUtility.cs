@@ -204,7 +204,6 @@ namespace MapBoard.Main.Util
                     {
                         case ".mbmpkg":
                             await Package.ExportMap2(path);
-                            //Package.ExportMap(path);
                             break;
 
                         case ".png":
@@ -215,11 +214,11 @@ namespace MapBoard.Main.Util
                             await MobileGISToolBox.ExportMap(path);
                             break;
                     }
-                    SnakeBar.Show("导出成功");
+                    SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)
                 {
-                    CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }
         }
@@ -262,25 +261,25 @@ namespace MapBoard.Main.Util
                 }
                 else
                 {
-                    CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式",
-                        new DialogItem[]{
+                    await CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式",
+                               new DialogItem[]{
                 new("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
                 new("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
                 new("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
                 new("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
-                });
+                       });
                 }
             }
             else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
             {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？", "打开Mapboard Map Package文件") == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
                 {
                     Package.ImportMap(files[0]);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
             {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否导入图层？", "打开Mapboard Layer Package文件") == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否导入图层？") == true)
                 {
                     foreach (var file in files)
                     {
@@ -291,7 +290,7 @@ namespace MapBoard.Main.Util
             }
             else if (files.Count(p => p.EndsWith(".csv")) == files.Length)
             {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？", "打开CSV") == true)
+                if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
                 {
                     foreach (var file in files)
                     {

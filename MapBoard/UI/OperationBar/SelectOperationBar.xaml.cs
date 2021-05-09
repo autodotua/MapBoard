@@ -140,7 +140,7 @@ namespace MapBoard.Main.UI.OperationBar
                     var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
                     await targetTable.AddFeaturesAsync(newFeatures);
                     await MapView.Selection.StopFrameSelect(false);
-                    if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？", "复制/移动") == false)
+                    if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") == false)
                     {
                         await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
                         LayerCollection.Instance.Selected.UpdateFeatureCount();

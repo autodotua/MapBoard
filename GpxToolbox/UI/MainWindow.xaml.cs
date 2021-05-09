@@ -656,7 +656,7 @@ namespace MapBoard.GpxToolbox
                 int num = result.Value;
                 if (num < 2 || num >= count)
                 {
-                    TaskDialog.ShowError("输入的数值超出范围");
+                    await CommonDialog.ShowErrorDialogAsync("输入的数值超出范围");
                     return;
                 }
                 if (z)

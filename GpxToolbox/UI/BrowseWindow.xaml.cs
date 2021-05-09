@@ -5,6 +5,7 @@ using FzLib.Geography.Analysis;
 using FzLib.Geography.IO.Gpx;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
+using ModernWpf.FzExtension.CommonDialog;
 using ProjNet.CoordinateSystems;
 using System;
 using System.ComponentModel;
@@ -148,7 +149,7 @@ namespace MapBoard.GpxToolbox
                 }
                 if (i >= points.Count - 2 || stopping)
                 {
-                    StopRecord();
+                    await StopRecordAsync();
                     return;
                 }
                 NetTopologySuite.Geometries.Point interPoint = null;
@@ -199,14 +200,14 @@ namespace MapBoard.GpxToolbox
             SetUIEnabled(false, false);
         }
 
-        private void StopRecord()
+        private async Task StopRecordAsync()
         {
             btnRecord.Content = "录制";
             stopping = false;
             working = false;
             SetUIEnabled(false, false);
             ResizeMode = ResizeMode.CanResize;
-            if (TaskDialog.ShowWithYesNoButtons("是否打开目录？", "录制结束") == true)
+            if (await CommonDialog.ShowYesNoDialogAsync("是否打开目录？") == true)
             {
                 Process.Start("explorer.exe", GetRecordPath());
             }
@@ -252,7 +253,7 @@ namespace MapBoard.GpxToolbox
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
         }
 
-        #endregion
+        #endregion 左下角按钮
 
         private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
         {

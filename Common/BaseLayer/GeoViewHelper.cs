@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.UI.Dialog;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace MapBoard.Common.BaseLayer
                     }
                     catch (Exception ex)
                     {
-                        TaskDialog.ShowException(ex, $"加载以下底图失败：{Environment.NewLine}");
+                        await CommonDialog.ShowErrorDialogAsync(ex, "加载底图失败");
                     }
                 }
 
@@ -55,7 +56,7 @@ namespace MapBoard.Common.BaseLayer
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(ex, "加载地图失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "加载底图失败");
 
                 return false;
             }

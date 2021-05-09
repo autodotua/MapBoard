@@ -5,6 +5,7 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.UI.Dialog;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -93,7 +94,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(ex, "加载地图失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "加载地图失败");
                 return;
             }
         }

@@ -2,32 +2,21 @@
 using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using FzLib.Geography.IO.Tile;
-
-using FzLib.UI.Extension;
-
-using GIS.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GeoPoint = NetTopologySuite.Geometries.Point;
+using ModernWpf.FzExtension.CommonDialog;
 
 namespace MapBoard.TileDownloaderSplicer
 {
@@ -76,10 +65,6 @@ namespace MapBoard.TileDownloaderSplicer
         /// </summary>
         private string savedImgPath = null;
 
-        /// <summary>
-        /// 支持的格式
-        /// </summary>
-        /// 是否正在尝试关闭程序
         private bool closing = false;
 
         public IReadOnlyList<string> Formats { get; } = new List<string> { "jpg", "png", "bmp", "tiff" }.AsReadOnly();
@@ -200,15 +185,14 @@ namespace MapBoard.TileDownloaderSplicer
 
         private bool waiting = false;
 
-        private void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
+        private async void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
         {
-            CalculateTileNumber();
+            await CalculateTileNumberAsync();
             lastTile = null;
-            //btnDownload.Content = "开始下载";
             CurrentDownloadStatus = DownloadStatus.Stop;
         }
 
-        private void CalculateTileNumber(bool save = true)
+        private async Task CalculateTileNumberAsync(bool save = true)
         {
             if (CurrentDownload == null)
             {
@@ -232,7 +216,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
             else
             {
-                TaskDialog.ShowError(this, "坐标范围不正确");
+                await CommonDialog.ShowErrorDialogAsync("坐标范围不正确");
             }
         }
 
@@ -240,12 +224,12 @@ namespace MapBoard.TileDownloaderSplicer
         {
             if (Config.Instance.UrlCollection.SelectedUrl == null)
             {
-                TaskDialog.ShowError(this, "还未选择瓦片地址");
+                await CommonDialog.ShowErrorDialogAsync("还未选择瓦片地址");
                 return;
             }
             if (CurrentDownload == null)
             {
-                TaskDialog.ShowError(this, "还没有进行设置");
+                await CommonDialog.ShowErrorDialogAsync("还没有进行设置");
                 return;
             }
 
@@ -327,7 +311,7 @@ namespace MapBoard.TileDownloaderSplicer
             arcMap.ShowPosition(this, null);
             arcMap.SketchEditor.IsEnabled = true;
 
-            if (TaskDialog.ShowWithYesNoButtons("下载完成，是否删除临时文件夹？", "下载完成") == true)
+            if (await CommonDialog.ShowYesNoDialogAsync("下载完成，是否删除临时文件夹？") == true)
             {
                 loading.Show();
                 await Task.Run(() =>
@@ -342,7 +326,7 @@ namespace MapBoard.TileDownloaderSplicer
                     }
                     catch (Exception ex)
                     {
-                        Dispatcher.Invoke(() => TaskDialog.ShowException(ex, "无法删除临时文件夹"));
+                        Dispatcher.Invoke(async () => await CommonDialog.ShowErrorDialogAsync(ex, "无法删除临时文件夹"));
                     }
                 });
                 loading.Hide();
@@ -354,7 +338,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        private void ServerButtonClick(object sender, RoutedEventArgs e)
+        private async void ServerButtonClick(object sender, RoutedEventArgs e)
         {
             if (!ServerOn)
             {
@@ -368,17 +352,17 @@ namespace MapBoard.TileDownloaderSplicer
                     switch (sex.ErrorCode)
                     {
                         case 10048:
-                            TaskDialog.ShowError("端口不可用，清更换端口");
+                            await CommonDialog.ShowErrorDialogAsync("端口不可用，清更换端口");
                             break;
 
                         default:
-                            TaskDialog.ShowException(sex, "开启服务失败");
+                            await CommonDialog.ShowErrorDialogAsync(sex, "开启服务失败");
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.ShowException(ex, "开启服务失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "开启服务失败");
                 }
             }
             else
@@ -398,7 +382,7 @@ namespace MapBoard.TileDownloaderSplicer
                 var tryBound = stichBoundary.GetIntValue();
                 if (tryBound == null)
                 {
-                    TaskDialog.ShowError(this, "瓦片边界输入错误");
+                    await CommonDialog.ShowErrorDialogAsync("瓦片边界输入错误");
                     return;
                 }
                 var boundary = stichBoundary.GetIntValue();
@@ -426,10 +410,10 @@ namespace MapBoard.TileDownloaderSplicer
                          }
                          catch
                          {
-                             Dispatcher.Invoke(() =>
-                             {
-                                 TaskDialog.ShowError(this, "图片尺寸对于内存来说太大");
-                             });
+                             Dispatcher.Invoke(async () =>
+                            {
+                                await CommonDialog.ShowErrorDialogAsync("图片尺寸对于内存来说太大");
+                            });
                              return;
                          }
                          int count = (right - left + 1) * (bottom - top + 1);
@@ -469,9 +453,9 @@ namespace MapBoard.TileDownloaderSplicer
                      }
                      catch (Exception ex)
                      {
-                         Dispatcher.Invoke(() =>
+                         Dispatcher.Invoke(async () =>
                          {
-                             TaskDialog.ShowException(this, ex, "拼接图片失败");
+                             await CommonDialog.ShowErrorDialogAsync(ex, "拼接图片失败");
                          });
                      }
                  });
@@ -495,11 +479,11 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        private void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (CurrentDownload != null)
             {
-                CalculateTileNumber();
+                await CalculateTileNumberAsync();
             }
         }
 
@@ -540,9 +524,9 @@ namespace MapBoard.TileDownloaderSplicer
                             }
                             catch (Exception ex)
                             {
-                                Dispatcher.Invoke(() =>
+                                Dispatcher.Invoke(async () =>
                                 {
-                                    TaskDialog.ShowException(this, ex, "保存失败");
+                                    await CommonDialog.ShowErrorDialogAsync(ex, "保存失败");
                                 });
                             }
                         });
@@ -552,28 +536,28 @@ namespace MapBoard.TileDownloaderSplicer
                 }
                 else
                 {
-                    TaskDialog.ShowError(this, "没有已生成的地图！");
+                    await CommonDialog.ShowErrorDialogAsync("没有已生成的地图！");
                 }
             }
         }
 
-        private void WindowClosing(object sender, CancelEventArgs e)
+        private async void WindowClosing(object sender, CancelEventArgs e)
         {
             if (CurrentDownloadStatus == DownloadStatus.Downloading)
             {
-                if (TaskDialog.ShowWithYesNoButtons("正在下载瓦片，是否停止下载后关闭窗口？", "关闭") == true)
+                e.Cancel = true;
+                if (await CommonDialog.ShowYesNoDialogAsync("正在下载瓦片，是否停止下载后关闭窗口？"))
                 {
                     closing = true;
                     StopDownloading();
                 }
-                e.Cancel = true;
             }
             Config.Instance.LastDownload = CurrentDownload;
 
             Config.Save();
         }
 
-        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -585,7 +569,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(this, ex, "无法打开目录");
+                await CommonDialog.ShowErrorDialogAsync(ex, "无法打开目录");
             }
         }
 
@@ -606,7 +590,7 @@ namespace MapBoard.TileDownloaderSplicer
             downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (Config.LastDownload != null)
             {
@@ -615,7 +599,7 @@ namespace MapBoard.TileDownloaderSplicer
                 {
                     downloadBoundary.SetDoubleValue(CurrentDownload.MapRange.XMin_Left, CurrentDownload.MapRange.YMax_Top,
                         CurrentDownload.MapRange.XMax_Right, CurrentDownload.MapRange.YMin_Bottom);
-                    CalculateTileNumber(false);
+                    await CalculateTileNumberAsync(false);
                     arcMap.SetBoundary(CurrentDownload.MapRange);
                 }
             }
@@ -682,23 +666,23 @@ namespace MapBoard.TileDownloaderSplicer
                 .Where(p => new FileInfo(p).Length == 0).ToArray());
                 if (files.Length == 0)
                 {
-                    TaskDialog.Show("没有空文件");
+                    await CommonDialog.ShowErrorDialogAsync("没有空文件");
                 }
                 else
                 {
-                    if (TaskDialog.ShowWithYesNoButtons($"共找到{files.Length}个空文件，是否删除？", "删除空文件", null, Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Information) == true)
+                    if (await CommonDialog.ShowYesNoDialogAsync($"共找到{files.Length}个空文件，是否删除？") == true)
                     {
                         foreach (var file in files)
                         {
                             File.Delete(file);
                         }
-                        TaskDialog.Show("删除成功");
+                        await CommonDialog.ShowOkDialogAsync("删除空文件", "删除成功");
                     }
                 };
             }
             catch (Exception ex)
             {
-                TaskDialog.ShowException(ex, "删除失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
             }
             finally
             {

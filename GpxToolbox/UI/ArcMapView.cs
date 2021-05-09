@@ -8,6 +8,7 @@ using FzLib.Geography.IO.Gpx;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -75,7 +76,7 @@ namespace MapBoard.GpxToolbox
 
         public GraphicsOverlay TapOverlay { get; set; }
 
-        protected override void OnDrop(DragEventArgs e)
+        protected override async void OnDrop(DragEventArgs e)
         {
             base.OnDrop(e);
             if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
@@ -85,7 +86,7 @@ namespace MapBoard.GpxToolbox
             bool yes = true;
             if (files.Length > 10)
             {
-                yes = TaskDialog.ShowWithYesNoButtons("导入文件较多，是否确定导入？", $"导入{files.Length}个文件") == true;
+                yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{files.Length}个文件");
             }
             if (yes)
             {

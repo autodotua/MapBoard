@@ -44,7 +44,7 @@
             x:Name="rect" Grid.Row="2"
             Grid.Column="2"
             Height="{Binding ActualWidth, ElementName=rect}"
-            Fill="{DynamicResource SystemControlBackgroundBaseLowBrush}" Stroke="Black"
-            StrokeThickness="0" />
+            Fill="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+            Stroke="Black" StrokeThickness="0" />
     </Grid>
 </UserControl>

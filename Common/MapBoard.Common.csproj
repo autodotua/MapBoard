@@ -125,10 +125,18 @@
     <PackageReference Include="Esri.ArcGISRuntime.WPF">
       <Version>100.6.0</Version>
     </PackageReference>
+    <PackageReference Include="ModernWpfUI">
+      <Version>0.9.4</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj">
+      <Project>{f5d99d6b-c794-4e2d-bb07-172d2ee954bb}</Project>
+      <Name>ModernWpf.FzExtension</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

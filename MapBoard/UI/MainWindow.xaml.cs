@@ -83,9 +83,7 @@ namespace MapBoard.Main.UI
         public MainWindow()
         {
             InitializeComponent();
-            //SnakeBar.DefaultWindow = this;
             RegistEvents();
-            SnakeBar.DefaultOwner = new WindowOwner(this);
             LayerCollection.LayerInstanceChanged += (p1, p2) =>
               {
                   Notify(nameof(Layers));

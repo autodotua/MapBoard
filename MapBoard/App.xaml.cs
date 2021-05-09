@@ -1,4 +1,5 @@
 ﻿using FzLib.Program.Runtime;
+using FzLib.UI.Dialog;
 using FzLib.UI.Program;
 using MapBoard.Main.UI;
 using ModernWpf.Controls;
@@ -32,6 +33,8 @@ namespace MapBoard.Main
 #else
             UnhandledException.RegistAll(true);
 #endif
+
+            SnakeBar.DefaultOwner = new WindowOwner(true);
             if (e.Args.Length > 0)
             {
                 string arg = e.Args[0];

@@ -22,7 +22,10 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <TextBlock
+            Text="{Binding Message}"
+            TextWrapping="Wrap"
+            Visibility="{Binding Message, Converter={StaticResource n2ic}}" />
         <Expander
             Grid.Row="2" Margin="0,16,0,0"
             HorizontalAlignment="Stretch"
