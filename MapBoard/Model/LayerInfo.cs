@@ -199,7 +199,8 @@ namespace MapBoard.Main.Model
                 {
                     FillColor = s.Value.FillColor,
                     LineColor = s.Value.LineColor,
-                    LineWidth = s.Value.LineWidth,
+                    Size = s.Value.Size,
+                    OutlineWidth = s.Value.OutlineWidth
                 });
             }
             //Renderer.LineWidth = style.Renderer.LineWidth;

@@ -166,16 +166,20 @@ namespace MapBoard.Main.Util
                     {
                         case GeometryType.Point:
                         case GeometryType.Multipoint:
-                            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.LineWidth);
+                            var outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.Size)
+                            {
+                                Outline = outline
+                            };
 
                             break;
 
                         case GeometryType.Polyline:
-                            symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
+                            symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.Size);
                             break;
 
                         case GeometryType.Polygon:
-                            var lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.LineWidth);
+                            var lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.OutlineWidth);
                             symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, symbolInfo.FillColor, lineSymbol);
                             break;
                     }
@@ -206,10 +210,14 @@ namespace MapBoard.Main.Util
             var exp = new ArcadeLabelExpression(label.GetExpression());
             TextSymbol symbol = new TextSymbol()
             {
-                HaloColor = label.LineColor,
-                Color = label.FillColor,
+                HaloColor = label.HaloColor,
+                Color = label.FontColor,
+                BackgroundColor = label.BackgroundColor,
                 Size = label.FontSize,
-                HaloWidth = label.StrokeThickness,
+                HaloWidth = label.HaloWidth,
+                OutlineWidth = label.OutlineWidth,
+                OutlineColor = label.OutlineColor,
+               FontWeight=FontWeight.Bold,
             };
             LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
             {

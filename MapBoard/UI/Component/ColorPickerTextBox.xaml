@@ -16,7 +16,7 @@
         <TextBox
             x:Name="txt"
             LostKeyboardFocus="txt_LostKeyboardFocus"
-            Text="{Binding CurrentColor, ElementName=colorPicker, Mode=TwoWay}" />
+            Text="{Binding CurrentColor, ElementName=colorPicker, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
         <local:ColorPicker
             x:Name="colorPicker" Grid.Column="2"
             Width="16" Height="16"

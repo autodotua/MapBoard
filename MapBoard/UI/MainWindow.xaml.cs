@@ -153,7 +153,7 @@ namespace MapBoard.Main.UI
         {
             await CommonDialog.ShowSelectItemDialogAsync("请选择需要创建的图层类型", new DialogItem[]
               {
-                new DialogItem(){Title="点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polyline)},
+                new DialogItem(){Title="点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Point)},
                 new DialogItem(){Title="多点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Multipoint)},
                 new DialogItem(){Title="线",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polyline)},
                 new DialogItem(){Title="面",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polygon)},

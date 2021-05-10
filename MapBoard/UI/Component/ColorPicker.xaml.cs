@@ -14,13 +14,17 @@ namespace MapBoard.UI.Compoment
             get => (SolidColorBrush)GetValue(CurrentColorProperty);
             set
             {
+                //SelectionColorChanged?.Invoke(this, new EventArgs());
                 SetValue(CurrentColorProperty, value);
-                SelectionColorChanged?.Invoke(this, new EventArgs());
             }
         }
 
         public static DependencyProperty CurrentColorProperty =
-            DependencyProperty.Register("CurrentColor", typeof(SolidColorBrush), typeof(ColorPicker), new PropertyMetadata(Brushes.Black));
+            DependencyProperty.Register("CurrentColor", typeof(SolidColorBrush), typeof(ColorPicker),
+                new PropertyMetadata(Brushes.Black, new PropertyChangedCallback((s, e) =>
+                {
+                    (s as ColorPicker).SelectionColorChanged?.Invoke(s, new EventArgs());
+                })));
 
         public static RoutedUICommand SelectColorCommand = new RoutedUICommand("SelectColorCommand", "SelectColorCommand", typeof(ColorPicker));
         private Window _advancedPickerWindow;

@@ -10,6 +10,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:ColorBrushConverter x:Key="cc" />
+    </UserControl.Resources>
     <Grid>
         <StackPanel Orientation="Vertical">
             <TextBox
@@ -43,45 +46,109 @@
                                 Grid.Column="4" Click="KeyButtonClick"
                                 Content="..." />
                         </Grid>
-                        <Grid Margin="2,10,2,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
 
-                            <TextBlock
-                                Grid.Row="0" HorizontalAlignment="Right"
-                                Text="线宽/边框宽/点大小：" />
-                            <TextBox
-                                x:Name="txtLineWidth" Grid.Row="0"
-                                Grid.Column="2"
-                                Text="{Binding LineWidth}" />
+                        <TabControl
+                            x:Name="tab" Background="Transparent"
+                            DataContext="{Binding SelectedKey.Symbol}">
+                            <TabControl.Resources>
+                                <Style BasedOn="{StaticResource DefaultTabItemStyle}" TargetType="{x:Type TabItem}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </TabControl.Resources>
+                            <TabItem Header="点">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
 
-                            <TextBlock
-                                Grid.Row="2" HorizontalAlignment="Right"
-                                Text="边框/线颜色：" />
-                            <compoment:ColorPickerTextBox
-                                x:Name="lineColorPicker" Grid.Row="2 "
-                                Grid.Column="2" />
-                            <TextBlock
-                                Grid.Row="4" HorizontalAlignment="Right"
-                                Text="填充/点颜色：" />
-                            <compoment:ColorPickerTextBox
-                                x:Name="fillColorPicker" Grid.Row="4 "
-                                Grid.Column="2" />
+                                    <TextBlock Grid.Row="0" Text="直径：" />
 
-                            <!--<flatstyle:CheckBox x:Name="chkStatic" Content="静态点/线（米）：" IsChecked="{Binding Config.StaticEnable}" Grid.ColumnSpan="100" Grid.Row="6" />
+                                    <TextBox
+                                        Grid.Row="0" Grid.Column="2"
+                                        Text="{Binding Size}" />
+                                    <TextBlock Grid.Row="2" Text="边框粗细：" />
 
-                <TextBox Text="{Binding Config.StaticWidth}" IsEnabled="{Binding ElementName=chkStatic, Path=IsChecked}" Grid.Row="6" Grid.Column="2" />-->
-                        </Grid>
+                                    <TextBox
+                                        Grid.Row="2" Grid.Column="2"
+                                        Text="{Binding OutlineWidth}" />
+
+                                    <TextBlock Grid.Row="6" Text="边框颜色：" />
+                                    <compoment:ColorPickerTextBox
+                                        Grid.Row="6 " Grid.Column="2"
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                    <TextBlock Grid.Row="4" Text="填充颜色：" />
+                                    <compoment:ColorPickerTextBox
+                                        Grid.Row="4 " Grid.Column="2"
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="折线">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="宽度：" />
+                                    <TextBox
+                                        Grid.Row="0" Grid.Column="2"
+                                        Text="{Binding OutlineWidth}" />
+                                    <TextBlock Grid.Row="2" Text="颜色：" />
+                                    <compoment:ColorPickerTextBox
+                                        Grid.Row="2 " Grid.Column="2"
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="折线">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="边框宽度：" />
+                                    <TextBox
+                                        Grid.Row="0" Grid.Column="2"
+                                        Text="{Binding OutlineWidth}" />
+
+                                    <TextBlock Grid.Row="2" Text="填充颜色：" />
+                                    <compoment:ColorPickerTextBox
+                                        Grid.Row="2 " Grid.Column="2"
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+
+                                    <TextBlock Grid.Row="4" Text="边框颜色：" />
+                                    <compoment:ColorPickerTextBox
+                                        Grid.Row="4 " Grid.Column="2"
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
                     </StackPanel>
                 </Border>
             </Expander>
@@ -91,7 +158,7 @@
                     Padding="8"
                     Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                     CornerRadius="4">
-                    <Grid>
+                    <Grid DataContext="{Binding Label}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="8" />
@@ -115,44 +182,69 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Text="字体颜色" />
                         <compoment:ColorPickerTextBox
-                            x:Name="labelFillColor" Grid.Row="0"
-                            Grid.Column="2" Grid.ColumnSpan="3" />
-                        <TextBlock Grid.Row="2" Text="边框颜色" />
+                            Grid.Row="0" Grid.Column="2"
+                            Grid.ColumnSpan="3"
+                            ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                        <TextBlock Grid.Row="2" Text="描边颜色" />
                         <compoment:ColorPickerTextBox
-                            x:Name="labelLineColor" Grid.Row="2"
-                            Grid.Column="2" Grid.ColumnSpan="3" />
-                        <TextBlock Grid.Row="4" Text="字体大小" />
-                        <TextBox
+                            Grid.Row="2" Grid.Column="2"
+                            Grid.ColumnSpan="3"
+                            ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                        <TextBlock Grid.Row="4" Text="背景颜色" />
+                        <compoment:ColorPickerTextBox
+                            x:Name="labelBackgroundColor"
                             Grid.Row="4" Grid.Column="2"
                             Grid.ColumnSpan="3"
-                            Text="{Binding Label.FontSize}" />
-                        <TextBlock Grid.Row="6" Text="边框宽度" />
-                        <TextBox
+                            ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                        <TextBlock Grid.Row="6" Text="边框颜色" />
+                        <compoment:ColorPickerTextBox
                             Grid.Row="6" Grid.Column="2"
                             Grid.ColumnSpan="3"
-                            VerticalAlignment="Center"
-                            Text="{Binding Label.StrokeThickness}" />
-                        <TextBlock Grid.Row="8" Text="最小比例" />
+                            ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                        <TextBlock Grid.Row="8" Text="字体大小" />
                         <TextBox
                             Grid.Row="8" Grid.Column="2"
+                            Grid.ColumnSpan="3"
+                            Text="{Binding FontSize}" />
+                        <TextBlock Grid.Row="10" Text="描边宽度" />
+                        <TextBox
+                            Grid.Row="10" Grid.Column="2"
+                            Grid.ColumnSpan="3"
                             VerticalAlignment="Center"
-                            Text="{Binding Label.MinScale}" />
+                            Text="{Binding HaloWidth}" />
+                        <TextBlock Grid.Row="12" Text="边框宽度" />
+                        <TextBox
+                            Grid.Row="12" Grid.Column="2"
+                            Grid.ColumnSpan="3"
+                            VerticalAlignment="Center"
+                            Text="{Binding OutlineWidth}" />
+                        <TextBlock Grid.Row="14" Text="最小比例" />
+                        <TextBox
+                            Grid.Row="14" Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Text="{Binding MinScale}" />
                         <Button
-                            Grid.Row="8" Grid.Column="4"
+                            Grid.Row="14" Grid.Column="4"
                             Height="24" Padding="8,0"
                             HorizontalAlignment="Right"
                             Click="SetScaleButtonClick"
                             Content="设为当前" />
-                        <TextBlock Grid.Row="10" Text="布局" />
+                        <TextBlock Grid.Row="16" Text="布局" />
                         <ComboBox
-                            Grid.Row="10" Grid.Column="2"
+                            Grid.Row="16" Grid.Column="2"
                             Grid.ColumnSpan="99"
                             HorizontalAlignment="Stretch"
-                            SelectedIndex="{Binding Label.Layout}">
+                            SelectedIndex="{Binding Layout}">
                             <ComboBoxItem>自动</ComboBoxItem>
                             <ComboBoxItem>水平</ComboBoxItem>
                             <ComboBoxItem>垂直</ComboBoxItem>
@@ -160,28 +252,34 @@
                             <ComboBoxItem>跟随图形</ComboBoxItem>
                         </ComboBox>
 
-                        <Grid Grid.Row="12" Grid.ColumnSpan="99">
+                        <Grid Grid.Row="18" Grid.ColumnSpan="99">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="8" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <ui:ToggleSwitch IsOn="{Binding Label.AllowRepeat}">允许重复显示</ui:ToggleSwitch>
-                            <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding Label.AllowOverlap}">允许重叠显示</ui:ToggleSwitch>
-
+                            <ui:ToggleSwitch IsOn="{Binding AllowRepeat}">允许重复显示</ui:ToggleSwitch>
+                            <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding AllowOverlap}">允许重叠显示</ui:ToggleSwitch>
                         </Grid>
-                        <Grid Grid.Row="99" Grid.ColumnSpan="99">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <ui:ToggleSwitch IsOn="{Binding Label.Info}">标签</ui:ToggleSwitch>
-                            <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding Label.Date}">日期</ui:ToggleSwitch>
-                            <ui:ToggleSwitch Grid.Column="4" IsOn="{Binding Label.Class}">分类</ui:ToggleSwitch>
-                        </Grid>
+                        <TextBlock
+                            Grid.Row="20" VerticalAlignment="Center"
+                            Text="显示内容" />
+                        <ComboBox
+                            Grid.Row="20" Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            ui:ControlHelper.PlaceholderText="选择显示的内容"
+                            SelectionChanged="ComboBox_SelectionChanged">
+                            <CheckBox Content="标签" IsChecked="{Binding Info}" />
+                            <CheckBox Content="日期" IsChecked="{Binding Date}" />
+                            <CheckBox Content="分类" IsChecked="{Binding Class}" />
+                        </ComboBox>
+                        <CheckBox
+                            Grid.Row="20" Grid.Column="4"
+                            Width="0" Margin="0,0,-48,0"
+                            VerticalAlignment="Center" Content="换行"
+                            Foreground="Red"
+                            IsChecked="{Binding NewLine}" />
                     </Grid>
                 </Border>
             </Expander>

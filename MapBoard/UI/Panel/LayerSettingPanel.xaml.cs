@@ -1,4 +1,5 @@
-﻿using FzLib.UI.Dialog;
+﻿using FzLib.Media;
+using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
@@ -13,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -44,15 +46,6 @@ namespace MapBoard.Main.UI.Panel
             InitializeComponent();
         }
 
-        private double lineWidth = 5;
-
-        public double LineWidth
-        {
-            get => lineWidth;
-            set => SetValueAndNotify(ref lineWidth, value, nameof(LineWidth));
-        }
-
-
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
 
         public KeySymbolPair SelectedKey
@@ -60,24 +53,9 @@ namespace MapBoard.Main.UI.Panel
             get => selectedKey;
             set
             {
-                //保存旧值
-                if (selectedKey != null)
-                {
-                    selectedKey.Symbol.LineWidth = LineWidth;
-                    selectedKey.Symbol.LineColor = MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
-                    selectedKey.Symbol.FillColor = MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
-                }
-
                 SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
 
                 btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
-                if (value != null)
-                {
-                    //应用新值
-                    LineWidth = value.Symbol.LineWidth;
-                    lineColorPicker.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(value.Symbol.LineColor));
-                    fillColorPicker.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(value.Symbol.FillColor));
-                }
             }
         }
 
@@ -101,19 +79,11 @@ namespace MapBoard.Main.UI.Panel
         {
             var layer = LayerCollection.Instance.Selected;
 
-            if (SelectedKey != null)
-            {
-                SelectedKey.Symbol.LineWidth = LineWidth;
-                SelectedKey.Symbol.LineColor = MediaColorToDrawingColor(lineColorPicker.ColorBrush.Color);
-                SelectedKey.Symbol.FillColor = MediaColorToDrawingColor(fillColorPicker.ColorBrush.Color);
-            }
             layer.Symbols.Clear();
             foreach (var keySymbol in Keys)
             {
                 layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
             }
-            Label.LineColor = MediaColorToDrawingColor(labelLineColor.ColorBrush.Color);
-            Label.FillColor = MediaColorToDrawingColor(labelFillColor.ColorBrush.Color);
 
             string newName = LayerName;
             if (newName != layer.Name)
@@ -146,7 +116,7 @@ namespace MapBoard.Main.UI.Panel
                 layer.Table = null;
                 LayerCollection.Instance.Layers.Insert(index, layer);
             }
-                await layer.ApplyLayers();
+            await layer.ApplyLayers();
         }
 
         public void ResetLayerSettingUI()
@@ -179,8 +149,24 @@ namespace MapBoard.Main.UI.Panel
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
             }
 
-            labelLineColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.LineColor));
-            labelFillColor.ColorBrush = new SolidColorBrush(DrawingColorToMeidaColor(Label.FillColor));
+            switch (layer.Type)
+            {
+                case Esri.ArcGISRuntime.Geometry.GeometryType.Point:
+                case Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint:
+                    tab.SelectedIndex = 0;
+                    break;
+
+                case Esri.ArcGISRuntime.Geometry.GeometryType.Polyline:
+                    tab.SelectedIndex = 1;
+                    break;
+
+                case Esri.ArcGISRuntime.Geometry.GeometryType.Polygon:
+                    tab.SelectedIndex = 2;
+                    break;
+
+                default:
+                    throw new Exception("未知的类型");
+            }
         }
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
@@ -188,7 +174,6 @@ namespace MapBoard.Main.UI.Panel
             Label.MinScale = ArcMapView.Instance.MapScale;
         }
 
-        private JObject labelJson;
         private KeySymbolPair selectedKey;
 
         private void KeyButtonClick(object sender, RoutedEventArgs e)
@@ -253,16 +238,15 @@ namespace MapBoard.Main.UI.Panel
             var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {
-                if (Keys.Any(p => p.Key == key) || key == "")
+                if (!Keys.Any(p => p.Key == key) && key != "")
                 {
-                    continue;
+                    SymbolInfo symbol = new SymbolInfo()
+                    {
+                        LineColor = GetRandomColor(),
+                        FillColor = GetRandomColor(),
+                    };
+                    Keys.Add(new KeySymbolPair(key, symbol));
                 }
-                SymbolInfo symbol = new SymbolInfo()
-                {
-                    LineColor = GetRandomColor(),
-                    FillColor = GetRandomColor(),
-                };
-                Keys.Add(new KeySymbolPair(key, symbol));
             }
         }
 
@@ -286,6 +270,11 @@ namespace MapBoard.Main.UI.Panel
                 key.Symbol.FillColor = GetRandomColor();
             }
         }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            (sender as ComboBox).SelectedItem = null;
+        }
     }
 
     public class KeySymbolPair
@@ -302,5 +291,34 @@ namespace MapBoard.Main.UI.Panel
 
         public string Key { get; set; }
         public SymbolInfo Symbol { get; set; }
+    }
+
+    public class ColorBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            if (value is Color c)
+            {
+                return new SolidColorBrush(DrawingColorToMeidaColor(c));
+            }
+            throw new Exception();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            if (value is SolidColorBrush b)
+            {
+                return MediaColorToDrawingColor(b.Color);
+            }
+            throw new Exception();
+        }
     }
 }

@@ -24,15 +24,17 @@ namespace MapBoard.Main.Model
 {
     public class LabelInfo : INotifyPropertyChanged
     {
-        public bool Info { get; set; } = true;
-        public bool Date { get; set; }
-        public bool Class { get; set; }
-        public bool Enable => Info || Date || Class;
+        private Color backgroundColor = Color.Transparent;
+        private Color fontColor = Color.Black;
+        private double fontSize = 12;
+        private Color haloColor = Color.FromArgb(255, 248, 220);
+        private double haloWidth = 3;
+        private double minScale = 0;
+        private bool newLine;
+        private Color outlineColor = Color.Transparent;
+        private double outlineWidth = 0;
 
-        /// <summary>
-        /// 标签布局
-        /// </summary>
-        public int Layout { get; set; } = 0;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// 是否允许重叠
@@ -44,23 +46,21 @@ namespace MapBoard.Main.Model
         /// </summary>
         public bool AllowRepeat { get; set; }
 
-        private Color lineColor = Color.FromArgb(255, 248, 220);
-
-        public Color LineColor
+        public Color BackgroundColor
         {
-            get => lineColor;
-            set => this.SetValueAndNotify(ref lineColor, value, nameof(LineColor));
+            get => backgroundColor;
+            set => this.SetValueAndNotify(ref backgroundColor, value, nameof(BackgroundColor));
         }
 
-        private Color fillColor = Color.Black;
+        public bool Class { get; set; }
+        public bool Date { get; set; }
+        public bool Enable => Info || Date || Class;
 
-        public Color FillColor
+        public Color FontColor
         {
-            get => fillColor;
-            set => this.SetValueAndNotify(ref fillColor, value, nameof(FillColor));
+            get => fontColor;
+            set => this.SetValueAndNotify(ref fontColor, value, nameof(FontColor));
         }
-
-        private double fontSize = 12;
 
         public double FontSize
         {
@@ -68,17 +68,24 @@ namespace MapBoard.Main.Model
             set => this.SetValueAndNotify(ref fontSize, value, nameof(FontSize));
         }
 
-        private double strokeThickness = 3;
-
-        public double StrokeThickness
+        public Color HaloColor
         {
-            get => strokeThickness;
-            set => this.SetValueAndNotify(ref strokeThickness, value, nameof(StrokeThickness));
+            get => haloColor;
+            set => this.SetValueAndNotify(ref haloColor, value, nameof(HaloColor));
         }
 
-        private double minScale = 0;
+        public double HaloWidth
+        {
+            get => haloWidth;
+            set => this.SetValueAndNotify(ref haloWidth, value, nameof(HaloWidth));
+        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public bool Info { get; set; } = true;
+
+        /// <summary>
+        /// 标签布局
+        /// </summary>
+        public int Layout { get; set; } = 0;
 
         public double MinScale
         {
@@ -97,45 +104,22 @@ namespace MapBoard.Main.Model
             }
         }
 
-        public string GetExpression()
+        public bool NewLine
         {
-            string l = Resource.LabelFieldName;
-            string d = Resource.DateFieldName;
-            string c = Resource.ClassFieldName;
-            List<string> exps = new List<string>();
-            if (Info)
-            {
-                exps.Add("$feature." + l);
-            }
-            if (Date)
-            {
-                string field = "$feature." + d;
-                exps.Add($"{field}==null");
-            }
-            if (Class)
-            {
-                exps.Add("$feature." + c);
-            }
-            string exp = string.Join("+'\\n'+", exps);
-            exp = @$"
-var exp='';
-if({Info})
-{{
-    exp=exp+$feature.{ l}+'\n';
-}}
-if({Date})
-{{
-if($feature.{ d}!=null)
-{{
-    exp=exp+Year($feature.{d})+'-'+Month($feature.{d})+'-'+Day($feature.{d})+'\n';
-}}
-}}
-if({Class})
-{{
-    exp=exp+$feature.{ c}+'\n';
-}}
-exp";
-            return exp;
+            get => newLine;
+            set => this.SetValueAndNotify(ref newLine, value, nameof(NewLine));
+        }
+
+        public Color OutlineColor
+        {
+            get => outlineColor;
+            set => this.SetValueAndNotify(ref outlineColor, value, nameof(OutlineColor));
+        }
+
+        public double OutlineWidth
+        {
+            get => outlineWidth;
+            set => this.SetValueAndNotify(ref outlineWidth, value, nameof(OutlineWidth));
         }
 
         public string Get11Expression()
@@ -157,55 +141,52 @@ exp";
             return exp;
         }
 
-        public string ToJson()
+        public string GetExpression()
         {
-            var labelJson = JObject.Parse(Resource.LabelJson);
-            SetLabelJsonValue<byte>(labelJson, "symbol.haloColor", GetRgbaFromColor(LineColor));
-            SetLabelJsonValue<byte>(labelJson, "symbol.color", GetRgbaFromColor(FillColor));
-            SetLabelJsonValue(labelJson, "symbol.font.size", FontSize);
-            SetLabelJsonValue(labelJson, "symbol.haloSize", StrokeThickness);
-            SetLabelJsonValue(labelJson, "minScale", MinScale);
-            SetLabelJsonValue(labelJson, "labelExpressionInfo.expression", GetExpression());
-            return labelJson.ToString();
-        }
+            string l = Resource.LabelFieldName;
+            string d = Resource.DateFieldName;
+            string c = Resource.ClassFieldName;
 
-        private static byte[] GetRgbaFromColor(Color color)
-        {
-            return new byte[] { color.R, color.G, color.B, color.A };
-        }
-
-        private static Color GetColorFromArgb(IList<byte> argb)
-        {
-            return Color.FromArgb(argb[3], argb[0], argb[1], argb[2]);
-        }
-
-        public void SetLabelJsonValue<T>(JObject labelJson, string path, IList<T> value)
-        {
-            string[] paths = path.Split('.');
-
-            JToken token = labelJson[paths[0]];
-            for (int i = 1; i < paths.Length; i++)
-            {
-                token = token[paths[i]];
-            }
-
-            for (int i = 0; i < value.Count; i++)
-            {
-                (token as JArray)[i] = new JValue(value[i]);
-            }
-        }
-
-        public void SetLabelJsonValue<T>(JObject labelJson, string path, T value)
-        {
-            string[] paths = path.Split('.');
-
-            JToken token = labelJson[paths[0]];
-            for (int i = 1; i < paths.Length; i++)
-            {
-                token = token[paths[i]];
-            }
-
-           (token as JValue).Value = value;
+            string newLine = $@"
+if({NewLine})
+{{
+    exp=exp+'\n';
+}}
+else
+{{
+    exp=exp+'    ';
+}}
+";
+            string exp = @$"
+var exp='';
+if({Info}&&$feature.{ l}!='')
+{{
+    exp=exp+$feature.{ l};
+    {newLine}
+}}
+if({Date})
+{{
+if($feature.{ d}!=null)
+{{
+    exp=exp+Year($feature.{d})+'-'+Month($feature.{d})+'-'+Day($feature.{d});
+    {newLine}
+}}
+}}
+if({Class}&&$feature.{ c}!='')
+{{
+    exp=exp+$feature.{ c};
+    {newLine}
+}}
+if({NewLine})
+{{
+    exp=Left(exp,Count(exp)-1);
+}}
+else
+{{
+    exp=Left(exp,Count(exp)-4);
+}}
+exp";
+            return exp;
         }
 
         public T[] GetLabelJsonValue<T>(JObject labelJson, string path, IEnumerable<T> defaultValue)
@@ -257,6 +238,57 @@ exp";
             {
                 return defaultValue;
             }
+        }
+
+        public void SetLabelJsonValue<T>(JObject labelJson, string path, IList<T> value)
+        {
+            string[] paths = path.Split('.');
+
+            JToken token = labelJson[paths[0]];
+            for (int i = 1; i < paths.Length; i++)
+            {
+                token = token[paths[i]];
+            }
+
+            for (int i = 0; i < value.Count; i++)
+            {
+                (token as JArray)[i] = new JValue(value[i]);
+            }
+        }
+
+        public void SetLabelJsonValue<T>(JObject labelJson, string path, T value)
+        {
+            string[] paths = path.Split('.');
+
+            JToken token = labelJson[paths[0]];
+            for (int i = 1; i < paths.Length; i++)
+            {
+                token = token[paths[i]];
+            }
+
+           (token as JValue).Value = value;
+        }
+
+        public string ToJson()
+        {
+            var labelJson = JObject.Parse(Resource.LabelJson);
+            SetLabelJsonValue<byte>(labelJson, "symbol.haloColor", GetRgbaFromColor(HaloColor));
+            SetLabelJsonValue<byte>(labelJson, "symbol.color", GetRgbaFromColor(FontColor));
+            SetLabelJsonValue(labelJson, "symbol.font.size", FontSize);
+            SetLabelJsonValue(labelJson, "symbol.haloSize", HaloWidth);
+            SetLabelJsonValue(labelJson, "minScale", MinScale);
+            SetLabelJsonValue(labelJson, "labelExpressionInfo.expression", GetExpression());
+            return labelJson.ToString();
+        }
+
+        private static Color GetColorFromArgb(IList<byte> argb)
+        {
+            return Color.FromArgb(argb[3], argb[0], argb[1], argb[2]);
+        }
+
+        private static byte[] GetRgbaFromColor(Color color)
+        {
+            return new byte[] { color.R, color.G, color.B, color.A };
         }
     }
 }
