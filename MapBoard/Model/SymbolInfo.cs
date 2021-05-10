@@ -44,5 +44,37 @@ namespace MapBoard.Main.Model
             get => fillColor;
             set => this.SetValueAndNotify(ref fillColor, value, nameof(FillColor));
         }
+
+        private int pointStyle = 0;
+
+        public int PointStyle
+        {
+            get => pointStyle;
+            set => this.SetValueAndNotify(ref pointStyle, value, nameof(PointStyle));
+        }
+
+        private int fillStyle = 6;
+
+        public int FillStyle
+        {
+            get => fillStyle;
+            set => this.SetValueAndNotify(ref fillStyle, value, nameof(FillStyle));
+        }
+
+        private int lineStyle = 5;
+
+        public int LineStyle
+        {
+            get => lineStyle;
+            set => this.SetValueAndNotify(ref lineStyle, value, nameof(LineStyle));
+        }
+
+        private int arrow = 0;
+
+        public int Arrow
+        {
+            get => arrow;
+            set => this.SetValueAndNotify(ref arrow, value, nameof(Arrow));
+        }
     }
 }

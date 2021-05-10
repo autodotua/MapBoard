@@ -116,7 +116,7 @@ namespace MapBoard.Main.UI.Panel
                 layer.Table = null;
                 LayerCollection.Instance.Layers.Insert(index, layer);
             }
-            await layer.ApplyLayers();
+            await layer.ApplyStyle();
         }
 
         public void ResetLayerSettingUI()

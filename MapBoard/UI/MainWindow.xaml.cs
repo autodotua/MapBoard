@@ -173,7 +173,7 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private async void DrawButtonsClick(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        private async void DrawButtonsClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await StartDraw(sender);
         }

@@ -32,7 +32,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 FeatureLayer layer = new FeatureLayer(style.Table);
                 Mapview.Map.OperationalLayers.Add(layer);
-                await LayerUtility.ApplyLayers(style);
+                await LayerUtility.ApplyStyle(style);
                 await style.LayerComplete();
                 return true;
             }

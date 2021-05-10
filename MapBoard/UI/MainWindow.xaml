@@ -125,12 +125,8 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <ui:SimpleStackPanel Spacing="12">
-                        <ScrollViewer
-                            Padding="0,0,12,0"
-                            HorizontalScrollBarVisibility="Disabled"
-                            VerticalScrollBarVisibility="Auto">
-                            <panel:LayerSettingPanel x:Name="Layersetting" />
-                        </ScrollViewer>
+
+                        <panel:LayerSettingPanel x:Name="Layersetting" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
                             HorizontalAlignment="Right"

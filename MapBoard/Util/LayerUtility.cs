@@ -145,7 +145,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static async Task ApplyLayers(this LayerInfo layer)
+        public static async Task ApplyStyle(this LayerInfo layer)
         {
             try
             {
@@ -166,8 +166,8 @@ namespace MapBoard.Main.Util
                     {
                         case GeometryType.Point:
                         case GeometryType.Multipoint:
-                            var outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, symbolInfo.FillColor, symbolInfo.Size)
+                            var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                            symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
                             {
                                 Outline = outline
                             };
@@ -175,16 +175,21 @@ namespace MapBoard.Main.Util
                             break;
 
                         case GeometryType.Polyline:
-                            symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.Size);
+                            symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.Size);
+                            if (symbolInfo.Arrow > 0)
+                            {
+                                (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow-1);
+                                (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
+                            }
                             break;
 
                         case GeometryType.Polygon:
-                            var lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                            symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, symbolInfo.FillColor, lineSymbol);
+                            var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                            symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
                             break;
                     }
 
-                    if (key == "")
+                    if (key.Length == 0)
                     {
                         renderer.DefaultSymbol = symbol;
                     }
@@ -217,7 +222,7 @@ namespace MapBoard.Main.Util
                 HaloWidth = label.HaloWidth,
                 OutlineWidth = label.OutlineWidth,
                 OutlineColor = label.OutlineColor,
-               FontWeight=FontWeight.Bold,
+                FontWeight = FontWeight.Bold,
             };
             LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
             {
