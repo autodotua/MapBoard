@@ -51,7 +51,7 @@ namespace MapBoard.Main.Util
             layer.Name = name ?? throw new ArgumentException();
             LayerCollection.Instance.Layers.Add(layer);
             LayerCollection.Instance.Selected = layer;
-            layer.ApplyLabel();
+            layer.ApplyStyle();
             return layer;
         }
 
@@ -143,97 +143,6 @@ namespace MapBoard.Main.Util
             {
                 await CreatCopy(LayerCollection.Instance.Selected, mode == 2);
             }
-        }
-
-        public static async Task ApplyStyle(this LayerInfo layer)
-        {
-            try
-            {
-                UniqueValueRenderer renderer = new UniqueValueRenderer();
-                renderer.FieldNames.Add(Resource.ClassFieldName);
-                if (layer.Symbols.Count == 0)
-                {
-                    layer.Symbols.Add("", new SymbolInfo());
-                }
-                foreach (var info in layer.Symbols)
-                {
-                    var key = info.Key;
-                    var symbolInfo = info.Value;
-
-                    Symbol symbol = null;
-
-                    switch (layer.Layer.FeatureTable.GeometryType)
-                    {
-                        case GeometryType.Point:
-                        case GeometryType.Multipoint:
-                            var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                            symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
-                            {
-                                Outline = outline
-                            };
-
-                            break;
-
-                        case GeometryType.Polyline:
-                            symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.Size);
-                            if (symbolInfo.Arrow > 0)
-                            {
-                                (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow-1);
-                                (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
-                            }
-                            break;
-
-                        case GeometryType.Polygon:
-                            var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                            symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
-                            break;
-                    }
-
-                    if (key.Length == 0)
-                    {
-                        renderer.DefaultSymbol = symbol;
-                    }
-                    else
-                    {
-                        renderer.UniqueValues.Add(new UniqueValue(key, key, symbol, key));
-                    }
-                }
-                layer.Layer.Renderer = renderer;
-                layer.ApplyLabel();
-                //style.Layer.LabelsEnabled = true;
-            }
-            catch (Exception ex)
-            {
-                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" + layer.Name : "图层") + "样式加载失败";
-                await CommonDialog.ShowErrorDialogAsync(ex, error);
-            }
-        }
-
-        public static void ApplyLabel(this LayerInfo layer)
-        {
-            LabelInfo label = layer.Label;
-            var exp = new ArcadeLabelExpression(label.GetExpression());
-            TextSymbol symbol = new TextSymbol()
-            {
-                HaloColor = label.HaloColor,
-                Color = label.FontColor,
-                BackgroundColor = label.BackgroundColor,
-                Size = label.FontSize,
-                HaloWidth = label.HaloWidth,
-                OutlineWidth = label.OutlineWidth,
-                OutlineColor = label.OutlineColor,
-                FontWeight = FontWeight.Bold,
-            };
-            LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
-            {
-                MinScale = label.MinScale,
-                TextLayout = (LabelTextLayout)label.Layout,
-                RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,
-                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude
-            };
-            layer.Layer.LabelDefinitions.Clear();
-            layer.Layer.LabelDefinitions.Add(labelDefinition);
-            layer.Layer.LabelsEnabled = true;
         }
 
         public static async Task LayerComplete(this LayerInfo layer)

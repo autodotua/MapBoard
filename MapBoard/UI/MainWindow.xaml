@@ -129,6 +129,7 @@
                         <panel:LayerSettingPanel x:Name="Layersetting" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
+                            Margin="0,0,12,0"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
                             <Button
@@ -144,7 +145,7 @@
                             <Button
                                 x:Name="btnCreateStyle"
                                 Click="CreateStyleButtonClick"
-                                Content="新建样式" />
+                                Content="新建图层" />
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">

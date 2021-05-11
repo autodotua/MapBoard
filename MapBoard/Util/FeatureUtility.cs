@@ -340,5 +340,43 @@ namespace MapBoard.Main.Util
             }
             return points;
         }
+
+        public static IEnumerable<Geometry> EnsureSinglePart(Geometry geometry)
+        {
+            switch (geometry.GeometryType)
+            {
+                case GeometryType.Point:
+                    yield return geometry;
+                    break;
+
+                case GeometryType.Polyline:
+                    var line = geometry as Polyline;
+
+                    foreach (var part in line.Parts)
+                    {
+                        yield return new Polyline(part);
+                    }
+                    break;
+
+                case GeometryType.Polygon:
+                    var polygon = geometry as Polygon;
+
+                    foreach (var part in polygon.Parts)
+                    {
+                        yield return new Polygon(part);
+                    }
+                    break;
+
+                case GeometryType.Multipoint:
+                    foreach (var point in (geometry as Multipoint).Points)
+                    {
+                        yield return point;
+                    }
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
     }
 }

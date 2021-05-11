@@ -80,24 +80,6 @@ namespace MapBoard.Main.Model
             }
         }
 
-        //private LabelDisplay label = new LabelDisplay();
-        //public LabelDisplay Label
-        //{
-        //    get
-        //    {
-        //        return label;
-        //    }
-        //    set
-        //    {
-        //        label = value;
-        //        if (Layer != null)
-        //        {
-        //            Layer.LabelsEnabled = Label.Enable;
-        //        }
-        //        this.Notify(nameof(Label));
-        //    }
-        //}
-
         private TimeExtentInfo timeExtent;
 
         public event PropertyChangedEventHandler PropertyChanged;

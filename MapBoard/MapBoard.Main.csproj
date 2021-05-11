@@ -131,6 +131,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
+    <Compile Include="IO\Kml.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />
     <Compile Include="UI\Component\AdvancedColorPickerDialog.xaml.cs">
       <DependentUpon>AdvancedColorPickerDialog.xaml</DependentUpon>
@@ -195,6 +196,7 @@
     <Compile Include="UI\Panel\LayerSettingPanel.xaml.cs">
       <DependentUpon>LayerSettingPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\StyleUtility.cs" />
     <Page Include="UI\Component\AdvancedColorPickerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

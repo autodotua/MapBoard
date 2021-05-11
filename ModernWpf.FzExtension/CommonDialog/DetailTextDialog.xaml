@@ -31,10 +31,15 @@
             HorizontalAlignment="Stretch"
             Header="详情"
             Visibility="{Binding Detail, Converter={StaticResource n2ic}}">
-            <TextBlock
-                Margin="0,8,0,0"
-                Text="{Binding Detail}"
-                TextWrapping="Wrap" />
+            <ScrollViewer
+                MaxHeight="320"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <TextBlock
+                    Margin="0,8,0,0"
+                    Text="{Binding Detail}"
+                    TextWrapping="Wrap" />
+            </ScrollViewer>
         </Expander>
         <ui:FontIcon
             Grid.RowSpan="99" Grid.Column="2"

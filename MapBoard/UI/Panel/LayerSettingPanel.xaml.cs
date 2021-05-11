@@ -116,7 +116,15 @@ namespace MapBoard.Main.UI.Panel
                 layer.Table = null;
                 LayerCollection.Instance.Layers.Insert(index, layer);
             }
-            await layer.ApplyStyle();
+            try
+            {
+                layer.ApplyStyle();
+            }
+            catch (Exception ex)
+            {
+                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" + layer.Name : "图层") + "样式加载失败";
+                await CommonDialog.ShowErrorDialogAsync(ex, error);
+            }
         }
 
         public void ResetLayerSettingUI()

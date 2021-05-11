@@ -1,7 +1,10 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Ogc;
+using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using FzLib.UI.Dialog;
+using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI;
@@ -76,31 +79,40 @@ namespace MapBoard.Main.Util
 
         public async static Task ExportLayer()
         {
+            var layer = LayerCollection.Instance.Selected;
+            System.Diagnostics.Debug.Assert(layer != null);
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
                 .Add("地图画板图层包", "mblpkg")
                 .Add("GIS工具箱图层", "zip")
-                , true, "地图画板图层 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+                .Add("KML打包文件", "kmz")
+                , true, layer.Name);
             if (path != null)
             {
                 try
                 {
+                    SnakeBar.Show("正在导出，请勿关闭程序");
                     switch (Path.GetExtension(path))
                     {
                         case ".mblpkg":
-                            await Package.ExportLayer2(path, LayerCollection.Instance.Selected);
+                            await Package.ExportLayer2(path, layer);
                             break;
 
                         case ".zip":
-                            await MobileGISToolBox.ExportLayer(path, LayerCollection.Instance.Selected);
+                            await MobileGISToolBox.ExportLayer(path, layer);
+                            break;
+
+                        case ".kmz":
+                            await Kml.Export(path, layer);
                             break;
 
                         default:
                             throw new Exception("未知文件类型");
                     }
+                    SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)
                 {
-                    CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }
         }
@@ -171,13 +183,14 @@ namespace MapBoard.Main.Util
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
                    .Add("mbmpkg地图画板包", "mbmpkg")
                 .Add("GIS工具箱图层", "zip")
-                 .Add("截图", "png"),
+                 .Add("截图", "png")
+                .Add("KML打包文件", "kmz"),
                  true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {
                 try
                 {
-                    SnakeBar.ShowError("正在导出，请勿关闭程序");
+                    SnakeBar.Show("正在导出，请勿关闭程序");
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
@@ -191,6 +204,13 @@ namespace MapBoard.Main.Util
                         case ".zip":
                             await MobileGISToolBox.ExportMap(path);
                             break;
+
+                        case ".kmz":
+                            await Kml.Export(path);
+                            break;
+
+                        default:
+                            throw new Exception("未知文件类型");
                     }
                     SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }

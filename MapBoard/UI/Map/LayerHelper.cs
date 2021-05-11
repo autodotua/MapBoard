@@ -21,35 +21,35 @@ namespace MapBoard.Main.UI.Map
     {
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async Task<bool> AddLayerAsync(LayerInfo style)
+        public async Task<bool> AddLayerAsync(LayerInfo layer)
         {
             try
             {
-                if (style.Table == null)
+                if (layer.Table == null)
                 {
-                    style.Table = new ShapefileFeatureTable(style.FileName);
-                    await style.Table.LoadAsync();
+                    layer.Table = new ShapefileFeatureTable(layer.FileName);
+                    await layer.Table.LoadAsync();
                 }
-                FeatureLayer layer = new FeatureLayer(style.Table);
-                Mapview.Map.OperationalLayers.Add(layer);
-                await LayerUtility.ApplyStyle(style);
-                await style.LayerComplete();
+                FeatureLayer fl = new FeatureLayer(layer.Table);
+                Mapview.Map.OperationalLayers.Add(fl);
+                layer.ApplyStyle();
+                await layer.LayerComplete();
                 return true;
             }
             catch (Exception ex)
             {
                 try
                 {
-                    style.Table.Close();
-                    if (style.Layer != null)
+                    layer.Table.Close();
+                    if (layer.Layer != null)
                     {
-                        Mapview.Map.OperationalLayers.Remove(style.Layer);
+                        Mapview.Map.OperationalLayers.Remove(layer.Layer);
                     }
                 }
                 catch
                 {
                 }
-                string error = (string.IsNullOrWhiteSpace(style.Name) ? "样式" : "样式" + style.Name) + "加载失败";
+                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "样式" : "样式" + layer.Name) + "加载失败";
                 await CommonDialog.ShowErrorDialogAsync(ex, error);
                 return false;
             }
