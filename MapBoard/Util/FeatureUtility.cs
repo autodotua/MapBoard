@@ -133,7 +133,21 @@ namespace MapBoard.Main.Util
             }
         }
 
-        private static async Task SimplyBase(LayerInfo layer, Feature feature, Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
+        public async static Task GeneralizeSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        {
+            foreach (var feature in features)
+            {
+                Geometry geometry = feature.Geometry;
+                geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
+               geometry= GeometryEngine.Generalize(geometry, max, false);
+                geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
+                feature.Geometry = geometry;
+                await layer.Table.UpdateFeatureAsync(feature);
+            }
+        }
+
+        private static async Task SimplyBase(LayerInfo layer, Feature feature,
+            Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
 

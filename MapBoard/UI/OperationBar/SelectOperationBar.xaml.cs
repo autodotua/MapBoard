@@ -280,7 +280,8 @@ namespace MapBoard.Main.UI.OperationBar
                    {
                 new DialogItem("间隔取点法","或每几个点保留一点"),
                 new DialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
-                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作")
+                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作"),
+                new DialogItem("最大偏离法","保证新的图形与旧图形之间的距离不超过一个值")
                    });
                 double? num = null;
                 switch (i)
@@ -309,6 +310,15 @@ namespace MapBoard.Main.UI.OperationBar
                         if (num.HasValue)
                         {
                             await FeatureUtility.DouglasPeuckerSimplify(layer, features, num.Value);
+                        }
+                        break;
+
+                    case 3:
+                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大允许的偏移距离（米）");
+
+                        if (num.HasValue)
+                        {
+                            await FeatureUtility.GeneralizeSimplify(layer, features, num.Value);
                         }
                         break;
                 }

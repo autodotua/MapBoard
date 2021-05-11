@@ -77,17 +77,30 @@ namespace MapBoard.Main.UI.Map
             base.OnPreviewMouseMove(e);
             if (e.RightButton == MouseButtonState.Pressed)
             {
-                if (!canRotate)
+                if (!canRotate )
                 {
                     return;
                 }
                 Point position = e.GetPosition(this);
                 double distance = position.X - startPosition.X;
+                if(Math.Abs(distance )< 10)
+                {
+                    return;
+                }
                 canRotate = false;
                 SetViewpointRotationAsync(startRotation + distance / 5);
                 await Task.Delay(100);
                 canRotate = true;
                 //防止旋转过快造成卡顿
+            }
+        }
+
+        protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseDoubleClick(e);
+            if (e.ChangedButton.HasFlag(MouseButton.Right))
+            {
+                SetViewpointRotationAsync(0);
             }
         }
 
