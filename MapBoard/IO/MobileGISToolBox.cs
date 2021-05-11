@@ -14,12 +14,6 @@ namespace MapBoard.Main.IO
     {
         public static async Task ExportLayer(string path, LayerInfo layer)
         {
-            //ZipFile zip;
-            //using (zip = new ZipFile(path))
-            //{
-            //zip.AlternateEncoding = Encoding.UTF8;
-            //zip.AlternateEncodingUsage = ZipOption.Always;
-
             DirectoryInfo tempDir = IOUtilities.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
@@ -29,23 +23,10 @@ namespace MapBoard.Main.IO
             File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
             File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
-            //foreach (var file in tempShpDir.EnumerateFiles())
-            //{
-            //    zip.AddFile( file.FullName, "BaseShapeFile");
-            //}
-
-            //zip.Save();
-            //}
         }
 
         public static async Task ExportMap(string path)
         {
-            //ZipFile zip;
-            //using (zip = new ZipFile(path))
-            //{
-            //zip.AlternateEncoding = Encoding.UTF8;
-            //zip.AlternateEncodingUsage = ZipOption.Always;
-
             DirectoryInfo tempDir = IOUtilities.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
@@ -58,13 +39,6 @@ namespace MapBoard.Main.IO
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
             }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
-            //foreach (var file in tempShpDir.EnumerateFiles())
-            //{
-            //    zip.AddFile( file.FullName, "BaseShapeFile");
-            //}
-
-            //zip.Save();
-            //}
         }
     }
 }

@@ -22,7 +22,7 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<LayerInfo> ImportToNewStyle(string path, Type type)
+        public async static Task<LayerInfo> ImportToNewLayer(string path, GpxImportType type)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -30,14 +30,14 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            LayerInfo style = LayerUtility.CreateLayer(type == Type.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
+            LayerInfo style = LayerUtility.CreateLayer(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
                 FeatureTable table = style.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
-                if (type == Type.Point)
+                if (type == GpxImportType.Point)
                 {
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
@@ -47,28 +47,6 @@ namespace MapBoard.Main.IO
                         feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
                     }
-                    await table.AddFeaturesAsync(features);
-                }
-                else if (type == Type.MultiLine)
-                {
-                    MapPoint lastPoint = null;
-                    List<Feature> features = new List<Feature>();
-                    foreach (var point in track.Points)
-                    {
-                        if (lastPoint == null)
-                        {
-                            lastPoint = transformation.TransformateToMapPoint(point);
-                        }
-                        else
-                        {
-                            var newPoint = transformation.TransformateToMapPoint(point);
-                            Feature feature = table.CreateFeature();
-                            feature.Geometry = new Polyline(new MapPoint[] { lastPoint, newPoint });
-                            features.Add(feature);
-                            lastPoint = newPoint;
-                        }
-                    }
-
                     await table.AddFeaturesAsync(features);
                 }
                 else
@@ -87,30 +65,37 @@ namespace MapBoard.Main.IO
             return style;
         }
 
-        public async static Task<LayerInfo> ImportAllToNewStyle(string[] paths)
+        public async static Task<LayerInfo> ImportAllToNewLayer(string[] paths, GpxImportType type)
         {
-            Debug.Assert(paths.Length >= 2);
-            var style = await ImportToNewStyle(paths[0], Type.OneLine);
+            var layer = await ImportToNewLayer(paths[0], type);
             for (int i = 1; i < paths.Length; i++)
             {
-                await ImportToStyle(style, paths[i]);
+                await ImportToLayer(paths[i], layer);
             }
-            return style;
+            return layer;
         }
 
-        public async static Task<Feature[]> ImportToStyle(LayerInfo style, string path)
+        public async static Task ImportToLayers(IEnumerable<string> paths, LayerInfo layer)
+        {
+            foreach (var path in paths)
+            {
+                await ImportToLayer(path, layer);
+            }
+        }
+
+        public async static Task<Feature[]> ImportToLayer(string path, LayerInfo layer)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
             var gpx = LibGpx.FromString(content);
-            FeatureTable table = style.Table;
+            FeatureTable table = layer.Table;
             CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)
             {
-                if (style.Type == GeometryType.Point)
+                if (layer.Type == GeometryType.Point)
                 {
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
@@ -123,16 +108,11 @@ namespace MapBoard.Main.IO
                     importedFeatures = features;
                     await table.AddFeaturesAsync(features);
                 }
-                else if (style.Type == GeometryType.Multipoint)
+                else if (layer.Type == GeometryType.Multipoint)
                 {
-                    //IEnumerable<MapPoint> points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
-                    //Feature feature = table.CreateFeature();
-                    //feature.Geometry = new Multipoint(points);
-                    //await table.AddFeatureAsync(feature);
-
-                    throw new Exception("由于内部BUG，多点暂不支持导入GPX");
+                    throw new Exception("多点暂不支持导入GPX");
                 }
-                else if (style.Type == GeometryType.Polyline)
+                else if (layer.Type == GeometryType.Polyline)
                 {
                     var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
                     Feature feature = table.CreateFeature();
@@ -146,20 +126,14 @@ namespace MapBoard.Main.IO
                 }
             }
 
-            style.UpdateFeatureCount();
+            layer.UpdateFeatureCount();
             return importedFeatures.ToArray();
-        }
-
-        public async static Task<Feature[]> ImportToCurrentLayer(string path)
-        {
-            LayerInfo style = LayerCollection.Instance.Selected;
-            return await ImportToStyle(style, path);
         }
 
         /// <summary>
         /// 生成的图形的类型
         /// </summary>
-        public enum Type
+        public enum GpxImportType
         {
             /// <summary>
             /// 每一个点就是一个点
@@ -169,12 +143,7 @@ namespace MapBoard.Main.IO
             /// <summary>
             /// 连点成线，所有点生成一条线
             /// </summary>
-            OneLine,
-
-            /// <summary>
-            /// 每两个点之间生成一条线
-            /// </summary>
-            MultiLine
+            Line,
         }
     }
 }

@@ -43,6 +43,7 @@ namespace MapBoard.Common
 
         public string BasemapCoordinateSystem { get; set; } = "WGS84";
         public bool HideWatermark { get; set; } = true;
+        public static int WatermarkHeight = 72;
         public bool RemainLabel { get; set; } = false;
         public bool RemainKey { get; set; } = false;
         public bool RemainDate { get; set; } = false;

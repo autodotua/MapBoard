@@ -123,11 +123,6 @@ namespace MapBoard.Main.UI.Map
 
         public async Task StopEditing()
         {
-            //if (lastBar != null)
-            //{
-            //    lastBar.Hide();
-            //    lastBar = null;
-            //}
             if (Mode == EditMode.Draw)
             {
                 await Mapview.Drawing.StopDraw();
@@ -151,29 +146,8 @@ namespace MapBoard.Main.UI.Map
                 LayerCollection.Instance.Selected.UpdateFeatureCount();
             }
 
-            //if (lastBar != null)
-            //{
-            //    lastBar.Hide();
-            //    lastBar = null;
-            //}
             Mapview.Selection.ClearSelection();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
-
-        //private bool isEditing = false;
-        //public bool IsEditing
-        //{
-        //    get => isEditing;
-        //    set
-        //    {
-        //        if (isEditing != value)
-        //        {
-        //            isEditing = value;
-        //            EditingStatusChanged?.Invoke(this, new EventArgs());
-        //        }
-        //    }
-        //}
-
-        //public event EventHandler EditingStatusChanged;
     }
 }

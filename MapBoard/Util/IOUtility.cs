@@ -25,10 +25,10 @@ namespace MapBoard.Main.Util
     {
         public async static Task ImportFeature()
         {
-            LayerInfo style = LayerCollection.Instance.Selected;
+            LayerInfo layer = LayerCollection.Instance.Selected;
             FileFilterCollection filter = null;
 
-            if (style.Type != GeometryType.Polygon)
+            if (layer.Type != GeometryType.Polygon)
             {
                 filter = new FileFilterCollection()
                     .Add("CSV表格", "csv")
@@ -46,7 +46,7 @@ namespace MapBoard.Main.Util
                 switch (Path.GetExtension(path))
                 {
                     case ".gpx":
-                        Feature[] features = await Gpx.ImportToCurrentLayer(path);
+                        Feature[] features = await Gpx.ImportToLayer(path, layer);
                         if (features.Length > 1)
                         {
                             SnakeBar.Show("导入GPX成功");
@@ -135,29 +135,7 @@ namespace MapBoard.Main.Util
                             return;
 
                         case ".gpx":
-                            int result = await CommonDialog.ShowSelectItemDialogAsync("请选择转换类型",
-                           new DialogItem[] {
-                              new DialogItem ("点","每一个轨迹点分别加入到新的样式中",null),
-                              new DialogItem ("一条线","按时间顺序将轨迹点相连，形成一条线",null),
-                              new DialogItem ("多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",null) });
-                            switch (result)
-                            {
-                                case 0:
-                                    await Gpx.ImportToNewStyle(path, Gpx.Type.Point);
-                                    break;
-
-                                case 1:
-                                    await Gpx.ImportToNewStyle(path, Gpx.Type.OneLine);
-                                    break;
-
-                                case 2:
-                                    await Gpx.ImportToNewStyle(path, Gpx.Type.MultiLine);
-                                    break;
-
-                                default:
-                                    ok = false;
-                                    break;
-                            }
+                            await ImportGpx(new[] { path });
                             break;
 
                         case ".shp":
@@ -170,7 +148,7 @@ namespace MapBoard.Main.Util
                 }
                 catch (Exception ex)
                 {
-                    CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
                     ok = false;
                 }
                 finally
@@ -230,9 +208,6 @@ namespace MapBoard.Main.Util
         /// <returns></returns>
         private static async Task SaveImage(string path)
         {
-            //ArcMapView.Instance.Width = 10000;
-            //ArcMapView.Instance.Height = 10000;
-            //await Task.Delay(1000);
             RuntimeImage image = await ArcMapView.Instance.ExportImageAsync();
             Bitmap bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
             bitmap.Save(path);
@@ -247,28 +222,31 @@ namespace MapBoard.Main.Util
             }
         }
 
+        private static async Task ImportGpx(string[] files)
+        {
+            List<DialogItem> items = new List<DialogItem>()
+                {
+                       new("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+                        new("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewLayer(files,Gpx.GpxImportType.Line)),
+                        new("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gpx.ImportAllToNewLayer(files,Gpx.GpxImportType.Point)),
+                };
+            if (LayerCollection.Instance.Selected != null)
+            {
+                var layer = LayerCollection.Instance.Selected;
+                if (layer.Type == GeometryType.Point || layer.Type == GeometryType.Polyline)
+                {
+                    items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayers(files, layer)));
+                }
+
+                await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
+            }
+        }
+
         public async static Task DropFiles(string[] files)
         {
             if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
             {
-                if (files.Length > 1)
-                {
-                    await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式",
-                           new DialogItem[]{
-             new DialogItem       ("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
-          new DialogItem          ("导入到新样式","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewStyle(files)),
-                   });
-                }
-                else
-                {
-                    await CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式",
-                               new DialogItem[]{
-                new("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
-                new("导入为点","每一个轨迹点分别加入到新的样式中",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.Point)),
-                new("导入为一条线","按时间顺序将轨迹点相连，形成一条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.OneLine)),
-                new("导入为多条线","按时间顺序将每两个轨迹点相连，形成n-1条线",async()=>await Gpx.ImportToNewStyle(files[0],Gpx.Type.MultiLine)),
-                       });
-                }
+                await ImportGpx(files);
             }
             else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
             {

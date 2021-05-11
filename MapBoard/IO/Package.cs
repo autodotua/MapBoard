@@ -32,7 +32,6 @@ namespace MapBoard.Main.IO
             }
             ZipFile.ExtractToDirectory(path, Config.DataPath);
 
-            //Information.Restart();
             LayerCollection.ResetLayers();
         }
 
@@ -54,11 +53,6 @@ namespace MapBoard.Main.IO
             LayerInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
             var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
 
-            //    Directory.EnumerateFiles(tempDirectoryPath).Where(p => Path.GetFileNameWithoutExtension(p) == style.Name).ToArray();
-            //if(files.Length<3)
-            //{
-            //    throw new Exception("缺少文件");
-            //}
             List<string> copyedFiles = new List<string>();
             foreach (var file in files)
             {

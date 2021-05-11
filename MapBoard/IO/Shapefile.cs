@@ -61,17 +61,6 @@ namespace MapBoard.Main.IO
         /// <param name="path"></param>
         public async static Task Import(string path)
         {
-            //string[] files = GetExistShapefiles(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)).ToArray();
-            //string[] existFiles = Directory.EnumerateFiles(Config.DataPath).Select(p => Path.GetFileName(p)).ToArray();
-
-            //foreach (var file in files)
-            //{
-            //    if (existFiles.Contains(Path.GetFileName(file)))
-            //    {
-            //        throw new Exception("文件名" + Path.GetFileName(file) + "与现有文件冲突");
-            //    }
-            //}
-
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
             bool info = table.Fields.Any(p => p.Name == Resource.LabelFieldName && p.FieldType == FieldType.Text);

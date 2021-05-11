@@ -64,7 +64,7 @@ namespace MapBoard.Main.UI.Map
 
         public void SetHideWatermark()
         {
-            Margin = new Thickness(Config.Instance.HideWatermark ? -72 : 0);
+            Margin = new Thickness(Config.Instance.HideWatermark ? -Config.WatermarkHeight : 0);
         }
 
         public static ArcMapView Instance { get; private set; }
@@ -76,7 +76,7 @@ namespace MapBoard.Main.UI.Map
 
         public async Task ZoomToGeometry(Geometry geometry, bool autoExtent = true)
         {
-            await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? 72 : 0);
+            await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
         }
 
         /// <summary>
@@ -90,15 +90,6 @@ namespace MapBoard.Main.UI.Map
             {
                 await Selection.StopFrameSelect(true);
             }
-        }
-
-        /// <summary>
-        /// 右键按下事件，用于显示右键菜单，现已废除
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnPreviewMouseRightButtonDown(e);
         }
 
         /// <summary>
