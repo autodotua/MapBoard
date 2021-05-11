@@ -30,16 +30,13 @@ namespace MapBoard.Main.UI.Map
             Mapview.Drawing.Attributes = FeatureAttributes.FromFeature(editingFeature);
 
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
-            // Config.Instance.DefaultStyle.CopyStyleFrom(LayerCollection.Instance.Layers.FirstOrDefault(p => p.Table.FeatureLayer == editingFeature.FeatureTable.FeatureLayer));
             if (mode == EditMode.Draw)
             {
                 await editingFeature.FeatureTable.DeleteFeatureAsync(editingFeature);
-                //ShowBar("正在编辑");
                 await Mapview.SketchEditor.StartAsync(GeometryEngine.Project(editingFeature.Geometry, SpatialReferences.WebMercator));
             }
             else if (mode == EditMode.Cut)
             {
-                //ShowBar("请画一条直线用于切割");
                 await Mapview.SketchEditor.StartAsync(Esri.ArcGISRuntime.UI.SketchCreationMode.Polyline);
             }
         }

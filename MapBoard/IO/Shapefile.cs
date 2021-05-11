@@ -72,7 +72,7 @@ namespace MapBoard.Main.IO
             foreach (var feature in features)
             {
                 Feature newFeature = style.Table.CreateFeature();
-                newFeature.Geometry = feature.Geometry;
+                newFeature.Geometry = FeatureUtility.RemoveZAndM(feature.Geometry);
                 if (info)
                 {
                     newFeature.Attributes[Resource.LabelFieldName] = feature.Attributes[Resource.LabelFieldName];

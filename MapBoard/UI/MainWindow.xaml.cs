@@ -9,6 +9,7 @@ using MapBoard.Common;
 using MapBoard.Common.Resource;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
@@ -480,7 +481,7 @@ namespace MapBoard.Main.UI
 
         public async Task Do(Func<Task> action)
         {
-            loading.IsActive = true;
+            loading.Show();
             try
             {
                 await action();
@@ -491,7 +492,7 @@ namespace MapBoard.Main.UI
             }
             finally
             {
-                loading.IsActive = false;
+                loading.Hide();
             }
         }
     }

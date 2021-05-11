@@ -51,7 +51,44 @@ namespace MapBoard.Main.UI.Map
             Layer = new LayerHelper();
             Overlay = new OverlayHelper();
             ViewpointChanged += ArcMapView_ViewpointChanged;
+            InteractionOptions = new MapViewInteractionOptions()
+            {
+                IsRotateEnabled = true
+            };
             Load();
+        }
+
+        private double startRotation = 0;
+        private Point startPosition = default;
+        private bool canRotate = true;
+
+        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseDown(e);
+            if (e.RightButton == MouseButtonState.Pressed)
+            {
+                startRotation = MapRotation;
+                startPosition = e.GetPosition(this);
+            }
+        }
+
+        protected async override void OnPreviewMouseMove(MouseEventArgs e)
+        {
+            base.OnPreviewMouseMove(e);
+            if (e.RightButton == MouseButtonState.Pressed)
+            {
+                if (!canRotate)
+                {
+                    return;
+                }
+                Point position = e.GetPosition(this);
+                double distance = position.X - startPosition.X;
+                canRotate = false;
+                SetViewpointRotationAsync(startRotation + distance / 5);
+                await Task.Delay(100);
+                canRotate = true;
+                //防止旋转过快造成卡顿
+            }
         }
 
         private void ArcMapView_ViewpointChanged(object sender, EventArgs e)

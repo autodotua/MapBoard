@@ -58,7 +58,7 @@ namespace MapBoard.Main.Model
             return attributes;
         }
 
-        public static FeatureAttributes Empty => new();
+        public static FeatureAttributes Empty => new FeatureAttributes();
 
         public void SaveToFeature(Feature feature)
         {

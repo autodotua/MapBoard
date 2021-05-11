@@ -1,5 +1,6 @@
 ﻿using FzLib.Extension;
 using FzLib.UI.Extension;
+using Microsoft.Xaml.Behaviors.Media;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,6 +13,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -28,12 +30,25 @@ namespace MapBoard.Main.UI.Component
             InitializeComponent();
         }
 
-        private bool isActive;
-
-        public bool IsActive
+        public void Show()
         {
-            get => isActive;
-            set => this.SetValueAndNotify(ref isActive, value, nameof(IsActive));
+            DoubleAnimation ani = new DoubleAnimation(1, TimeSpan.FromMilliseconds(500));
+            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+            grd.BeginAnimation(OpacityProperty, ani);
+            grd.Visibility = Visibility.Visible;
+            grd.IsHitTestVisible = true;
+        }
+
+        public void Hide()
+        {
+            DoubleAnimation ani = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
+            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+            grd.IsHitTestVisible = false;
+            ani.Completed += (p1, p2) =>
+            {
+                grd.Visibility = Visibility.Collapsed;
+            };
+            grd.BeginAnimation(OpacityProperty, ani);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

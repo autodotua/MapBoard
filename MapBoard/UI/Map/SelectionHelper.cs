@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
+using FzLib.Basic;
 using FzLib.Basic.Collection;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI;
@@ -9,6 +10,7 @@ using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -53,7 +55,7 @@ namespace MapBoard.Main.UI.Map
             double tolerance = Mapview.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
 
-            await Select(envelope, SpatialRelationship.Intersects);
+            await Select(envelope, e.Position, SpatialRelationship.Intersects);
         }
 
         public ArcMapView Mapview => ArcMapView.Instance;
@@ -81,7 +83,7 @@ namespace MapBoard.Main.UI.Map
             {
                 Envelope envelope = Mapview.SketchEditor.Geometry == null ? null : (Mapview.SketchEditor.Geometry as Polygon).Extent;
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
-                await Select(envelope, SpatialRelationship.Contains);
+                await Select(envelope, null, SpatialRelationship.Contains);
             }
 
             Mapview.SketchEditor.Stop();
@@ -89,71 +91,111 @@ namespace MapBoard.Main.UI.Map
             //BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
         }
 
-        public async Task Select(Envelope envelope, SpatialRelationship relationship)
+        public async Task Select(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
         {
-            if (envelope == null)
-            {
-                return;
-            }
+            await (App.Current.MainWindow as MainWindow).Do(async () =>
+             {
+                 if (envelope == null)
+                 {
+                     return;
+                 }
 
-            bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) || Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
-            bool inverse = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
-            QueryParameters query = new QueryParameters();
-            query.Geometry = envelope;
-            query.SpatialRelationship = relationship;
-            //foreach (FeatureLayer layer in Mapview.Map.OperationalLayers)
-            //{
-            var layer = LayerCollection.Instance.Selected?.Layer;
-            if (layer == null)
-            {
-                return;
-            }
-            FeatureQueryResult result = await layer.FeatureTable.QueryFeaturesAsync(query);
-            if (result.Count() != 0)
-            {
-                if (!multiple)
-                {
-                    ClearSelection();
-                }
-                foreach (var feature in result)
-                {
-                    if (SelectedFeatures.Any(p => p.Geometry.ToJson() == feature.Geometry.ToJson()))
-                    {
-                        if (inverse)
-                        {
-                            layer.UnselectFeature(feature);
-                            SelectedFeatures.Remove(SelectedFeatures.First(p => p.Geometry.ToJson() == feature.Geometry.ToJson()));
-                        }
-                    }
-                    else
-                    {
-                        layer.SelectFeature(feature);
-                        SelectedFeatures.Add(feature);
-                    }
-                }
-            }
-            //}
+                 bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) || Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+                 bool inverse = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+                 QueryParameters query = new QueryParameters();
+                 query.Geometry = envelope;
+                 query.SpatialRelationship = relationship;
+                 FeatureLayer layer = LayerCollection.Instance.Selected?.Layer;
+                 if (layer == null)
+                 {
+                     return;
+                 }
+                 //多图层选择过于复杂，不进行实现
+                 //if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                 //&& Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)
+                 //&& point.HasValue)
+                 //{
+                 //    var result = await Mapview.IdentifyLayersAsync(point.Value, 10, false);
+                 //    foreach (var r in result)
+                 //    {
+                 //        if (r.LayerContent is FeatureLayer l)
+                 //        {
+                 //            l.SelectFeatures(r.GeoElements.Cast<Feature>());
+                 //            SelectedFeatures.AddRange(r.GeoElements.Cast<Feature>());
+                 //        }
+                 //    }
+                 //}
+                 //else
+                 //{
+                 SelectionMode mode = SelectionMode.New;
+                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                 {
+                     mode = SelectionMode.Add;
+                 }
+                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                 {
+                     mode = SelectionMode.Subtract;
+                 }
+                 var result = await layer.SelectFeaturesAsync(query, mode);
+                 List<Feature> features = null;
+                 await Task.Run(() =>
+                 {
+                     features = result.ToList();
+                 });
+                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                 {
+                     features = features.Where(p =>
+                     !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
+                     .Equals(q.GetAttributeValue("FID")))).ToList();
+                     SelectedFeatures.AddRange(features);
+                 }
+                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                 {
+                     SelectedFeatures.RemoveRange(features);
+                 }
+                 else
+                 {
+                     SelectedFeatures.Clear();
+                     SelectedFeatures.AddRange(features);
+                 }
+                 // }
+                 // FeatureQueryResult result = await layer.query layer.FeatureTable.QueryFeaturesAsync(query);
+                 // List<Feature> features = null;
+                 // await Task.Run(() =>
+                 //{
+                 //    features = result.ToList();
+                 //});
+                 // if (features.Count != 0)
+                 // {
+                 //     if (!multiple)
+                 //     {
+                 //         ClearSelection();
+                 //     }
+                 //     foreach (var feature in features)
+                 //     {
+                 //         if (SelectedFeatures.Any(p => p.Geometry.ToJson() == feature.Geometry.ToJson()))
+                 //         {
+                 //             if (inverse)
+                 //             {
+                 //                 layer.UnselectFeature(feature);
+                 //                 SelectedFeatures.Remove(SelectedFeatures.First(p => p.Geometry.ToJson() == feature.Geometry.ToJson()));
+                 //             }
+                 //         }
+                 //         else
+                 //         {
+                 //             layer.SelectFeature(feature);
+                 //             SelectedFeatures.Add(feature);
+                 //         }
+                 //     }
+                 // }
+             });
         }
 
-        //public event EventHandler SelectingStatusChanged;
-        //private bool isSelecting = false;
-        //public bool IsSelecting
-        //{
-        //    get => isSelecting;
-        //    set
-        //    {
-        //        if(isSelecting!=value)
-        //        {
-        //            SelectingStatusChanged?.Invoke(this, new EventArgs());
-        //            isSelecting = value;
-        //        }
-        //    }
-        //}
         public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
 
         public void Select(Feature feature, bool clearAll = false)
         {
-            var layer = LayerCollection.Instance.Selected?.Layer;
+            var layer = feature.FeatureTable.FeatureLayer;
             if (layer == null)
             {
                 return;

@@ -10,19 +10,20 @@
     d:DesignHeight="450" d:DesignWidth="800"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
-    <Grid>
+    <Grid
+        x:Name="grd" Opacity="0"
+        Visibility="Collapsed">
         <Grid.Resources>
             <converter:Bool2VisibilityConverter x:Key="b2vc" />
         </Grid.Resources>
         <Border
+            x:Name="border"
             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-            Opacity="0.5"
-            Visibility="{Binding IsActive, Converter={StaticResource b2vc}}" />
+            Opacity="0.5" />
 
         <ui:ProgressRing
             x:Name="loading" Width="60"
-            Height="60"
-            IsActive="{Binding IsActive}"
+            Height="60" IsActive="True"
             IsHitTestVisible="False" />
     </Grid>
 </UserControl>

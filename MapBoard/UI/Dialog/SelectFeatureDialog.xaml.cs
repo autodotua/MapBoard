@@ -27,11 +27,11 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class SelectFeatureDialog : Common.Dialog.DialogWindowBase
     {
-        public ObservableCollection<FeatherSelectionInfo> SelectedFeatures { get; } = new ObservableCollection<FeatherSelectionInfo>();
+        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; } = new ObservableCollection<FeatureSelectionInfo>();
 
-        private FeatherSelectionInfo selected;
+        private FeatureSelectionInfo selected;
 
-        public FeatherSelectionInfo Selected
+        public FeatureSelectionInfo Selected
         {
             get => selected;
             set
@@ -64,7 +64,7 @@ namespace MapBoard.Main.UI.Dialog
             int index = 0;
             foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)
             {
-                SelectedFeatures.Add(new FeatherSelectionInfo(feature, ++index));
+                SelectedFeatures.Add(new FeatureSelectionInfo(feature, ++index));
             }
         }
 
@@ -93,9 +93,9 @@ namespace MapBoard.Main.UI.Dialog
             mainWindow.Focus();
         }
 
-        public class FeatherSelectionInfo
+        public class FeatureSelectionInfo
         {
-            public FeatherSelectionInfo(Feature feature, int index)
+            public FeatureSelectionInfo(Feature feature, int index)
             {
                 Feature = feature;
                 Index = index;

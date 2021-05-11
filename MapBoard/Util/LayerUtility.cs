@@ -136,8 +136,8 @@ namespace MapBoard.Main.Util
             await CommonDialog.ShowSelectItemDialogAsync("请选择副本类型",
                 new DialogItem[]
             {
-              new  ("仅样式",null,()=>mode=1),
-               new ("样式和所有图形",null,()=>mode=2)
+              new  DialogItem("仅样式",null,()=>mode=1),
+               new DialogItem("样式和所有图形",null,()=>mode=2)
             });
             if (mode > 0)
             {
