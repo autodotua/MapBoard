@@ -121,5 +121,9 @@ namespace MapBoard.Main.Model
             get => outlineWidth;
             set => this.SetValueAndNotify(ref outlineWidth, value, nameof(OutlineWidth));
         }
+
+        public bool Bold { get; set; }
+        public bool Italic { get; set; }
+        public string FontFamily { get; set; }
     }
 }

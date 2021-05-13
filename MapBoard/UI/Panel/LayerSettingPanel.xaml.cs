@@ -44,7 +44,10 @@ namespace MapBoard.Main.UI.Panel
         public LayerSettingPanel()
         {
             InitializeComponent();
+            Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
+
+        public string[] Fonts { get; }
 
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
 

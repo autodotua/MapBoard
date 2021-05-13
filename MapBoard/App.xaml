@@ -11,6 +11,9 @@
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
+            <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="{x:Type TextBox}">
+                <Setter Property="Padding" Value="8,2,6,1" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

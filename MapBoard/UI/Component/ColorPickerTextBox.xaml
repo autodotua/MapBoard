@@ -10,11 +10,11 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="4" />
-
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <TextBox
             x:Name="txt"
+            HorizontalAlignment="Stretch"
             LostKeyboardFocus="txt_LostKeyboardFocus"
             Text="{Binding CurrentColor, ElementName=colorPicker, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
         <local:ColorPicker

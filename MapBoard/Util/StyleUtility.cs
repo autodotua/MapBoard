@@ -87,14 +87,18 @@ namespace MapBoard.Main.Util
                 HaloWidth = label.HaloWidth,
                 OutlineWidth = label.OutlineWidth,
                 OutlineColor = label.OutlineColor,
-                FontWeight = FontWeight.Bold,
+                FontWeight = label.Bold ? FontWeight.Bold : FontWeight.Normal,
+                FontStyle = label.Italic ? FontStyle.Italic : FontStyle.Normal,
+                FontFamily = string.IsNullOrWhiteSpace(label.FontFamily) ? null : label.FontFamily
             };
             LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
             {
                 MinScale = label.MinScale,
                 TextLayout = (LabelTextLayout)label.Layout,
                 RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,
-                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude
+                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
+                FeatureInteriorOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
+                FeatureBoundaryOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
             };
             layer.Layer.LabelDefinitions.Clear();
             layer.Layer.LabelDefinitions.Add(labelDefinition);
