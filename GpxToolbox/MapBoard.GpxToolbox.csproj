@@ -102,12 +102,12 @@
   <ItemGroup>
     <Compile Include="UI\ArcMapView.cs" />
     <Compile Include="GpxHelper.cs" />
-    <Compile Include="Data\SymbolResources.cs" />
+    <Compile Include="Model\SymbolResources.cs" />
     <Compile Include="UI\BrowseWindow.xaml.cs">
       <DependentUpon>BrowseWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\TimeBasedChartHelper.cs" />
-    <Compile Include="Data\TrackInfo.cs" />
+    <Compile Include="Model\TrackInfo.cs" />
     <Page Include="UI\BrowseWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -116,7 +116,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Data\Log.cs" />
+    <Compile Include="Model\Log.cs" />
     <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

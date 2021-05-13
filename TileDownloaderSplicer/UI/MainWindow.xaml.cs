@@ -17,8 +17,9 @@ using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using GeoPoint = NetTopologySuite.Geometries.Point;
 using ModernWpf.FzExtension.CommonDialog;
+using MapBoard.TileDownloaderSplicer.Model;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -199,7 +200,7 @@ namespace MapBoard.TileDownloaderSplicer
                 CurrentDownload = new DownloadInfo();
             }
             DownloadingProgressPercent = 0;
-            Range<double> value = downloadBoundary.GetDoubleValue();
+            GeoRange<double> value = downloadBoundary.GetDoubleValue();
             if (value != null)
             {
                 CurrentDownload.SetRange(value);
@@ -466,7 +467,7 @@ namespace MapBoard.TileDownloaderSplicer
                 else if (File.Exists(savedImgPath))
                 {
                     staticMap.Source = new BitmapImage(new Uri(savedImgPath));
-                    currentProject = new ProjectInfo(level, left, top, width, height);
+                    currentProject = new ProjectInfo(level, left, top);
                 }
                 tbkStichStatus.Text = "";
 
@@ -513,13 +514,19 @@ namespace MapBoard.TileDownloaderSplicer
                                 File.Copy(savedImgPath, file);
                                 if (currentProject != null)
                                 {
-                                    string projectFile = file + "w";
+                                    string worldFile = file + "w";
+                                    string projFile = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + ".prj");
 
-                                    if (File.Exists(projectFile))
+                                    if (File.Exists(worldFile))
                                     {
-                                        File.Delete(projectFile);
+                                        File.Delete(worldFile);
                                     }
-                                    File.WriteAllText(projectFile, currentProject.ToString());
+                                    if (File.Exists(projFile))
+                                    {
+                                        File.Delete(projFile);
+                                    }
+                                    File.WriteAllText(worldFile, currentProject.ToString());
+                                    File.WriteAllText(projFile, Common.Resource.Resource.Proj3857);
                                 }
                             }
                             catch (Exception ex)

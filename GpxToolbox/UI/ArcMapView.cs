@@ -8,6 +8,7 @@ using FzLib.Geography.IO.Gpx;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
+using MapBoard.GpxToolbox.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
@@ -20,11 +21,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using static MapBoard.GpxToolbox.SymbolResources;
+using static MapBoard.GpxToolbox.Model.SymbolResources;
 using ArcMapPoint = Esri.ArcGISRuntime.Geometry.MapPoint;
 using GeoPoint = NetTopologySuite.Geometries.Point;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.UI
 {
     public class ArcMapView : SceneView
     {
@@ -32,19 +33,15 @@ namespace MapBoard.GpxToolbox
 
         public ArcMapView()
         {
-            Instances.Add(this);
+            instances.Add(this);
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
-            SetHideWatermark();
+            this.SetHideWatermark();
         }
 
-        public static List<ArcMapView> Instances { get; } = new List<ArcMapView>();
-
-        public void SetHideWatermark()
-        {
-            Margin = new Thickness(Config.Instance.HideWatermark ? -72 : 0);
-        }
+        private static List<ArcMapView> instances = new List<ArcMapView>();
+        public static IReadOnlyList<ArcMapView> Instances => instances.AsReadOnly();
 
         private void TracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {

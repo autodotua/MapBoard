@@ -6,15 +6,15 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using GeoPoint = NetTopologySuite.Geometries.Point;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.Model
 {
-    public class Range<T>
+    public class GeoRange<T>
     {
-        public Range()
+        public GeoRange()
         {
         }
 
-        public Range(T xMinOrLeft, T xMaxOrRight, T yMinOrBottom, T yMaxOrTop)
+        public GeoRange(T xMinOrLeft, T xMaxOrRight, T yMinOrBottom, T yMaxOrTop)
         {
             SetValue(xMinOrLeft, xMaxOrRight, yMinOrBottom, yMaxOrTop);
         }

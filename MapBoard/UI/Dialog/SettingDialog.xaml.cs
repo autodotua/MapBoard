@@ -1,5 +1,6 @@
 ﻿using FzLib.UI.Dialog;
 using MapBoard.Common;
+using MapBoard.Common.BaseLayer;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
@@ -53,7 +54,11 @@ namespace MapBoard.Main.UI.Dialog
             {
                 ArcMapView.Instance.SetHideWatermark();
             }
-            foreach (var map in GpxToolbox.ArcMapView.Instances)
+            foreach (var map in GpxToolbox.UI.ArcMapView.Instances)
+            {
+                map.SetHideWatermark();
+            }
+            foreach (var map in TileDownloaderSplicer.UI.ArcMapView.Instances)
             {
                 map.SetHideWatermark();
             }

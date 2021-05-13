@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapBoard.TileDownloaderSplicer.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.UI
 {
     /// <summary>
     /// BoundaryInputTable.xaml 的交互逻辑
@@ -62,22 +63,22 @@ namespace MapBoard.TileDownloaderSplicer
             txtBottom.Text = bottom.ToString();
         }
 
-        public Range<int> GetIntValue()
+        public GeoRange<int> GetIntValue()
         {
             if (!IsIntLegal(out int left, out int right, out int top, out int bottom))
             {
                 return null;
             }
-            return new Range<int>(left, right, bottom, top);
+            return new GeoRange<int>(left, right, bottom, top);
         }
 
-        public Range<double> GetDoubleValue()
+        public GeoRange<double> GetDoubleValue()
         {
             if (!IsDoubleLegal(out double left, out double right, out double top, out double bottom))
             {
                 return null;
             }
-            return new Range<double>(left, right, bottom, top);
+            return new GeoRange<double>(left, right, bottom, top);
         }
     }
 }

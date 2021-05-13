@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.Model
 {
     public class TileSourceCollection : INotifyPropertyChanged
     {

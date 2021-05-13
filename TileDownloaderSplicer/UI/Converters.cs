@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.UI
 {
     public class IsNotNullToBoolConverter : IValueConverter
     {

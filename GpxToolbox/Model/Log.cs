@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.Model
 {
     public static class Log
     {

@@ -246,7 +246,7 @@ namespace MapBoard.Main.Util
         {
             List<DialogItem> items = new List<DialogItem>()
                 {
-                       new DialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.MainWindow(files).Show()),
+                       new DialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.UI.MainWindow(files).Show()),
                         new DialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewLayer(files,Gpx.GpxImportType.Line)),
                         new DialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gpx.ImportAllToNewLayer(files,Gpx.GpxImportType.Point)),
                 };

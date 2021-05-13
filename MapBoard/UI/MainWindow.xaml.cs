@@ -471,12 +471,12 @@ namespace MapBoard.Main.UI
 
         private void GpxMenu_Click(object sender, RoutedEventArgs e)
         {
-            new GpxToolbox.MainWindow().Show();
+            new GpxToolbox.UI.MainWindow().Show();
         }
 
         private void TileMenu_Click(object sender, RoutedEventArgs e)
         {
-            new TileDownloaderSplicer.MainWindow().Show();
+            new TileDownloaderSplicer.UI.MainWindow().Show();
         }
 
         public async Task Do(Func<Task> action)

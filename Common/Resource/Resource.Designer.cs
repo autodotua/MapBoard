@@ -328,5 +328,27 @@ namespace MapBoard.Common.Resource {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   查找类似 PROJCS[&quot;WGS 84 / Pseudo-Mercator&quot;,
+        ///    GEOGCS[&quot;WGS 84&quot;,
+        ///        DATUM[&quot;WGS_1984&quot;,
+        ///            SPHEROID[&quot;WGS 84&quot;,6378137,298.257223563,
+        ///                AUTHORITY[&quot;EPSG&quot;,&quot;7030&quot;]],
+        ///            AUTHORITY[&quot;EPSG&quot;,&quot;6326&quot;]],
+        ///        PRIMEM[&quot;Greenwich&quot;,0,
+        ///            AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]],
+        ///        UNIT[&quot;degree&quot;,0.0174532925199433,
+        ///            AUTHORITY[&quot;EPSG&quot;,&quot;9122&quot;]],
+        ///        AUTHORITY[&quot;EPSG&quot;,&quot;4326&quot;]],
+        ///    PROJECTION[&quot;Mercator_1SP&quot;],
+        ///    PARAMETER[&quot;central_meridian&quot;,0],
+        ///    PARAMETER[&quot;scale_factor&quot; [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        /// </summary>
+        public static string Proj3857 {
+            get {
+                return ResourceManager.GetString("Proj3857", resourceCulture);
+            }
+        }
     }
 }

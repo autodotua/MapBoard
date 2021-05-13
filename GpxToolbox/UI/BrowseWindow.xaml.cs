@@ -5,6 +5,7 @@ using FzLib.Geography.Analysis;
 using FzLib.Geography.IO.Gpx;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
+using MapBoard.GpxToolbox.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using ProjNet.CoordinateSystems;
 using System;
@@ -17,10 +18,10 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using static MapBoard.GpxToolbox.SymbolResources;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
+using static MapBoard.GpxToolbox.Model.SymbolResources;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑

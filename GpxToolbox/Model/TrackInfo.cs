@@ -3,7 +3,7 @@ using FzLib.Geography.IO.Gpx;
 using System;
 using System.IO;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.Model
 {
     public class TrackInfo : ICloneable
     {

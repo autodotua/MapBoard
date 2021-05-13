@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.UI
 {
     public class TimeBasedChartHelper<TPoint, TLine, TPolygon> where TPoint : class where TLine : class where TPolygon : class
     {
@@ -43,7 +43,7 @@ namespace MapBoard.GpxToolbox
         private Line mouseLine;
         private TwoWayDictionary<Ellipse, TPoint> PointItems = new TwoWayDictionary<Ellipse, TPoint>();
 
-        #endregion
+        #endregion 指示性元素
 
         #region 刷新重绘
 
@@ -231,7 +231,7 @@ namespace MapBoard.GpxToolbox
         // private IEnumerable<T> lastPointPoints;
         // private IEnumerable<T> lastPolygonPoints;
 
-        #endregion
+        #endregion 刷新重绘
 
         #region 暴露的方法
 
@@ -473,7 +473,7 @@ namespace MapBoard.GpxToolbox
             Sketchpad.RenderTransform = group;
         }
 
-        #endregion
+        #endregion 暴露的方法
 
         #region 可从外部更改的属性
 
@@ -503,7 +503,7 @@ namespace MapBoard.GpxToolbox
 
         public double FontSize { get; set; } = 9;
 
-        #endregion
+        #endregion 可从外部更改的属性
 
         #region 基础绘制
 
@@ -596,7 +596,7 @@ namespace MapBoard.GpxToolbox
             AddSketchpadChildren(tbk);
         }
 
-        #endregion
+        #endregion 基础绘制
 
         #region 事件相关
 
@@ -614,7 +614,7 @@ namespace MapBoard.GpxToolbox
 
         public event MouseOverPointEventHandler MouseOverPoint;
 
-        #endregion
+        #endregion 事件相关
 
         private class BorderInfo
         {

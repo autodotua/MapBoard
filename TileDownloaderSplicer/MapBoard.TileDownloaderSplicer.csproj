@@ -98,9 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="UI\ArcMapView.cs" />
-    <Compile Include="Data\Range.cs" />
-    <Compile Include="Data\TileSourceCollection.cs" />
-    <Compile Include="Data\TileSourceInfo.cs" />
+    <Compile Include="Model\GeoRange.cs" />
+    <Compile Include="Model\TileSourceCollection.cs" />
+    <Compile Include="Model\TileSourceInfo.cs" />
     <Page Include="UI\BoundaryInputTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -113,8 +113,7 @@
       <DependentUpon>BoundaryInputTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
-    <Compile Include="Data\DownloadFileInfo.cs" />
-    <Compile Include="Data\DownloadInfo.cs" />
+    <Compile Include="Model\DownloadInfo.cs" />
     <Compile Include="UI\Converters.cs" />
     <Compile Include="UI\DrawRectCanvas.cs" />
     <Compile Include="UI\MainWindow.xaml.cs">
@@ -124,7 +123,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetHelper.cs" />
-    <Compile Include="Data\ProjectInfo.cs" />
+    <Compile Include="Model\ProjectInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -183,6 +182,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\MapBoard.Common.csproj">
+      <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
+      <Name>MapBoard.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj">
       <Project>{F5D99D6B-C794-4E2D-BB07-172D2EE954BB}</Project>
       <Name>ModernWpf.FzExtension</Name>

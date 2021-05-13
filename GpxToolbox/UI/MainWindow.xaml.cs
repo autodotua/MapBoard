@@ -18,7 +18,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using static MapBoard.GpxToolbox.SymbolResources;
+using static MapBoard.GpxToolbox.Model.SymbolResources;
 using MessageBox = FzLib.UI.Dialog.MessageBox;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
 using FzLib.UI.Extension;
@@ -35,8 +35,9 @@ using FzLib.Program;
 using System.Collections.ObjectModel;
 using ModernWpf.FzExtension.CommonDialog;
 using System.Threading.Tasks;
+using MapBoard.GpxToolbox.Model;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑

@@ -6,6 +6,7 @@ using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MapBoard.Common.BaseLayer
 {
@@ -60,6 +61,11 @@ namespace MapBoard.Common.BaseLayer
 
                 return false;
             }
+        }
+
+        public static void SetHideWatermark(this GeoView map)
+        {
+            map.Margin = new Thickness(Config.Instance.HideWatermark ? -Config.WatermarkHeight : 0);
         }
     }
 }

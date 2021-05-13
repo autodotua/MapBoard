@@ -407,8 +407,8 @@
                                     <ColumnDefinition Width="8" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <ui:ToggleSwitch IsOn="{Binding AllowRepeat}">允许重复显示</ui:ToggleSwitch>
-                                <ui:ToggleSwitch Grid.Column="2" IsOn="{Binding AllowOverlap}">允许重叠显示</ui:ToggleSwitch>
+                                <CheckBox IsChecked="{Binding AllowRepeat}">允许重复显示</CheckBox>
+                                <CheckBox Grid.Column="2" IsChecked="{Binding AllowOverlap}">允许重叠显示</CheckBox>
                             </Grid>
                             <TextBlock
                                 Grid.Row="14" VerticalAlignment="Center"

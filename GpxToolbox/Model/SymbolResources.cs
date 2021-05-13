@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Symbology;
 using System.Drawing;
 
-namespace MapBoard.GpxToolbox
+namespace MapBoard.GpxToolbox.Model
 {
     public static class SymbolResources
     {

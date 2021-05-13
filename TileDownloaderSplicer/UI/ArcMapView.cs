@@ -5,23 +5,29 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.UI.Dialog;
+using MapBoard.Common.BaseLayer;
+using MapBoard.TileDownloaderSplicer.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-namespace MapBoard.TileDownloaderSplicer
+namespace MapBoard.TileDownloaderSplicer.UI
 {
     public class ArcMapView : MapView
     {
         public ArcMapView()
         {
+            instances.Add(this);
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             AllowDrop = true;
             IsAttributionTextVisible = false;
+            this.SetHideWatermark();
+
             GraphicsOverlays.Add(overlay);
             graphic.Geometry = point;
             graphic.IsVisible = false;
@@ -33,6 +39,9 @@ namespace MapBoard.TileDownloaderSplicer
 
             Config.Instance.UrlCollection.PropertyChanged += UrlCollectionPropertyChanged;
         }
+
+        private static List<ArcMapView> instances = new List<ArcMapView>();
+        public static IReadOnlyList<ArcMapView> Instances => instances.AsReadOnly();
 
         private async void UrlCollectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -68,12 +77,9 @@ namespace MapBoard.TileDownloaderSplicer
             loaded = true;
             try
             {
-                //var baseLayer = new WebTiledLayer("http://online{num}.map.bdimg.com/tile/?qt=tile&x={col}&y={row}&z={level}&styles=pl&scaler=1&udt=20141103", new string[] { "1", "2", "3", "4" });
-                //baseLayer = new WebTiledLayer("file:/C:/Users/autod/Desktop/瓦片下载拼接器Debug/Download/{level}/{col}-{row}.png");
                 if (IsLocal)
                 {
                     baseLayer = new WebTiledLayer($"http://127.0.0.1:" + Config.Instance.ServerPort + "/{col}-{row}-{level}");
-                    //baseLayer = new WebTiledLayer("files:///" + Config.Instance.DownloadFolder + "/{level}/{x}-{y}." + Config.Instance.FormatExtension);
                 }
                 else
                 {
@@ -81,13 +87,11 @@ namespace MapBoard.TileDownloaderSplicer
                     {
                         return;
                     }
-                    //baseLayer = new WmtsLayer(new Uri("http://t0.tianditu.gov.cn/vec_c/wmts?tk=9396357d4b92e8e197eafa646c3c541d"), "vec_c");
-                    //baseLayer = new WebTiledLayer();
 
                     baseLayer = new WebTiledLayer(Config.Instance.UrlCollection.SelectedUrl.Url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
                 }
                 Basemap basemap = new Basemap(baseLayer);
-                //Basemap basemap = new Basemap(new WebTiledLayer("http://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={col}&y={row}&z={level}", new string[] { "1", "2", "3", "4" }));
+
                 await basemap.LoadAsync();
 
                 Map.Basemap = basemap;
@@ -118,7 +122,7 @@ namespace MapBoard.TileDownloaderSplicer
             }
         }
 
-        public void SetBoundary(Range<double> range)
+        public void SetBoundary(GeoRange<double> range)
         {
             Polygon polygon = RangeToPolygon(range);
             Geometry geometry = GeometryEngine.Project(polygon, SpatialReference);
@@ -136,7 +140,7 @@ namespace MapBoard.TileDownloaderSplicer
             };
         }
 
-        private Polygon RangeToPolygon(Range<double> range)
+        private Polygon RangeToPolygon(GeoRange<double> range)
         {
             MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
             MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
@@ -187,17 +191,8 @@ namespace MapBoard.TileDownloaderSplicer
                 return;
             }
             var range = tile.Extent;
-            //MapPoint wn = new MapPoint(range.XMin_Left, range.YMax_Top, SpatialReferences.Wgs84);
-            ////MapPoint en = new MapPoint(range.XMax_Right, range.YMax_Top, SpatialReferences.Wgs84);
-            //MapPoint es = new MapPoint(range.XMax_Right, range.YMin_Bottom, SpatialReferences.Wgs84);
-            ////MapPoint ws = new MapPoint(range.XMin_Left,range.YMin_Bottom, SpatialReferences.Wgs84);
 
-            ////Polygon polygon = new Polygon(new MapPoint[] { wn, en, es, ws });
-            ////polygon = GeometryEngine.Project(polygon, SpatialReferences.WebMercator)  as Polygon;
-
-            //Envelope envelope = new Envelope(wn, es);
             graphic.IsVisible = true;
-            //graphic.Geometry = polygon;
             graphic.Geometry = RangeToPolygon(range);
         }
     }

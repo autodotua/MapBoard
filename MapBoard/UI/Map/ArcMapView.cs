@@ -44,7 +44,7 @@ namespace MapBoard.Main.UI.Map
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
             ViewInsets = new Thickness(8);
-            SetHideWatermark();
+            this.SetHideWatermark();
             Edit = new EditHelper();
             Selection = new SelectionHelper();
             Drawing = new DrawHelper();
@@ -77,13 +77,13 @@ namespace MapBoard.Main.UI.Map
             base.OnPreviewMouseMove(e);
             if (e.RightButton == MouseButtonState.Pressed)
             {
-                if (!canRotate )
+                if (!canRotate)
                 {
                     return;
                 }
                 Point position = e.GetPosition(this);
                 double distance = position.X - startPosition.X;
-                if(Math.Abs(distance )< 10)
+                if (Math.Abs(distance) < 10)
                 {
                     return;
                 }
@@ -110,11 +110,6 @@ namespace MapBoard.Main.UI.Map
             {
                 Model.LayerCollection.Instance.MapViewExtentJson = envelope.ToJson();
             }
-        }
-
-        public void SetHideWatermark()
-        {
-            Margin = new Thickness(Config.Instance.HideWatermark ? -Config.WatermarkHeight : 0);
         }
 
         public static ArcMapView Instance { get; private set; }
