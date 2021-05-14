@@ -1,42 +1,38 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.UI.Dialog;
-using MapBoard.Common.Dialog;
-using MapBoard.Main.IO;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MapBoard.Main.Util
 {
     public static class FeatureUtility
     {
-        public static async Task Union(LayerInfo layer, IEnumerable<Feature> features)
+        public static async Task Union(LayerInfo layer, Feature[] features)
         {
             Geometry geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
             var firstFeature = features.First();
-            firstFeature.Geometry = geometry;
-            await layer.Table.UpdateFeatureAsync(firstFeature);
-            await layer.Table.DeleteFeaturesAsync(ArcMapView.Instance.Selection.SelectedFeatures.Where(p => p != firstFeature));
-            ArcMapView.Instance.Selection.ClearSelection();
+            var newFeature = layer.Table.CreateFeature(firstFeature.Attributes, geometry);
+            await layer.Table.DeleteFeaturesAsync(features);
+            await layer.Table.AddFeatureAsync(newFeature);
+            FeaturesGeometryChanged?.Invoke(null,
+                new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
         }
 
-        public static async Task Link(LayerInfo layer, IList<Feature> features, bool headToHead, bool reverse)
+        public static async Task Link(LayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
-            if (features.Count <= 1)
+            if (features.Length <= 1)
             {
                 throw new ArgumentException("要素数量小于2");
             }
-            if (features.Count == 2)
+            if (features.Length == 2)
             {
                 List<MapPoint> points1 = GetPoints(features[0]);
                 List<MapPoint> points2 = GetPoints(features[1]);
@@ -74,16 +70,18 @@ namespace MapBoard.Main.Util
                     points.AddRange(part);
                 }
             }
-            features[0].Geometry = new Polyline(points);
+            var newFeature = layer.Table.CreateFeature(features[0].Attributes, new Polyline(points));
 
-            await layer.Table.UpdateFeatureAsync(features[0]);
+            await layer.Table.AddFeatureAsync(newFeature);
 
-            await layer.Table.DeleteFeaturesAsync(features.Where(p => p != features[0]));
-            ArcMapView.Instance.Selection.ClearSelection();
+            await layer.Table.DeleteFeaturesAsync(features);
+            FeaturesGeometryChanged?.Invoke(null,
+    new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
         }
 
-        public static async Task Reverse(LayerInfo layer, IEnumerable<Feature> features)
+        public static async Task Reverse(LayerInfo layer, Feature[] features)
         {
+            List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features.ToList())
             {
                 List<MapPoint> points = GetPoints(feature);
@@ -98,25 +96,34 @@ namespace MapBoard.Main.Util
                     newGeo = new Polyline(points.ToList());
                 }
                 await layer.Table.DeleteFeatureAsync(feature);
-                await layer.Table.AddFeatureAsync(layer.Table.CreateFeature(feature.Attributes, newGeo));
-                ArcMapView.Instance.Selection.ClearSelection();
+                var newFeature = layer.Table.CreateFeature(feature.Attributes, newGeo);
+                await layer.Table.AddFeatureAsync(newFeature);
+                newFeatures.Add(newFeature);
             }
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, newFeatures, features, null));
         }
 
-        public static async Task Densify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        public static async Task Densify(LayerInfo layer, Feature[] features, double max)
         {
+            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             foreach (var feature in features.ToList())
             {
-                feature.Geometry = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
-                await layer.Table.UpdateFeatureAsync(feature);
+                var newGeo = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
+                oldGeometries.Add(feature, feature.Geometry);
+                feature.Geometry = newGeo;
             }
-            ArcMapView.Instance.Selection.ClearSelection();
+            await layer.Table.UpdateFeaturesAsync(oldGeometries.Keys);
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
-        public async static Task VerticalDistanceSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        public async static Task VerticalDistanceSimplify(LayerInfo layer, Feature[] features, double max)
         {
+            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             foreach (var feature in features)
             {
+                oldGeometries.Add(feature, feature.Geometry);
                 await SimplyBase(layer, feature, part =>
                 {
                     HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
@@ -131,19 +138,27 @@ namespace MapBoard.Main.Util
                     return part.Points.Except(deletedPoints);
                 });
             }
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
-        public async static Task GeneralizeSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        public async static Task GeneralizeSimplify(LayerInfo layer, Feature[] features, double max)
         {
+            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+
             foreach (var feature in features)
             {
+                oldGeometries.Add(feature, feature.Geometry);
+
                 Geometry geometry = feature.Geometry;
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
-               geometry= GeometryEngine.Generalize(geometry, max, false);
+                geometry = GeometryEngine.Generalize(geometry, max, false);
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
                 feature.Geometry = geometry;
                 await layer.Table.UpdateFeatureAsync(feature);
             }
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
         private static async Task SimplyBase(LayerInfo layer, Feature feature,
@@ -197,10 +212,14 @@ namespace MapBoard.Main.Util
             return dist.Distance;
         }
 
-        public static async Task DouglasPeuckerSimplify(LayerInfo layer, IEnumerable<Feature> features, double max)
+        public static async Task DouglasPeuckerSimplify(LayerInfo layer, Feature[] features, double max)
         {
+            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+
             foreach (var feature in features)
             {
+                oldGeometries.Add(feature, feature.Geometry);
+
                 await SimplyBase(layer, feature, part =>
                 {
                     var ps = part.Points;
@@ -234,16 +253,21 @@ namespace MapBoard.Main.Util
                     return result;
                 });
             }
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
-        public static async Task IntervalTakePointsSimplify(LayerInfo layer, IEnumerable<Feature> features, double interval)
+        public static async Task IntervalTakePointsSimplify(LayerInfo layer, Feature[] features, double interval)
         {
+            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+            if (interval < 2)
+            {
+                throw new Exception("间隔不应小于2");
+            }
             foreach (var feature in features)
             {
-                if (interval < 2)
-                {
-                    throw new Exception("间隔不应小于2");
-                }
+                oldGeometries.Add(feature, feature.Geometry);
+
                 await SimplyBase(layer, feature, part =>
                 {
                     List<MapPoint> points = new List<MapPoint>();
@@ -254,72 +278,18 @@ namespace MapBoard.Main.Util
                             points.Add(part.Points[i]);
                         }
                     }
-                    if (part.PointCount % interval != 0)
+                    if ((part.PointCount - 1) % interval != 0)
                     {
                         points.Add(part.Points[part.PointCount - 1]);
                     }
                     return points;
                 });
             }
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
-        public static async Task IntervalTakePointsSimplify(LayerInfo layer)
-        {
-            Feature feature = ArcMapView.Instance.Selection.SelectedFeatures[0];
-            int? num = await CommonDialog.ShowIntInputDialogAsync("请输入每几个点保留一个点");
-
-            if (num.HasValue)
-            {
-                int eachPoint = num.Value;
-                if (eachPoint < 2)
-                {
-                    await CommonDialog.ShowErrorDialogAsync("输入的值不可小于2！");
-                    return;
-                }
-
-                if (layer.Type == GeometryType.Polygon)
-                {
-                    Polygon polygon = feature.Geometry as Polygon;
-                    List<List<MapPoint>> newParts = new List<List<MapPoint>>();
-                    foreach (var part in polygon.Parts)
-                    {
-                        List<MapPoint> points = new List<MapPoint>();
-                        for (int i = 0; i < part.PointCount; i++)
-                        {
-                            if (i % eachPoint == 0)
-                            {
-                                points.Add(part.Points[i]);
-                            }
-                        }
-                        newParts.Add(points);
-                    }
-                    Polygon newPolygon = new Polygon(newParts);
-                    feature.Geometry = newPolygon;
-                }
-                else
-                {
-                    Polyline polygon = feature.Geometry as Polyline;
-                    List<List<MapPoint>> newParts = new List<List<MapPoint>>();
-                    foreach (var part in polygon.Parts)
-                    {
-                        List<MapPoint> points = new List<MapPoint>();
-                        for (int i = 0; i < part.PointCount; i++)
-                        {
-                            if (i % eachPoint == 0)
-                            {
-                                points.Add(part.Points[i]);
-                            }
-                        }
-                        newParts.Add(points);
-                    }
-                    Polyline newPolygon = new Polyline(newParts);
-                    feature.Geometry = newPolygon;
-                }
-                await layer.Table.UpdateFeatureAsync(feature);
-            }
-        }
-
-        public static async Task CreateCopy(LayerInfo layer, IEnumerable<Feature> features)
+        public static async Task CreateCopy(LayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features)
@@ -330,7 +300,40 @@ namespace MapBoard.Main.Util
             await layer.Table.AddFeaturesAsync(newFeatures);
             ArcMapView.Instance.Selection.ClearSelection();
             ArcMapView.Instance.Selection.Select(newFeatures);
-            layer.UpdateFeatureCount();
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, newFeatures, null, null));
+        }
+
+        public static async Task DeleteAsync(LayerInfo layer, Feature[] features)
+        {
+            await layer.Table.DeleteFeaturesAsync(features);
+            FeaturesGeometryChanged?.Invoke(null,
+new FeaturesGeometryChangedEventArgs(layer, null, features, null));
+        }
+
+        public static async Task Cut(LayerInfo layer, Feature[] features, Polyline clipLine)
+        {
+            List<Feature> added = new List<Feature>();
+            foreach (var feature in features)
+            {
+                var newGeos = GeometryEngine.Cut(feature.Geometry,
+                    GeometryEngine.Project(clipLine, SpatialReferences.Wgs84) as Polyline);
+                int partsCount = 0;
+                foreach (var newGeo in newGeos)
+                {
+                    foreach (var part in (newGeo as Multipart).Parts)
+                    {
+                        partsCount++;
+                        Feature newFeature = layer.Table.CreateFeature(
+                            feature.Attributes, newGeo is Polyline ? new Polyline(part) : new Polygon(part));
+                        added.Add(newFeature);
+                    }
+                }
+            }
+            await layer.Table.AddFeaturesAsync(added);
+            await layer.Table.DeleteFeaturesAsync(features);
+            FeaturesGeometryChanged?.Invoke(null,
+    new FeaturesGeometryChangedEventArgs(layer, added, features, null));
         }
 
         private static List<MapPoint> GetPoints(Feature feature)
@@ -356,78 +359,34 @@ namespace MapBoard.Main.Util
             return points;
         }
 
-        public static IEnumerable<Geometry> EnsureSinglePart(Geometry geometry)
+        public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;
+    }
+
+    public class FeaturesGeometryChangedEventArgs : EventArgs
+    {
+        public IReadOnlyList<Feature> DeletedFeatures { get; }
+        public IReadOnlyList<Feature> AddedFeatures { get; }
+        public IReadOnlyDictionary<Feature, Geometry> ChangedFeatures { get; }
+        public LayerInfo Layer { get; }
+
+        public FeaturesGeometryChangedEventArgs(LayerInfo layer,
+            IEnumerable<Feature> addedFeatures,
+            IEnumerable<Feature> deletedFeatures,
+            IDictionary<Feature, Geometry> changedFeatures)
         {
-            switch (geometry.GeometryType)
+            if (deletedFeatures != null)
             {
-                case GeometryType.Point:
-                    yield return geometry;
-                    break;
-
-                case GeometryType.Polyline:
-                    var line = geometry as Polyline;
-
-                    foreach (var part in line.Parts)
-                    {
-                        yield return new Polyline(part);
-                    }
-                    break;
-
-                case GeometryType.Polygon:
-                    var polygon = geometry as Polygon;
-
-                    foreach (var part in polygon.Parts)
-                    {
-                        yield return new Polygon(part);
-                    }
-                    break;
-
-                case GeometryType.Multipoint:
-                    foreach (var point in (geometry as Multipoint).Points)
-                    {
-                        yield return point;
-                    }
-                    break;
-
-                default:
-                    throw new NotSupportedException();
+                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
             }
-        }
-
-        public static Geometry RemoveZAndM(Geometry geometry)
-        {
-            if (!geometry.HasM && !geometry.HasZ)
+            if (addedFeatures != null)
             {
-                return geometry;
+                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
             }
-            switch (geometry.GeometryType)
+            if (changedFeatures != null)
             {
-                case GeometryType.Point:
-                    var point = geometry as MapPoint;
-                    return new MapPoint(point.X, point.Y, geometry.SpatialReference);
-
-                case GeometryType.Polyline:
-                case GeometryType.Polygon:
-                    List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();
-                    foreach (var part in (geometry as Multipart).Parts)
-                    {
-                        parts.Add(part.Points.Select(p => RemoveZAndM(p) as MapPoint));
-                    }
-                    if (geometry.GeometryType == GeometryType.Polyline)
-                    {
-                        return new Polyline(parts);
-                    }
-                    else
-                    {
-                        return new Polygon(parts);
-                    }
-
-                case GeometryType.Multipoint:
-                    return new Multipoint((geometry as Multipoint).Points.Select(p => RemoveZAndM(p) as MapPoint));
-
-                default:
-                    throw new NotSupportedException();
+                ChangedFeatures = new ReadOnlyDictionary<Feature, Geometry>(changedFeatures);
             }
+            Layer = layer;
         }
     }
 }

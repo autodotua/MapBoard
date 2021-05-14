@@ -46,7 +46,7 @@
         </Button>
         <Button
             x:Name="btnRedraw" Grid.Column="6"
-            Click="ReDrawButtonClick"
+            Click="EditButtonClick"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <Viewbox Width="16">

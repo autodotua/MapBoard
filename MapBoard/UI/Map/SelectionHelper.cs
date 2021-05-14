@@ -93,7 +93,7 @@ namespace MapBoard.Main.UI.Map
 
         public async Task Select(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
         {
-            await (App.Current.MainWindow as MainWindow).Do(async () =>
+            await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
              {
                  if (envelope == null)
                  {

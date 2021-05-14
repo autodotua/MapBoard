@@ -123,7 +123,7 @@ namespace MapBoard.Main.UI
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await arcMap.Edit.StopEditing();
+                await arcMap.Edit.StopAsync();
             }
 
             Config.Save();
@@ -196,7 +196,7 @@ namespace MapBoard.Main.UI
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            await Do(IOUtility.ImportLayer);
+            await DoAsync(IOUtility.ImportLayer);
         }
 
         private void JudgeControlsEnable()
@@ -256,6 +256,11 @@ namespace MapBoard.Main.UI
                 else
                 {
                     arcMap.Drawing.CurrentDrawMode = null;
+                }
+                if (undoSnakeBar != null)
+                {
+                    undoSnakeBar.Hide();
+                    undoSnakeBar = null;
                 }
             }
         }
@@ -335,7 +340,7 @@ namespace MapBoard.Main.UI
 
             async void ExportSingle()
             {
-                await Do(IOUtility.ExportLayer);
+                await DoAsync(IOUtility.ExportLayer);
             }
 
             async void ZoomToLayer()
@@ -355,7 +360,7 @@ namespace MapBoard.Main.UI
                 CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
                 if (dialog.ShowDialog() == true)
                 {
-                    await Do(async () =>
+                    await DoAsync(async () =>
                      {
                          string from = dialog.SelectedCoordinateSystem1;
                          string to = dialog.SelectedCoordinateSystem2;
@@ -462,6 +467,65 @@ namespace MapBoard.Main.UI
             {
                 Layersetting.ResetLayerSettingUI();
             }
+            FeatureUtility.FeaturesGeometryChanged += FeatureUtility_FeaturesGeometryChanged;
+        }
+
+        private void FeatureUtility_FeaturesGeometryChanged(object sender, FeaturesGeometryChangedEventArgs e)
+        {
+            if (e.AddedFeatures != null || e.DeletedFeatures != null || e.ChangedFeatures != null)
+            {
+                if (undoSnakeBar != null)
+                {
+                    undoSnakeBar.Hide();
+                }
+                SnakeBar snake = new SnakeBar(this)
+                {
+                    Duration = TimeSpan.FromSeconds(10),
+                    ButtonContent = "撤销",
+                    ShowButton = true,
+                };
+
+                undoSnakeBar = snake;
+                snake.ShowMessage("操作完成");
+                snake.ButtonClick += async (p1, p2) =>
+                 {
+                     undoSnakeBar = null;
+                     snake.Hide();
+                     await DoAsync(async () =>
+                      {
+                          try
+                          {
+                              await UndoFeatureOperation(e);
+                          }
+                          catch (Exception ex)
+                          {
+                              await CommonDialog.ShowErrorDialogAsync(ex, "撤销失败");
+                          }
+                      });
+                 };
+            }
+        }
+
+        private SnakeBar undoSnakeBar = null;
+
+        private async Task UndoFeatureOperation(FeaturesGeometryChangedEventArgs e)
+        {
+            if (e.AddedFeatures != null && e.AddedFeatures.Count > 0)
+            {
+                await e.Layer.Table.DeleteFeaturesAsync(e.AddedFeatures);
+            }
+            if (e.DeletedFeatures != null && e.DeletedFeatures.Count > 0)
+            {
+                await e.Layer.Table.AddFeaturesAsync(e.DeletedFeatures);
+            }
+            if (e.ChangedFeatures != null && e.ChangedFeatures.Count > 0)
+            {
+                foreach (var feature in e.ChangedFeatures.Keys)
+                {
+                    feature.Geometry = e.ChangedFeatures[feature];
+                }
+                await e.Layer.Table.UpdateFeaturesAsync(e.ChangedFeatures.Keys);
+            }
         }
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
@@ -479,16 +543,23 @@ namespace MapBoard.Main.UI
             new TileDownloaderSplicer.UI.MainWindow().Show();
         }
 
-        public async Task Do(Func<Task> action)
+        public async Task DoAsync(Func<Task> action, bool catchException = false)
         {
             loading.Show();
             try
             {
                 await action();
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                if (catchException)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex);
+                }
+                else
+                {
+                    throw;
+                }
             }
             finally
             {

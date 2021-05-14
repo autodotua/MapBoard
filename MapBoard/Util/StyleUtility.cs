@@ -132,7 +132,7 @@ if({label.Date})
 {{
 if($feature.{ d}!=null)
 {{
-    exp=exp+Year($feature.{d})+'-'+Month($feature.{d})+'-'+Day($feature.{d});
+    exp=exp+Year($feature.{d})+'-'+(Month($feature.{d})+1)+'-'+Day($feature.{d});
     {newLine}
 }}
 }}

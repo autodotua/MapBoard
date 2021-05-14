@@ -87,7 +87,7 @@ namespace MapBoard.Main.UI.OperationBar
             }
             else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await MapView.Edit.StopEditing();
+                await MapView.Edit.StopAsync();
             }
         }
 
@@ -99,7 +99,7 @@ namespace MapBoard.Main.UI.OperationBar
             }
             else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
             {
-                await MapView.Edit.AbandonEditing();
+                await MapView.Edit.CancelEditingAsync();
             }
         }
 

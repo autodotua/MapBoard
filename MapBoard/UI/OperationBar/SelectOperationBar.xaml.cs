@@ -49,8 +49,7 @@ namespace MapBoard.Main.UI.OperationBar
         {
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
-            btnCut.IsEnabled = count == 1 &&
-                (LayerCollection.Instance.Selected.Type == GeometryType.Polygon || LayerCollection.Instance.Selected.Type == GeometryType.Polyline);
+            btnCut.IsEnabled = (LayerCollection.Instance.Selected.Type == GeometryType.Polygon || LayerCollection.Instance.Selected.Type == GeometryType.Polyline);
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
             if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
             {
@@ -124,12 +123,15 @@ namespace MapBoard.Main.UI.OperationBar
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
-            await MapView.Edit.DeleteSelectedFeatures();
+            await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
+            {
+                await FeatureUtility.DeleteAsync(LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
+            }, true);
         }
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
         {
-            await (Window.GetWindow(this) as MainWindow).Do(async () =>
+            await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
                 SelectLayerDialog dialog = new SelectLayerDialog();
                 if (dialog.ShowDialog() == true)
@@ -151,14 +153,21 @@ namespace MapBoard.Main.UI.OperationBar
             });
         }
 
-        private void CutButtonClick(object sender, RoutedEventArgs e)
+        private async void CutButtonClick(object sender, RoutedEventArgs e)
         {
-            MapView.Edit.StartEdit(EditHelper.EditMode.Cut);
+            var line = await MapView.Edit.StartCutAsync();
+            if (line != null)
+            {
+                await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
+                {
+                    await FeatureUtility.Cut(LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray(), line);
+                }, true);
+            }
         }
 
-        private void ReDrawButtonClick(object sender, RoutedEventArgs e)
+        private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
-            MapView.Edit.StartEdit(EditHelper.EditMode.Draw);
+            await MapView.Edit.StartEditAsync();
         }
 
         private async void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -172,12 +181,12 @@ namespace MapBoard.Main.UI.OperationBar
 
             var layer = LayerCollection.Instance.Selected;
 
-            ExtendedObservableCollection<Feature> features = ArcMapView.Instance.Selection.SelectedFeatures;
+            var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
             List<(string header, Func<Task> action, bool visiable)> menus = new List<(string header, Func<Task> action, bool visiable)>()
            {
-                ("合并",Union,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)&& features.Count>1),
+                ("合并",Union,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)&& features.Length>1),
                 ("连接",Link,layer.Type==GeometryType.Polyline
-                && features.Count>1
+                && features.Length>1
                 && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
                 ("反转",Reverse,layer.Type==GeometryType.Polyline),
                 ("加密",Densify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
@@ -195,7 +204,7 @@ namespace MapBoard.Main.UI.OperationBar
                     {
                         try
                         {
-                            await (Window.GetWindow(this) as MainWindow).Do(action);
+                            await (Window.GetWindow(this) as MainWindow).DoAsync(action);
                         }
                         catch (Exception ex)
                         {

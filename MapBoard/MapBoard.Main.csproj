@@ -151,6 +151,7 @@
     <Compile Include="UI\Map\OverlayHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
+    <Compile Include="Util\GeometryUtility.cs" />
     <Compile Include="Util\IOUtility.cs" />
     <Compile Include="IO\IOUtilities.cs" />
     <Compile Include="IO\MobileGISToolBox.cs" />

@@ -69,7 +69,7 @@ namespace MapBoard.Main.IO
         {
             foreach (var feature in await layer.GetAllFeatures())
             {
-                foreach (var g in FeatureUtility.EnsureSinglePart(feature.Geometry))
+                foreach (var g in GeometryUtility.EnsureSinglePart(feature.Geometry))
                 {
                     var geometry = new KmlGeometry(g, KmlAltitudeMode.ClampToGround);
                     var placemark = new KmlPlacemark(geometry);

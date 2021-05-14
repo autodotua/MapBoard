@@ -14,6 +14,7 @@ using MapBoard.Common.BaseLayer;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -151,7 +152,10 @@ namespace MapBoard.Main.UI.Map
                     break;
 
                 case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
-                    await Edit.DeleteSelectedFeatures();
+                    await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
+                   {
+                       await FeatureUtility.DeleteAsync(Model.LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
+                   }, true);
                     break;
 
                 case Key.Space:
@@ -163,7 +167,7 @@ namespace MapBoard.Main.UI.Map
                             break;
 
                         case BoardTaskManager.BoardTask.Edit:
-                            await Edit.StopEditing();
+                            await Edit.StopAsync();
                             break;
 
                         case BoardTaskManager.BoardTask.Ready when Drawing.CurrentDrawMode.HasValue:
@@ -177,7 +181,7 @@ namespace MapBoard.Main.UI.Map
                     break;
 
                 case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
-                    await Edit.AbandonEditing();
+                    await Edit.CancelEditingAsync();
                     break;
 
                 case Key.Escape when Selection.SelectedFeatures.Count > 0:
