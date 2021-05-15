@@ -24,7 +24,6 @@ namespace MapBoard.Main.UI.Map
     {
         public SelectionHelper()
         {
-            instance = this;
             Mapview.GeoViewTapped += MapviewTapped;
             SelectedFeatures.CollectionChanged += (s, e) =>
               {

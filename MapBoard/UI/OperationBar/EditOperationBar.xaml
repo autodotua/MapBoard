@@ -101,7 +101,6 @@
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">取消</TextBlock>
                 </StackPanel>
             </Button>
-
         </Grid>
         <Grid
             Grid.Row="1" Grid.RowSpan="99"
@@ -132,14 +131,14 @@
             <TextBlock VerticalAlignment="Center" Text="标签：" />
             <TextBox
                 x:Name="txtLabel" Grid.Column="2"
-                Text="{Binding MapView.Drawing.Attributes.Label}" />
+                Text="{Binding MapView.Editor.Attributes.Label}" />
             <TextBlock
                 Grid.Row="2" Grid.Column="4"
                 VerticalAlignment="Center" Text="日期：" />
             <TextBox
                 x:Name="txtDate" Grid.Row="2"
                 Grid.Column="6"
-                Text="{Binding MapView.Drawing.Attributes.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}" />
+                Text="{Binding MapView.Editor.Attributes.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}" />
             <TextBlock
                 Grid.Row="4" Grid.Column="8"
                 HorizontalAlignment="Right"
@@ -147,7 +146,7 @@
             <TextBox
                 x:Name="txtKey" Grid.Row="4"
                 Grid.Column="10"
-                Text="{Binding MapView.Drawing.Attributes.Key}" />
+                Text="{Binding MapView.Editor.Attributes.Key}" />
         </Grid>
     </Grid>
 </local:OperationBarBase>

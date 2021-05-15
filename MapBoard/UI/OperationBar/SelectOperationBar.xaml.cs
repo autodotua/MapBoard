@@ -354,5 +354,17 @@ namespace MapBoard.Main.UI.OperationBar
                 }
             }
         }
+
+        private void ValueTextBlock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock tbk)
+            {
+                if (!string.IsNullOrEmpty(tbk.Text))
+                {
+                    Clipboard.SetText(tbk.Text);
+                    SnakeBar.Show($"已复制“{tbk.Text}”到剪贴板");
+                }
+            }
+        }
     }
 }
