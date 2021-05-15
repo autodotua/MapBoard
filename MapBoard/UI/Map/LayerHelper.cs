@@ -33,7 +33,7 @@ namespace MapBoard.Main.UI.Map
                 FeatureLayer fl = new FeatureLayer(layer.Table);
                 Mapview.Map.OperationalLayers.Add(fl);
                 layer.ApplyStyle();
-                await layer.LayerComplete();
+                await layer.LayerCompleteAsync();
                 return true;
             }
             catch (Exception ex)
@@ -49,18 +49,18 @@ namespace MapBoard.Main.UI.Map
                 catch
                 {
                 }
-                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "样式" : "样式" + layer.Name) + "加载失败";
+                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" : "图层" + layer.Name) + "加载失败";
                 await CommonDialog.ShowErrorDialogAsync(ex, error);
                 return false;
             }
         }
 
-        public void RemoveLayer(LayerInfo style)
+        public void RemoveLayer(LayerInfo layer)
         {
             try
             {
-                Mapview.Map.OperationalLayers.Remove(style.Layer);
-                style.Table.Close();
+                Mapview.Map.OperationalLayers.Remove(layer.Layer);
+                layer.Table.Close();
             }
             catch
             {
@@ -76,7 +76,7 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        public async Task LoadLayers()
+        public async Task LoadLayersAsync()
         {
             Mapview.Selection.SelectedFeatures.Clear();
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
@@ -91,7 +91,7 @@ namespace MapBoard.Main.UI.Map
             {
                 if (File.Exists(Path.Combine(Config.DataPath, style.Name + ".shp")))
                 {
-                    await LoadLayer(style);
+                    await LoadLayerAsync(style);
                 }
                 else
                 {
@@ -117,18 +117,18 @@ namespace MapBoard.Main.UI.Map
                 {
                     LayerInfo style = new LayerInfo();
                     style.Name = name;
-                    await LoadLayer(style);
+                    await LoadLayerAsync(style);
                 }
             }
         }
 
-        public async Task LoadLayer(LayerInfo style)
+        public async Task LoadLayerAsync(LayerInfo layer)
         {
             try
             {
-                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Config.DataPath + "\\" + style.Name + ".shp");
+                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Config.DataPath + "\\" + layer.Name + ".shp");
                 await featureTable.LoadAsync();
-                if (featureTable.LoadStatus == Esri.ArcGISRuntime.LoadStatus.Loaded)
+                if (featureTable.LoadStatus == LoadStatus.Loaded)
                 {
                 }
             }
@@ -136,11 +136,11 @@ namespace MapBoard.Main.UI.Map
             {
                 if (SnakeBar.DefaultOwner.Owner == null)
                 {
-                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载样式{style.Name}");
+                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载图层{layer.Name}");
                 }
                 else
                 {
-                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载样式{style.Name}");
+                    await CommonDialog.ShowErrorDialogAsync(ex, $"无法加载图层{layer.Name}");
                 }
             }
         }

@@ -167,7 +167,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
 
         private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
         {
-            await arcMap.StartSelectAsync();
+            await arcMap.SelectAsync();
         }
 
         private DownloadInfo currentDownload;
@@ -236,7 +236,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
 
             if (CurrentDownloadStatus == DownloadStatus.Stop || CurrentDownloadStatus == DownloadStatus.Paused)
             {
-                await StartOrContinueDowloading();
+                await StartOrContinueDowloadingAsync();
             }
             else
             {
@@ -249,7 +249,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
             CurrentDownloadStatus = DownloadStatus.Pausing;
         }
 
-        private async Task StartOrContinueDowloading()
+        private async Task StartOrContinueDowloadingAsync()
         {
             CurrentDownloadStatus = DownloadStatus.Downloading;
             //pgb.Maximum = CurrentDownload.TileCount;
@@ -588,7 +588,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
                 {
                     ServerButtonClick(null, null);
                 }
-                await arcLocalMap.Load();
+                await arcLocalMap.LoadAsync();
             }
         }
 

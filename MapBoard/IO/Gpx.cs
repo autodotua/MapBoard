@@ -22,7 +22,7 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<LayerInfo> ImportToNewLayer(string path, GpxImportType type)
+        public async static Task<LayerInfo> ImportToNewLayerAsync(string path, GpxImportType type)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -65,25 +65,25 @@ namespace MapBoard.Main.IO
             return style;
         }
 
-        public async static Task<LayerInfo> ImportAllToNewLayer(string[] paths, GpxImportType type)
+        public async static Task<LayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type)
         {
-            var layer = await ImportToNewLayer(paths[0], type);
+            var layer = await ImportToNewLayerAsync(paths[0], type);
             for (int i = 1; i < paths.Length; i++)
             {
-                await ImportToLayer(paths[i], layer);
+                await ImportToLayerAsync(paths[i], layer);
             }
             return layer;
         }
 
-        public async static Task ImportToLayers(IEnumerable<string> paths, LayerInfo layer)
+        public async static Task ImportToLayersAsync(IEnumerable<string> paths, LayerInfo layer)
         {
             foreach (var path in paths)
             {
-                await ImportToLayer(path, layer);
+                await ImportToLayerAsync(path, layer);
             }
         }
 
-        public async static Task<Feature[]> ImportToLayer(string path, LayerInfo layer)
+        public async static Task<Feature[]> ImportToLayerAsync(string path, LayerInfo layer)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);

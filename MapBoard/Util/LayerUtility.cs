@@ -81,7 +81,7 @@ namespace MapBoard.Main.Util
             return layer;
         }
 
-        public async static Task CreatCopy(this LayerInfo layer, bool includeFeatures)
+        public async static Task CreatCopyAsync(this LayerInfo layer, bool includeFeatures)
         {
             if (includeFeatures)
             {
@@ -104,7 +104,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task CopyAllFeatures(LayerInfo source, LayerInfo target)
+        public async static Task CopyAllFeaturesAsync(LayerInfo source, LayerInfo target)
         {
             FeatureQueryResult features = await source.GetAllFeatures();
             ShapefileFeatureTable targetTable = target.Table;
@@ -121,13 +121,13 @@ namespace MapBoard.Main.Util
             SelectLayerDialog dialog = new SelectLayerDialog();
             if (dialog.ShowDialog() == true)
             {
-                await CopyAllFeatures(LayerCollection.Instance.Selected, dialog.SelectedLayer);
+                await CopyAllFeaturesAsync(LayerCollection.Instance.Selected, dialog.SelectedLayer);
             }
         }
 
         public async static void Buffer()
         {
-            await Buffer(LayerCollection.Instance.Selected);
+            await BufferAsync(LayerCollection.Instance.Selected);
         }
 
         public async static void CreateCopy()
@@ -141,19 +141,19 @@ namespace MapBoard.Main.Util
             });
             if (mode > 0)
             {
-                await CreatCopy(LayerCollection.Instance.Selected, mode == 2);
+                await CreatCopyAsync(LayerCollection.Instance.Selected, mode == 2);
             }
         }
 
-        public static async Task LayerComplete(this LayerInfo layer)
+        public static async Task LayerCompleteAsync(this LayerInfo layer)
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
 
-            await layer.SetTimeExtent();
+            await layer.SetTimeExtentAsync();
         }
 
-        public async static Task Buffer(this LayerInfo layer)
+        public async static Task BufferAsync(this LayerInfo layer)
         {
             var newLayer = CreateLayer(GeometryType.Polygon, layer);
 
@@ -168,7 +168,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task SetTimeExtent(this LayerInfo layer)
+        public async static Task SetTimeExtentAsync(this LayerInfo layer)
         {
             if (layer.TimeExtent == null)
             {
@@ -215,7 +215,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task CoordinateTransformate(this LayerInfo layer, string from, string to)
+        public async static Task CoordinateTransformateAsync(this LayerInfo layer, string from, string to)
         {
             if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
             {
@@ -233,16 +233,16 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> Union(IEnumerable<LayerInfo> Layers)
+        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> Layers)
         {
             if (Layers == null || !Layers.Any())
             {
-                throw new Exception("样式为空");
+                throw new Exception("图层为空");
             }
             var type = Layers.Select(p => p.Type).Distinct();
             if (type.Count() != 1)
             {
-                throw new Exception("样式的类型并非统一");
+                throw new Exception("图层的类型并非统一");
             }
             LayerInfo layer = CreateLayer(type.First());
 

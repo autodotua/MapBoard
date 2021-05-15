@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task Import(string path)
+        public async static Task ImportAsync(string path)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();

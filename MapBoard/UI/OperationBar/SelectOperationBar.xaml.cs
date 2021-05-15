@@ -141,7 +141,7 @@ namespace MapBoard.Main.UI.OperationBar
                     ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
                     var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
                     await targetTable.AddFeaturesAsync(newFeatures);
-                    await MapView.Selection.StopFrameSelect(false);
+                    MapView.Selection.ClearSelection();
                     if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") == false)
                     {
                         await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
@@ -155,24 +155,26 @@ namespace MapBoard.Main.UI.OperationBar
 
         private async void CutButtonClick(object sender, RoutedEventArgs e)
         {
-            var line = await MapView.Edit.StartCutAsync();
+            var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
+            var line = await MapView.Editor.GetPolylineAsync();
             if (line != null)
             {
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
-                    await FeatureUtility.Cut(LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray(), line);
+                    await FeatureUtility.CutAsync(LayerCollection.Instance.Selected, features, line);
                 }, true);
             }
         }
 
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
-            await MapView.Edit.StartEditAsync();
+            Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
+            await MapView.Editor.EditAsync(MapView.Selection.SelectedFeatures[0]);
         }
 
-        private async void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButtonClick(object sender, RoutedEventArgs e)
         {
-            await MapView.Selection.StopFrameSelect(false);
+            MapView.Selection.ClearSelection();
         }
 
         private void BtnMenuClick(object sender, RoutedEventArgs e)
@@ -221,7 +223,7 @@ namespace MapBoard.Main.UI.OperationBar
 
             Task Union()
             {
-                return FeatureUtility.Union(layer, features);
+                return FeatureUtility.UnionAsync(layer, features);
             }
 
             async Task Link()
@@ -267,12 +269,12 @@ namespace MapBoard.Main.UI.OperationBar
                     return;
                 }
 
-                await FeatureUtility.Link(layer, features, headToHead, reverse);
+                await FeatureUtility.LinkAsync(layer, features, headToHead, reverse);
             }
 
             Task Reverse()
             {
-                return FeatureUtility.Reverse(layer, features);
+                return FeatureUtility.ReverseAsync(layer, features);
             }
 
             async Task Densify()
@@ -280,7 +282,7 @@ namespace MapBoard.Main.UI.OperationBar
                 double? num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大间隔（米）");
                 if (num.HasValue)
                 {
-                    await FeatureUtility.Densify(layer, features, num.Value);
+                    await FeatureUtility.DensifyAsync(layer, features, num.Value);
                 }
             }
             async Task Simplify()
@@ -300,7 +302,7 @@ namespace MapBoard.Main.UI.OperationBar
 
                         if (num.HasValue)
                         {
-                            await FeatureUtility.IntervalTakePointsSimplify(layer, features, num.Value);
+                            await FeatureUtility.IntervalTakePointsSimplifyAsync(layer, features, num.Value);
                         }
                         break;
 
@@ -309,7 +311,7 @@ namespace MapBoard.Main.UI.OperationBar
 
                         if (num.HasValue)
                         {
-                            await FeatureUtility.VerticalDistanceSimplify(layer, features, num.Value);
+                            await FeatureUtility.VerticalDistanceSimplifyAsync(layer, features, num.Value);
                         }
                         break;
 
@@ -318,7 +320,7 @@ namespace MapBoard.Main.UI.OperationBar
 
                         if (num.HasValue)
                         {
-                            await FeatureUtility.DouglasPeuckerSimplify(layer, features, num.Value);
+                            await FeatureUtility.DouglasPeuckerSimplifyAsync(layer, features, num.Value);
                         }
                         break;
 
@@ -327,14 +329,14 @@ namespace MapBoard.Main.UI.OperationBar
 
                         if (num.HasValue)
                         {
-                            await FeatureUtility.GeneralizeSimplify(layer, features, num.Value);
+                            await FeatureUtility.GeneralizeSimplifyAsync(layer, features, num.Value);
                         }
                         break;
                 }
             }
             Task CreateCopy()
             {
-                return FeatureUtility.CreateCopy(layer, features);
+                return FeatureUtility.CreateCopyAsync(layer, features);
             }
             async Task ToCsv()
             {

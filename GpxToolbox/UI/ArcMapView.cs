@@ -171,7 +171,7 @@ namespace MapBoard.GpxToolbox.UI
                         }
                         else
                         {
-                            loadedTrack.AddRange(await LoadGpx(file, false));
+                            loadedTrack.AddRange(await LoadGpxAsync(file, false));
                         }
                     }
                 }
@@ -316,10 +316,10 @@ namespace MapBoard.GpxToolbox.UI
             //DrawStatusChanged += handler;
         }
 
-        public async Task<List<TrackInfo>> ReloadGpx(TrackInfo track, bool raiseEvent)
+        public async Task<List<TrackInfo>> ReloadGpxAsync(TrackInfo track, bool raiseEvent)
         {
             Tracks.Remove(track);
-            var ts = await LoadGpx(track.FilePath, false);
+            var ts = await LoadGpxAsync(track.FilePath, false);
             if (raiseEvent)
             {
                 GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(ts.ToArray(), true));
@@ -327,7 +327,7 @@ namespace MapBoard.GpxToolbox.UI
             return ts;
         }
 
-        public async Task<List<TrackInfo>> LoadGpx(string filePath, bool raiseEvent)
+        public async Task<List<TrackInfo>> LoadGpxAsync(string filePath, bool raiseEvent)
         {
             string gpxContent = File.ReadAllText(filePath);
             Gpx gpx = null;

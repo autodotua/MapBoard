@@ -101,7 +101,7 @@ namespace MapBoard.Main.Model
                     if (value != TimeExtent.IsEnable)
                     {
                         TimeExtent.IsEnable = value;
-                        this.SetTimeExtent();
+                        this.SetTimeExtentAsync();
                     }
                 }
 

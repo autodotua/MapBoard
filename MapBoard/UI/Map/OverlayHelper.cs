@@ -22,7 +22,6 @@ namespace MapBoard.Main.UI.Map
             {
                 Text = text,
                 Color = Color.White,
-                //BackgroundColor = Color.Black,
                 Size = 16,
                 HaloColor = outlineColor,
                 HaloWidth = 4,
@@ -60,7 +59,7 @@ namespace MapBoard.Main.UI.Map
                 headAndTailOverlay.Graphics.Add(g1);
                 headAndTailOverlay.Graphics.Add(g2);
             }
-            await Mapview.ZoomToGeometry(headAndTailOverlay.Extent);
+            await Mapview.ZoomToGeometryAsync(headAndTailOverlay.Extent);
         }
     }
 }

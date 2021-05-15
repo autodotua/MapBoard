@@ -59,7 +59,7 @@ namespace MapBoard.Main.IO
         /// 导入shapefile文件
         /// </summary>
         /// <param name="path"></param>
-        public async static Task Import(string path)
+        public async static Task ImportAsync(string path)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();

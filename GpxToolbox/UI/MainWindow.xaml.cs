@@ -450,7 +450,7 @@ namespace MapBoard.GpxToolbox.UI
             MenuItem menuReset = new MenuItem() { Header = "重置 - 不改变设置" };
             menuReset.Click += async (p1, p2) =>
                {
-                   await arcMap.ReloadGpx(track, true);
+                   await arcMap.ReloadGpxAsync(track, true);
                };
             MenuItem menuResetWithSmooth = new MenuItem() { Header = "重置 - 自动平滑" };
             menuResetWithSmooth.Click += async (p1, p2) =>
@@ -458,7 +458,7 @@ namespace MapBoard.GpxToolbox.UI
                 Config.Instance.GpxAutoSmooth = true;
                 try
                 {
-                    await arcMap.ReloadGpx(track, true);
+                    await arcMap.ReloadGpxAsync(track, true);
                 }
                 finally
                 {
@@ -471,7 +471,7 @@ namespace MapBoard.GpxToolbox.UI
                    Config.Instance.GpxAutoSmooth = false;
                    try
                    {
-                       await arcMap.ReloadGpx(track, true);
+                       await arcMap.ReloadGpxAsync(track, true);
                    }
                    finally
                    {
@@ -485,7 +485,7 @@ namespace MapBoard.GpxToolbox.UI
                    Config.Instance.GpxHeight = true;
                    try
                    {
-                       await arcMap.ReloadGpx(track, true);
+                       await arcMap.ReloadGpxAsync(track, true);
                    }
                    finally
                    {
@@ -499,7 +499,7 @@ namespace MapBoard.GpxToolbox.UI
                    Config.Instance.GpxHeight = false;
                    try
                    {
-                       await arcMap.ReloadGpx(track, true);
+                       await arcMap.ReloadGpxAsync(track, true);
                    }
                    finally
                    {
@@ -549,7 +549,7 @@ namespace MapBoard.GpxToolbox.UI
             if (filePath != null)
             {
                 gpx.Save(filePath);
-                await arcMap.LoadGpx(filePath, true);
+                await arcMap.LoadGpxAsync(filePath, true);
             }
         }
 
@@ -617,9 +617,9 @@ namespace MapBoard.GpxToolbox.UI
         private void OperationButtonClick(object sender, RoutedEventArgs e)
         {
             MenuItem menuHeightSmooth = new MenuItem() { Header = "高度平滑" };
-            menuHeightSmooth.Click += (p1, p2) => Smooth(false, true);
+            menuHeightSmooth.Click += (p1, p2) => SmoothAsync(false, true);
             MenuItem menuSmooth = new MenuItem() { Header = "平滑" };
-            menuSmooth.Click += (p1, p2) => Smooth(true, true);
+            menuSmooth.Click += (p1, p2) => SmoothAsync(true, true);
             MenuItem menuHeightOffset = new MenuItem() { Header = "高度整体偏移" };
             menuHeightOffset.Click += ElevationOffsetMenuClick;
             MenuItem menuSpeed = new MenuItem() { Header = "计算速度" };
@@ -641,7 +641,7 @@ namespace MapBoard.GpxToolbox.UI
         {
         }
 
-        private async Task Smooth(bool xy, bool z)
+        private async Task SmoothAsync(bool xy, bool z)
         {
             if (lvwFiles.SelectedItem == null)
             {

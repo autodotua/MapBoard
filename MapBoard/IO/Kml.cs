@@ -27,12 +27,12 @@ namespace MapBoard.Main.IO
 {
     public static class Kml
     {
-        public async static Task Export(string path, LayerInfo layer)
+        public async static Task ExportAsync(string path, LayerInfo layer)
         {
             KmlDocument kml = new KmlDocument() { Name = layer.Name };
             await Task.Run(async () =>
             {
-                await AddToKml(layer, kml.ChildNodes);
+                await AddToKmlAsync(layer, kml.ChildNodes);
             });
             if (File.Exists(path))
             {
@@ -41,12 +41,12 @@ namespace MapBoard.Main.IO
             await kml.SaveAsAsync(path);
         }
 
-        public static Task Export(string path)
+        public static Task ExportAsync(string path)
         {
-            return Export(path, LayerCollection.Instance.Layers);
+            return ExportAsync(path, LayerCollection.Instance.Layers);
         }
 
-        public async static Task Export(string path, IEnumerable<LayerInfo> layers)
+        public async static Task ExportAsync(string path, IEnumerable<LayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();
             await Task.Run(async () =>
@@ -55,7 +55,7 @@ namespace MapBoard.Main.IO
                 {
                     KmlDocument subKml = new KmlDocument() { Name = layer.Name };
                     kml.ChildNodes.Add(subKml);
-                    await AddToKml(layer, subKml.ChildNodes);
+                    await AddToKmlAsync(layer, subKml.ChildNodes);
                 }
             });
             if (File.Exists(path))
@@ -65,7 +65,7 @@ namespace MapBoard.Main.IO
             await kml.SaveAsAsync(path);
         }
 
-        private static async Task AddToKml(LayerInfo layer, KmlNodeCollection nodes)
+        private static async Task AddToKmlAsync(LayerInfo layer, KmlNodeCollection nodes)
         {
             foreach (var feature in await layer.GetAllFeatures())
             {

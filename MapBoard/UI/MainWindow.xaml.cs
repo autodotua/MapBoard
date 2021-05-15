@@ -98,7 +98,7 @@ namespace MapBoard.Main.UI
             {
                 return;
             }
-            await IOUtility.DropFiles(files);
+            await IOUtility.DropFilesAsync(files);
         }
 
         private void RegistEvents()
@@ -121,13 +121,14 @@ namespace MapBoard.Main.UI
 
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
-            {
-                await arcMap.Edit.StopAsync();
-            }
-
             Config.Save();
             LayerCollection.Instance.Save();
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
+                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
+            {
+                e.Cancel = true;
+                await CommonDialog.ShowErrorDialogAsync("请先结束绘制");
+            }
         }
 
         #endregion 窗体启动与关闭
@@ -191,12 +192,12 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOUtility.ExportMap();
+            await IOUtility.ExportMapAsync();
         }
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            await DoAsync(IOUtility.ImportLayer);
+            await DoAsync(IOUtility.ImportLayerAsync);
         }
 
         private void JudgeControlsEnable()
@@ -234,28 +235,28 @@ namespace MapBoard.Main.UI
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
-                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Multipoint;
+                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Multipoint;
                             break;
 
                         case GeometryType.Point:
                             splBtnPoint.Visibility = Visibility.Visible;
-                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Point;
+                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Point;
                             break;
 
                         case GeometryType.Polyline:
                             splBtnPolyline.Visibility = Visibility.Visible;
-                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polyline;
+                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Polyline;
                             break;
 
                         case GeometryType.Polygon:
                             splBtnPolygon.Visibility = Visibility.Visible;
-                            arcMap.Drawing.CurrentDrawMode = SketchCreationMode.Polygon;
+                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Polygon;
                             break;
                     }
                 }
                 else
                 {
-                    arcMap.Drawing.CurrentDrawMode = null;
+                    arcMap.Editor.CurrentDrawMode = null;
                 }
                 if (undoSnakeBar != null)
                 {
@@ -311,7 +312,7 @@ namespace MapBoard.Main.UI
                     ("缩放到图层", ZoomToLayer,LayerCollection.Instance.Selected.FeatureCount > 0),
                     ("坐标转换",CoordinateTransformate,true),
                     ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
-                    ("导入",async()=>await IOUtility.ImportFeature(),true),
+                    ("导入",async()=>await IOUtility.ImportFeatureAsync(),true),
                     ("导出",  ExportSingle,true),
                };
             }
@@ -319,7 +320,7 @@ namespace MapBoard.Main.UI
             {
                 menus = new List<(string header, Action action, bool visiable)>()
                {
-                    ("合并",async()=>await LayerUtility. Union(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
+                    ("合并",async()=>await LayerUtility. UnionAsync(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
                     ("删除",DeleteLayer,true),
                 };
             }
@@ -340,14 +341,14 @@ namespace MapBoard.Main.UI
 
             async void ExportSingle()
             {
-                await DoAsync(IOUtility.ExportLayer);
+                await DoAsync(IOUtility.ExportLayerAsync);
             }
 
             async void ZoomToLayer()
             {
                 try
                 {
-                    await arcMap.ZoomToGeometry(await layer.Table.QueryExtentAsync(new QueryParameters()));
+                    await arcMap.ZoomToGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
                 }
                 catch (Exception ex)
                 {
@@ -364,7 +365,7 @@ namespace MapBoard.Main.UI
                      {
                          string from = dialog.SelectedCoordinateSystem1;
                          string to = dialog.SelectedCoordinateSystem2;
-                         await LayerUtility.CoordinateTransformate(LayerCollection.Instance.Selected, from, to);
+                         await LayerUtility.CoordinateTransformateAsync(LayerCollection.Instance.Selected, from, to);
                      });
                 }
             }
@@ -374,7 +375,7 @@ namespace MapBoard.Main.UI
                 DateRangeDialog dialog = new DateRangeDialog(layer);
                 if (dialog.ShowDialog() == true)
                 {
-                    await LayerUtility.SetTimeExtent(layer);
+                    await LayerUtility.SetTimeExtentAsync(layer);
                 }
             }
         }
@@ -435,7 +436,7 @@ namespace MapBoard.Main.UI
 
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
         {
-            await arcMap.Selection.StartSelect(SketchCreationMode.Rectangle);
+            await arcMap.Selection.SelectRectangleAsync();
         }
 
         private async Task StartDraw(object sender)
@@ -451,12 +452,12 @@ namespace MapBoard.Main.UI
             }
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
-                await arcMap.Selection.StopFrameSelect(false);
+                arcMap.Selection.ClearSelection();
             }
 
             var mode = ButtonsMode[text];
-            arcMap.Drawing.CurrentDrawMode = mode;
-            await arcMap.Drawing.StartDraw(mode);
+            arcMap.Editor.CurrentDrawMode = mode;
+            await arcMap.Editor.DrawAsync(mode);
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)

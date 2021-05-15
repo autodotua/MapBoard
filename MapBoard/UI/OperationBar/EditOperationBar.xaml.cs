@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MapBoard.Main.UI.Map.EditorHelper;
 
 namespace MapBoard.Main.UI.OperationBar
 {
@@ -45,7 +46,7 @@ namespace MapBoard.Main.UI.OperationBar
                 }
                 else
                 {
-                    if (MapView.Edit.Mode == EditHelper.EditMode.Draw)
+                    if (MapView.Editor.Mode == EditMode.Edit)
                     {
                         Title = "正在编辑";
                     }
@@ -79,28 +80,14 @@ namespace MapBoard.Main.UI.OperationBar
 
         public override double BarHeight { get; } = 48;
 
-        private async void OkButtonClick(object sender, RoutedEventArgs e)
+        private void OkButtonClick(object sender, RoutedEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
-            {
-                await MapView.Drawing.StopDraw();
-            }
-            else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
-            {
-                await MapView.Edit.StopAsync();
-            }
+            MapView.Editor.StopAndSave();
         }
 
-        private async void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButtonClick(object sender, RoutedEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
-            {
-                await MapView.Drawing.StopDraw(false);
-            }
-            else if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit)
-            {
-                await MapView.Edit.CancelEditingAsync();
-            }
+            MapView.Editor.Cancel();
         }
 
         private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)

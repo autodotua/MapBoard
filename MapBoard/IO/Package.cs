@@ -90,12 +90,12 @@ namespace MapBoard.Main.IO
             LayerCollection.Instance.SaveWhenChanged = true;
         }
 
-        public async static Task ExportMap2(string path)
+        public async static Task ExportMap2Async(string path)
         {
             DirectoryInfo directory = IOUtilities.GetTempDir();
             foreach (var layer in LayerCollection.Instance.Layers)
             {
-                await IOUtilities.CloneFeatureToNewShp(directory.FullName, layer);
+                await IOUtilities.CloneFeatureToNewShpAsync(directory.FullName, layer);
             }
             await Task.Delay(500);
             LayerCollection.Instance.Save(Path.Combine(directory.FullName, LayerCollection.LayersFileName));
@@ -137,10 +137,10 @@ namespace MapBoard.Main.IO
             Directory.Delete(tempDirectoryPath, true);
         }
 
-        public async static Task ExportLayer2(string path, LayerInfo layer)
+        public async static Task ExportLayer2Async(string path, LayerInfo layer)
         {
             DirectoryInfo directory = IOUtilities.GetTempDir();
-            await IOUtilities.CloneFeatureToNewShp(directory.FullName, layer);
+            await IOUtilities.CloneFeatureToNewShpAsync(directory.FullName, layer);
             await Task.Delay(500);
             File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
 

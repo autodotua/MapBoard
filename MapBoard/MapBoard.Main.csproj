@@ -176,8 +176,7 @@
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Map\ArcMapView.cs" />
-    <Compile Include="UI\Map\DrawHelper.cs" />
-    <Compile Include="UI\Map\EditHelper.cs" />
+    <Compile Include="UI\Map\EditorHelper.cs" />
     <Compile Include="UI\Map\LayerHelper.cs" />
     <Compile Include="UI\Map\SelectionHelper.cs" />
     <Compile Include="Model\LayerInfo.cs" />

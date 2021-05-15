@@ -105,7 +105,7 @@ namespace MapBoard.Main.Util
             layer.Layer.LabelsEnabled = true;
         }
 
-        public static string GetExpression(this LabelInfo label)
+        private static string GetExpression(this LabelInfo label)
         {
             string l = Resource.LabelFieldName;
             string d = Resource.DateFieldName;

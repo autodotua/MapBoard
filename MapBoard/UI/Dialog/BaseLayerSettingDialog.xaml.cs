@@ -71,7 +71,7 @@ namespace MapBoard.Main.UI.Dialog
             {
                 Config.Instance.BaseLayers.Add(item);
             }
-            await ArcMapView.Instance.LoadBasemap();
+            await ArcMapView.Instance.LoadBasemapAsync();
             LayerCollection.ResetLayers();
             Config.Instance.Save();
             if ((sender as Button).Tag.Equals("1"))

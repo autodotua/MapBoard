@@ -47,7 +47,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
         {
             if (e.PropertyName == nameof(Config.UrlCollection.SelectedUrl))
             {
-                await Load();
+                await LoadAsync();
             }
         }
 
@@ -68,11 +68,11 @@ namespace MapBoard.TileDownloaderSplicer.UI
             }
             if (!IsLocal)
             {
-                await Load();
+                await LoadAsync();
             }
         }
 
-        public async Task Load()
+        public async Task LoadAsync()
         {
             loaded = true;
             try
@@ -105,7 +105,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
 
         private bool isSelecting = false;
 
-        public async Task StartSelectAsync()
+        public async Task SelectAsync()
         {
             if (!isSelecting)
             {

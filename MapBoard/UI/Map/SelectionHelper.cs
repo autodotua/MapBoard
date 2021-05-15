@@ -22,8 +22,6 @@ namespace MapBoard.Main.UI.Map
 {
     public class SelectionHelper
     {
-        private SelectionHelper instance;
-
         public SelectionHelper()
         {
             instance = this;
@@ -55,43 +53,40 @@ namespace MapBoard.Main.UI.Map
             double tolerance = Mapview.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
 
-            await Select(envelope, e.Position, SpatialRelationship.Intersects);
+            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects);
         }
 
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async Task StartSelect(SketchCreationMode mode)
+        public async Task SelectRectangleAsync()
         {
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Select;
-            //Mapview.SketchEditor.Stop();
-            await Mapview.SketchEditor.StartAsync(mode);
+            ClearSelection();
+            var envelope = await Mapview.Editor.GetRectangleAsync();
+            if (envelope != null)
+            {
+                envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                {
+                    await SelectAsync(envelope, null, SpatialRelationship.Intersects);
+                }
+                else
+                {
+                    await SelectAsync(envelope, null, SpatialRelationship.Contains);
+                }
+            }
         }
 
         public void ClearSelection()
         {
-            foreach (var layer in SelectedFeatures.Select(p => p.FeatureTable.FeatureLayer).ToHashSet())
+            Mapview.Editor.Cancel();
+            foreach (var layer in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).ToHashSet())
             {
                 layer.ClearSelection();
             }
             SelectedFeatures.Clear();
         }
 
-        public async Task StopFrameSelect(bool save)
-        {
-            ClearSelection();
-            if (save)
-            {
-                Envelope envelope = Mapview.SketchEditor.Geometry == null ? null : (Mapview.SketchEditor.Geometry as Polygon).Extent;
-                envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
-                await Select(envelope, null, SpatialRelationship.Contains);
-            }
-
-            Mapview.SketchEditor.Stop();
-
-            //BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
-        }
-
-        public async Task Select(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
+        public async Task SelectAsync(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
         {
             await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
              {
@@ -158,36 +153,6 @@ namespace MapBoard.Main.UI.Map
                      SelectedFeatures.Clear();
                      SelectedFeatures.AddRange(features);
                  }
-                 // }
-                 // FeatureQueryResult result = await layer.query layer.FeatureTable.QueryFeaturesAsync(query);
-                 // List<Feature> features = null;
-                 // await Task.Run(() =>
-                 //{
-                 //    features = result.ToList();
-                 //});
-                 // if (features.Count != 0)
-                 // {
-                 //     if (!multiple)
-                 //     {
-                 //         ClearSelection();
-                 //     }
-                 //     foreach (var feature in features)
-                 //     {
-                 //         if (SelectedFeatures.Any(p => p.Geometry.ToJson() == feature.Geometry.ToJson()))
-                 //         {
-                 //             if (inverse)
-                 //             {
-                 //                 layer.UnselectFeature(feature);
-                 //                 SelectedFeatures.Remove(SelectedFeatures.First(p => p.Geometry.ToJson() == feature.Geometry.ToJson()));
-                 //             }
-                 //         }
-                 //         else
-                 //         {
-                 //             layer.SelectFeature(feature);
-                 //             SelectedFeatures.Add(feature);
-                 //         }
-                 //     }
-                 // }
              });
         }
 
@@ -195,14 +160,14 @@ namespace MapBoard.Main.UI.Map
 
         public void Select(Feature feature, bool clearAll = false)
         {
-            var layer = feature.FeatureTable.FeatureLayer;
+            var layer = feature.FeatureTable.Layer as FeatureLayer;
             if (layer == null)
             {
                 return;
             }
             if (clearAll && SelectedFeatures.Count > 0)
             {
-                foreach (var l in SelectedFeatures.Select(p => p.FeatureTable.FeatureLayer).Distinct().ToArray())
+                foreach (var l in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).Distinct().ToArray())
                 {
                     l.ClearSelection();
                 }

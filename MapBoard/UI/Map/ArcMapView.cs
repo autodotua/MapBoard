@@ -46,9 +46,8 @@ namespace MapBoard.Main.UI.Map
             SketchEditor = new SketchEditor();
             ViewInsets = new Thickness(8);
             this.SetHideWatermark();
-            Edit = new EditHelper();
             Selection = new SelectionHelper();
-            Drawing = new DrawHelper();
+            Editor = new EditorHelper();
             Layer = new LayerHelper();
             Overlay = new OverlayHelper();
             ViewpointChanged += ArcMapView_ViewpointChanged;
@@ -56,7 +55,7 @@ namespace MapBoard.Main.UI.Map
             {
                 IsRotateEnabled = true
             };
-            Load();
+            LoadAsync();
         }
 
         private double startRotation = 0;
@@ -114,28 +113,14 @@ namespace MapBoard.Main.UI.Map
         }
 
         public static ArcMapView Instance { get; private set; }
-        public EditHelper Edit { get; }
         public SelectionHelper Selection { get; }
-        public DrawHelper Drawing { get; }
+        public EditorHelper Editor { get; }
         public LayerHelper Layer { get; }
         public OverlayHelper Overlay { get; set; }
 
-        public async Task ZoomToGeometry(Geometry geometry, bool autoExtent = true)
+        public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
             await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
-        }
-
-        /// <summary>
-        /// 左键抬起事件，用于结束框选
-        /// </summary>
-        /// <param name="e"></param>
-        protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
-        {
-            base.OnPreviewMouseRightButtonUp(e);
-            if (SketchEditor.Geometry != null && BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
-            {
-                await Selection.StopFrameSelect(true);
-            }
         }
 
         /// <summary>
@@ -163,29 +148,22 @@ namespace MapBoard.Main.UI.Map
                     switch (BoardTaskManager.CurrentTask)
                     {
                         case BoardTaskManager.BoardTask.Draw:
-                            await Drawing.StopDraw();
-                            break;
-
                         case BoardTaskManager.BoardTask.Edit:
-                            await Edit.StopAsync();
+                            Editor.StopAndSave();
                             break;
 
-                        case BoardTaskManager.BoardTask.Ready when Drawing.CurrentDrawMode.HasValue:
-                            await Drawing.StartDraw(Drawing.CurrentDrawMode.Value);
+                        case BoardTaskManager.BoardTask.Ready when Editor.CurrentDrawMode.HasValue:
+                            await Editor.DrawAsync(Editor.CurrentDrawMode.Value);
                             break;
                     }
                     break;
 
-                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
-                    await Drawing.StopDraw(false);
-                    break;
-
-                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
-                    await Edit.CancelEditingAsync();
+                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
+                    Editor.Cancel();
                     break;
 
                 case Key.Escape when Selection.SelectedFeatures.Count > 0:
-                    await Selection.StopFrameSelect(false);
+                    Selection.ClearSelection();
                     break;
 
                 case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
@@ -206,14 +184,14 @@ namespace MapBoard.Main.UI.Map
         /// 加载底图和图层事件
         /// </summary>
         /// <returns></returns>
-        private async Task Load()
+        private async Task LoadAsync()
         {
-            await LoadBasemap();
+            await LoadBasemapAsync();
             if (Model.LayerCollection.Instance.MapViewExtentJson != null)
             {
                 try
                 {
-                    await ZoomToGeometry(Envelope.FromJson(Model.LayerCollection.Instance.MapViewExtentJson), false);
+                    await ZoomToGeometryAsync(Envelope.FromJson(Model.LayerCollection.Instance.MapViewExtentJson), false);
                 }
                 catch
                 {
@@ -221,7 +199,7 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        public async Task LoadBasemap()
+        public async Task LoadBasemapAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
         }

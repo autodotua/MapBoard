@@ -24,7 +24,7 @@ namespace MapBoard.Main.IO
             return directory;
         }
 
-        public static async Task<string> CloneFeatureToNewShp(string directory, LayerInfo layer)
+        public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
         {
             string path = ShapefileExport.ExportEmptyShapefile(layer.Type, layer.Name, directory);
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
