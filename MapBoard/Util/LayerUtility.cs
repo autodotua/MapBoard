@@ -61,7 +61,7 @@ namespace MapBoard.Main.Util
             {
                 if (template == null)
                 {
-                    name = "新样式-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                    name = "新图层-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
                 }
                 else
                 {

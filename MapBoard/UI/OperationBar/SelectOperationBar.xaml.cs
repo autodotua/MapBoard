@@ -184,24 +184,43 @@ namespace MapBoard.Main.UI.OperationBar
             var layer = LayerCollection.Instance.Selected;
 
             var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
-            List<(string header, Func<Task> action, bool visiable)> menus = new List<(string header, Func<Task> action, bool visiable)>()
+            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
-                ("合并",Union,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)&& features.Length>1),
-                ("连接",Link,layer.Type==GeometryType.Polyline
+                ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
+                (layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)
+                && features.Length>1),
+                ("分离","将拥有多个部分的图形分离为单独的图形",
+                SeparateAsync,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)),
+                ("连接","将折线的端点互相连接",LinkAsync,layer.Type==GeometryType.Polyline
                 && features.Length>1
                 && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
-                ("反转",Reverse,layer.Type==GeometryType.Polyline),
-                ("加密",Densify,(layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
-                ("简化",Simplify,layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon),
-                ("建立副本",CreateCopy, true),
-                ("导出CSV表格",ToCsv, true),
+                ("反转","交换点的顺序",ReverseAsync,
+                layer.Type==GeometryType.Polyline||layer.Type==GeometryType.Polygon),
+                ("加密","在每两个折点之间添加更多的点",DensifyAsync,
+                (layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
+                ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
+                layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon),
+                ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
+                ("导出CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
             };
 
-            foreach (var (header, action, visiable) in menus)
+            foreach (var (header, desc, action, visiable) in menus)
             {
                 if (visiable)
                 {
-                    MenuItem item = new MenuItem() { Header = header };
+                    StackPanel content = new StackPanel();
+                    content.Children.Add(new TextBlock()
+                    {
+                        Text = header,
+                        FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 4, 0, 4)
+                    });
+                    content.Children.Add(new TextBlock()
+                    {
+                        Text = desc,
+                        Margin = new Thickness(0, 0, 0, 4)
+                    });
+                    MenuItem item = new MenuItem() { Header = content };
                     item.Click += async (p1, p2) =>
                     {
                         try
@@ -221,12 +240,16 @@ namespace MapBoard.Main.UI.OperationBar
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;
 
-            Task Union()
+            Task SeparateAsync()
+            {
+                return FeatureUtility.SeparateAsync(layer, features);
+            }
+            Task UnionAsync()
             {
                 return FeatureUtility.UnionAsync(layer, features);
             }
 
-            async Task Link()
+            async Task LinkAsync()
             {
                 List<DialogItem> typeList = new List<DialogItem>();
                 bool headToHead = false;
@@ -258,7 +281,7 @@ namespace MapBoard.Main.UI.OperationBar
                           {
                               ArcMapView.Instance.Overlay.ClearHeadAndTail();
                               snake.Hide();
-                              await Link();
+                              await LinkAsync();
                           };
 
                          snake.ShowMessage("正在显示图形起点和终点");
@@ -272,12 +295,12 @@ namespace MapBoard.Main.UI.OperationBar
                 await FeatureUtility.LinkAsync(layer, features, headToHead, reverse);
             }
 
-            Task Reverse()
+            Task ReverseAsync()
             {
                 return FeatureUtility.ReverseAsync(layer, features);
             }
 
-            async Task Densify()
+            async Task DensifyAsync()
             {
                 double? num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大间隔（米）");
                 if (num.HasValue)
@@ -285,7 +308,7 @@ namespace MapBoard.Main.UI.OperationBar
                     await FeatureUtility.DensifyAsync(layer, features, num.Value);
                 }
             }
-            async Task Simplify()
+            async Task SimplifyAsync()
             {
                 int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
                    {
@@ -334,20 +357,22 @@ namespace MapBoard.Main.UI.OperationBar
                         break;
                 }
             }
-            Task CreateCopy()
+            Task CreateCopyAsync()
             {
                 return FeatureUtility.CreateCopyAsync(layer, features);
             }
-            async Task ToCsv()
+            async Task ToCsvAsync()
             {
                 string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv"), ensureExtension: true, defaultFileName: "图形");
                 if (path != null)
                 {
                     await Csv.ExportAsync(ArcMapView.Instance.Selection.SelectedFeatures, path);
 
-                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
-                    snake.ShowButton = true;
-                    snake.ButtonContent = "打开";
+                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
+                    {
+                        ShowButton = true,
+                        ButtonContent = "打开"
+                    };
                     snake.ButtonClick += (p1, p2) => Process.Start(path);
 
                     snake.ShowMessage("已导出到" + path);

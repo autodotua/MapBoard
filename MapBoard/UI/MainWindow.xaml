@@ -263,6 +263,17 @@
                             Click="SelectToggleButtonClick"
                             FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
+                            <Button.ToolTip>
+                                <ui:SimpleStackPanel Width="200" Spacing="4">
+                                    <TextBlock HorizontalAlignment="Center" Style="{DynamicResource SubtitleTextBlockStyle}">选择</TextBlock>
+                                    <TextBlock Style="{DynamicResource BaseTextBlockStyle}" TextWrapping="Wrap">点选</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">按住Ctrl后点击图形，即可进行点选。之后再进行点击时，不需要按住Ctrl，即可将新点击的图形增加到选中的集合中。同时按住下述键时：</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Ctrl：将清空之前的选择，只保留最新点击的图形</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Alt：从已选择的图形集合中，移除点击的图形</TextBlock>
+                                    <TextBlock Style="{DynamicResource BaseTextBlockStyle}" TextWrapping="Wrap">框选</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">点击该按钮开始框选。鼠标按下后不松开，拖动形成矩形，松开结束选择。默认情况下，只选择完全处于矩形内部的图形。当松开时同时按住Shift时，将选择与矩形相交的图形。</TextBlock>
+                                </ui:SimpleStackPanel>
+                            </Button.ToolTip>
                         </Button>
                     </Grid>
                 </Grid>

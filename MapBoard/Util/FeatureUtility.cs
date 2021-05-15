@@ -25,6 +25,35 @@ namespace MapBoard.Main.Util
                 new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
         }
 
+        public static async Task SeparateAsync(LayerInfo layer, Feature[] features)
+        {
+            List<Feature> deleted = new List<Feature>();
+            List<Feature> added = new List<Feature>();
+            foreach (var feature in features)
+            {
+                Debug.Assert(feature.Geometry is Multipart);
+                var m = feature.Geometry as Multipart;
+                if (m.Parts.Count <= 1)
+                {
+                    continue;
+                }
+                foreach (var part in m.Parts)
+                {
+                    Geometry g = m is Polyline ? new Polyline(part) : new Polygon(part);
+                    var newFeature = layer.Table.CreateFeature(feature.Attributes, g);
+                    added.Add(newFeature);
+                }
+                deleted.Add(feature);
+            }
+            if (added.Count > 0)
+            {
+                await layer.Table.AddFeaturesAsync(added);
+                await layer.Table.DeleteFeaturesAsync(deleted);
+                FeaturesGeometryChanged?.Invoke(null,
+       new FeaturesGeometryChangedEventArgs(layer, added, deleted, null));
+            }
+        }
+
         public static async Task LinkAsync(LayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;

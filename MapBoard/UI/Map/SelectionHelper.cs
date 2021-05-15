@@ -40,14 +40,16 @@ namespace MapBoard.Main.UI.Map
 
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected == null || !LayerCollection.Instance.Selected.LayerVisible || BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected == null
+                || !LayerCollection.Instance.Selected.LayerVisible
+                || BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
             }
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
-            {
-                Mapview.SketchEditor.Stop();
-            }
+            //if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            //{
+            //    Mapview.SketchEditor.Stop();
+            //}
             MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
             double tolerance = Mapview.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
@@ -85,7 +87,7 @@ namespace MapBoard.Main.UI.Map
             SelectedFeatures.Clear();
         }
 
-        public async Task SelectAsync(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
+        private async Task SelectAsync(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
         {
             await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
              {
@@ -104,27 +106,10 @@ namespace MapBoard.Main.UI.Map
                  {
                      return;
                  }
-                 //多图层选择过于复杂，不进行实现
-                 //if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
-                 //&& Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)
-                 //&& point.HasValue)
-                 //{
-                 //    var result = await Mapview.IdentifyLayersAsync(point.Value, 10, false);
-                 //    foreach (var r in result)
-                 //    {
-                 //        if (r.LayerContent is FeatureLayer l)
-                 //        {
-                 //            l.SelectFeatures(r.GeoElements.Cast<Feature>());
-                 //            SelectedFeatures.AddRange(r.GeoElements.Cast<Feature>());
-                 //        }
-                 //    }
-                 //}
-                 //else
-                 //{
-                 SelectionMode mode = SelectionMode.New;
-                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                 SelectionMode mode = SelectionMode.Add;
+                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                  {
-                     mode = SelectionMode.Add;
+                     mode = SelectionMode.New;
                  }
                  else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
                  {
@@ -136,11 +121,9 @@ namespace MapBoard.Main.UI.Map
                  {
                      features = result.ToList();
                  });
-                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                  {
-                     features = features.Where(p =>
-                     !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
-                     .Equals(q.GetAttributeValue("FID")))).ToList();
+                     SelectedFeatures.Clear();
                      SelectedFeatures.AddRange(features);
                  }
                  else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
@@ -149,7 +132,9 @@ namespace MapBoard.Main.UI.Map
                  }
                  else
                  {
-                     SelectedFeatures.Clear();
+                     features = features.Where(p =>
+                       !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
+                       .Equals(q.GetAttributeValue("FID")))).ToList();
                      SelectedFeatures.AddRange(features);
                  }
              });
