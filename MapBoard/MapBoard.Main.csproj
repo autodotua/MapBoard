@@ -142,9 +142,6 @@
     <Compile Include="UI\Component\ColorPickerTextBox.xaml.cs">
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Component\ProgressRingOverlay.xaml.cs">
-      <DependentUpon>ProgressRingOverlay.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
@@ -208,10 +205,6 @@
     <Page Include="UI\Component\ColorPickerTextBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Component\ProgressRingOverlay.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\BaseLayerSettingDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -385,7 +378,9 @@
   <ItemGroup>
     <Resource Include="UI\Component\colorChart.PNG" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="UI\Component\transparent.PNG" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

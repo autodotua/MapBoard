@@ -4,12 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
-    xmlns:component="clr-namespace:MapBoard.Main.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
     Title="地图画板" Width="1000"
     Height="700"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
@@ -278,7 +277,7 @@
                     </Grid>
                 </Grid>
             </Grid>
-            <component:ProgressRingOverlay
+            <fzextension:ProgressRingOverlay
                 x:Name="loading" Grid.RowSpan="100"
                 Grid.ColumnSpan="100" />
         </Grid>

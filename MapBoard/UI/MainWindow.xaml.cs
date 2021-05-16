@@ -2,45 +2,27 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
-using FzLib.Program;
 using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Resource;
-using MapBoard.Main.IO;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using static FzLib.Basic.Loop;
-using static MapBoard.Main.UI.Dialog.MultiLayersOperationDialog;
 
 namespace MapBoard.Main.UI
 {

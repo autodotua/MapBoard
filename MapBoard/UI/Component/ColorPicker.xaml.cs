@@ -73,8 +73,9 @@ namespace MapBoard.UI.Compoment
                 Margin = new Thickness(0),
                 WindowState = WindowState.Normal,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Height = 300,
-                Width = 232
+                Width = advancedColorPickerDialog.Width,
+                Height = advancedColorPickerDialog.Height,
+                Title="Ñ¡ÔñÑÕÉ«"
             };
             _advancedPickerWindow.DragMove();
             _advancedPickerWindow.KeyDown += AdvancedPickerPopUpKeyDown;

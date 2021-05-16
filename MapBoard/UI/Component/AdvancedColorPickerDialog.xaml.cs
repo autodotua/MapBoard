@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using MapBoard.Common.Dialog;
 
 namespace MapBoard.UI.Compoment
 {
@@ -33,13 +34,14 @@ namespace MapBoard.UI.Compoment
 
         public static DependencyProperty SelectedCurrentColorProperty = DependencyProperty.Register("SelectedCurrentColor", typeof(SolidColorBrush), typeof(ColorPicker), new PropertyMetadata(Brushes.White));
 
-        #endregion
+        #endregion Properties
 
         public AdvancedColorPickerDialog()
         {
             DataContext = this;
             InitializeComponent();
             brightnessSlider.ValueChanged += BrightnessSliderValueChanged;
+            tranparentSlider.ValueChanged += TransparentSlider_ValueChanged;
             colorMarker.RenderTransform = _markerTransform;
             colorMarker.RenderTransformOrigin = new Point(1, 1);
             borderColorChart.Cursor = Cursors.Cross;
@@ -53,19 +55,7 @@ namespace MapBoard.UI.Compoment
             OnDragDelta(e);
         }
 
-        public bool AllowsTransparency
-        {
-            set
-            {
-                if (value == false)
-                {
-                    Container.Margin = new Thickness(0);
-                    Container.CornerRadius = new CornerRadius(0);
-                }
-            }
-        }
-
-        #endregion
+        #endregion Dialog Members
 
         #region Advanced Picker Members
 
@@ -102,8 +92,8 @@ namespace MapBoard.UI.Compoment
 
         private void UpdateCurrentColor()
         {
-            CurrentColor = Color.FromRgb(_pixels[2], _pixels[1], _pixels[0]);
-            currentColorBorder.Background = new SolidColorBrush(Color.FromRgb(_pixels[2], _pixels[1], _pixels[0]));
+            CurrentColor = Color.FromArgb(Convert.ToByte(tranparentSlider.Value), _pixels[2], _pixels[1], _pixels[0]);
+            currentColorBorder.Background = new SolidColorBrush(CurrentColor);
             brightnessSlider.Value = 0.5;
             SelectedCurrentColor = new SolidColorBrush(CurrentColor);
         }
@@ -173,10 +163,11 @@ namespace MapBoard.UI.Compoment
             {
                 if (e.Source.GetType().Equals(typeof(Image)))
                 {
-                    var cb = new CroppedBitmap((BitmapSource)(((Image)e.Source).Source), new Int32Rect((int)Mouse.GetPosition(e.Source as Image).X, (int)Mouse.GetPosition(e.Source as Image).Y, 1, 1));
-                    _pixels = new byte[4];
                     try
                     {
+                        var cb = new CroppedBitmap((BitmapSource)(((Image)e.Source).Source), new Int32Rect((int)Mouse.GetPosition(e.Source as Image).X, (int)Mouse.GetPosition(e.Source as Image).Y, 1, 1));
+                        _pixels = new byte[4];
+
                         cb.CopyPixels(_pixels, 4, 0);
                         UpdateMarkerPosition();
                         UpdateCurrentColor();
@@ -200,7 +191,12 @@ namespace MapBoard.UI.Compoment
             OnDialogResultEvent(new DialogEventArgs() { DialogResult = false });
         }
 
-        #endregion
+        #endregion Advanced Picker Members
+
+        private void TransparentSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateCurrentColor();
+        }
     }
 
     public class DialogEventArgs : EventArgs
