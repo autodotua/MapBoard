@@ -1,7 +1,11 @@
 ﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using FzLib.UI.Dialog;
-using MapBoard.Common.Resource;
+using MapBoard.Common;
+
+using MapBoard.Common;
+
 using MapBoard.Main.Model;
 using MapBoard.Main.Util;
 using System;
@@ -68,10 +72,10 @@ namespace MapBoard.Main.IO
             bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            LayerInfo style = LayerUtility.CreateLayer(table.GeometryType, null, Path.GetFileNameWithoutExtension(path));
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, null, Path.GetFileNameWithoutExtension(path));
             foreach (var feature in features)
             {
-                Feature newFeature = style.Table.CreateFeature();
+                Feature newFeature = layer.Table.CreateFeature();
                 newFeature.Geometry = GeometryUtility.RemoveZAndM(feature.Geometry);
                 if (info)
                 {
@@ -86,9 +90,38 @@ namespace MapBoard.Main.IO
                     newFeature.Attributes[Resource.ClassFieldName] = feature.Attributes[Resource.ClassFieldName];
                 }
 
-                await style.Table.AddFeatureAsync(newFeature);
+                await layer.Table.AddFeatureAsync(newFeature);
             }
-            style.UpdateFeatureCount();
+            layer.UpdateFeatureCount();
+        }
+
+        public async static Task<string> CreateShapefileAsync(GeometryType type, string name, string folder = null)
+        {
+            if (folder == null)
+            {
+                folder = Config.DataPath;
+            }
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            string path = Path.Combine(folder, name);
+            List<Field> fields = new List<Field>()
+            {
+                new Field(FieldType.Int32,"ID",null,9),
+                new Field(FieldType.Text,Resource.LabelFieldName,null,254),
+                new Field(FieldType.Date,Resource.DateFieldName,null,8),
+                new Field(FieldType.Text,Resource.ClassFieldName,null,254),
+            };
+
+            NtsShapefile.TestCreate2Dshape(path, type, fields.ToArray());
+            path = path + ".shp";
+            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
+            await table.LoadAsync();
+            var feature = (await table.QueryFeaturesAsync(new QueryParameters())).First();
+            await table.DeleteFeatureAsync(feature);
+            table.Close();
+            return path;
         }
     }
 }

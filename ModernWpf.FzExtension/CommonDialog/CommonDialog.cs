@@ -131,5 +131,26 @@ namespace ModernWpf.FzExtension.CommonDialog
             await dialog.ShowAsync();
             return dialog.SelectedIndex;
         }
+
+        public static CommonDialog CurrentDialog { get; private set; }
+        private Task<ContentDialogResult> ShowTask { get; set; }
+
+        /// <summary>
+        /// “重写”方法，使弹窗能够依次弹出来而不会报错
+        /// </summary>
+        /// <returns></returns>
+        public async new Task<ContentDialogResult> ShowAsync()
+        {
+            if (CurrentDialog != null)
+            {
+                await CurrentDialog.ShowTask;
+            }
+            CurrentDialog = this;
+            ShowTask = base.ShowAsync();
+            var result = await ShowTask;
+            ShowTask = null;
+            CurrentDialog = null;
+            return result;
+        }
     }
 }

@@ -3,7 +3,9 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Extension;
 using MapBoard.Common;
-using MapBoard.Common.Resource;
+
+using MapBoard.Common;
+
 using MapBoard.Main.Model;
 using System;
 using System.ComponentModel;
@@ -120,13 +122,14 @@ namespace MapBoard.Main.UI.Map
         public async Task EditAsync(Feature feature)
         {
             Mode = EditMode.Edit;
-            Mapview.Editor.Attributes = FeatureAttributes.FromFeature(feature);
+            Attributes = FeatureAttributes.FromFeature(feature);
 
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             await Mapview.SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
             if (geometry != null)
             {
                 feature.Geometry = geometry;
+                Attributes.SaveToFeature(feature);
                 await feature.FeatureTable.UpdateFeatureAsync(feature);
             }
         }

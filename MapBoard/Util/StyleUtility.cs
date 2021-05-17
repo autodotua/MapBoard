@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Mapping.Labeling;
 using Esri.ArcGISRuntime.Symbology;
-using MapBoard.Common.Resource;
+using MapBoard.Common;
 using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;

@@ -3,7 +3,9 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
 using MapBoard.Common;
-using MapBoard.Common.Resource;
+
+using MapBoard.Common;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

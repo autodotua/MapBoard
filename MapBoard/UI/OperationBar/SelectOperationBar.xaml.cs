@@ -4,7 +4,7 @@ using FzLib.Basic;
 using FzLib.Basic.Collection;
 using FzLib.Extension;
 using FzLib.UI.Dialog;
-using MapBoard.Common.Resource;
+using MapBoard.Common;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;

@@ -30,11 +30,11 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            LayerInfo style = LayerUtility.CreateLayer(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
-                FeatureTable table = style.Table;
+                FeatureTable table = layer.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
                 if (type == GpxImportType.Point)
@@ -61,8 +61,8 @@ namespace MapBoard.Main.IO
                     await table.AddFeatureAsync(feature);
                 }
             }
-            style.UpdateFeatureCount();
-            return style;
+            layer.UpdateFeatureCount();
+            return layer;
         }
 
         public async static Task<LayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type)

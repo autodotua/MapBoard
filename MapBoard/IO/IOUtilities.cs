@@ -1,5 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using MapBoard.Common.Resource;
+using MapBoard.Common;
 using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace MapBoard.Main.IO
 
         public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
         {
-            string path = ShapefileExport.ExportEmptyShapefile(layer.Type, layer.Name, directory);
+            string path = await Shapefile.CreateShapefileAsync(layer.Type, layer.Name, directory);
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.AddFeaturesAsync(await layer.GetAllFeatures());
             table.Close();

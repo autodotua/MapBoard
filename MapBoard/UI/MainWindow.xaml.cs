@@ -5,7 +5,9 @@ using FzLib.Basic.Collection;
 using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common;
-using MapBoard.Common.Resource;
+
+using MapBoard.Common;
+
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
@@ -137,10 +139,9 @@ namespace MapBoard.Main.UI
         {
             await CommonDialog.ShowSelectItemDialogAsync("请选择需要创建的图层类型", new DialogItem[]
               {
-                new DialogItem(){Title="点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Point)},
-                new DialogItem(){Title="多点",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Multipoint)},
-                new DialogItem(){Title="线",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polyline)},
-                new DialogItem(){Title="面",SelectAction=()=>LayerUtility.CreateLayer(GeometryType.Polygon)},
+                new DialogItem("点","零维",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Point)),
+                new DialogItem("折线","一维（线）",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Polyline)),
+                new DialogItem("多边形","二维（面）",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Polygon)),
               });
         }
 

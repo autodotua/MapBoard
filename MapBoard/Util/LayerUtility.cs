@@ -6,7 +6,9 @@ using Esri.ArcGISRuntime.Symbology;
 using FzLib.IO;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
-using MapBoard.Common.Resource;
+
+using MapBoard.Common;
+
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI;
@@ -55,7 +57,7 @@ namespace MapBoard.Main.Util
             return layer;
         }
 
-        public static LayerInfo CreateLayer(GeometryType type, LayerInfo template = null, string name = null)
+        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null)
         {
             if (name == null)
             {
@@ -69,7 +71,7 @@ namespace MapBoard.Main.Util
                 }
             }
 
-            ShapefileExport.ExportEmptyShapefile(type, name);
+            await Shapefile.CreateShapefileAsync(type, name);
             LayerInfo layer = new LayerInfo();
             if (template != null)
             {
@@ -87,20 +89,16 @@ namespace MapBoard.Main.Util
             {
                 FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeatures();
 
-                var newLayer = CreateLayer(layer.Type, layer);
+                var newLayer = await CreateLayerAsync(layer.Type, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
 
-                //foreach (var feature in features)
-                //{
-                //    await targetTable.AddFeatureAsync(feature);
-                //}
                 await targetTable.AddFeaturesAsync(features);
                 newLayer.UpdateFeatureCount();
                 layer.LayerVisible = false;
             }
             else
             {
-                CreateLayer(layer.Type, layer);
+                await CreateLayerAsync(layer.Type, layer);
             }
         }
 
@@ -155,7 +153,7 @@ namespace MapBoard.Main.Util
 
         public async static Task BufferAsync(this LayerInfo layer)
         {
-            var newLayer = CreateLayer(GeometryType.Polygon, layer);
+            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layer);
 
             ShapefileFeatureTable newTable = newLayer.Table;
 
@@ -244,7 +242,7 @@ namespace MapBoard.Main.Util
             {
                 throw new Exception("图层的类型并非统一");
             }
-            LayerInfo layer = CreateLayer(type.First());
+            LayerInfo layer = await CreateLayerAsync(type.First());
 
             foreach (var oldLayer in Layers)
             {

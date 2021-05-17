@@ -1,6 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Extension;
-using MapBoard.Common.Resource;
+using MapBoard.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
