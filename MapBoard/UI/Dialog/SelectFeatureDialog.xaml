@@ -9,25 +9,29 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:picker="clr-namespace:FzLib.UI.Picker;assembly=FzUILib.WPF"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="选择图形"
-    Width="240"
+    Title="选择图形" Width="240"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"
-    SizeToContent="Height"
-    mc:Ignorable="d">
+    SizeToContent="Height" mc:Ignorable="d">
 
     <ListView
-        MaxHeight="200"
-        Margin="4"
+        MaxHeight="200" Margin="4"
         ItemsSource="{Binding SelectedFeatures}"
-        SelectedItem="{Binding Selected}">
+        SelectedItem="{Binding Selected}"
+        SelectionMode="Single">
         <ListView.View>
             <GridView>
                 <GridViewColumn DisplayMemberBinding="{Binding Index}" Header="序号" />
-                <GridViewColumn DisplayMemberBinding="{Binding Label}" Header="标签" />
-                <GridViewColumn DisplayMemberBinding="{Binding Key}" Header="分类" />
+                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Label}" Header="标签" />
+                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Date, StringFormat={}{0:yyyy-MM-dd}}" Header="日期" />
+                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Key}" Header="分类" />
             </GridView>
         </ListView.View>
+        <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Margin="0,0,0,24" />
+            </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
     </ListView>
 </local:DialogWindowBase>

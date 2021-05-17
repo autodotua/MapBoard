@@ -83,7 +83,7 @@ namespace MapBoard.Main.UI.Dialog
             }
 
             Left = left + mainWindow.ActualWidth - ActualWidth;
-            Top = top + 24/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
+            Top = top + 50/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -99,14 +99,12 @@ namespace MapBoard.Main.UI.Dialog
             {
                 Feature = feature;
                 Index = index;
-                Label = feature.GetAttributeValue(Resource.LabelFieldName) as string;
-                Key = feature.GetAttributeValue(Resource.ClassFieldName) as string;
+                Attributes = FeatureAttributes.FromFeature(feature);
             }
 
             public Feature Feature { get; }
             public int Index { get; }
-            public string Label { get; }
-            public string Key { get; }
+            public FeatureAttributes Attributes { get; set; }
         }
     }
 }
