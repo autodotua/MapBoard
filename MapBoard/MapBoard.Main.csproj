@@ -167,9 +167,6 @@
     <Compile Include="UI\Dialog\SelectFeatureDialog.xaml.cs">
       <DependentUpon>SelectFeatureDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Dialog\MultiStylesOperationDialog.xaml.cs">
-      <DependentUpon>MultiStylesOperationDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\Dialog\DateRangeDialog.xaml.cs">
       <DependentUpon>DateRangeDialog.xaml</DependentUpon>
     </Compile>
@@ -212,10 +209,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Dialog\SelectFeatureDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Dialog\MultiStylesOperationDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

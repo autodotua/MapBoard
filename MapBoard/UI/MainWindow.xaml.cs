@@ -125,11 +125,6 @@ namespace MapBoard.Main.UI
             LayerCollection.Instance.Save();
         }
 
-        private void BatchOperationButtonClick(object sender, RoutedEventArgs e)
-        {
-            new MultiLayersOperationDialog().Show();
-        }
-
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
             dataGrid.SelectedItem = null;
@@ -342,7 +337,7 @@ namespace MapBoard.Main.UI
             async void CoordinateTransformate()
             {
                 CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-                if (dialog.ShowDialog() == true)
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
                     await DoAsync(async () =>
                      {
@@ -356,7 +351,7 @@ namespace MapBoard.Main.UI
             async void SetTimeExtent()
             {
                 DateRangeDialog dialog = new DateRangeDialog(layer);
-                if (dialog.ShowDialog() == true)
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
                     await LayerUtility.SetTimeExtentAsync(layer);
                 }

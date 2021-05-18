@@ -10,6 +10,7 @@ using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
+using ModernWpf.Controls;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
@@ -134,9 +135,10 @@ namespace MapBoard.Main.UI.OperationBar
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
                 SelectLayerDialog dialog = new SelectLayerDialog();
-                if (dialog.ShowDialog() == true)
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
                     LayerCollection.Instance.Selected.LayerVisible = false;
+                    dialog.SelectedLayer.LayerVisible = true;
                     List<Feature> features = MapView.Selection.SelectedFeatures.ToList();
                     ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
                     var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));

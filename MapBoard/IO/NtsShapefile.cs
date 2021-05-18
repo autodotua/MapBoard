@@ -43,6 +43,7 @@ namespace MapBoard.Main.IO
                 {
                     case FieldType.Int16:
                     case FieldType.Int32:
+                    case FieldType.OID:
                         att.Add(field.Name, int.MaxValue);
                         break;
 

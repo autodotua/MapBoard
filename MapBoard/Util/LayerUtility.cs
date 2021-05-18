@@ -117,7 +117,7 @@ namespace MapBoard.Main.Util
         public async static void CopyFeatures()
         {
             SelectLayerDialog dialog = new SelectLayerDialog();
-            if (dialog.ShowDialog() == true)
+            if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary)
             {
                 await CopyAllFeaturesAsync(LayerCollection.Instance.Selected, dialog.SelectedLayer);
             }

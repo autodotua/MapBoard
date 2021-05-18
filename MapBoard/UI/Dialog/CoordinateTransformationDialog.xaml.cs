@@ -1,6 +1,7 @@
 ﻿using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// CoordinateTransformationDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class CoordinateTransformationDialog : DialogWindowBase
+    public partial class CoordinateTransformationDialog : CommonDialog
     {
         public CoordinateTransformationDialog()
         {
@@ -36,24 +37,13 @@ namespace MapBoard.Main.UI.Dialog
         public string SelectedCoordinateSystem1 { get; set; } = "GCJ02";
         public string SelectedCoordinateSystem2 { get; set; } = "WGS84";
 
-        /// <summary>
-        /// 单击确定按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OkButtonClick(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
         private void ComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded)
             {
                 return;
             }
-            btn.IsEnabled = SelectedCoordinateSystem1 != SelectedCoordinateSystem2;
+            IsPrimaryButtonEnabled = SelectedCoordinateSystem1 != SelectedCoordinateSystem2;
         }
     }
 }

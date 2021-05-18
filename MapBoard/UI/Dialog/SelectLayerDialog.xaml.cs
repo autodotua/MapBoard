@@ -1,6 +1,7 @@
 ﻿using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectLayerDialog : Common.Dialog.DialogWindowBase
+    public partial class SelectLayerDialog : CommonDialog
     {
         private bool canSelect = false;
 
@@ -37,17 +38,11 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
         public LayerInfo SelectedLayer { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if(canSelect==false)
+            if (canSelect == false)
             {
                 Content = new TextBlock()
                 {

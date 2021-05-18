@@ -108,7 +108,7 @@ namespace MapBoard.Main.IO
             string path = Path.Combine(folder, name);
             List<Field> fields = new List<Field>()
             {
-                new Field(FieldType.Int32,"ID",null,9),
+            //   new Field(FieldType.OID,"Id",null,9),
                 new Field(FieldType.Text,Resource.LabelFieldName,null,254),
                 new Field(FieldType.Date,Resource.DateFieldName,null,8),
                 new Field(FieldType.Text,Resource.ClassFieldName,null,254),

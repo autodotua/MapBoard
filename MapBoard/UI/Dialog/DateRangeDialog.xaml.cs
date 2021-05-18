@@ -1,7 +1,9 @@
-﻿using FzLib.UI.Dialog;
+﻿using FzLib.Extension;
+using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +23,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class DateRangeDialog : Common.Dialog.DialogWindowBase
+    public partial class DateRangeDialog : CommonDialog
     {
         private LayerInfo Layer { get; }
 
@@ -44,18 +46,6 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
-        private void OkButtonClick(object sender, RoutedEventArgs e)
-        {
-            Layer.TimeExtent = new TimeExtentInfo()
-            {
-                IsEnable = EnableDateRange,
-                From = dateFrom.SelectedDate.Value,
-                To = dateTo.SelectedDate.Value,
-            };
-            DialogResult = true;
-            Close();
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
         }
@@ -68,14 +58,26 @@ namespace MapBoard.Main.UI.Dialog
             set
             {
                 enableDateRange = value;
-                Notify(nameof(EnableDateRange));
-                btn.IsEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
+                this.Notify(nameof(EnableDateRange));
+                IsPrimaryButtonEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
             }
         }
 
         private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            btn.IsEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
+            IsPrimaryButtonEnabled = !EnableDateRange 
+                || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue 
+                && dateTo.SelectedDate > dateFrom.SelectedDate;
+        }
+
+        private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
+        {
+            Layer.TimeExtent = new TimeExtentInfo()
+            {
+                IsEnable = EnableDateRange,
+                From = dateFrom.SelectedDate.Value,
+                To = dateTo.SelectedDate.Value,
+            };
         }
     }
 }
