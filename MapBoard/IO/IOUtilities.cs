@@ -23,14 +23,5 @@ namespace MapBoard.Main.IO
             directory.Create();
             return directory;
         }
-
-        public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
-        {
-            string path = await Shapefile.CreateShapefileAsync(layer.Type, layer.Name, directory);
-            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
-            await table.AddFeaturesAsync(await layer.GetAllFeatures());
-            table.Close();
-            return path;
-        }
     }
 }

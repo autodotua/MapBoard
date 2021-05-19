@@ -133,6 +133,7 @@
     <Compile Include="BoardTaskManager.cs" />
     <Compile Include="IO\Kml.cs" />
     <Compile Include="IO\NtsShapefile.cs" />
+    <Compile Include="Model\FieldInfo.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />
     <Compile Include="UI\Component\AdvancedColorPickerDialog.xaml.cs">
       <DependentUpon>AdvancedColorPickerDialog.xaml</DependentUpon>
@@ -143,12 +144,16 @@
     <Compile Include="UI\Component\ColorPickerTextBox.xaml.cs">
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialog\CreateLayerDialog.xaml.cs">
+      <DependentUpon>CreateLayerDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Map\OverlayHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
+    <Compile Include="Util\FieldUtility.cs" />
     <Compile Include="Util\GeometryUtility.cs" />
     <Compile Include="Util\IOUtility.cs" />
     <Compile Include="IO\IOUtilities.cs" />
@@ -205,6 +210,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Dialog\BaseLayerSettingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Dialog\CreateLayerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

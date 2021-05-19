@@ -67,7 +67,7 @@ namespace MapBoard.Main.IO
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            bool info = table.Fields.Any(p => p.Name == Resource.LabelFieldName && p.FieldType == FieldType.Text);
+            bool label = table.Fields.Any(p => p.Name == Resource.LabelFieldName && p.FieldType == FieldType.Text);
             bool date = table.Fields.Any(p => p.Name == Resource.DateFieldName && p.FieldType == FieldType.Date);
             bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
@@ -77,7 +77,7 @@ namespace MapBoard.Main.IO
             {
                 Feature newFeature = layer.Table.CreateFeature();
                 newFeature.Geometry = GeometryUtility.RemoveZAndM(feature.Geometry);
-                if (info)
+                if (label)
                 {
                     newFeature.Attributes[Resource.LabelFieldName] = feature.Attributes[Resource.LabelFieldName];
                 }
@@ -95,7 +95,7 @@ namespace MapBoard.Main.IO
             layer.UpdateFeatureCount();
         }
 
-        public async static Task<string> CreateShapefileAsync(GeometryType type, string name, string folder = null)
+        public async static Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IList<Field> fields = null)
         {
             if (folder == null)
             {
@@ -106,13 +106,32 @@ namespace MapBoard.Main.IO
                 Directory.CreateDirectory(folder);
             }
             string path = Path.Combine(folder, name);
-            List<Field> fields = new List<Field>()
+            if (fields == null)
             {
-            //   new Field(FieldType.OID,"Id",null,9),
-                new Field(FieldType.Text,Resource.LabelFieldName,null,254),
-                new Field(FieldType.Date,Resource.DateFieldName,null,8),
-                new Field(FieldType.Text,Resource.ClassFieldName,null,254),
-            };
+                fields = new List<Field>()
+                {
+                //   new Field(FieldType.OID,"Id",null,9),
+                    new Field(FieldType.Text,Resource.LabelFieldName,null,254),
+                    new Field(FieldType.Date,Resource.DateFieldName,null,8),
+                    new Field(FieldType.Text,Resource.ClassFieldName,null,254),
+                };
+            }
+            else
+            {
+                fields = fields.Where(p => p.Name.ToLower() != "fid").Where(p => p.Name.ToLower() != "id").ToList();
+                if (!fields.Any(p => p.Name == Resource.LabelFieldName))
+                {
+                    fields.Add(new Field(FieldType.Text, Resource.LabelFieldName, null, 254));
+                }
+                if (!fields.Any(p => p.Name == Resource.ClassFieldName))
+                {
+                    fields.Add(new Field(FieldType.Text, Resource.ClassFieldName, null, 254));
+                }
+                if (!fields.Any(p => p.Name == Resource.DateFieldName))
+                {
+                    fields.Add(new Field(FieldType.Date, Resource.DateFieldName, null, 8));
+                }
+            }
 
             NtsShapefile.TestCreate2Dshape(path, type, fields.ToArray());
             path = path + ".shp";
@@ -120,8 +139,22 @@ namespace MapBoard.Main.IO
             await table.LoadAsync();
             var feature = (await table.QueryFeaturesAsync(new QueryParameters())).First();
             await table.DeleteFeatureAsync(feature);
+            return table;
+        }
+
+        public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
+        {
+            var table = await CreateShapefileAsync(layer.Type, layer.Name, directory, layer.Table.Fields.ToList());
+            List<Feature> newFeatures = new List<Feature>();
+            foreach (var feature in await layer.GetAllFeatures())
+            {
+                newFeatures.Add(
+                    table.CreateFeature(
+                        feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"), feature.Geometry));
+            }
+            await table.AddFeaturesAsync(newFeatures);
             table.Close();
-            return path;
+            return table.Path;
         }
     }
 }

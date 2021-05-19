@@ -47,17 +47,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static LayerInfo AddLayer(string name)
-        {
-            LayerInfo layer = new LayerInfo();
-            layer.Name = name ?? throw new ArgumentException();
-            LayerCollection.Instance.Layers.Add(layer);
-            LayerCollection.Instance.Selected = layer;
-            layer.ApplyStyle();
-            return layer;
-        }
-
-        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null)
+        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null, IList<Field> fields = null)
         {
             if (name == null)
             {
@@ -71,7 +61,7 @@ namespace MapBoard.Main.Util
                 }
             }
 
-            await Shapefile.CreateShapefileAsync(type, name);
+            await Shapefile.CreateShapefileAsync(type, name, null, fields);
             LayerInfo layer = new LayerInfo();
             if (template != null)
             {

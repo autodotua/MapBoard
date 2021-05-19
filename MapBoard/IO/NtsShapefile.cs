@@ -41,15 +41,18 @@ namespace MapBoard.Main.IO
             {
                 switch (field.FieldType)
                 {
+                    case FieldType.OID:
+                        att.Add(field.Name, 0);
+                        break;
+
                     case FieldType.Int16:
                     case FieldType.Int32:
-                    case FieldType.OID:
                         att.Add(field.Name, int.MaxValue);
                         break;
 
                     case FieldType.Float32:
                     case FieldType.Float64:
-                        att.Add(field.Name, double.MaxValue);
+                        att.Add(field.Name, 0d);
                         break;
 
                     case FieldType.Date:
@@ -64,7 +67,7 @@ namespace MapBoard.Main.IO
                         throw new NotSupportedException();
                 }
             }
-            Geometry geom = null;
+            Geometry geom;
             switch (type)
             {
                 case GeometryType.Point:
@@ -91,7 +94,6 @@ namespace MapBoard.Main.IO
 
             var outDbaseHeader = ShapefileDataWriter.GetHeader(features[0], 1, Encoding.UTF8);
             dataWriter.Header = outDbaseHeader;
-
             dataWriter.Write(features);
 
             File.WriteAllText(fileName + ".prj", ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84.WKT);

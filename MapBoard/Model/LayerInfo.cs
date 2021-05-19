@@ -53,7 +53,7 @@ namespace MapBoard.Main.Model
         }
 
         [JsonIgnore]
-        public FeatureLayer Layer => Table?.FeatureLayer;
+        public FeatureLayer Layer => Table?.Layer as FeatureLayer;
 
         private bool layerVisible = true;
 
@@ -70,16 +70,20 @@ namespace MapBoard.Main.Model
             set
             {
                 layerVisible = value;
-                //if (LayerCollection.Instance.Layers.Contains(this))
-                //{
-                //    Config.Instance.ShapefileLayers.First(p => p.Name == Name).LayerVisible = value;
-                //}
                 if (Layer != null)
                 {
                     Layer.IsVisible = value;
                 }
                 this.Notify(nameof(LayerVisible));
             }
+        }
+
+        private FieldInfo[] fields;
+
+        public FieldInfo[] Fields
+        {
+            get => fields;
+            set => this.SetValueAndNotify(ref fields, value, nameof(Fields));
         }
 
         private TimeExtentInfo timeExtent;
