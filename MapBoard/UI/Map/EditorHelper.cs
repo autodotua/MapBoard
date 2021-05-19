@@ -84,22 +84,26 @@ namespace MapBoard.Main.UI.Map
             Mode = EditMode.Creat;
             if (Attributes != null)
             {
-                if (!Config.Instance.RemainLabel)
+                var label = Attributes.Label;
+                var key = Attributes.Key;
+                var date = Attributes.Date;
+                Attributes = FeatureAttributes.Empty(LayerCollection.Instance.Selected);
+                if (Config.Instance.RemainLabel)
                 {
-                    Attributes.Label = "";
+                    Attributes.Label = label;
                 }
-                if (!Config.Instance.RemainKey)
+                if (Config.Instance.RemainKey)
                 {
-                    Attributes.Key = "";
+                    Attributes.Key = key;
                 }
-                if (!Config.Instance.RemainDate)
+                if (Config.Instance.RemainDate)
                 {
-                    Attributes.Date = null;
+                    Attributes.Date = date;
                 }
             }
             else
             {
-                Attributes = FeatureAttributes.Empty;
+                Attributes = FeatureAttributes.Empty(LayerCollection.Instance.Selected);
             }
             await Mapview.SketchEditor.StartAsync(mode);
             if (geometry != null)
@@ -119,10 +123,10 @@ namespace MapBoard.Main.UI.Map
         /// 编辑
         /// </summary>
         /// <returns></returns>
-        public async Task EditAsync(Feature feature)
+        public async Task EditAsync(LayerInfo layer, Feature feature)
         {
             Mode = EditMode.Edit;
-            Attributes = FeatureAttributes.FromFeature(feature);
+            Attributes = FeatureAttributes.FromFeature(layer, feature);
 
             BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Edit;
             await Mapview.SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));

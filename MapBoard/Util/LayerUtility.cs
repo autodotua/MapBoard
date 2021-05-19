@@ -47,7 +47,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null, IList<Field> fields = null)
+        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null, IList<FieldInfo> fields = null)
         {
             if (name == null)
             {
@@ -60,9 +60,13 @@ namespace MapBoard.Main.Util
                     name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.FileName));
                 }
             }
-
-            await Shapefile.CreateShapefileAsync(type, name, null, fields);
+            if (fields == null)
+            {
+                fields = new List<FieldInfo>();
+            }
+            await Shapefile.CreateShapefileAsync(type, name, null, fields.ToEsriFields().ToList());
             LayerInfo layer = new LayerInfo();
+            layer.Fields = fields.ToArray();
             if (template != null)
             {
                 layer.CopyLayerFrom(template);

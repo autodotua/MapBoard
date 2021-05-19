@@ -64,7 +64,7 @@ namespace MapBoard.Main.UI.Dialog
             int index = 0;
             foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)
             {
-                SelectedFeatures.Add(new FeatureSelectionInfo(feature, ++index));
+                SelectedFeatures.Add(new FeatureSelectionInfo(LayerCollection.Instance.Selected, feature, ++index));
             }
         }
 
@@ -95,11 +95,11 @@ namespace MapBoard.Main.UI.Dialog
 
         public class FeatureSelectionInfo
         {
-            public FeatureSelectionInfo(Feature feature, int index)
+            public FeatureSelectionInfo(LayerInfo layer, Feature feature, int index)
             {
                 Feature = feature;
                 Index = index;
-                Attributes = FeatureAttributes.FromFeature(feature);
+                Attributes = FeatureAttributes.FromFeature(layer, feature);
             }
 
             public Feature Feature { get; }

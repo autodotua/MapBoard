@@ -1,8 +1,10 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Extension;
 using MapBoard.Common;
+using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -12,11 +14,19 @@ namespace MapBoard.Main.Model
 {
     public class FeatureAttributes : INotifyPropertyChanged
     {
+        private DateTimeOffset? date;
+
+        private string key;
+
+        private string label;
+
+        private List<FeatureAttribute> others = new List<FeatureAttribute>();
+
         private FeatureAttributes()
         {
         }
 
-        private DateTimeOffset? date;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public DateTimeOffset? Date
         {
@@ -24,7 +34,11 @@ namespace MapBoard.Main.Model
             set => this.SetValueAndNotify(ref date, value, nameof(Date));
         }
 
-        private string label;
+        public string Key
+        {
+            get => key;
+            set => this.SetValueAndNotify(ref key, value, nameof(Key));
+        }
 
         public string Label
         {
@@ -32,17 +46,24 @@ namespace MapBoard.Main.Model
             set => this.SetValueAndNotify(ref label, value, nameof(Label));
         }
 
-        private string key;
+        public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
 
-        public string Key
+        public static FeatureAttributes Empty(LayerInfo layer)
         {
-            get => key;
-            set => this.SetValueAndNotify(ref key, value, nameof(Key));
+            var attrs = new FeatureAttributes();
+            foreach (var field in layer.Fields)
+            {
+                attrs.others.Add(new FeatureAttribute()
+                {
+                    Name = field.Name,
+                    DisplayName = field.DisplayName,
+                    Type = field.Type
+                });
+            }
+            return attrs;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public static FeatureAttributes FromFeature(Feature feature)
+        public static FeatureAttributes FromFeature(LayerInfo layer, Feature feature)
         {
             FeatureAttributes attributes = new FeatureAttributes();
             attributes.Label = feature.Attributes[Resource.LabelFieldName] as string;
@@ -55,10 +76,32 @@ namespace MapBoard.Main.Model
             {
                 attributes.Date = null;
             }
+            foreach (var attr in FieldUtility.GetCustomAttributes(feature.Attributes))
+            {
+                if (layer.Fields.Any(p => p.Name == attr.Key))
+                {
+                    var field = layer.Fields.First(p => p.Name == attr.Key);
+                    attributes.others.Add(new FeatureAttribute()
+                    {
+                        Name = attr.Key,
+                        DisplayName = field.DisplayName,
+                        Type = field.Type,
+                        Value = attr.Value
+                    });
+                }
+                else
+                {
+                    attributes.others.Add(new FeatureAttribute()
+                    {
+                        Name = attr.Key,
+                        DisplayName = attr.Key,
+                        Type = feature.FeatureTable.Fields.First(p => p.Name == attr.Key).ToFieldInfo().Type,
+                        Value = attr.Value
+                    });
+                }
+            }
             return attributes;
         }
-
-        public static FeatureAttributes Empty => new FeatureAttributes();
 
         public void SaveToFeature(Feature feature)
         {
@@ -76,6 +119,13 @@ namespace MapBoard.Main.Model
                 feature.Attributes[Resource.DateFieldName] = null;
             }
             feature.Attributes[Resource.ClassFieldName] = Key;
+            if (Others != null)
+            {
+                foreach (var attr in Others)
+                {
+                    feature.Attributes[attr.Name] = attr.Value;
+                }
+            }
         }
     }
 }

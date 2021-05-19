@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -45,19 +46,22 @@ namespace MapBoard.Main.UI.OperationBar
         }
 
         private SelectFeatureDialog selectFeatureDialog;
+        protected override bool CanEdit => false;
 
         private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
-            btnCut.IsEnabled = (LayerCollection.Instance.Selected.Type == GeometryType.Polygon || LayerCollection.Instance.Selected.Type == GeometryType.Polyline);
+            btnMoreAttributes.IsEnabled = count == 1;
+            LayerInfo layer = LayerCollection.Instance.Selected;
+            btnCut.IsEnabled = layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline;
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
-            if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polyline)//线
+            if (layer.Table.GeometryType == GeometryType.Polyline)//线
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
-            else if (LayerCollection.Instance.Selected.Table.GeometryType == GeometryType.Polygon)//面
+            else if (layer.Table.GeometryType == GeometryType.Polygon)//面
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 double area = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
@@ -75,21 +79,18 @@ namespace MapBoard.Main.UI.OperationBar
 
             if (count == 1)
             {
-                Attributes = FeatureAttributes.FromFeature(MapView.Selection.SelectedFeatures[0]);
+                attributes = FeatureAttributes.FromFeature(layer, MapView.Selection.SelectedFeatures[0]);
             }
             else
             {
-                Attributes = null;
+                attributes = null;
             }
+            this.Notify(nameof(Attributes));
         }
 
         private FeatureAttributes attributes;
 
-        public FeatureAttributes Attributes
-        {
-            get => attributes;
-            set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
-        }
+        public override FeatureAttributes Attributes => attributes;
 
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
         {
@@ -171,7 +172,7 @@ namespace MapBoard.Main.UI.OperationBar
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            await MapView.Editor.EditAsync(MapView.Selection.SelectedFeatures[0]);
+            await MapView.Editor.EditAsync(LayerCollection.Instance.Selected, MapView.Selection.SelectedFeatures[0]);
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)

@@ -17,7 +17,8 @@ namespace MapBoard.Main.IO
 {
     public class NtsShapefile
     {
-        public static void TestCreate2Dshape(string fileName, GeometryType type, Field[] fields)
+      
+        public static void CreateShapefile(string fileName, GeometryType type, Field[] fields)
         {
             Dictionary<GeometryType, ShapeGeometryType> esriGeometryType2NtsGeometryType = new Dictionary<GeometryType, ShapeGeometryType>()
             {
@@ -37,36 +38,6 @@ namespace MapBoard.Main.IO
 
             List<Feature> features = new List<Feature>();
             AttributesTable att = new AttributesTable();
-            foreach (var field in fields)
-            {
-                switch (field.FieldType)
-                {
-                    case FieldType.OID:
-                        att.Add(field.Name, 0);
-                        break;
-
-                    case FieldType.Int16:
-                    case FieldType.Int32:
-                        att.Add(field.Name, int.MaxValue);
-                        break;
-
-                    case FieldType.Float32:
-                    case FieldType.Float64:
-                        att.Add(field.Name, 0d);
-                        break;
-
-                    case FieldType.Date:
-                        att.Add(field.Name, DateTime.Now);
-                        break;
-
-                    case FieldType.Text:
-                        att.Add(field.Name, new string('c', field.Length));
-                        break;
-
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
             Geometry geom;
             switch (type)
             {
@@ -89,11 +60,47 @@ namespace MapBoard.Main.IO
                 default:
                     throw new NotSupportedException();
             }
+            DbaseFileHeader header = ShapefileDataWriter.GetHeader(
+                new Feature(shpWriter.Factory.CreateGeometry(geom), att), 1, Encoding.UTF8);
+            foreach (var field in fields)
+            {
+                switch (field.FieldType)
+                {
+                    case FieldType.OID:
+                        att.Add(field.Name, 0);
+                        header.AddColumn(field.Name, 'N', 9, 0);
+                        break;
+
+                    case FieldType.Int16:
+                    case FieldType.Int32:
+                        att.Add(field.Name, 0);
+                        header.AddColumn(field.Name, 'N', 9, 0);
+                        break;
+
+                    case FieldType.Float32:
+                    case FieldType.Float64:
+                        att.Add(field.Name, 0d);
+                        header.AddColumn(field.Name, 'N', 13, 8);
+                        break;
+
+                    case FieldType.Date:
+                        att.Add(field.Name, DateTime.Now);
+                        header.AddColumn(field.Name, 'D', 9, 0);
+                        break;
+
+                    case FieldType.Text:
+                        att.Add(field.Name, "");
+                        header.AddColumn(field.Name, 'C', 255, 0);
+                        break;
+
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
 
             features.Add(new Feature(shpWriter.Factory.CreateGeometry(geom), att));
 
-            var outDbaseHeader = ShapefileDataWriter.GetHeader(features[0], 1, Encoding.UTF8);
-            dataWriter.Header = outDbaseHeader;
+            dataWriter.Header = header;
             dataWriter.Write(features);
 
             File.WriteAllText(fileName + ".prj", ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84.WKT);

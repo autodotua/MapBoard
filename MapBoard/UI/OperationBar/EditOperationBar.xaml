@@ -2,10 +2,12 @@
     x:Class="MapBoard.Main.UI.OperationBar.EditOperationBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="clr-namespace:FzLib.UI.Converter;assembly=FzUILib.WPF"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+
     <Grid Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="OperationBarStyles.xaml" />
@@ -120,6 +122,7 @@
                 <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.Resources>
                 <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="{x:Type TextBox}">
@@ -147,6 +150,18 @@
                 x:Name="txtKey" Grid.Row="4"
                 Grid.Column="10"
                 Text="{Binding MapView.Editor.Attributes.Key}" />
+            <Button
+                x:Name="btnMoreAttributes"
+                Grid.Column="12"
+                Click="MoreAttributesButton_Click"
+                Style="{StaticResource barButtonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="14">
+                        <Path Data="M57.6 132.48v785.92h908.8V132.48z m844.16 64v203.52H121.6V196.48zM397.44 627.2V464h220.16V627.2z m220.8 64v163.2H397.44V691.2zM121.6 464h211.2V627.2H121.6z m560 0h220.8V627.2h-220.8zM121.6 691.2h211.2v163.2H121.6z m560 163.2V691.2h220.8v163.2z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                    </Viewbox>
+                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">更多</TextBlock>
+                </StackPanel>
+            </Button>
         </Grid>
     </Grid>
 </local:OperationBarBase>

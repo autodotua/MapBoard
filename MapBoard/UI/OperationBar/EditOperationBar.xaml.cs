@@ -1,4 +1,5 @@
-﻿using MapBoard.Main.UI.Map;
+﻿using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,9 @@ namespace MapBoard.Main.UI.OperationBar
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
             //ppp.PlacementTarget = btnAttri;
         }
+
+        public override FeatureAttributes Attributes => ArcMapView.Instance.Editor.Attributes;
+        protected override bool CanEdit => true;
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
         {
@@ -93,10 +97,6 @@ namespace MapBoard.Main.UI.OperationBar
         private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
-        }
-
-        private void BtnAttri_Click(object sender, RoutedEventArgs e)
-        {
         }
     }
 }

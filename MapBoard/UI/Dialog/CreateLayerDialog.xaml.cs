@@ -31,12 +31,7 @@ namespace MapBoard.Main.UI.Dialog
         public CreateLayerDialog()
         {
             LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            StaticFields = new FieldInfo[]
-            {
-                new FieldInfo("Label", "标签", FieldInfoType.Text),
-                new FieldInfo("Date", "日期", FieldInfoType.Date),
-                new FieldInfo("Class", "分类", FieldInfoType.Text),
-            };
+            StaticFields = FieldUtility.GetDefaultFields();
             InitializeComponent();
         }
 
@@ -50,10 +45,22 @@ namespace MapBoard.Main.UI.Dialog
 
         private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
+            HashSet<string> names = new HashSet<string>();
+            HashSet<string> displayNames = new HashSet<string>();
             foreach (var field in Fields)
             {
                 if (field.DisplayName.Length * field.Name.Length == 0
                     && field.Name.Length + field.DisplayName.Length > 0)
+                {
+                    IsPrimaryButtonEnabled = false;
+                    return;
+                }
+                if (!names.Add(field.Name))
+                {
+                    IsPrimaryButtonEnabled = false;
+                    return;
+                }
+                if (!displayNames.Add(field.DisplayName))
                 {
                     IsPrimaryButtonEnabled = false;
                     return;
@@ -64,9 +71,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
-            var fields = StaticFields
-                .Concat(Fields.Where(p => p.Name.Length > 0 && p.DisplayName.Length > 0))
-                .ToEsriFields()
+            var fields = Fields.Where(p => p.Name.Length > 0 && p.DisplayName.Length > 0)
                 .ToList();
             GeometryType type;
             if (rbtnPoint.IsChecked == true)

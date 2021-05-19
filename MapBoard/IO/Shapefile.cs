@@ -133,7 +133,7 @@ namespace MapBoard.Main.IO
                 }
             }
 
-            NtsShapefile.TestCreate2Dshape(path, type, fields.ToArray());
+            NtsShapefile.CreateShapefile(path, type, fields.ToArray());
             path = path + ".shp";
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();

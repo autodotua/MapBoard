@@ -82,7 +82,14 @@ namespace MapBoard.Main.Model
 
         public FieldInfo[] Fields
         {
-            get => fields;
+            get
+            {
+                if (fields == null)
+                {
+                    fields = Array.Empty<FieldInfo>();
+                }
+                return fields;
+            }
             set => this.SetValueAndNotify(ref fields, value, nameof(Fields));
         }
 

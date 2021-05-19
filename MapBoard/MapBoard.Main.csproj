@@ -133,6 +133,7 @@
     <Compile Include="BoardTaskManager.cs" />
     <Compile Include="IO\Kml.cs" />
     <Compile Include="IO\NtsShapefile.cs" />
+    <Compile Include="Model\FeatureAttribute.cs" />
     <Compile Include="Model\FieldInfo.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />
     <Compile Include="UI\Component\AdvancedColorPickerDialog.xaml.cs">
