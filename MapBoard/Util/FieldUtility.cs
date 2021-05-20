@@ -18,6 +18,10 @@ namespace MapBoard.Main.Util
             foreach (var feature in features)
             {
                 object value = feature.Attributes[fieldSource.Name];
+                if (value is DateTimeOffset dto)
+                {
+                    value = dto.UtcDateTime;
+                }
                 if (fieldTarget.Type == fieldSource.Type)
                 {
                     feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
@@ -50,7 +54,7 @@ namespace MapBoard.Main.Util
                                 break;
 
                             case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
-                                result = ((DateTimeOffset)value).Date.ToString(dateFormat);
+                                result = ((DateTime)value).Date.ToString(dateFormat);
                                 break;
 
                             case FieldInfoType.Text:
@@ -152,7 +156,7 @@ namespace MapBoard.Main.Util
             foreach (var field in fields)
             {
                 string name = field.Name.ToLower();
-                if(name=="id"||name=="fid")
+                if (name == "id" || name == "fid")
                 {
                     continue;
                 }

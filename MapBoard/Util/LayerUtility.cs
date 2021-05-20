@@ -168,7 +168,7 @@ namespace MapBoard.Main.Util
                 {
                     if (feature.Attributes[Resource.DateFieldName] is DateTimeOffset date)
                     {
-                        if (date > layer.TimeExtent.From && date < layer.TimeExtent.To)
+                        if (date.UtcDateTime >= layer.TimeExtent.From && date.UtcDateTime <= layer.TimeExtent.To)
                         {
                             visiableFeatures.Add(feature);
                         }

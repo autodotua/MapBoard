@@ -67,7 +67,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             IsPrimaryButtonEnabled = !EnableDateRange 
                 || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue 
-                && dateTo.SelectedDate > dateFrom.SelectedDate;
+                && dateTo.SelectedDate >= dateFrom.SelectedDate;
         }
 
         private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)

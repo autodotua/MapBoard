@@ -8,8 +8,8 @@ namespace MapBoard.Main.Model
 {
     public class TimeExtentInfo
     {
-        public DateTimeOffset From { get; set; }
-        public DateTimeOffset To { get; set; }
+        public DateTime From { get; set; }
+        public DateTime To { get; set; }
         public bool IsEnable { get; set; }
     }
 }

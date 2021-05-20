@@ -128,6 +128,7 @@ namespace MapBoard.Main.UI.OperationBar
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
                 await FeatureUtility.DeleteAsync(LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
+                ArcMapView.Instance.Selection.ClearSelection();
             }, true);
         }
 

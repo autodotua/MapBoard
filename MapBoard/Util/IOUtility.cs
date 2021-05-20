@@ -73,7 +73,7 @@ namespace MapBoard.Main.Util
             }
             catch (Exception ex)
             {
-                CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
 
@@ -90,23 +90,26 @@ namespace MapBoard.Main.Util
                 try
                 {
                     SnakeBar.Show("正在导出，请勿关闭程序");
-                    switch (Path.GetExtension(path))
-                    {
-                        case ".mblpkg":
-                            await Package.ExportLayer2Async(path, layer);
-                            break;
+                    await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
+                     {
+                         switch (Path.GetExtension(path))
+                         {
+                             case ".mblpkg":
+                                 await Package.ExportLayer2Async(path, layer);
+                                 break;
 
-                        case ".zip":
-                            await MobileGISToolBox.ExportLayerAsync(path, layer);
-                            break;
+                             case ".zip":
+                                 await MobileGISToolBox.ExportLayerAsync(path, layer);
+                                 break;
 
-                        case ".kmz":
-                            await Kml.ExportAsync(path, layer);
-                            break;
+                             case ".kmz":
+                                 await Kml.ExportAsync(path, layer);
+                                 break;
 
-                        default:
-                            throw new Exception("未知文件类型");
-                    }
+                             default:
+                                 throw new Exception("未知文件类型");
+                         }
+                     });
                     SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)
@@ -190,27 +193,30 @@ namespace MapBoard.Main.Util
                 try
                 {
                     SnakeBar.Show("正在导出，请勿关闭程序");
-                    switch (Path.GetExtension(path))
+                    await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
                     {
-                        case ".mbmpkg":
-                            await Package.ExportMap2Async(path);
-                            break;
+                        switch (Path.GetExtension(path))
+                        {
+                            case ".mbmpkg":
+                                await Package.ExportMap2Async(path);
+                                break;
 
-                        case ".png":
-                            await SaveImageAsync(path);
-                            break;
+                            case ".png":
+                                await SaveImageAsync(path);
+                                break;
 
-                        case ".zip":
-                            await MobileGISToolBox.ExportMapAsync(path);
-                            break;
+                            case ".zip":
+                                await MobileGISToolBox.ExportMapAsync(path);
+                                break;
 
-                        case ".kmz":
-                            await Kml.ExportAsync(path);
-                            break;
+                            case ".kmz":
+                                await Kml.ExportAsync(path);
+                                break;
 
-                        default:
-                            throw new Exception("未知文件类型");
-                    }
+                            default:
+                                throw new Exception("未知文件类型");
+                        }
+                    });
                     SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)

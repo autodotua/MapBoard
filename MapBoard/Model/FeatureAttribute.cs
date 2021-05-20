@@ -104,13 +104,13 @@ namespace MapBoard.Main.Model
                             }
                             if (value is DateTime dt)
                             {
-                                dateValue = new DateTimeOffset(dt);
+                                dateValue = dt;
                                 attrValue = dateValue;
                                 break;
                             }
                             if (value is DateTimeOffset dto)
                             {
-                                dateValue = dto;
+                                dateValue = dto.DateTime;
                                 attrValue = dateValue;
                                 break;
                             }
@@ -204,9 +204,9 @@ namespace MapBoard.Main.Model
             }
         }
 
-        private DateTimeOffset? dateValue;
+        private DateTime? dateValue;
 
-        public DateTimeOffset? DateValue
+        public DateTime? DateValue
         {
             get => dateValue;
             set

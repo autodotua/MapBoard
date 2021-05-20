@@ -56,7 +56,7 @@ namespace MapBoard.Main.Model
             }
         }
 
-        public DateTimeOffset? Date
+        public DateTime? Date
         {
             get => all.FirstOrDefault(p => p.Name == Resource.DateFieldName)?.DateValue;
             set
@@ -72,17 +72,18 @@ namespace MapBoard.Main.Model
 
         public static FeatureAttributes Empty(LayerInfo layer)
         {
-            var attrs = new FeatureAttributes();
+            var attributes = new FeatureAttributes();
+            attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, null));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, null));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, null));
+
             foreach (var field in layer.Fields)
             {
-                attrs.others.Add(new FeatureAttribute()
-                {
-                    Name = field.Name,
-                    DisplayName = field.DisplayName,
-                    Type = field.Type
-                });
+                var attr = new FeatureAttribute(field);
+                attributes.others.Add(attr);
+                attributes.all.Add(attr);
             }
-            return attrs;
+            return attributes;
         }
 
         public static FeatureAttributes FromFeature(LayerInfo layer, Feature feature)
@@ -94,7 +95,7 @@ namespace MapBoard.Main.Model
 
             attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Resource.LabelFieldName] as string));
             attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Resource.ClassFieldName] as string));
-            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, feature.Attributes[Resource.DateFieldName] as DateTimeOffset?));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, (feature.Attributes[Resource.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
             foreach (var attr in FieldUtility.GetCustomAttributes(feature.Attributes))
             {
                 FeatureAttribute newAttr = null;
@@ -128,7 +129,14 @@ namespace MapBoard.Main.Model
         {
             foreach (var attr in All)
             {
-                feature.Attributes[attr.Name] = attr.Value;
+                if (attr.Type == FieldInfoType.Date)
+                {
+                    feature.SetAttributeValue(attr.Name, attr.DateValue.HasValue ? new DateTimeOffset(attr.DateValue.Value, TimeSpan.Zero) : null);
+                }
+                else
+                {
+                    feature.SetAttributeValue(attr.Name, attr.Value);
+                }
             }
         }
     }
