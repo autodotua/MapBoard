@@ -77,9 +77,8 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task ExportLayerAsync()
+        public async static Task ExportLayerAsync(LayerInfo layer)
         {
-            var layer = LayerCollection.Instance.Selected;
             System.Diagnostics.Debug.Assert(layer != null);
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
                 .Add("地图画板图层包", "mblpkg")

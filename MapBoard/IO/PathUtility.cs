@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Main.IO
 {
-    internal static class IOUtilities
+    internal static class PathUtility
     {
         public static DirectoryInfo GetTempDir()
         {

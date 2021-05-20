@@ -1,35 +1,22 @@
-﻿using FzLib.Media;
-using FzLib.UI.Dialog;
+﻿using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
-using MapBoard.Common;
-using MapBoard.Common.Dialog;
-
 using MapBoard.Common;
 
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
@@ -106,7 +93,7 @@ namespace MapBoard.Main.UI.Panel
                 }
                 try
                 {
-                    Util.LayerUtility.RemoveLayer(LayerCollection.Instance.Selected, false);
+                    await LayerUtility.RemoveLayerAsync(LayerCollection.Instance.Selected, false);
                     foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                     {
                         File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
@@ -248,7 +235,7 @@ namespace MapBoard.Main.UI.Panel
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
             var style = LayerCollection.Instance.Selected;
-            var keys = (await style.GetAllFeatures()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
+            var keys = (await style.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {
                 if (!Keys.Any(p => p.Key == key) && key != "")

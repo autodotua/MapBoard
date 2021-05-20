@@ -94,7 +94,7 @@ namespace MapBoard.Main.IO
 
         public async static Task ExportMap2Async(string path)
         {
-            DirectoryInfo directory = IOUtilities.GetTempDir();
+            DirectoryInfo directory = PathUtility.GetTempDir();
             foreach (var layer in LayerCollection.Instance.Layers)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
@@ -141,7 +141,7 @@ namespace MapBoard.Main.IO
 
         public async static Task ExportLayer2Async(string path, LayerInfo layer)
         {
-            DirectoryInfo directory = IOUtilities.GetTempDir();
+            DirectoryInfo directory = PathUtility.GetTempDir();
             await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
             await Task.Delay(500);
             File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));

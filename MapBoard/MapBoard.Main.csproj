@@ -148,16 +148,20 @@
     <Compile Include="UI\Dialog\CreateLayerDialog.xaml.cs">
       <DependentUpon>CreateLayerDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialog\CopyAttributesDialog.xaml.cs">
+      <DependentUpon>CopyAttributesDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Map\OverlayHelper.cs" />
+    <Compile Include="UI\Panel\LayerListPanelHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
     <Compile Include="Util\FieldUtility.cs" />
     <Compile Include="Util\GeometryUtility.cs" />
     <Compile Include="Util\IOUtility.cs" />
-    <Compile Include="IO\IOUtilities.cs" />
+    <Compile Include="IO\PathUtility.cs" />
     <Compile Include="IO\MobileGISToolBox.cs" />
     <Compile Include="IO\Package.cs" />
     <Compile Include="IO\Shapefile.cs" />
@@ -215,6 +219,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Dialog\CreateLayerDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Dialog\CopyAttributesDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

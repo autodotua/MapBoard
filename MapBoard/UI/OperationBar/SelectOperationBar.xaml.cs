@@ -138,19 +138,12 @@ namespace MapBoard.Main.UI.OperationBar
                 SelectLayerDialog dialog = new SelectLayerDialog();
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
+                    bool copy = await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
+
+                    await FeatureUtility.CopyOrMoveAsync(LayerCollection.Instance.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
                     LayerCollection.Instance.Selected.LayerVisible = false;
-                    dialog.SelectedLayer.LayerVisible = true;
-                    List<Feature> features = MapView.Selection.SelectedFeatures.ToList();
-                    ShapefileFeatureTable targetTable = dialog.SelectedLayer.Table;
-                    var newFeatures = features.Select(p => targetTable.CreateFeature(p.Attributes, p.Geometry));
-                    await targetTable.AddFeaturesAsync(newFeatures);
+                    dialog.SelectedLayer.LayerVisible = false;
                     MapView.Selection.ClearSelection();
-                    if (await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") == false)
-                    {
-                        await LayerCollection.Instance.Selected.Table.DeleteFeaturesAsync(features);
-                        LayerCollection.Instance.Selected.UpdateFeatureCount();
-                    }
-                    dialog.SelectedLayer.UpdateFeatureCount();
                     LayerCollection.Instance.Selected = dialog.SelectedLayer;
                 }
             });

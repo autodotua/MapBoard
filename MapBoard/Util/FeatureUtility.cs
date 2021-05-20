@@ -388,6 +388,33 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
             return points;
         }
 
+        public static async Task CopyOrMoveAsync(LayerInfo layerFrom, LayerInfo layerTo, Feature[] features, bool copy)
+        {
+            LayerCollection.Instance.Selected.LayerVisible = false;
+            layerTo.LayerVisible = true;
+            ShapefileFeatureTable targetTable = layerTo.Table;
+            var newFeatures = new List<Feature>();
+            var fields = targetTable.Fields.Select(p => p.Name).ToHashSet();
+            foreach (var feature in await layerFrom.GetAllFeaturesAsync())
+            {
+                Dictionary<string, object> attributes = new Dictionary<string, object>();
+                foreach (var attr in feature.Attributes)
+                {
+                    if (fields.Contains(attr.Key))
+                    {
+                        attributes.Add(attr.Key, attr.Value);
+                    }
+                }
+                newFeatures.Add(targetTable.CreateFeature(attributes, feature.Geometry));
+            }
+            await targetTable.AddFeaturesAsync(newFeatures);
+            if (!copy)
+            {
+                await DeleteAsync(layerFrom, features);
+            }
+            layerTo.UpdateFeatureCount();
+        }
+
         public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;
     }
 

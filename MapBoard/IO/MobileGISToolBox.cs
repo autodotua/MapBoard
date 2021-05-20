@@ -14,7 +14,7 @@ namespace MapBoard.Main.IO
     {
         public static async Task ExportLayerAsync(string path, LayerInfo layer)
         {
-            DirectoryInfo tempDir = IOUtilities.GetTempDir();
+            DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);
@@ -27,7 +27,7 @@ namespace MapBoard.Main.IO
 
         public static async Task ExportMapAsync(string path)
         {
-            DirectoryInfo tempDir = IOUtilities.GetTempDir();
+            DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);

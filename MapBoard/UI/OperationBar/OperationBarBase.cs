@@ -11,6 +11,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 
 namespace MapBoard.Main.UI.OperationBar
 {
@@ -86,14 +87,14 @@ namespace MapBoard.Main.UI.OperationBar
                 TextBlock tbkKey = new TextBlock()
                 {
                     Text = a.DisplayName,
-                    VerticalAlignment = VerticalAlignment.Center
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontWeight = FontWeights.Bold,
                 };
                 SetRow(tbkKey, row);
 
                 TextBox txt = new TextBox()
                 {
                     VerticalAlignment = VerticalAlignment.Center,
-                    Width = 108,
                     MaxWidth = 360,
                     MaxLines = 5,
                     TextWrapping = TextWrapping.Wrap
@@ -122,6 +123,20 @@ namespace MapBoard.Main.UI.OperationBar
                 grd.Children.Add(txt);
                 row += 2;
                 index++;
+            }
+
+            for (int i = 1; i < row - 2; i += 2)
+            {
+                Border line = new Border()
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Height = 2,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                line.SetResourceReference(BackgroundProperty, "SystemControlBackgroundBaseMediumLowBrush");
+                SetColumnSpan(line, 999);
+                SetRow(line, i);
+                grd.Children.Add(line);
             }
             Popup p = new Popup()
             {

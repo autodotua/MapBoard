@@ -72,27 +72,30 @@ namespace MapBoard.Main.IO
             bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, null, Path.GetFileNameWithoutExtension(path));
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, null, Path.GetFileNameWithoutExtension(path), table.Fields.ToFieldInfos().ToList());
+            layer.LayerVisible = false;
+            var fields = layer.Table.Fields.Select(p => p.Name).ToHashSet();
             foreach (var feature in features)
             {
-                Feature newFeature = layer.Table.CreateFeature();
-                newFeature.Geometry = GeometryUtility.RemoveZAndM(feature.Geometry);
-                if (label)
+                Dictionary<string, object> newAttributes = new Dictionary<string, object>();
+                foreach (var attr in feature.Attributes)
                 {
-                    newFeature.Attributes[Resource.LabelFieldName] = feature.Attributes[Resource.LabelFieldName];
+                    if (attr.Key.ToLower() == "id")
+                    {
+                        continue;
+                    }
+                    if (fields.Contains(attr.Key))
+                    {
+                        newAttributes.Add(attr.Key, attr.Value);
+                    }
                 }
-                if (date)
-                {
-                    newFeature.Attributes[Resource.DateFieldName] = feature.Attributes[Resource.DateFieldName];
-                }
-                if (key)
-                {
-                    newFeature.Attributes[Resource.ClassFieldName] = feature.Attributes[Resource.ClassFieldName];
-                }
+                Feature newFeature = layer.Table.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
 
                 await layer.Table.AddFeatureAsync(newFeature);
             }
+
             layer.UpdateFeatureCount();
+            layer.LayerVisible = true;
         }
 
         public async static Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IList<Field> fields = null)
@@ -146,7 +149,7 @@ namespace MapBoard.Main.IO
         {
             var table = await CreateShapefileAsync(layer.Type, layer.Name, directory, layer.Table.Fields.ToList());
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in await layer.GetAllFeatures())
+            foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 newFeatures.Add(
                     table.CreateFeature(

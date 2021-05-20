@@ -10,6 +10,7 @@ using MapBoard.Common;
 
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.UI.Panel;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
 using ModernWpf.FzExtension.CommonDialog;
@@ -57,6 +58,7 @@ namespace MapBoard.Main.UI
 
         public Config Config => Config.Instance;
         public LayerCollection Layers => LayerCollection.Instance;
+        private LayerListPanelHelper layerListHelper;
 
         #endregion 字段和属性
 
@@ -69,6 +71,7 @@ namespace MapBoard.Main.UI
         {
             InitializeComponent();
             RegistEvents();
+            layerListHelper = new LayerListPanelHelper(dataGrid, this);
             LayerCollection.LayerInstanceChanged += (p1, p2) =>
               {
                   Notify(nameof(Layers));
@@ -139,19 +142,6 @@ namespace MapBoard.Main.UI
             //    new DialogItem("多边形","二维（面）",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Polygon)),
             //  });
             await new CreateLayerDialog().ShowAsync();
-        }
-
-        private void DeleteLayer()
-        {
-            if (dataGrid.SelectedItems.Count == 0)
-            {
-                SnakeBar.ShowError("没有选择任何样式");
-                return;
-            }
-            foreach (LayerInfo layer in dataGrid.SelectedItems.Cast<LayerInfo>().ToArray())
-            {
-                LayerUtility.RemoveLayer(layer, true);
-            }
         }
 
         private async void DrawButtonsClick(SplitButton sender, SplitButtonClickEventArgs args)
@@ -276,113 +266,12 @@ namespace MapBoard.Main.UI
 
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            ContextMenu menu = new ContextMenu();
-            List<(string header, Action action, bool visiable)> menus = null;
-            LayerInfo layer = LayerCollection.Instance.Selected;
-            LayerInfo[] Layers = dataGrid.SelectedItems.Cast<LayerInfo>().ToArray();
-            if (dataGrid.SelectedItems.Count == 1)
-            {
-                menus = new List<(string header, Action action, bool visiable)>()
-               {
-                    ("复制",LayerUtility. CopyFeatures,true),
-                    ("建立缓冲区",LayerUtility.Buffer,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
-                    ("删除",DeleteLayer,true),
-                    ("新建副本",LayerUtility. CreateCopy,true),
-                    ("缩放到图层", ZoomToLayer,LayerCollection.Instance.Selected.FeatureCount > 0),
-                    ("坐标转换",CoordinateTransformate,true),
-                    ("设置时间范围",SetTimeExtent,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
-                    ("导入",async()=>await IOUtility.ImportFeatureAsync(),true),
-                    ("导出",  ExportSingle,true),
-               };
-            }
-            else
-            {
-                menus = new List<(string header, Action action, bool visiable)>()
-               {
-                    ("合并",async()=>await LayerUtility. UnionAsync(Layers),Layers.Select(p=>p.Type).Distinct().Count()==1),
-                    ("删除",DeleteLayer,true),
-                };
-            }
-
-            foreach (var (header, action, visiable) in menus)
-            {
-                if (visiable)
-                {
-                    MenuItem item = new MenuItem() { Header = header };
-                    item.Click += (p1, p2) => action();
-                    menu.Items.Add(item);
-                }
-            }
-            if (menu.Items.Count > 0)
-            {
-                menu.IsOpen = true;
-            }
-
-            async void ExportSingle()
-            {
-                await DoAsync(IOUtility.ExportLayerAsync);
-            }
-
-            async void ZoomToLayer()
-            {
-                try
-                {
-                    await arcMap.ZoomToGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
-                }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "操作失败，可能是不构成有面积的图形");
-                }
-            }
-
-            async void CoordinateTransformate()
-            {
-                CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-                {
-                    await DoAsync(async () =>
-                     {
-                         string from = dialog.SelectedCoordinateSystem1;
-                         string to = dialog.SelectedCoordinateSystem2;
-                         await LayerUtility.CoordinateTransformateAsync(LayerCollection.Instance.Selected, from, to);
-                     });
-                }
-            }
-
-            async void SetTimeExtent()
-            {
-                DateRangeDialog dialog = new DateRangeDialog(layer);
-                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-                {
-                    await LayerUtility.SetTimeExtentAsync(layer);
-                }
-            }
-        }
-
-        private void ListViewPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Delete)
-            {
-                DeleteLayer();
-            }
+            layerListHelper.ShowContextMenu();
         }
 
         private void lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (dataGrid.SelectedItems.Count > 1)
-            {
-                return;
-            }
-            var obj = e.OriginalSource as FrameworkElement;
-            while (obj != null && !(obj.DataContext is LayerInfo))
-            {
-                obj = obj.Parent as FrameworkElement;
-            }
-            var layer = obj.DataContext as LayerInfo;
-            if (layer != null)
-            {
-                dataGrid.SelectedItem = layer;
-            }
+            layerListHelper.RightButtonClickToSelect(e);
         }
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
@@ -454,6 +343,7 @@ namespace MapBoard.Main.UI
         {
             if (e.AddedFeatures != null || e.DeletedFeatures != null || e.ChangedFeatures != null)
             {
+                e.Layer.UpdateFeatureCount();
                 if (undoSnakeBar != null)
                 {
                     undoSnakeBar.Hide();

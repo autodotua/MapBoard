@@ -67,7 +67,7 @@ namespace MapBoard.Main.IO
 
         private static async Task AddToKmlAsync(LayerInfo layer, KmlNodeCollection nodes)
         {
-            foreach (var feature in await layer.GetAllFeatures())
+            foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 foreach (var g in GeometryUtility.EnsureSinglePart(feature.Geometry))
                 {

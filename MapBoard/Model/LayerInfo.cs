@@ -129,12 +129,6 @@ namespace MapBoard.Main.Model
             this.Notify(nameof(FeatureCount));
         }
 
-        public async Task<FeatureQueryResult> GetAllFeatures()
-        {
-            FeatureQueryResult result = await Table.QueryFeaturesAsync(new QueryParameters());
-            return result;
-        }
-
         [JsonIgnore]
         public long FeatureCount
         {
@@ -162,10 +156,10 @@ namespace MapBoard.Main.Model
                         return "点";
 
                     case GeometryType.Polygon:
-                        return "面";
+                        return "折线";
 
                     case GeometryType.Polyline:
-                        return "线";
+                        return "多边形";
 
                     case GeometryType.Multipoint:
                         return "多点";
@@ -198,15 +192,8 @@ namespace MapBoard.Main.Model
                     OutlineWidth = s.Value.OutlineWidth
                 });
             }
-            //Renderer.LineWidth = style.Renderer.LineWidth;
-            //Renderer.LineColor = style.Renderer.LineColor;
-            //Renderer.FillColor = style.Renderer.FillColor;
             Label = layer.Label;
             this.Notify(
-                //nameof(Renderer.LineColor),
-                //nameof(Renderer),
-                //nameof(Renderer.LineWidth),
-                //nameof(Renderer.FillColor),
                 nameof(Type),
                 nameof(FeatureCount),
                 nameof(LayerVisible),

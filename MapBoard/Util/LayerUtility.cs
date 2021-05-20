@@ -28,7 +28,7 @@ namespace MapBoard.Main.Util
 {
     public static class LayerUtility
     {
-        public static void RemoveLayer(this LayerInfo layer, bool deleteFiles)
+        public static async Task RemoveLayerAsync(this LayerInfo layer, bool deleteFiles)
         {
             if (LayerCollection.Instance.Layers.Contains(layer))
             {
@@ -37,13 +37,16 @@ namespace MapBoard.Main.Util
 
             if (deleteFiles)
             {
-                foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
+                await Task.Run(() =>
                 {
-                    if (Path.GetFileNameWithoutExtension(file) == layer.Name)
+                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                     {
-                        File.Delete(file);
+                        if (Path.GetFileNameWithoutExtension(file) == layer.Name)
+                        {
+                            File.Delete(file);
+                        }
                     }
-                }
+                });
             }
         }
 
@@ -81,7 +84,7 @@ namespace MapBoard.Main.Util
         {
             if (includeFeatures)
             {
-                FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeatures();
+                FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeaturesAsync();
 
                 var newLayer = await CreateLayerAsync(layer.Type, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
@@ -96,9 +99,15 @@ namespace MapBoard.Main.Util
             }
         }
 
+        public async static Task<FeatureQueryResult> GetAllFeaturesAsync(this LayerInfo layer)
+        {
+            FeatureQueryResult result = await layer.Table.QueryFeaturesAsync(new QueryParameters());
+            return result;
+        }
+
         public async static Task CopyAllFeaturesAsync(LayerInfo source, LayerInfo target)
         {
-            FeatureQueryResult features = await source.GetAllFeatures();
+            FeatureQueryResult features = await source.GetAllFeaturesAsync();
             ShapefileFeatureTable targetTable = target.Table;
 
             foreach (var feature in features)
@@ -106,35 +115,6 @@ namespace MapBoard.Main.Util
                 await targetTable.AddFeatureAsync(feature);
             }
             target.UpdateFeatureCount();
-        }
-
-        public async static void CopyFeatures()
-        {
-            SelectLayerDialog dialog = new SelectLayerDialog();
-            if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary)
-            {
-                await CopyAllFeaturesAsync(LayerCollection.Instance.Selected, dialog.SelectedLayer);
-            }
-        }
-
-        public async static void Buffer()
-        {
-            await BufferAsync(LayerCollection.Instance.Selected);
-        }
-
-        public async static void CreateCopy()
-        {
-            int mode = 0;
-            await CommonDialog.ShowSelectItemDialogAsync("请选择副本类型",
-                new DialogItem[]
-            {
-              new  DialogItem("仅样式",null,()=>mode=1),
-               new DialogItem("样式和所有图形",null,()=>mode=2)
-            });
-            if (mode > 0)
-            {
-                await CreatCopyAsync(LayerCollection.Instance.Selected, mode == 2);
-            }
         }
 
         public static async Task LayerCompleteAsync(this LayerInfo layer)
@@ -151,7 +131,7 @@ namespace MapBoard.Main.Util
 
             ShapefileFeatureTable newTable = newLayer.Table;
 
-            foreach (var feature in await layer.GetAllFeatures())
+            foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
                 var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
@@ -177,7 +157,7 @@ namespace MapBoard.Main.Util
                 List<Feature> visiableFeatures = new List<Feature>();
                 List<Feature> invisiableFeatures = new List<Feature>();
 
-                FeatureQueryResult features = await layer.GetAllFeatures();
+                FeatureQueryResult features = await layer.GetAllFeaturesAsync();
 
                 foreach (var feature in features)
                 {
@@ -203,7 +183,7 @@ namespace MapBoard.Main.Util
             }
             else
             {
-                featureLayer.SetFeaturesVisible(await layer.GetAllFeatures(), true);
+                featureLayer.SetFeaturesVisible(await layer.GetAllFeaturesAsync(), true);
             }
         }
 
@@ -216,7 +196,7 @@ namespace MapBoard.Main.Util
 
             CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
 
-            FeatureQueryResult features = await layer.GetAllFeatures();
+            FeatureQueryResult features = await layer.GetAllFeaturesAsync();
 
             foreach (var feature in features)
             {
@@ -225,22 +205,22 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> Layers)
+        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> layers)
         {
-            if (Layers == null || !Layers.Any())
+            if (layers == null || !layers.Any())
             {
                 throw new Exception("图层为空");
             }
-            var type = Layers.Select(p => p.Type).Distinct();
+            var type = layers.Select(p => p.Type).Distinct();
             if (type.Count() != 1)
             {
                 throw new Exception("图层的类型并非统一");
             }
             LayerInfo layer = await CreateLayerAsync(type.First());
 
-            foreach (var oldLayer in Layers)
+            foreach (var oldLayer in layers)
             {
-                var oldFeatures = await oldLayer.GetAllFeatures();
+                var oldFeatures = await oldLayer.GetAllFeaturesAsync();
 
                 var features = oldFeatures.Select(p => layer.Table.CreateFeature(p.Attributes, p.Geometry));
                 await layer.Table.AddFeaturesAsync(features);
