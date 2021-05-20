@@ -53,28 +53,31 @@ namespace MapBoard.Main.UI.Panel
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
-            List<(string header, Func<LayerInfo, Task> action, bool visiable)> menus = null;
+            List<(string header, Func<LayerInfo, Task> action, bool visiable)?> menus = null;
             LayerInfo layer = LayerCollection.Instance.Selected;
             LayerInfo[] layers = dataGrid.SelectedItems.Cast<LayerInfo>().ToArray();
             if (dataGrid.SelectedItems.Count == 1)
             {
-                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)>()
+                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
-                    ("复制", CopyFeaturesAsync,true),
-                    ("建立缓冲区",BufferAsync,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
-                    ("删除",async l=>await DeleteSelectedLayersAsync(),true),
-                    ("新建副本", CreateCopyAsync,true),
                     ("缩放到图层", ZoomToLayerAsync,layer.FeatureCount > 0),
+                    ("属性表", ShowAttributeTableAsync,true),
+                    ("复制", CopyFeaturesAsync,true),
+                    ("删除",async l=>await DeleteSelectedLayersAsync(),true),
+                    null,
+                    ("建立缓冲区",BufferAsync,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
+                    ("新建副本", CreateCopyAsync,true),
                     ("坐标转换",CoordinateTransformateAsync,true),
                     ("设置时间范围",SetTimeExtentAsync,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
                     ("字段赋值",CopyAttributesAsync,true),
+                    null,
                     ("导入",async l=>await IOUtility.ImportFeatureAsync(),true),
                     ("导出",  ExportSingleAsync,true),
                };
             }
             else
             {
-                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)>()
+                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
                     ("合并",async l=>await LayerUtility. UnionAsync(layers)
                     ,layers.Select(p=>p.Type).Distinct().Count()==1),
@@ -82,23 +85,30 @@ namespace MapBoard.Main.UI.Panel
                 };
             }
 
-            foreach (var (header, action, visiable) in menus)
+            foreach (var m in menus)
             {
-                if (visiable)
+                if (m.HasValue)
                 {
-                    MenuItem item = new MenuItem() { Header = header };
-                    item.Click += async (p1, p2) =>
+                    if (m.Value.visiable)
                     {
-                        try
+                        MenuItem item = new MenuItem() { Header = m.Value.header };
+                        item.Click += async (p1, p2) =>
                         {
-                            await Window.DoAsync(() => action(layer));
-                        }
-                        catch (Exception ex)
-                        {
-                            await CommonDialog.ShowErrorDialogAsync(ex);
-                        }
-                    };
-                    menu.Items.Add(item);
+                            try
+                            {
+                                await Window.DoAsync(() => m.Value.action(layer));
+                            }
+                            catch (Exception ex)
+                            {
+                                await CommonDialog.ShowErrorDialogAsync(ex);
+                            }
+                        };
+                        menu.Items.Add(item);
+                    }
+                }
+                else
+                {
+                    menu.Items.Add(new Separator());
                 }
             }
             if (menu.Items.Count > 0)
@@ -196,6 +206,21 @@ namespace MapBoard.Main.UI.Panel
             {
                 await FieldUtility.CopyAttributesAsync(layer, dialog.FieldSource, dialog.FieldTarget, dialog.DateFormat);
             }
+        }
+
+        private async Task ShowAttributeTableAsync(LayerInfo layer)
+        {
+            var dialog = new AttributeTableDialog(layer) { Owner = Window };
+            try
+            {
+                await Window.DoAsync(dialog.LoadAsync);
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "加载属性失败");
+                return;
+            }
+            dialog.Show();
         }
 
         public void RightButtonClickToSelect(MouseEventArgs e)

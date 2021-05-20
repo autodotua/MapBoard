@@ -1,4 +1,5 @@
 ﻿using FzLib.Extension;
+using MapBoard.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -41,6 +42,10 @@ namespace MapBoard.Main.Model
         public FieldInfo()
         {
         }
+
+        public static FieldInfo LabelField { get; } = new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text);
+        public static FieldInfo DateField { get; } = new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date);
+        public static FieldInfo ClassField { get; } = new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text);
 
         public event PropertyChangedEventHandler PropertyChanged;
 

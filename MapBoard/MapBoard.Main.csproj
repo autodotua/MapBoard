@@ -151,6 +151,9 @@
     <Compile Include="UI\Dialog\CopyAttributesDialog.xaml.cs">
       <DependentUpon>CopyAttributesDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialog\AttributeTableDialog.xaml.cs">
+      <DependentUpon>AttributeTableDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialog\SettingDialog.xaml.cs">
       <DependentUpon>SettingDialog.xaml</DependentUpon>
     </Compile>
@@ -235,6 +238,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialog\DateRangeDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Dialog\AttributeTableDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

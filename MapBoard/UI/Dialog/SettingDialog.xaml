@@ -10,8 +10,8 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="设置" Width="480"
     Height="400"
-    Closing="DialogWindowBase_Closing"
     ui:WindowHelper.UseModernWindowStyle="True"
+    Closing="DialogWindowBase_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded" mc:Ignorable="d">
     <Grid Margin="8">

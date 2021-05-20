@@ -1,4 +1,5 @@
 ﻿using FzLib.UI.Extension;
+using ModernWpf.Controls.Primitives;
 using System.Linq;
 using System.Windows;
 
@@ -8,6 +9,7 @@ namespace MapBoard.Common.Dialog
     {
         public DialogWindowBase()
         {
+            WindowHelper.SetUseModernWindowStyle(this, true);
             Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
             if (Owner == null)
             {

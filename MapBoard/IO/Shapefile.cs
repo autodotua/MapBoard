@@ -72,7 +72,9 @@ namespace MapBoard.Main.IO
             bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, null, Path.GetFileNameWithoutExtension(path), table.Fields.ToFieldInfos().ToList());
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType,
+                null, Path.GetFileNameWithoutExtension(path),
+                table.Fields.ToFieldInfos().ToList());
             layer.LayerVisible = false;
             var fields = layer.Table.Fields.Select(p => p.Name).ToHashSet();
             foreach (var feature in features)
@@ -98,7 +100,7 @@ namespace MapBoard.Main.IO
             layer.LayerVisible = true;
         }
 
-        public async static Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IList<Field> fields = null)
+        public async static Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
         {
             if (folder == null)
             {
@@ -109,34 +111,22 @@ namespace MapBoard.Main.IO
                 Directory.CreateDirectory(folder);
             }
             string path = Path.Combine(folder, name);
+            Field[] esriFields;
             if (fields == null)
             {
-                fields = new List<Field>()
-                {
-                //   new Field(FieldType.OID,"Id",null,9),
-                    new Field(FieldType.Text,Resource.LabelFieldName,null,254),
-                    new Field(FieldType.Date,Resource.DateFieldName,null,8),
-                    new Field(FieldType.Text,Resource.ClassFieldName,null,254),
-                };
+                esriFields = FieldUtility.GetDefaultFields().ToEsriFields().ToArray();
             }
             else
             {
-                fields = fields.Where(p => p.Name.ToLower() != "fid").Where(p => p.Name.ToLower() != "id").ToList();
-                if (!fields.Any(p => p.Name == Resource.LabelFieldName))
-                {
-                    fields.Add(new Field(FieldType.Text, Resource.LabelFieldName, null, 254));
-                }
-                if (!fields.Any(p => p.Name == Resource.ClassFieldName))
-                {
-                    fields.Add(new Field(FieldType.Text, Resource.ClassFieldName, null, 254));
-                }
-                if (!fields.Any(p => p.Name == Resource.DateFieldName))
-                {
-                    fields.Add(new Field(FieldType.Date, Resource.DateFieldName, null, 8));
-                }
+                esriFields = fields
+                    .Where(p => p.Name.ToLower() != "fid")
+                    .Where(p => p.Name.ToLower() != "id")
+                    .IncludeDefaultFields()
+                    .ToEsriFields()
+                    .ToArray();
             }
 
-            NtsShapefile.CreateShapefile(path, type, fields.ToArray());
+            NtsShapefile.CreateShapefile(path, type, esriFields);
             path = path + ".shp";
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
@@ -147,7 +137,7 @@ namespace MapBoard.Main.IO
 
         public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
         {
-            var table = await CreateShapefileAsync(layer.Type, layer.Name, directory, layer.Table.Fields.ToList());
+            var table = await CreateShapefileAsync(layer.Type, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {

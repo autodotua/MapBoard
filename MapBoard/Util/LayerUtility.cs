@@ -67,7 +67,7 @@ namespace MapBoard.Main.Util
             {
                 fields = new List<FieldInfo>();
             }
-            await Shapefile.CreateShapefileAsync(type, name, null, fields.ToEsriFields().ToList());
+            await Shapefile.CreateShapefileAsync(type, name, null, fields);
             LayerInfo layer = new LayerInfo();
             layer.Fields = fields.ToArray();
             if (template != null)
@@ -84,7 +84,7 @@ namespace MapBoard.Main.Util
         {
             if (includeFeatures)
             {
-                FeatureQueryResult features = await LayerCollection.Instance.Selected.GetAllFeaturesAsync();
+                var features = await LayerCollection.Instance.Selected.GetAllFeaturesAsync();
 
                 var newLayer = await CreateLayerAsync(layer.Type, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
@@ -99,15 +99,20 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<FeatureQueryResult> GetAllFeaturesAsync(this LayerInfo layer)
+        public async static Task<Feature[]> GetAllFeaturesAsync(this LayerInfo layer)
         {
             FeatureQueryResult result = await layer.Table.QueryFeaturesAsync(new QueryParameters());
-            return result;
+            Feature[] array = null;
+            await Task.Run(() =>
+            {
+                array = result.ToArray();
+            });
+            return array;
         }
 
         public async static Task CopyAllFeaturesAsync(LayerInfo source, LayerInfo target)
         {
-            FeatureQueryResult features = await source.GetAllFeaturesAsync();
+            var features = await source.GetAllFeaturesAsync();
             ShapefileFeatureTable targetTable = target.Table;
 
             foreach (var feature in features)
@@ -157,7 +162,7 @@ namespace MapBoard.Main.Util
                 List<Feature> visiableFeatures = new List<Feature>();
                 List<Feature> invisiableFeatures = new List<Feature>();
 
-                FeatureQueryResult features = await layer.GetAllFeaturesAsync();
+                var features = await layer.GetAllFeaturesAsync();
 
                 foreach (var feature in features)
                 {
@@ -196,7 +201,7 @@ namespace MapBoard.Main.Util
 
             CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
 
-            FeatureQueryResult features = await layer.GetAllFeaturesAsync();
+            var features = await layer.GetAllFeaturesAsync();
 
             foreach (var feature in features)
             {

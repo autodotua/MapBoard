@@ -12,19 +12,6 @@ namespace MapBoard.Main.Util
 {
     public static class FieldUtility
     {
-        public static IEnumerable<FieldInfo> GetCustomFields(this IEnumerable<FieldInfo> fields)
-        {
-            foreach (var field in fields)
-            {
-                if (field.Name != Resource.ClassFieldName
-                    && field.Name != Resource.LabelFieldName
-                    && field.Name != Resource.DateFieldName)
-                {
-                    yield return field;
-                }
-            }
-        }
-
         public static async Task CopyAttributesAsync(LayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();
@@ -97,30 +84,26 @@ namespace MapBoard.Main.Util
         public static FieldInfo[] GetDefaultFields()
         {
             return new FieldInfo[]
-                {
-                new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text),
-                new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date),
-                new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text),
-                };
+                {             FieldInfo.LabelField,FieldInfo.DateField,FieldInfo.ClassField                };
         }
 
         public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
         {
-            foreach (var field in fields)
-            {
-                yield return field;
-            }
             if (!fields.Any(p => p.Name == Resource.LabelFieldName))
             {
-                yield return new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text);
+                yield return FieldInfo.LabelField;
             }
             if (!fields.Any(p => p.Name == Resource.DateFieldName))
             {
-                yield return new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date);
+                yield return FieldInfo.DateField;
             }
             if (!fields.Any(p => p.Name == Resource.ClassFieldName))
             {
-                yield return new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text);
+                yield return FieldInfo.ClassField;
+            }
+            foreach (var field in fields)
+            {
+                yield return field;
             }
         }
 
@@ -168,6 +151,11 @@ namespace MapBoard.Main.Util
         {
             foreach (var field in fields)
             {
+                string name = field.Name.ToLower();
+                if(name=="id"||name=="fid")
+                {
+                    continue;
+                }
                 yield return ToFieldInfo(field);
             }
         }

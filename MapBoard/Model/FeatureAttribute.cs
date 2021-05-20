@@ -8,6 +8,18 @@ namespace MapBoard.Main.Model
     {
         private object attrValue;
 
+        public FeatureAttribute(FieldInfo field, object value = null)
+        {
+            Name = field.Name;
+            DisplayName = field.DisplayName;
+            Type = field.Type;
+            Value = value;
+        }
+
+        public FeatureAttribute()
+        {
+        }
+
         public object Value
         {
             get => attrValue;
@@ -21,18 +33,21 @@ namespace MapBoard.Main.Model
                             if (value == null)
                             {
                                 attrValue = null;
+                                intValue = null;
                                 break;
                             }
                             if (value is int)
                             {
                                 attrValue = value;
+                                intValue = (int)value;
                                 break;
                             }
                             if (value is long l)
                             {
                                 if (l <= int.MaxValue && l >= int.MinValue)
                                 {
-                                    attrValue = Convert.ToInt32(l);
+                                    intValue = Convert.ToInt32(l);
+                                    attrValue = intValue;
                                     break;
                                 }
                                 throw new ApplicationException("输入的值超过了范围");
@@ -41,7 +56,8 @@ namespace MapBoard.Main.Model
                             {
                                 if (d <= int.MaxValue && d >= int.MinValue)
                                 {
-                                    attrValue = Convert.ToInt32(d);
+                                    intValue = Convert.ToInt32(d);
+                                    attrValue = intValue;
                                     break;
                                 }
                                 throw new ApplicationException("输入的值超过了范围");
@@ -50,7 +66,8 @@ namespace MapBoard.Main.Model
                             {
                                 if (int.TryParse(str1, out int result))
                                 {
-                                    attrValue = result;
+                                    intValue = result;
+                                    attrValue = intValue;
                                     break;
                                 }
                             }
@@ -58,19 +75,22 @@ namespace MapBoard.Main.Model
                         case FieldInfoType.Float:
                             if (value == null)
                             {
-                                attrValue = null;
+                                floatValue = null;
+                                attrValue = floatValue;
                                 break;
                             }
                             if (value is double)
                             {
-                                attrValue = value;
+                                floatValue = (double)value;
+                                attrValue = floatValue;
                                 break;
                             }
                             if (value is string str2)
                             {
                                 if (double.TryParse(str2, out double result))
                                 {
-                                    attrValue = result;
+                                    floatValue = result;
+                                    attrValue = floatValue;
                                     break;
                                 }
                             }
@@ -78,19 +98,28 @@ namespace MapBoard.Main.Model
                         case FieldInfoType.Date:
                             if (value == null)
                             {
-                                attrValue = null;
+                                dateValue = null;
+                                attrValue = dateValue;
                                 break;
                             }
-                            if (value is DateTime)
+                            if (value is DateTime dt)
                             {
-                                attrValue = value;
+                                dateValue = new DateTimeOffset(dt);
+                                attrValue = dateValue;
+                                break;
+                            }
+                            if (value is DateTimeOffset dto)
+                            {
+                                dateValue = dto;
+                                attrValue = dateValue;
                                 break;
                             }
                             if (value is string str3)
                             {
                                 if (DateTime.TryParse(str3, out DateTime result))
                                 {
-                                    attrValue = result;
+                                    dateValue = result;
+                                    attrValue = dateValue;
                                     break;
                                 }
                             }
@@ -102,6 +131,7 @@ namespace MapBoard.Main.Model
                                 {
                                     throw new ApplicationException("输入的字符串过长");
                                 }
+                                textValue = str4;
                                 attrValue = value;
                                 break;
                             }
@@ -120,6 +150,74 @@ namespace MapBoard.Main.Model
                 {
                     this.Notify(nameof(Value));
                 }
+            }
+        }
+
+        private int? intValue;
+
+        public int? IntValue
+        {
+            get => intValue;
+            set
+            {
+                if (Type != FieldInfoType.Integer)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                intValue = value;
+                this.Notify(nameof(IntValue), nameof(Value));
+            }
+        }
+
+        private double? floatValue;
+
+        public double? FloatValue
+        {
+            get => floatValue;
+            set
+            {
+                if (Type != FieldInfoType.Float)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                floatValue = value;
+                this.Notify(nameof(FloatValue), nameof(Value));
+            }
+        }
+
+        private string textValue;
+
+        public string TextValue
+        {
+            get => textValue;
+            set
+            {
+                if (Type != FieldInfoType.Text)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                textValue = value;
+                this.Notify(nameof(TextValue), nameof(Value));
+            }
+        }
+
+        private DateTimeOffset? dateValue;
+
+        public DateTimeOffset? DateValue
+        {
+            get => dateValue;
+            set
+            {
+                if (Type != FieldInfoType.Date)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                dateValue = value;
+                this.Notify(nameof(DateValue), nameof(Value));
             }
         }
 

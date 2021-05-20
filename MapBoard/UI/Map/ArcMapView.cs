@@ -120,6 +120,14 @@ namespace MapBoard.Main.UI.Map
 
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
+            if (geometry is MapPoint)
+            {
+                if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
+                {
+                    geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
+                }
+                geometry = GeometryEngine.Buffer(geometry, 100);
+            }
             await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
         }
 

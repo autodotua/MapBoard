@@ -1,0 +1,109 @@
+﻿using Esri.ArcGISRuntime.Data;
+using MapBoard.Common.Dialog;
+using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
+using MapBoard.Main.Util;
+using ModernWpf.Controls.Primitives;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+
+namespace MapBoard.Main.UI.Dialog
+{
+    public class AttributeTableDialog2 : DialogWindowBase
+    {
+        public async Task LoadAsync2()
+        {
+            var features = await Layer.GetAllFeaturesAsync();
+            ScrollViewer scr = new ScrollViewer();
+            Content = scr;
+
+            var fields = Layer.Fields.IncludeDefaultFields().ToList();
+
+            Grid grd = GetGrid(features, fields);
+            scr.Content = grd;
+            int column = 0;
+            foreach (var field in Layer.Fields.IncludeDefaultFields())
+            {
+                column += 2;
+                TextBlock tbk = new TextBlock()
+                {
+                    Text = field.DisplayName,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                AddToGrid(grd, tbk, 0, column);
+            }
+            int row = 2;
+            int index = 0;
+            Attributes = features.Select(p => FeatureAttributes.FromFeature(Layer, p)).ToArray();
+            foreach (var attrs in Attributes)
+            {
+                index++;
+                TextBlock tbk = new TextBlock()
+                {
+                    Text = index.ToString(),
+                };
+                AddToGrid(grd, tbk, row, 0);
+                column = 2;
+                int index2 = 0;
+                foreach (var attr in attrs.All)
+                {
+                    TextBox txt = new TextBox()
+                    {
+                        Width = 108
+                    };
+                    Binding binding = new Binding()
+                    {
+                        Path = new PropertyPath($"Attributes[{index}].All[{index2}].Value"),
+                    };
+                    binding.ValidationRules.Add(new ExceptionValidationRule());
+                    if (attr.Type == FieldInfoType.Date)
+                    {
+                        binding.StringFormat = "{0:yyyy-MM-dd}";
+                    }
+                    txt.SetBinding(TextBox.TextProperty, binding);
+                    AddToGrid(grd, txt, row, column);
+
+                    column += 2;
+                    index2++;
+                }
+                row += 2;
+            }
+        }
+
+        private Grid GetGrid(Feature[] features, List<FieldInfo> fields)
+        {
+            Grid grd = new Grid()
+            {
+                Margin = new Thickness(4),
+            };
+            grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+            for (int i = 0 - 2; i < fields.Count; i++)
+            {
+                grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(4) });
+                grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+            }
+
+            grd.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+            for (int i = 0 - 0; i < features.Length; i++)
+            {
+                grd.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(4) });
+                grd.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+            }
+            return grd;
+        }
+
+        private void AddToGrid(Grid grd, UIElement element, int row, int column)
+        {
+            Grid.SetRow(element, row);
+            Grid.SetColumn(element, column);
+            grd.Children.Add(element);
+        }
+    }
+}

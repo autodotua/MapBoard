@@ -2,6 +2,7 @@
 using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Main.Util;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,39 +15,60 @@ namespace MapBoard.Main.Model
 {
     public class FeatureAttributes : INotifyPropertyChanged
     {
-        private DateTimeOffset? date;
-
-        private string key;
-
-        private string label;
-
         private List<FeatureAttribute> others = new List<FeatureAttribute>();
+        private List<FeatureAttribute> all = new List<FeatureAttribute>();
 
         private FeatureAttributes()
         {
         }
 
+        [JsonIgnore]
+        private Feature feature;
+
+        [JsonIgnore]
+        public Feature Feature
+        {
+            get => feature;
+            private set => this.SetValueAndNotify(ref feature, value, nameof(Feature));
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public DateTimeOffset? Date
+        public string Label
         {
-            get => date;
-            set => this.SetValueAndNotify(ref date, value, nameof(Date));
+            get => all.FirstOrDefault(p => p.Name == Resource.LabelFieldName)?.TextValue;
+            set
+            {
+                var item = all.First(p => p.Name == Resource.LabelFieldName);
+                item.TextValue = value;
+                this.Notify(nameof(Label));
+            }
         }
 
         public string Key
         {
-            get => key;
-            set => this.SetValueAndNotify(ref key, value, nameof(Key));
+            get => all.FirstOrDefault(p => p.Name == Resource.ClassFieldName)?.TextValue;
+            set
+            {
+                var item = all.First(p => p.Name == Resource.ClassFieldName);
+                item.TextValue = value;
+                this.Notify(nameof(Key));
+            }
         }
 
-        public string Label
+        public DateTimeOffset? Date
         {
-            get => label;
-            set => this.SetValueAndNotify(ref label, value, nameof(Label));
+            get => all.FirstOrDefault(p => p.Name == Resource.DateFieldName)?.DateValue;
+            set
+            {
+                var item = all.First(p => p.Name == Resource.DateFieldName);
+                item.DateValue = value;
+                this.Notify(nameof(Date));
+            }
         }
 
         public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
+        public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
 
         public static FeatureAttributes Empty(LayerInfo layer)
         {
@@ -65,66 +87,48 @@ namespace MapBoard.Main.Model
 
         public static FeatureAttributes FromFeature(LayerInfo layer, Feature feature)
         {
-            FeatureAttributes attributes = new FeatureAttributes();
-            attributes.Label = feature.Attributes[Resource.LabelFieldName] as string;
-            attributes.Key = feature.Attributes[Resource.ClassFieldName] as string;
-            if (feature.Attributes[Resource.DateFieldName] is DateTimeOffset date)
+            FeatureAttributes attributes = new FeatureAttributes
             {
-                attributes.Date = date;
-            }
-            else
-            {
-                attributes.Date = null;
-            }
+                Feature = feature
+            };
+
+            attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Resource.LabelFieldName] as string));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Resource.ClassFieldName] as string));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, feature.Attributes[Resource.DateFieldName] as DateTimeOffset?));
             foreach (var attr in FieldUtility.GetCustomAttributes(feature.Attributes))
             {
+                FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))
                 {
                     var field = layer.Fields.First(p => p.Name == attr.Key);
-                    attributes.others.Add(new FeatureAttribute()
-                    {
-                        Name = attr.Key,
-                        DisplayName = field.DisplayName,
-                        Type = field.Type,
-                        Value = attr.Value
-                    });
+                    newAttr = new FeatureAttribute(field, attr.Value);
                 }
                 else
                 {
-                    attributes.others.Add(new FeatureAttribute()
+                    newAttr = new FeatureAttribute()
                     {
                         Name = attr.Key,
                         DisplayName = attr.Key,
                         Type = feature.FeatureTable.Fields.First(p => p.Name == attr.Key).ToFieldInfo().Type,
                         Value = attr.Value
-                    });
+                    };
                 }
+                attributes.others.Add(newAttr);
+                attributes.all.Add(newAttr);
             }
             return attributes;
         }
 
+        public void SaveToFeature()
+        {
+            SaveToFeature(Feature);
+        }
+
         public void SaveToFeature(Feature feature)
         {
-            if (!string.IsNullOrWhiteSpace(Label))
+            foreach (var attr in All)
             {
-                feature.Attributes[Resource.LabelFieldName] = Label;
-            }
-            if (Date.HasValue)
-            {
-                Date = new DateTimeOffset(Date.Value.DateTime, TimeSpan.Zero);
-                feature.Attributes[Resource.DateFieldName] = Date.Value.UtcDateTime;
-            }
-            else
-            {
-                feature.Attributes[Resource.DateFieldName] = null;
-            }
-            feature.Attributes[Resource.ClassFieldName] = Key;
-            if (Others != null)
-            {
-                foreach (var attr in Others)
-                {
-                    feature.Attributes[attr.Name] = attr.Value;
-                }
+                feature.Attributes[attr.Name] = attr.Value;
             }
         }
     }

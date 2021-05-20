@@ -142,24 +142,25 @@ namespace MapBoard.Main.UI.Map
 
         public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
 
-        public void Select(Feature feature, bool clearAll = false)
+        public bool Select(Feature feature, bool clearAll = false)
         {
             var layer = feature.FeatureTable.Layer as FeatureLayer;
             if (layer == null)
             {
-                return;
+                return false;
             }
             if (clearAll && SelectedFeatures.Count > 0)
             {
-                foreach (var l in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).Distinct().ToArray())
-                {
-                    l.ClearSelection();
-                }
+                (SelectedFeatures[0].FeatureTable.Layer as FeatureLayer).ClearSelection();
                 SelectedFeatures.Clear();
             }
-
+            if(SelectedFeatures.Any(p=>p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
+            {
+                return false;
+            }
             layer.SelectFeature(feature);
             ArcMapView.Instance.Selection.SelectedFeatures.Add(feature);
+            return true;
         }
 
         public void Select(IEnumerable<Feature> features)
