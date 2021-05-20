@@ -82,8 +82,6 @@ namespace MapBoard.Main.UI.OperationBar
             }
         }
 
-        public override double BarHeight { get; } = 48;
-
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.Editor.StopAndSave();

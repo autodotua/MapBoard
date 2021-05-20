@@ -17,8 +17,9 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="24" />
+            <RowDefinition Height="4" />
+            <RowDefinition Height="24" />
             <RowDefinition Height="4" />
         </Grid.RowDefinitions>
         <TextBlock
@@ -105,7 +106,7 @@
             </Button>
         </Grid>
         <Grid
-            Grid.Row="1" Grid.RowSpan="99"
+            Grid.Row="2" Grid.RowSpan="99"
             Grid.Column="2"
             HorizontalAlignment="Right">
 

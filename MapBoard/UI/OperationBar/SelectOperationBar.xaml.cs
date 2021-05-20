@@ -121,8 +121,6 @@ namespace MapBoard.Main.UI.OperationBar
             }
         }
 
-        public override double BarHeight { get; } = 48;
-
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>

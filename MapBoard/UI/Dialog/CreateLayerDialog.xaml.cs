@@ -49,18 +49,13 @@ namespace MapBoard.Main.UI.Dialog
             HashSet<string> displayNames = new HashSet<string>();
             foreach (var field in Fields)
             {
-                if (field.DisplayName.Length * field.Name.Length == 0
-                    && field.Name.Length + field.DisplayName.Length > 0)
-                {
-                    IsPrimaryButtonEnabled = false;
-                    return;
-                }
-                if (!names.Add(field.Name))
-                {
-                    IsPrimaryButtonEnabled = false;
-                    return;
-                }
-                if (!displayNames.Add(field.DisplayName))
+                if(field.Name==Resource.ClassFieldName
+                    ||field.Name==Resource.LabelFieldName
+                    ||field.Name==Resource.DateFieldName
+                    || field.DisplayName.Length * field.Name.Length == 0
+                    && field.Name.Length + field.DisplayName.Length > 0
+                    || !displayNames.Add(field.DisplayName)
+                    || !names.Add(field.Name))
                 {
                     IsPrimaryButtonEnabled = false;
                     return;

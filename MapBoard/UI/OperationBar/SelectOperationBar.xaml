@@ -28,8 +28,10 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="24" />
+            <RowDefinition Height="4" />
+            <RowDefinition Height="24" />
+            <RowDefinition Height="4" />
         </Grid.RowDefinitions>
         <Button
             x:Name="btnMenu" Grid.Column="4"
@@ -142,24 +144,22 @@
 
                 <Style x:Key="tbkKey" TargetType="{x:Type TextBlock}">
                     <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
                 </Style>
                 <Style x:Key="tbkValue" TargetType="{x:Type TextBlock}">
                     <Setter Property="Width" Value="84" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
                     <Setter Property="Cursor" Value="Hand" />
                     <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ValueTextBlock_PreviewMouseLeftButtonDown" />
                 </Style>
             </Grid.Resources>
-            <TextBlock
-                VerticalAlignment="Center"
-                Style="{DynamicResource tbkKey}"
-                Text="标签：" />
+            <TextBlock Style="{DynamicResource tbkKey}" Text="标签：" />
             <TextBlock
                 Grid.Column="2"
                 Style="{DynamicResource tbkValue}"
                 Text="{Binding Attributes.Label}" />
             <TextBlock
                 Grid.Row="2" Grid.Column="4"
-                VerticalAlignment="Center"
                 Style="{DynamicResource tbkKey}"
                 Text="日期：" />
             <TextBlock
@@ -168,8 +168,6 @@
                 Text="{Binding Attributes.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}" />
             <TextBlock
                 Grid.Row="4" Grid.Column="8"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
                 Style="{DynamicResource tbkKey}"
                 Text="分类：" />
             <TextBlock

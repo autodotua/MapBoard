@@ -19,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using MapBoard.Main.UI.OperationBar;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -83,7 +84,7 @@ namespace MapBoard.Main.UI.Dialog
             }
 
             Left = left + mainWindow.ActualWidth - ActualWidth;
-            Top = top + 50/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
+            Top = top + OperationBarBase.DefaultBarHeight + 2/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

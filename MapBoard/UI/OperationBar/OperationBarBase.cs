@@ -19,7 +19,8 @@ namespace MapBoard.Main.UI.OperationBar
 {
     public abstract class OperationBarBase : Grid, INotifyPropertyChanged
     {
-        public abstract double BarHeight { get; }
+        public static double DefaultBarHeight { get; } = 56;
+        public virtual double BarHeight { get; } = DefaultBarHeight;
 
         public OperationBarBase() : base()
         {
@@ -162,18 +163,21 @@ namespace MapBoard.Main.UI.OperationBar
                 index++;
             }
 
-            for (int i = 1; i < row - 2; i += 2)
+            if (!CanEdit)
             {
-                Border line = new Border()
+                for (int i = 1; i < row - 2; i += 2)
                 {
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Height = 2,
-                    HorizontalAlignment = HorizontalAlignment.Stretch
-                };
-                line.SetResourceReference(BackgroundProperty, "SystemControlBackgroundBaseMediumLowBrush");
-                SetColumnSpan(line, 999);
-                SetRow(line, i);
-                grd.Children.Add(line);
+                    Border line = new Border()
+                    {
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Height = 2,
+                        HorizontalAlignment = HorizontalAlignment.Stretch
+                    };
+                    line.SetResourceReference(BackgroundProperty, "SystemControlBackgroundBaseMediumLowBrush");
+                    SetColumnSpan(line, 999);
+                    SetRow(line, i);
+                    grd.Children.Add(line);
+                }
             }
             Popup p = new Popup()
             {
