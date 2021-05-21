@@ -141,11 +141,12 @@ namespace MapBoard.Main.Util
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
-                            Package.ImportMap(path);
+                            await Package.BackupAsync();
+                            Package.ImportMapAsync(path);
                             return;
 
                         case ".mblpkg":
-                            Package.ImportLayer(path);
+                            await Package.ImportLayerAsync(path);
                             return;
 
                         case ".gpx":
@@ -277,7 +278,7 @@ namespace MapBoard.Main.Util
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
                 {
-                    Package.ImportMap(files[0]);
+                    Package.ImportMapAsync(files[0]);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
@@ -286,7 +287,7 @@ namespace MapBoard.Main.Util
                 {
                     foreach (var file in files)
                     {
-                        Package.ImportLayer(file);
+                        await Package.ImportLayerAsync(file);
                         await Task.Delay(500);
                     }
                 }

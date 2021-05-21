@@ -30,9 +30,9 @@ namespace MapBoard.Main.Util
     {
         public static async Task RemoveLayerAsync(this LayerInfo layer, bool deleteFiles)
         {
-            if (LayerCollection.Instance.Layers.Contains(layer))
+            if (LayerCollection.Instance.Contains(layer))
             {
-                LayerCollection.Instance.Layers.Remove(layer);
+                LayerCollection.Instance.Remove(layer);
             }
 
             if (deleteFiles)
@@ -75,7 +75,7 @@ namespace MapBoard.Main.Util
                 layer.CopyLayerFrom(template);
             }
             layer.Name = name;
-            LayerCollection.Instance.Layers.Add(layer);
+            await LayerCollection.Instance.AddAsync(layer);
             LayerCollection.Instance.Selected = layer;
             return layer;
         }
@@ -232,7 +232,7 @@ namespace MapBoard.Main.Util
                 oldLayer.LayerVisible = false;
             }
             layer.UpdateFeatureCount();
-            //LayerCollection.Instance.Layers.Add(style);
+            //LayerCollection.Instance.Add(style);
             return layer;
         }
     }

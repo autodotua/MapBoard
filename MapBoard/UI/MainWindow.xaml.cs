@@ -8,7 +8,9 @@ using MapBoard.Common;
 
 using MapBoard.Common;
 
+using MapBoard.Main.IO;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Panel;
 using MapBoard.Main.Util;
@@ -51,13 +53,15 @@ namespace MapBoard.Main.UI
             { "多点",SketchCreationMode.Multipoint},
         };
 
-        /// <summary>
-        /// 控制在执行耗时工作时控件的可用性
-        /// </summary>
-        private bool controlsEnable = true;
-
         public Config Config => Config.Instance;
-        public LayerCollection Layers => LayerCollection.Instance;
+        private LayerCollection layers;
+
+        public LayerCollection Layers
+        {
+            get => layers;
+            private set => this.SetValueAndNotify(ref layers, value, nameof(Layers));
+        }
+
         private LayerListPanelHelper layerListHelper;
 
         #endregion 字段和属性
@@ -70,12 +74,6 @@ namespace MapBoard.Main.UI
         public MainWindow()
         {
             InitializeComponent();
-            RegistEvents();
-            layerListHelper = new LayerListPanelHelper(dataGrid, this);
-            LayerCollection.LayerInstanceChanged += (p1, p2) =>
-              {
-                  Notify(nameof(Layers));
-              };
         }
 
         protected async override void OnDrop(DragEventArgs e)
@@ -94,7 +92,7 @@ namespace MapBoard.Main.UI
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             LayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
-            var lvwHelper = new DataGridHelper<LayerInfo>(dataGrid);
+            var lvwHelper = new LayerDataGridHelper(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
             LayerCollection.Instance.PropertyChanged += (p1, p2) =>
@@ -106,16 +104,27 @@ namespace MapBoard.Main.UI
               };
         }
 
+        private bool closing = false;
+
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
+            if (closing)
+            {
+                return;
+            }
+            e.Cancel = true;
             Config.Save();
             LayerCollection.Instance.Save();
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
                 || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
             {
-                e.Cancel = true;
                 await CommonDialog.ShowErrorDialogAsync("请先结束绘制");
+                return;
             }
+            Hide();
+            await Package.BackupAsync();
+            closing = true;
+            Close();
         }
 
         #endregion 窗体启动与关闭
@@ -330,6 +339,21 @@ namespace MapBoard.Main.UI
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+            InitializeAsync();
+        }
+
+        public async Task InitializeAsync()
+        {
+            LayerCollection.LayerInstanceChanged += (p1, p2) =>
+            {
+                Layers = LayerCollection.Instance;
+            };
+            await arcMap.LoadBasemapAsync();
+            await LayerCollection.LoadInstanceAsync();
+            await arcMap.ZoomToLastExtent();
+            RegistEvents();
+            layerListHelper = new LayerListPanelHelper(dataGrid, this);
+
             JudgeControlsEnable();
 
             if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)

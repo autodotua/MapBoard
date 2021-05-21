@@ -32,7 +32,7 @@ namespace MapBoard.Main.IO
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);
             Directory.CreateDirectory(tempStyleDir);
-            foreach (var layer in LayerCollection.Instance.Layers)
+            foreach (var layer in LayerCollection.Instance)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());

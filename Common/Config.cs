@@ -26,6 +26,7 @@ namespace MapBoard.Common
         public List<BaseLayerInfo> BaseLayers { get; } = new List<BaseLayerInfo>();
         public static string RecordPath { get; } = @"..\Records";
         public static string DataPath { get; } = @"..\Data";
+        public static string BackupPath { get; } = @"..\Backups";
 
         public bool StaticEnable { get; set; } = true;
 

@@ -145,6 +145,7 @@
     <Compile Include="UI\Component\ColorPickerTextBox.xaml.cs">
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Component\LayerDataGridHelper.cs" />
     <Compile Include="UI\Dialog\CreateLayerDialog.xaml.cs">
       <DependentUpon>CreateLayerDialog.xaml</DependentUpon>
     </Compile>

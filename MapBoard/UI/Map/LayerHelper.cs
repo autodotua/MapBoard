@@ -21,7 +21,7 @@ namespace MapBoard.Main.UI.Map
     {
         public ArcMapView Mapview => ArcMapView.Instance;
 
-        public async Task<bool> AddLayerAsync(LayerInfo layer)
+        public async Task<bool> AddLayerAsync(LayerInfo layer, int index = -1)
         {
             try
             {
@@ -31,7 +31,14 @@ namespace MapBoard.Main.UI.Map
                     await layer.Table.LoadAsync();
                 }
                 FeatureLayer fl = new FeatureLayer(layer.Table);
-                Mapview.Map.OperationalLayers.Add(fl);
+                if (index == -1)
+                {
+                    Mapview.Map.OperationalLayers.Add(fl);
+                }
+                else
+                {
+                    Mapview.Map.OperationalLayers.Insert(index, fl);
+                }
                 layer.ApplyStyle();
                 await layer.LayerCompleteAsync();
                 return true;
@@ -87,7 +94,7 @@ namespace MapBoard.Main.UI.Map
                 return;
             }
 
-            foreach (var style in LayerCollection.Instance.Layers.ToArray())
+            foreach (var style in LayerCollection.Instance.ToArray())
             {
                 if (File.Exists(Path.Combine(Config.DataPath, style.Name + ".shp")))
                 {
@@ -95,7 +102,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 else
                 {
-                    LayerCollection.Instance.Layers.Remove(style);
+                    LayerCollection.Instance.Remove(style);
                 }
             }
 
@@ -113,7 +120,7 @@ namespace MapBoard.Main.UI.Map
 
             foreach (var name in files)
             {
-                if (!LayerCollection.Instance.Layers.Any(p => p.Name == name))
+                if (!LayerCollection.Instance.Any(p => p.Name == name))
                 {
                     LayerInfo style = new LayerInfo();
                     style.Name = name;

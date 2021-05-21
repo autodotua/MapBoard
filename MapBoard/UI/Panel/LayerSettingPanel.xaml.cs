@@ -80,7 +80,7 @@ namespace MapBoard.Main.UI.Panel
             string newName = LayerName;
             if (newName != layer.Name)
             {
-                int index = LayerCollection.Instance.Layers.IndexOf(LayerCollection.Instance.Selected);
+                int index = LayerCollection.Instance.IndexOf(LayerCollection.Instance.Selected);
 
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
                 {
@@ -106,7 +106,7 @@ namespace MapBoard.Main.UI.Panel
                 }
             end:
                 layer.Table = null;
-                LayerCollection.Instance.Layers.Insert(index, layer);
+                await LayerCollection.Instance.InsertAsync(index, layer);
             }
             try
             {

@@ -45,6 +45,17 @@ namespace MapBoard.Main.UI.Dialog
 
         private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
+            if(e.EditAction==DataGridEditAction.Commit)
+            {
+                if(e.Column.DisplayIndex==0)
+                {
+                    var field = e.Row.Item as FieldInfo;
+                    if(string.IsNullOrEmpty(field.DisplayName))
+                    {
+                        field.DisplayName = field.Name;
+                    }
+                }
+            }
             HashSet<string> names = new HashSet<string>();
             HashSet<string> displayNames = new HashSet<string>();
             foreach (var field in Fields)

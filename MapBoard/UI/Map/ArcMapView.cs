@@ -55,7 +55,6 @@ namespace MapBoard.Main.UI.Map
             {
                 IsRotateEnabled = true
             };
-            LoadAsync();
         }
 
         private double startRotation = 0;
@@ -106,7 +105,8 @@ namespace MapBoard.Main.UI.Map
 
         private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
         {
-            if (GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            if (Model.LayerCollection.IsInstanceLoaded
+                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
             {
                 Model.LayerCollection.Instance.MapViewExtentJson = envelope.ToJson();
             }
@@ -187,14 +187,8 @@ namespace MapBoard.Main.UI.Map
                     break;
             }
         }
-
-        /// <summary>
-        /// 加载底图和图层事件
-        /// </summary>
-        /// <returns></returns>
-        private async Task LoadAsync()
+        public async Task ZoomToLastExtent()
         {
-            await LoadBasemapAsync();
             if (Model.LayerCollection.Instance.MapViewExtentJson != null)
             {
                 try
@@ -206,7 +200,6 @@ namespace MapBoard.Main.UI.Map
                 }
             }
         }
-
         public async Task LoadBasemapAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);

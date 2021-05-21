@@ -28,8 +28,8 @@ namespace MapBoard.Main.UI.Dialog
         public SelectLayerDialog()
         {
             InitializeComponent();
-            var Layers = LayerCollection.Instance;
-            var list = Layers.Layers.Where(p => p.Type == Layers.Selected.Type && p != Layers.Selected);
+            var layers = LayerCollection.Instance;
+            var list = LayerCollection.Instance.Where(p => p.Type == layers.Selected.Type && p != layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;

@@ -43,7 +43,7 @@ namespace MapBoard.Main.IO
 
         public static Task ExportAsync(string path)
         {
-            return ExportAsync(path, LayerCollection.Instance.Layers);
+            return ExportAsync(path, LayerCollection.Instance);
         }
 
         public async static Task ExportAsync(string path, IEnumerable<LayerInfo> layers)

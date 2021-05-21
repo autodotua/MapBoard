@@ -5,10 +5,11 @@
     xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
-    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
     Height="700"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
@@ -85,7 +86,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top">
                     <bar:EditOperationBar.RenderTransform>
-                        <TranslateTransform Y="-48" />
+                        <TranslateTransform Y="-56" />
                     </bar:EditOperationBar.RenderTransform>
                 </bar:EditOperationBar>
                 <bar:SelectOperationBar
@@ -93,7 +94,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top">
                     <bar:SelectOperationBar.RenderTransform>
-                        <TranslateTransform Y="-48" />
+                        <TranslateTransform Y="-56" />
                     </bar:SelectOperationBar.RenderTransform>
                 </bar:SelectOperationBar>
             </Grid>
@@ -159,7 +160,7 @@
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"
                             HeadersVisibility="Column"
-                            ItemsSource="{Binding Layers.Layers}"
+                            ItemsSource="{Binding Layers}"
                             PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
                             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
