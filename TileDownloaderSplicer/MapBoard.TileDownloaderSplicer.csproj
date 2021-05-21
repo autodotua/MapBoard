@@ -29,7 +29,7 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>preview</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
-    <NoWarn>CS0067;CS4014</NoWarn>
+    <NoWarn>CS0067;CS4014;CS0168</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>

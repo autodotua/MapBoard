@@ -119,15 +119,46 @@ namespace MapBoard.Main.Util
             }
         }
 
+        public async static Task ImportPackageAsync()
+        {
+            bool ok = true;
+            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
+                   .Add("mbmpkg地图画板包", "mbmpkg"));
+
+            if (path != null)
+            {
+                try
+                {
+                    if (Config.Instance.BackupWhenReplace)
+                    {
+                        await Package.BackupAsync(Config.Instance.MaxBackupCount);
+                    }
+                    await Package.ImportMapAsync(path, true);
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                    ok = false;
+                }
+                finally
+                {
+                    if (ok)
+                    {
+                        SnakeBar.Show("导入成功");
+                    }
+                }
+            }
+            return;
+        }
+
         /// <summary>
         /// 显示对话框导入
         /// </summary>
         /// <returns>返回是否需要通知刷新Style</returns>
-        public async static Task ImportLayerAsync()
+        public async static Task AddLayerAsync()
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
-
                     .Add("支持的格式", "mbmpkg,mblpkg,gpx,shp")
                    .Add("mbmpkg地图画板包", "mbmpkg")
                     .Add("mblpkg地图画板图层包", "mblpkg")
@@ -141,8 +172,7 @@ namespace MapBoard.Main.Util
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
-                            await Package.BackupAsync();
-                            Package.ImportMapAsync(path);
+                            await Package.ImportMapAsync(path, false);
                             return;
 
                         case ".mblpkg":
@@ -278,7 +308,11 @@ namespace MapBoard.Main.Util
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
                 {
-                    Package.ImportMapAsync(files[0]);
+                    Package.ImportMapAsync(files[0], true);
+                }
+                else
+                {
+                    Package.ImportMapAsync(files[0], false);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)

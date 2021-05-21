@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Margin="4,0">
+    <Grid x:Name="grd" Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="OperationBarStyles.xaml" />
         </Grid.Resources>
@@ -105,7 +105,7 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid
+        <Grid x:Name="grdProperties"
             Grid.Row="2" Grid.RowSpan="99"
             Grid.Column="2"
             HorizontalAlignment="Right">

@@ -194,22 +194,28 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Button
                             HorizontalAlignment="Stretch"
-                            Click="ImportBtnClick" Content="导入" />
+                            Click="AddBtnClick" Content="添加" />
                         <Button
                             Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="ImportBtnClick" Content="导入" />
+                        <Button
+                            Grid.Column="4"
                             HorizontalAlignment="Stretch"
                             Click="ExportBtnClick" Content="导出" />
                         <Button
                             Grid.Row="0" Grid.Column="6"
                             HorizontalAlignment="Stretch"
                             Click="OpenFolderButtonClick"
-                            Content="打开目录" />
+                            Content="目录" />
                     </Grid>
                     <Grid x:Name="grdButtons" Grid.Row="100">
                         <Grid.ColumnDefinitions>
@@ -226,7 +232,8 @@
                         <ui:SplitButton
                             x:Name="splBtnPolyline"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多段线">
+                            Click="DrawButtonsClick" Content="多段线"
+                            Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由线" />
@@ -236,7 +243,8 @@
                         <ui:SplitButton
                             x:Name="splBtnPolygon"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多边形">
+                            Click="DrawButtonsClick" Content="多边形"
+                            Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由面" />
@@ -252,11 +260,13 @@
                         <ui:SplitButton
                             x:Name="splBtnPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="点" />
+                            Click="DrawButtonsClick" Content="点"
+                            Visibility="Collapsed" />
                         <ui:SplitButton
                             x:Name="splBtnMultiPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多点" />
+                            Click="DrawButtonsClick" Content="多点"
+                            Visibility="Collapsed" />
 
                         <Button
                             x:Name="btnSelect" Grid.Column="2"

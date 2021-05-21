@@ -74,14 +74,9 @@ namespace MapBoard.Main.Model
         public int SelectedIndex { get; set; }
         public LayerInfo this[int index] => layers[index];
 
-        public static async Task LoadInstanceAsync()
+        public static LayerCollection GetInstance(string path)
         {
-            instance = new LayerCollection();
-            string path = Path.Combine(Config.DataPath, LayersFileName);
-            if (!File.Exists(path))
-            {
-                return;
-            }
+            var instance = new LayerCollection();
 
             JObject json = JObject.Parse(File.ReadAllText(path));
             instance.MapViewExtentJson = json[nameof(MapViewExtentJson)]?.Value<string>();
@@ -92,8 +87,24 @@ namespace MapBoard.Main.Model
             {
                 foreach (var layerJson in layerJsonArray)
                 {
-                    await instance.AddAsync(layerJson.ToObject<LayerInfo>());
+                    instance.layers.Add(layerJson.ToObject<LayerInfo>());
                 }
+            }
+            return instance;
+        }
+
+        public static async Task LoadInstanceAsync()
+        {
+            string path = Path.Combine(Config.DataPath, LayersFileName);
+            if (!File.Exists(path))
+            {
+                instance = new LayerCollection();
+                return;
+            }
+            instance = GetInstance(path);
+            foreach (var layer in instance.layers)
+            {
+                await instance.AddAsync(layer, false);
             }
 
             if (instance.SelectedIndex >= 0
@@ -111,12 +122,20 @@ namespace MapBoard.Main.Model
             await LoadInstanceAsync();
         }
 
-        public async Task<bool> AddAsync(LayerInfo layer)
+        public Task<bool> AddAsync(LayerInfo layer)
+        {
+            return AddAsync(layer, true);
+        }
+
+        private async Task<bool> AddAsync(LayerInfo layer, bool addToCollection)
         {
             if (await ArcMapView.Instance.Layer.AddLayerAsync(layer))
             {
                 layer.PropertyChanged += LayerPropertyChanged;
-                layers.Add(layer);
+                if (addToCollection)
+                {
+                    layers.Add(layer);
+                }
                 return true;
             }
             return false;

@@ -25,20 +25,49 @@ namespace MapBoard.Main.IO
         /// 导入地图包
         /// </summary>
         /// <param name="path"></param>
-        public static async Task ImportMapAsync(string path)
+        public static async Task ImportMapAsync(string path, bool overwrite)
         {
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
-            LayerCollection.Instance.Clear();
-            if (Directory.Exists(Config.DataPath))
+            if (overwrite)
             {
-                Directory.Delete(Config.DataPath, true);
-            }
-            ZipFile.ExtractToDirectory(path, Config.DataPath);
+                LayerCollection.Instance.Clear();
+                if (Directory.Exists(Config.DataPath))
+                {
+                    Directory.Delete(Config.DataPath, true);
+                }
 
-            await LayerCollection.ResetLayersAsync();
+                ZipFile.ExtractToDirectory(path, Config.DataPath);
+                await LayerCollection.ResetLayersAsync();
+            }
+            else
+            {
+                var tempDir = PathUtility.GetTempDir().FullName;
+                ZipFile.ExtractToDirectory(path, tempDir);
+                var configPath = Path.Combine(tempDir, LayerCollection.LayersFileName);
+                if (!File.Exists(configPath))
+                {
+                    throw new FileNotFoundException("找不到图层配置文件");
+                }
+                var layers = LayerCollection.GetInstance(configPath);
+                foreach (var layer in layers)
+                {
+                    if (LayerCollection.Instance.Any(p => p.Name == layer.Name))
+                    {
+                        throw new Exception("存在重复的图层名：" + layer.Name);
+                    }
+                }
+                foreach (var layer in layers)
+                {
+                    foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                    {
+                        File.Copy(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
+                    }
+                    LayerCollection.Instance.AddAsync(layer);
+                }
+            }
         }
 
         /// <summary>
@@ -100,9 +129,20 @@ namespace MapBoard.Main.IO
             ZipFile.CreateFromDirectory(directory.FullName, path);
         }
 
-        public static Task BackupAsync()
+        public async static Task BackupAsync(int maxCount)
         {
-            return ExportMap2Async(Path.Combine(Config.BackupPath, DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"));
+            await ExportMap2Async(Path.Combine(Config.BackupPath, DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"));
+
+            var files = Directory.EnumerateFiles(Config.BackupPath).ToList();
+            if (files.Count > maxCount)
+            {
+                foreach (var file in files
+                    .Select(p => new FileInfo(p)).ToList()
+                    .OrderByDescending(p => p.LastWriteTime).Skip(maxCount).ToList())
+                {
+                    file.Delete();
+                }
+            }
         }
     }
 }

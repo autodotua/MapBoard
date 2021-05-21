@@ -48,6 +48,9 @@ namespace MapBoard.Common
         public bool RemainLabel { get; set; } = false;
         public bool RemainKey { get; set; } = false;
         public bool RemainDate { get; set; } = false;
+        public bool BackupWhenExit { get; set; } = true;
+        public bool BackupWhenReplace { get; set; } = true;
+        public int MaxBackupCount { get; set; } = 100;
 
         public bool GpxAutoSmooth { get; set; } = true;
         public bool GpxAutoSmoothOnlyZ { get; set; } = false;

@@ -25,7 +25,6 @@ namespace MapBoard.Main.UI.OperationBar
         public OperationBarBase() : base()
         {
             DataContext = this;
-            Height = BarHeight;
             SetResourceReference(BackgroundProperty, "SystemControlBackgroundAltHighBrush");
             ani = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
             ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
@@ -41,6 +40,7 @@ namespace MapBoard.Main.UI.OperationBar
 
         public void Show()
         {
+            Height = BarHeight;
             ani.To = 0;
             storyboard.Begin();
         }

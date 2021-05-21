@@ -122,7 +122,10 @@ namespace MapBoard.Main.UI
                 return;
             }
             Hide();
-            await Package.BackupAsync();
+            if (Config.BackupWhenExit)
+            {
+                await Package.BackupAsync(Config.MaxBackupCount);
+            }
             closing = true;
             Close();
         }
@@ -175,7 +178,12 @@ namespace MapBoard.Main.UI
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            await DoAsync(IOUtility.ImportLayerAsync);
+            await DoAsync(IOUtility.ImportPackageAsync);
+        }
+
+        private async void AddBtnClick(object sender, RoutedEventArgs e)
+        {
+            await DoAsync(IOUtility.AddLayerAsync);
         }
 
         private void JudgeControlsEnable()

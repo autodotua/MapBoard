@@ -147,7 +147,8 @@ namespace MapBoard.Main.UI.Map
                 case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
                     await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                    {
-                       await FeatureUtility.DeleteAsync(Model.LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
+                       await FeatureUtility.DeleteAsync(Model.LayerCollection.Instance.Selected, Selection.SelectedFeatures.ToArray());
+                       Selection.ClearSelection();
                    }, true);
                     break;
 
@@ -160,7 +161,10 @@ namespace MapBoard.Main.UI.Map
                             Editor.StopAndSave();
                             break;
 
-                        case BoardTaskManager.BoardTask.Ready when Editor.CurrentDrawMode.HasValue:
+                        case BoardTaskManager.BoardTask.Ready
+                        when Editor.CurrentDrawMode.HasValue
+                        && Model.LayerCollection.Instance.Selected != null
+                        && Model.LayerCollection.Instance.Selected.LayerVisible:
                             await Editor.DrawAsync(Editor.CurrentDrawMode.Value);
                             break;
                     }
@@ -187,6 +191,7 @@ namespace MapBoard.Main.UI.Map
                     break;
             }
         }
+
         public async Task ZoomToLastExtent()
         {
             if (Model.LayerCollection.Instance.MapViewExtentJson != null)
@@ -200,6 +205,7 @@ namespace MapBoard.Main.UI.Map
                 }
             }
         }
+
         public async Task LoadBasemapAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);

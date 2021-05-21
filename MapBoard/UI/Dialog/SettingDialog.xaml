@@ -22,7 +22,7 @@
         </Grid.RowDefinitions>
         <TabControl Style="{StaticResource TabControlPivotStyle}">
             <TabItem Padding="8" Header="通用">
-                <ui:SimpleStackPanel Spacing="8">
+                <ui:SimpleStackPanel Spacing="16">
                     <ComboBox ui:ControlHelper.Header="底图坐标系" SelectedItem="{Binding Config.BasemapCoordinateSystem}">
                         <system:String>WGS84</system:String>
                         <system:String>CGCS2000</system:String>
@@ -46,21 +46,36 @@
                 </ui:SimpleStackPanel>
             </TabItem>
 
-            <TabItem Padding="8" Header="地图画板">
-                <ui:SimpleStackPanel Spacing="8">
+            <TabItem Padding="6" Header="地图画板">
+                <ui:SimpleStackPanel Spacing="16">
                     <TextBox ui:ControlHelper.Header="缓冲区半径（米）" Text="{Binding Config.StaticWidth}" />
 
-                    <TextBlock Text="在绘制下一个图形时，保留：" />
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox Content="标签" IsChecked="{Binding Config.RemainLabel}" />
-                        <CheckBox Content="日期" IsChecked="{Binding Config.RemainDate}" />
-                        <CheckBox Content="分类" IsChecked="{Binding Config.RemainKey}" />
-                    </StackPanel>
+                    <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock VerticalAlignment="Center" Text="在绘制下一个图形时，保留：" />
+                        <CheckBox
+                            Margin="0,0,-56,0" Content="标签"
+                            IsChecked="{Binding Config.RemainLabel}" />
+                        <CheckBox
+                            Margin="0,0,-56,0" Content="日期"
+                            IsChecked="{Binding Config.RemainDate}" />
+                        <CheckBox
+                            Margin="0,0,-56,0" Content="分类"
+                            IsChecked="{Binding Config.RemainKey}" />
+                    </ui:SimpleStackPanel>
+
+                    <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock VerticalAlignment="Center" Text="自动备份选项：" />
+
+                        <CheckBox Content="退出时自动备份" IsChecked="{Binding Config.BackupWhenExit}" />
+                        <CheckBox Content="导入时自动备份" IsChecked="{Binding Config.BackupWhenReplace}" />
+                    </ui:SimpleStackPanel>
+                    <TextBox ui:ControlHelper.Header="最大备份数" Text="{Binding Config.MaxBackupCount}" />
+
                 </ui:SimpleStackPanel>
             </TabItem>
 
             <TabItem Padding="8" Header="GPX工具箱">
-                <ui:SimpleStackPanel Spacing="8">
+                <ui:SimpleStackPanel Spacing="16">
                     <CheckBox
                         x:Name="chkGpxHeight" Content="展示高度"
                         IsChecked="{Binding Config.GpxHeight}" />
