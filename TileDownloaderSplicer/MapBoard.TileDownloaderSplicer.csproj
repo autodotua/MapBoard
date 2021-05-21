@@ -26,9 +26,10 @@
     <OutputPath>..\Generation\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>2</WarningLevel>
+    <WarningLevel>4</WarningLevel>
     <LangVersion>preview</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>CS0067;CS4014</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>

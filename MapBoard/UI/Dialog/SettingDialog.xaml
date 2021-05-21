@@ -28,7 +28,6 @@
                         <system:String>CGCS2000</system:String>
                         <system:String>GCJ02</system:String>
                     </ComboBox>
-                    <CheckBox Content="保留上一次绘制的标签" IsChecked="{Binding Config.RemainLabel}" />
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" Text="当前底图数量：" />
                         <TextBlock VerticalAlignment="Center" Text="{Binding Config.BaseLayers.Count}" />

@@ -220,7 +220,5 @@ namespace MapBoard.Main.Model
                 this.Notify(nameof(DateValue), nameof(Value));
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

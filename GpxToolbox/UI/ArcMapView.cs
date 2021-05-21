@@ -416,7 +416,7 @@ namespace MapBoard.GpxToolbox.UI
             }
             else
             {
-                trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Draped;
+                trackInfo.Overlay.SceneProperties.SurfacePlacement = SurfacePlacement.DrapedFlat;
             }
             if (!update)
             {

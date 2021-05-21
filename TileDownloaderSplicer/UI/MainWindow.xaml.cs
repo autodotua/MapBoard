@@ -526,7 +526,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
                                         File.Delete(projFile);
                                     }
                                     File.WriteAllText(worldFile, currentProject.ToString());
-                                    File.WriteAllText(projFile, Common.Resource.Proj3857);
+                                    File.WriteAllText(projFile, SpatialReferences.WebMercator.WkText);
                                 }
                             }
                             catch (Exception ex)

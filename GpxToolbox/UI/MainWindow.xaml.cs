@@ -437,7 +437,7 @@ namespace MapBoard.GpxToolbox.UI
 
         #endregion 点菜单
 
-        private async void ResetTrackButtonClick(object sender, RoutedEventArgs e)
+        private void ResetTrackButtonClick(object sender, RoutedEventArgs e)
         {
             if (!(lvwFiles.SelectedItem is TrackInfo track))
             {

@@ -193,5 +193,26 @@ namespace MapBoard.Main.Util
             }
             return new FieldInfo(field.Name, field.Name, type);
         }
+
+        public static int GetLength(this FieldInfoType type)
+        {
+            switch (type)
+            {
+                case FieldInfoType.Integer:
+                    return 9;
+
+                case FieldInfoType.Float:
+                    return 13;
+
+                case FieldInfoType.Date:
+                    return 9;
+
+                case FieldInfoType.Text:
+                    return 254;
+
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

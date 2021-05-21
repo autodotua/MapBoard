@@ -45,7 +45,7 @@ namespace MapBoard.GpxToolbox.UI
             Config.Instance.Save();
         }
 
-        private async void WindowLoaded(object sender, RoutedEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(Track, false, true, false);
         }
@@ -80,7 +80,7 @@ namespace MapBoard.GpxToolbox.UI
             arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
         }
 
-        public async Task Play()
+        public void StartPlay()
         {
             working = true;
             DispatcherTimer timer = new DispatcherTimer()
@@ -283,7 +283,7 @@ namespace MapBoard.GpxToolbox.UI
             }
             else
             {
-                Play();
+                StartPlay();
                 btnPlay.Content = "停止";
                 SetUIEnabled(true, false);
             }
