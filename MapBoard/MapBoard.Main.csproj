@@ -163,6 +163,9 @@
     </Compile>
     <Compile Include="UI\Map\MapLayerCollection.cs" />
     <Compile Include="UI\Map\OverlayHelper.cs" />
+    <Compile Include="UI\Bar\MeasureBar.xaml.cs">
+      <DependentUpon>MeasureBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Panel\LayerListPanelHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
@@ -195,13 +198,13 @@
     <Compile Include="UI\Dialog\CoordinateTransformationDialog.xaml.cs">
       <DependentUpon>CoordinateTransformationDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\OperationBar\SelectOperationBar.xaml.cs">
-      <DependentUpon>SelectOperationBar.xaml</DependentUpon>
+    <Compile Include="UI\Bar\SelectBar.xaml.cs">
+      <DependentUpon>SelectBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\OperationBar\EditOperationBar.xaml.cs">
-      <DependentUpon>EditOperationBar.xaml</DependentUpon>
+    <Compile Include="UI\Bar\EditBar.xaml.cs">
+      <DependentUpon>EditBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\OperationBar\OperationBarBase.cs" />
+    <Compile Include="UI\Bar\BarBase.cs" />
     <Compile Include="UI\Dialog\SelectLayerDialog.xaml.cs">
       <DependentUpon>SelectLayerDialog.xaml</DependentUpon>
     </Compile>
@@ -265,15 +268,19 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UI\OperationBar\SelectOperationBar.xaml">
+    <Page Include="UI\Bar\MeasureBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\OperationBar\EditOperationBar.xaml">
+    <Page Include="UI\Bar\SelectBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Bar\EditBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\OperationBar\OperationBarStyles.xaml">
+    <Page Include="UI\Bar\BarStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

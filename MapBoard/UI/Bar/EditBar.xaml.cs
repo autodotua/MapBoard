@@ -3,20 +3,19 @@ using MapBoard.Main.UI.Map;
 using System.Windows;
 using static MapBoard.Main.UI.Map.EditorHelper;
 
-namespace MapBoard.Main.UI.OperationBar
+namespace MapBoard.Main.UI.Bar
 {
     /// <summary>
-    /// EditOperationBar.xaml 的交互逻辑
+    /// EditBar.xaml 的交互逻辑
     /// </summary>
-    public partial class EditOperationBar : OperationBarBase
+    public partial class EditBar : BarBase
     {
-        public EditOperationBar()
+        public EditBar()
         {
             InitializeComponent();
 
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
-            //ppp.PlacementTarget = btnAttri;
         }
 
         public override FeatureAttributes Attributes => ArcMapView.Instance.Editor.Attributes;
@@ -50,25 +49,27 @@ namespace MapBoard.Main.UI.OperationBar
 
         private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTaskManager.BoardTask.Draw || e.NewTask == BoardTaskManager.BoardTask.Edit)
+            if (e.NewTask == BoardTaskManager.BoardTask.Draw)
             {
-                if (e.NewTask == BoardTaskManager.BoardTask.Draw)
+                switch (MapView.Editor.Mode)
                 {
-                    Title = "正在绘制";
-                    SetBarHeight(false);
-                }
-                else
-                {
-                    if (MapView.Editor.Mode == EditMode.Edit)
-                    {
+                    case EditMode.Creat:
+                        Title = "正在绘制";
+                        SetBarHeight(false);
+                        break;
+
+                    case EditMode.Edit:
                         Title = "正在编辑";
                         SetBarHeight(false);
-                    }
-                    else
-                    {
+                        break;
+
+                    case EditMode.GetLine:
                         Title = "正在切割（请绘制用于切割的线段）";
                         SetBarHeight(true);
-                    }
+                        break;
+
+                    default:
+                        return;
                 }
                 Notify(nameof(MapView));
                 Show();

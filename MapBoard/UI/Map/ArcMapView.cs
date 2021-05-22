@@ -32,7 +32,7 @@ namespace MapBoard.Main.UI.Map
             ViewInsets = new Thickness(8);
             this.SetHideWatermark();
             Selection = new SelectionHelper();
-            Editor = new EditorHelper();
+            Editor = new EditorHelper(SketchEditor);
             Layer = new LayerHelper();
             Overlay = new OverlayHelper();
             ViewpointChanged += ArcMapView_ViewpointChanged;
@@ -142,7 +142,6 @@ namespace MapBoard.Main.UI.Map
                     switch (BoardTaskManager.CurrentTask)
                     {
                         case BoardTaskManager.BoardTask.Draw:
-                        case BoardTaskManager.BoardTask.Edit:
                             Editor.StopAndSave();
                             break;
 
@@ -155,7 +154,7 @@ namespace MapBoard.Main.UI.Map
                     }
                     break;
 
-                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit:
+                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
                     Editor.Cancel();
                     break;
 

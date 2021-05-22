@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
-using MapBoard.Main.UI.OperationBar;
+using MapBoard.Main.UI.Bar;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
@@ -69,7 +69,7 @@ namespace MapBoard.Main.UI.Dialog
             }
 
             Left = left + mainWindow.ActualWidth - ActualWidth;
-            Top = top + OperationBarBase.DefaultBarHeight + 2/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
+            Top = top + BarBase.DefaultBarHeight + 2/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

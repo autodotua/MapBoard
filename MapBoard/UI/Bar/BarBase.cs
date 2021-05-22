@@ -10,14 +10,14 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media.Animation;
 
-namespace MapBoard.Main.UI.OperationBar
+namespace MapBoard.Main.UI.Bar
 {
-    public abstract class OperationBarBase : Grid, INotifyPropertyChanged
+    public abstract class BarBase : Grid, INotifyPropertyChanged
     {
         public static double DefaultBarHeight { get; } = 56;
         public virtual double BarHeight { get; } = DefaultBarHeight;
 
-        public OperationBarBase() : base()
+        public BarBase() : base()
         {
             DataContext = this;
             SetResourceReference(BackgroundProperty, "SystemControlBackgroundAltHighBrush");
@@ -33,8 +33,11 @@ namespace MapBoard.Main.UI.OperationBar
 
         public abstract FeatureAttributes Attributes { get; }
 
+        public bool IsOpen { get; private set; }
+
         public void Show()
         {
+            IsOpen = true;
             Height = BarHeight;
             ani.To = 0;
             storyboard.Begin();
@@ -42,6 +45,7 @@ namespace MapBoard.Main.UI.OperationBar
 
         public void Hide()
         {
+            IsOpen = false;
             ani.To = -BarHeight;
             storyboard.Begin();
         }

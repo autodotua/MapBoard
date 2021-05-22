@@ -5,9 +5,6 @@ using FzLib.Basic.Collection;
 using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common;
-
-using MapBoard.Common;
-
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Component;
@@ -116,8 +113,7 @@ namespace MapBoard.Main.UI
             e.Cancel = true;
             Config.Save();
             MapLayerCollection.Instance.Save();
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
-                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
             {
                 await CommonDialog.ShowErrorDialogAsync("请先结束绘制");
                 return;
@@ -184,7 +180,6 @@ namespace MapBoard.Main.UI
         private void JudgeControlsEnable()
         {
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw
-                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
                 || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
             {
                 grdLeft.IsEnabled = false;
@@ -464,6 +459,16 @@ namespace MapBoard.Main.UI
             {
                 loading.Hide();
             }
+        }
+
+        private void MeasureLengthMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            arcMap.Editor.MeasureLength();
+        }
+
+        private void MeasureAreaMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            arcMap.Editor.MeasureArea();
         }
     }
 }

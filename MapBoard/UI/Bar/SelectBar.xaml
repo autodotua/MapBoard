@@ -1,14 +1,14 @@
-﻿<local:OperationBarBase
-    x:Class="MapBoard.Main.UI.OperationBar.SelectOperationBar"
+﻿<local:BarBase
+    x:Class="MapBoard.Main.UI.Bar.SelectBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:MapBoard.Main.UI.OperationBar"
+    xmlns:local="clr-namespace:MapBoard.Main.UI.Bar"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Grid Margin="4,0">
         <Grid.Resources>
-            <ResourceDictionary Source="OperationBarStyles.xaml" />
+            <ResourceDictionary Source="BarStyles.xaml" />
         </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -188,4 +188,4 @@
             </Button>
         </Grid>
     </Grid>
-</local:OperationBarBase>
+</local:BarBase>

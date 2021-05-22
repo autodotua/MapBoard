@@ -34,7 +34,6 @@ namespace MapBoard.Main
         {
             Ready,
             Draw,
-            Edit,
             Select,
         }
 

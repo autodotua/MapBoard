@@ -30,14 +30,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 
-namespace MapBoard.Main.UI.OperationBar
+namespace MapBoard.Main.UI.Bar
 {
     /// <summary>
-    /// EditOperationBar.xaml 的交互逻辑
+    /// EditBar.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectOperationBar : OperationBarBase
+    public partial class SelectBar : BarBase
     {
-        public SelectOperationBar()
+        public SelectBar()
         {
             InitializeComponent();
             BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
