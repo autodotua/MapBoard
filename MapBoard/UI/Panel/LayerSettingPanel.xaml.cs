@@ -69,7 +69,7 @@ namespace MapBoard.Main.UI.Panel
 
         public async Task SetStyleFromUI()
         {
-            var layer = LayerCollection.Instance.Selected;
+            var layer = MapLayerCollection.Instance.Selected;
 
             layer.Symbols.Clear();
             foreach (var keySymbol in Keys)
@@ -80,7 +80,7 @@ namespace MapBoard.Main.UI.Panel
             string newName = LayerName;
             if (newName != layer.Name)
             {
-                int index = LayerCollection.Instance.IndexOf(LayerCollection.Instance.Selected);
+                int index = MapLayerCollection.Instance.IndexOf(MapLayerCollection.Instance.Selected);
 
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
                 {
@@ -93,7 +93,7 @@ namespace MapBoard.Main.UI.Panel
                 }
                 try
                 {
-                    await LayerUtility.RemoveLayerAsync(LayerCollection.Instance.Selected, false);
+                    await LayerUtility.RemoveLayerAsync(MapLayerCollection.Instance.Selected, false);
                     foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                     {
                         File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
@@ -106,7 +106,7 @@ namespace MapBoard.Main.UI.Panel
                 }
             end:
                 layer.Table = null;
-                await LayerCollection.Instance.InsertAsync(index, layer);
+                await MapLayerCollection.Instance.InsertAsync(index, layer);
             }
             try
             {
@@ -121,7 +121,7 @@ namespace MapBoard.Main.UI.Panel
 
         public void ResetLayerSettingUI()
         {
-            LayerInfo layer = LayerCollection.Instance.Selected;
+            LayerInfo layer = MapLayerCollection.Instance.Selected;
             if (!IsLoaded || layer == null)
             {
                 return;
@@ -234,7 +234,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var style = LayerCollection.Instance.Selected;
+            var style = MapLayerCollection.Instance.Selected;
             var keys = (await style.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {

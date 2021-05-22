@@ -1,6 +1,7 @@
 ﻿using FzLib.UI.Dialog;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
@@ -28,8 +29,8 @@ namespace MapBoard.Main.UI.Dialog
         public SelectLayerDialog()
         {
             InitializeComponent();
-            var layers = LayerCollection.Instance;
-            var list = LayerCollection.Instance.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
+            var layers = MapLayerCollection.Instance;
+            var list = MapLayerCollection.Instance.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;

@@ -390,7 +390,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
 
         public static async Task CopyOrMoveAsync(LayerInfo layerFrom, LayerInfo layerTo, Feature[] features, bool copy)
         {
-            LayerCollection.Instance.Selected.LayerVisible = false;
+            MapLayerCollection.Instance.Selected.LayerVisible = false;
             layerTo.LayerVisible = true;
             ShapefileFeatureTable targetTable = layerTo.Table;
             var newFeatures = new List<Feature>();

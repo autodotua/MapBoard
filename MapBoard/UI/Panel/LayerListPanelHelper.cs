@@ -37,7 +37,7 @@ namespace MapBoard.Main.UI.Panel
         {
             ContextMenu menu = new ContextMenu();
             List<(string header, Func<LayerInfo, Task> action, bool visiable)?> menus = null;
-            LayerInfo layer = LayerCollection.Instance.Selected;
+            LayerInfo layer = MapLayerCollection.Instance.Selected;
             LayerInfo[] layers = dataGrid.SelectedItems.Cast<LayerInfo>().ToArray();
             if (dataGrid.SelectedItems.Count == 1)
             {
@@ -170,7 +170,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task SetTimeExtentAsync(LayerInfo layer)
         {
-            DateRangeDialog dialog = new DateRangeDialog(LayerCollection.Instance.Selected);
+            DateRangeDialog dialog = new DateRangeDialog(MapLayerCollection.Instance.Selected);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.SetTimeExtentAsync(layer);

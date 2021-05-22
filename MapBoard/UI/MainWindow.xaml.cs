@@ -12,6 +12,7 @@ using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.UI.Map;
 using MapBoard.Main.UI.Panel;
 using MapBoard.Main.Util;
 using ModernWpf.Controls;
@@ -54,9 +55,9 @@ namespace MapBoard.Main.UI
         };
 
         public Config Config => Config.Instance;
-        private LayerCollection layers;
+        private MapLayerCollection layers;
 
-        public LayerCollection Layers
+        public MapLayerCollection Layers
         {
             get => layers;
             private set => this.SetValueAndNotify(ref layers, value, nameof(Layers));
@@ -90,16 +91,16 @@ namespace MapBoard.Main.UI
         {
             arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            LayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
+            MapLayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
             var lvwHelper = new LayerListViewHelper(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
-            LayerCollection.Instance.PropertyChanged += (p1, p2) =>
+            MapLayerCollection.Instance.PropertyChanged += (p1, p2) =>
               {
-                  if (p2.PropertyName == nameof(LayerCollection.Instance.Selected) && !changingStyle)
+                  if (p2.PropertyName == nameof(MapLayerCollection.Instance.Selected) && !changingStyle)
                   {
-                      dataGrid.SelectedItem = LayerCollection.Instance.Selected;
+                      dataGrid.SelectedItem = MapLayerCollection.Instance.Selected;
                   }
               };
         }
@@ -114,7 +115,7 @@ namespace MapBoard.Main.UI
             }
             e.Cancel = true;
             Config.Save();
-            LayerCollection.Instance.Save();
+            MapLayerCollection.Instance.Save();
             if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Edit
                 || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
             {
@@ -137,7 +138,7 @@ namespace MapBoard.Main.UI
         private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
             await Layersetting.SetStyleFromUI();
-            LayerCollection.Instance.Save();
+            MapLayerCollection.Instance.Save();
         }
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
@@ -200,18 +201,18 @@ namespace MapBoard.Main.UI
                 }
                 grdLeft.IsEnabled = true;
             }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = LayerCollection.Instance.Selected != null;
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = MapLayerCollection.Instance.Selected != null;
 
             if (IsLoaded)
             {
-                btnSelect.IsEnabled = LayerCollection.Instance.Selected != null;
-                grdButtons.IsEnabled = LayerCollection.Instance.Selected == null || LayerCollection.Instance.Selected.LayerVisible;
+                btnSelect.IsEnabled = MapLayerCollection.Instance.Selected != null;
+                grdButtons.IsEnabled = MapLayerCollection.Instance.Selected == null || MapLayerCollection.Instance.Selected.LayerVisible;
 
                 var buttons = grdButtons.Children.OfType<SplitButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
-                if (LayerCollection.Instance.Selected != null)
+                if (MapLayerCollection.Instance.Selected != null)
                 {
-                    switch (LayerCollection.Instance.Selected.Table.GeometryType)
+                    switch (MapLayerCollection.Instance.Selected.Table.GeometryType)
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
@@ -346,21 +347,21 @@ namespace MapBoard.Main.UI
 
         public async Task InitializeAsync()
         {
-            LayerCollection.LayerInstanceChanged += (p1, p2) =>
+            MapLayerCollection.LayerInstanceChanged += (p1, p2) =>
             {
-                Layers = LayerCollection.Instance;
+                Layers = MapLayerCollection.Instance;
             };
             await arcMap.LoadBasemapAsync();
-            await LayerCollection.LoadInstanceAsync();
+            await MapLayerCollection.LoadInstanceAsync();
             await arcMap.ZoomToLastExtent();
             RegistEvents();
             layerListHelper = new LayerListPanelHelper(dataGrid, this);
 
             JudgeControlsEnable();
 
-            if (LayerCollection.Instance.Selected != null
-                && LayerCollection.Instance.Selected.Table != null
-                && LayerCollection.Instance.Selected.Table.NumberOfFeatures > 0)
+            if (MapLayerCollection.Instance.Selected != null
+                && MapLayerCollection.Instance.Selected.Table != null
+                && MapLayerCollection.Instance.Selected.Table.NumberOfFeatures > 0)
             {
                 Layersetting.ResetLayerSettingUI();
             }

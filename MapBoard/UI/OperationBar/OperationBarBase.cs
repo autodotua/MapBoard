@@ -1,5 +1,6 @@
 ﻿using FzLib.UI.Converter;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -87,7 +88,7 @@ namespace MapBoard.Main.UI.OperationBar
                 grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(8) });
                 grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
             }
-            var field = LayerCollection.Instance.Selected.Fields;
+            var field = MapLayerCollection.Instance.Selected.Fields;
             int row = 0;
             int index = 0;
             foreach (var a in Attributes.Others)

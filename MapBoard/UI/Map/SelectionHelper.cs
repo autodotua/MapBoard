@@ -16,7 +16,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -40,8 +39,8 @@ namespace MapBoard.Main.UI.Map
 
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || LayerCollection.Instance.Selected == null
-                || !LayerCollection.Instance.Selected.LayerVisible
+            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || MapLayerCollection.Instance.Selected == null
+                || !MapLayerCollection.Instance.Selected.LayerVisible
                 || BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
@@ -101,7 +100,7 @@ namespace MapBoard.Main.UI.Map
                  QueryParameters query = new QueryParameters();
                  query.Geometry = envelope;
                  query.SpatialRelationship = relationship;
-                 FeatureLayer layer = LayerCollection.Instance.Selected?.Layer;
+                 FeatureLayer layer = MapLayerCollection.Instance.Selected?.Layer;
                  if (layer == null)
                  {
                      return;
@@ -154,7 +153,7 @@ namespace MapBoard.Main.UI.Map
                 (SelectedFeatures[0].FeatureTable.Layer as FeatureLayer).ClearSelection();
                 SelectedFeatures.Clear();
             }
-            if(SelectedFeatures.Any(p=>p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
+            if (SelectedFeatures.Any(p => p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
             {
                 return false;
             }
@@ -165,7 +164,7 @@ namespace MapBoard.Main.UI.Map
 
         public void Select(IEnumerable<Feature> features)
         {
-            var layer = LayerCollection.Instance.Selected?.Layer;
+            var layer = MapLayerCollection.Instance.Selected?.Layer;
             if (layer == null)
             {
                 return;

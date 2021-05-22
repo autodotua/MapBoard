@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using FzLib.UI.Dialog;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -136,7 +137,7 @@ namespace MapBoard.Main.IO
             }
 
             List<Feature> features = new List<Feature>();
-            var style = LayerCollection.Instance.Selected;
+            var style = MapLayerCollection.Instance.Selected;
 
             foreach (var part in parts)
             {

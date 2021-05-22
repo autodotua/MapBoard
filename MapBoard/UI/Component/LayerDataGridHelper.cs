@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 
 namespace MapBoard.Main.UI.Component
 {
@@ -146,16 +147,14 @@ namespace MapBoard.Main.UI.Component
                 if (index > -1)
                 {
                     //拖动元素集合的第一个元素索引
-                    int oldIndex = (View.ItemsSource as LayerCollection).IndexOf(item);
+                    int oldIndex = (View.ItemsSource as MapLayerCollection).IndexOf(item);
                     if (oldIndex == index)
                     {
                         return;
                     }
 
-                    (View.ItemsSource as LayerCollection).Move(oldIndex, index);
+                    (View.ItemsSource as MapLayerCollection).Move(oldIndex, index);
                     SingleItemDragDroped?.Invoke(this, new SingleItemDragDropedEventArgs(oldIndex, index));
-                    // lvw.SelectedItems.Clear();
-                    //ListView.SelectedIndex = index;
                 }
             }
         }
@@ -185,10 +184,10 @@ namespace MapBoard.Main.UI.Component
                 {
                     LayerInfo Logmess = (LayerInfo)peopleList[0];
                     //拖动元素集合的第一个元素索引
-                    int OldFirstIndex = (View.ItemsSource as LayerCollection).IndexOf(Logmess);
+                    int OldFirstIndex = (View.ItemsSource as MapLayerCollection).IndexOf(Logmess);
                     for (int i = 0; i < peopleList.Count; i++)
                     {
-                        (View.ItemsSource as LayerCollection).Move(OldFirstIndex, index);
+                        (View.ItemsSource as MapLayerCollection).Move(OldFirstIndex, index);
                     }
                     GetSelectedItems().Clear();
                 }

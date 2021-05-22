@@ -6,13 +6,13 @@ using MapBoard.Common;
 
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
-using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.Util
 {
@@ -25,9 +25,9 @@ namespace MapBoard.Main.Util
 
         public static async Task RemoveLayerAsync(this LayerInfo layer, bool deleteFiles)
         {
-            if (LayerCollection.Instance.Contains(layer))
+            if (MapLayerCollection.Instance.Contains(layer))
             {
-                LayerCollection.Instance.Remove(layer);
+                MapLayerCollection.Instance.Remove(layer);
             }
 
             if (deleteFiles)
@@ -66,8 +66,8 @@ namespace MapBoard.Main.Util
             LayerInfo layer = template == null ? new LayerInfo() : template.Clone() as LayerInfo;
             layer.Fields = fields.ToArray();
             layer.Name = name;
-            await LayerCollection.Instance.AddAsync(layer);
-            LayerCollection.Instance.Selected = layer;
+            await MapLayerCollection.Instance.AddAsync(layer);
+            MapLayerCollection.Instance.Selected = layer;
             return layer;
         }
 
@@ -75,7 +75,7 @@ namespace MapBoard.Main.Util
         {
             if (includeFeatures)
             {
-                var features = await LayerCollection.Instance.Selected.GetAllFeaturesAsync();
+                var features = await MapLayerCollection.Instance.Selected.GetAllFeaturesAsync();
 
                 var newLayer = await CreateLayerAsync(layer.Table.GeometryType, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
@@ -223,7 +223,6 @@ namespace MapBoard.Main.Util
                 oldLayer.LayerVisible = false;
             }
             layer.NotifyFeatureChanged();
-            //LayerCollection.Instance.Add(style);
             return layer;
         }
     }

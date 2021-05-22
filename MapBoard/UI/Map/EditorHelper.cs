@@ -87,7 +87,7 @@ namespace MapBoard.Main.UI.Map
                 var label = Attributes.Label;
                 var key = Attributes.Key;
                 var date = Attributes.Date;
-                Attributes = FeatureAttributes.Empty(LayerCollection.Instance.Selected);
+                Attributes = FeatureAttributes.Empty(MapLayerCollection.Instance.Selected);
                 if (Config.Instance.RemainLabel)
                 {
                     Attributes.Label = label;
@@ -103,19 +103,19 @@ namespace MapBoard.Main.UI.Map
             }
             else
             {
-                Attributes = FeatureAttributes.Empty(LayerCollection.Instance.Selected);
+                Attributes = FeatureAttributes.Empty(MapLayerCollection.Instance.Selected);
             }
             await Mapview.SketchEditor.StartAsync(mode);
             if (geometry != null)
             {
-                ShapefileFeatureTable table = LayerCollection.Instance.Selected.Table;
+                ShapefileFeatureTable table = MapLayerCollection.Instance.Selected.Table;
 
                 Feature feature = table.CreateFeature();
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
                 await table.AddFeatureAsync(feature);
 
-                LayerCollection.Instance.Selected.NotifyFeatureChanged();
+                MapLayerCollection.Instance.Selected.NotifyFeatureChanged();
             }
         }
 

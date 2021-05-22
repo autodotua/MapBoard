@@ -1,5 +1,6 @@
 ﻿//using Ionic.Zip;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +33,7 @@ namespace MapBoard.Main.IO
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);
             Directory.CreateDirectory(tempStyleDir);
-            foreach (var layer in LayerCollection.Instance)
+            foreach (var layer in MapLayerCollection.Instance)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());

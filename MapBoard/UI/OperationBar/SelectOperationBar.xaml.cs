@@ -53,7 +53,7 @@ namespace MapBoard.Main.UI.OperationBar
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
             btnMoreAttributes.IsEnabled = count == 1;
-            LayerInfo layer = LayerCollection.Instance.Selected;
+            LayerInfo layer = MapLayerCollection.Instance.Selected;
             btnCut.IsEnabled = layer.Table.GeometryType == GeometryType.Polygon
                 || layer.Table.GeometryType == GeometryType.Polyline;
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
@@ -129,7 +129,7 @@ namespace MapBoard.Main.UI.OperationBar
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                await FeatureUtility.DeleteAsync(LayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
+                await FeatureUtility.DeleteAsync(MapLayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
                 ArcMapView.Instance.Selection.ClearSelection();
             }, true);
         }
@@ -143,11 +143,11 @@ namespace MapBoard.Main.UI.OperationBar
                 {
                     bool copy = await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
 
-                    await FeatureUtility.CopyOrMoveAsync(LayerCollection.Instance.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
-                    LayerCollection.Instance.Selected.LayerVisible = false;
+                    await FeatureUtility.CopyOrMoveAsync(MapLayerCollection.Instance.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    MapLayerCollection.Instance.Selected.LayerVisible = false;
                     dialog.SelectedLayer.LayerVisible = false;
                     MapView.Selection.ClearSelection();
-                    LayerCollection.Instance.Selected = dialog.SelectedLayer;
+                    MapLayerCollection.Instance.Selected = dialog.SelectedLayer;
                 }
             });
         }
@@ -160,7 +160,7 @@ namespace MapBoard.Main.UI.OperationBar
             {
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
-                    await FeatureUtility.CutAsync(LayerCollection.Instance.Selected, features, line);
+                    await FeatureUtility.CutAsync(MapLayerCollection.Instance.Selected, features, line);
                 }, true);
             }
         }
@@ -168,7 +168,7 @@ namespace MapBoard.Main.UI.OperationBar
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            await MapView.Editor.EditAsync(LayerCollection.Instance.Selected, MapView.Selection.SelectedFeatures[0]);
+            await MapView.Editor.EditAsync(MapLayerCollection.Instance.Selected, MapView.Selection.SelectedFeatures[0]);
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -180,7 +180,7 @@ namespace MapBoard.Main.UI.OperationBar
         {
             ContextMenu menu = new ContextMenu();
 
-            var layer = LayerCollection.Instance.Selected;
+            var layer = MapLayerCollection.Instance.Selected;
 
             var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()

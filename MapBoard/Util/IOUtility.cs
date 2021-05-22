@@ -28,7 +28,7 @@ namespace MapBoard.Main.Util
     {
         public async static Task ImportFeatureAsync()
         {
-            LayerInfo layer = LayerCollection.Instance.Selected;
+            LayerInfo layer = MapLayerCollection.Instance.Selected;
             FileFilterCollection filter = null;
 
             if (layer.Table.GeometryType != GeometryType.Polygon)
@@ -286,9 +286,9 @@ namespace MapBoard.Main.Util
                         new DialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Line)),
                         new DialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Point)),
                 };
-            if (LayerCollection.Instance.Selected != null)
+            if (MapLayerCollection.Instance.Selected != null)
             {
-                var layer = LayerCollection.Instance.Selected;
+                var layer = MapLayerCollection.Instance.Selected;
                 if (layer.Table.GeometryType == GeometryType.Point || layer.Table.GeometryType == GeometryType.Polyline)
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));

@@ -13,7 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LayerCollection = MapBoard.Main.Model.LayerCollection;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -94,7 +93,7 @@ namespace MapBoard.Main.UI.Map
                 return;
             }
 
-            foreach (var style in LayerCollection.Instance.ToArray())
+            foreach (var style in MapLayerCollection.Instance.ToArray())
             {
                 if (File.Exists(Path.Combine(Config.DataPath, style.Name + ".shp")))
                 {
@@ -102,7 +101,7 @@ namespace MapBoard.Main.UI.Map
                 }
                 else
                 {
-                    LayerCollection.Instance.Remove(style);
+                    MapLayerCollection.Instance.Remove(style);
                 }
             }
 
@@ -120,7 +119,7 @@ namespace MapBoard.Main.UI.Map
 
             foreach (var name in files)
             {
-                if (!LayerCollection.Instance.Any(p => p.Name == name))
+                if (!MapLayerCollection.Instance.Any(p => p.Name == name))
                 {
                     LayerInfo style = new LayerInfo();
                     style.Name = name;
