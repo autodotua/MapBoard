@@ -77,7 +77,7 @@ namespace MapBoard.Main.Model
             return layers.IndexOf(layer);
         }
 
-        public void Save(string path = null)
+        public void Save(string path)
         {
             JObject json = new JObject();
             json.Add(nameof(MapViewExtentJson), MapViewExtentJson);
@@ -92,13 +92,12 @@ namespace MapBoard.Main.Model
             File.WriteAllText(path, jsonStr);
         }
 
-        protected void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        protected virtual void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(LayerInfo.LayerVisible))
             {
                 LayerVisibilityChanged?.Invoke(this, new EventArgs());
             }
-            Save();
         }
     }
 }

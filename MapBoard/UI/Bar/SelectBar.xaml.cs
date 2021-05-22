@@ -168,7 +168,9 @@ namespace MapBoard.Main.UI.Bar
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            await MapView.Editor.EditAsync(MapLayerCollection.Instance.Selected, MapView.Selection.SelectedFeatures[0]);
+            var feature = MapView.Selection.SelectedFeatures[0];
+            ArcMapView.Instance.Selection.ClearSelection();
+            await MapView.Editor.EditAsync(MapLayerCollection.Instance.Selected, feature);
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -235,7 +237,7 @@ namespace MapBoard.Main.UI.Bar
                 }
             }
 
-            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.Placement = PlacementMode.Bottom;
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;
 

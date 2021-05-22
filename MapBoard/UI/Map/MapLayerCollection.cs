@@ -2,6 +2,7 @@
 using MapBoard.Common;
 using MapBoard.Main.Model;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -37,7 +38,18 @@ namespace MapBoard.Main.UI.Map
         public LayerInfo Selected
         {
             get => selected;
-            set => this.SetValueAndNotify(ref selected, value, nameof(Selected));
+            set
+            {
+                if (value != null)
+                {
+                    SelectedIndex = IndexOf(value);
+                }
+                else
+                {
+                    SelectedIndex = -1;
+                }
+                this.SetValueAndNotify(ref selected, value, nameof(Selected));
+            }
         }
 
         public static async Task LoadInstanceAsync()
@@ -121,6 +133,12 @@ namespace MapBoard.Main.UI.Map
         public void Save()
         {
             Save(Path.Combine(Config.DataPath, LayersFileName));
+        }
+
+        protected override void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            base.LayerPropertyChanged(sender, e);
+            Save();
         }
     }
 }

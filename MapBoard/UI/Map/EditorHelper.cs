@@ -92,8 +92,9 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
             Mode = EditMode.Creat;
+
+            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
             if (Attributes != null)
             {
                 var label = Attributes.Label;
