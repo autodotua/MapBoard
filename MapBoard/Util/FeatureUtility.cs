@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -416,6 +417,63 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
         }
 
         public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;
+
+        public static async Task CopyAttributesAsync(LayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
+        {
+            var features = await layer.GetAllFeaturesAsync();
+            foreach (var feature in features)
+            {
+                object value = feature.Attributes[fieldSource.Name];
+                if (value is DateTimeOffset dto)
+                {
+                    value = dto.UtcDateTime;
+                }
+                if (fieldTarget.Type == fieldSource.Type)
+                {
+                    feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
+                }
+                else
+                {
+                    object result = null;
+                    try
+                    {
+                        switch (fieldTarget.Type)
+                        {
+                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
+                                result = Convert.ToInt32(value);
+                                break;
+
+                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
+                                result = int.Parse(value as string);
+                                break;
+
+                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
+                                result = Convert.ToDouble(value);
+                                break;
+
+                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
+                                result = double.Parse(value as string);
+                                break;
+
+                            case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
+                                result = DateTime.ParseExact(value as string, dateFormat, CultureInfo.CurrentCulture);
+                                break;
+
+                            case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
+                                result = ((DateTime)value).Date.ToString(dateFormat);
+                                break;
+
+                            case FieldInfoType.Text:
+                                result = value.ToString();
+                                break;
+                        }
+                    }
+                    catch { }
+                    feature.SetAttributeValue(fieldTarget.Name, result);
+                }
+                await layer.Table.UpdateFeatureAsync(feature);
+            }
+        }
     }
 
     public class FeaturesGeometryChangedEventArgs : EventArgs

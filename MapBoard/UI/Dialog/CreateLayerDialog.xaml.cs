@@ -4,6 +4,7 @@ using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using MapBoard.Main.Model.Extension;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
@@ -35,7 +36,7 @@ namespace MapBoard.Main.UI.Dialog
 
         public CreateLayerDialog(LayerInfo layer = null)
         {
-            StaticFields = FieldUtility.GetDefaultFields();
+            StaticFields = FieldInfo.DefaultFields;
             InitializeComponent();
             if (layer != null)
             {

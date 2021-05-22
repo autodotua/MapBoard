@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
+using MapBoard.Main.Model.Extension;
 
 namespace MapBoard.Main.UI.Dialog
 {

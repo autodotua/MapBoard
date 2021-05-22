@@ -1,22 +1,9 @@
 ﻿using FzLib.Extension;
-using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
-using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -65,8 +52,8 @@ namespace MapBoard.Main.UI.Dialog
 
         private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            IsPrimaryButtonEnabled = !EnableDateRange 
-                || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue 
+            IsPrimaryButtonEnabled = !EnableDateRange
+                || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue
                 && dateTo.SelectedDate >= dateFrom.SelectedDate;
         }
 

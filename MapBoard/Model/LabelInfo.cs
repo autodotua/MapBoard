@@ -1,26 +1,8 @@
-﻿using Esri.ArcGISRuntime.Data;
-using Esri.ArcGISRuntime.Geometry;
-using Esri.ArcGISRuntime.Mapping;
-using Esri.ArcGISRuntime.Mapping.Labeling;
-using FzLib.Extension;
-using MapBoard.Common;
-
-using MapBoard.Common;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using FzLib.Extension;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static FzLib.Extension.ExtendedINotifyPropertyChanged;
-using static MapBoard.Common.CoordinateTransformation;
-using static MapBoard.Main.Util.LayerUtility;
 
 namespace MapBoard.Main.Model
 {

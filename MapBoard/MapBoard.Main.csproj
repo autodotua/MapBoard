@@ -133,6 +133,8 @@
     </ApplicationDefinition>
     <Compile Include="BoardTaskManager.cs" />
     <Compile Include="IO\Kml.cs" />
+    <Compile Include="Model\Extension\FeatureAttributeExtension.cs" />
+    <Compile Include="Model\Extension\FieldExtension.cs" />
     <Compile Include="Model\FeatureAttribute.cs" />
     <Compile Include="Model\FieldInfo.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />
@@ -164,7 +166,6 @@
     <Compile Include="UI\Panel\LayerListPanelHelper.cs" />
     <Compile Include="Util\FeatureUtility.cs" />
     <Compile Include="IO\Csv.cs" />
-    <Compile Include="Util\FieldUtility.cs" />
     <Compile Include="Util\GeometryUtility.cs" />
     <Compile Include="Util\IOUtility.cs" />
     <Compile Include="IO\PathUtility.cs" />

@@ -2,11 +2,8 @@
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MapBoard.Main.IO

@@ -1,96 +1,15 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using MapBoard.Common;
-using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.Util
+namespace MapBoard.Main.Model.Extension
 {
-    public static class FieldUtility
+    public static class FieldExtension
     {
-        public static async Task CopyAttributesAsync(LayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
-        {
-            var features = await layer.GetAllFeaturesAsync();
-            foreach (var feature in features)
-            {
-                object value = feature.Attributes[fieldSource.Name];
-                if (value is DateTimeOffset dto)
-                {
-                    value = dto.UtcDateTime;
-                }
-                if (fieldTarget.Type == fieldSource.Type)
-                {
-                    feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
-                }
-                else
-                {
-                    object result = null;
-                    try
-                    {
-                        switch (fieldTarget.Type)
-                        {
-                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
-                                result = Convert.ToInt32(value);
-                                break;
-
-                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
-                                result = int.Parse(value as string);
-                                break;
-
-                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
-                                result = Convert.ToDouble(value);
-                                break;
-
-                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
-                                result = double.Parse(value as string);
-                                break;
-
-                            case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
-                                result = DateTime.ParseExact(value as string, dateFormat, CultureInfo.CurrentCulture);
-                                break;
-
-                            case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
-                                result = ((DateTime)value).Date.ToString(dateFormat);
-                                break;
-
-                            case FieldInfoType.Text:
-                                result = value.ToString();
-                                break;
-                        }
-                    }
-                    catch { }
-                    feature.SetAttributeValue(fieldTarget.Name, result);
-                }
-                await layer.Table.UpdateFeatureAsync(feature);
-            }
-        }
-
-        public static Dictionary<string, object> GetCustomAttributes(this IDictionary<string, object> attributes)
-        {
-            Dictionary<string, object> result = new Dictionary<string, object>();
-            foreach (var a in attributes)
-            {
-                if (a.Key != Resource.ClassFieldName
-                    && a.Key != Resource.LabelFieldName
-                    && a.Key != Resource.DateFieldName
-                    && a.Key != "FID")
-                {
-                    result.Add(a.Key, a.Value);
-                }
-            }
-            return result;
-        }
-
-        public static FieldInfo[] GetDefaultFields()
-        {
-            return new FieldInfo[]
-                {             FieldInfo.LabelField,FieldInfo.DateField,FieldInfo.ClassField                };
-        }
-
         public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
         {
             if (!fields.Any(p => p.Name == Resource.LabelFieldName))
@@ -151,7 +70,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public static IEnumerable<FieldInfo> ToFieldInfos(this IEnumerable<Field> fields)
+        public static IEnumerable<FieldInfo> FromEsriFields(this IEnumerable<Field> fields)
         {
             foreach (var field in fields)
             {

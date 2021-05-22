@@ -212,7 +212,6 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-
                     </Grid>
                     <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>

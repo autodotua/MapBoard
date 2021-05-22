@@ -3,6 +3,7 @@ using FzLib.UI.Dialog;
 using FzLib.UI.Extension;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
+using MapBoard.Main.Model.Extension;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using System;

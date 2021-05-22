@@ -195,7 +195,7 @@ namespace MapBoard.Main.UI.Panel
             var dialog = new CopyAttributesDialog(layer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await FieldUtility.CopyAttributesAsync(layer, dialog.FieldSource, dialog.FieldTarget, dialog.DateFormat);
+                await FeatureUtility.CopyAttributesAsync(layer, dialog.FieldSource, dialog.FieldTarget, dialog.DateFormat);
             }
         }
 

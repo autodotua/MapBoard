@@ -5,6 +5,7 @@ using FzLib.Basic;
 using MapBoard.Common;
 
 using MapBoard.Main.Model;
+using MapBoard.Main.Model.Extension;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
@@ -71,7 +72,7 @@ namespace MapBoard.Main.IO
 
             LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType,
                 null, Path.GetFileNameWithoutExtension(path),
-                table.Fields.ToFieldInfos().ToList());
+                table.Fields.FromEsriFields().ToList());
             layer.LayerVisible = false;
             var fields = layer.Table.Fields.Select(p => p.Name).ToHashSet();
             foreach (var feature in features)
@@ -110,7 +111,7 @@ namespace MapBoard.Main.IO
             string path = Path.Combine(folder, name);
             if (fields == null)
             {
-                fields = FieldUtility.GetDefaultFields();
+                fields = FieldInfo.DefaultFields;
             }
             else
             {

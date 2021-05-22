@@ -1,15 +1,12 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
-using MapBoard.Common;
 
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 using static MapBoard.Main.Util.LayerUtility;

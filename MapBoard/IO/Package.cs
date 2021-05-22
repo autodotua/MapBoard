@@ -1,22 +1,13 @@
-﻿using Esri.ArcGISRuntime.Data;
-using FzLib.Basic.Collection;
-using FzLib.Program;
-using FzLib.UI.Dialog;
-using MapBoard.Common;
-
-using MapBoard.Common;
+﻿using MapBoard.Common;
 
 using MapBoard.Main.Model;
-using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static FzLib.Basic.Loop;
 
 namespace MapBoard.Main.IO
 {

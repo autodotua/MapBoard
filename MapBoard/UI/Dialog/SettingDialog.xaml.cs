@@ -25,8 +25,6 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class SettingDialog : Common.Dialog.DialogWindowBase
     {
-        private bool canSelect = false;
-
         public SettingDialog()
         {
             InitializeComponent();

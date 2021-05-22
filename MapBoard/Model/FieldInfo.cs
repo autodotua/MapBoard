@@ -1,12 +1,8 @@
 ﻿using FzLib.Extension;
 using MapBoard.Common;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace MapBoard.Main.Model
 {
@@ -43,9 +39,10 @@ namespace MapBoard.Main.Model
         {
         }
 
-        public static FieldInfo LabelField { get; } = new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text);
-        public static FieldInfo DateField { get; } = new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date);
-        public static FieldInfo ClassField { get; } = new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text);
+        public static FieldInfo[] DefaultFields => new[] { LabelField, DateField, ClassField };
+        public static readonly FieldInfo LabelField = new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text);
+        public static readonly FieldInfo DateField = new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date);
+        public static readonly FieldInfo ClassField = new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text);
 
         public event PropertyChangedEventHandler PropertyChanged;
 

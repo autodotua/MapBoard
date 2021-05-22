@@ -1,18 +1,8 @@
-﻿using FzLib.Program.Runtime;
-using FzLib.UI.Dialog;
-using FzLib.UI.Program;
-using MapBoard.Main.UI;
+﻿using FzLib.UI.Dialog;
 using ModernWpf.Controls;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using static FzLib.IO.Shortcut;
 
 namespace MapBoard.Main
 {

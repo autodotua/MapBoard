@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using FzLib.Extension;
+﻿using FzLib.Extension;
 using MapBoard.Common;
-using System.IO;
 using MapBoard.Main.Model;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace MapBoard.Main.UI.Map
 {

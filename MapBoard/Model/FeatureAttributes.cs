@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Extension;
 using MapBoard.Common;
+using MapBoard.Main.Model.Extension;
 using MapBoard.Main.Util;
 using Newtonsoft.Json;
 using System;
@@ -96,7 +97,7 @@ namespace MapBoard.Main.Model
             attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Resource.LabelFieldName] as string));
             attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Resource.ClassFieldName] as string));
             attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, (feature.Attributes[Resource.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
-            foreach (var attr in FieldUtility.GetCustomAttributes(feature.Attributes))
+            foreach (var attr in feature.Attributes.GetCustomAttributes())
             {
                 FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))

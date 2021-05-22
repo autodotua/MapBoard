@@ -1,15 +1,12 @@
-﻿using System;
-using System.Linq;
-
+﻿using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
+using System;
 using System.Collections;
-
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using MapBoard.Main.Model;
-using MapBoard.Main.UI.Map;
 
 namespace MapBoard.Main.UI.Component
 {

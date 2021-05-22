@@ -70,7 +70,6 @@
                         <CheckBox Content="导入时自动备份" IsChecked="{Binding Config.BackupWhenReplace}" />
                     </ui:SimpleStackPanel>
                     <TextBox ui:ControlHelper.Header="最大备份数" Text="{Binding Config.MaxBackupCount}" />
-
                 </ui:SimpleStackPanel>
             </TabItem>
 

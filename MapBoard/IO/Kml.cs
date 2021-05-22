@@ -1,27 +1,13 @@
-﻿using Esri.ArcGISRuntime.Data;
-using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
-using Esri.ArcGISRuntime.UI;
-using FzLib.UI.Dialog;
 using MapBoard.Common;
-using MapBoard.Main.IO;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
-using ModernWpf.FzExtension.CommonDialog;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using static FzLib.UI.Common;
 
 namespace MapBoard.Main.IO
 {
