@@ -217,7 +217,7 @@ namespace MapBoard.Main.UI
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (LayerCollection.Instance.Selected != null)
                 {
-                    switch (LayerCollection.Instance.Selected.Type)
+                    switch (LayerCollection.Instance.Selected.Table.GeometryType)
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
@@ -364,7 +364,9 @@ namespace MapBoard.Main.UI
 
             JudgeControlsEnable();
 
-            if (LayerCollection.Instance.Selected != null && LayerCollection.Instance.Selected.FeatureCount > 0)
+            if (LayerCollection.Instance.Selected != null
+                && LayerCollection.Instance.Selected.Table != null
+                && LayerCollection.Instance.Selected.Table.NumberOfFeatures > 0)
             {
                 Layersetting.ResetLayerSettingUI();
             }
@@ -375,7 +377,7 @@ namespace MapBoard.Main.UI
         {
             if (e.AddedFeatures != null || e.DeletedFeatures != null || e.ChangedFeatures != null)
             {
-                e.Layer.UpdateFeatureCount();
+                e.Layer.NotifyFeatureChanged();
                 if (undoSnakeBar != null)
                 {
                     undoSnakeBar.Hide();

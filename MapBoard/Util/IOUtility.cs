@@ -31,7 +31,7 @@ namespace MapBoard.Main.Util
             LayerInfo layer = LayerCollection.Instance.Selected;
             FileFilterCollection filter = null;
 
-            if (layer.Type != GeometryType.Polygon)
+            if (layer.Table.GeometryType != GeometryType.Polygon)
             {
                 filter = new FileFilterCollection()
                     .Add("CSV表格", "csv")
@@ -289,7 +289,7 @@ namespace MapBoard.Main.Util
             if (LayerCollection.Instance.Selected != null)
             {
                 var layer = LayerCollection.Instance.Selected;
-                if (layer.Type == GeometryType.Point || layer.Type == GeometryType.Polyline)
+                if (layer.Table.GeometryType == GeometryType.Point || layer.Table.GeometryType == GeometryType.Polyline)
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));
                 }

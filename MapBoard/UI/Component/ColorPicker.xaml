@@ -1,8 +1,8 @@
 ﻿<UserControl
-    x:Class="MapBoard.UI.Compoment.ColorPicker"
+    x:Class="MapBoard.Main.UI.Compoment.ColorPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:MapBoard.UI.Compoment"
+    xmlns:local="clr-namespace:MapBoard.Main.UI.Compoment"
     x:Name="picker" Width="15"
     Height="15"
     DataContext="{Binding RelativeSource={RelativeSource Self}}">

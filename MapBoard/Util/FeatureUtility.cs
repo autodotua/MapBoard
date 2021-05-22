@@ -193,14 +193,14 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         private static async Task SimplyBaseAsync(LayerInfo layer, Feature feature,
             Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
-            Debug.Assert(layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline); ;
+            Debug.Assert(layer.Table.GeometryType == GeometryType.Polygon || layer.Table.GeometryType == GeometryType.Polyline); ;
 
             IReadOnlyList<ReadOnlyPart> parts = null;
-            if (layer.Type == GeometryType.Polygon)
+            if (layer.Table.GeometryType == GeometryType.Polygon)
             {
                 parts = (feature.Geometry as Polygon).Parts;
             }
-            else if (layer.Type == GeometryType.Polyline)
+            else if (layer.Table.GeometryType == GeometryType.Polyline)
             {
                 parts = (feature.Geometry as Polyline).Parts;
             }
@@ -210,11 +210,11 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
             {
                 newParts.Add(func(part));
             }
-            if (layer.Type == GeometryType.Polygon)
+            if (layer.Table.GeometryType == GeometryType.Polygon)
             {
                 feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
             }
-            else if (layer.Type == GeometryType.Polyline)
+            else if (layer.Table.GeometryType == GeometryType.Polyline)
             {
                 feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
             }
@@ -412,7 +412,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
             {
                 await DeleteAsync(layerFrom, features);
             }
-            layerTo.UpdateFeatureCount();
+            layerTo.NotifyFeatureChanged();
         }
 
         public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;

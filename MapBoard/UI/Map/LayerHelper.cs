@@ -27,7 +27,7 @@ namespace MapBoard.Main.UI.Map
             {
                 if (layer.Table == null)
                 {
-                    layer.Table = new ShapefileFeatureTable(layer.FileName);
+                    layer.Table = new ShapefileFeatureTable(layer.GetFileName());
                     await layer.Table.LoadAsync();
                 }
                 FeatureLayer fl = new FeatureLayer(layer.Table);

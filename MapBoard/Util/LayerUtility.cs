@@ -1,25 +1,15 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
-using Esri.ArcGISRuntime.Mapping.Labeling;
-using Esri.ArcGISRuntime.Symbology;
 using FzLib.IO;
-using FzLib.UI.Dialog;
-using MapBoard.Common;
-
 using MapBoard.Common;
 
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI;
-using MapBoard.Main.UI.Dialog;
-using MapBoard.Main.UI.Map;
-using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static MapBoard.Common.CoordinateTransformation;
 using LayerCollection = MapBoard.Main.Model.LayerCollection;
@@ -28,6 +18,11 @@ namespace MapBoard.Main.Util
 {
     public static class LayerUtility
     {
+        public static string GetFileName(this LayerInfo layer)
+        {
+            return Path.Combine(Config.DataPath, layer.Name + ".shp");
+        }
+
         public static async Task RemoveLayerAsync(this LayerInfo layer, bool deleteFiles)
         {
             if (LayerCollection.Instance.Contains(layer))
@@ -60,7 +55,7 @@ namespace MapBoard.Main.Util
                 }
                 else
                 {
-                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.FileName));
+                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFileName()));
                 }
             }
             if (fields == null)
@@ -68,12 +63,8 @@ namespace MapBoard.Main.Util
                 fields = new List<FieldInfo>();
             }
             await Shapefile.CreateShapefileAsync(type, name, null, fields);
-            LayerInfo layer = new LayerInfo();
+            LayerInfo layer = template == null ? new LayerInfo() : template.Clone() as LayerInfo;
             layer.Fields = fields.ToArray();
-            if (template != null)
-            {
-                layer.CopyLayerFrom(template);
-            }
             layer.Name = name;
             await LayerCollection.Instance.AddAsync(layer);
             LayerCollection.Instance.Selected = layer;
@@ -86,16 +77,16 @@ namespace MapBoard.Main.Util
             {
                 var features = await LayerCollection.Instance.Selected.GetAllFeaturesAsync();
 
-                var newLayer = await CreateLayerAsync(layer.Type, layer);
+                var newLayer = await CreateLayerAsync(layer.Table.GeometryType, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
 
                 await targetTable.AddFeaturesAsync(features);
-                newLayer.UpdateFeatureCount();
+                newLayer.NotifyFeatureChanged();
                 layer.LayerVisible = false;
             }
             else
             {
-                await CreateLayerAsync(layer.Type, layer);
+                await CreateLayerAsync(layer.Table.GeometryType, layer);
             }
         }
 
@@ -119,7 +110,7 @@ namespace MapBoard.Main.Util
             {
                 await targetTable.AddFeatureAsync(feature);
             }
-            target.UpdateFeatureCount();
+            target.NotifyFeatureChanged();
         }
 
         public static async Task LayerCompleteAsync(this LayerInfo layer)
@@ -216,7 +207,7 @@ namespace MapBoard.Main.Util
             {
                 throw new Exception("图层为空");
             }
-            var type = layers.Select(p => p.Type).Distinct();
+            var type = layers.Select(p => p.Table.GeometryType).Distinct();
             if (type.Count() != 1)
             {
                 throw new Exception("图层的类型并非统一");
@@ -231,7 +222,7 @@ namespace MapBoard.Main.Util
                 await layer.Table.AddFeaturesAsync(features);
                 oldLayer.LayerVisible = false;
             }
-            layer.UpdateFeatureCount();
+            layer.NotifyFeatureChanged();
             //LayerCollection.Instance.Add(style);
             return layer;
         }

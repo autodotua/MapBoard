@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Main.Model
 {
-    public class SymbolInfo : INotifyPropertyChanged
+    public class SymbolInfo : INotifyPropertyChanged, ICloneable
     {
         private double size = 6;
 
@@ -75,6 +75,11 @@ namespace MapBoard.Main.Model
         {
             get => arrow;
             set => this.SetValueAndNotify(ref arrow, value, nameof(Arrow));
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

@@ -93,7 +93,7 @@ namespace MapBoard.Main.IO
                 await layer.Table.AddFeatureAsync(newFeature);
             }
 
-            layer.UpdateFeatureCount();
+            layer.NotifyFeatureChanged();
             layer.LayerVisible = true;
         }
 
@@ -197,7 +197,7 @@ namespace MapBoard.Main.IO
 
         public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
         {
-            var table = await CreateShapefileAsync(layer.Type, layer.Name, directory, layer.Fields);
+            var table = await CreateShapefileAsync(layer.Table.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {

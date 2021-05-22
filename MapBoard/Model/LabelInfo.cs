@@ -24,7 +24,7 @@ using static MapBoard.Main.Util.LayerUtility;
 
 namespace MapBoard.Main.Model
 {
-    public class LabelInfo : INotifyPropertyChanged
+    public class LabelInfo : INotifyPropertyChanged, ICloneable
     {
         private Color backgroundColor = Color.Transparent;
         private Color fontColor = Color.Black;
@@ -127,5 +127,10 @@ namespace MapBoard.Main.Model
         public bool Bold { get; set; }
         public bool Italic { get; set; }
         public string FontFamily { get; set; }
+
+        public object Clone()
+        {
+            return MemberwiseClone() as LabelInfo;
+        }
     }
 }

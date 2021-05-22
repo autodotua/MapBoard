@@ -61,7 +61,7 @@ namespace MapBoard.Main.IO
                     await table.AddFeatureAsync(feature);
                 }
             }
-            layer.UpdateFeatureCount();
+            layer.NotifyFeatureChanged();
             return layer;
         }
 
@@ -95,7 +95,7 @@ namespace MapBoard.Main.IO
 
             foreach (var track in gpx.Tracks)
             {
-                if (layer.Type == GeometryType.Point)
+                if (layer.Table.GeometryType == GeometryType.Point)
                 {
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
@@ -108,11 +108,11 @@ namespace MapBoard.Main.IO
                     importedFeatures = features;
                     await table.AddFeaturesAsync(features);
                 }
-                else if (layer.Type == GeometryType.Multipoint)
+                else if (layer.Table.GeometryType == GeometryType.Multipoint)
                 {
                     throw new Exception("多点暂不支持导入GPX");
                 }
-                else if (layer.Type == GeometryType.Polyline)
+                else if (layer.Table.GeometryType == GeometryType.Polyline)
                 {
                     var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
                     Feature feature = table.CreateFeature();
@@ -126,7 +126,7 @@ namespace MapBoard.Main.IO
                 }
             }
 
-            layer.UpdateFeatureCount();
+            layer.NotifyFeatureChanged();
             return importedFeatures.ToArray();
         }
 

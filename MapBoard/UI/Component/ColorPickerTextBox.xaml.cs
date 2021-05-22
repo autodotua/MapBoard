@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MapBoard.UI.Compoment
+namespace MapBoard.Main.UI.Compoment
 {
     /// <summary>
     /// ColorChooserTextBox.xaml 的交互逻辑

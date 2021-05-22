@@ -29,7 +29,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             InitializeComponent();
             var layers = LayerCollection.Instance;
-            var list = LayerCollection.Instance.Where(p => p.Type == layers.Selected.Type && p != layers.Selected);
+            var list = LayerCollection.Instance.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;

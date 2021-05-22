@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MapBoard.UI.Compoment
+namespace MapBoard.Main.UI.Compoment
 {
     public partial class ColorPicker : UserControl
     {
@@ -75,7 +75,7 @@ namespace MapBoard.UI.Compoment
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Width = advancedColorPickerDialog.Width,
                 Height = advancedColorPickerDialog.Height,
-                Title="选择颜色"
+                Title = "选择颜色"
             };
             _advancedPickerWindow.DragMove();
             _advancedPickerWindow.KeyDown += AdvancedPickerPopUpKeyDown;

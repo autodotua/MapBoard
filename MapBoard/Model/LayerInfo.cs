@@ -4,36 +4,24 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
 using MapBoard.Common;
 
-using MapBoard.Common;
-
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static FzLib.Extension.ExtendedINotifyPropertyChanged;
-using static MapBoard.Common.CoordinateTransformation;
 using static MapBoard.Main.Util.LayerUtility;
 
 namespace MapBoard.Main.Model
 {
+    [DebuggerDisplay("{Name}")]
     public class LayerInfo : INotifyPropertyChanged, ICloneable
     {
         public string Name { get; set; }
 
-        [JsonIgnore]
-        public string FileName => Path.Combine(Config.DataPath, Name + ".shp");
-
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
-
-        [JsonIgnore]
-        public GeometryType Type => table == null ? GeometryType.Unknown : table.GeometryType;
 
         private ShapefileFeatureTable table;
 
@@ -41,15 +29,7 @@ namespace MapBoard.Main.Model
         public ShapefileFeatureTable Table
         {
             get => table;
-            set
-            {
-                //if(value.FeatureLayer==null)
-                //{
-                //    throw new Exception("必须先加入Layer才能设置Table");
-                //}
-                //value.FeatureLayer.IsVisible = LayerVisible;
-                this.SetValueAndNotify(ref table, value, nameof(LayerVisible), nameof(TypeDescription), nameof(FeatureCount));
-            }
+            set => this.SetValueAndNotify(ref table, value, nameof(LayerVisible));
         }
 
         [JsonIgnore]
@@ -59,14 +39,7 @@ namespace MapBoard.Main.Model
 
         public bool LayerVisible
         {
-            get
-            {
-                //if (Layer == null)
-                //{
-                //    return true;
-                //}
-                return layerVisible;
-            }
+            get => layerVisible;
             set
             {
                 layerVisible = value;
@@ -124,85 +97,22 @@ namespace MapBoard.Main.Model
 
         public LabelInfo Label { get; set; } = new LabelInfo();
 
-        public void UpdateFeatureCount()
+        public void NotifyFeatureChanged()
         {
-            this.Notify(nameof(FeatureCount));
+            this.Notify(nameof(Table));
         }
 
-        [JsonIgnore]
-        public long FeatureCount
+        public object Clone()
         {
-            get
+            LayerInfo layer = MemberwiseClone() as LayerInfo;
+            layer.Table = null;
+            foreach (var key in Symbols.Keys.ToList())
             {
-                try
-                {
-                    return Table == null || Table.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded ? 0 : Table.NumberOfFeatures;
-                }
-                catch
-                {
-                    return 0;
-                }
+                layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
             }
-        }
-
-        [JsonIgnore]
-        public string TypeDescription
-        {
-            get
-            {
-                switch (Type)
-                {
-                    case GeometryType.Point:
-                        return "点";
-
-                    case GeometryType.Polygon:
-                        return "折线";
-
-                    case GeometryType.Polyline:
-                        return "多边形";
-
-                    case GeometryType.Multipoint:
-                        return "多点";
-
-                    default:
-                        return "未知";
-                }
-            }
-        }
-
-        public LayerInfo Clone()
-        {
-            return MemberwiseClone() as LayerInfo;
-        }
-
-        object ICloneable.Clone()
-        {
-            return MemberwiseClone();
-        }
-
-        public void CopyLayerFrom(LayerInfo layer)
-        {
-            foreach (var s in layer.Symbols)
-            {
-                Symbols.Add(s.Key, new SymbolInfo()
-                {
-                    FillColor = s.Value.FillColor,
-                    LineColor = s.Value.LineColor,
-                    Size = s.Value.Size,
-                    OutlineWidth = s.Value.OutlineWidth
-                });
-            }
-            Label = layer.Label;
-            this.Notify(
-                nameof(Type),
-                nameof(FeatureCount),
-                nameof(LayerVisible),
-                nameof(TypeDescription));
-        }
-
-        public override string ToString()
-        {
-            return Name;
+            layer.fields = fields == null ? null : fields.Select(p => p.Clone() as FieldInfo).ToArray();
+            layer.Label = Label.Clone() as LabelInfo;
+            return layer;
         }
     }
 }

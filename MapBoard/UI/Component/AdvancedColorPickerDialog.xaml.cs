@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MapBoard.Common.Dialog;
 
-namespace MapBoard.UI.Compoment
+namespace MapBoard.Main.UI.Compoment
 {
     public partial class AdvancedColorPickerDialog
     {

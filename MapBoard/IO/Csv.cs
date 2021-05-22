@@ -142,7 +142,7 @@ namespace MapBoard.Main.IO
             {
                 Feature feature = style.Table.CreateFeature();
                 features.Add(feature);
-                switch (style.Type)
+                switch (style.Table.GeometryType)
                 {
                     case GeometryType.Multipoint:
                         feature.Geometry = new Multipoint(part);

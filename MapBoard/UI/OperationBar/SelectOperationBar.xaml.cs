@@ -54,17 +54,21 @@ namespace MapBoard.Main.UI.OperationBar
             btnRedraw.IsEnabled = count == 1;
             btnMoreAttributes.IsEnabled = count == 1;
             LayerInfo layer = LayerCollection.Instance.Selected;
-            btnCut.IsEnabled = layer.Type == GeometryType.Polygon || layer.Type == GeometryType.Polyline;
+            btnCut.IsEnabled = layer.Table.GeometryType == GeometryType.Polygon
+                || layer.Table.GeometryType == GeometryType.Polyline;
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
             if (layer.Table.GeometryType == GeometryType.Polyline)//线
             {
-                double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+                double length = MapView.Selection.SelectedFeatures.Sum(p =>
+                GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
             else if (layer.Table.GeometryType == GeometryType.Polygon)//面
             {
-                double length = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
-                double area = MapView.Selection.SelectedFeatures.Sum(p => GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+                double length = MapView.Selection.SelectedFeatures.Sum(p =>
+                GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+                double area = MapView.Selection.SelectedFeatures.Sum(p =>
+                GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，周长：" + Number.MeterToFitString(length));
                 sb.Append("，面积：" + Number.SquareMeterToFitString(area));
             }
@@ -182,19 +186,19 @@ namespace MapBoard.Main.UI.OperationBar
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
                 ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
-                (layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)
+                (layer.Table.GeometryType==GeometryType.Polygon || layer.Table.GeometryType==GeometryType.Polyline)
                 && features.Length>1),
                 ("分离","将拥有多个部分的图形分离为单独的图形",
-                SeparateAsync,(layer.Type==GeometryType.Polygon || layer.Type==GeometryType.Polyline)),
-                ("连接","将折线的端点互相连接",LinkAsync,layer.Type==GeometryType.Polyline
+                SeparateAsync,(layer.Table.GeometryType==GeometryType.Polygon || layer.Table.GeometryType==GeometryType.Polyline)),
+                ("连接","将折线的端点互相连接",LinkAsync,layer.Table.GeometryType==GeometryType.Polyline
                 && features.Length>1
                 && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
                 ("反转","交换点的顺序",ReverseAsync,
-                layer.Type==GeometryType.Polyline||layer.Type==GeometryType.Polygon),
+                layer.Table.GeometryType==GeometryType.Polyline||layer.Table.GeometryType==GeometryType.Polygon),
                 ("加密","在每两个折点之间添加更多的点",DensifyAsync,
-                (layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon)),
+                (layer.Table.GeometryType==GeometryType.Polyline|| layer.Table.GeometryType==GeometryType.Polygon)),
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
-                layer.Type==GeometryType.Polyline|| layer.Type==GeometryType.Polygon),
+                layer.Table.GeometryType==GeometryType.Polyline|| layer.Table.GeometryType==GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
                 ("导出CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
             };

@@ -25,7 +25,7 @@ namespace MapBoard.Main.Model
         Text
     }
 
-    public class FieldInfo : INotifyPropertyChanged
+    public class FieldInfo : INotifyPropertyChanged, ICloneable
     {
         private string displayName = "";
         private string name = "";
@@ -80,6 +80,11 @@ namespace MapBoard.Main.Model
         {
             get => type;
             set => this.SetValueAndNotify(ref type, value, nameof(Type));
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

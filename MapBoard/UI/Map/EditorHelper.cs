@@ -115,7 +115,7 @@ namespace MapBoard.Main.UI.Map
                 Attributes.SaveToFeature(feature);
                 await table.AddFeatureAsync(feature);
 
-                LayerCollection.Instance.Selected.UpdateFeatureCount();
+                LayerCollection.Instance.Selected.NotifyFeatureChanged();
             }
         }
 

@@ -146,6 +146,7 @@
       <DependentUpon>ColorPickerTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Component\LayerDataGridHelper.cs" />
+    <Compile Include="UI\Converter\GeometryTypeDescriptionConverter.cs" />
     <Compile Include="UI\Dialog\CreateLayerDialog.xaml.cs">
       <DependentUpon>CreateLayerDialog.xaml</DependentUpon>
     </Compile>
@@ -288,7 +289,6 @@
       <SubType>Code</SubType>
     </Compile>
     <None Include="app.manifest" />
-    <None Include="MapBoard_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

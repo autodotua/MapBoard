@@ -149,7 +149,7 @@ namespace MapBoard.Main.UI.Panel
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
             }
 
-            switch (layer.Type)
+            switch (layer.Table.GeometryType)
             {
                 case Esri.ArcGISRuntime.Geometry.GeometryType.Point:
                 case Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint:

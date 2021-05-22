@@ -60,12 +60,12 @@ namespace MapBoard.Main.UI.Panel
             {
                 menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
-                    ("缩放到图层", ZoomToLayerAsync,layer.FeatureCount > 0),
+                    ("缩放到图层", ZoomToLayerAsync,layer.Table!=null&&layer.Table.NumberOfFeatures > 0),
                     ("属性表", ShowAttributeTableAsync,true),
                     ("复制", CopyFeaturesAsync,true),
                     ("删除",async l=>await DeleteSelectedLayersAsync(),true),
                     null,
-                    ("建立缓冲区",BufferAsync,layer.Type==GeometryType.Polyline || layer.Type==GeometryType.Point|| layer.Type==GeometryType.Multipoint),
+                    ("建立缓冲区",BufferAsync,layer.Table.GeometryType==GeometryType.Polyline || layer.Table.GeometryType==GeometryType.Point|| layer.Table.GeometryType==GeometryType.Multipoint),
                     ("新建副本", CreateCopyAsync,true),
                     ("坐标转换",CoordinateTransformateAsync,true),
                     ("设置时间范围",SetTimeExtentAsync,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
@@ -80,7 +80,7 @@ namespace MapBoard.Main.UI.Panel
                 menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
                     ("合并",async l=>await LayerUtility. UnionAsync(layers)
-                    ,layers.Select(p=>p.Type).Distinct().Count()==1),
+                    ,layers.Select(p=>p.Table.GeometryType).Distinct().Count()==1),
                     ("删除",async l=>await DeleteSelectedLayersAsync(),true),
                 };
             }

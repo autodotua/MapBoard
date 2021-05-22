@@ -88,7 +88,7 @@ namespace MapBoard.Main.IO
                     {
                         symbol = layer.Symbols[""];
                     }
-                    switch (layer.Type)
+                    switch (layer.Table.GeometryType)
                     {
                         case GeometryType.Point:
                             placemark.Style.LabelStyle = new KmlLabelStyle(symbol.FillColor, symbol.Size);

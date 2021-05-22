@@ -4,13 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.OperationBar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+    xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="地图画板" Width="1000"
+    Title="地图画板"
+    Width="1000"
     Height="700"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -19,7 +21,9 @@
     Loaded="WindowLoaded"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Window.Resources />
+    <Window.Resources>
+        <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -38,11 +42,14 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
-                    VerticalAlignment="Center" FontSize="13"
+                    VerticalAlignment="Center"
+                    FontSize="13"
                     Text="地图画板" />
                 <ui:TitleBarButton
-                    Grid.Column="2" Width="NaN"
-                    Padding="16,0" FontSize="13"
+                    Grid.Column="2"
+                    Width="NaN"
+                    Padding="16,0"
+                    FontSize="13"
                     Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
@@ -55,7 +62,8 @@
                     </ui:FlyoutService.Flyout>
                 </ui:TitleBarButton>
                 <ui:TitleBarButton
-                    Grid.Column="4" Width="NaN"
+                    Grid.Column="4"
+                    Width="NaN"
                     Padding="16,0"
                     Click="SettingButton_Click"
                     FontSize="13"
@@ -67,7 +75,8 @@
             </Grid>
         </Border>
         <Grid
-            x:Name="grdMain" Grid.Row="2"
+            x:Name="grdMain"
+            Grid.Row="2"
             ClipToBounds="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -106,12 +115,15 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                    Grid.Column="2" Width="10"
-                    Height="80" Margin="4,0,8,0"
+                    Grid.Column="2"
+                    Width="10"
+                    Height="80"
+                    Margin="4,0,8,0"
                     VerticalAlignment="Center"
                     Click="LayerSettingOpenCloseButton_Click" />
                 <Grid
-                    x:Name="grdLeft" Width="300"
+                    x:Name="grdLeft"
+                    Width="300"
                     Margin="4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -128,7 +140,8 @@
 
                         <panel:LayerSettingPanel x:Name="Layersetting" />
                         <StackPanel
-                            Grid.Row="100" Grid.ColumnSpan="100"
+                            Grid.Row="100"
+                            Grid.ColumnSpan="100"
                             Margin="0,0,12,0"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
@@ -177,13 +190,16 @@
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn
                                     Binding="{Binding Name}"
-                                    Header="图层名" IsReadOnly="True" />
+                                    Header="图层名"
+                                    IsReadOnly="True" />
                                 <DataGridTextColumn
-                                    Binding="{Binding TypeDescription}"
-                                    Header="类型" IsReadOnly="True" />
+                                    Binding="{Binding Table.GeometryType, Converter={StaticResource gtdc}}"
+                                    Header="类型"
+                                    IsReadOnly="True" />
                                 <DataGridTextColumn
-                                    Binding="{Binding FeatureCount}"
-                                    Header="图形数量" IsReadOnly="True" />
+                                    Binding="{Binding Table.NumberOfFeatures}"
+                                    Header="图形数量"
+                                    IsReadOnly="True" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
@@ -202,17 +218,21 @@
                         </Grid.RowDefinitions>
                         <Button
                             HorizontalAlignment="Stretch"
-                            Click="AddBtnClick" Content="添加" />
+                            Click="AddBtnClick"
+                            Content="添加" />
                         <Button
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
-                            Click="ImportBtnClick" Content="导入" />
+                            Click="ImportBtnClick"
+                            Content="导入" />
                         <Button
                             Grid.Column="4"
                             HorizontalAlignment="Stretch"
-                            Click="ExportBtnClick" Content="导出" />
+                            Click="ExportBtnClick"
+                            Content="导出" />
                         <Button
-                            Grid.Row="0" Grid.Column="6"
+                            Grid.Row="0"
+                            Grid.Column="6"
                             HorizontalAlignment="Stretch"
                             Click="OpenFolderButtonClick"
                             Content="目录" />
@@ -226,13 +246,15 @@
 
                         <ui:SplitButton
                             HorizontalAlignment="Stretch"
-                            Content="绘制" IsEnabled="False"
+                            Content="绘制"
+                            IsEnabled="False"
                             Tag="always" />
 
                         <ui:SplitButton
                             x:Name="splBtnPolyline"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多段线"
+                            Click="DrawButtonsClick"
+                            Content="多段线"
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
@@ -243,7 +265,8 @@
                         <ui:SplitButton
                             x:Name="splBtnPolygon"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多边形"
+                            Click="DrawButtonsClick"
+                            Content="多边形"
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
@@ -260,16 +283,19 @@
                         <ui:SplitButton
                             x:Name="splBtnPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="点"
+                            Click="DrawButtonsClick"
+                            Content="点"
                             Visibility="Collapsed" />
                         <ui:SplitButton
                             x:Name="splBtnMultiPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick" Content="多点"
+                            Click="DrawButtonsClick"
+                            Content="多点"
                             Visibility="Collapsed" />
 
                         <Button
-                            x:Name="btnSelect" Grid.Column="2"
+                            x:Name="btnSelect"
+                            Grid.Column="2"
                             Click="SelectToggleButtonClick"
                             FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
@@ -289,7 +315,8 @@
                 </Grid>
             </Grid>
             <fzextension:ProgressRingOverlay
-                x:Name="loading" Grid.RowSpan="100"
+                x:Name="loading"
+                Grid.RowSpan="100"
                 Grid.ColumnSpan="100" />
         </Grid>
     </Grid>
