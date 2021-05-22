@@ -1,52 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using Esri.ArcGISRuntime.UI;
-using FzLib.Basic.Collection;
 using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
-using MapBoard.Common;
-
 using MapBoard.Common;
 
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
-using ModernWpf.Controls;
 using ModernWpf.FzExtension.CommonDialog;
-
-using System;
-using System.Collections.Generic;
-
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-
-using System.Linq;
-using System.Threading.Tasks;
 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
-using static FzLib.Basic.Loop;
 using MapBoard.Main.UI.Map;
+using ModernWpf.Controls;
+using ListView = System.Windows.Controls.ListView;
 
 namespace MapBoard.Main.UI.Panel
 {
     public class LayerListPanelHelper
     {
-        private readonly DataGrid dataGrid;
+        private readonly ListView dataGrid;
 
         public MainWindow Window { get; }
 
-        public LayerListPanelHelper(DataGrid dataGrid, MainWindow window)
+        public LayerListPanelHelper(ListView list, MainWindow window)
         {
-            this.dataGrid = dataGrid;
+            this.dataGrid = list;
             Window = window;
         }
 
@@ -64,6 +47,7 @@ namespace MapBoard.Main.UI.Panel
                     ("属性表", ShowAttributeTableAsync,true),
                     ("复制", CopyFeaturesAsync,true),
                     ("删除",async l=>await DeleteSelectedLayersAsync(),true),
+                    ("修改字段显示名", EditFieldDisplayAsync,true),
                     null,
                     ("建立缓冲区",BufferAsync,layer.Table.GeometryType==GeometryType.Polyline || layer.Table.GeometryType==GeometryType.Point|| layer.Table.GeometryType==GeometryType.Multipoint),
                     ("新建副本", CreateCopyAsync,true),
@@ -124,6 +108,13 @@ namespace MapBoard.Main.UI.Panel
             {
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer);
             }
+        }
+
+        private async Task EditFieldDisplayAsync(LayerInfo layer)
+        {
+            ArcMapView.Instance.Selection.ClearSelection();
+            CreateLayerDialog dialog = new CreateLayerDialog(layer);
+            await dialog.ShowAsync();
         }
 
         private async Task CreateCopyAsync(LayerInfo layer)
@@ -225,6 +216,7 @@ namespace MapBoard.Main.UI.Panel
 
         public void RightButtonClickToSelect(MouseEventArgs e)
         {
+            return;
             if (dataGrid.SelectedItems.Count > 1)
             {
                 return;

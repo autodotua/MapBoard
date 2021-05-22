@@ -92,7 +92,7 @@ namespace MapBoard.Main.UI
             BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             LayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
-            var lvwHelper = new LayerDataGridHelper(dataGrid);
+            var lvwHelper = new LayerListViewHelper(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
             LayerCollection.Instance.PropertyChanged += (p1, p2) =>
@@ -145,14 +145,8 @@ namespace MapBoard.Main.UI
             dataGrid.SelectedItem = null;
         }
 
-        private async void CreateStyleButtonClick(object sender, RoutedEventArgs e)
+        private async void CreateLayerButtonClick(object sender, RoutedEventArgs e)
         {
-            //await CommonDialog.ShowSelectItemDialogAsync("请选择需要创建的图层类型", new DialogItem[]
-            //  {
-            //    new DialogItem("点","零维",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Point)),
-            //    new DialogItem("折线","一维（线）",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Polyline)),
-            //    new DialogItem("多边形","二维（面）",async()=>await LayerUtility.CreateLayerAsync(GeometryType.Polygon)),
-            //  });
             await new CreateLayerDialog().ShowAsync();
         }
 

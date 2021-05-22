@@ -29,15 +29,17 @@
     </commondialog:CommonDialog.Resources>
     <ui:SimpleStackPanel Spacing="8">
         <TextBox ui:ControlHelper.Header="图层名" Text="{Binding LayerName}" />
-        <Grid>
+        <Grid Width="360" x:Name="grdType">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <RadioButton x:Name="rbtnPoint" IsChecked="True">点</RadioButton>
-            <RadioButton x:Name="rbtnPolyline" Grid.Column="1">折线</RadioButton>
-            <RadioButton x:Name="rbtnPolygon" Grid.Column="2">多边形</RadioButton>
+            <RadioButton x:Name="rbtnMultiPoint" Grid.Column="1">多点</RadioButton>
+            <RadioButton x:Name="rbtnPolyline" Grid.Column="2">折线</RadioButton>
+            <RadioButton x:Name="rbtnPolygon" Grid.Column="3">多边形</RadioButton>
         </Grid>
         <TextBlock>默认字段：</TextBlock>
         <DataGrid
@@ -63,8 +65,8 @@
             CellEditEnding="dg_CellEditEnding"
             ItemsSource="{Binding Fields}">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="字段名" />
-                <DataGridTextColumn Binding="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Header="显示名称" />
+                <DataGridTextColumn Width="128" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="字段名" />
+                <DataGridTextColumn Width="128" Binding="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Header="显示名称" />
                 <DataGridTemplateColumn Header="类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

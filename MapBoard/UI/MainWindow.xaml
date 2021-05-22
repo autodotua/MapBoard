@@ -11,8 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="地图画板"
-    Width="1000"
+    Title="地图画板" Width="1000"
     Height="700"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -42,14 +41,11 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="13"
+                    VerticalAlignment="Center" FontSize="13"
                     Text="地图画板" />
                 <ui:TitleBarButton
-                    Grid.Column="2"
-                    Width="NaN"
-                    Padding="16,0"
-                    FontSize="13"
+                    Grid.Column="2" Width="NaN"
+                    Padding="16,0" FontSize="13"
                     Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
@@ -62,8 +58,7 @@
                     </ui:FlyoutService.Flyout>
                 </ui:TitleBarButton>
                 <ui:TitleBarButton
-                    Grid.Column="4"
-                    Width="NaN"
+                    Grid.Column="4" Width="NaN"
                     Padding="16,0"
                     Click="SettingButton_Click"
                     FontSize="13"
@@ -75,8 +70,7 @@
             </Grid>
         </Border>
         <Grid
-            x:Name="grdMain"
-            Grid.Row="2"
+            x:Name="grdMain" Grid.Row="2"
             ClipToBounds="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -115,15 +109,12 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                    Grid.Column="2"
-                    Width="10"
-                    Height="80"
-                    Margin="4,0,8,0"
+                    Grid.Column="2" Width="10"
+                    Height="80" Margin="4,0,8,0"
                     VerticalAlignment="Center"
                     Click="LayerSettingOpenCloseButton_Click" />
                 <Grid
-                    x:Name="grdLeft"
-                    Width="300"
+                    x:Name="grdLeft" Width="300"
                     Margin="4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -140,8 +131,7 @@
 
                         <panel:LayerSettingPanel x:Name="Layersetting" />
                         <StackPanel
-                            Grid.Row="100"
-                            Grid.ColumnSpan="100"
+                            Grid.Row="100" Grid.ColumnSpan="100"
                             Margin="0,0,12,0"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
@@ -157,7 +147,7 @@
                             <TextBlock Text="  " />
                             <Button
                                 x:Name="btnCreateStyle"
-                                Click="CreateStyleButtonClick"
+                                Click="CreateLayerButtonClick"
                                 Content="新建图层" />
                         </StackPanel>
                     </ui:SimpleStackPanel>
@@ -167,41 +157,62 @@
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <DataGrid
+                        <ListView
                             x:Name="dataGrid"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            HeadersVisibility="Column"
                             ItemsSource="{Binding Layers}"
                             PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
                             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
-                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
                             SelectedItem="{Binding Layers.Selected, Mode=OneWay}"
-                            SelectionChanged="SelectedLayerChanged"
-                            SelectionUnit="FullRow">
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Width="64" Header="显示">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox Margin="16,0,0,0" IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn
-                                    Binding="{Binding Name}"
-                                    Header="图层名"
-                                    IsReadOnly="True" />
-                                <DataGridTextColumn
-                                    Binding="{Binding Table.GeometryType, Converter={StaticResource gtdc}}"
-                                    Header="类型"
-                                    IsReadOnly="True" />
-                                <DataGridTextColumn
-                                    Binding="{Binding Table.NumberOfFeatures}"
-                                    Header="图形数量"
-                                    IsReadOnly="True" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                            SelectionChanged="SelectedLayerChanged">
+                            <ListBox.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource {x:Type ListBoxItem}}" TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="DockPanel.Dock" Value="Bottom" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <DockPanel LastChildFill="False" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="8,-4" HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="72" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="128" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="4" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <CheckBox
+                                            Grid.RowSpan="99"
+                                            VerticalAlignment="Center"
+                                            FocusVisualStyle="{x:Null}"
+                                            IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock
+                                            Grid.Column="2" Grid.ColumnSpan="99"
+                                            FontWeight="Bold"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Grid.Row="2" Grid.Column="2"
+                                            Text="{Binding Table.GeometryType, Converter={StaticResource gtdc}}" />
+                                        <TextBlock
+                                            Grid.Row="2" Grid.Column="4"
+                                            HorizontalAlignment="Left">
+                                            <Run Text="{Binding Table.NumberOfFeatures, Mode=OneWay}" />
+                                            <Run>个图形</Run>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
                     </Grid>
                     <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>
@@ -218,21 +229,17 @@
                         </Grid.RowDefinitions>
                         <Button
                             HorizontalAlignment="Stretch"
-                            Click="AddBtnClick"
-                            Content="添加" />
+                            Click="AddBtnClick" Content="添加" />
                         <Button
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
-                            Click="ImportBtnClick"
-                            Content="导入" />
+                            Click="ImportBtnClick" Content="导入" />
                         <Button
                             Grid.Column="4"
                             HorizontalAlignment="Stretch"
-                            Click="ExportBtnClick"
-                            Content="导出" />
+                            Click="ExportBtnClick" Content="导出" />
                         <Button
-                            Grid.Row="0"
-                            Grid.Column="6"
+                            Grid.Row="0" Grid.Column="6"
                             HorizontalAlignment="Stretch"
                             Click="OpenFolderButtonClick"
                             Content="目录" />
@@ -246,15 +253,13 @@
 
                         <ui:SplitButton
                             HorizontalAlignment="Stretch"
-                            Content="绘制"
-                            IsEnabled="False"
+                            Content="绘制" IsEnabled="False"
                             Tag="always" />
 
                         <ui:SplitButton
                             x:Name="splBtnPolyline"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多段线"
+                            Click="DrawButtonsClick" Content="多段线"
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
@@ -265,8 +270,7 @@
                         <ui:SplitButton
                             x:Name="splBtnPolygon"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多边形"
+                            Click="DrawButtonsClick" Content="多边形"
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
@@ -283,19 +287,16 @@
                         <ui:SplitButton
                             x:Name="splBtnPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="点"
+                            Click="DrawButtonsClick" Content="点"
                             Visibility="Collapsed" />
                         <ui:SplitButton
                             x:Name="splBtnMultiPoint"
                             HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多点"
+                            Click="DrawButtonsClick" Content="多点"
                             Visibility="Collapsed" />
 
                         <Button
-                            x:Name="btnSelect"
-                            Grid.Column="2"
+                            x:Name="btnSelect" Grid.Column="2"
                             Click="SelectToggleButtonClick"
                             FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
@@ -315,8 +316,7 @@
                 </Grid>
             </Grid>
             <fzextension:ProgressRingOverlay
-                x:Name="loading"
-                Grid.RowSpan="100"
+                x:Name="loading" Grid.RowSpan="100"
                 Grid.ColumnSpan="100" />
         </Grid>
     </Grid>

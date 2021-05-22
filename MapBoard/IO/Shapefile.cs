@@ -120,17 +120,14 @@ namespace MapBoard.Main.IO
                     .IncludeDefaultFields();
             }
 
-            //NtsShapefile.CreateShapefile(path, type, esriFields);
-            CreateShapefile(type, name, folder, fields);
+            CreateEgisShapefile(type, name, folder, fields);
             path = path + ".shp";
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            //var feature = (await table.QueryFeaturesAsync(new QueryParameters())).First();
-            //await table.DeleteFeatureAsync(feature);
             return table;
         }
 
-        public static void CreateShapefile(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
+        public static void CreateEgisShapefile(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
         {
             ShapeType egisType;
             switch (type)
@@ -148,7 +145,7 @@ namespace MapBoard.Main.IO
                     break;
 
                 case GeometryType.Multipoint:
-                    egisType = ShapeType.MultiPoint;
+                    egisType = ShapeType.Point;
                     break;
 
                 default:
@@ -188,10 +185,22 @@ namespace MapBoard.Main.IO
                 };
                 egisFields.Add(f);
             }
-
             using ShapeFileWriter sfw = ShapeFileWriter.CreateWriter(folder, name, egisType, egisFields.ToArray());
-
             sfw.Close();
+            //EGIS无法创建多点，因此创建点以后手动修改类型
+            //类型位于shape文件的[32..35]，大端序，点、折线、多边形、多点分别为1、3、5、8
+            if (type == GeometryType.Multipoint)
+            {
+                var shpPath = Path.Combine(folder, name + ".shp");
+                var bytes = File.ReadAllBytes(shpPath);
+                var current = bytes[32];
+                if (current != 1)
+                {
+                    throw new Exception("类型字节应为1，实际为" + current);
+                }
+                bytes[32] = 8;
+                File.WriteAllBytes(shpPath, bytes);
+            }
             File.WriteAllText(Path.Combine(folder, name + ".prj"), SpatialReferences.Wgs84.WkText);
         }
 

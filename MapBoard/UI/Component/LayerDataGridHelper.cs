@@ -12,6 +12,18 @@ using MapBoard.Main.Model;
 
 namespace MapBoard.Main.UI.Component
 {
+    public class LayerListViewHelper : ItemControlHelper<ListView, ListViewItem>
+    {
+        public LayerListViewHelper(ListView view) : base(view)
+        {
+        }
+
+        protected override IList GetSelectedItems()
+        {
+            return View.SelectedItems;
+        }
+    }
+
     public class LayerDataGridHelper : ItemControlHelper<DataGrid, DataGridRow>
     {
         public LayerDataGridHelper(DataGrid view) : base(view)
