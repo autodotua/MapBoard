@@ -35,8 +35,9 @@
                 MaxHeight="320"
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
-                <TextBlock
-                    Margin="0,8,0,0"
+                <TextBox
+                    Margin="0,8,0,0" BorderThickness="0"
+                    IsReadOnly="True"
                     Text="{Binding Detail}"
                     TextWrapping="Wrap" />
             </ScrollViewer>
