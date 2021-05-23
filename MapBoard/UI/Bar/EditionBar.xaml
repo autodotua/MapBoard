@@ -1,5 +1,5 @@
 ﻿<local:BarBase
-    x:Class="MapBoard.Main.UI.Bar.EditBar"
+    x:Class="MapBoard.Main.UI.Bar.EditionBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="clr-namespace:FzLib.UI.Converter;assembly=FzUILib.WPF"
@@ -105,9 +105,9 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid x:Name="grdProperties"
-            Grid.Row="2" Grid.RowSpan="99"
-            Grid.Column="2"
+        <Grid
+            x:Name="grdProperties" Grid.Row="2"
+            Grid.RowSpan="99" Grid.Column="2"
             HorizontalAlignment="Right">
 
             <Grid.ColumnDefinitions>
@@ -135,6 +135,7 @@
             <TextBlock VerticalAlignment="Center" Text="标签：" />
             <TextBox
                 x:Name="txtLabel" Grid.Column="2"
+                PreviewKeyDown="TextBox_PreviewKeyDown"
                 Text="{Binding MapView.Editor.Attributes.Label}" />
             <TextBlock
                 Grid.Row="2" Grid.Column="4"
@@ -142,6 +143,7 @@
             <TextBox
                 x:Name="txtDate" Grid.Row="2"
                 Grid.Column="6"
+                PreviewKeyDown="TextBox_PreviewKeyDown"
                 Text="{Binding MapView.Editor.Attributes.Date, TargetNullValue='', StringFormat='{}{0:yyyy-MM-dd}'}" />
             <TextBlock
                 Grid.Row="4" Grid.Column="8"
@@ -150,6 +152,7 @@
             <TextBox
                 x:Name="txtKey" Grid.Row="4"
                 Grid.Column="10"
+                PreviewKeyDown="TextBox_PreviewKeyDown"
                 Text="{Binding MapView.Editor.Attributes.Key}" />
             <Button
                 x:Name="btnMoreAttributes"

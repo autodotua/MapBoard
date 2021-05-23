@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -11,9 +12,10 @@ namespace MapBoard.Main.UI.Map
 {
     public class OverlayHelper
     {
-        public OverlayHelper()
+        public OverlayHelper(GraphicsOverlayCollection overlays, Func<Geometry, Task> zoomAsync)
         {
-            Mapview.GraphicsOverlays.Add(headAndTailOverlay);
+            overlays.Add(headAndTailOverlay);
+            this.zoomAsync = zoomAsync;
         }
 
         private Symbol GetSymbol(string text, Color outlineColor)
@@ -33,8 +35,8 @@ namespace MapBoard.Main.UI.Map
             return symbol;
         }
 
-        public ArcMapView Mapview => ArcMapView.Instance;
         private GraphicsOverlay headAndTailOverlay = new GraphicsOverlay();
+        private readonly Func<Geometry, Task> zoomAsync;
 
         public void ClearHeadAndTail()
         {
@@ -59,7 +61,7 @@ namespace MapBoard.Main.UI.Map
                 headAndTailOverlay.Graphics.Add(g1);
                 headAndTailOverlay.Graphics.Add(g2);
             }
-            await Mapview.ZoomToGeometryAsync(headAndTailOverlay.Extent);
+            await zoomAsync(headAndTailOverlay.Extent);
         }
     }
 }

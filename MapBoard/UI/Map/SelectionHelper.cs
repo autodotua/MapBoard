@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,47 +12,72 @@ namespace MapBoard.Main.UI.Map
 {
     public class SelectionHelper
     {
-        public SelectionHelper()
+        private bool isClearing = false;
+
+        public SelectionHelper(ArcMapView map)
         {
-            Mapview.GeoViewTapped += MapviewTapped;
-            SelectedFeatures.CollectionChanged += (s, e) =>
-              {
-                  if (SelectedFeatures.Count == 0 && BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
-                  {
-                      BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
-                  }
-                  else if (SelectedFeatures.Count != 0 && BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select)
-                  {
-                      BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Select;
-                  }
-              };
+            map.GeoViewTapped += MapviewTapped;
+            SelectedFeatures.CollectionChanged += SelectedFeatures_CollectionChanged;
+            MapView = map;
+            Editor.EditorStatusChanged += Editor_EditorStatusChanged;
         }
 
-        private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
+        public EditorHelper Editor => MapView.Editor;
+
+        public MapLayerCollection Layers => MapView.Layers;
+
+        public ArcMapView MapView { get; }
+
+        public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
+
+        public void ClearSelection()
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw || MapLayerCollection.Instance.Selected == null
-                || !MapLayerCollection.Instance.Selected.LayerVisible
-                || BoardTaskManager.CurrentTask != BoardTaskManager.BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            isClearing = true;
+            Editor.Cancel();
+            foreach (var layer in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).ToHashSet())
+            {
+                layer.ClearSelection();
+            }
+            SelectedFeatures.Clear();
+            isClearing = false;
+        }
+
+        public bool Select(Feature feature, bool clearAll = false)
+        {
+            var layer = feature.FeatureTable.Layer as FeatureLayer;
+            if (layer == null)
+            {
+                return false;
+            }
+            if (clearAll && SelectedFeatures.Count > 0)
+            {
+                (SelectedFeatures[0].FeatureTable.Layer as FeatureLayer).ClearSelection();
+                SelectedFeatures.Clear();
+            }
+            if (SelectedFeatures.Any(p => p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
+            {
+                return false;
+            }
+            layer.SelectFeature(feature);
+            SelectedFeatures.Add(feature);
+            return true;
+        }
+
+        public void Select(IEnumerable<Feature> features)
+        {
+            var layer = Layers.Selected?.Layer;
+            if (layer == null)
             {
                 return;
             }
-            //if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
-            //{
-            //    Mapview.SketchEditor.Stop();
-            //}
-            MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
-            double tolerance = Mapview.MapScale / 1e8;
-            Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
-
-            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects);
+            layer.SelectFeatures(features);
+            SelectedFeatures.AddRange(features);
         }
-
-        public ArcMapView Mapview => ArcMapView.Instance;
 
         public async Task SelectRectangleAsync()
         {
             ClearSelection();
-            var envelope = await Mapview.Editor.GetRectangleAsync();
+            var envelope = await Editor.GetRectangleAsync();
             if (envelope != null)
             {
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
@@ -66,14 +92,27 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        public void ClearSelection()
+        private void Editor_EditorStatusChanged(object sender, EditorStatusChangedEventArgs e)
         {
-            Mapview.Editor.Cancel();
-            foreach (var layer in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).ToHashSet())
+            if (!isClearing && !e.IsRunning)
             {
-                layer.ClearSelection();
+                ClearSelection();
             }
-            SelectedFeatures.Clear();
+        }
+
+        private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
+        {
+            if (MapView.CurrentTask == BoardTask.Draw || Layers.Selected == null
+                || !Layers.Selected.LayerVisible
+                || MapView.CurrentTask != BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                return;
+            }
+            MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
+            double tolerance = MapView.MapScale / 1e8;
+            Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
+
+            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects);
         }
 
         private async Task SelectAsync(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
@@ -90,7 +129,7 @@ namespace MapBoard.Main.UI.Map
                  QueryParameters query = new QueryParameters();
                  query.Geometry = envelope;
                  query.SpatialRelationship = relationship;
-                 FeatureLayer layer = MapLayerCollection.Instance.Selected?.Layer;
+                 FeatureLayer layer = Layers.Selected?.Layer;
                  if (layer == null)
                  {
                      return;
@@ -129,38 +168,16 @@ namespace MapBoard.Main.UI.Map
              });
         }
 
-        public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
-
-        public bool Select(Feature feature, bool clearAll = false)
+        private void SelectedFeatures_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            var layer = feature.FeatureTable.Layer as FeatureLayer;
-            if (layer == null)
+            if (SelectedFeatures.Count == 0 && MapView.CurrentTask == BoardTask.Select)
             {
-                return false;
+                MapView.CurrentTask = BoardTask.Ready;
             }
-            if (clearAll && SelectedFeatures.Count > 0)
+            else if (SelectedFeatures.Count != 0 && MapView.CurrentTask != BoardTask.Select)
             {
-                (SelectedFeatures[0].FeatureTable.Layer as FeatureLayer).ClearSelection();
-                SelectedFeatures.Clear();
+                MapView.CurrentTask = BoardTask.Select;
             }
-            if (SelectedFeatures.Any(p => p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
-            {
-                return false;
-            }
-            layer.SelectFeature(feature);
-            ArcMapView.Instance.Selection.SelectedFeatures.Add(feature);
-            return true;
-        }
-
-        public void Select(IEnumerable<Feature> features)
-        {
-            var layer = MapLayerCollection.Instance.Selected?.Layer;
-            if (layer == null)
-            {
-                return;
-            }
-            layer.SelectFeatures(features);
-            ArcMapView.Instance.Selection.SelectedFeatures.AddRange(features);
         }
     }
 }

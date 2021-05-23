@@ -6,6 +6,7 @@ using MapBoard.Common;
 
 using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
+using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
@@ -61,7 +62,7 @@ namespace MapBoard.Main.IO
         /// 导入shapefile文件
         /// </summary>
         /// <param name="path"></param>
-        public async static Task ImportAsync(string path)
+        public async static Task ImportAsync(string path, MapLayerCollection layers)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
@@ -70,7 +71,7 @@ namespace MapBoard.Main.IO
             bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
-            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType,
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
                 null, Path.GetFileNameWithoutExtension(path),
                 table.Fields.FromEsriFields().ToList());
             layer.LayerVisible = false;

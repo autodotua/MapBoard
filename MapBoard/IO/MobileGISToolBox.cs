@@ -23,14 +23,14 @@ namespace MapBoard.Main.IO
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
         }
 
-        public static async Task ExportMapAsync(string path)
+        public static async Task ExportMapAsync(string path, LayerCollection layers)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);
             Directory.CreateDirectory(tempStyleDir);
-            foreach (var layer in MapLayerCollection.Instance)
+            foreach (var layer in layers)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());

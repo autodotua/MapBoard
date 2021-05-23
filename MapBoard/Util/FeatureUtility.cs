@@ -15,7 +15,7 @@ namespace MapBoard.Main.Util
 {
     public static class FeatureUtility
     {
-        public static async Task UnionAsync(LayerInfo layer, Feature[] features)
+        public static async Task<Feature> UnionAsync(LayerInfo layer, Feature[] features)
         {
             Geometry geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
             var firstFeature = features.First();
@@ -24,9 +24,10 @@ namespace MapBoard.Main.Util
             await layer.Table.AddFeatureAsync(newFeature);
             FeaturesGeometryChanged?.Invoke(null,
                 new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
+            return newFeature;
         }
 
-        public static async Task SeparateAsync(LayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> SeparateAsync(LayerInfo layer, Feature[] features)
         {
             List<Feature> deleted = new List<Feature>();
             List<Feature> added = new List<Feature>();
@@ -53,9 +54,10 @@ namespace MapBoard.Main.Util
                 FeaturesGeometryChanged?.Invoke(null,
        new FeaturesGeometryChangedEventArgs(layer, added, deleted, null));
             }
+            return added.AsReadOnly();
         }
 
-        public static async Task LinkAsync(LayerInfo layer, Feature[] features, bool headToHead, bool reverse)
+        public static async Task<Feature> LinkAsync(LayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
             if (features.Length <= 1)
@@ -107,9 +109,10 @@ namespace MapBoard.Main.Util
             await layer.Table.DeleteFeaturesAsync(features);
             FeaturesGeometryChanged?.Invoke(null,
     new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
+            return newFeature;
         }
 
-        public static async Task ReverseAsync(LayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> ReverseAsync(LayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features.ToList())
@@ -132,6 +135,7 @@ namespace MapBoard.Main.Util
             }
             FeaturesGeometryChanged?.Invoke(null,
 new FeaturesGeometryChangedEventArgs(layer, newFeatures, features, null));
+            return newFeatures.AsReadOnly();
         }
 
         public static async Task DensifyAsync(LayerInfo layer, Feature[] features, double max)
@@ -319,7 +323,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
 new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
         }
 
-        public static async Task CreateCopyAsync(LayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(LayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features)
@@ -328,10 +332,9 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
                 newFeatures.Add(newFeature);
             }
             await layer.Table.AddFeaturesAsync(newFeatures);
-            ArcMapView.Instance.Selection.ClearSelection();
-            ArcMapView.Instance.Selection.Select(newFeatures);
             FeaturesGeometryChanged?.Invoke(null,
 new FeaturesGeometryChangedEventArgs(layer, newFeatures, null, null));
+            return newFeatures.AsReadOnly();
         }
 
         public static async Task DeleteAsync(LayerInfo layer, Feature[] features)
@@ -341,7 +344,7 @@ new FeaturesGeometryChangedEventArgs(layer, newFeatures, null, null));
 new FeaturesGeometryChangedEventArgs(layer, null, features, null));
         }
 
-        public static async Task CutAsync(LayerInfo layer, Feature[] features, Polyline clipLine)
+        public static async Task<IReadOnlyList<Feature>> CutAsync(LayerInfo layer, Feature[] features, Polyline clipLine)
         {
             List<Feature> added = new List<Feature>();
             foreach (var feature in features)
@@ -364,6 +367,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
             await layer.Table.DeleteFeaturesAsync(features);
             FeaturesGeometryChanged?.Invoke(null,
     new FeaturesGeometryChangedEventArgs(layer, added, features, null));
+            return added;
         }
 
         private static List<MapPoint> GetPoints(Feature feature)
@@ -389,9 +393,8 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
             return points;
         }
 
-        public static async Task CopyOrMoveAsync(LayerInfo layerFrom, LayerInfo layerTo, Feature[] features, bool copy)
+        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(LayerInfo layerFrom, LayerInfo layerTo, Feature[] features, bool copy)
         {
-            MapLayerCollection.Instance.Selected.LayerVisible = false;
             layerTo.LayerVisible = true;
             ShapefileFeatureTable targetTable = layerTo.Table;
             var newFeatures = new List<Feature>();
@@ -414,6 +417,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                 await DeleteAsync(layerFrom, features);
             }
             layerTo.NotifyFeatureChanged();
+            return newFeatures.AsReadOnly();
         }
 
         public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;

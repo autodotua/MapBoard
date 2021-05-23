@@ -87,22 +87,22 @@
                     <map:ArcMapView x:Name="arcMap" />
                 </Border>
 
-                <bar:EditBar
+                <bar:EditionBar
                     x:Name="editBar"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top">
-                    <bar:EditBar.RenderTransform>
+                    <bar:EditionBar.RenderTransform>
                         <TranslateTransform Y="-56" />
-                    </bar:EditBar.RenderTransform>
-                </bar:EditBar>
-                <bar:SelectBar
+                    </bar:EditionBar.RenderTransform>
+                </bar:EditionBar>
+                <bar:SelectionBar
                     x:Name="selectBar"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top">
-                    <bar:SelectBar.RenderTransform>
+                    <bar:SelectionBar.RenderTransform>
                         <TranslateTransform Y="-56" />
-                    </bar:SelectBar.RenderTransform>
-                </bar:SelectBar>
+                    </bar:SelectionBar.RenderTransform>
+                </bar:SelectionBar>
                 <bar:MeasureBar
                     x:Name="measureBar"
                     HorizontalAlignment="Stretch"
@@ -140,7 +140,7 @@
                     </Grid.RowDefinitions>
                     <ui:SimpleStackPanel Spacing="12">
 
-                        <panel:LayerSettingPanel x:Name="Layersetting" />
+                        <panel:LayerSettingPanel x:Name="layerSettings" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
                             Margin="0,0,12,0"
@@ -170,11 +170,10 @@
                         </Grid.RowDefinitions>
                         <ListView
                             x:Name="dataGrid"
-                            ItemsSource="{Binding Layers}"
                             PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
                             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
-                            SelectedItem="{Binding Layers.Selected, Mode=OneWay}"
-                            SelectionChanged="SelectedLayerChanged">
+                            SelectionChanged="SelectedLayerChanged"
+                            SelectionMode="Extended">
                             <ListBox.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource {x:Type ListBoxItem}}" TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="DockPanel.Dock" Value="Bottom" />
@@ -238,14 +237,15 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Button
+                            Grid.Column="4"
                             HorizontalAlignment="Stretch"
                             Click="AddBtnClick" Content="添加" />
                         <Button
-                            Grid.Column="2"
+                            Grid.Column="0"
                             HorizontalAlignment="Stretch"
                             Click="ImportBtnClick" Content="导入" />
                         <Button
-                            Grid.Column="4"
+                            Grid.Column="2"
                             HorizontalAlignment="Stretch"
                             Click="ExportBtnClick" Content="导出" />
                         <Button

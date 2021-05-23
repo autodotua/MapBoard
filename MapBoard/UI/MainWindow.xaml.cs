@@ -7,6 +7,7 @@ using FzLib.UI.Extension;
 using MapBoard.Common;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Bar;
 using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
@@ -52,13 +53,13 @@ namespace MapBoard.Main.UI
         };
 
         public Config Config => Config.Instance;
-        private MapLayerCollection layers;
+        //private MapLayerCollection layers;
 
-        public MapLayerCollection Layers
-        {
-            get => layers;
-            private set => this.SetValueAndNotify(ref layers, value, nameof(Layers));
-        }
+        //public MapLayerCollection Layers
+        //{
+        //    get => layers;
+        //    private set => this.SetValueAndNotify(ref layers, value, nameof(Layers));
+        //}
 
         private LayerListPanelHelper layerListHelper;
 
@@ -81,23 +82,23 @@ namespace MapBoard.Main.UI
             {
                 return;
             }
-            await IOUtility.DropFilesAsync(files);
+            await IOUtility.DropFilesAsync(files, arcMap.Layers);
         }
 
         private void RegistEvents()
         {
             arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
-            BoardTaskManager.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            MapLayerCollection.Instance.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
+            arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
+            arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
             var lvwHelper = new LayerListViewHelper(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
-            MapLayerCollection.Instance.PropertyChanged += (p1, p2) =>
+            arcMap.Layers.PropertyChanged += (p1, p2) =>
               {
-                  if (p2.PropertyName == nameof(MapLayerCollection.Instance.Selected) && !changingStyle)
+                  if (p2.PropertyName == nameof(arcMap.Layers.Selected) && !changingSelection)
                   {
-                      dataGrid.SelectedItem = MapLayerCollection.Instance.Selected;
+                      dataGrid.SelectedItem = arcMap.Layers.Selected;
                   }
               };
         }
@@ -112,8 +113,8 @@ namespace MapBoard.Main.UI
             }
             e.Cancel = true;
             Config.Save();
-            MapLayerCollection.Instance.Save();
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw)
+            arcMap.Layers.Save();
+            if (arcMap.CurrentTask == BoardTask.Draw)
             {
                 await CommonDialog.ShowErrorDialogAsync("请先结束绘制");
                 return;
@@ -121,7 +122,7 @@ namespace MapBoard.Main.UI
             Hide();
             if (Config.BackupWhenExit)
             {
-                await Package.BackupAsync(Config.MaxBackupCount);
+                await Package.BackupAsync(arcMap.Layers, Config.MaxBackupCount);
             }
             closing = true;
             Close();
@@ -129,12 +130,12 @@ namespace MapBoard.Main.UI
 
         #endregion 窗体启动与关闭
 
-        private bool changingStyle = false;
+        private bool changingSelection = false;
 
         private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
-            await Layersetting.SetStyleFromUI();
-            MapLayerCollection.Instance.Save();
+            await layerSettings.SetStyleFromUI();
+            arcMap.Layers.Save();
         }
 
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
@@ -144,7 +145,7 @@ namespace MapBoard.Main.UI
 
         private async void CreateLayerButtonClick(object sender, RoutedEventArgs e)
         {
-            await new CreateLayerDialog().ShowAsync();
+            await new CreateLayerDialog(arcMap.Layers).ShowAsync();
         }
 
         private async void DrawButtonsClick(SplitButton sender, SplitButtonClickEventArgs args)
@@ -164,23 +165,23 @@ namespace MapBoard.Main.UI
                 SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
                 return;
             }
-            await IOUtility.ExportMapAsync();
+            await IOUtility.ExportMapAsync(arcMap, arcMap.Layers);
         }
 
         private async void ImportBtnClick(object sender, RoutedEventArgs e)
         {
-            await DoAsync(IOUtility.ImportPackageAsync);
+            await DoAsync(() => IOUtility.ImportPackageAsync(arcMap.Layers));
         }
 
         private async void AddBtnClick(object sender, RoutedEventArgs e)
         {
-            await DoAsync(IOUtility.AddLayerAsync);
+            await DoAsync(() => IOUtility.AddLayerAsync(arcMap.Layers));
         }
 
         private void JudgeControlsEnable()
         {
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw
-                || BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            if (arcMap.CurrentTask == BoardTask.Draw
+                || arcMap.CurrentTask == BoardTask.Select)
             {
                 grdLeft.IsEnabled = false;
             }
@@ -196,18 +197,18 @@ namespace MapBoard.Main.UI
                 }
                 grdLeft.IsEnabled = true;
             }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = Layersetting.IsEnabled = MapLayerCollection.Instance.Selected != null;
+            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = layerSettings.IsEnabled = arcMap.Layers.Selected != null;
 
             if (IsLoaded)
             {
-                btnSelect.IsEnabled = MapLayerCollection.Instance.Selected != null;
-                grdButtons.IsEnabled = MapLayerCollection.Instance.Selected == null || MapLayerCollection.Instance.Selected.LayerVisible;
+                btnSelect.IsEnabled = arcMap.Layers.Selected != null;
+                grdButtons.IsEnabled = arcMap.Layers.Selected == null || arcMap.Layers.Selected.LayerVisible;
 
                 var buttons = grdButtons.Children.OfType<SplitButton>();
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
-                if (MapLayerCollection.Instance.Selected != null)
+                if (arcMap.Layers.Selected != null)
                 {
-                    switch (MapLayerCollection.Instance.Selected.Table.GeometryType)
+                    switch (arcMap.Layers.Selected.Table.GeometryType)
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
@@ -295,18 +296,18 @@ namespace MapBoard.Main.UI
 
         private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
         {
-            changingStyle = true;
+            changingSelection = true;
             if (dataGrid.SelectedItems.Count == 1)
             {
-                Layers.Selected = dataGrid.SelectedItem as LayerInfo;
+                arcMap.Layers.Selected = dataGrid.SelectedItem as LayerInfo;
             }
             else
             {
-                Layers.Selected = null;
+                arcMap.Layers.Selected = null;
             }
-            changingStyle = false;
+            changingSelection = false;
             JudgeControlsEnable();
-            Layersetting.ResetLayerSettingUI();
+            layerSettings.ResetLayerSettingUI();
         }
 
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
@@ -325,7 +326,7 @@ namespace MapBoard.Main.UI
             {
                 text = (sender as MenuItem).Header as string;
             }
-            if (BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select)
+            if (arcMap.CurrentTask == BoardTask.Select)
             {
                 arcMap.Selection.ClearSelection();
             }
@@ -335,30 +336,38 @@ namespace MapBoard.Main.UI
             await arcMap.Editor.DrawAsync(mode);
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            InitializeAsync();
+            await InitializeAsync();
         }
 
         public async Task InitializeAsync()
         {
-            MapLayerCollection.LayerInstanceChanged += (p1, p2) =>
+            await arcMap.LoadAsync();
+            layerSettings.MapView = arcMap;
+            foreach (var bar in new BarBase[] { editBar, selectBar, measureBar })
             {
-                Layers = MapLayerCollection.Instance;
+                bar.MapView = arcMap;
+                bar.Initialize();
+            }
+            dataGrid.ItemsSource = arcMap.Layers;
+            dataGrid.SelectedItem = arcMap.Layers.Selected;
+            arcMap.Layers.PropertyChanged += (p1, p2) =>
+            {
+                if (p2.PropertyName == nameof(arcMap.Layers.Selected) && !changingSelection)
+                {
+                    dataGrid.SelectedItem = arcMap.Layers.Selected;
+                }
             };
-            await arcMap.LoadBasemapAsync();
-            await MapLayerCollection.LoadInstanceAsync();
-            await arcMap.ZoomToLastExtent();
             RegistEvents();
-            layerListHelper = new LayerListPanelHelper(dataGrid, this);
-
+            layerListHelper = new LayerListPanelHelper(dataGrid, p => DoAsync(p), arcMap);
             JudgeControlsEnable();
 
-            if (MapLayerCollection.Instance.Selected != null
-                && MapLayerCollection.Instance.Selected.Table != null
-                && MapLayerCollection.Instance.Selected.Table.NumberOfFeatures > 0)
+            if (arcMap.Layers.Selected != null
+                && arcMap.Layers.Selected.Table != null
+                && arcMap.Layers.Selected.Table.NumberOfFeatures > 0)
             {
-                Layersetting.ResetLayerSettingUI();
+                layerSettings.ResetLayerSettingUI();
             }
             FeatureUtility.FeaturesGeometryChanged += FeatureUtility_FeaturesGeometryChanged;
         }

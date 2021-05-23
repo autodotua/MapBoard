@@ -15,10 +15,10 @@ namespace MapBoard.Main.UI.Map
 {
     public class EditorHelper : INotifyPropertyChanged
     {
-        public EditorHelper(SketchEditor sketch)
+        public EditorHelper(ArcMapView mapView)
         {
-            SketchEditor = sketch;
-            sketch.GeometryChanged += Sketch_GeometryChanged;
+            MapView = mapView;
+            SketchEditor.GeometryChanged += Sketch_GeometryChanged;
         }
 
         private void Sketch_GeometryChanged(object sender, GeometryChangedEventArgs e)
@@ -70,7 +70,9 @@ namespace MapBoard.Main.UI.Map
         /// </summary>
         public EditMode Mode { get; private set; }
 
-        public SketchEditor SketchEditor { get; }
+        public SketchEditor SketchEditor => MapView.SketchEditor;
+        public MapLayerCollection Layers => MapView.Layers;
+        public ArcMapView MapView { get; }
 
         /// <summary>
         /// 停止并不保存
@@ -92,15 +94,13 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
-            Mode = EditMode.Creat;
-
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
+            StartDraw(EditMode.Creat);
             if (Attributes != null)
             {
                 var label = Attributes.Label;
                 var key = Attributes.Key;
                 var date = Attributes.Date;
-                Attributes = FeatureAttributes.Empty(MapLayerCollection.Instance.Selected);
+                Attributes = FeatureAttributes.Empty(Layers.Selected);
                 if (Config.Instance.RemainLabel)
                 {
                     Attributes.Label = label;
@@ -116,19 +116,19 @@ namespace MapBoard.Main.UI.Map
             }
             else
             {
-                Attributes = FeatureAttributes.Empty(MapLayerCollection.Instance.Selected);
+                Attributes = FeatureAttributes.Empty(Layers.Selected);
             }
             await SketchEditor.StartAsync(mode);
             if (geometry != null)
             {
-                ShapefileFeatureTable table = MapLayerCollection.Instance.Selected.Table;
+                ShapefileFeatureTable table = Layers.Selected.Table;
 
                 Feature feature = table.CreateFeature();
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
                 await table.AddFeatureAsync(feature);
 
-                MapLayerCollection.Instance.Selected.NotifyFeatureChanged();
+                Layers.Selected.NotifyFeatureChanged();
             }
         }
 
@@ -138,10 +138,8 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task EditAsync(LayerInfo layer, Feature feature)
         {
-            Mode = EditMode.Edit;
+            StartDraw(EditMode.Edit);
             Attributes = FeatureAttributes.FromFeature(layer, feature);
-
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
             await SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
             if (geometry != null)
             {
@@ -157,10 +155,7 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task<Polyline> GetPolylineAsync()
         {
-            Mode = EditMode.GetLine;
-
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
-
+            StartDraw(EditMode.GetLine);
             await SketchEditor.StartAsync(SketchCreationMode.Polyline);
             if (geometry is Polyline line)
             {
@@ -175,16 +170,21 @@ namespace MapBoard.Main.UI.Map
 
         public async Task MeasureLength()
         {
-            Mode = EditMode.MeasureLength;
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
+            StartDraw(EditMode.MeasureLength);
             await SketchEditor.StartAsync(SketchCreationMode.Polyline);
         }
 
         public async Task MeasureArea()
         {
-            Mode = EditMode.MeasureArea;
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Draw;
+            StartDraw(EditMode.MeasureArea);
             await SketchEditor.StartAsync(SketchCreationMode.Polygon);
+        }
+
+        private void StartDraw(EditMode mode)
+        {
+            Mode = mode;
+            MapView.CurrentTask = BoardTask.Draw;
+            EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(true));
         }
 
         /// <summary>
@@ -205,15 +205,13 @@ namespace MapBoard.Main.UI.Map
             Debug.WriteLine("停止绘制");
             Mode = EditMode.None;
             SketchEditor.Stop();
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Ready;
+            EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(false));
+            MapView.CurrentTask = BoardTask.Ready;
         }
 
         public async Task<Envelope> GetRectangleAsync()
         {
-            Debug.WriteLine("开始绘制");
-            Mode = EditMode.GetRectangle;
-
-            BoardTaskManager.CurrentTask = BoardTaskManager.BoardTask.Select;
+            StartDraw(EditMode.GetRectangle);
             var geometry = await SketchEditor.StartAsync(SketchCreationMode.Rectangle, false);
             StopAndSave();
             if (geometry is Polygon rect)
@@ -222,5 +220,17 @@ namespace MapBoard.Main.UI.Map
             }
             return null;
         }
+
+        public event EventHandler<EditorStatusChangedEventArgs> EditorStatusChanged;
+    }
+
+    public class EditorStatusChangedEventArgs : EventArgs
+    {
+        public EditorStatusChangedEventArgs(bool isRunning)
+        {
+            IsRunning = isRunning;
+        }
+
+        public bool IsRunning { get; set; }
     }
 }

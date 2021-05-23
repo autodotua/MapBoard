@@ -35,12 +35,16 @@ namespace MapBoard.Main.UI.Bar
     /// <summary>
     /// EditBar.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectBar : BarBase
+    public partial class SelectionBar : BarBase
     {
-        public SelectBar()
+        public SelectionBar()
         {
             InitializeComponent();
-            BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
+        }
+
+        public override void Initialize()
+        {
+            MapView.BoardTaskChanged += BoardTaskChanged;
             Application.Current.MainWindow.SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             Application.Current.MainWindow.LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
         }
@@ -53,7 +57,7 @@ namespace MapBoard.Main.UI.Bar
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
             btnMoreAttributes.IsEnabled = count == 1;
-            LayerInfo layer = MapLayerCollection.Instance.Selected;
+            LayerInfo layer = Layers.Selected;
             btnCut.IsEnabled = layer.Table.GeometryType == GeometryType.Polygon
                 || layer.Table.GeometryType == GeometryType.Polyline;
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
@@ -77,7 +81,7 @@ namespace MapBoard.Main.UI.Bar
             if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
             {
                 var mainWindow = Application.Current.MainWindow;
-                selectFeatureDialog = new SelectFeatureDialog();
+                selectFeatureDialog = new SelectFeatureDialog(MapView.Selection, MapView.Layers);
                 selectFeatureDialog.Show();
             }
 
@@ -96,9 +100,9 @@ namespace MapBoard.Main.UI.Bar
 
         public override FeatureAttributes Attributes => attributes;
 
-        private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
+        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTaskManager.BoardTask.Select)
+            if (e.NewTask == BoardTask.Select)
             {
                 MapView.Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
                 SelectedFeaturesChanged(null, null);
@@ -110,8 +114,6 @@ namespace MapBoard.Main.UI.Bar
                 Hide();
             }
         }
-
-        public ArcMapView MapView => ArcMapView.Instance;
 
         private string message = "正在编辑";
 
@@ -129,8 +131,8 @@ namespace MapBoard.Main.UI.Bar
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                await FeatureUtility.DeleteAsync(MapLayerCollection.Instance.Selected, ArcMapView.Instance.Selection.SelectedFeatures.ToArray());
-                ArcMapView.Instance.Selection.ClearSelection();
+                await FeatureUtility.DeleteAsync(Layers.Selected, MapView.Selection.SelectedFeatures.ToArray());
+                MapView.Selection.ClearSelection();
             }, true);
         }
 
@@ -138,29 +140,30 @@ namespace MapBoard.Main.UI.Bar
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                SelectLayerDialog dialog = new SelectLayerDialog();
+                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
                     bool copy = await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
 
-                    await FeatureUtility.CopyOrMoveAsync(MapLayerCollection.Instance.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
-                    MapLayerCollection.Instance.Selected.LayerVisible = false;
+                    Layers.Selected.LayerVisible = false;
+                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    Layers.Selected.LayerVisible = false;
                     dialog.SelectedLayer.LayerVisible = false;
                     MapView.Selection.ClearSelection();
-                    MapLayerCollection.Instance.Selected = dialog.SelectedLayer;
+                    Layers.Selected = dialog.SelectedLayer;
                 }
             });
         }
 
         private async void CutButtonClick(object sender, RoutedEventArgs e)
         {
-            var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
+            var features = MapView.Selection.SelectedFeatures.ToArray();
             var line = await MapView.Editor.GetPolylineAsync();
             if (line != null)
             {
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
-                    await FeatureUtility.CutAsync(MapLayerCollection.Instance.Selected, features, line);
+                    await FeatureUtility.CutAsync(Layers.Selected, features, line);
                 }, true);
             }
         }
@@ -169,8 +172,8 @@ namespace MapBoard.Main.UI.Bar
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
             var feature = MapView.Selection.SelectedFeatures[0];
-            ArcMapView.Instance.Selection.ClearSelection();
-            await MapView.Editor.EditAsync(MapLayerCollection.Instance.Selected, feature);
+            MapView.Selection.ClearSelection();
+            await MapView.Editor.EditAsync(Layers.Selected, feature);
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -182,9 +185,9 @@ namespace MapBoard.Main.UI.Bar
         {
             ContextMenu menu = new ContextMenu();
 
-            var layer = MapLayerCollection.Instance.Selected;
+            var layer = Layers.Selected;
 
-            var features = ArcMapView.Instance.Selection.SelectedFeatures.ToArray();
+            var features = MapView.Selection.SelectedFeatures.ToArray();
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
                 ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
@@ -255,7 +258,7 @@ namespace MapBoard.Main.UI.Bar
                 List<DialogItem> typeList = new List<DialogItem>();
                 bool headToHead = false;
                 bool reverse = false;
-                if (ArcMapView.Instance.Selection.SelectedFeatures.Count == 2)
+                if (MapView.Selection.SelectedFeatures.Count == 2)
                 {
                     typeList.Add(new DialogItem("起点相连", "起始点与起始点相连接", () => headToHead = true));
                     typeList.Add(new DialogItem("终点相连", "终结点与终结点相连接", () => headToHead = reverse = true));
@@ -271,7 +274,7 @@ namespace MapBoard.Main.UI.Bar
                 int result = await CommonDialog.ShowSelectItemDialogAsync(
                     "请选择连接类型", typeList, "查看图形起点和终点", async () =>
                      {
-                         await ArcMapView.Instance.Overlay.ShowHeadAndTailOfFeatures(features);
+                         await MapView.Overlay.ShowHeadAndTailOfFeatures(features);
                          SnakeBar snake = new SnakeBar(Window.GetWindow(this))
                          {
                              ShowButton = true,
@@ -280,7 +283,7 @@ namespace MapBoard.Main.UI.Bar
                          };
                          snake.ButtonClick += async (p1, p2) =>
                           {
-                              ArcMapView.Instance.Overlay.ClearHeadAndTail();
+                              MapView.Overlay.ClearHeadAndTail();
                               snake.Hide();
                               await LinkAsync();
                           };
@@ -358,16 +361,18 @@ namespace MapBoard.Main.UI.Bar
                         break;
                 }
             }
-            Task CreateCopyAsync()
+            async Task CreateCopyAsync()
             {
-                return FeatureUtility.CreateCopyAsync(layer, features);
+                MapView.Selection.ClearSelection();
+                var newFeatures = await FeatureUtility.CreateCopyAsync(layer, features);
+                MapView.Selection.Select(newFeatures);
             }
             async Task ToCsvAsync()
             {
                 string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv"), ensureExtension: true, defaultFileName: "图形");
                 if (path != null)
                 {
-                    await Csv.ExportAsync(ArcMapView.Instance.Selection.SelectedFeatures, path);
+                    await Csv.ExportAsync(MapView.Selection.SelectedFeatures, path);
 
                     SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
                     {

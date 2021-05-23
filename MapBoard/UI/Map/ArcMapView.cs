@@ -2,10 +2,12 @@
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.Main.Util;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,31 +18,48 @@ namespace MapBoard.Main.UI.Map
 {
     public class ArcMapView : MapView, INotifyPropertyChanged
     {
+        private static List<ArcMapView> instances = new List<ArcMapView>();
+        public static IReadOnlyList<ArcMapView> Instances => instances.AsReadOnly();
+
         public ArcMapView()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                throw new Exception("不允许多实例");
-            }
+            instances.Add(this);
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
             ViewInsets = new Thickness(8);
             this.SetHideWatermark();
-            Selection = new SelectionHelper();
-            Editor = new EditorHelper(SketchEditor);
-            Layer = new LayerHelper();
-            Overlay = new OverlayHelper();
-            ViewpointChanged += ArcMapView_ViewpointChanged;
+
             InteractionOptions = new MapViewInteractionOptions()
             {
                 IsRotateEnabled = true
             };
         }
+
+        /// <summary>
+        /// 画板当前任务
+        /// </summary>
+        private static BoardTask currentTask = BoardTask.Ready;
+
+        /// <summary>
+        /// 画板当前任务
+        /// </summary>
+        public BoardTask CurrentTask
+        {
+            get => currentTask;
+            set
+            {
+                if (currentTask != value)
+                {
+                    BoardTask oldTask = currentTask;
+                    currentTask = value;
+
+                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(oldTask, value));
+                }
+            }
+        }
+
+        public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
         private double startRotation = 0;
         private Point startPosition = default;
@@ -90,18 +109,27 @@ namespace MapBoard.Main.UI.Map
 
         private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
         {
-            if (MapLayerCollection.IsInstanceLoaded
+            if (Layers != null
                 && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
             {
-                MapLayerCollection.Instance.MapViewExtentJson = envelope.ToJson();
+                Layers.MapViewExtentJson = envelope.ToJson();
             }
         }
 
-        public static ArcMapView Instance { get; private set; }
-        public SelectionHelper Selection { get; }
-        public EditorHelper Editor { get; }
-        public LayerHelper Layer { get; }
-        public OverlayHelper Overlay { get; set; }
+        public SelectionHelper Selection { get; private set; }
+        public EditorHelper Editor { get; private set; }
+        public OverlayHelper Overlay { get; private set; }
+        public MapLayerCollection Layers { get; private set; }
+
+        public async Task LoadAsync()
+        {
+            await LoadBasemapAsync();
+            Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
+            ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
+            Editor = new EditorHelper(this);
+            Selection = new SelectionHelper(this);
+            Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
+        }
 
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
@@ -129,32 +157,32 @@ namespace MapBoard.Main.UI.Map
                     SketchEditor.RemoveSelectedVertex();
                     break;
 
-                case Key.Delete when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Select:
+                case Key.Delete when CurrentTask == BoardTask.Select:
                     await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                    {
-                       await FeatureUtility.DeleteAsync(MapLayerCollection.Instance.Selected, Selection.SelectedFeatures.ToArray());
+                       await FeatureUtility.DeleteAsync(Layers.Selected, Selection.SelectedFeatures.ToArray());
                        Selection.ClearSelection();
                    }, true);
                     break;
 
                 case Key.Space:
                 case Key.Enter:
-                    switch (BoardTaskManager.CurrentTask)
+                    switch (CurrentTask)
                     {
-                        case BoardTaskManager.BoardTask.Draw:
+                        case BoardTask.Draw:
                             Editor.StopAndSave();
                             break;
 
-                        case BoardTaskManager.BoardTask.Ready
+                        case BoardTask.Ready
                         when Editor.CurrentDrawMode.HasValue
-                        && MapLayerCollection.Instance.Selected != null
-                        && MapLayerCollection.Instance.Selected.LayerVisible:
+                        && Layers.Selected != null
+                        && Layers.Selected.LayerVisible:
                             await Editor.DrawAsync(Editor.CurrentDrawMode.Value);
                             break;
                     }
                     break;
 
-                case Key.Escape when BoardTaskManager.CurrentTask == BoardTaskManager.BoardTask.Draw:
+                case Key.Escape when CurrentTask == BoardTask.Draw:
                     Editor.Cancel();
                     break;
 
@@ -178,11 +206,11 @@ namespace MapBoard.Main.UI.Map
 
         public async Task ZoomToLastExtent()
         {
-            if (MapLayerCollection.Instance.MapViewExtentJson != null)
+            if (Layers.MapViewExtentJson != null)
             {
                 try
                 {
-                    await ZoomToGeometryAsync(Envelope.FromJson(MapLayerCollection.Instance.MapViewExtentJson), false);
+                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
                 }
                 catch
                 {
@@ -194,5 +222,36 @@ namespace MapBoard.Main.UI.Map
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
         }
+    } /// <summary>
+
+      /// 画板任务类型
+      /// </summary>
+    public enum BoardTask
+    {
+        Ready,
+        Draw,
+        Select,
+    }
+
+    /// <summary>
+    /// 画板任务改变事件参数
+    /// </summary>
+    public class BoardTaskChangedEventArgs : EventArgs
+    {
+        public BoardTaskChangedEventArgs(BoardTask oldTask, BoardTask newTask)
+        {
+            OldTask = oldTask;
+            NewTask = newTask;
+        }
+
+        /// <summary>
+        /// 旧任务
+        /// </summary>
+        public BoardTask OldTask { get; private set; }
+
+        /// <summary>
+        /// 新任务
+        /// </summary>
+        public BoardTask NewTask { get; private set; }
     }
 }

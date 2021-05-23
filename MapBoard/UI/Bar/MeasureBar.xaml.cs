@@ -18,7 +18,11 @@ namespace MapBoard.Main.UI.Bar
         public MeasureBar()
         {
             InitializeComponent();
-            BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
+        }
+
+        public override void Initialize()
+        {
+            MapView.BoardTaskChanged += BoardTaskChanged;
             MapView.Editor.GeometryChanged += Editor_GeometryChanged;
         }
 
@@ -71,7 +75,6 @@ namespace MapBoard.Main.UI.Bar
         private double barHeight = 28;
         public override double BarHeight => barHeight;
 
-        public ArcMapView MapView => ArcMapView.Instance;
         private string lengthTitle;
 
         public string LengthTitle
@@ -104,9 +107,9 @@ namespace MapBoard.Main.UI.Bar
             set => this.SetValueAndNotify(ref area, value, nameof(Area));
         }
 
-        private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
+        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTaskManager.BoardTask.Draw)
+            if (e.NewTask == BoardTask.Draw)
             {
                 switch (MapView.Editor.Mode)
                 {

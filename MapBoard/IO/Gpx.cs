@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using FzLib.IO;
 using MapBoard.Common;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<LayerInfo> ImportToNewLayerAsync(string path, GpxImportType type)
+        public async static Task<LayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -28,7 +29,8 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            LayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline, name: Path.GetFileNameWithoutExtension(newName));
+            LayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
+                layers, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
@@ -63,9 +65,9 @@ namespace MapBoard.Main.IO
             return layer;
         }
 
-        public async static Task<LayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type)
+        public async static Task<LayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers)
         {
-            var layer = await ImportToNewLayerAsync(paths[0], type);
+            var layer = await ImportToNewLayerAsync(paths[0], type, layers);
             for (int i = 1; i < paths.Length; i++)
             {
                 await ImportToLayerAsync(paths[i], layer);

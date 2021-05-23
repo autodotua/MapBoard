@@ -77,6 +77,11 @@ namespace MapBoard.Main.Model
             return layers.IndexOf(layer);
         }
 
+        public bool Contains(LayerInfo layer)
+        {
+            return layers.Contains(layer);
+        }
+
         public void Save(string path)
         {
             JObject json = new JObject();

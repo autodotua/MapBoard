@@ -27,11 +27,6 @@ namespace MapBoard.Main.IO
             await kml.SaveAsAsync(path);
         }
 
-        public static Task ExportAsync(string path)
-        {
-            return ExportAsync(path, MapLayerCollection.Instance);
-        }
-
         public async static Task ExportAsync(string path, IEnumerable<LayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();

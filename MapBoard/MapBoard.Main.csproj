@@ -131,7 +131,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BoardTaskManager.cs" />
     <Compile Include="IO\Kml.cs" />
     <Compile Include="Model\Extension\FeatureAttributeExtension.cs" />
     <Compile Include="Model\Extension\FieldExtension.cs" />
@@ -198,11 +197,11 @@
     <Compile Include="UI\Dialog\CoordinateTransformationDialog.xaml.cs">
       <DependentUpon>CoordinateTransformationDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Bar\SelectBar.xaml.cs">
-      <DependentUpon>SelectBar.xaml</DependentUpon>
+    <Compile Include="UI\Bar\SelectionBar.xaml.cs">
+      <DependentUpon>SelectionBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Bar\EditBar.xaml.cs">
-      <DependentUpon>EditBar.xaml</DependentUpon>
+    <Compile Include="UI\Bar\EditionBar.xaml.cs">
+      <DependentUpon>EditionBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Bar\BarBase.cs" />
     <Compile Include="UI\Dialog\SelectLayerDialog.xaml.cs">
@@ -272,11 +271,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Bar\SelectBar.xaml">
+    <Page Include="UI\Bar\SelectionBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Bar\EditBar.xaml">
+    <Page Include="UI\Bar\EditionBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

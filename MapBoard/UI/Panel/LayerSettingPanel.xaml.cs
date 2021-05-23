@@ -36,6 +36,9 @@ namespace MapBoard.Main.UI.Panel
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
 
+        public ArcMapView MapView { get; set; }
+        public MapLayerCollection Layers => MapView.Layers;
+
         public string[] Fonts { get; }
 
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
@@ -69,7 +72,7 @@ namespace MapBoard.Main.UI.Panel
 
         public async Task SetStyleFromUI()
         {
-            var layer = MapLayerCollection.Instance.Selected;
+            var layer = Layers.Selected;
 
             layer.Symbols.Clear();
             foreach (var keySymbol in Keys)
@@ -80,7 +83,7 @@ namespace MapBoard.Main.UI.Panel
             string newName = LayerName;
             if (newName != layer.Name)
             {
-                int index = MapLayerCollection.Instance.IndexOf(MapLayerCollection.Instance.Selected);
+                int index = Layers.IndexOf(Layers.Selected);
 
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
                 {
@@ -93,7 +96,7 @@ namespace MapBoard.Main.UI.Panel
                 }
                 try
                 {
-                    await LayerUtility.RemoveLayerAsync(MapLayerCollection.Instance.Selected, false);
+                    await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
                     foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
                     {
                         File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
@@ -106,7 +109,7 @@ namespace MapBoard.Main.UI.Panel
                 }
             end:
                 layer.Table = null;
-                await MapLayerCollection.Instance.InsertAsync(index, layer);
+                await Layers.InsertAsync(index, layer);
             }
             try
             {
@@ -121,7 +124,7 @@ namespace MapBoard.Main.UI.Panel
 
         public void ResetLayerSettingUI()
         {
-            LayerInfo layer = MapLayerCollection.Instance.Selected;
+            LayerInfo layer = Layers.Selected;
             if (!IsLoaded || layer == null)
             {
                 return;
@@ -171,7 +174,7 @@ namespace MapBoard.Main.UI.Panel
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
-            Label.MinScale = ArcMapView.Instance.MapScale;
+            Label.MinScale = MapView.MapScale;
         }
 
         private KeySymbolPair selectedKey;
@@ -234,7 +237,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var style = MapLayerCollection.Instance.Selected;
+            var style = Layers.Selected;
             var keys = (await style.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {

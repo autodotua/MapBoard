@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
@@ -102,7 +103,7 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task ImportAsync(string path)
+        public async static Task ImportAsync(string path, LayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();
@@ -135,13 +136,12 @@ namespace MapBoard.Main.IO
             }
 
             List<Feature> features = new List<Feature>();
-            var style = MapLayerCollection.Instance.Selected;
 
             foreach (var part in parts)
             {
-                Feature feature = style.Table.CreateFeature();
+                Feature feature = layer.Table.CreateFeature();
                 features.Add(feature);
-                switch (style.Table.GeometryType)
+                switch (layer.Table.GeometryType)
                 {
                     case GeometryType.Multipoint:
                         feature.Geometry = new Multipoint(part);
@@ -165,7 +165,7 @@ namespace MapBoard.Main.IO
                         break;
                 }
             }
-            await style.Table.AddFeaturesAsync(features);
+            await layer.Table.AddFeaturesAsync(features);
         }
     }
 }

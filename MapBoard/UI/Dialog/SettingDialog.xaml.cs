@@ -38,7 +38,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void SetBaseLayersButtonClick(object sender, RoutedEventArgs e)
         {
-            var dialog = new Dialog.BaseLayerSettingDialog();
+            var dialog = new BaseLayerSettingDialog(ArcMapView.Instances.First());
             dialog.Closed += (p1, p2) =>
             {
                 Notify(nameof(Config));
@@ -48,9 +48,9 @@ namespace MapBoard.Main.UI.Dialog
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            if (ArcMapView.Instance != null)
+            foreach (var map in ArcMapView.Instances)
             {
-                ArcMapView.Instance.SetHideWatermark();
+                map.SetHideWatermark();
             }
             foreach (var map in GpxToolbox.UI.ArcMapView.Instances)
             {

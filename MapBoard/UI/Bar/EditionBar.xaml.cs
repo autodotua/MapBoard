@@ -8,17 +8,20 @@ namespace MapBoard.Main.UI.Bar
     /// <summary>
     /// EditBar.xaml 的交互逻辑
     /// </summary>
-    public partial class EditBar : BarBase
+    public partial class EditionBar : BarBase
     {
-        public EditBar()
+        public EditionBar()
         {
             InitializeComponent();
+        }
 
-            BoardTaskManager.BoardTaskChanged += BoardTaskChanged;
+        public override void Initialize()
+        {
+            MapView.BoardTaskChanged += BoardTaskChanged;
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
         }
 
-        public override FeatureAttributes Attributes => ArcMapView.Instance.Editor.Attributes;
+        public override FeatureAttributes Attributes => MapView.Editor.Attributes;
         protected override bool CanEdit => true;
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
@@ -47,9 +50,9 @@ namespace MapBoard.Main.UI.Bar
             }
         }
 
-        private void BoardTaskChanged(object sender, BoardTaskManager.BoardTaskChangedEventArgs e)
+        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTaskManager.BoardTask.Draw)
+            if (e.NewTask == BoardTask.Draw)
             {
                 switch (MapView.Editor.Mode)
                 {
@@ -80,8 +83,6 @@ namespace MapBoard.Main.UI.Bar
             }
         }
 
-        public ArcMapView MapView => ArcMapView.Instance;
-
         private string title = "正在编辑";
 
         public string Title
@@ -107,6 +108,14 @@ namespace MapBoard.Main.UI.Bar
         private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
+        }
+
+        private void TextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                MapView.Editor.StopAndSave();
+            }
         }
     }
 }

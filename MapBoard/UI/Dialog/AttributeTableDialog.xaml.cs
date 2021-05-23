@@ -25,11 +25,12 @@ namespace MapBoard.Main.UI.Dialog
 
         private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
 
-        public AttributeTableDialog(LayerInfo layer)
+        public AttributeTableDialog(LayerInfo layer, ArcMapView mapView)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
             Layer = layer;
+            MapView = mapView;
             Width = 800;
             Height = 600;
         }
@@ -43,6 +44,7 @@ namespace MapBoard.Main.UI.Dialog
         public int EditedFeaturesCount => editedAttributes.Count;
 
         public LayerInfo Layer { get; }
+        public ArcMapView MapView { get; }
 
         /// <summary>
         /// 加载数据
@@ -123,7 +125,7 @@ namespace MapBoard.Main.UI.Dialog
         private void AddSelectButton_Click(object sender, RoutedEventArgs e)
         {
             var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
-            ArcMapView.Instance.Selection.Select(feature);
+            MapView.Selection.Select(feature);
         }
 
         private async void AttributeTableDialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -158,13 +160,13 @@ namespace MapBoard.Main.UI.Dialog
         private async void LocateButton_Click(object sender, RoutedEventArgs e)
         {
             var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
-            await ArcMapView.Instance.ZoomToGeometryAsync(feature.Geometry);
+            await MapView.ZoomToGeometryAsync(feature.Geometry);
         }
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)
         {
             var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
-            ArcMapView.Instance.Selection.Select(feature, true);
+            MapView.Selection.Select(feature, true);
         }
 
         private void Dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)

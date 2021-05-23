@@ -16,6 +16,8 @@ namespace MapBoard.Main.UI.Bar
     {
         public static double DefaultBarHeight { get; } = 56;
         public virtual double BarHeight { get; } = DefaultBarHeight;
+        public ArcMapView MapView { get; set; }
+        public MapLayerCollection Layers => MapView.Layers;
 
         public BarBase() : base()
         {
@@ -27,6 +29,9 @@ namespace MapBoard.Main.UI.Bar
             Storyboard.SetTargetProperty(ani, new PropertyPath("(Grid.RenderTransform).(TranslateTransform.Y)"));
             storyboard = new Storyboard() { Children = { ani } };
         }
+
+        public virtual void Initialize()
+        { }
 
         private DoubleAnimation ani;
         private Storyboard storyboard;
@@ -86,7 +91,6 @@ namespace MapBoard.Main.UI.Bar
                 grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(8) });
                 grd.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
             }
-            var field = MapLayerCollection.Instance.Selected.Fields;
             int row = 0;
             int index = 0;
             foreach (var a in Attributes.Others)

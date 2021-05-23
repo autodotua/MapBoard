@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
+using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.IO;
@@ -26,9 +27,8 @@ namespace MapBoard.Main.Util
 {
     public static class IOUtility
     {
-        public async static Task ImportFeatureAsync()
+        public async static Task ImportFeatureAsync(LayerInfo layer, ArcMapView mapView)
         {
-            LayerInfo layer = MapLayerCollection.Instance.Selected;
             FileFilterCollection filter = null;
 
             if (layer.Table.GeometryType != GeometryType.Polygon)
@@ -59,14 +59,14 @@ namespace MapBoard.Main.Util
                             SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
                             snake.ShowButton = true;
                             snake.ButtonContent = "查看";
-                            snake.ButtonClick += async (p1, p2) => await ArcMapView.Instance.ZoomToGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
+                            snake.ButtonClick += async (p1, p2) => await mapView.ZoomToGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
 
                             snake.ShowMessage("已导出到" + path);
                         }
                         break;
 
                     case ".csv":
-                        await Csv.ImportAsync(path);
+                        await Csv.ImportAsync(path, layer);
                         SnakeBar.Show("导入CSV成功");
                         break;
                 }
@@ -77,7 +77,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task ExportLayerAsync(LayerInfo layer)
+        public async static Task ExportLayerAsync(LayerInfo layer, LayerCollection layers)
         {
             System.Diagnostics.Debug.Assert(layer != null);
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
@@ -95,7 +95,7 @@ namespace MapBoard.Main.Util
                          switch (Path.GetExtension(path))
                          {
                              case ".mblpkg":
-                                 await Package.ExportLayer2Async(path, layer);
+                                 await Package.ExportLayer2Async(path, layer, layers);
                                  break;
 
                              case ".zip":
@@ -119,7 +119,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task ImportPackageAsync()
+        public async static Task ImportPackageAsync(MapLayerCollection layers)
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
@@ -131,9 +131,9 @@ namespace MapBoard.Main.Util
                 {
                     if (Config.Instance.BackupWhenReplace)
                     {
-                        await Package.BackupAsync(Config.Instance.MaxBackupCount);
+                        await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
                     }
-                    await Package.ImportMapAsync(path, true);
+                    await Package.ImportMapAsync(path, layers, true);
                 }
                 catch (Exception ex)
                 {
@@ -155,7 +155,7 @@ namespace MapBoard.Main.Util
         /// 显示对话框导入
         /// </summary>
         /// <returns>返回是否需要通知刷新Style</returns>
-        public async static Task AddLayerAsync()
+        public async static Task AddLayerAsync(MapLayerCollection layers)
         {
             bool ok = true;
             string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
@@ -172,19 +172,19 @@ namespace MapBoard.Main.Util
                     switch (Path.GetExtension(path))
                     {
                         case ".mbmpkg":
-                            await Package.ImportMapAsync(path, false);
+                            await Package.ImportMapAsync(path, layers, false);
                             return;
 
                         case ".mblpkg":
-                            await Package.ImportLayerAsync(path);
+                            await Package.ImportLayerAsync(path, layers);
                             return;
 
                         case ".gpx":
-                            await ImportGpxAsync(new[] { path });
+                            await ImportGpxAsync(new[] { path }, layers.Selected, layers);
                             break;
 
                         case ".shp":
-                            await Shapefile.ImportAsync(path);
+                            await Shapefile.ImportAsync(path, layers);
                             return;
 
                         default:
@@ -211,7 +211,7 @@ namespace MapBoard.Main.Util
         /// 显示对话框导出
         /// </summary>
         /// <returns></returns>
-        public static async Task ExportMapAsync()
+        public static async Task ExportMapAsync(MapView mapView, MapLayerCollection layers)
         {
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
                    .Add("mbmpkg地图画板包", "mbmpkg")
@@ -229,19 +229,19 @@ namespace MapBoard.Main.Util
                         switch (Path.GetExtension(path))
                         {
                             case ".mbmpkg":
-                                await Package.ExportMap2Async(path);
+                                await Package.ExportMap2Async(path, layers);
                                 break;
 
                             case ".png":
-                                await SaveImageAsync(path);
+                                await SaveImageAsync(path, mapView);
                                 break;
 
                             case ".zip":
-                                await MobileGISToolBox.ExportMapAsync(path);
+                                await MobileGISToolBox.ExportMapAsync(path, layers);
                                 break;
 
                             case ".kmz":
-                                await Kml.ExportAsync(path);
+                                await Kml.ExportAsync(path, layers);
                                 break;
 
                             default:
@@ -262,9 +262,9 @@ namespace MapBoard.Main.Util
         /// </summary>
         /// <param name="path">保存地址</param>
         /// <returns></returns>
-        private static async Task SaveImageAsync(string path)
+        private static async Task SaveImageAsync(string path, MapView mapView)
         {
-            RuntimeImage image = await ArcMapView.Instance.ExportImageAsync();
+            RuntimeImage image = await mapView.ExportImageAsync();
             Bitmap bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
             bitmap.Save(path);
             Bitmap ConvertToBitmap(BitmapSource bitmapSource)
@@ -278,17 +278,16 @@ namespace MapBoard.Main.Util
             }
         }
 
-        private static async Task ImportGpxAsync(string[] files)
+        private static async Task ImportGpxAsync(string[] files, LayerInfo layer, MapLayerCollection layers)
         {
             List<DialogItem> items = new List<DialogItem>()
                 {
                        new DialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.UI.MainWindow(files).Show()),
-                        new DialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Line)),
-                        new DialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Point)),
+                        new DialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Line,layers)),
+                        new DialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gpx.ImportAllToNewLayerAsync(files,Gpx.GpxImportType.Point,layers)),
                 };
-            if (MapLayerCollection.Instance.Selected != null)
+            if (layer != null)
             {
-                var layer = MapLayerCollection.Instance.Selected;
                 if (layer.Table.GeometryType == GeometryType.Point || layer.Table.GeometryType == GeometryType.Polyline)
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));
@@ -298,21 +297,21 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task DropFilesAsync(string[] files)
+        public async static Task DropFilesAsync(string[] files, MapLayerCollection layers)
         {
             if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
             {
-                await ImportGpxAsync(files);
+                await ImportGpxAsync(files, layers.Selected, layers);
             }
             else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
                 {
-                    Package.ImportMapAsync(files[0], true);
+                    Package.ImportMapAsync(files[0], layers, true);
                 }
                 else
                 {
-                    Package.ImportMapAsync(files[0], false);
+                    Package.ImportMapAsync(files[0], layers, false);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
@@ -321,7 +320,7 @@ namespace MapBoard.Main.Util
                 {
                     foreach (var file in files)
                     {
-                        await Package.ImportLayerAsync(file);
+                        await Package.ImportLayerAsync(file, layers);
                         await Task.Delay(500);
                     }
                 }
@@ -332,7 +331,7 @@ namespace MapBoard.Main.Util
                 {
                     foreach (var file in files)
                     {
-                        await IO.Csv.ImportAsync(file);
+                        await Csv.ImportAsync(file, layers.Selected);
                     }
                 }
             }

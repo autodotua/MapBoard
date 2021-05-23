@@ -23,11 +23,11 @@ namespace MapBoard.Main.Util
             return Path.Combine(Config.DataPath, layer.Name + ".shp");
         }
 
-        public static async Task RemoveLayerAsync(this LayerInfo layer, bool deleteFiles)
+        public static async Task DeleteLayerAsync(this LayerInfo layer, MapLayerCollection layers, bool deleteFiles)
         {
-            if (MapLayerCollection.Instance.Contains(layer))
+            if (layers.Contains(layer))
             {
-                MapLayerCollection.Instance.Remove(layer);
+                layers.Remove(layer);
             }
 
             if (deleteFiles)
@@ -45,7 +45,11 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type, LayerInfo template = null, string name = null, IList<FieldInfo> fields = null)
+        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type,
+                                                             MapLayerCollection layers,
+                                                             LayerInfo template = null,
+                                                             string name = null,
+                                                             IList<FieldInfo> fields = null)
         {
             if (name == null)
             {
@@ -66,18 +70,18 @@ namespace MapBoard.Main.Util
             LayerInfo layer = template == null ? new LayerInfo() : template.Clone() as LayerInfo;
             layer.Fields = fields.ToArray();
             layer.Name = name;
-            await MapLayerCollection.Instance.AddAsync(layer);
-            MapLayerCollection.Instance.Selected = layer;
+            await layers.AddAsync(layer);
+            layers.Selected = layer;
             return layer;
         }
 
-        public async static Task CreatCopyAsync(this LayerInfo layer, bool includeFeatures)
+        public async static Task CreatCopyAsync(this LayerInfo layer, MapLayerCollection layers, bool includeFeatures)
         {
             if (includeFeatures)
             {
-                var features = await MapLayerCollection.Instance.Selected.GetAllFeaturesAsync();
+                var features = await layer.GetAllFeaturesAsync();
 
-                var newLayer = await CreateLayerAsync(layer.Table.GeometryType, layer);
+                var newLayer = await CreateLayerAsync(layer.Table.GeometryType, layers, layer);
                 ShapefileFeatureTable targetTable = newLayer.Table;
 
                 await targetTable.AddFeaturesAsync(features);
@@ -86,7 +90,7 @@ namespace MapBoard.Main.Util
             }
             else
             {
-                await CreateLayerAsync(layer.Table.GeometryType, layer);
+                await CreateLayerAsync(layer.Table.GeometryType, layers, layer);
             }
         }
 
@@ -121,9 +125,9 @@ namespace MapBoard.Main.Util
             await layer.SetTimeExtentAsync();
         }
 
-        public async static Task BufferAsync(this LayerInfo layer)
+        public async static Task BufferAsync(this LayerInfo layer, MapLayerCollection layers)
         {
-            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layer);
+            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, layer);
 
             ShapefileFeatureTable newTable = newLayer.Table;
 
@@ -201,7 +205,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> layers)
+        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> layers, MapLayerCollection layerCollection)
         {
             if (layers == null || !layers.Any())
             {
@@ -212,7 +216,7 @@ namespace MapBoard.Main.Util
             {
                 throw new Exception("图层的类型并非统一");
             }
-            LayerInfo layer = await CreateLayerAsync(type.First());
+            LayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
 
             foreach (var oldLayer in layers)
             {

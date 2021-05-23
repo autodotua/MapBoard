@@ -20,7 +20,7 @@ namespace MapBoard.Main.UI.Dialog
     {
         public Config Config => Config.Instance;
 
-        public BaseLayerSettingDialog()
+        public BaseLayerSettingDialog(ArcMapView mapView)
         {
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
                 Config.Instance.BaseLayers.Select(p => p.Clone()));
@@ -28,6 +28,7 @@ namespace MapBoard.Main.UI.Dialog
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
             new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
+            MapView = mapView;
         }
 
         private void ResetIndex()
@@ -46,6 +47,7 @@ namespace MapBoard.Main.UI.Dialog
 
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
         public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
+        public ArcMapView MapView { get; }
 
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
@@ -55,8 +57,7 @@ namespace MapBoard.Main.UI.Dialog
             {
                 Config.Instance.BaseLayers.Add(item);
             }
-            await ArcMapView.Instance.LoadBasemapAsync();
-            await MapLayerCollection.ResetLayersAsync();
+            await MapView.LoadBasemapAsync();
             Config.Instance.Save();
             if ((sender as Button).Tag.Equals("1"))
             {

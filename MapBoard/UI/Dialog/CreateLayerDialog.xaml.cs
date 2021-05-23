@@ -5,6 +5,7 @@ using MapBoard.Common;
 using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
+using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
@@ -34,7 +35,7 @@ namespace MapBoard.Main.UI.Dialog
         public bool editMode = false;
         public LayerInfo editLayer = null;
 
-        public CreateLayerDialog(LayerInfo layer = null)
+        public CreateLayerDialog(MapLayerCollection layers, LayerInfo layer = null)
         {
             StaticFields = FieldInfo.DefaultFields;
             InitializeComponent();
@@ -81,6 +82,7 @@ namespace MapBoard.Main.UI.Dialog
             {
                 LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
             }
+            Layers = layers;
         }
 
         public ObservableCollection<FieldInfo> Fields { get; } = new ObservableCollection<FieldInfo>();
@@ -92,6 +94,8 @@ namespace MapBoard.Main.UI.Dialog
             get => layerName;
             set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
         }
+
+        public MapLayerCollection Layers { get; }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
@@ -163,7 +167,7 @@ namespace MapBoard.Main.UI.Dialog
                 }
                 try
                 {
-                    await LayerUtility.CreateLayerAsync(type, name: LayerName, fields: fields);
+                    await LayerUtility.CreateLayerAsync(type, Layers, name: LayerName, fields: fields);
                 }
                 catch (Exception ex)
                 {

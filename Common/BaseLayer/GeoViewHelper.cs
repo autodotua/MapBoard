@@ -31,7 +31,7 @@ namespace MapBoard.Common.BaseLayer
                     }
                     catch (Exception ex)
                     {
-                        await CommonDialog.ShowErrorDialogAsync(ex, "加载底图失败");
+                        throw new Exception("加载底图失败", ex);
                     }
                 }
 
@@ -43,23 +43,35 @@ namespace MapBoard.Common.BaseLayer
                 {
                     await basemap.LoadAsync();
                 }
-                if (map is SceneView)
+                if (map is SceneView s)
                 {
-                    (map as SceneView).Scene = basemap == null ? new Scene() : new Scene(basemap);
-                    await (map as SceneView).Scene.LoadAsync();
+                    if (s.Scene == null)
+                    {
+                        s.Scene = basemap == null ? new Scene() : new Scene(basemap);
+                        await s.Scene.LoadAsync();
+                    }
+                    else
+                    {
+                        s.Scene.Basemap = basemap;
+                    }
                 }
-                else
+                else if (map is MapView m)
                 {
-                    (map as MapView).Map = basemap == null ? new Map(SpatialReferences.Wgs84) : new Map(basemap);
-                    await (map as MapView).Map.LoadAsync();
+                    if (m.Map == null)
+                    {
+                        m.Map = basemap == null ? new Map(SpatialReferences.Wgs84) : new Map(basemap);
+                        await m.Map.LoadAsync();
+                    }
+                    else
+                    {
+                        m.Map.Basemap = basemap;
+                    }
                 }
                 return true;
             }
             catch (Exception ex)
             {
-                await CommonDialog.ShowErrorDialogAsync(ex, "加载底图失败");
-
-                return false;
+                throw new Exception("加载底图失败", ex);
             }
         }
 

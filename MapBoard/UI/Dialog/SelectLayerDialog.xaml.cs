@@ -14,11 +14,10 @@ namespace MapBoard.Main.UI.Dialog
     {
         private bool canSelect = false;
 
-        public SelectLayerDialog()
+        public SelectLayerDialog(MapLayerCollection layers)
         {
             InitializeComponent();
-            var layers = MapLayerCollection.Instance;
-            var list = MapLayerCollection.Instance.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
+            var list = layers.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;

@@ -8,16 +8,21 @@
     xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="请选择目标"
+    Title="请选择目标" CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="True"
     Loaded="Window_Loaded"
-    PrimaryButtonText="确定"
-    CloseButtonText="取消"
-    mc:Ignorable="d">
+    PrimaryButtonText="确定" mc:Ignorable="d">
 
     <ListView
         x:Name="lbx" MinWidth="240"
         MaxHeight="480"
-        SelectedItem="{Binding SelectedLayer}" />
+        SelectedItem="{Binding SelectedLayer}">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+
 </commondialog:CommonDialog>

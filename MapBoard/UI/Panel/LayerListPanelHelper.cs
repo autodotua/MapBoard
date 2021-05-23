@@ -23,23 +23,25 @@ namespace MapBoard.Main.UI.Panel
 {
     public class LayerListPanelHelper
     {
-        private readonly ListView dataGrid;
+        private readonly ListView list;
 
-        public MainWindow Window { get; }
+        public Func<Func<Task>, Task> DoAsync { get; }
+        public ArcMapView MapView { get; }
 
-        public LayerListPanelHelper(ListView list, MainWindow window)
+        public LayerListPanelHelper(ListView list, Func<Func<Task>, Task> d, ArcMapView mapView)
         {
-            this.dataGrid = list;
-            Window = window;
+            this.list = list;
+            DoAsync = d;
+            MapView = mapView;
         }
 
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
             List<(string header, Func<LayerInfo, Task> action, bool visiable)?> menus = null;
-            LayerInfo layer = MapLayerCollection.Instance.Selected;
-            LayerInfo[] layers = dataGrid.SelectedItems.Cast<LayerInfo>().ToArray();
-            if (dataGrid.SelectedItems.Count == 1)
+            LayerInfo layer = MapView.Layers.Selected;
+            LayerInfo[] layers = list.SelectedItems.Cast<LayerInfo>().ToArray();
+            if (list.SelectedItems.Count == 1)
             {
                 menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
@@ -55,7 +57,7 @@ namespace MapBoard.Main.UI.Panel
                     ("设置时间范围",SetTimeExtentAsync,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
                     ("字段赋值",CopyAttributesAsync,true),
                     null,
-                    ("导入",async l=>await IOUtility.ImportFeatureAsync(),true),
+                    ("导入",async p=>await IOUtility.ImportFeatureAsync(p, MapView),true),
                     ("导出",  ExportSingleAsync,true),
                };
             }
@@ -63,7 +65,7 @@ namespace MapBoard.Main.UI.Panel
             {
                 menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
                {
-                    ("合并",async l=>await LayerUtility. UnionAsync(layers)
+                    ("合并",async l=>await LayerUtility. UnionAsync(layers,MapView.Layers)
                     ,layers.Select(p=>p.Table.GeometryType).Distinct().Count()==1),
                     ("删除",async l=>await DeleteSelectedLayersAsync(),true),
                 };
@@ -80,7 +82,7 @@ namespace MapBoard.Main.UI.Panel
                         {
                             try
                             {
-                                await Window.DoAsync(() => m.Value.action(layer));
+                                await DoAsync(() => m.Value.action(layer));
                             }
                             catch (Exception ex)
                             {
@@ -103,7 +105,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task CopyFeaturesAsync(LayerInfo layer)
         {
-            SelectLayerDialog dialog = new SelectLayerDialog();
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer);
@@ -112,8 +114,8 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task EditFieldDisplayAsync(LayerInfo layer)
         {
-            ArcMapView.Instance.Selection.ClearSelection();
-            CreateLayerDialog dialog = new CreateLayerDialog(layer);
+            MapView.Selection.ClearSelection();
+            CreateLayerDialog dialog = new CreateLayerDialog(MapView.Layers, layer);
             await dialog.ShowAsync();
         }
 
@@ -128,25 +130,25 @@ namespace MapBoard.Main.UI.Panel
             });
             if (mode > 0)
             {
-                await LayerUtility.CreatCopyAsync(layer, mode == 2);
+                await LayerUtility.CreatCopyAsync(layer, MapView.Layers, mode == 2);
             }
         }
 
-        private async static Task BufferAsync(LayerInfo layer)
+        private async Task BufferAsync(LayerInfo layer)
         {
-            await LayerUtility.BufferAsync(layer);
+            await LayerUtility.BufferAsync(layer, MapView.Layers);
         }
 
         private Task ExportSingleAsync(LayerInfo layer)
         {
-            return IOUtility.ExportLayerAsync(layer);
+            return IOUtility.ExportLayerAsync(layer, MapView.Layers);
         }
 
         private async Task ZoomToLayerAsync(LayerInfo layer)
         {
             try
             {
-                await ArcMapView.Instance.ZoomToGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
+                await MapView.ZoomToGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
             }
             catch (Exception ex)
             {
@@ -159,7 +161,7 @@ namespace MapBoard.Main.UI.Panel
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await Window.DoAsync(async () =>
+                await DoAsync(async () =>
                 {
                     string from = dialog.SelectedCoordinateSystem1;
                     string to = dialog.SelectedCoordinateSystem2;
@@ -170,7 +172,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task SetTimeExtentAsync(LayerInfo layer)
         {
-            DateRangeDialog dialog = new DateRangeDialog(MapLayerCollection.Instance.Selected);
+            DateRangeDialog dialog = new DateRangeDialog(MapView.Layers.Selected);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.SetTimeExtentAsync(layer);
@@ -179,14 +181,14 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task DeleteSelectedLayersAsync()
         {
-            if (dataGrid.SelectedItems.Count == 0)
+            if (list.SelectedItems.Count == 0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            foreach (LayerInfo layer in dataGrid.SelectedItems.Cast<LayerInfo>().ToArray())
+            foreach (LayerInfo layer in list.SelectedItems.Cast<LayerInfo>().ToArray())
             {
-                await LayerUtility.RemoveLayerAsync(layer, true);
+                await layer.DeleteLayerAsync(MapView.Layers, true);
             }
         }
 
@@ -201,10 +203,10 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task ShowAttributeTableAsync(LayerInfo layer)
         {
-            var dialog = new AttributeTableDialog(layer) { Owner = Window };
+            var dialog = new AttributeTableDialog(layer, MapView);
             try
             {
-                await Window.DoAsync(dialog.LoadAsync);
+                await DoAsync(dialog.LoadAsync);
             }
             catch (Exception ex)
             {
@@ -217,7 +219,7 @@ namespace MapBoard.Main.UI.Panel
         public void RightButtonClickToSelect(MouseEventArgs e)
         {
             return;
-            if (dataGrid.SelectedItems.Count > 1)
+            if (list.SelectedItems.Count > 1)
             {
                 return;
             }
@@ -229,7 +231,7 @@ namespace MapBoard.Main.UI.Panel
             var layer = obj.DataContext as LayerInfo;
             if (layer != null)
             {
-                dataGrid.SelectedItem = layer;
+                list.SelectedItem = layer;
             }
         }
     }

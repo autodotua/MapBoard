@@ -25,32 +25,37 @@ namespace MapBoard.Main.UI.Dialog
                 selected = value;
                 if (value != null)
                 {
-                    ArcMapView.Instance.Selection.Select(value.Feature, true);
+                    Selection.Select(value.Feature, true);
                 }
             }
         }
 
-        public SelectFeatureDialog()
+        public SelectionHelper Selection { get; }
+        public MapLayerCollection Layers { get; }
+
+        public SelectFeatureDialog(SelectionHelper selection, MapLayerCollection layers)
         {
             var mainWindow = Application.Current.MainWindow;
             Owner = mainWindow;
+            Selection = selection;
+            Layers = layers;
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
-            ArcMapView.Instance.Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
+            Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
             SelectedFeaturesChanged(null, null);
         }
 
         private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (ArcMapView.Instance.Selection.SelectedFeatures.Count < 2)
+            if (Selection.SelectedFeatures.Count < 2)
             {
                 return;
             }
             SelectedFeatures.Clear();
             int index = 0;
-            foreach (var feature in ArcMapView.Instance.Selection.SelectedFeatures)
+            foreach (var feature in Selection.SelectedFeatures)
             {
-                SelectedFeatures.Add(new FeatureSelectionInfo(MapLayerCollection.Instance.Selected, feature, ++index));
+                SelectedFeatures.Add(new FeatureSelectionInfo(Layers.Selected, feature, ++index));
             }
         }
 
