@@ -31,7 +31,7 @@ namespace MapBoard.Common.BaseLayer
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception("加载底图失败", ex);
+                        throw new Exception($"加载底图{item.Path}失败", ex);
                     }
                 }
 
@@ -48,24 +48,24 @@ namespace MapBoard.Common.BaseLayer
                     if (s.Scene == null)
                     {
                         s.Scene = basemap == null ? new Scene() : new Scene(basemap);
-                        await s.Scene.LoadAsync();
                     }
                     else
                     {
                         s.Scene.Basemap = basemap;
                     }
+                    await s.Scene.LoadAsync();
                 }
                 else if (map is MapView m)
                 {
                     if (m.Map == null)
                     {
                         m.Map = basemap == null ? new Map(SpatialReferences.Wgs84) : new Map(basemap);
-                        await m.Map.LoadAsync();
                     }
                     else
                     {
                         m.Map.Basemap = basemap;
                     }
+                    await m.Map.LoadAsync();
                 }
                 return true;
             }

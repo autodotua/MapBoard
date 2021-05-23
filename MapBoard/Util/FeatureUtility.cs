@@ -41,7 +41,7 @@ namespace MapBoard.Main.Util
                 }
                 foreach (var part in m.Parts)
                 {
-                    Geometry g = m is Polyline ? new Polyline(part) : new Polygon(part);
+                    Geometry g = m is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part);
                     var newFeature = layer.Table.CreateFeature(feature.Attributes, g);
                     added.Add(newFeature);
                 }
@@ -358,7 +358,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                     {
                         partsCount++;
                         Feature newFeature = layer.Table.CreateFeature(
-                            feature.Attributes, newGeo is Polyline ? new Polyline(part) : new Polygon(part));
+                            feature.Attributes, newGeo is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part));
                         added.Add(newFeature);
                     }
                 }

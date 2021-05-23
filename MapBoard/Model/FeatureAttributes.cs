@@ -132,7 +132,7 @@ namespace MapBoard.Main.Model
             {
                 if (attr.Type == FieldInfoType.Date)
                 {
-                    feature.SetAttributeValue(attr.Name, attr.DateValue.HasValue ? new DateTimeOffset(attr.DateValue.Value, TimeSpan.Zero) : null);
+                    feature.SetAttributeValue(attr.Name, attr.DateValue.HasValue ? new DateTimeOffset(attr.DateValue.Value, TimeSpan.Zero) : (DateTimeOffset?)null);
                 }
                 else
                 {
