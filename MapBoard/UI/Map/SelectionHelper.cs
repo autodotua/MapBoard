@@ -3,7 +3,10 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
+using MapBoard.Main.Model;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -83,11 +86,11 @@ namespace MapBoard.Main.UI.Map
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
                 if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                 {
-                    await SelectAsync(envelope, null, SpatialRelationship.Intersects);
+                    await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New);
                 }
                 else
                 {
-                    await SelectAsync(envelope, null, SpatialRelationship.Contains);
+                    await SelectAsync(envelope, null, SpatialRelationship.Contains, SelectionMode.New);
                 }
             }
         }
@@ -102,21 +105,34 @@ namespace MapBoard.Main.UI.Map
 
         private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
         {
-            if (MapView.CurrentTask == BoardTask.Draw || Layers.Selected == null
-                || !Layers.Selected.LayerVisible
-                || MapView.CurrentTask != BoardTask.Select && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (MapView.CurrentTask == BoardTask.Draw //正在绘制
+                || (MapView.CurrentTask != BoardTask.Select)//当前不在选择状态，
+                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)))
             {
                 return;
             }
             MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
             double tolerance = MapView.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
-
-            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects);
+            SelectionMode mode = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
+               SelectionMode.New
+               : (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) ?
+               SelectionMode.Subtract
+               : SelectionMode.Add);
+            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, Keyboard.Modifiers == ModifierKeys.Shift);
         }
 
-        private async Task SelectAsync(Envelope envelope, System.Windows.Point? point, SpatialRelationship relationship)
+        private async Task SelectAsync(Envelope envelope,
+            System.Windows.Point? point,
+            SpatialRelationship relationship,
+             SelectionMode mode,
+             bool allLayers = false)
         {
+            if (allLayers && !point.HasValue)
+            {
+                throw new ArgumentException("需要选取多图层，但是没有给鼠标位置");
+            }
             await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
              {
                  if (envelope == null)
@@ -124,46 +140,60 @@ namespace MapBoard.Main.UI.Map
                      return;
                  }
 
-                 bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) || Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
-                 bool inverse = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
                  QueryParameters query = new QueryParameters();
                  query.Geometry = envelope;
                  query.SpatialRelationship = relationship;
-                 FeatureLayer layer = Layers.Selected?.Layer;
-                 if (layer == null)
-                 {
-                     return;
-                 }
-                 SelectionMode mode = SelectionMode.Add;
-                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                 {
-                     mode = SelectionMode.New;
-                 }
-                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
-                 {
-                     mode = SelectionMode.Subtract;
-                 }
-                 var result = await layer.SelectFeaturesAsync(query, mode);
+
                  List<Feature> features = null;
-                 await Task.Run(() =>
+                 if (allLayers)
                  {
-                     features = result.ToList();
-                 });
-                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                 {
-                     SelectedFeatures.Clear();
-                     SelectedFeatures.AddRange(features);
-                 }
-                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
-                 {
-                     SelectedFeatures.RemoveRange(features);
+                     IdentifyLayerResult result =
+                     (await MapView.IdentifyLayersAsync(point.Value, 8, false))
+                     .FirstOrDefault(p => p.LayerContent.IsVisible);
+                     if (result == null)
+                     {
+                         return;
+                     }
+                     LayerInfo layer = MapView.Layers.FirstOrDefault(p => p.Layer == result.LayerContent);
+                     Debug.Assert(layer != null);
+                     MapView.Layers.Selected = layer;
+                     features = result.GeoElements.Cast<Feature>().ToList();
+                     layer.Layer.SelectFeatures(features);
                  }
                  else
                  {
-                     features = features.Where(p =>
-                       !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
-                       .Equals(q.GetAttributeValue("FID")))).ToList();
-                     SelectedFeatures.AddRange(features);
+                     FeatureLayer layer = Layers.Selected?.Layer;
+                     if (Layers.Selected == null || !Layers.Selected.LayerVisible)
+                     {
+                         return;
+                     }
+                     FeatureQueryResult result = await layer.SelectFeaturesAsync(query, mode);
+
+                     await Task.Run(() =>
+                     {
+                         features = result.ToList();
+                     });
+                 }
+                 switch (mode)
+                 {
+                     case SelectionMode.Add:
+                         features = features.Where(p =>
+                              !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
+                              .Equals(q.GetAttributeValue("FID")))).ToList();
+                         SelectedFeatures.AddRange(features);
+                         break;
+
+                     case SelectionMode.New:
+                         SelectedFeatures.Clear();
+                         SelectedFeatures.AddRange(features);
+                         break;
+
+                     case SelectionMode.Subtract:
+                         SelectedFeatures.RemoveRange(features);
+                         break;
+
+                     default:
+                         break;
                  }
              });
         }

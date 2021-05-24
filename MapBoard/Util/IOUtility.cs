@@ -144,7 +144,7 @@ namespace MapBoard.Main.Util
                 {
                     if (ok)
                     {
-                        SnakeBar.Show("导入成功");
+                        SnakeBar.Show(App.Current.MainWindow, "导入成功");
                     }
                 }
             }
@@ -292,9 +292,9 @@ namespace MapBoard.Main.Util
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));
                 }
-
-                await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
             }
+            await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
+
         }
 
         public async static Task DropFilesAsync(string[] files, MapLayerCollection layers)

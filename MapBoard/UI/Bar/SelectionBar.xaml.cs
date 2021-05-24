@@ -145,10 +145,7 @@ namespace MapBoard.Main.UI.Bar
                 {
                     bool copy = await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
 
-                    Layers.Selected.LayerVisible = false;
                     await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures.ToArray(), copy);
-                    Layers.Selected.LayerVisible = false;
-                    dialog.SelectedLayer.LayerVisible = false;
                     MapView.Selection.ClearSelection();
                     Layers.Selected = dialog.SelectedLayer;
                 }

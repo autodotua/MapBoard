@@ -395,12 +395,12 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
 
         public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(LayerInfo layerFrom, LayerInfo layerTo, Feature[] features, bool copy)
         {
-            layerTo.LayerVisible = true;
             ShapefileFeatureTable targetTable = layerTo.Table;
             var newFeatures = new List<Feature>();
             var fields = targetTable.Fields.Select(p => p.Name).ToHashSet();
-            foreach (var feature in await layerFrom.GetAllFeaturesAsync())
+            foreach (var feature in features)
             {
+                Debug.Assert(feature.FeatureTable == layerFrom.Table);
                 Dictionary<string, object> attributes = new Dictionary<string, object>();
                 foreach (var attr in feature.Attributes)
                 {
@@ -417,6 +417,8 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                 await DeleteAsync(layerFrom, features);
             }
             layerTo.NotifyFeatureChanged();
+            layerFrom.LayerVisible = false;
+            layerTo.LayerVisible = true;
             return newFeatures.AsReadOnly();
         }
 

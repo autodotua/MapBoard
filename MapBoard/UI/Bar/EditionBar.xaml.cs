@@ -1,6 +1,7 @@
 ﻿using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System.Windows;
+using System.Windows.Controls;
 using static MapBoard.Main.UI.Map.EditorHelper;
 
 namespace MapBoard.Main.UI.Bar
@@ -114,6 +115,8 @@ namespace MapBoard.Main.UI.Bar
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
+                (sender as TextBox).GetBindingExpression(TextBox.TextProperty)
+                      .UpdateSource();//由于要失去焦点才会更新数据，因此按回车以后要手动强制更新
                 MapView.Editor.StopAndSave();
             }
         }

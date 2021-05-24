@@ -482,7 +482,7 @@ namespace MapBoard.Main.UI
 
         private void AboutMenu_Click(object sender, RoutedEventArgs e)
         {
-            CommonDialog.ShowOkDialogAsync("关于", "开发人员：autodotua", "github:http://https://github.com/autodotua/MapBoard");
+            CommonDialog.ShowOkDialogAsync("关于", "开发人员：autodotua", "github:https://github.com/autodotua/MapBoard");
         }
     }
 }

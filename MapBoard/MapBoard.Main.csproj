@@ -191,7 +191,6 @@
     </Compile>
     <Compile Include="UI\Map\ArcMapView.cs" />
     <Compile Include="UI\Map\EditorHelper.cs" />
-    <Compile Include="UI\Map\LayerHelper.cs" />
     <Compile Include="UI\Map\SelectionHelper.cs" />
     <Compile Include="Model\LayerInfo.cs" />
     <Compile Include="UI\Dialog\CoordinateTransformationDialog.xaml.cs">
