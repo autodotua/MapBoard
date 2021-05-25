@@ -153,7 +153,7 @@ namespace MapBoard.Main.UI.Dialog
                 {
                     type = GeometryType.Point;
                 }
-                if (rbtnMultiPoint.IsChecked == true)
+                else if (rbtnMultiPoint.IsChecked == true)
                 {
                     type = GeometryType.Multipoint;
                 }

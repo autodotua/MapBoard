@@ -94,7 +94,6 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
-            StartDraw(EditMode.Creat);
             if (Attributes != null)
             {
                 var label = Attributes.Label;
@@ -118,6 +117,8 @@ namespace MapBoard.Main.UI.Map
             {
                 Attributes = FeatureAttributes.Empty(Layers.Selected);
             }
+            StartDraw(EditMode.Creat);
+
             await SketchEditor.StartAsync(mode);
             if (geometry != null)
             {
@@ -138,8 +139,8 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task EditAsync(LayerInfo layer, Feature feature)
         {
-            StartDraw(EditMode.Edit);
             Attributes = FeatureAttributes.FromFeature(layer, feature);
+            StartDraw(EditMode.Edit);
             await SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
             if (geometry != null)
             {

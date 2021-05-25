@@ -345,7 +345,7 @@ namespace MapBoard.Main.UI
         {
             await arcMap.LoadAsync();
             layerSettings.MapView = arcMap;
-            foreach (var bar in new BarBase[] { editBar, selectBar, measureBar })
+            foreach (var bar in new BarBase[] { editBar, selectBar, measureBar, attributesBar })
             {
                 bar.MapView = arcMap;
                 bar.Initialize();

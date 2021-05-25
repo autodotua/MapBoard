@@ -219,5 +219,18 @@ namespace MapBoard.Main.Model
                 this.Notify(nameof(DateValue), nameof(Value));
             }
         }
+
+        public override string ToString()
+        {
+            if (Value == null)
+            {
+                return "";
+            }
+            if (Type == FieldInfoType.Date)
+            {
+                return DateValue.Value.ToShortDateString();
+            }
+            return Value.ToString();
+        }
     }
 }

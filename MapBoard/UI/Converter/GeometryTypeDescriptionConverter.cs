@@ -17,10 +17,10 @@ namespace MapBoard.Main.UI.Converter
                         return "点";
 
                     case GeometryType.Polygon:
-                        return "折线";
+                        return "多边形";
 
                     case GeometryType.Polyline:
-                        return "多边形";
+                        return "折线";
 
                     case GeometryType.Multipoint:
                         return "多点";

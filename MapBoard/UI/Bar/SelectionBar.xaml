@@ -30,8 +30,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="4" />
-            <RowDefinition Height="24" />
-            <RowDefinition Height="4" />
+            <!--<RowDefinition Height="24" />
+            <RowDefinition Height="4" />-->
         </Grid.RowDefinitions>
         <Button
             x:Name="btnMenu" Grid.Column="4"
@@ -120,7 +120,7 @@
             VerticalAlignment="Center" FontSize="16"
             FontWeight="Bold"
             Text="{Binding Message}" />
-        <Grid
+        <!--<Grid
             Grid.Row="2" Grid.Column="2"
             Grid.ColumnSpan="99"
             VerticalAlignment="Center">
@@ -186,6 +186,6 @@
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">更多</TextBlock>
                 </StackPanel>
             </Button>
-        </Grid>
+        </Grid>-->
     </Grid>
 </local:BarBase>

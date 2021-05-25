@@ -107,27 +107,19 @@
                 <bar:EditionBar
                     x:Name="editBar"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top">
-                    <bar:EditionBar.RenderTransform>
-                        <TranslateTransform Y="-56" />
-                    </bar:EditionBar.RenderTransform>
-                </bar:EditionBar>
+                    VerticalAlignment="Top" />
                 <bar:SelectionBar
                     x:Name="selectBar"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top">
-                    <bar:SelectionBar.RenderTransform>
-                        <TranslateTransform Y="-56" />
-                    </bar:SelectionBar.RenderTransform>
-                </bar:SelectionBar>
+                    VerticalAlignment="Top" />
                 <bar:MeasureBar
                     x:Name="measureBar"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top">
-                    <bar:MeasureBar.RenderTransform>
-                        <TranslateTransform Y="-28" />
-                    </bar:MeasureBar.RenderTransform>
-                </bar:MeasureBar>
+                    VerticalAlignment="Top" />
+                <bar:AttributesBar
+                    x:Name="attributesBar" Margin="0,28,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch" />
             </Grid>
 
             <Grid x:Name="grdLeftArea">

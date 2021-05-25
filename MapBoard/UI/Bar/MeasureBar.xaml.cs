@@ -3,6 +3,7 @@ using FzLib.Extension;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System.Windows;
+using System.Windows.Controls;
 using static MapBoard.Main.UI.Map.EditorHelper;
 
 namespace MapBoard.Main.UI.Bar
@@ -12,7 +13,6 @@ namespace MapBoard.Main.UI.Bar
     /// </summary>
     public partial class MeasureBar : BarBase
     {
-        protected override bool CanEdit => throw new System.NotImplementedException();
         public override FeatureAttributes Attributes => throw new System.NotImplementedException();
 
         public MeasureBar()
@@ -72,8 +72,8 @@ namespace MapBoard.Main.UI.Bar
             }
         }
 
-        private double barHeight = 28;
-        public override double BarHeight => barHeight;
+        public override double ExpandDistance => 28;
+        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
 
         private string lengthTitle;
 
@@ -130,11 +130,11 @@ namespace MapBoard.Main.UI.Bar
                     default:
                         return;
                 }
-                Show();
+                Expand();
             }
             else
             {
-                Hide();
+                Collapse();
             }
         }
 

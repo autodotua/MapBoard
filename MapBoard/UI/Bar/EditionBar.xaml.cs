@@ -1,4 +1,5 @@
-﻿using MapBoard.Main.Model;
+﻿using FzLib.Extension;
+using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,33 +24,34 @@ namespace MapBoard.Main.UI.Bar
         }
 
         public override FeatureAttributes Attributes => MapView.Editor.Attributes;
-        protected override bool CanEdit => true;
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
         {
             btnDeleteSelectedVertex.IsEnabled = MapView.SketchEditor.SelectedVertex != null;
         }
 
-        private double barHeight = 56;
-        public override double BarHeight => barHeight;
+        //private double barHeight = 56;
+        public override double ExpandDistance => 28;
 
-        public void SetBarHeight(bool oneLine)
-        {
-            if (oneLine)
-            {
-                grdProperties.Visibility = Visibility.Collapsed;
-                barHeight = 28;
-                grd.RowDefinitions[2].Height = new GridLength(0);
-                grd.RowDefinitions[3].Height = new GridLength(0);
-            }
-            else
-            {
-                barHeight = 56;
-                grdProperties.Visibility = Visibility.Visible;
-                grd.RowDefinitions[2].Height = new GridLength(24);
-                grd.RowDefinitions[3].Height = new GridLength(4);
-            }
-        }
+        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
+
+        //public void SetBarHeight(bool oneLine)
+        //{
+        //    if (oneLine)
+        //    {
+        //        grdProperties.Visibility = Visibility.Collapsed;
+        //        barHeight = 28;
+        //        grd.RowDefinitions[2].Height = new GridLength(0);
+        //        grd.RowDefinitions[3].Height = new GridLength(0);
+        //    }
+        //    else
+        //    {
+        //        barHeight = 56;
+        //        grdProperties.Visibility = Visibility.Visible;
+        //        grd.RowDefinitions[2].Height = new GridLength(24);
+        //        grd.RowDefinitions[3].Height = new GridLength(4);
+        //    }
+        //}
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
@@ -59,28 +61,28 @@ namespace MapBoard.Main.UI.Bar
                 {
                     case EditMode.Creat:
                         Title = "正在绘制";
-                        SetBarHeight(false);
+                        //SetBarHeight(false);
                         break;
 
                     case EditMode.Edit:
                         Title = "正在编辑";
-                        SetBarHeight(false);
+                        //SetBarHeight(false);
                         break;
 
                     case EditMode.GetLine:
                         Title = "正在切割（请绘制用于切割的线段）";
-                        SetBarHeight(true);
+                        //SetBarHeight(true);
                         break;
 
                     default:
                         return;
                 }
-                Notify(nameof(MapView));
-                Show();
+                this.Notify(nameof(MapView));
+                Expand();
             }
             else
             {
-                Hide();
+                Collapse();
             }
         }
 
@@ -92,7 +94,7 @@ namespace MapBoard.Main.UI.Bar
             set
             {
                 title = value;
-                Notify(nameof(Title));
+                this.Notify(nameof(Title));
             }
         }
 

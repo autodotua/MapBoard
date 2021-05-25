@@ -19,8 +19,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="4" />
-            <RowDefinition Height="24" />
-            <RowDefinition Height="4" />
+            <!--<RowDefinition Height="24" />
+            <RowDefinition Height="4" />-->
         </Grid.RowDefinitions>
         <TextBlock
             Grid.RowSpan="3"
@@ -105,7 +105,7 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid
+        <!--<Grid
             x:Name="grdProperties" Grid.Row="2"
             Grid.RowSpan="99" Grid.Column="2"
             HorizontalAlignment="Right">
@@ -166,6 +166,6 @@
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">更多</TextBlock>
                 </StackPanel>
             </Button>
-        </Grid>
+        </Grid>-->
     </Grid>
 </local:BarBase>

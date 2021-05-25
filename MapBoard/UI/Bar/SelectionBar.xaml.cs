@@ -50,13 +50,12 @@ namespace MapBoard.Main.UI.Bar
         }
 
         private SelectFeatureDialog selectFeatureDialog;
-        protected override bool CanEdit => false;
 
         private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
-            btnMoreAttributes.IsEnabled = count == 1;
+            //btnMoreAttributes.IsEnabled = count == 1;
             LayerInfo layer = Layers.Selected;
             btnCut.IsEnabled = layer.Table.GeometryType == GeometryType.Polygon
                 || layer.Table.GeometryType == GeometryType.Polyline;
@@ -106,12 +105,12 @@ namespace MapBoard.Main.UI.Bar
             {
                 MapView.Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
                 SelectedFeaturesChanged(null, null);
-                Show();
+                Expand();
             }
             else
             {
                 MapView.Selection.SelectedFeatures.CollectionChanged -= SelectedFeaturesChanged;
-                Hide();
+                Collapse();
             }
         }
 
@@ -123,9 +122,11 @@ namespace MapBoard.Main.UI.Bar
             set
             {
                 message = value;
-                Notify(nameof(Message));
+                this.Notify(nameof(Message));
             }
         }
+
+        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {

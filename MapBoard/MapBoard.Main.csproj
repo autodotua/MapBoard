@@ -137,6 +137,9 @@
     <Compile Include="Model\FeatureAttribute.cs" />
     <Compile Include="Model\FieldInfo.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />
+    <Compile Include="UI\Bar\AttributesBar.xaml.cs">
+      <DependentUpon>AttributesBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Component\AdvancedColorPickerDialog.xaml.cs">
       <DependentUpon>AdvancedColorPickerDialog.xaml</DependentUpon>
     </Compile>
@@ -210,6 +213,10 @@
       <DependentUpon>LayerSettingPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\StyleUtility.cs" />
+    <Page Include="UI\Bar\AttributesBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Component\AdvancedColorPickerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
