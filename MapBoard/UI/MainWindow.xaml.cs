@@ -80,9 +80,30 @@ namespace MapBoard.Main.UI
             base.OnDrop(e);
             if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
             {
+                SnakeBar.ShowError(this, "不支持的格式");
                 return;
             }
-            await IOUtility.DropFilesAsync(files, arcMap.Layers);
+            if (files.Select(p => Path.GetExtension(p)).Distinct().Count() > 1)
+            {
+                SnakeBar.ShowError(this, "不支持拖放含多个格式的文件或文件夹");
+            }
+            int fileCount = files.Count(p => File.Exists(p));
+            int folderCount = files.Count(p => Directory.Exists(p));
+            if (fileCount * folderCount != 0)
+            {
+                SnakeBar.ShowError(this, "不支持同时包含文件和文件夹");
+            }
+            await DoAsync(async () =>
+            {
+                if (fileCount > 0)
+                {
+                    await IOUtility.DropFilesAsync(files, arcMap.Layers);
+                }
+                else
+                {
+                    await IOUtility.DropFoldersAsync(files, arcMap.Layers);
+                }
+            });
         }
 
         private void RegistEvents()

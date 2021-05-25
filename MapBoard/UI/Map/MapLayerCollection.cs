@@ -11,6 +11,7 @@ using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,9 +55,18 @@ namespace MapBoard.Main.UI.Map
                 return new MapLayerCollection(esriLayers);
             }
             var instance = FromFile(path, () => new MapLayerCollection(esriLayers));
-            foreach (var layer in instance.layers)
+            List<string> errorMsgs = new List<string>();
+            foreach (var layer in instance.layers.ToList())
             {
-                await instance.AddAsync(layer, false);
+                try
+                {
+                    await instance.AddAsync(layer, false);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"图层{layer.Name}加载失败：{ex.Message}");
+                    instance.layers.Remove(layer);
+                }
             }
 
             if (instance.SelectedIndex >= 0
@@ -67,7 +77,7 @@ namespace MapBoard.Main.UI.Map
             return instance;
         }
 
-        public Task<bool> AddAsync(LayerInfo layer)
+        public Task AddAsync(LayerInfo layer)
         {
             return AddAsync(layer, true);
         }
@@ -82,15 +92,11 @@ namespace MapBoard.Main.UI.Map
             layers.Clear();
         }
 
-        public async Task<bool> InsertAsync(int index, LayerInfo layer)
+        public async Task InsertAsync(int index, LayerInfo layer)
         {
-            if (await AddLayerAsync(layer))
-            {
-                layer.PropertyChanged += LayerPropertyChanged;
-                layers.Insert(index, layer);
-                return true;
-            }
-            return false;
+            await AddLayerAsync(layer, index);
+            layer.PropertyChanged += LayerPropertyChanged;
+            layers.Insert(index, layer);
         }
 
         public void Move(int fromIndex, int toIndex)
@@ -113,18 +119,14 @@ namespace MapBoard.Main.UI.Map
             layers.Remove(layer);
         }
 
-        private async Task<bool> AddAsync(LayerInfo layer, bool addToCollection)
+        private async Task AddAsync(LayerInfo layer, bool addToCollection)
         {
-            if (await AddLayerAsync(layer))
+            await AddLayerAsync(layer);
+            layer.PropertyChanged += LayerPropertyChanged;
+            if (addToCollection)
             {
-                layer.PropertyChanged += LayerPropertyChanged;
-                if (addToCollection)
-                {
-                    layers.Add(layer);
-                }
-                return true;
+                layers.Add(layer);
             }
-            return false;
         }
 
         public void Save()
@@ -140,7 +142,7 @@ namespace MapBoard.Main.UI.Map
 
         public Esri.ArcGISRuntime.Mapping.LayerCollection EsriLayers { get; }
 
-        private async Task<bool> AddLayerAsync(LayerInfo layer, int index = -1)
+        private async Task AddLayerAsync(LayerInfo layer, int index = -1)
         {
             try
             {
@@ -160,7 +162,6 @@ namespace MapBoard.Main.UI.Map
                 }
                 layer.ApplyStyle();
                 await layer.LayerCompleteAsync();
-                return true;
             }
             catch (Exception ex)
             {
@@ -175,9 +176,7 @@ namespace MapBoard.Main.UI.Map
                 catch
                 {
                 }
-                string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" : "图层" + layer.Name) + "加载失败";
-                await CommonDialog.ShowErrorDialogAsync(ex, error);
-                return false;
+                throw;
             }
         }
 

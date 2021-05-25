@@ -131,6 +131,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IO\Photo.cs" />
     <Compile Include="IO\Kml.cs" />
     <Compile Include="Model\Extension\FeatureAttributeExtension.cs" />
     <Compile Include="Model\Extension\FieldExtension.cs" />

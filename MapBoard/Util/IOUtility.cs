@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using FzLib.IO.FileProperty.Photo;
 using FzLib.UI.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.IO;
@@ -294,6 +295,33 @@ namespace MapBoard.Main.Util
                 }
             }
             await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
+        }
+
+        public async static Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
+        {
+            int index = await CommonDialog.ShowSelectItemDialogAsync("请选择需要导入的内容", new DialogItem[]
+            {
+                new DialogItem("照片位置","根据照片EXIF信息的经纬度，生成点图层"),
+            });
+            switch (index)
+            {
+                case 0:
+                    List<string> files = new List<string>();
+                    string[] extensions = { ".jpg" };
+                    await Task.Run(() =>
+                    {
+                        foreach (var folder in folders)
+                        {
+                            files.AddRange(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Where(file => extensions.Contains(Path.GetExtension(file))));
+                        }
+                    });
+                    await Photo.ImportImageLocation(files, layers);
+
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         public async static Task DropFilesAsync(string[] files, MapLayerCollection layers)

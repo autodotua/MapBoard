@@ -204,6 +204,7 @@ namespace MapBoard.Main.IO
                 File.WriteAllBytes(shpPath, bytes);
             }
             File.WriteAllText(Path.Combine(folder, name + ".prj"), SpatialReferences.Wgs84.WkText);
+            File.WriteAllText(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
         public static async Task<string> CloneFeatureToNewShpAsync(string directory, LayerInfo layer)
