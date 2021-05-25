@@ -52,6 +52,7 @@
                             <TextBlock Text="当前分类" />
                             <TextBlock
                                 x:Name="txtKey" Grid.Column="2"
+                                Margin="4,0"
                                 Text="{Binding SelectedKey.Key}" />
                             <Button
                                 Grid.Column="4" Click="KeyButtonClick"

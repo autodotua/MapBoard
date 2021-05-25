@@ -4,6 +4,7 @@ using MapBoard.Common;
 
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
+using MapBoard.Main.Model.Extension;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
@@ -147,29 +148,19 @@ namespace MapBoard.Main.UI.Panel
                 }
                 if (!Keys.Any(p => p.Key == defaultKeyName))
                 {
-                    Keys.Add(new KeySymbolPair(defaultKeyName, new SymbolInfo()));
+                    Keys.Add(new KeySymbolPair(defaultKeyName, MapView.Layers.Selected.GetDefaultSymbol()));
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
             }
 
-            switch (layer.Table.GeometryType)
+            tab.SelectedIndex = layer.Table.GeometryType switch
             {
-                case Esri.ArcGISRuntime.Geometry.GeometryType.Point:
-                case Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint:
-                    tab.SelectedIndex = 0;
-                    break;
-
-                case Esri.ArcGISRuntime.Geometry.GeometryType.Polyline:
-                    tab.SelectedIndex = 1;
-                    break;
-
-                case Esri.ArcGISRuntime.Geometry.GeometryType.Polygon:
-                    tab.SelectedIndex = 2;
-                    break;
-
-                default:
-                    throw new Exception("未知的类型");
-            }
+                Esri.ArcGISRuntime.Geometry.GeometryType.Point=> 0,
+                Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
+                Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
+                Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
+                _ => throw new Exception("未知的类型"),
+            };
         }
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
@@ -194,6 +185,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
         {
+            ppp.IsOpen = false;
             var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
             if (key != null)
             {
@@ -203,10 +195,13 @@ namespace MapBoard.Main.UI.Panel
                     return;
                 }
 
-                var keySymbol = new KeySymbolPair(key, new SymbolInfo());
+                var keySymbol = new KeySymbolPair(key, MapView.Layers.Selected.GetDefaultSymbol());
                 Keys.Add(keySymbol);
                 SelectedKey = keySymbol;
+
+                ppp.IsOpen = true;
             }
+
         }
 
         private void CloseButtonClick(object sender, RoutedEventArgs e)
@@ -237,17 +232,13 @@ namespace MapBoard.Main.UI.Panel
 
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var style = Layers.Selected;
-            var keys = (await style.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
+            var layer = Layers.Selected;
+            var keys = (await layer.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {
                 if (!Keys.Any(p => p.Key == key) && key != "")
                 {
-                    SymbolInfo symbol = new SymbolInfo()
-                    {
-                        LineColor = GetRandomColor(),
-                        FillColor = GetRandomColor(),
-                    };
+                    SymbolInfo symbol = layer.GetDefaultSymbol();
                     Keys.Add(new KeySymbolPair(key, symbol));
                 }
             }

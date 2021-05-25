@@ -7,6 +7,34 @@ namespace MapBoard.Main.Model
 {
     public class SymbolInfo : INotifyPropertyChanged, ICloneable
     {
+        public static SymbolInfo DefaultPointSymbol =>
+            new SymbolInfo()
+            {
+                Size = 12,
+                OutlineWidth = 2,
+                FillColor = ColorTranslator.FromHtml("#FFE36C09"),
+                LineColor = ColorTranslator.FromHtml("#FFF2F2F2"),
+            };
+
+        public static SymbolInfo DefaultLineSymbol =>
+            new SymbolInfo()
+            {
+                OutlineWidth = 6,
+                LineColor = ColorTranslator.FromHtml("#BB12EDED"),
+            };
+
+        public static SymbolInfo DefaultPolygonSymbol =>
+            new SymbolInfo()
+            {
+                OutlineWidth = 4,
+                FillColor = ColorTranslator.FromHtml("#66008000"),
+                LineColor = ColorTranslator.FromHtml("#FF92CDDC"),
+            };
+
+        public SymbolInfo()
+        {
+        }
+
         private double size = 6;
 
         public double Size

@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping.Labeling;
 using Esri.ArcGISRuntime.Symbology;
 using MapBoard.Common;
 using MapBoard.Main.Model;
+using MapBoard.Main.Model.Extension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace MapBoard.Main.Util
             renderer.FieldNames.Add(Resource.ClassFieldName);
             if (layer.Symbols.Count == 0)
             {
-                layer.Symbols.Add("", new SymbolInfo());
+                layer.Symbols.Add("", layer.GetDefaultSymbol());
             }
             foreach (var info in layer.Symbols)
             {

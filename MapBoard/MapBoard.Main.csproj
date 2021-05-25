@@ -134,6 +134,7 @@
     <Compile Include="IO\Kml.cs" />
     <Compile Include="Model\Extension\FeatureAttributeExtension.cs" />
     <Compile Include="Model\Extension\FieldExtension.cs" />
+    <Compile Include="Model\Extension\StyleExtension.cs" />
     <Compile Include="Model\FeatureAttribute.cs" />
     <Compile Include="Model\FieldInfo.cs" />
     <Compile Include="Model\FeatureAttributes.cs" />

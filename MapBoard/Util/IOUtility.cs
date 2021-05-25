@@ -294,7 +294,6 @@ namespace MapBoard.Main.Util
                 }
             }
             await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
-
         }
 
         public async static Task DropFilesAsync(string[] files, MapLayerCollection layers)
@@ -321,7 +320,6 @@ namespace MapBoard.Main.Util
                     foreach (var file in files)
                     {
                         await Package.ImportLayerAsync(file, layers);
-                        await Task.Delay(500);
                     }
                 }
             }
