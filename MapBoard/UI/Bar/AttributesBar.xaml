@@ -35,6 +35,8 @@
                         <DataTemplate>
                             <TextBlock
                                 Margin="3" VerticalAlignment="Center"
+                                Cursor="Hand"
+                                PreviewMouseLeftButtonDown="TextBlock_PreviewMouseLeftButtonDown"
                                 Text="{Binding .}"
                                 TextWrapping="Wrap" />
                         </DataTemplate>

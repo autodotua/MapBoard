@@ -1,6 +1,10 @@
 ﻿using FzLib.Extension;
+using FzLib.UI.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using static MapBoard.Main.UI.Map.EditorHelper;
@@ -64,6 +68,56 @@ namespace MapBoard.Main.UI.Bar
                 DataGrid grd = (DataGrid)sender;
                 grd.BeginEdit(e);
             }
+        }
+
+        private void TextBlock_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (!dataGrid.Columns[1].IsReadOnly)
+            {
+                return;
+            }
+            string text = (sender as TextBlock).Text;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+            if (File.Exists(text))
+            {
+                try
+                {
+                    Process.Start(text);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            if (Directory.Exists(text))
+            {
+                try
+                {
+                    Process.Start("explorer.exe", text);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            if (Uri.TryCreate(text, UriKind.Absolute, out Uri uriResult)
+    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                try
+                {
+                    Process.Start(text);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            Clipboard.SetText(text);
+            SnakeBar.Show($"已复制{text}到剪贴板");
         }
     }
 }
