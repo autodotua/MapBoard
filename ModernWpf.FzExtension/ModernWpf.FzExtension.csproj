@@ -8,6 +8,10 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <NoWarn>CS0067;CS4014;CS0168;CA1416</NoWarn>
+    <OutputPath>..\Generation\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\Generation\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FzCoreLib.Windows">

@@ -19,12 +19,12 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\Generation\Debug\</OutputPath>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <NoWarn>CS0067;CS4014;CS0168;CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\Generation\Release\</OutputPath>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -61,7 +61,6 @@
     <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AfterBuild\MapBoard.AfterBuild.csproj" />
     <ProjectReference Include="..\EGIS.ShapeFileLib\EGIS.ShapeFileLib.csproj" />
     <ProjectReference Include="..\GpxToolbox\MapBoard.GpxToolbox.csproj" />
     <ProjectReference Include="..\Common\MapBoard.Common.csproj" />
@@ -115,7 +114,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>call AfterBuild.exe</PostBuildEvent>
-  </PropertyGroup>
+  <PropertyGroup />
 </Project>

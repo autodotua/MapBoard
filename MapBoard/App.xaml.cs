@@ -1,10 +1,13 @@
-﻿using FzLib.WPF.Dialog;
+﻿using FzLib.Program.Runtime;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using ModernWpf.Controls;
 using ModernWpf.FzExtension;
+using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MapBoard.Main
@@ -25,7 +28,9 @@ namespace MapBoard.Main
             //};
             //return;
 #else
-            UnhandledException.RegistAll(true);
+            UnhandledException.RegistAll();
+            UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
+
 #endif
             Config.Instance.ThemeChanged += (p1, p2) =>
             {
@@ -55,6 +60,40 @@ namespace MapBoard.Main
             if (xcr != null)
             {
                 xcr.UseCompactResources = true;
+            }
+        }
+
+        private async void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
+        {
+            //await Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        LogUtility.AddLog(e.Exception.Message, e.Exception.ToString());
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //    }
+            //});
+            if (!e.Exception.Source.StartsWith("Microsoft.EntityFrameworkCore"))
+            {
+                await Dispatcher.Invoke(async () =>
+                {
+                    try
+                    {
+                        await CommonDialog.ShowErrorDialogAsync(e.Exception, "程序出现异常");
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            MessageBox.Show(e.Exception.ToString());
+                        }
+                        catch
+                        {
+                        }
+                    }
+                });
             }
         }
     }
