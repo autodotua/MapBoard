@@ -5,7 +5,7 @@ using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic.Collection;
 using FzLib.Geography.IO.Gpx;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.GpxToolbox.Model;

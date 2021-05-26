@@ -1,51 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AD7451A5-7743-42E9-A988-2C292F629F76}</ProjectGuid>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>MapBoard.GpxToolbox</RootNamespace>
-    <AssemblyName>MapBoard.GpxToolbox</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\Generation\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
-    <NoWarn>CS0067;CS4014;CS0168</NoWarn>
+    <NoWarn>CS0067;CS4014;CS0168;CA1416</NoWarn>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
     <OutputPath>..\Generation\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FzDesktopLib.Windows">
-      <HintPath>..\libs\FzDesktopLib.Windows.dll</HintPath>
+    <Reference Include="FzCoreLib.Windows">
+      <HintPath>..\libs\FzCoreLib.Windows.dll</HintPath>
     </Reference>
     <Reference Include="FzGeographyLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -55,9 +31,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FzStandardLib.dll</HintPath>
     </Reference>
-    <Reference Include="FzUILib.WPF">
-      <HintPath>..\libs\FzUILib.WPF.dll</HintPath>
-    </Reference>
     <Reference Include="GeoAPI, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\GeoAPI.dll</HintPath>
@@ -66,97 +39,35 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\GeoAPI.CoordinateSystems.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\Microsoft.WindowsAPICodePack.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
-    </Reference>
-    <Reference Include="netstandard" />
-    <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\NetTopologySuite.dll</HintPath>
-    </Reference>
     <Reference Include="ProjNET, Version=1.4.0.0, Culture=neutral, PublicKeyToken=a1f5bdcd9c6f5740, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\ProjNET.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UI\ArcMapView.cs" />
-    <Compile Include="GpxHelper.cs" />
-    <Compile Include="Model\SymbolResources.cs" />
-    <Compile Include="UI\BrowseWindow.xaml.cs">
-      <DependentUpon>BrowseWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\TimeBasedChartHelper.cs" />
-    <Compile Include="Model\TrackInfo.cs" />
-    <Page Include="UI\BrowseWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="Model\Log.cs" />
-    <Compile Include="UI\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <ProjectReference Include="..\Common\MapBoard.Common.csproj" />
+    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\MapBoard.Common.csproj">
-      <Project>{7f99ef14-0e45-4d03-99bb-f9d918a9a0ad}</Project>
-      <Name>MapBoard.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj">
-      <Project>{f5d99d6b-c794-4e2d-bb07-172d2ee954bb}</Project>
-      <Name>ModernWpf.FzExtension</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Esri.ArcGISRuntime">
-      <Version>100.11.0</Version>
-    </PackageReference>
-    <PackageReference Include="Esri.ArcGISRuntime.WPF">
-      <Version>100.11.0</Version>
-    </PackageReference>
+    <PackageReference Include="Esri.ArcGISRuntime.WPF" Version="100.11.0" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
-      <Version>1.1.3.3</Version>
+      <Version>1.1.4</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.4</Version>
     </PackageReference>
+    <PackageReference Include="NetTopologySuite" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
     </PackageReference>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Remove="MapView.cs" />
+    <Compile Remove="SpeedChart.xaml.cs" />
+    <Page Remove="SpeedChart.xaml" />
+  </ItemGroup>
 </Project>

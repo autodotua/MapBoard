@@ -1,8 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.UI.Dialog;
-using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

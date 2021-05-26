@@ -1,4 +1,4 @@
-﻿<common:MainWindowBase
+﻿<common:WindowBase
     x:Class="MapBoard.Main.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -101,7 +101,7 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="grdCenter" Grid.Column="2">
                 <Border ClipToBounds="True">
-                    <map:ArcMapView x:Name="arcMap" />
+                    <map:ArcMapView x:Name="arcMap" PreviewDrop="arcMap_PreviewDrop" />
                 </Border>
 
                 <bar:EditionBar
@@ -341,4 +341,4 @@
                 Grid.ColumnSpan="100" />
         </Grid>
     </Grid>
-</common:MainWindowBase>
+</common:WindowBase>

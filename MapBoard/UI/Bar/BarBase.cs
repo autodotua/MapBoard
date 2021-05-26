@@ -1,5 +1,4 @@
-﻿using FzLib.UI.Converter;
-using MapBoard.Main.Model;
+﻿using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;
 using System.ComponentModel;

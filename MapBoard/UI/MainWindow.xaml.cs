@@ -2,8 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Basic.Collection;
-using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
@@ -33,7 +32,7 @@ namespace MapBoard.Main.UI
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : MainWindowBase
+    public partial class MainWindow : WindowBase
     {
         #region 字段和属性
 
@@ -73,37 +72,6 @@ namespace MapBoard.Main.UI
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        protected async override void OnDrop(DragEventArgs e)
-        {
-            base.OnDrop(e);
-            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
-            {
-                SnakeBar.ShowError(this, "不支持的格式");
-                return;
-            }
-            if (files.Select(p => Path.GetExtension(p)).Distinct().Count() > 1)
-            {
-                SnakeBar.ShowError(this, "不支持拖放含多个格式的文件或文件夹");
-            }
-            int fileCount = files.Count(p => File.Exists(p));
-            int folderCount = files.Count(p => Directory.Exists(p));
-            if (fileCount * folderCount != 0)
-            {
-                SnakeBar.ShowError(this, "不支持同时包含文件和文件夹");
-            }
-            await DoAsync(async () =>
-            {
-                if (fileCount > 0)
-                {
-                    await IOUtility.DropFilesAsync(files, arcMap.Layers);
-                }
-                else
-                {
-                    await IOUtility.DropFoldersAsync(files, arcMap.Layers);
-                }
-            });
         }
 
         private void RegistEvents()
@@ -504,6 +472,40 @@ namespace MapBoard.Main.UI
         private void AboutMenu_Click(object sender, RoutedEventArgs e)
         {
             CommonDialog.ShowOkDialogAsync("关于", "开发人员：autodotua", "github:https://github.com/autodotua/MapBoard");
+        }
+
+        private async void arcMap_PreviewDrop(object sender, DragEventArgs e)
+        {
+            if(e.Data.GetDataPresent("MapBoard.Main.Model.LayerInfo"))
+            {
+                return;
+            }
+            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
+            {
+                SnakeBar.ShowError(this, "不支持的格式");
+                return;
+            }
+            if (files.Select(p => Path.GetExtension(p)).Distinct().Count() > 1)
+            {
+                SnakeBar.ShowError(this, "不支持拖放含多个格式的文件或文件夹");
+            }
+            int fileCount = files.Count(p => File.Exists(p));
+            int folderCount = files.Count(p => Directory.Exists(p));
+            if (fileCount * folderCount != 0)
+            {
+                SnakeBar.ShowError(this, "不支持同时包含文件和文件夹");
+            }
+            await DoAsync(async () =>
+            {
+                if (fileCount > 0)
+                {
+                    await IOUtility.DropFilesAsync(files, arcMap.Layers);
+                }
+                else
+                {
+                    await IOUtility.DropFoldersAsync(files, arcMap.Layers);
+                }
+            });
         }
     }
 }

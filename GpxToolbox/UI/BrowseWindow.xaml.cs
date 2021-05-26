@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Geography.Analysis;
 using FzLib.Geography.IO.Gpx;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.GpxToolbox.Model;
 using ModernWpf.FzExtension.CommonDialog;
@@ -20,13 +20,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
 using static MapBoard.GpxToolbox.Model.SymbolResources;
+using FzLib.Extension;
 
 namespace MapBoard.GpxToolbox.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class BrowseWindow : MainWindowBase
+    public partial class BrowseWindow : WindowBase
     {
         public BrowseWindow(TrackInfo track)
         {
@@ -236,7 +237,7 @@ namespace MapBoard.GpxToolbox.UI
             get => track;
             set
             {
-                SetValueAndNotify(ref track, value, nameof(Track));
+                this.SetValueAndNotify(ref track, value, nameof(Track));
             }
         }
 

@@ -1,5 +1,5 @@
 ﻿using FzLib.Extension;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;

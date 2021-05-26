@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Basic;
 using FzLib.Extension;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.Model;
 using MapBoard.Main.Util;

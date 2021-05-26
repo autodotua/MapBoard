@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 
 using MapBoard.Main.Model;

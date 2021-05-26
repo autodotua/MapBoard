@@ -2,7 +2,6 @@
 using FzLib.Basic;
 using FzLib.Extension;
 using MapBoard.Common;
-using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
 using MapBoard.Main.UI.Map;

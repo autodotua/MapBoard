@@ -1,5 +1,5 @@
-﻿using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
+﻿using FzLib.WPF.Dialog;
+using FzLib.WPF.Extension;
 using MapBoard.Common;
 using MapBoard.Main.UI.Map;
 using System;
@@ -16,7 +16,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class BaseLayerSettingDialog : Common.Dialog.DialogWindowBase
+    public partial class BaseLayerSettingDialog : Common.DialogWindowBase
     {
         public Config Config => Config.Instance;
 

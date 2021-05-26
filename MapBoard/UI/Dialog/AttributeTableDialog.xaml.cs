@@ -11,13 +11,14 @@ using System.Windows.Documents;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using MapBoard.Main.Model.Extension;
+using FzLib.Extension;
 
 namespace MapBoard.Main.UI.Dialog
 {
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class AttributeTableDialog : Common.Dialog.DialogWindowBase
+    public partial class AttributeTableDialog : Common.DialogWindowBase
     {
         private FeatureAttributes[] attributes;
 

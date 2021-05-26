@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:flat="clr-namespace:FzLib.UI.FlatStyle;assembly=FzUILib.WPF"
-    xmlns:local="clr-namespace:MapBoard.Common.Dialog;assembly=MapBoard.Common"
+
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="请选择目标" CloseButtonText="取消"
@@ -24,5 +23,4 @@
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
-
 </commondialog:CommonDialog>

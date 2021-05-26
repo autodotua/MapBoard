@@ -1,7 +1,7 @@
-﻿using FzLib.UI.Dialog;
+﻿using FzLib.Extension;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
-using MapBoard.Common.Dialog;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using System;
@@ -23,7 +23,7 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SettingDialog : Common.Dialog.DialogWindowBase
+    public partial class SettingDialog : Common.DialogWindowBase
     {
         public SettingDialog()
         {
@@ -41,7 +41,7 @@ namespace MapBoard.Main.UI.Dialog
             var dialog = new BaseLayerSettingDialog(ArcMapView.Instances.First());
             dialog.Closed += (p1, p2) =>
             {
-                Notify(nameof(Config));
+                this.Notify(nameof(Config));
             };
             dialog.ShowDialog();
         }

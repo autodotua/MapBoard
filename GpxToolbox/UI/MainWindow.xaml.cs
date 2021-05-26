@@ -2,7 +2,6 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
-using FzLib.UI.Dialog;
 using FzLib.DataAnalysis;
 using FzLib.Extension;
 using GIS.Geometry;
@@ -19,12 +18,9 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using static MapBoard.GpxToolbox.Model.SymbolResources;
-using MessageBox = FzLib.UI.Dialog.MessageBox;
 using Envelope = Esri.ArcGISRuntime.Geometry.Envelope;
-using FzLib.UI.Extension;
 using Esri.ArcGISRuntime.Symbology;
 using System.Diagnostics;
-using MapBoard.Common.Dialog;
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
@@ -36,13 +32,15 @@ using System.Collections.ObjectModel;
 using ModernWpf.FzExtension.CommonDialog;
 using System.Threading.Tasks;
 using MapBoard.GpxToolbox.Model;
+using FzLib.WPF.Extension;
+using FzLib.WPF.Dialog;
 
 namespace MapBoard.GpxToolbox.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : MainWindowBase
+    public partial class MainWindow : WindowBase
     {
         public ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
 
@@ -273,7 +271,7 @@ namespace MapBoard.GpxToolbox.UI
         public Gpx Gpx
         {
             get => gpx;
-            set => SetValueAndNotify(ref gpx, value, nameof(Gpx));
+            set => this.SetValueAndNotify(ref gpx, value, nameof(Gpx));
         }
 
         private GpxTrack gpxTrack;
@@ -283,7 +281,7 @@ namespace MapBoard.GpxToolbox.UI
             get => gpxTrack;
             set
             {
-                SetValueAndNotify(ref gpxTrack, value, nameof(GpxTrack));
+                this.SetValueAndNotify(ref gpxTrack, value, nameof(GpxTrack));
                 grdLeft.IsEnabled = value != null;
             }
         }
@@ -318,17 +316,15 @@ namespace MapBoard.GpxToolbox.UI
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
         }
 
-        private void SpeedButtonClick(object sender, RoutedEventArgs e)
+        private async void SpeedButtonClick(object sender, RoutedEventArgs e)
         {
-            if (InputBox.GetInput("请选择单边采样率：", out string result, null, "3", "[1-9]", false, this))
+            int? num = await CommonDialog.ShowIntInputDialogAsync("请选择单边采样率");
+            if (num.HasValue)
             {
-                if (int.TryParse(result, out int intResult))
+                foreach (var item in GpxTrack.Points)
                 {
-                    foreach (var item in GpxTrack.Points)
-                    {
-                        double speed = GpxTrack.Points.GetSpeed(item as GpxPoint, intResult);
-                        item.Speed = speed;
-                    }
+                    double speed = GpxTrack.Points.GetSpeed(item as GpxPoint, num.Value);
+                    item.Speed = speed;
                 }
             }
 
@@ -337,7 +333,7 @@ namespace MapBoard.GpxToolbox.UI
             grdPoints.ItemsSource = source;
         }
 
-        private void SaveFileButtonClick(object sender, RoutedEventArgs e)
+        private async void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
             string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx"), true, Gpx.Name + ".gpx");
             if (path != null)
@@ -349,7 +345,7 @@ namespace MapBoard.GpxToolbox.UI
                 }
                 catch (Exception ex)
                 {
-                    SnakeBar.ShowException(ex, "导出失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }
         }
@@ -376,15 +372,13 @@ namespace MapBoard.GpxToolbox.UI
 
         #region 点菜单
 
-        private void SpeedMenuItemClick(object sender, RoutedEventArgs e)
+        private async void SpeedMenuItemClick(object sender, RoutedEventArgs e)
         {
-            if (InputBox.GetInput("请选择单边采样率：", out string result, null, "3", "[1-9]", false, this))
+            int? num = await CommonDialog.ShowIntInputDialogAsync("请选择单边采样率");
+            if (num.HasValue)
             {
-                if (int.TryParse(result, out int intResult))
-                {
-                    double speed = GpxTrack.Points.GetSpeed(grdPoints.SelectedItem as GpxPoint, intResult);
-                    MessageBox.ShowPrompt("速度为：" + speed.ToString("0.00") + "m/s，" + (3.6 * speed).ToString("0.00") + "km/h");
-                }
+                double speed = GpxTrack.Points.GetSpeed(grdPoints.SelectedItem as GpxPoint, num.Value);
+                await CommonDialog.ShowOkDialogAsync("速度为：" + speed.ToString("0.00") + "m/s，" + (3.6 * speed).ToString("0.00") + "km/h");
             }
         }
 
@@ -673,24 +667,18 @@ namespace MapBoard.GpxToolbox.UI
             }
         }
 
-        private void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
+        private async void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
         {
-            if (InputBox.GetInput("请输入偏移值：", out string result, null, "", @"^[0-9]{0,5}(\.[0-9]+)?$", false, this))
+            double? num = await CommonDialog.ShowDoubleInputDialogAsync("请选择单边采样率");
+            if (num.HasValue)
             {
-                if (double.TryParse(result, out double num))
+                foreach (var point in GpxTrack.Points)
                 {
-                    foreach (var point in GpxTrack.Points)
-                    {
-                        point.Z += num;
-                    }
-                    var temp = GpxTrack;
-                    GpxTrack = null;
-                    GpxTrack = temp;
+                    point.Z += num.Value;
                 }
-                else
-                {
-                    SnakeBar.ShowError("输入的不是数字");
-                }
+                var temp = GpxTrack;
+                GpxTrack = null;
+                GpxTrack = temp;
             }
         }
 

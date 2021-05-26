@@ -2,7 +2,7 @@
     x:Class="ModernWpf.FzExtension.ProgressRingOverlay"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converter="clr-namespace:FzLib.UI.Converter;assembly=FzUILib.WPF"
+    xmlns:cvt="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -13,7 +13,7 @@
         x:Name="grd" Opacity="0"
         Visibility="Collapsed">
         <Grid.Resources>
-            <converter:Bool2VisibilityConverter x:Key="b2vc" />
+            <cvt:Bool2VisibilityConverter x:Key="b2vc" />
         </Grid.Resources>
         <Border
             x:Name="border"

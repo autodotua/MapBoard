@@ -1,6 +1,4 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
 using FzLib.Geography.IO.Tile;
 using System;
 using System.Collections.Generic;
@@ -18,13 +16,16 @@ using System.Windows.Media.Imaging;
 using GeoPoint = NetTopologySuite.Geometries.Point;
 using ModernWpf.FzExtension.CommonDialog;
 using MapBoard.TileDownloaderSplicer.Model;
+using MapBoard.Common;
+using FzLib.Extension;
+using FzLib.WPF.Dialog;
 
 namespace MapBoard.TileDownloaderSplicer.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : ExtendedWindow
+    public partial class MainWindow : WindowBase
     {
         public Config Config => Config.Instance;
 
@@ -77,25 +78,32 @@ namespace MapBoard.TileDownloaderSplicer.UI
 
         public ObservableCollection<dynamic> DownloadErrors { get; } = new ObservableCollection<dynamic>();
         private string lastdownloadingTile = "还未下载";
-        public string LastDownloadingTile { get => lastdownloadingTile; set => SetValueAndNotify(ref lastdownloadingTile, value, nameof(LastDownloadingTile)); }
-        private string lastdownloadingStatus = "准备就绪";
-        public string LastDownloadingStatus { get => lastdownloadingStatus; set => SetValueAndNotify(ref lastdownloadingStatus, value, nameof(LastDownloadingStatus)); }
-        private string downloadingProgressStatus = "准备就绪";
-        public string DownloadingProgressStatus { get => downloadingProgressStatus; set => SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus)); }
 
-        //private int downloadingProgressValue = 0;
-        //public int DownloadingProgressValue
-        //{
-        //    get => downloadingProgressValue;
-        //    set
-        //    {
-        //        SetValueAndNotify(ref downloadingProgressValue, value, nameof(DownloadingProgressValue));
-        //        DownloadingProgressPercent = (double)value / CurrentDownload.TileCount;
-        //    }
-        //}
+        public string LastDownloadingTile
+        {
+            get => lastdownloadingTile;
+            set => this.SetValueAndNotify(ref lastdownloadingTile, value, nameof(LastDownloadingTile));
+        }
+
+        private string lastdownloadingStatus = "准备就绪";
+
+        public string LastDownloadingStatus
+        {
+            get => lastdownloadingStatus;
+            set => this.SetValueAndNotify(ref lastdownloadingStatus, value, nameof(LastDownloadingStatus));
+        }
+
+        private string downloadingProgressStatus = "准备就绪";
+
+        public string DownloadingProgressStatus
+        {
+            get => downloadingProgressStatus;
+            set => this.SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus));
+        }
+
         private double downloadingProgressPercent = 0;
 
-        public double DownloadingProgressPercent { get => downloadingProgressPercent; set => SetValueAndNotify(ref downloadingProgressPercent, value, nameof(DownloadingProgressPercent)); }
+        public double DownloadingProgressPercent { get => downloadingProgressPercent; set => this.SetValueAndNotify(ref downloadingProgressPercent, value, nameof(DownloadingProgressPercent)); }
         private DownloadStatus currentDownloadStatus = DownloadStatus.Stop;
 
         public DownloadStatus CurrentDownloadStatus
@@ -103,7 +111,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
             get => currentDownloadStatus;
             set
             {
-                SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
+                this.SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
                 switch (value)
                 {
                     case DownloadStatus.Downloading:
@@ -129,7 +137,7 @@ namespace MapBoard.TileDownloaderSplicer.UI
         public bool ServerOn
         {
             get => serverOn;
-            set => SetValueAndNotify(ref serverOn, value, nameof(ServerOn));
+            set => this.SetValueAndNotify(ref serverOn, value, nameof(ServerOn));
         }
 
         /// <summary>
@@ -175,13 +183,13 @@ namespace MapBoard.TileDownloaderSplicer.UI
         public DownloadInfo CurrentDownload
         {
             get => currentDownload;
-            set => SetValueAndNotify(ref currentDownload, value, nameof(CurrentDownload));
+            set => this.SetValueAndNotify(ref currentDownload, value, nameof(CurrentDownload));
         }
 
         public bool ControlsEnable
         {
             get => controlsEnable;
-            set => SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
+            set => this.SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
         }
 
         private bool waiting = false;

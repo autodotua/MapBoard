@@ -4,8 +4,7 @@ using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.IO.FileProperty.Photo;
-using FzLib.UI.Dialog;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
@@ -22,7 +21,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using static FzLib.UI.Common;
 
 namespace MapBoard.Main.Util
 {

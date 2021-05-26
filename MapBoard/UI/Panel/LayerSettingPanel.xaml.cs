@@ -1,5 +1,5 @@
-﻿using FzLib.UI.Dialog;
-using FzLib.UI.Extension;
+﻿using FzLib.Extension;
+using FzLib.WPF.Dialog;
 using MapBoard.Common;
 
 using MapBoard.Main.IO;
@@ -27,7 +27,7 @@ namespace MapBoard.Main.UI.Panel
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class LayerSettingPanel : ExtendedUserControl
+    public partial class LayerSettingPanel : UserControlBase
     {
         private const string defaultKeyName = "（默认）";
 
@@ -49,7 +49,7 @@ namespace MapBoard.Main.UI.Panel
             get => selectedKey;
             set
             {
-                SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
+                this.SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
 
                 btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
             }
@@ -60,7 +60,7 @@ namespace MapBoard.Main.UI.Panel
         public string LayerName
         {
             get => layerName;
-            set => SetValueAndNotify(ref layerName, value, nameof(LayerName));
+            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
         }
 
         private LabelInfo label;
@@ -68,7 +68,7 @@ namespace MapBoard.Main.UI.Panel
         public LabelInfo Label
         {
             get => label;
-            set => SetValueAndNotify(ref label, value, nameof(Label));
+            set => this.SetValueAndNotify(ref label, value, nameof(Label));
         }
 
         public async Task SetStyleFromUI()
@@ -106,7 +106,7 @@ namespace MapBoard.Main.UI.Panel
                 }
                 catch (Exception ex)
                 {
-                    SnakeBar.ShowException(ex, "重命名失败");
+                    await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
                 }
             end:
                 layer.Table = null;
@@ -155,7 +155,7 @@ namespace MapBoard.Main.UI.Panel
 
             tab.SelectedIndex = layer.Table.GeometryType switch
             {
-                Esri.ArcGISRuntime.Geometry.GeometryType.Point=> 0,
+                Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
                 Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
                 Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
                 Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
@@ -201,7 +201,6 @@ namespace MapBoard.Main.UI.Panel
 
                 ppp.IsOpen = true;
             }
-
         }
 
         private void CloseButtonClick(object sender, RoutedEventArgs e)

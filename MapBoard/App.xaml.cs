@@ -1,5 +1,4 @@
-﻿using FzLib.UI.Dialog;
-using FzLib.UI.Program;
+﻿using FzLib.WPF.Dialog;
 using ModernWpf.Controls;
 using System;
 using System.Globalization;
