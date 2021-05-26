@@ -85,7 +85,13 @@ namespace MapBoard.Main.UI.Bar
             {
                 try
                 {
-                    Process.Start(text);
+                    new Process
+                    {
+                        StartInfo = new ProcessStartInfo(text)
+                        {
+                            UseShellExecute = true
+                        }
+                    }.Start();
                     return;
                 }
                 catch (Exception ex)
@@ -108,7 +114,13 @@ namespace MapBoard.Main.UI.Bar
             {
                 try
                 {
-                    Process.Start(text);
+                 new Process
+                    {
+                        StartInfo = new ProcessStartInfo(text)
+                        {
+                            UseShellExecute = true
+                        }
+                    }.Start();
                     return;
                 }
                 catch (Exception ex)

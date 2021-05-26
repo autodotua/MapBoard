@@ -36,6 +36,24 @@ namespace MapBoard.Main.UI.Dialog
 
         public Config Config => Config.Instance;
 
+        public int Theme
+        {
+            get => Config.Theme switch
+            {
+                0 => 0,
+                1 => 1,
+                -1 => 2,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            set => Config.Theme = value switch
+            {
+                0 => 0,
+                1 => 1,
+                2 => -1,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
         private void SetBaseLayersButtonClick(object sender, RoutedEventArgs e)
         {
             var dialog = new BaseLayerSettingDialog(ArcMapView.Instances.First());

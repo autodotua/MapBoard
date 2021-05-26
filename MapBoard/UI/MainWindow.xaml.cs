@@ -476,7 +476,7 @@ namespace MapBoard.Main.UI
 
         private async void arcMap_PreviewDrop(object sender, DragEventArgs e)
         {
-            if(e.Data.GetDataPresent("MapBoard.Main.Model.LayerInfo"))
+            if (e.Data.GetDataPresent(typeof(LayerInfo).FullName))
             {
                 return;
             }

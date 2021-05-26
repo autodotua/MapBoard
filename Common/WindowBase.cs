@@ -20,7 +20,10 @@ namespace MapBoard.Common
         public WindowBase()
         {
             DataContext = this;
+            WindowCreated?.Invoke(this, new EventArgs());
         }
+
+        public static event EventHandler WindowCreated;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

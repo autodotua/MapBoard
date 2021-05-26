@@ -55,6 +55,19 @@ namespace MapBoard.Common
         public bool GpxAutoSmooth { get; set; } = true;
         public bool GpxAutoSmoothOnlyZ { get; set; } = false;
         public int GpxAutoSmoothLevel { get; set; } = 5;
+        private int theme = 0;
+
+        public int Theme
+        {
+            get => theme;
+            set
+            {
+                theme = value;
+                ThemeChanged?.Invoke(this, new EventArgs());
+            }
+        }
+
+        public event EventHandler ThemeChanged;
     }
 
     public class BrowseInfo : INotifyPropertyChanged

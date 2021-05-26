@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 namespace MapBoard.Main.UI.Converter
 {
-    internal class GeometryTypeDescriptionConverter : IValueConverter
+    public class GeometryTypeDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

@@ -1,5 +1,7 @@
 ﻿using FzLib.WPF.Dialog;
+using MapBoard.Common;
 using ModernWpf.Controls;
+using ModernWpf.FzExtension;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -25,7 +27,14 @@ namespace MapBoard.Main
 #else
             UnhandledException.RegistAll(true);
 #endif
-
+            Config.Instance.ThemeChanged += (p1, p2) =>
+            {
+                Theme.SetTheme(Config.Instance.Theme);
+            };
+            WindowBase.WindowCreated += (p1, p2) =>
+            {
+                Theme.SetTheme(Config.Instance.Theme, p1 as Window);
+            };
             SnakeBar.DefaultOwner = new WindowOwner(true);
             if (e.Args.Length > 0)
             {
