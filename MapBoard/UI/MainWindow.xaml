@@ -239,29 +239,66 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Button
-                            Grid.Column="4"
-                            HorizontalAlignment="Stretch"
-                            Click="AddBtnClick" Content="添加" />
-                        <Button
-                            Grid.Column="0"
-                            HorizontalAlignment="Stretch"
-                            Click="ImportBtnClick" Content="导入" />
-                        <Button
-                            Grid.Column="2"
-                            HorizontalAlignment="Stretch"
-                            Click="ExportBtnClick" Content="导出" />
+                        <Button Grid.Column="0" HorizontalAlignment="Stretch">
+                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
+                                <ui:SymbolIcon Symbol="Import" />
+                                <TextBlock>导入</TextBlock>
+                            </ui:SimpleStackPanel>
+                            <ui:FlyoutService.Flyout>
+                                <ui:MenuFlyout>
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="地图包（覆盖）" Tag="1" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="地图包（追加）" Tag="2" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click" Header="图层包"
+                                        Tag="3" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="GPX轨迹文件" Tag="4" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="Shapefile" Tag="5" />
+                                </ui:MenuFlyout>
+                            </ui:FlyoutService.Flyout>
+                        </Button>
+                        <Button Grid.Column="2" HorizontalAlignment="Stretch">
+                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
+                                <ui:FontIcon Glyph="&#xEDE1;" />
+                                <TextBlock>导出</TextBlock>
+                            </ui:SimpleStackPanel>
+                            <ui:FlyoutService.Flyout>
+                                <ui:MenuFlyout>
+                                    <MenuItem
+                                        Click="ExportMenu_Click" Header="地图包"
+                                        Tag="1" />
+                                    <MenuItem
+                                        Click="ExportMenu_Click"
+                                        Header="移动GIS工具箱图层包" Tag="2" />
+                                    <MenuItem
+                                        Click="ExportMenu_Click"
+                                        Header="KML打包文件" Tag="3" />
+                                    <MenuItem
+                                        Click="ExportMenu_Click" Header="截图"
+                                        Tag="4" />
+                                </ui:MenuFlyout>
+                            </ui:FlyoutService.Flyout>
+                        </Button>
                         <Button
                             Grid.Row="0" Grid.Column="6"
                             HorizontalAlignment="Stretch"
-                            Click="OpenFolderButtonClick"
-                            Content="目录" />
+                            Click="OpenFolderButtonClick">
+                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
+                                <ui:FontIcon Glyph="&#xE838;" />
+                                <TextBlock>目录</TextBlock>
+                            </ui:SimpleStackPanel>
+                        </Button>
                     </Grid>
                     <Grid x:Name="grdButtons" Grid.Row="100">
                         <Grid.ColumnDefinitions>

@@ -93,6 +93,7 @@ namespace MapBoard.Main.UI
         }
 
         private bool closing = false;
+        private bool canClosing = true;
 
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
@@ -101,6 +102,10 @@ namespace MapBoard.Main.UI
                 return;
             }
             e.Cancel = true;
+            if (!canClosing)
+            {
+                return;
+            }
             Config.Save();
             arcMap.Layers.Save();
             if (arcMap.CurrentTask == BoardTask.Draw)
@@ -145,26 +150,6 @@ namespace MapBoard.Main.UI
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
             await StartDraw(sender);
-        }
-
-        private async void ExportBtnClick(object sender, RoutedEventArgs e)
-        {
-            if (!Directory.Exists(Config.DataPath))
-            {
-                SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
-                return;
-            }
-            await IOUtility.ExportMapAsync(arcMap, arcMap.Layers);
-        }
-
-        private async void ImportBtnClick(object sender, RoutedEventArgs e)
-        {
-            await DoAsync(() => IOUtility.ImportPackageAsync(arcMap.Layers));
-        }
-
-        private async void AddBtnClick(object sender, RoutedEventArgs e)
-        {
-            await DoAsync(() => IOUtility.AddLayerAsync(arcMap.Layers));
         }
 
         private void JudgeControlsEnable()
@@ -506,6 +491,29 @@ namespace MapBoard.Main.UI
                     await IOUtility.DropFoldersAsync(files, arcMap.Layers);
                 }
             });
+        }
+
+        private void ImportMenu_Click(object sender, RoutedEventArgs e)
+        {
+            DoAsync(async () =>
+            {
+                await IOUtility.ImportMapAsync(arcMap.Layers, (ImportMapType)int.Parse((sender as FrameworkElement).Tag as string));
+            });
+        }
+
+        private void ExportMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Directory.Exists(Config.DataPath))
+            {
+                SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
+                return;
+            }
+            canClosing = false;
+            DoAsync(async () =>
+            {
+                await IOUtility.ExportMapAsync(arcMap, arcMap.Layers, (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string));
+            });
+            canClosing = true;
         }
     }
 }

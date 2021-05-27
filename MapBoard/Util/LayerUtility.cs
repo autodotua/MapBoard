@@ -125,16 +125,25 @@ namespace MapBoard.Main.Util
             await layer.SetTimeExtentAsync();
         }
 
-        public async static Task BufferAsync(this LayerInfo layer, MapLayerCollection layers)
+        public async static Task BufferAsync(this LayerInfo layer, MapLayerCollection layers, double meters)
         {
-            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, layer);
+            var template = new LayerInfo();
+            foreach (var symbol in layer.Symbols)
+            {
+                template.Symbols.Add(symbol.Key, new SymbolInfo()
+                {
+                    OutlineWidth = 0,
+                    FillColor = symbol.Value.LineColor
+                });
+            }
+            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name+"_缓冲区");
 
             ShapefileFeatureTable newTable = newLayer.Table;
 
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
-                var geometry = GeometryEngine.Buffer(oldGeometry, Config.Instance.StaticWidth);
+                var geometry = GeometryEngine.Buffer(oldGeometry, meters);
                 Feature newFeature = newTable.CreateFeature(feature.Attributes, geometry);
                 await newTable.AddFeatureAsync(newFeature);
             }

@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task ImportAsync(string path, LayerInfo layer)
+        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, LayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();
@@ -166,6 +166,7 @@ namespace MapBoard.Main.IO
                 }
             }
             await layer.Table.AddFeaturesAsync(features);
+            return features.AsReadOnly();
         }
     }
 }

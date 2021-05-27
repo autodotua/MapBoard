@@ -22,93 +22,87 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace MapBoard.Main.Util
+namespace MapBoard.Main.UI
 {
     public static class IOUtility
     {
-        public async static Task ImportFeatureAsync(LayerInfo layer, ArcMapView mapView)
+        public async static Task ImportFeatureAsync(LayerInfo layer, ArcMapView mapView, ImportLayerType type)
         {
-            FileFilterCollection filter = null;
-
-            if (layer.Table.GeometryType != GeometryType.Polygon)
+            FileFilterCollection filter = new FileFilterCollection();
+            filter = type switch
             {
-                filter = new FileFilterCollection()
-                    .Add("CSV表格", "csv")
-                    .Add("GPS轨迹文件", "gpx")
-                    .AddUnion();
-            }
-            else
-            {
-                filter = new FileFilterCollection()
-                  .Add("CSV表格", "csv");
-            }
+                ImportLayerType.Gpx => filter.Add("GPS轨迹文件", "gpx"),
+                ImportLayerType.Csv => filter.Add("CSV表格", "csv"),
+                _ => throw new ArgumentOutOfRangeException()
+            };
             string path = FileSystemDialog.GetOpenFile(filter);
-            try
-            {
-                switch (Path.GetExtension(path))
-                {
-                    case ".gpx":
-                        Feature[] features = await Gpx.ImportToLayerAsync(path, layer);
-                        if (features.Length > 1)
-                        {
-                            SnakeBar.Show("导入GPX成功");
-                        }
-                        else
-                        {
-                            SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
-                            snake.ShowButton = true;
-                            snake.ButtonContent = "查看";
-                            snake.ButtonClick += async (p1, p2) => await mapView.ZoomToGeometryAsync(GeometryEngine.Project(features[0].Geometry.Extent, SpatialReferences.WebMercator));
-
-                            snake.ShowMessage("已导出到" + path);
-                        }
-                        break;
-
-                    case ".csv":
-                        await Csv.ImportAsync(path, layer);
-                        SnakeBar.Show("导入CSV成功");
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
-            }
-        }
-
-        public async static Task ExportLayerAsync(LayerInfo layer, LayerCollection layers)
-        {
-            System.Diagnostics.Debug.Assert(layer != null);
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
-                .Add("地图画板图层包", "mblpkg")
-                .Add("GIS工具箱图层", "zip")
-                .Add("KML打包文件", "kmz")
-                , true, layer.Name);
             if (path != null)
             {
                 try
                 {
-                    SnakeBar.Show("正在导出，请勿关闭程序");
-                    await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
-                     {
-                         switch (Path.GetExtension(path))
-                         {
-                             case ".mblpkg":
-                                 await Package.ExportLayer2Async(path, layer, layers);
-                                 break;
+                    IReadOnlyList<Feature> features = null;
+                    switch (type)
+                    {
+                        case ImportLayerType.Gpx:
+                            features = await Gpx.ImportToLayerAsync(path, layer);
+                            break;
 
-                             case ".zip":
-                                 await MobileGISToolBox.ExportLayerAsync(path, layer);
-                                 break;
+                        case ImportLayerType.Csv:
+                            features = await Csv.ImportAsync(path, layer);
+                            break;
 
-                             case ".kmz":
-                                 await Kml.ExportAsync(path, layer);
-                                 break;
+                        default:
+                            break;
+                    }
+                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
+                    snake.ShowButton = true;
+                    snake.ButtonContent = "查看";
+                    snake.ButtonClick += async (p1, p2) =>
+                    {
+                        var geom = GeometryEngine.CombineExtents(features.Select(p => p.Geometry));
+                        await mapView.ZoomToGeometryAsync(geom);
+                    };
+                    snake.ShowMessage("导入成功");
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                }
+            }
+        }
 
-                             default:
-                                 throw new Exception("未知文件类型");
-                         }
-                     });
+        public async static Task ExportLayerAsync(LayerInfo layer, LayerCollection layers, ExportLayerType type)
+        {
+            FileFilterCollection filter = new FileFilterCollection();
+            filter = type switch
+            {
+                ExportLayerType.LayerPackge => filter.Add("mblpkg地图画板包", "mblpkg"),
+                ExportLayerType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
+                ExportLayerType.KML => filter.Add("KML打包文件", "kmz"),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            string path = FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+            if (path != null)
+            {
+                try
+                {
+                    switch (type)
+                    {
+                        case ExportLayerType.LayerPackge:
+                            await Package.ExportLayer2Async(path, layer, layers);
+                            break;
+
+                        case ExportLayerType.GISToolBoxZip:
+                            await MobileGISToolBox.ExportLayerAsync(path, layer);
+                            break;
+
+                        case ExportLayerType.KML:
+                            await Kml.ExportAsync(path, layer);
+                            break;
+
+                        default:
+                            break;
+                    }
                     SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)
@@ -118,135 +112,99 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task ImportPackageAsync(MapLayerCollection layers)
+        public async static Task ImportMapAsync(MapLayerCollection layers, ImportMapType type)
         {
-            bool ok = true;
-            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
-                   .Add("mbmpkg地图画板包", "mbmpkg"));
-
+            FileFilterCollection filter = new FileFilterCollection();
+            filter = type switch
+            {
+                ImportMapType.MapPackageOverwrite or ImportMapType.MapPackgeAppend
+                => filter.Add("mbmpkg地图画板包", "mbmpkg"),
+                ImportMapType.LayerPackge => filter.Add("mblpkg地图画板图层包", "mblpkg"),
+                ImportMapType.Gpx => filter.Add("GPS轨迹文件", "gpx"),
+                ImportMapType.Shapefile => filter.Add("Shapefile", "shp"),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            string path = FileSystemDialog.GetOpenFile(filter);
             if (path != null)
             {
                 try
                 {
-                    if (Config.Instance.BackupWhenReplace)
+                    switch (type)
                     {
-                        await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
-                    }
-                    await Package.ImportMapAsync(path, layers, true);
-                }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
-                    ok = false;
-                }
-                finally
-                {
-                    if (ok)
-                    {
-                        SnakeBar.Show(App.Current.MainWindow, "导入成功");
-                    }
-                }
-            }
-            return;
-        }
+                        case ImportMapType.MapPackageOverwrite:
+                            if (Config.Instance.BackupWhenReplace)
+                            {
+                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
+                            }
+                            await Package.ImportMapAsync(path, layers, true);
+                            break;
 
-        /// <summary>
-        /// 显示对话框导入
-        /// </summary>
-        /// <returns>返回是否需要通知刷新Style</returns>
-        public async static Task AddLayerAsync(MapLayerCollection layers)
-        {
-            bool ok = true;
-            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
-                    .Add("支持的格式", "mbmpkg,mblpkg,gpx,shp")
-                   .Add("mbmpkg地图画板包", "mbmpkg")
-                    .Add("mblpkg地图画板图层包", "mblpkg")
-                   .Add("GPS轨迹文件", "gpx")
-                 .Add("Shapefile文件", "shp"));
-
-            if (path != null)
-            {
-                try
-                {
-                    switch (Path.GetExtension(path))
-                    {
-                        case ".mbmpkg":
+                        case ImportMapType.MapPackgeAppend:
                             await Package.ImportMapAsync(path, layers, false);
-                            return;
+                            break;
 
-                        case ".mblpkg":
+                        case ImportMapType.LayerPackge:
                             await Package.ImportLayerAsync(path, layers);
-                            return;
+                            break;
 
-                        case ".gpx":
+                        case ImportMapType.Gpx:
                             await ImportGpxAsync(new[] { path }, layers.Selected, layers);
                             break;
 
-                        case ".shp":
+                        case ImportMapType.Shapefile:
                             await Shapefile.ImportAsync(path, layers);
-                            return;
+                            break;
 
                         default:
-                            throw new Exception("未知文件类型");
+                            break;
                     }
+                    SnakeBar.Show(App.Current.MainWindow, "导入成功");
                 }
                 catch (Exception ex)
                 {
                     await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
-                    ok = false;
-                }
-                finally
-                {
-                    if (ok)
-                    {
-                        SnakeBar.Show("导入成功");
-                    }
                 }
             }
-            return;
         }
 
-        /// <summary>
-        /// 显示对话框导出
-        /// </summary>
-        /// <returns></returns>
-        public static async Task ExportMapAsync(MapView mapView, MapLayerCollection layers)
+        public static async Task ExportMapAsync(MapView mapView, MapLayerCollection layers, ExportMapType type)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection()
-                   .Add("mbmpkg地图画板包", "mbmpkg")
-                .Add("GIS工具箱图层", "zip")
-                 .Add("截图", "png")
-                .Add("KML打包文件", "kmz"),
-                 true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+            FileFilterCollection filter = new FileFilterCollection();
+            filter = type switch
+            {
+                ExportMapType.MapPackage
+                => filter.Add("mbmpkg地图画板包", "mbmpkg"),
+                ExportMapType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
+                ExportMapType.KML => filter.Add("KML打包文件", "kmz"),
+                ExportMapType.Screenshot => filter.Add("截图", "png"),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            string path = FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
             if (path != null)
             {
                 try
                 {
-                    SnakeBar.Show("正在导出，请勿关闭程序");
-                    await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
+                    switch (type)
                     {
-                        switch (Path.GetExtension(path))
-                        {
-                            case ".mbmpkg":
-                                await Package.ExportMap2Async(path, layers);
-                                break;
+                        case ExportMapType.MapPackage:
+                            await Package.ExportMap2Async(path, layers);
+                            break;
 
-                            case ".png":
-                                await SaveImageAsync(path, mapView);
-                                break;
+                        case ExportMapType.GISToolBoxZip:
+                            await MobileGISToolBox.ExportMapAsync(path, layers);
+                            break;
 
-                            case ".zip":
-                                await MobileGISToolBox.ExportMapAsync(path, layers);
-                                break;
+                        case ExportMapType.KML:
+                            await Kml.ExportAsync(path, layers);
+                            break;
 
-                            case ".kmz":
-                                await Kml.ExportAsync(path, layers);
-                                break;
+                        case ExportMapType.Screenshot:
+                            await SaveImageAsync(path, mapView);
+                            break;
 
-                            default:
-                                throw new Exception("未知文件类型");
-                        }
-                    });
+                        default:
+                            break;
+                    }
                     SnakeBar.Show(App.Current.MainWindow, "导出成功");
                 }
                 catch (Exception ex)
@@ -364,5 +322,35 @@ namespace MapBoard.Main.Util
                 SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
             }
         }
+    }
+
+    public enum ImportMapType
+    {
+        MapPackageOverwrite = 1,
+        MapPackgeAppend = 2,
+        LayerPackge = 3,
+        Gpx = 4,
+        Shapefile = 5
+    }
+
+    public enum ExportMapType
+    {
+        MapPackage = 1,
+        GISToolBoxZip = 2,
+        KML = 3,
+        Screenshot = 4
+    }
+
+    public enum ImportLayerType
+    {
+        Csv = 1,
+        Gpx = 2
+    }
+
+    public enum ExportLayerType
+    {
+        LayerPackge = 1,
+        GISToolBoxZip = 2,
+        KML = 3
     }
 }

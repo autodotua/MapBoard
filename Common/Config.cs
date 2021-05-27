@@ -28,9 +28,6 @@ namespace MapBoard.Common
         public static string DataPath { get; } = @"..\Data";
         public static string BackupPath { get; } = @"..\Backups";
 
-        public bool StaticEnable { get; set; } = true;
-
-        public double StaticWidth { get; set; } = 100;
 
         public bool GpxHeight { get; set; } = true;
         public double GpxHeightExaggeratedMagnification { get; set; } = 5;

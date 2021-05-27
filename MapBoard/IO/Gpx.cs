@@ -83,7 +83,7 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task<Feature[]> ImportToLayerAsync(string path, LayerInfo layer)
+        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, LayerInfo layer)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -127,7 +127,7 @@ namespace MapBoard.Main.IO
             }
 
             layer.NotifyFeatureChanged();
-            return importedFeatures.ToArray();
+            return importedFeatures.AsReadOnly();
         }
 
         /// <summary>

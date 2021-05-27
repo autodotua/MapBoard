@@ -43,64 +43,72 @@ namespace MapBoard.Main.UI.Panel
             LayerInfo[] layers = list.SelectedItems.Cast<LayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
             {
-                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
-               {
-                    ("缩放到图层", ZoomToLayerAsync,layer.Table!=null&&layer.Table.NumberOfFeatures > 0),
-                    ("属性表", ShowAttributeTableAsync,true),
-                    ("复制", CopyFeaturesAsync,true),
-                    ("删除",async l=>await DeleteSelectedLayersAsync(),true),
-                    ("修改字段显示名", EditFieldDisplayAsync,true),
-                    null,
-                    ("建立缓冲区",BufferAsync,layer.Table.GeometryType==GeometryType.Polyline || layer.Table.GeometryType==GeometryType.Point|| layer.Table.GeometryType==GeometryType.Multipoint),
-                    ("新建副本", CreateCopyAsync,true),
-                    ("坐标转换",CoordinateTransformateAsync,true),
-                    ("设置时间范围",SetTimeExtentAsync,layer.Table.Fields.Any(p=>p.FieldType==FieldType.Date && p.Name==Resource.DateFieldName)),
-                    ("字段赋值",CopyAttributesAsync,true),
-                    null,
-                    ("导入",async p=>await IOUtility.ImportFeatureAsync(p, MapView),true),
-                    ("导出",  ExportSingleAsync,true),
-               };
+                if (layer.Table != null && layer.Table.NumberOfFeatures > 0)
+                {
+                    AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
+                }
+                AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
+                AddToMenu(menu, "复制", () => CopyFeaturesAsync(layer));
+                AddToMenu(menu, "删除", () => DeleteSelectedLayersAsync());
+                AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
+                menu.Items.Add(new Separator());
+                if (layer.Table.GeometryType == GeometryType.Polyline
+                    || layer.Table.GeometryType == GeometryType.Point
+                    || layer.Table.GeometryType == GeometryType.Multipoint)
+                {
+                    AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
+                }
+                AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layer));
+                AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
+                AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(layer));
+                menu.Items.Add(new Separator());
+
+                var menuImport = new MenuItem() { Header = "导入" };
+                menu.Items.Add(menuImport);
+                if (layer.Table.GeometryType == GeometryType.Polyline
+                    || layer.Table.GeometryType == GeometryType.Point
+                    || layer.Table.GeometryType == GeometryType.Multipoint)
+                {
+                    AddToMenu(menuImport, "GPX轨迹文件", () => IOUtility.ImportFeatureAsync(layer, MapView, ImportLayerType.Gpx));
+                }
+                AddToMenu(menuImport, "CSV表格", () => IOUtility.ImportFeatureAsync(layer, MapView, ImportLayerType.Csv));
+
+                var menuExport = new MenuItem() { Header = "导出" };
+                menu.Items.Add(menuExport);
+
+                AddToMenu(menuExport, "图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.LayerPackge));
+                AddToMenu(menuExport, "GPS工具箱图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.GISToolBoxZip));
+                AddToMenu(menuExport, "KML打包文件", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.KML));
             }
             else
             {
-                menus = new List<(string header, Func<LayerInfo, Task> action, bool visiable)?>()
-               {
-                    ("合并",async l=>await LayerUtility. UnionAsync(layers,MapView.Layers)
-                    ,layers.Select(p=>p.Table.GeometryType).Distinct().Count()==1),
-                    ("删除",async l=>await DeleteSelectedLayersAsync(),true),
-                };
-            }
-
-            foreach (var m in menus)
-            {
-                if (m.HasValue)
+                if (layers.Select(p => p.Table.GeometryType).Distinct().Count() == 1)
                 {
-                    if (m.Value.visiable)
-                    {
-                        MenuItem item = new MenuItem() { Header = m.Value.header };
-                        item.Click += async (p1, p2) =>
-                        {
-                            try
-                            {
-                                await DoAsync(() => m.Value.action(layer));
-                            }
-                            catch (Exception ex)
-                            {
-                                await CommonDialog.ShowErrorDialogAsync(ex);
-                            }
-                        };
-                        menu.Items.Add(item);
-                    }
+                    AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
-                else
-                {
-                    menu.Items.Add(new Separator());
-                }
+                AddToMenu(menu, "删除", () => DeleteSelectedLayersAsync());
             }
             if (menu.Items.Count > 0)
             {
                 menu.IsOpen = true;
             }
+        }
+
+        private void AddToMenu(ItemsControl menu, string header, Func<Task> func)
+        {
+            MenuItem item = new MenuItem() { Header = header };
+            item.Click += async (p1, p2) =>
+            {
+                try
+                {
+                    await DoAsync(func);
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex);
+                }
+            };
+            menu.Items.Add(item);
         }
 
         private async Task CopyFeaturesAsync(LayerInfo layer)
@@ -136,12 +144,11 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task BufferAsync(LayerInfo layer)
         {
-            await LayerUtility.BufferAsync(layer, MapView.Layers);
-        }
-
-        private Task ExportSingleAsync(LayerInfo layer)
-        {
-            return IOUtility.ExportLayerAsync(layer, MapView.Layers);
+            var num = await CommonDialog.ShowDoubleInputDialogAsync("请输入缓冲区距离（米）");
+            if (num.HasValue)
+            {
+                await LayerUtility.BufferAsync(layer, MapView.Layers, num.Value);
+            }
         }
 
         private async Task ZoomToLayerAsync(LayerInfo layer)
