@@ -56,17 +56,17 @@ namespace MapBoard.Main.UI.Bar
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
             //btnMoreAttributes.IsEnabled = count == 1;
-            LayerInfo layer = Layers.Selected;
-            btnCut.IsEnabled = layer.Table.GeometryType == GeometryType.Polygon
-                || layer.Table.GeometryType == GeometryType.Polyline;
+            MapLayerInfo layer = Layers.Selected;
+            btnCut.IsEnabled = layer.GeometryType == GeometryType.Polygon
+                || layer.GeometryType == GeometryType.Polyline;
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
-            if (layer.Table.GeometryType == GeometryType.Polyline)//线
+            if (layer.GeometryType == GeometryType.Polyline)//线
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p =>
                 GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
-            else if (layer.Table.GeometryType == GeometryType.Polygon)//面
+            else if (layer.GeometryType == GeometryType.Polygon)//面
             {
                 double length = MapView.Selection.SelectedFeatures.Sum(p =>
                 GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
@@ -189,19 +189,19 @@ namespace MapBoard.Main.UI.Bar
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
                 ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
-                (layer.Table.GeometryType==GeometryType.Polygon || layer.Table.GeometryType==GeometryType.Polyline)
+                (layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)
                 && features.Length>1),
                 ("分离","将拥有多个部分的图形分离为单独的图形",
-                SeparateAsync,(layer.Table.GeometryType==GeometryType.Polygon || layer.Table.GeometryType==GeometryType.Polyline)),
-                ("连接","将折线的端点互相连接",LinkAsync,layer.Table.GeometryType==GeometryType.Polyline
+                SeparateAsync,(layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)),
+                ("连接","将折线的端点互相连接",LinkAsync,layer.GeometryType==GeometryType.Polyline
                 && features.Length>1
                 && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
                 ("反转","交换点的顺序",ReverseAsync,
-                layer.Table.GeometryType==GeometryType.Polyline||layer.Table.GeometryType==GeometryType.Polygon),
+                layer.GeometryType==GeometryType.Polyline||layer.GeometryType==GeometryType.Polygon),
                 ("加密","在每两个折点之间添加更多的点",DensifyAsync,
-                (layer.Table.GeometryType==GeometryType.Polyline|| layer.Table.GeometryType==GeometryType.Polygon)),
+                (layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon)),
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
-                layer.Table.GeometryType==GeometryType.Polyline|| layer.Table.GeometryType==GeometryType.Polygon),
+                layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
                 ("导出CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
             };
@@ -377,7 +377,7 @@ namespace MapBoard.Main.UI.Bar
                         ShowButton = true,
                         ButtonContent = "打开"
                     };
-                    snake.ButtonClick += (p1, p2) => Process.Start(path);
+                    snake.ButtonClick += (p1, p2) =>IOUtility. OpenFileOrFolder(path);
 
                     snake.ShowMessage("已导出到" + path);
                 }

@@ -110,7 +110,8 @@ namespace MapBoard.Main.Model.Extension
                 default:
                     throw new NotSupportedException();
             }
-            return new FieldInfo(field.Name, field.Name, type);
+            string name = field.Name;
+            return new FieldInfo(name, name, type);
         }
 
         public static int GetLength(this FieldInfoType type)

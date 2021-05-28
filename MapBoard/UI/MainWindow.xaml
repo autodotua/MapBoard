@@ -220,11 +220,11 @@
                                             TextTrimming="CharacterEllipsis" />
                                         <TextBlock
                                             Grid.Row="2" Grid.Column="2"
-                                            Text="{Binding Table.GeometryType, Converter={StaticResource gtdc}}" />
+                                            Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
                                         <TextBlock
                                             Grid.Row="2" Grid.Column="4"
                                             HorizontalAlignment="Left">
-                                            <Run Text="{Binding Table.NumberOfFeatures, Mode=OneWay}" />
+                                            <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
                                             <Run>个图形</Run>
                                         </TextBlock>
                                     </Grid>

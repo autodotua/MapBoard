@@ -13,7 +13,7 @@ namespace MapBoard.Main.IO
 {
     public static class Kml
     {
-        public async static Task ExportAsync(string path, LayerInfo layer)
+        public async static Task ExportAsync(string path, MapLayerInfo layer)
         {
             KmlDocument kml = new KmlDocument() { Name = layer.Name };
             await Task.Run(async () =>
@@ -27,7 +27,7 @@ namespace MapBoard.Main.IO
             await kml.SaveAsAsync(path);
         }
 
-        public async static Task ExportAsync(string path, IEnumerable<LayerInfo> layers)
+        public async static Task ExportAsync(string path, IEnumerable<MapLayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();
             await Task.Run(async () =>
@@ -46,7 +46,7 @@ namespace MapBoard.Main.IO
             await kml.SaveAsAsync(path);
         }
 
-        private static async Task AddToKmlAsync(LayerInfo layer, KmlNodeCollection nodes)
+        private static async Task AddToKmlAsync(MapLayerInfo layer, KmlNodeCollection nodes)
         {
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {
@@ -69,7 +69,7 @@ namespace MapBoard.Main.IO
                     {
                         symbol = layer.Symbols[""];
                     }
-                    switch (layer.Table.GeometryType)
+                    switch (layer.GeometryType)
                     {
                         case GeometryType.Point:
                             placemark.Style.LabelStyle = new KmlLabelStyle(symbol.FillColor, symbol.Size);

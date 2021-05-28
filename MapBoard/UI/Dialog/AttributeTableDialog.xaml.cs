@@ -26,7 +26,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
 
-        public AttributeTableDialog(LayerInfo layer, ArcMapView mapView)
+        public AttributeTableDialog(MapLayerInfo layer, ArcMapView mapView)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
@@ -44,7 +44,7 @@ namespace MapBoard.Main.UI.Dialog
 
         public int EditedFeaturesCount => editedAttributes.Count;
 
-        public LayerInfo Layer { get; }
+        public MapLayerInfo Layer { get; }
         public ArcMapView MapView { get; }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace MapBoard.Main.UI.Dialog
             foreach (var attr in editedAttributes)
             {
                 attr.SaveToFeature();
-                await Layer.Table.UpdateFeatureAsync(attr.Feature);
+                await Layer.UpdateFeatureAsync(attr.Feature);
             }
             editedAttributes.Clear();
             this.Notify(nameof(EditedFeaturesCount));

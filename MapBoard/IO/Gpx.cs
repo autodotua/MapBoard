@@ -21,7 +21,7 @@ namespace MapBoard.Main.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<LayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers)
+        public async static Task<MapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -29,12 +29,11 @@ namespace MapBoard.Main.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
 
-            LayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
+            MapLayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));
 
             foreach (var track in gpx.Tracks)
             {
-                FeatureTable table = layer.Table;
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
                 if (type == GpxImportType.Point)
@@ -43,11 +42,11 @@ namespace MapBoard.Main.IO
                     foreach (var point in track.Points)
                     {
                         MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
-                        Feature feature = table.CreateFeature();
+                        Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
                     }
-                    await table.AddFeaturesAsync(features);
+                    await layer.AddFeaturesAsync(features);
                 }
                 else
                 {
@@ -56,16 +55,15 @@ namespace MapBoard.Main.IO
                     {
                         points.Add(transformation.TransformateToMapPoint(point));
                     }
-                    Feature feature = table.CreateFeature();
+                    Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points);
-                    await table.AddFeatureAsync(feature);
+                    await layer.AddFeatureAsync(feature);
                 }
             }
-            layer.NotifyFeatureChanged();
             return layer;
         }
 
-        public async static Task<LayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers)
+        public async static Task<MapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers)
         {
             var layer = await ImportToNewLayerAsync(paths[0], type, layers);
             for (int i = 1; i < paths.Length; i++)
@@ -75,7 +73,7 @@ namespace MapBoard.Main.IO
             return layer;
         }
 
-        public async static Task ImportToLayersAsync(IEnumerable<string> paths, LayerInfo layer)
+        public async static Task ImportToLayersAsync(IEnumerable<string> paths, MapLayerInfo layer)
         {
             foreach (var path in paths)
             {
@@ -83,41 +81,40 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, LayerInfo layer)
+        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, MapLayerInfo layer)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
             var gpx = LibGpx.FromString(content);
-            FeatureTable table = layer.Table;
             CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)
             {
-                if (layer.Table.GeometryType == GeometryType.Point)
+                if (layer.GeometryType == GeometryType.Point)
                 {
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
                     {
                         MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
-                        Feature feature = table.CreateFeature();
+                        Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
                     }
                     importedFeatures = features;
-                    await table.AddFeaturesAsync(features);
+                    await layer.AddFeaturesAsync(features);
                 }
-                else if (layer.Table.GeometryType == GeometryType.Multipoint)
+                else if (layer.GeometryType == GeometryType.Multipoint)
                 {
                     throw new Exception("多点暂不支持导入GPX");
                 }
-                else if (layer.Table.GeometryType == GeometryType.Polyline)
+                else if (layer.GeometryType == GeometryType.Polyline)
                 {
                     var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
-                    Feature feature = table.CreateFeature();
+                    Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points, transformation.ToSpatialReference);
-                    await table.AddFeatureAsync(feature);
+                    await layer.AddFeatureAsync(feature);
                     importedFeatures.Add(feature);
                 }
                 else
@@ -126,7 +123,6 @@ namespace MapBoard.Main.IO
                 }
             }
 
-            layer.NotifyFeatureChanged();
             return importedFeatures.AsReadOnly();
         }
 

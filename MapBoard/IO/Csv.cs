@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, LayerInfo layer)
+        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, MapLayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();
@@ -139,9 +139,9 @@ namespace MapBoard.Main.IO
 
             foreach (var part in parts)
             {
-                Feature feature = layer.Table.CreateFeature();
+                Feature feature = layer.CreateFeature();
                 features.Add(feature);
-                switch (layer.Table.GeometryType)
+                switch (layer.GeometryType)
                 {
                     case GeometryType.Multipoint:
                         feature.Geometry = new Multipoint(part);
@@ -165,7 +165,7 @@ namespace MapBoard.Main.IO
                         break;
                 }
             }
-            await layer.Table.AddFeaturesAsync(features);
+            await layer.AddFeaturesAsync(features);
             return features.AsReadOnly();
         }
     }

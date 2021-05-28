@@ -122,14 +122,10 @@ namespace MapBoard.Main.UI.Map
             await SketchEditor.StartAsync(mode);
             if (geometry != null)
             {
-                ShapefileFeatureTable table = Layers.Selected.Table;
-
-                Feature feature = table.CreateFeature();
+                Feature feature = Layers.Selected.CreateFeature();
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
-                await table.AddFeatureAsync(feature);
-
-                Layers.Selected.NotifyFeatureChanged();
+                await Layers.Selected.AddFeatureAsync(feature);
             }
         }
 
@@ -137,7 +133,7 @@ namespace MapBoard.Main.UI.Map
         /// 编辑
         /// </summary>
         /// <returns></returns>
-        public async Task EditAsync(LayerInfo layer, Feature feature)
+        public async Task EditAsync(MapLayerInfo layer, Feature feature)
         {
             Attributes = FeatureAttributes.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);

@@ -17,7 +17,7 @@ namespace MapBoard.Main.UI.Dialog
         public SelectLayerDialog(MapLayerCollection layers)
         {
             InitializeComponent();
-            var list = layers.Where(p => p.Table.GeometryType == layers.Selected.Table.GeometryType && p != layers.Selected);
+            var list = layers.Cast<MapLayerInfo>().Where(p => p.GeometryType == layers.Selected.GeometryType && p != layers.Selected);
             if (list.Count() > 0)
             {
                 lbx.ItemsSource = list;
@@ -26,7 +26,7 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
-        public LayerInfo SelectedLayer { get; set; }
+        public MapLayerInfo SelectedLayer { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

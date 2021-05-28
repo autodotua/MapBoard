@@ -119,14 +119,14 @@ namespace MapBoard.Main.UI.Component
                 return;
             }
             TView listview = sender as TView;
-            LayerInfo select = (LayerInfo)listview.SelectedItem;
+            MapLayerInfo select = (MapLayerInfo)listview.SelectedItem;
             if (listview.SelectedIndex < 0)
             {
                 return;
             }
             if (e.LeftButton == MouseButtonState.Pressed && IsMouseOverTarget(GetItem(listview.SelectedIndex), new GetPositionDelegate(e.GetPosition)))
             {
-                DataObject data = new DataObject(typeof(LayerInfo), select);
+                DataObject data = new DataObject(typeof(MapLayerInfo), select);
 
                 DragDrop.DoDragDrop(listview, data, DragDropEffects.Move);
             }
@@ -136,9 +136,9 @@ namespace MapBoard.Main.UI.Component
 
         private void SingleDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(LayerInfo)))
+            if (e.Data.GetDataPresent(typeof(MapLayerInfo)))
             {
-                LayerInfo item = (LayerInfo)e.Data.GetData(typeof(LayerInfo));
+                MapLayerInfo item = (MapLayerInfo)e.Data.GetData(typeof(MapLayerInfo));
                 //index为放置时鼠标下元素项的索引
                 int index = GetCurrentIndex(new GetPositionDelegate(e.GetPosition));
                 if (index > -1)
@@ -179,7 +179,7 @@ namespace MapBoard.Main.UI.Component
                 int index = GetCurrentIndex(new GetPositionDelegate(e.GetPosition));
                 if (index > -1)
                 {
-                    LayerInfo Logmess = (LayerInfo)peopleList[0];
+                    MapLayerInfo Logmess = (MapLayerInfo)peopleList[0];
                     //拖动元素集合的第一个元素索引
                     int OldFirstIndex = (View.ItemsSource as MapLayerCollection).IndexOf(Logmess);
                     for (int i = 0; i < peopleList.Count; i++)

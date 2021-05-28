@@ -32,9 +32,9 @@ namespace MapBoard.Main.UI.Dialog
     public partial class CreateLayerDialog : CommonDialog
     {
         public bool editMode = false;
-        public LayerInfo editLayer = null;
+        public MapLayerInfo editLayer = null;
 
-        public CreateLayerDialog(MapLayerCollection layers, LayerInfo layer = null)
+        public CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer = null)
         {
             StaticFields = FieldInfo.DefaultFields;
             InitializeComponent();
@@ -44,7 +44,7 @@ namespace MapBoard.Main.UI.Dialog
                 editLayer = layer;
                 LayerName = layer.Name;
                 grdType.Children.Cast<RadioButton>().ForEach(p => p.IsChecked = false);
-                switch (layer.Table.GeometryType)
+                switch (layer.GeometryType)
                 {
                     case GeometryType.Point:
                         rbtnPoint.IsChecked = true;

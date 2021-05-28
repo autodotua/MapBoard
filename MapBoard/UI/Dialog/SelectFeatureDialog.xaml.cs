@@ -102,7 +102,7 @@ namespace MapBoard.Main.UI.Dialog
 
         public class FeatureSelectionInfo
         {
-            public FeatureSelectionInfo(LayerInfo layer, Feature feature, int index)
+            public FeatureSelectionInfo(MapLayerInfo layer, Feature feature, int index)
             {
                 Feature = feature;
                 Index = index;

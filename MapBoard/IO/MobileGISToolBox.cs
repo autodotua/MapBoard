@@ -10,7 +10,7 @@ namespace MapBoard.Main.IO
 {
     internal class MobileGISToolBox
     {
-        public static async Task ExportLayerAsync(string path, LayerInfo layer)
+        public static async Task ExportLayerAsync(string path, MapLayerInfo layer)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
@@ -23,14 +23,14 @@ namespace MapBoard.Main.IO
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
         }
 
-        public static async Task ExportMapAsync(string path, LayerCollection layers)
+        public static async Task ExportMapAsync(string path, MapLayerCollection layers)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");
             string tempStyleDir = Path.Combine(tempDir.FullName, "style");
             Directory.CreateDirectory(tempShpDir);
             Directory.CreateDirectory(tempStyleDir);
-            foreach (var layer in layers)
+            foreach (MapLayerInfo layer in layers)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());

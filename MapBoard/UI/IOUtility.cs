@@ -13,6 +13,7 @@ using MapBoard.Main.UI.Map;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace MapBoard.Main.UI
 {
     public static class IOUtility
     {
-        public async static Task ImportFeatureAsync(LayerInfo layer, ArcMapView mapView, ImportLayerType type)
+        public async static Task ImportFeatureAsync(MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -71,7 +72,7 @@ namespace MapBoard.Main.UI
             }
         }
 
-        public async static Task ExportLayerAsync(LayerInfo layer, LayerCollection layers, ExportLayerType type)
+        public async static Task ExportLayerAsync(MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -195,7 +196,7 @@ namespace MapBoard.Main.UI
                             break;
 
                         case ExportMapType.KML:
-                            await Kml.ExportAsync(path, layers);
+                            await Kml.ExportAsync(path, layers.Cast<MapLayerInfo>());
                             break;
 
                         case ExportMapType.Screenshot:
@@ -235,7 +236,7 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private static async Task ImportGpxAsync(string[] files, LayerInfo layer, MapLayerCollection layers)
+        private static async Task ImportGpxAsync(string[] files, MapLayerInfo layer, MapLayerCollection layers)
         {
             List<DialogItem> items = new List<DialogItem>()
                 {
@@ -245,7 +246,7 @@ namespace MapBoard.Main.UI
                 };
             if (layer != null)
             {
-                if (layer.Table.GeometryType is GeometryType.Point or GeometryType.Polyline)
+                if (layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));
                 }
@@ -321,6 +322,17 @@ namespace MapBoard.Main.UI
             {
                 SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
             }
+        }
+
+        public static void OpenFileOrFolder(string path)
+        {
+            new Process()
+            {
+                StartInfo = new ProcessStartInfo(path)
+                {
+                    UseShellExecute = true
+                }
+            }.Start();
         }
     }
 

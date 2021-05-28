@@ -2,6 +2,7 @@
 using MapBoard.Common;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace MapBoard.Main.Model
@@ -21,6 +22,7 @@ namespace MapBoard.Main.Model
         Text
     }
 
+    [DebuggerDisplay("Name={Name} Disp={DisplayName} Type={Type}")]
     public class FieldInfo : INotifyPropertyChanged, ICloneable
     {
         private string displayName = "";
@@ -30,8 +32,8 @@ namespace MapBoard.Main.Model
 
         public FieldInfo(string name, string displayName, FieldInfoType type)
         {
-            Name = name;
-            DisplayName = displayName;
+            this.name = name;
+            this.displayName = displayName;
             Type = type;
         }
 
@@ -62,12 +64,15 @@ namespace MapBoard.Main.Model
                     name = "";
                 }
                 else if (value != null
-                     && value.Length < 10
+                     && value.Length <= 10
                      && value.Length > 0
                      && Regex.IsMatch(value[0].ToString(), "[a-zA-Z]")
                      && Regex.IsMatch(value, "^[a-zA-Z0-9_]+$"))
                 {
                     name = value;
+                }
+                else
+                {
                 }
                 this.Notify(nameof(Name));
             }

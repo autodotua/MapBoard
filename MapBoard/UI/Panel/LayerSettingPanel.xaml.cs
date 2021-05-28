@@ -108,8 +108,8 @@ namespace MapBoard.Main.UI.Panel
                 {
                     await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
                 }
-            end:
-                layer.Table = null;
+                end:
+                layer = null;
                 await Layers.InsertAsync(index, layer);
             }
             try
@@ -125,7 +125,7 @@ namespace MapBoard.Main.UI.Panel
 
         public void ResetLayerSettingUI()
         {
-            LayerInfo layer = Layers.Selected;
+            MapLayerInfo layer = Layers.Selected;
             if (!IsLoaded || layer == null)
             {
                 return;
@@ -153,7 +153,7 @@ namespace MapBoard.Main.UI.Panel
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
             }
 
-            tab.SelectedIndex = layer.Table.GeometryType switch
+            tab.SelectedIndex = layer.GeometryType switch
             {
                 Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
                 Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,

@@ -85,13 +85,7 @@ namespace MapBoard.Main.UI.Bar
             {
                 try
                 {
-                    new Process
-                    {
-                        StartInfo = new ProcessStartInfo(text)
-                        {
-                            UseShellExecute = true
-                        }
-                    }.Start();
+                    IOUtility.OpenFileOrFolder(text);
                     return;
                 }
                 catch (Exception ex)
@@ -102,7 +96,7 @@ namespace MapBoard.Main.UI.Bar
             {
                 try
                 {
-                    Process.Start("explorer.exe", text);
+                    IOUtility.OpenFileOrFolder(text);
                     return;
                 }
                 catch (Exception ex)
@@ -114,13 +108,7 @@ namespace MapBoard.Main.UI.Bar
             {
                 try
                 {
-                 new Process
-                    {
-                        StartInfo = new ProcessStartInfo(text)
-                        {
-                            UseShellExecute = true
-                        }
-                    }.Start();
+                    IOUtility.OpenFileOrFolder(text);
                     return;
                 }
                 catch (Exception ex)

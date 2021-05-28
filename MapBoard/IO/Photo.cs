@@ -80,32 +80,31 @@ namespace MapBoard.Main.IO
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
             await Task.Run(() =>
             {
-                Parallel.ForEach(files,new ParallelOptions() { MaxDegreeOfParallelism=4,}, file =>
-                {
-                    try
+                Parallel.ForEach(files, new ParallelOptions() { MaxDegreeOfParallelism = 4, }, file =>
                     {
-                        var info = GetImageExifInfo(file);
-                        if (info != null)
+                        try
                         {
-                            MapPoint point = new MapPoint(info.Value.lng, info.Value.lat, SpatialReferences.Wgs84);
-                            Dictionary<string, object> attr = new Dictionary<string, object>();
-                            if (info.Value.time.HasValue)
+                            var info = GetImageExifInfo(file);
+                            if (info != null)
                             {
-                                attr.Add(Resource.DateFieldName, info.Value.time);
+                                MapPoint point = new MapPoint(info.Value.lng, info.Value.lat, SpatialReferences.Wgs84);
+                                Dictionary<string, object> attr = new Dictionary<string, object>();
+                                if (info.Value.time.HasValue)
+                                {
+                                    attr.Add(Resource.DateFieldName, info.Value.time);
+                                }
+                                attr.Add(Resource.LabelFieldName, Path.GetFileName(file));
+                                attr.Add(addressField, file);
+                                var feature = layer.CreateFeature(attr, point);
+                                features.Add(feature);
                             }
-                            attr.Add(Resource.LabelFieldName, Path.GetFileName(file));
-                            attr.Add(addressField, file);
-                            var feature = layer.Table.CreateFeature(attr, point);
-                            features.Add(feature);
                         }
-                    }
-                    catch
-                    {
-                    }
-                });
+                        catch
+                        {
+                        }
+                    });
             });
-            await layer.Table.AddFeaturesAsync(features);
-            layer.NotifyFeatureChanged();
+            await layer.AddFeaturesAsync(features);
         }
     }
 }

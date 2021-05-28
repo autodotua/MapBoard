@@ -38,12 +38,12 @@ namespace MapBoard.Main.UI.Panel
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
-            List<(string header, Func<LayerInfo, Task> action, bool visiable)?> menus = null;
-            LayerInfo layer = MapView.Layers.Selected;
-            LayerInfo[] layers = list.SelectedItems.Cast<LayerInfo>().ToArray();
+            List<(string header, Func<MapLayerInfo, Task> action, bool visiable)?> menus = null;
+            MapLayerInfo layer = MapView.Layers.Selected;
+            MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
             {
-                if (layer.Table != null && layer.Table.NumberOfFeatures > 0)
+                if (layer != null && layer.NumberOfFeatures > 0)
                 {
                     AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
                 }
@@ -52,9 +52,9 @@ namespace MapBoard.Main.UI.Panel
                 AddToMenu(menu, "删除", () => DeleteSelectedLayersAsync());
                 AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
                 menu.Items.Add(new Separator());
-                if (layer.Table.GeometryType == GeometryType.Polyline
-                    || layer.Table.GeometryType == GeometryType.Point
-                    || layer.Table.GeometryType == GeometryType.Multipoint)
+                if (layer.GeometryType == GeometryType.Polyline
+                    || layer.GeometryType == GeometryType.Point
+                    || layer.GeometryType == GeometryType.Multipoint)
                 {
                     AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                 }
@@ -65,9 +65,9 @@ namespace MapBoard.Main.UI.Panel
 
                 var menuImport = new MenuItem() { Header = "导入" };
                 menu.Items.Add(menuImport);
-                if (layer.Table.GeometryType == GeometryType.Polyline
-                    || layer.Table.GeometryType == GeometryType.Point
-                    || layer.Table.GeometryType == GeometryType.Multipoint)
+                if (layer.GeometryType == GeometryType.Polyline
+                    || layer.GeometryType == GeometryType.Point
+                    || layer.GeometryType == GeometryType.Multipoint)
                 {
                     AddToMenu(menuImport, "GPX轨迹文件", () => IOUtility.ImportFeatureAsync(layer, MapView, ImportLayerType.Gpx));
                 }
@@ -82,7 +82,7 @@ namespace MapBoard.Main.UI.Panel
             }
             else
             {
-                if (layers.Select(p => p.Table.GeometryType).Distinct().Count() == 1)
+                if (layers.Select(p => p.GeometryType).Distinct().Count() == 1)
                 {
                     AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
@@ -111,7 +111,7 @@ namespace MapBoard.Main.UI.Panel
             menu.Items.Add(item);
         }
 
-        private async Task CopyFeaturesAsync(LayerInfo layer)
+        private async Task CopyFeaturesAsync(MapLayerInfo layer)
         {
             SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -120,14 +120,14 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task EditFieldDisplayAsync(LayerInfo layer)
+        private async Task EditFieldDisplayAsync(MapLayerInfo layer)
         {
             MapView.Selection.ClearSelection();
             CreateLayerDialog dialog = new CreateLayerDialog(MapView.Layers, layer);
             await dialog.ShowAsync();
         }
 
-        private async Task CreateCopyAsync(LayerInfo layer)
+        private async Task CreateCopyAsync(MapLayerInfo layer)
         {
             int mode = 0;
             await CommonDialog.ShowSelectItemDialogAsync("请选择副本类型",
@@ -142,7 +142,7 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task BufferAsync(LayerInfo layer)
+        private async Task BufferAsync(MapLayerInfo layer)
         {
             var num = await CommonDialog.ShowDoubleInputDialogAsync("请输入缓冲区距离（米）");
             if (num.HasValue)
@@ -151,11 +151,11 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task ZoomToLayerAsync(LayerInfo layer)
+        private async Task ZoomToLayerAsync(MapLayerInfo layer)
         {
             try
             {
-                await MapView.ZoomToGeometryAsync(await layer.Table.QueryExtentAsync(new QueryParameters()));
+                await MapView.ZoomToGeometryAsync(await layer.QueryExtentAsync(new QueryParameters()));
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task CoordinateTransformateAsync(LayerInfo layer)
+        private async Task CoordinateTransformateAsync(MapLayerInfo layer)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -177,7 +177,7 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task SetTimeExtentAsync(LayerInfo layer)
+        private async Task SetTimeExtentAsync(MapLayerInfo layer)
         {
             DateRangeDialog dialog = new DateRangeDialog(MapView.Layers.Selected);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -193,13 +193,13 @@ namespace MapBoard.Main.UI.Panel
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            foreach (LayerInfo layer in list.SelectedItems.Cast<LayerInfo>().ToArray())
+            foreach (MapLayerInfo layer in list.SelectedItems.Cast<MapLayerInfo>().ToArray())
             {
                 await layer.DeleteLayerAsync(MapView.Layers, true);
             }
         }
 
-        private async Task CopyAttributesAsync(LayerInfo layer)
+        private async Task CopyAttributesAsync(MapLayerInfo layer)
         {
             var dialog = new CopyAttributesDialog(layer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -208,7 +208,7 @@ namespace MapBoard.Main.UI.Panel
             }
         }
 
-        private async Task ShowAttributeTableAsync(LayerInfo layer)
+        private async Task ShowAttributeTableAsync(MapLayerInfo layer)
         {
             var dialog = new AttributeTableDialog(layer, MapView);
             try
@@ -231,11 +231,11 @@ namespace MapBoard.Main.UI.Panel
                 return;
             }
             var obj = e.OriginalSource as FrameworkElement;
-            while (obj != null && !(obj.DataContext is LayerInfo))
+            while (obj != null && !(obj.DataContext is MapLayerInfo))
             {
                 obj = obj.Parent as FrameworkElement;
             }
-            var layer = obj.DataContext as LayerInfo;
+            var layer = obj.DataContext as MapLayerInfo;
             if (layer != null)
             {
                 list.SelectedItem = layer;

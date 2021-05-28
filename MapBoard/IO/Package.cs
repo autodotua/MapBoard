@@ -49,7 +49,7 @@ namespace MapBoard.Main.IO
                 {
                     File.Copy(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
                 }
-                await layers.AddAsync(layer);
+                await layers.AddAsync(new MapLayerInfo(layer));
             }
             layers.Save();
         }
@@ -69,7 +69,7 @@ namespace MapBoard.Main.IO
 
             ZipFile.ExtractToDirectory(path, tempDirectoryPath);
 
-            LayerInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
+            MapLayerInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<MapLayerInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
             var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
 
             List<string> copyedFiles = new List<string>();
@@ -95,7 +95,7 @@ namespace MapBoard.Main.IO
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
             DirectoryInfo directory = PathUtility.GetTempDir();
-            foreach (var layer in layers)
+            foreach (MapLayerInfo layer in layers)
             {
                 await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
             }
@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
             ZipFile.CreateFromDirectory(directory.FullName, path);
         }
 
-        public async static Task ExportLayer2Async(string path, LayerInfo layer, LayerCollection layers)
+        public async static Task ExportLayer2Async(string path, MapLayerInfo layer, MapLayerCollection layers)
         {
             DirectoryInfo directory = PathUtility.GetTempDir();
             await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);

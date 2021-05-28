@@ -184,7 +184,7 @@ namespace MapBoard.Main.UI
                 buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
                 if (arcMap.Layers.Selected != null)
                 {
-                    switch (arcMap.Layers.Selected.Table.GeometryType)
+                    switch (arcMap.Layers.Selected.GeometryType)
                     {
                         case GeometryType.Multipoint:
                             splBtnMultiPoint.Visibility = Visibility.Visible;
@@ -262,11 +262,11 @@ namespace MapBoard.Main.UI
         {
             if (Directory.Exists(Config.DataPath))
             {
-                Process.Start(Config.DataPath);
+                IOUtility.OpenFileOrFolder(Config.DataPath);
             }
             else
             {
-                Process.Start(FzLib.Program.App.ProgramDirectoryPath);
+                IOUtility.OpenFileOrFolder(FzLib.Program.App.ProgramDirectoryPath);
             }
         }
 
@@ -275,7 +275,7 @@ namespace MapBoard.Main.UI
             changingSelection = true;
             if (dataGrid.SelectedItems.Count == 1)
             {
-                arcMap.Layers.Selected = dataGrid.SelectedItem as LayerInfo;
+                arcMap.Layers.Selected = dataGrid.SelectedItem as MapLayerInfo;
             }
             else
             {
@@ -340,8 +340,8 @@ namespace MapBoard.Main.UI
             JudgeControlsEnable();
 
             if (arcMap.Layers.Selected != null
-                && arcMap.Layers.Selected.Table != null
-                && arcMap.Layers.Selected.Table.NumberOfFeatures > 0)
+                && arcMap.Layers.Selected != null
+                && arcMap.Layers.Selected.NumberOfFeatures > 0)
             {
                 layerSettings.ResetLayerSettingUI();
             }
@@ -354,7 +354,6 @@ namespace MapBoard.Main.UI
                 || e.DeletedFeatures != null
                 || e.ChangedFeatures != null)
             {
-                e.Layer.NotifyFeatureChanged();
                 if (undoSnakeBar != null)
                 {
                     undoSnakeBar.Hide();
@@ -399,11 +398,11 @@ namespace MapBoard.Main.UI
         {
             if (e.AddedFeatures != null && e.AddedFeatures.Count > 0)
             {
-                await e.Layer.Table.DeleteFeaturesAsync(e.AddedFeatures);
+                await e.Layer.DeleteFeaturesAsync(e.AddedFeatures);
             }
             if (e.DeletedFeatures != null && e.DeletedFeatures.Count > 0)
             {
-                await e.Layer.Table.AddFeaturesAsync(e.DeletedFeatures);
+                await e.Layer.AddFeaturesAsync(e.DeletedFeatures);
             }
             if (e.ChangedFeatures != null && e.ChangedFeatures.Count > 0)
             {
@@ -411,7 +410,7 @@ namespace MapBoard.Main.UI
                 {
                     feature.Geometry = e.ChangedFeatures[feature];
                 }
-                await e.Layer.Table.UpdateFeaturesAsync(e.ChangedFeatures.Keys);
+                await e.Layer.UpdateFeaturesAsync(e.ChangedFeatures.Keys);
             }
         }
 
@@ -471,7 +470,7 @@ namespace MapBoard.Main.UI
 
         private async void arcMap_PreviewDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(LayerInfo).FullName))
+            if (e.Data.GetDataPresent(typeof(MapLayerInfo).FullName))
             {
                 return;
             }

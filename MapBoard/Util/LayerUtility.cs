@@ -18,12 +18,12 @@ namespace MapBoard.Main.Util
 {
     public static class LayerUtility
     {
-        public static string GetFileName(this LayerInfo layer)
+        public static string GetFileName(this MapLayerInfo layer)
         {
             return Path.Combine(Config.DataPath, layer.Name + ".shp");
         }
 
-        public static async Task DeleteLayerAsync(this LayerInfo layer, MapLayerCollection layers, bool deleteFiles)
+        public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
         {
             if (layers.Contains(layer))
             {
@@ -45,9 +45,9 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task<LayerInfo> CreateLayerAsync(GeometryType type,
+        public async static Task<MapLayerInfo> CreateLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
-                                                             LayerInfo template = null,
+                                                             MapLayerInfo template = null,
                                                              string name = null,
                                                              IList<FieldInfo> fields = null)
         {
@@ -67,7 +67,7 @@ namespace MapBoard.Main.Util
                 fields = new List<FieldInfo>();
             }
             await Shapefile.CreateShapefileAsync(type, name, null, fields);
-            LayerInfo layer = template == null ? new LayerInfo() : template.Clone() as LayerInfo;
+            MapLayerInfo layer = template == null ? new MapLayerInfo() : template.Clone() as MapLayerInfo;
             layer.Fields = fields.ToArray();
             layer.Name = name;
             await layers.AddAsync(layer);
@@ -75,28 +75,26 @@ namespace MapBoard.Main.Util
             return layer;
         }
 
-        public async static Task CreatCopyAsync(this LayerInfo layer, MapLayerCollection layers, bool includeFeatures)
+        public async static Task CreatCopyAsync(this MapLayerInfo layer, MapLayerCollection layers, bool includeFeatures)
         {
             if (includeFeatures)
             {
                 var features = await layer.GetAllFeaturesAsync();
 
-                var newLayer = await CreateLayerAsync(layer.Table.GeometryType, layers, layer);
-                ShapefileFeatureTable targetTable = newLayer.Table;
+                var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer);
 
-                await targetTable.AddFeaturesAsync(features);
-                newLayer.NotifyFeatureChanged();
+                await newLayer.AddFeaturesAsync(features);
                 layer.LayerVisible = false;
             }
             else
             {
-                await CreateLayerAsync(layer.Table.GeometryType, layers, layer);
+                await CreateLayerAsync(layer.GeometryType, layers, layer);
             }
         }
 
-        public async static Task<Feature[]> GetAllFeaturesAsync(this LayerInfo layer)
+        public async static Task<Feature[]> GetAllFeaturesAsync(this MapLayerInfo layer)
         {
-            FeatureQueryResult result = await layer.Table.QueryFeaturesAsync(new QueryParameters());
+            FeatureQueryResult result = await layer.QueryFeaturesAsync(new QueryParameters());
             Feature[] array = null;
             await Task.Run(() =>
             {
@@ -105,19 +103,17 @@ namespace MapBoard.Main.Util
             return array;
         }
 
-        public async static Task CopyAllFeaturesAsync(LayerInfo source, LayerInfo target)
+        public async static Task CopyAllFeaturesAsync(MapLayerInfo source, MapLayerInfo target)
         {
             var features = await source.GetAllFeaturesAsync();
-            ShapefileFeatureTable targetTable = target.Table;
 
             foreach (var feature in features)
             {
-                await targetTable.AddFeatureAsync(feature);
+                await target.AddFeatureAsync(feature);
             }
-            target.NotifyFeatureChanged();
         }
 
-        public static async Task LayerCompleteAsync(this LayerInfo layer)
+        public static async Task LayerCompleteAsync(this MapLayerInfo layer)
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
@@ -125,9 +121,9 @@ namespace MapBoard.Main.Util
             await layer.SetTimeExtentAsync();
         }
 
-        public async static Task BufferAsync(this LayerInfo layer, MapLayerCollection layers, double meters)
+        public async static Task BufferAsync(this MapLayerInfo layer, MapLayerCollection layers, double meters)
         {
-            var template = new LayerInfo();
+            var template = new MapLayerInfo();
             foreach (var symbol in layer.Symbols)
             {
                 template.Symbols.Add(symbol.Key, new SymbolInfo()
@@ -136,29 +132,27 @@ namespace MapBoard.Main.Util
                     FillColor = symbol.Value.LineColor
                 });
             }
-            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name+"_缓冲区");
-
-            ShapefileFeatureTable newTable = newLayer.Table;
+            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name + "_缓冲区");
 
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
                 var geometry = GeometryEngine.Buffer(oldGeometry, meters);
-                Feature newFeature = newTable.CreateFeature(feature.Attributes, geometry);
-                await newTable.AddFeatureAsync(newFeature);
+                Feature newFeature = newLayer.CreateFeature(feature.Attributes, geometry);
+                await newLayer.AddFeatureAsync(newFeature);
             }
         }
 
-        public async static Task SetTimeExtentAsync(this LayerInfo layer)
+        public async static Task SetTimeExtentAsync(this MapLayerInfo layer)
         {
             if (layer.TimeExtent == null)
             {
                 return;
             }
-            if (!layer.Table.Fields.Any(p => p.FieldType == FieldType.Date && p.Name == Resource.DateFieldName))
-            {
-                throw new Exception("shapefile没有指定的日期属性");
-            }
+            //if (!layer.Fields.Any(p => p.Type == FieldInfoType.Date && p.Name == Resource.DateFieldName))
+            //{
+            //    throw new Exception("shapefile没有指定的日期属性");
+            //}
             FeatureLayer featureLayer = layer.Layer;
 
             if (layer.TimeExtent.IsEnable)
@@ -196,7 +190,7 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task CoordinateTransformateAsync(this LayerInfo layer, string from, string to)
+        public async static Task CoordinateTransformateAsync(this MapLayerInfo layer, string from, string to)
         {
             if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
             {
@@ -210,32 +204,31 @@ namespace MapBoard.Main.Util
             foreach (var feature in features)
             {
                 coordinate.Transformate(feature);
-                await layer.Table.UpdateFeatureAsync(feature);
+                await layer.UpdateFeatureAsync(feature);
             }
         }
 
-        public async static Task<LayerInfo> UnionAsync(IEnumerable<LayerInfo> layers, MapLayerCollection layerCollection)
+        public async static Task<MapLayerInfo> UnionAsync(IEnumerable<MapLayerInfo> layers, MapLayerCollection layerCollection)
         {
             if (layers == null || !layers.Any())
             {
                 throw new Exception("图层为空");
             }
-            var type = layers.Select(p => p.Table.GeometryType).Distinct();
+            var type = layers.Select(p => p.GeometryType).Distinct();
             if (type.Count() != 1)
             {
                 throw new Exception("图层的类型并非统一");
             }
-            LayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
+            MapLayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
 
             foreach (var oldLayer in layers)
             {
                 var oldFeatures = await oldLayer.GetAllFeaturesAsync();
 
-                var features = oldFeatures.Select(p => layer.Table.CreateFeature(p.Attributes, p.Geometry));
-                await layer.Table.AddFeaturesAsync(features);
+                var features = oldFeatures.Select(p => layer.CreateFeature(p.Attributes, p.Geometry));
+                await layer.AddFeaturesAsync(features);
                 oldLayer.LayerVisible = false;
             }
-            layer.NotifyFeatureChanged();
             return layer;
         }
     }

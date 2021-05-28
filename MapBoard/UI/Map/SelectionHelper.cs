@@ -154,7 +154,7 @@ namespace MapBoard.Main.UI.Map
                      {
                          return;
                      }
-                     LayerInfo layer = MapView.Layers.FirstOrDefault(p => p.Layer == result.LayerContent);
+                     MapLayerInfo layer = MapView.Layers.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == result.LayerContent);
                      Debug.Assert(layer != null);
                      MapView.Layers.Selected = layer;
                      features = result.GeoElements.Cast<Feature>().ToList();

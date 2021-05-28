@@ -5,6 +5,7 @@ using Esri.ArcGISRuntime.Symbology;
 using MapBoard.Common;
 using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +16,13 @@ namespace MapBoard.Main.Util
 {
     public static class StyleUtility
     {
-        public static void ApplyStyle(this LayerInfo layer)
+        public static void ApplyStyle(this MapLayerInfo layer)
         {
             layer.ApplyRenderer();
             layer.ApplyLabel();
         }
 
-        private static void ApplyRenderer(this LayerInfo layer)
+        private static void ApplyRenderer(this MapLayerInfo layer)
         {
             UniqueValueRenderer renderer = new UniqueValueRenderer();
             renderer.FieldNames.Add(Resource.ClassFieldName);
@@ -75,7 +76,7 @@ namespace MapBoard.Main.Util
             layer.Layer.Renderer = renderer;
         }
 
-        private static void ApplyLabel(this LayerInfo layer)
+        private static void ApplyLabel(this MapLayerInfo layer)
         {
             LabelInfo label = layer.Label;
             var exp = new ArcadeLabelExpression(label.GetExpression());

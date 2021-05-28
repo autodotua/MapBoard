@@ -20,30 +20,14 @@ namespace MapBoard.Main.Model
 
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
 
-        private ShapefileFeatureTable table;
-
-        [JsonIgnore]
-        public ShapefileFeatureTable Table
-        {
-            get => table;
-            set => this.SetValueAndNotify(ref table, value, nameof(LayerVisible));
-        }
-
-        [JsonIgnore]
-        public FeatureLayer Layer => Table?.Layer as FeatureLayer;
-
         private bool layerVisible = true;
 
-        public bool LayerVisible
+        public virtual bool LayerVisible
         {
             get => layerVisible;
             set
             {
                 layerVisible = value;
-                if (Layer != null)
-                {
-                    Layer.IsVisible = value;
-                }
                 this.Notify(nameof(LayerVisible));
             }
         }
@@ -70,39 +54,14 @@ namespace MapBoard.Main.Model
         public TimeExtentInfo TimeExtent
         {
             get => timeExtent;
-            set => this.SetValueAndNotify(ref timeExtent, value, nameof(TimeExtentEnable));
-        }
-
-        [JsonIgnore]
-        public bool TimeExtentEnable
-        {
-            get => TimeExtent == null ? false : TimeExtent.IsEnable;
-            set
-            {
-                if (TimeExtent != null)
-                {
-                    if (value != TimeExtent.IsEnable)
-                    {
-                        TimeExtent.IsEnable = value;
-                        this.SetTimeExtentAsync();
-                    }
-                }
-
-                this.Notify(nameof(TimeExtentEnable));
-            }
+            set => this.SetValueAndNotify(ref timeExtent, value, nameof(TimeExtent));
         }
 
         public LabelInfo Label { get; set; } = new LabelInfo();
 
-        public void NotifyFeatureChanged()
-        {
-            this.Notify(nameof(Table));
-        }
-
-        public object Clone()
+        public virtual object Clone()
         {
             LayerInfo layer = MemberwiseClone() as LayerInfo;
-            layer.Table = null;
             foreach (var key in Symbols.Keys.ToList())
             {
                 layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
