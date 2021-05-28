@@ -43,7 +43,7 @@
                 <TextBlock
                     VerticalAlignment="Center" FontSize="13"
                     Text="地图画板" />
-                <ui:TitleBarButton
+                <ui:TitleBarButton x:Name="btnTitleBarMore"
                     Grid.Column="2" Width="NaN"
                     Padding="16,0" FontSize="13"
                     Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">

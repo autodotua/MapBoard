@@ -7,12 +7,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="设置" Width="480"
+    Title="设置" Width="800"
     Height="400"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="AttributeTableDialog_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    mc:Ignorable="d">
+    ResizeMode="CanResize"
+    ShowInTaskbar="True" mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

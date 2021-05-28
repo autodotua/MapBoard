@@ -5,6 +5,8 @@ using MapBoard.Main.UI.Bar;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
+using System;
+using System.Diagnostics;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -72,15 +74,29 @@ namespace MapBoard.Main.UI.Dialog
             {
                 left = top = 0;
             }
+            mainWindow.IsVisibleChanged += (p1, p2) =>
+            {
+                if (p2.NewValue.Equals(false))
+                {
+                    Visibility = Visibility.Collapsed;
+                }
+            };
 
             Left = left + mainWindow.ActualWidth - ActualWidth;
-            Top = top + BarBase.DefaultBarHeight + 2/*bar的高度*/ + SystemParameters.WindowCaptionHeight * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY;
+            Top = top + mainWindow.ActualHeight - Height;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Application.Current.MainWindow;
             ResetLocation();
+        }
+
+        protected override void OnContentRendered(EventArgs e)
+        {
+            ResetLocation();
+            base.OnContentRendered(e);
+            var mainWindow = Application.Current.MainWindow;
+
             mainWindow.Focus();
         }
 

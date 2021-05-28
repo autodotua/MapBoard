@@ -158,9 +158,11 @@ namespace MapBoard.Main.UI
                 || arcMap.CurrentTask == BoardTask.Select)
             {
                 grdLeft.IsEnabled = false;
+                btnTitleBarMore.IsEnabled = false;
             }
             else
             {
+                btnTitleBarMore.IsEnabled = true;
                 if (arcMap.Selection.SelectedFeatures.Count > 0)
                 {
                     dataGrid.IsEnabled = false;
@@ -348,7 +350,9 @@ namespace MapBoard.Main.UI
 
         private void FeatureUtility_FeaturesGeometryChanged(object sender, FeaturesGeometryChangedEventArgs e)
         {
-            if (e.AddedFeatures != null || e.DeletedFeatures != null || e.ChangedFeatures != null)
+            if (e.AddedFeatures != null
+                || e.DeletedFeatures != null
+                || e.ChangedFeatures != null)
             {
                 e.Layer.NotifyFeatureChanged();
                 if (undoSnakeBar != null)
@@ -380,6 +384,12 @@ namespace MapBoard.Main.UI
                           }
                       });
                  };
+
+                if (e.AddedFeatures != null)
+                {
+                    arcMap.Selection.ClearSelection();
+                    arcMap.Selection.Select(e.AddedFeatures);
+                }
             }
         }
 

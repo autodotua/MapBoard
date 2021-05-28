@@ -245,7 +245,7 @@ namespace MapBoard.Main.UI
                 };
             if (layer != null)
             {
-                if (layer.Table.GeometryType == GeometryType.Point || layer.Table.GeometryType == GeometryType.Polyline)
+                if (layer.Table.GeometryType is GeometryType.Point or GeometryType.Polyline)
                 {
                     items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gpx.ImportToLayersAsync(files, layer)));
                 }

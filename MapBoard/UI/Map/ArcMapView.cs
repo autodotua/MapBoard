@@ -2,7 +2,6 @@
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Common.BaseLayer;
 using MapBoard.Main.Util;
