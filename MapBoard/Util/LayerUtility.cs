@@ -83,7 +83,7 @@ namespace MapBoard.Main.Util
 
                 var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer);
 
-                await newLayer.AddFeaturesAsync(features);
+                await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
                 layer.LayerVisible = false;
             }
             else
@@ -107,10 +107,7 @@ namespace MapBoard.Main.Util
         {
             var features = await source.GetAllFeaturesAsync();
 
-            foreach (var feature in features)
-            {
-                await target.AddFeatureAsync(feature);
-            }
+            await target.AddFeaturesAsync(features, FeaturesChangedSource.FeatureOperation);
         }
 
         public static async Task LayerCompleteAsync(this MapLayerInfo layer)
@@ -133,14 +130,15 @@ namespace MapBoard.Main.Util
                 });
             }
             var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name + "_缓冲区");
-
+            List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {
                 Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
                 var geometry = GeometryEngine.Buffer(oldGeometry, meters);
                 Feature newFeature = newLayer.CreateFeature(feature.Attributes, geometry);
-                await newLayer.AddFeatureAsync(newFeature);
+                newFeatures.Add(newFeature);
             }
+            await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
         public async static Task SetTimeExtentAsync(this MapLayerInfo layer)
@@ -200,12 +198,14 @@ namespace MapBoard.Main.Util
             CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
 
             var features = await layer.GetAllFeaturesAsync();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
             foreach (var feature in features)
             {
+                newFeatures.Add(new UpdatedFeature(feature));
                 coordinate.Transformate(feature);
-                await layer.UpdateFeatureAsync(feature);
             }
+            await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
         public async static Task<MapLayerInfo> UnionAsync(IEnumerable<MapLayerInfo> layers, MapLayerCollection layerCollection)
@@ -226,7 +226,7 @@ namespace MapBoard.Main.Util
                 var oldFeatures = await oldLayer.GetAllFeaturesAsync();
 
                 var features = oldFeatures.Select(p => layer.CreateFeature(p.Attributes, p.Geometry));
-                await layer.AddFeaturesAsync(features);
+                await layer.AddFeaturesAsync(features, FeaturesChangedSource.FeatureOperation);
                 oldLayer.LayerVisible = false;
             }
             return layer;

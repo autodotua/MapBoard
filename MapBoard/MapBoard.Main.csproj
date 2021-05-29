@@ -111,6 +111,11 @@
   <ItemGroup>
     <Compile Remove="Model\TimeExtent.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="UI\Dialog\FeatureHistoryDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

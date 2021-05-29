@@ -74,6 +74,12 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
+                            <MenuItem Click="ClearHistoriesButton_Click" Header="清除要素历史记录">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Clear" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
                             <MenuItem Click="SettingButton_Click" Header="设置">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Setting" />

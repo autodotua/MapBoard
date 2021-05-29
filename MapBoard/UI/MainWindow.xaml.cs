@@ -211,11 +211,6 @@ namespace MapBoard.Main.UI
                 {
                     arcMap.Editor.CurrentDrawMode = null;
                 }
-                if (undoSnakeBar != null)
-                {
-                    undoSnakeBar.Hide();
-                    undoSnakeBar = null;
-                }
             }
         }
 
@@ -345,73 +340,6 @@ namespace MapBoard.Main.UI
             {
                 layerSettings.ResetLayerSettingUI();
             }
-            FeatureUtility.FeaturesGeometryChanged += FeatureUtility_FeaturesGeometryChanged;
-        }
-
-        private void FeatureUtility_FeaturesGeometryChanged(object sender, FeaturesGeometryChangedEventArgs e)
-        {
-            if (e.AddedFeatures != null
-                || e.DeletedFeatures != null
-                || e.ChangedFeatures != null)
-            {
-                if (undoSnakeBar != null)
-                {
-                    undoSnakeBar.Hide();
-                }
-                SnakeBar snake = new SnakeBar(this)
-                {
-                    Duration = TimeSpan.FromSeconds(10),
-                    ButtonContent = "撤销",
-                    ShowButton = true,
-                };
-
-                undoSnakeBar = snake;
-                snake.ShowMessage("操作完成");
-                snake.ButtonClick += async (p1, p2) =>
-                 {
-                     undoSnakeBar = null;
-                     snake.Hide();
-                     await DoAsync(async () =>
-                      {
-                          try
-                          {
-                              await UndoFeatureOperation(e);
-                          }
-                          catch (Exception ex)
-                          {
-                              await CommonDialog.ShowErrorDialogAsync(ex, "撤销失败");
-                          }
-                      });
-                 };
-
-                if (e.AddedFeatures != null)
-                {
-                    arcMap.Selection.ClearSelection();
-                    arcMap.Selection.Select(e.AddedFeatures);
-                }
-            }
-        }
-
-        private SnakeBar undoSnakeBar = null;
-
-        private async Task UndoFeatureOperation(FeaturesGeometryChangedEventArgs e)
-        {
-            if (e.AddedFeatures != null && e.AddedFeatures.Count > 0)
-            {
-                await e.Layer.DeleteFeaturesAsync(e.AddedFeatures);
-            }
-            if (e.DeletedFeatures != null && e.DeletedFeatures.Count > 0)
-            {
-                await e.Layer.AddFeaturesAsync(e.DeletedFeatures);
-            }
-            if (e.ChangedFeatures != null && e.ChangedFeatures.Count > 0)
-            {
-                foreach (var feature in e.ChangedFeatures.Keys)
-                {
-                    feature.Geometry = e.ChangedFeatures[feature];
-                }
-                await e.Layer.UpdateFeaturesAsync(e.ChangedFeatures.Keys);
-            }
         }
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
@@ -523,6 +451,14 @@ namespace MapBoard.Main.UI
                 await IOUtility.ExportMapAsync(arcMap, arcMap.Layers, (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string));
             });
             canClosing = true;
+        }
+
+        private void ClearHistoriesButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (MapLayerInfo layer in arcMap.Layers)
+            {
+                layer.Histories.Clear();
+            }
         }
     }
 }

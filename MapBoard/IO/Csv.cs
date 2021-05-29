@@ -165,7 +165,7 @@ namespace MapBoard.Main.IO
                         break;
                 }
             }
-            await layer.AddFeaturesAsync(features);
+            await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
             return features.AsReadOnly();
         }
     }

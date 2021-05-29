@@ -95,8 +95,8 @@ namespace ModernWpf.FzExtension.CommonDialog
         {
             DetailTextDialog dialog = new DetailTextDialog()
             {
-                Title = "错误",
-                Message = message ?? ex.Message,
+                Title = message ?? "错误",
+                Message = ex.Message,
                 Detail = ex == null ? null : ex.ToString(),
                 PrimaryButtonText = "确定",
                 IsPrimaryButtonEnabled = true,

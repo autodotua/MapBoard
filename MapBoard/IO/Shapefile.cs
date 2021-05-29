@@ -94,7 +94,7 @@ namespace MapBoard.Main.IO
                 Feature newFeature = layer.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
                 newFeatures.Add(newFeature);
             }
-            await layer.AddFeaturesAsync(newFeatures);
+            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
 
             layer.LayerVisible = true;
         }

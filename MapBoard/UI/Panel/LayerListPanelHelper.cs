@@ -61,6 +61,7 @@ namespace MapBoard.Main.UI.Panel
                 AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layer));
                 AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
                 AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(layer));
+                AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(layer));
                 menu.Items.Add(new Separator());
 
                 var menuImport = new MenuItem() { Header = "导入" };
@@ -92,6 +93,12 @@ namespace MapBoard.Main.UI.Panel
             {
                 menu.IsOpen = true;
             }
+        }
+
+        private async Task OpenHistoryDialog(MapLayerInfo layer)
+        {
+            var dialog = FeatureHistoryDialog.Get(layer, MapView);
+            dialog.BringToFront();
         }
 
         private void AddToMenu(ItemsControl menu, string header, Func<Task> func)
@@ -210,7 +217,7 @@ namespace MapBoard.Main.UI.Panel
 
         private async Task ShowAttributeTableAsync(MapLayerInfo layer)
         {
-            var dialog = new AttributeTableDialog(layer, MapView);
+            var dialog = AttributeTableDialog.Get(layer, MapView);
             try
             {
                 await DoAsync(dialog.LoadAsync);
@@ -220,7 +227,7 @@ namespace MapBoard.Main.UI.Panel
                 await CommonDialog.ShowErrorDialogAsync(ex, "加载属性失败");
                 return;
             }
-            dialog.Show();
+            dialog.BringToFront();
         }
 
         public void RightButtonClickToSelect(MouseEventArgs e)

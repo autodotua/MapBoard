@@ -12,6 +12,8 @@ using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using MapBoard.Main.Model.Extension;
 using FzLib.Extension;
+using Esri.ArcGISRuntime.Data;
+using System.Diagnostics;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -26,7 +28,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
 
-        public AttributeTableDialog(MapLayerInfo layer, ArcMapView mapView)
+        private AttributeTableDialog(MapLayerInfo layer, ArcMapView mapView)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
@@ -42,10 +44,25 @@ namespace MapBoard.Main.UI.Dialog
             private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
         }
 
+        private static Dictionary<MapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<MapLayerInfo, AttributeTableDialog>();
+
+        public static AttributeTableDialog Get(MapLayerInfo layer, ArcMapView mapView)
+        {
+            if (dialogs.ContainsKey(layer))
+            {
+                return dialogs[layer];
+            }
+            var dialog = new AttributeTableDialog(layer, mapView);
+            dialogs.Add(layer, dialog);
+            return dialog;
+        }
+
         public int EditedFeaturesCount => editedAttributes.Count;
 
         public MapLayerInfo Layer { get; }
         public ArcMapView MapView { get; }
+
+        public bool IsLoaded { get; private set; } = false;
 
         /// <summary>
         /// 加载数据
@@ -53,6 +70,11 @@ namespace MapBoard.Main.UI.Dialog
         /// <returns></returns>
         public async Task LoadAsync()
         {
+            if (IsLoaded)
+            {
+                return;
+            }
+            IsLoaded = true;
             var features = await Layer.GetAllFeaturesAsync();
             Attributes = features.Select(p => FeatureAttributes.FromFeature(Layer, p)).ToArray();
             if (Attributes.Length == 0)
@@ -133,6 +155,8 @@ namespace MapBoard.Main.UI.Dialog
         {
             if (close)
             {
+                Debug.Assert(dialogs.ContainsKey(Layer));
+                dialogs.Remove(Layer);
                 return;
             }
             if (EditedFeaturesCount > 0)
@@ -144,16 +168,25 @@ namespace MapBoard.Main.UI.Dialog
                     Close();
                 }
             }
+            else
+            {
+                Debug.Assert(dialogs.ContainsKey(Layer));
+                dialogs.Remove(Layer);
+            }
         }
 
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             btnSave.IsEnabled = false;
+            List<UpdatedFeature> features = new List<UpdatedFeature>();
             foreach (var attr in editedAttributes)
             {
+                var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
                 attr.SaveToFeature();
-                await Layer.UpdateFeatureAsync(attr.Feature);
+                features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
             }
+            await Layer.UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
+
             editedAttributes.Clear();
             this.Notify(nameof(EditedFeaturesCount));
         }

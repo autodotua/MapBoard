@@ -104,7 +104,7 @@ namespace MapBoard.Main.IO
                         }
                     });
             });
-            await layer.AddFeaturesAsync(features);
+            await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
         }
     }
 }

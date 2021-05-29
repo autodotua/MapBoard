@@ -5,6 +5,7 @@ using FzLib.Extension;
 using MapBoard.Common;
 using MapBoard.Main.Model;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -125,7 +126,7 @@ namespace MapBoard.Main.UI.Map
                 Feature feature = Layers.Selected.CreateFeature();
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
-                await Layers.Selected.AddFeatureAsync(feature);
+                await Layers.Selected.AddFeatureAsync(feature, FeaturesChangedSource.Draw);
             }
         }
 
@@ -140,9 +141,10 @@ namespace MapBoard.Main.UI.Map
             await SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
             if (geometry != null)
             {
+                UpdatedFeature newFeature = new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes));
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
-                await feature.FeatureTable.UpdateFeatureAsync(feature);
+                await layer.UpdateFeatureAsync(newFeature, FeaturesChangedSource.Edit);
             }
         }
 

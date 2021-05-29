@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using static MapBoard.Main.UI.Map.FeaturesChangedSource;
 
 namespace MapBoard.Main.Util
 {
@@ -20,10 +21,8 @@ namespace MapBoard.Main.Util
             Geometry geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
             var firstFeature = features.First();
             var newFeature = layer.CreateFeature(firstFeature.Attributes, geometry);
-            await layer.DeleteFeaturesAsync(features);
-            await layer.AddFeatureAsync(newFeature);
-            FeaturesGeometryChanged?.Invoke(null,
-                new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
+            await layer.AddFeatureAsync(newFeature, FeatureOperation);
             return newFeature;
         }
 
@@ -41,7 +40,7 @@ namespace MapBoard.Main.Util
                 }
                 foreach (var part in m.Parts)
                 {
-                    Geometry g = m is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part);
+                    Geometry g = m is Polyline ? new Polyline(part) : new Polygon(part);
                     var newFeature = layer.CreateFeature(feature.Attributes, g);
                     added.Add(newFeature);
                 }
@@ -49,10 +48,8 @@ namespace MapBoard.Main.Util
             }
             if (added.Count > 0)
             {
-                await layer.AddFeaturesAsync(added);
-                await layer.DeleteFeaturesAsync(deleted);
-                FeaturesGeometryChanged?.Invoke(null,
-       new FeaturesGeometryChangedEventArgs(layer, added, deleted, null));
+                await layer.DeleteFeaturesAsync(deleted, FeatureOperation);
+                await layer.AddFeaturesAsync(added, FeatureOperation);
             }
             return added.AsReadOnly();
         }
@@ -104,11 +101,9 @@ namespace MapBoard.Main.Util
             }
             var newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
 
-            await layer.AddFeatureAsync(newFeature);
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
+            await layer.AddFeatureAsync(newFeature, FeatureOperation);
 
-            await layer.DeleteFeaturesAsync(features);
-            FeaturesGeometryChanged?.Invoke(null,
-    new FeaturesGeometryChangedEventArgs(layer, new[] { newFeature }, features, null));
             return newFeature;
         }
 
@@ -128,74 +123,68 @@ namespace MapBoard.Main.Util
                 {
                     newGeo = new Polyline(points.ToList());
                 }
-                await layer.DeleteFeatureAsync(feature);
                 var newFeature = layer.CreateFeature(feature.Attributes, newGeo);
-                await layer.AddFeatureAsync(newFeature);
                 newFeatures.Add(newFeature);
             }
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, newFeatures, features, null));
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
+            await layer.AddFeaturesAsync(newFeatures, FeatureOperation);
             return newFeatures.AsReadOnly();
         }
 
         public static async Task DensifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
-            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
             foreach (var feature in features.ToList())
             {
                 var newGeo = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
-                oldGeometries.Add(feature, feature.Geometry);
+                newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, feature.Attributes));
                 feature.Geometry = newGeo;
             }
-            await layer.UpdateFeaturesAsync(oldGeometries.Keys);
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
         public async static Task VerticalDistanceSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+
             foreach (var feature in features)
             {
                 oldGeometries.Add(feature, feature.Geometry);
-                await SimplyBaseAsync(layer, feature, part =>
-                {
-                    HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
-                    for (int i = 2; i < part.PointCount; i += 2)
-                    {
-                        var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
-                        if (dist < max)
-                        {
-                            deletedPoints.Add(part.Points[i - 1]);
-                        }
-                    }
-                    return part.Points.Except(deletedPoints);
-                });
+                newFeatures.Add(SimplyBase(layer, feature, part =>
+               {
+                   HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
+                   for (int i = 2; i < part.PointCount; i += 2)
+                   {
+                       var dist = GetVerticleDistance(part.Points[i - 2], part.Points[i], part.Points[i - 1]);
+                       if (dist < max)
+                       {
+                           deletedPoints.Add(part.Points[i - 1]);
+                       }
+                   }
+                   return part.Points.Except(deletedPoints);
+               }));
             }
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
         public async static Task GeneralizeSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
-            Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
             foreach (var feature in features)
             {
-                oldGeometries.Add(feature, feature.Geometry);
-
                 Geometry geometry = feature.Geometry;
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
                 geometry = GeometryEngine.Generalize(geometry, max, false);
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
+                newFeatures.Add(new UpdatedFeature(feature, geometry, feature.Attributes));
                 feature.Geometry = geometry;
-                await layer.UpdateFeatureAsync(feature);
             }
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
-        private static async Task SimplyBaseAsync(MapLayerInfo layer, Feature feature,
+        private static UpdatedFeature SimplyBase(MapLayerInfo layer, Feature feature,
             Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.GeometryType == GeometryType.Polygon || layer.GeometryType == GeometryType.Polyline); ;
@@ -209,12 +198,12 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
             {
                 parts = (feature.Geometry as Polyline).Parts;
             }
-
             List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
             foreach (var part in parts)
             {
                 newParts.Add(func(part));
             }
+            UpdatedFeature uf = new UpdatedFeature(feature);
             if (layer.GeometryType == GeometryType.Polygon)
             {
                 feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
@@ -223,7 +212,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
             {
                 feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
             }
-            await layer.UpdateFeatureAsync(feature);
+            return uf;
         }
 
         /// <summary>
@@ -248,13 +237,15 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
 
         public static async Task DouglasPeuckerSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
 
             foreach (var feature in features)
             {
                 oldGeometries.Add(feature, feature.Geometry);
 
-                await SimplyBaseAsync(layer, feature, part =>
+                newFeatures.Add(SimplyBase(layer, feature, part =>
                 {
                     var ps = part.Points;
                     IList<MapPoint> Recurse(int from, int to)
@@ -285,15 +276,16 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
                     }
                     var result = Recurse(0, part.PointCount - 1);
                     return result;
-                });
+                }));
             }
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
         public static async Task IntervalTakePointsSimplifyAsync(MapLayerInfo layer, Feature[] features, double interval)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+
             if (interval < 2)
             {
                 throw new Exception("间隔不应小于2");
@@ -302,25 +294,24 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
             {
                 oldGeometries.Add(feature, feature.Geometry);
 
-                await SimplyBaseAsync(layer, feature, part =>
-                {
-                    List<MapPoint> points = new List<MapPoint>();
-                    for (int i = 0; i < part.PointCount; i++)
-                    {
-                        if (i % interval == 0)
-                        {
-                            points.Add(part.Points[i]);
-                        }
-                    }
-                    if ((part.PointCount - 1) % interval != 0)
-                    {
-                        points.Add(part.Points[part.PointCount - 1]);
-                    }
-                    return points;
-                });
+                newFeatures.Add(SimplyBase(layer, feature, part =>
+               {
+                   List<MapPoint> points = new List<MapPoint>();
+                   for (int i = 0; i < part.PointCount; i++)
+                   {
+                       if (i % interval == 0)
+                       {
+                           points.Add(part.Points[i]);
+                       }
+                   }
+                   if ((part.PointCount - 1) % interval != 0)
+                   {
+                       points.Add(part.Points[part.PointCount - 1]);
+                   }
+                   return points;
+               }));
             }
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
         public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(MapLayerInfo layer, Feature[] features)
@@ -331,17 +322,13 @@ new FeaturesGeometryChangedEventArgs(layer, null, null, oldGeometries));
                 Feature newFeature = layer.CreateFeature(feature.Attributes, feature.Geometry);
                 newFeatures.Add(newFeature);
             }
-            await layer.AddFeaturesAsync(newFeatures);
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, newFeatures, null, null));
+            await layer.AddFeaturesAsync(newFeatures, FeatureOperation);
             return newFeatures.AsReadOnly();
         }
 
         public static async Task DeleteAsync(MapLayerInfo layer, Feature[] features)
         {
-            await layer.DeleteFeaturesAsync(features);
-            FeaturesGeometryChanged?.Invoke(null,
-new FeaturesGeometryChangedEventArgs(layer, null, features, null));
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
         }
 
         public static async Task<IReadOnlyList<Feature>> CutAsync(MapLayerInfo layer, Feature[] features, Polyline clipLine)
@@ -363,10 +350,8 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                     }
                 }
             }
-            await layer.AddFeaturesAsync(added);
-            await layer.DeleteFeaturesAsync(features);
-            FeaturesGeometryChanged?.Invoke(null,
-    new FeaturesGeometryChangedEventArgs(layer, added, features, null));
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
+            await layer.AddFeaturesAsync(added, FeatureOperation);
             return added;
         }
 
@@ -409,7 +394,7 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                 }
                 newFeatures.Add(layerTo.CreateFeature(attributes, feature.Geometry));
             }
-            await layerTo.AddFeaturesAsync(newFeatures);
+            await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
             if (!copy)
             {
                 await DeleteAsync(layerFrom, features);
@@ -419,13 +404,14 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
             return newFeatures.AsReadOnly();
         }
 
-        public static event EventHandler<FeaturesGeometryChangedEventArgs> FeaturesGeometryChanged;
-
         public static async Task CopyAttributesAsync(MapLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+
             foreach (var feature in features)
             {
+                newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes)));
                 object value = feature.Attributes[fieldSource.Name];
                 if (value is DateTimeOffset dto)
                 {
@@ -474,36 +460,8 @@ new FeaturesGeometryChangedEventArgs(layer, null, features, null));
                     catch { }
                     feature.SetAttributeValue(fieldTarget.Name, result);
                 }
-                await layer.UpdateFeatureAsync(feature);
             }
-        }
-    }
-
-    public class FeaturesGeometryChangedEventArgs : EventArgs
-    {
-        public IReadOnlyList<Feature> DeletedFeatures { get; }
-        public IReadOnlyList<Feature> AddedFeatures { get; }
-        public IReadOnlyDictionary<Feature, Geometry> ChangedFeatures { get; }
-        public MapLayerInfo Layer { get; }
-
-        public FeaturesGeometryChangedEventArgs(MapLayerInfo layer,
-            IEnumerable<Feature> addedFeatures,
-            IEnumerable<Feature> deletedFeatures,
-            IDictionary<Feature, Geometry> changedFeatures)
-        {
-            if (deletedFeatures != null)
-            {
-                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
-            }
-            if (addedFeatures != null)
-            {
-                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
-            }
-            if (changedFeatures != null)
-            {
-                ChangedFeatures = new ReadOnlyDictionary<Feature, Geometry>(changedFeatures);
-            }
-            Layer = layer;
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
     }
 }

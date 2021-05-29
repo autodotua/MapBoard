@@ -31,22 +31,20 @@ namespace MapBoard.Main.IO
 
             MapLayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));
-
+            List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
             {
                 CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
                 if (type == GpxImportType.Point)
                 {
-                    List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
                     {
                         MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
                         Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
-                        features.Add(feature);
+                        newFeatures.Add(feature);
                     }
-                    await layer.AddFeaturesAsync(features);
                 }
                 else
                 {
@@ -57,9 +55,10 @@ namespace MapBoard.Main.IO
                     }
                     Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points);
-                    await layer.AddFeatureAsync(feature);
+                    newFeatures.Add(feature);
                 }
             }
+            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
             return layer;
         }
 
@@ -103,7 +102,7 @@ namespace MapBoard.Main.IO
                         features.Add(feature);
                     }
                     importedFeatures = features;
-                    await layer.AddFeaturesAsync(features);
+                    await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
                 }
                 else if (layer.GeometryType == GeometryType.Multipoint)
                 {
@@ -114,7 +113,6 @@ namespace MapBoard.Main.IO
                     var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
                     Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points, transformation.ToSpatialReference);
-                    await layer.AddFeatureAsync(feature);
                     importedFeatures.Add(feature);
                 }
                 else
@@ -122,6 +120,7 @@ namespace MapBoard.Main.IO
                     throw new Exception("不支持的格式图形类型");
                 }
             }
+            await layer.AddFeaturesAsync(importedFeatures, FeaturesChangedSource.Import);
 
             return importedFeatures.AsReadOnly();
         }

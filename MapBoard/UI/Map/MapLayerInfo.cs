@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,10 +36,11 @@ namespace MapBoard.Main.UI.Map
                 this.Notify(nameof(TimeExtentEnable));
             }
         }
+
         public MapLayerInfo()
         {
-
         }
+
         public MapLayerInfo(LayerInfo layer)
         {
             Name = layer.Name;
@@ -46,6 +50,7 @@ namespace MapBoard.Main.UI.Map
             Label = layer.Label;
             LayerVisible = layer.LayerVisible;
         }
+
         public override object Clone()
         {
             MapLayerInfo layer = MemberwiseClone() as MapLayerInfo;
@@ -90,33 +95,28 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        private void NotifyFeaturesChanged(IEnumerable<Feature> added, IEnumerable<Feature> deleted, IEnumerable<Feature> updated)
-        {
-            this.Notify(nameof(NumberOfFeatures));
-        }
-
-        public async Task AddFeatureAsync(Feature feature)
+        public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
             await table.AddFeatureAsync(feature);
-            NotifyFeaturesChanged(new[] { feature }, null, null);
+            NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
 
         public SymbolInfo GetDefaultSymbol()
         {
             return GeometryType switch
             {
-                Esri.ArcGISRuntime.Geometry.GeometryType.Point => SymbolInfo.DefaultPointSymbol,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
+                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
+                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
                 _ => throw new ArgumentOutOfRangeException(),
             };
         }
 
-        public async Task AddFeaturesAsync(IEnumerable<Feature> features)
+        public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
             await table.AddFeaturesAsync(features);
-            NotifyFeaturesChanged(features, null, null);
+            NotifyFeaturesChanged(features, null, null, source);
         }
 
         public Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters queryParameters)
@@ -124,28 +124,28 @@ namespace MapBoard.Main.UI.Map
             return table.QueryFeaturesAsync(queryParameters);
         }
 
-        public async Task DeleteFeatureAsync(Feature feature)
+        public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
             await table.DeleteFeatureAsync(feature);
-            NotifyFeaturesChanged(null, new[] { feature }, null);
+            NotifyFeaturesChanged(null, new[] { feature }, null, source);
         }
 
-        public async Task DeleteFeaturesAsync(IEnumerable<Feature> features)
+        public async Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
             await table.DeleteFeaturesAsync(features);
-            NotifyFeaturesChanged(null, features, null);
+            NotifyFeaturesChanged(null, features, null, source);
         }
 
-        public async Task UpdateFeatureAsync(Feature feature)
+        public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
         {
-            await table.UpdateFeatureAsync(feature);
-            NotifyFeaturesChanged(null, null, new[] { feature });
+            await table.UpdateFeatureAsync(feature.Feature);
+            NotifyFeaturesChanged(null, null, new[] { feature }, source);
         }
 
-        public async Task UpdateFeaturesAsync(IEnumerable<Feature> features)
+        public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
         {
-            await table.UpdateFeaturesAsync(features);
-            NotifyFeaturesChanged(null, null, features);
+            await table.UpdateFeaturesAsync(features.Select(p => p.Feature));
+            NotifyFeaturesChanged(null, null, features, source);
         }
 
         public long NumberOfFeatures => table == null ? 0 : table.NumberOfFeatures;
@@ -168,6 +168,108 @@ namespace MapBoard.Main.UI.Map
         public Task<Envelope> QueryExtentAsync(QueryParameters queryParameters)
         {
             return table.QueryExtentAsync(queryParameters);
+        }
+
+        public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
+
+        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
+            IEnumerable<Feature> deleted,
+            IEnumerable<UpdatedFeature> updated,
+            FeaturesChangedSource source)
+        {
+            this.Notify(nameof(NumberOfFeatures));
+            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
+            FeaturesChanged?.Invoke(this, h);
+            Histories.Add(h);
+        }
+
+        [JsonIgnore]
+        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; } = new ObservableCollection<FeaturesChangedEventArgs>();
+    }
+
+    public class UpdatedFeature
+    {
+        public UpdatedFeature(Feature newFeature)
+        {
+            Feature = newFeature;
+            OldGeometry = Feature.Geometry;
+            OldAttributes = new Dictionary<string, object>(Feature.Attributes);
+        }
+
+        public UpdatedFeature(Feature newFeature, Geometry oldGeometry, IDictionary<string, object> oldAttributes)
+        {
+            Feature = newFeature;
+            OldGeometry = oldGeometry;
+            OldAttributes = oldAttributes;
+        }
+
+        public Feature Feature { get; }
+        public Geometry OldGeometry { get; }
+        public IDictionary<string, object> OldAttributes { get; }
+    }
+
+    public enum FeaturesChangedSource
+    {
+        [Description("绘制")]
+        Draw,
+
+        [Description("编辑")]
+        Edit,
+
+        [Description("要素操作")]
+        FeatureOperation,
+
+        [Description("撤销")]
+        Undo,
+
+        [Description("导入")]
+        Import
+    }
+
+    public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
+    {
+        public IReadOnlyList<Feature> DeletedFeatures { get; }
+        public IReadOnlyList<Feature> AddedFeatures { get; }
+        public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
+        public MapLayerInfo Layer { get; }
+        public DateTime Time { get; }
+        public FeaturesChangedSource Source { get; }
+        private bool canUndo = true;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool CanUndo
+        {
+            get => canUndo;
+            set => this.SetValueAndNotify(ref canUndo, value, nameof(CanUndo));
+        }
+
+        public FeaturesChangedEventArgs(MapLayerInfo layer,
+            IEnumerable<Feature> addedFeatures,
+            IEnumerable<Feature> deletedFeatures,
+            IEnumerable<UpdatedFeature> changedFeatures,
+            FeaturesChangedSource source)
+        {
+            Source = source;
+            Time = DateTime.Now;
+            int count = 0;
+            if (deletedFeatures != null)
+            {
+                count++;
+                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
+            }
+            if (addedFeatures != null)
+            {
+                count++;
+                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
+            }
+            if (changedFeatures != null)
+            {
+                count++;
+                UpdatedFeatures = new List<UpdatedFeature>(changedFeatures).AsReadOnly();
+            }
+            Debug.Assert(count == 1);
+            Layer = layer;
         }
     }
 }
