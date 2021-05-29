@@ -91,16 +91,16 @@ namespace MapBoard.Main.UI.Panel
                     SnakeBar.ShowError("新文件名不合法");
                     goto end;
                 }
-                if (File.Exists(Path.Combine(Config.DataPath, newName + ".shp")))
+                if (File.Exists(Path.Combine(Parameters.Instance.DataPath, newName + ".shp")))
                 {
                     SnakeBar.ShowError("文件已存在");
                 }
                 try
                 {
                     await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
-                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
+                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.Instance.DataPath, layer.Name))
                     {
-                        File.Move(file, Path.Combine(Config.DataPath, newName + Path.GetExtension(file)));
+                        File.Move(file, Path.Combine(Parameters.Instance.DataPath, newName + Path.GetExtension(file)));
                     }
                     layer.Name = newName;
                 }

@@ -22,11 +22,11 @@ namespace MapBoard.Main.IO
             if (overwrite)
             {
                 layers.Clear();
-                if (Directory.Exists(Config.DataPath))
+                if (Directory.Exists(Parameters.Instance.DataPath))
                 {
-                    Directory.Delete(Config.DataPath, true);
+                    Directory.Delete(Parameters.Instance.DataPath, true);
                 }
-                Directory.CreateDirectory(Config.DataPath);
+                Directory.CreateDirectory(Parameters.Instance.DataPath);
             }
             var tempDir = PathUtility.GetTempDir().FullName;
             ZipFile.ExtractToDirectory(path, tempDir);
@@ -47,7 +47,7 @@ namespace MapBoard.Main.IO
             {
                 foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
                 {
-                    File.Copy(file, Path.Combine(Config.DataPath, Path.GetFileName(file)));
+                    File.Copy(file, Path.Combine(Parameters.Instance.DataPath, Path.GetFileName(file)));
                 }
                 await layers.AddAsync(new MapLayerInfo(layer));
             }
@@ -60,7 +60,7 @@ namespace MapBoard.Main.IO
         /// <param name="path"></param>
         public static async Task ImportLayerAsync(string path, MapLayerCollection layers)
         {
-            string tempDirectoryPath = Path.Combine(Config.DataPath, "temp");
+            string tempDirectoryPath = Path.Combine(Parameters.Instance.DataPath, "temp");
             if (Directory.Exists(tempDirectoryPath))
             {
                 Directory.Delete(tempDirectoryPath, true);
@@ -75,7 +75,7 @@ namespace MapBoard.Main.IO
             List<string> copyedFiles = new List<string>();
             foreach (var file in files)
             {
-                string target = Path.Combine(Config.DataPath, Path.GetFileName(file));
+                string target = Path.Combine(Parameters.Instance.DataPath, Path.GetFileName(file));
                 if (File.Exists(target))
                 {
                     copyedFiles.ForEach(p => File.Delete(p));
@@ -115,9 +115,9 @@ namespace MapBoard.Main.IO
 
         public async static Task BackupAsync(MapLayerCollection layers, int maxCount)
         {
-            await ExportMap2Async(Path.Combine(Config.BackupPath, DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"), layers);
+            await ExportMap2Async(Path.Combine(Parameters.Instance.BackupPath, DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"), layers);
 
-            var files = Directory.EnumerateFiles(Config.BackupPath).ToList();
+            var files = Directory.EnumerateFiles(Parameters.Instance.BackupPath).ToList();
             if (files.Count > maxCount)
             {
                 foreach (var file in files

@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using System;
@@ -35,17 +36,13 @@ namespace MapBoard.Common.BaseLayer
 
                 if (basemap.BaseLayers.Count == 0)
                 {
-                    basemap = null;
                 }
-                else
-                {
-                    await basemap.LoadAsync();
-                }
+                await basemap.LoadAsync();
                 if (map is SceneView s)
                 {
                     if (s.Scene == null)
                     {
-                        s.Scene = basemap == null ? new Scene() : new Scene(basemap);
+                        s.Scene = basemap.BaseLayers.Count == 0 ? new Scene() : new Scene(basemap);
                     }
                     else
                     {
@@ -57,7 +54,7 @@ namespace MapBoard.Common.BaseLayer
                 {
                     if (m.Map == null)
                     {
-                        m.Map = basemap == null ? new Map(SpatialReferences.Wgs84) : new Map(basemap);
+                        m.Map = basemap.BaseLayers.Count == 0 ? new Map(SpatialReferences.Wgs84) : new Map(basemap);
                     }
                     else
                     {

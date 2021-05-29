@@ -255,9 +255,9 @@ namespace MapBoard.Main.UI
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
-            if (Directory.Exists(Config.DataPath))
+            if (Directory.Exists(Parameters.Instance.DataPath))
             {
-                IOUtility.OpenFileOrFolder(Config.DataPath);
+                IOUtility.OpenFileOrFolder(Parameters.Instance.DataPath);
             }
             else
             {
@@ -344,7 +344,7 @@ namespace MapBoard.Main.UI
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            new SettingDialog() { Owner = this }.ShowDialog();
+            new SettingDialog(arcMap) { Owner = this }.ShowDialog();
         }
 
         private void GpxMenu_Click(object sender, RoutedEventArgs e)
@@ -440,9 +440,9 @@ namespace MapBoard.Main.UI
 
         private void ExportMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(Config.DataPath))
+            if (!Directory.Exists(Parameters.Instance.DataPath))
             {
-                SnakeBar.ShowError("数据目录" + Config.DataPath + "不存在");
+                SnakeBar.ShowError("数据目录" + Parameters.Instance.DataPath + "不存在");
                 return;
             }
             canClosing = false;

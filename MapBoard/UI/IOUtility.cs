@@ -328,7 +328,7 @@ namespace MapBoard.Main.UI
         {
             new Process()
             {
-                StartInfo = new ProcessStartInfo(path)
+                StartInfo = new ProcessStartInfo(Path.GetFullPath(path))
                 {
                     UseShellExecute = true
                 }

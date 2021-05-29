@@ -3,16 +3,21 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialog="clr-namespace:MapBoard.Main.UI.Dialog"
     xmlns:local="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="设置" Width="480"
-    Height="400"
+    Title="设置" Width="600"
+    Height="540"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="DialogWindowBase_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded" mc:Ignorable="d">
+    <local:DialogWindowBase.Resources>
+        <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
+        <dialog:BaseLayerTypeConverter x:Key="bl2str" />
+    </local:DialogWindowBase.Resources>
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -22,24 +27,106 @@
         <TabControl Style="{StaticResource TabControlPivotStyle}">
             <TabItem Padding="8" Header="通用">
                 <ui:SimpleStackPanel Spacing="16">
-                    <ComboBox ui:ControlHelper.Header="主题" SelectedIndex="{Binding Theme}">
-                        <ComboBoxItem>自动</ComboBoxItem>
-                        <ComboBoxItem>亮色</ComboBoxItem>
-                        <ComboBoxItem>暗色</ComboBoxItem>
-                    </ComboBox>
-                    <ComboBox ui:ControlHelper.Header="底图坐标系" SelectedItem="{Binding Config.BasemapCoordinateSystem}">
-                        <system:String>WGS84</system:String>
-                        <system:String>CGCS2000</system:String>
-                        <system:String>GCJ02</system:String>
-                    </ComboBox>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Text="当前底图数量：" />
-                        <TextBlock VerticalAlignment="Center" Text="{Binding Config.BaseLayers.Count}" />
-                        <Button
-                            Margin="12,0,0,0"
-                            Click="SetBaseLayersButtonClick"
-                            Content="设置" />
-                    </StackPanel>
+                    <WrapPanel ItemWidth="96">
+                        <ComboBox ui:ControlHelper.Header="主题" SelectedIndex="{Binding Theme}">
+                            <ComboBoxItem>自动</ComboBoxItem>
+                            <ComboBoxItem>亮色</ComboBoxItem>
+                            <ComboBoxItem>暗色</ComboBoxItem>
+                        </ComboBox>
+                        <ComboBox ui:ControlHelper.Header="底图坐标系" SelectedItem="{Binding Config.BasemapCoordinateSystem}">
+                            <system:String>WGS84</system:String>
+                            <system:String>CGCS2000</system:String>
+                            <system:String>GCJ02</system:String>
+                        </ComboBox>
+                    </WrapPanel>
+                    <ui:SimpleStackPanel Spacing="8" Orientation="Horizontal">
+                        <TextBlock Text="数据文件位置：" VerticalAlignment="Center" />
+                        <RadioButton x:Name="rbtnAppData" Click="RbtnDataPath_Click" Content="默认位置（AppData）" />
+                        <RadioButton x:Name="rbtnHere" Click="RbtnDataPath_Click" Content="程序目录" />
+                        <RadioButton x:Name="rbtnUp" Click="RbtnDataPath_Click" Content="程序上级目录" />
+                    </ui:SimpleStackPanel>
+                    <TextBlock>底图设置</TextBlock>
+                    <Grid Margin="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <DataGrid
+                            x:Name="grd" Height="160"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="True"
+                            ItemsSource="{Binding BaseLayers}"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Binding="{Binding Index}"
+                                    CanUserSort="False" Header="序号"
+                                    IsReadOnly="True"
+                                    SortDirection="Ascending" />
+                                <DataGridCheckBoxColumn Binding="{Binding Enable}" Header="启用" />
+
+                                <DataGridTemplateColumn CanUserSort="False" Header="类型">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Type, Converter={StaticResource bl2str}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <ComboBox
+                                                VerticalAlignment="Center"
+                                                ItemsSource="{Binding Source={StaticResource baseLayerTypes}}"
+                                                SelectedItem="{Binding Type}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding ., Converter={StaticResource bl2str}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding Opacity, StringFormat=P0}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <Slider
+                                                Width="120" Maximum="1"
+                                                Minimum="0"
+                                                Value="{Binding Opacity}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn
+                                    Width="320"
+                                    Binding="{Binding Path=Path}"
+                                    CanUserSort="False" Header="地址" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <ui:SimpleStackPanel
+                            Grid.Row="2" Grid.ColumnSpan="5"
+                            Margin="8" HorizontalAlignment="Right"
+                            Orientation="Horizontal" Spacing="8">
+                            <Button Click="BrowseButtonClick" Content="浏览.." />
+                            <Button Click="AddButtonClick" Content="新增" />
+                            <Button Click="DeleteButtonClick" Content="删除" />
+                            <Button Click="OkButtonClick" Content="应用" />
+                        </ui:SimpleStackPanel>
+                    </Grid>
+
                     <CheckBox Click="CheckBox_Click" IsChecked="{Binding Config.HideWatermark}">
                         <TextBlock>
                             <Run>尝试隐藏</Run>
@@ -52,7 +139,6 @@
 
             <TabItem Padding="6" Header="地图画板">
                 <ui:SimpleStackPanel Spacing="16">
-                    <TextBox ui:ControlHelper.Header="缓冲区半径（米）" Text="{Binding Config.StaticWidth}" />
 
                     <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
                         <TextBlock VerticalAlignment="Center" Text="在绘制下一个图形时，保留：" />

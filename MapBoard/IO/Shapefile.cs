@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
         {
             if (folder == null)
             {
-                folder = Config.DataPath;
+                folder = Parameters.Instance.DataPath;
             }
             if (!Directory.Exists(folder))
             {

@@ -20,7 +20,7 @@ namespace MapBoard.Main.Util
     {
         public static string GetFileName(this MapLayerInfo layer)
         {
-            return Path.Combine(Config.DataPath, layer.Name + ".shp");
+            return Path.Combine(Parameters.Instance.DataPath, layer.Name + ".shp");
         }
 
         public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
@@ -34,7 +34,7 @@ namespace MapBoard.Main.Util
             {
                 await Task.Run(() =>
                 {
-                    foreach (var file in Shapefile.GetExistShapefiles(Config.DataPath, layer.Name))
+                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.Instance.DataPath, layer.Name))
                     {
                         if (Path.GetFileNameWithoutExtension(file) == layer.Name)
                         {

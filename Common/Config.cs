@@ -16,7 +16,7 @@ namespace MapBoard.Common
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config.json"));
+                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.Instance.ConfigPath));
                     instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
                 }
                 return instance;
@@ -24,10 +24,6 @@ namespace MapBoard.Common
         }
 
         public List<BaseLayerInfo> BaseLayers { get; } = new List<BaseLayerInfo>();
-        public static string RecordPath { get; } = @"..\Records";
-        public static string DataPath { get; } = @"..\Data";
-        public static string BackupPath { get; } = @"..\Backups";
-
 
         public bool GpxHeight { get; set; } = true;
         public double GpxHeightExaggeratedMagnification { get; set; } = 5;

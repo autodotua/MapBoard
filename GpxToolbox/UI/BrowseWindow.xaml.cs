@@ -176,11 +176,11 @@ namespace MapBoard.GpxToolbox.UI
                     string filePath = null;
                     if (useTimeFileName)
                     {
-                        filePath = Path.Combine(Config.RecordPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
+                        filePath = Path.Combine(Parameters.Instance.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
                     }
                     else
                     {
-                        filePath = Path.Combine(Config.RecordPath, Track.FileName, ++count + ".png");
+                        filePath = Path.Combine(Parameters.Instance.RecordsPath, Track.FileName, ++count + ".png");
                     }
                     using var fileStream = new FileStream(filePath, FileMode.Create);
                     BitmapEncoder encoder = new PngBitmapEncoder();
@@ -192,7 +192,7 @@ namespace MapBoard.GpxToolbox.UI
 
         private string GetRecordPath()
         {
-            return Path.Combine(Config.RecordPath, Track.FileName);
+            return Path.Combine(Parameters.Instance.RecordsPath, Track.FileName);
         }
 
         private void StopPlay()

@@ -27,7 +27,7 @@ namespace MapBoard.Main.IO
             string content = File.ReadAllText(path);
 
             var gpx = LibGpx.FromString(content);
-            string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Config.DataPath, name + ".shp"));
+            string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.Instance.DataPath, name + ".shp"));
 
             MapLayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));

@@ -1,4 +1,5 @@
 ﻿using FzLib.Extension;
+using MapBoard.Common;
 using MapBoard.TileDownloaderSplicer.Model;
 using Newtonsoft.Json;
 using System;
@@ -23,7 +24,7 @@ namespace MapBoard.TileDownloaderSplicer
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "config_tile.json")));
+                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.Instance.TileConfigPath)));
                     instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
                 }
                 return instance;
@@ -50,7 +51,7 @@ namespace MapBoard.TileDownloaderSplicer
          */
 
         public string DownloadUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-        public string DownloadFolder { get; set; } = @"..\Download";
+        public string DownloadFolder { get; set; } = Parameters.Instance.TileDownloadPath;
         public bool CoverFile { get; set; } = false;
         public string FormatExtension { get; set; } = "png";
         public (int width, int height) TileSize { get; set; } = (256, 256);
