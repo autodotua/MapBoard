@@ -66,9 +66,9 @@ namespace MapBoard.Main.IO
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            bool label = table.Fields.Any(p => p.Name == Resource.LabelFieldName && p.FieldType == FieldType.Text);
-            bool date = table.Fields.Any(p => p.Name == Resource.DateFieldName && p.FieldType == FieldType.Date);
-            bool key = table.Fields.Any(p => p.Name == Resource.ClassFieldName && p.FieldType == FieldType.Text);
+            bool label = table.Fields.Any(p => p.Name == Parameters.LabelFieldName && p.FieldType == FieldType.Text);
+            bool date = table.Fields.Any(p => p.Name == Parameters.DateFieldName && p.FieldType == FieldType.Date);
+            bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
 
             MapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
@@ -103,7 +103,7 @@ namespace MapBoard.Main.IO
         {
             if (folder == null)
             {
-                folder = Parameters.Instance.DataPath;
+                folder = Parameters.DataPath;
             }
             if (!Directory.Exists(folder))
             {

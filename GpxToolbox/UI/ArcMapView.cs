@@ -7,7 +7,7 @@ using FzLib.Basic.Collection;
 using FzLib.Geography.IO.Gpx;
 using FzLib.WPF.Dialog;
 using MapBoard.Common;
-using MapBoard.Common.BaseLayer;
+using MapBoard.Common.UI;
 using MapBoard.GpxToolbox.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using System;

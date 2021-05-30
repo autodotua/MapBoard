@@ -51,4 +51,21 @@
   <ItemGroup>
     <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="res\DefaultBaseMap.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="res\DefaultBaseMap.jpg.aux.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="res\DefaultBaseMap.jpg.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="res\DefaultBaseMap.jpgw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="res\DefaultBaseMap.prj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

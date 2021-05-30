@@ -32,11 +32,11 @@ namespace MapBoard.TileDownloaderSplicer
                     // 设置参数
                     HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
                     request.Timeout = Config.Instance.RequestTimeOut;
+                    request.ReadWriteTimeout = Config.Instance.ReadTimeOut;
                     request.UserAgent = Config.Instance.DownloadUserAgent;
 
                     using HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                    using Stream responseStream = response.GetResponseStream();
-                    responseStream.ReadTimeout = Config.Instance.ReadTimeOut;
+                    using var responseStream = response.GetResponseStream();
                     //创建本地文件写入流
                     byte[] bArr = new byte[1024 * 1024];
                     int size = responseStream.Read(bArr, 0, bArr.Length);

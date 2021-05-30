@@ -42,9 +42,9 @@ namespace MapBoard.Main.Model
         }
 
         public static FieldInfo[] DefaultFields => new[] { LabelField, DateField, ClassField };
-        public static readonly FieldInfo LabelField = new FieldInfo(Resource.LabelFieldName, "标签", FieldInfoType.Text);
-        public static readonly FieldInfo DateField = new FieldInfo(Resource.DateFieldName, "日期", FieldInfoType.Date);
-        public static readonly FieldInfo ClassField = new FieldInfo(Resource.ClassFieldName, "分类", FieldInfoType.Text);
+        public static readonly FieldInfo LabelField = new FieldInfo(Parameters.LabelFieldName, "标签", FieldInfoType.Text);
+        public static readonly FieldInfo DateField = new FieldInfo(Parameters.DateFieldName, "日期", FieldInfoType.Date);
+        public static readonly FieldInfo ClassField = new FieldInfo(Parameters.ClassFieldName, "分类", FieldInfoType.Text);
 
         public event PropertyChangedEventHandler PropertyChanged;
 

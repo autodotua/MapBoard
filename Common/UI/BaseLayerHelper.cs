@@ -2,7 +2,7 @@
 using Esri.ArcGISRuntime.Mapping;
 using System;
 
-namespace MapBoard.Common.BaseLayer
+namespace MapBoard.Common.UI
 {
     public static class BaseLayerHelper
     {

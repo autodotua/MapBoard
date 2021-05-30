@@ -5,7 +5,7 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.WPF.Dialog;
-using MapBoard.Common.BaseLayer;
+using MapBoard.Common.UI;
 using MapBoard.TileDownloaderSplicer.Model;
 using ModernWpf.FzExtension.CommonDialog;
 using System;

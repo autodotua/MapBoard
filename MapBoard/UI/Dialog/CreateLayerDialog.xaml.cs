@@ -117,9 +117,9 @@ namespace MapBoard.Main.UI.Dialog
             HashSet<string> displayNames = new HashSet<string>();
             foreach (var field in Fields)
             {
-                if (field.Name == Resource.ClassFieldName
-                    || field.Name == Resource.LabelFieldName
-                    || field.Name == Resource.DateFieldName
+                if (field.Name == Parameters.ClassFieldName
+                    || field.Name == Parameters.LabelFieldName
+                    || field.Name == Parameters.DateFieldName
                     || field.DisplayName.Length * field.Name.Length == 0
                     && field.Name.Length + field.DisplayName.Length > 0
                     || !displayNames.Add(field.DisplayName)

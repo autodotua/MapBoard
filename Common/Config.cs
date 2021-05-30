@@ -16,7 +16,7 @@ namespace MapBoard.Common
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.Instance.ConfigPath));
+                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.ConfigPath));
                     instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
                 }
                 return instance;

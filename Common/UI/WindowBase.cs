@@ -1,20 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace MapBoard.Common
 {
-    public abstract class UserControlBase : UserControl, INotifyPropertyChanged
-    {
-        public UserControlBase()
-        {
-            DataContext = this;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
-
     public abstract class WindowBase : Window, INotifyPropertyChanged
     {
         public WindowBase()

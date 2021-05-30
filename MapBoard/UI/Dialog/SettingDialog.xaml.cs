@@ -2,7 +2,7 @@
 using FzLib.WPF.Dialog;
 using FzLib.WPF.Extension;
 using MapBoard.Common;
-using MapBoard.Common.BaseLayer;
+using MapBoard.Common.UI;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using ModernWpf.FzExtension.CommonDialog;

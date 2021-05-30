@@ -3,11 +3,12 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MapBoard.Common.BaseLayer
+namespace MapBoard.Common.UI
 {
     public static class GeoViewHelper
     {
@@ -36,6 +37,7 @@ namespace MapBoard.Common.BaseLayer
 
                 if (basemap.BaseLayers.Count == 0)
                 {
+                    basemap = new Basemap(new RasterLayer(Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBaseMap.jpg")));
                 }
                 await basemap.LoadAsync();
                 if (map is SceneView s)

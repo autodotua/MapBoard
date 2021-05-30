@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using MapBoard.Common;
-using MapBoard.Common.BaseLayer;
+using MapBoard.Common.UI;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;

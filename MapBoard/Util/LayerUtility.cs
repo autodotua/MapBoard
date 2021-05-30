@@ -20,7 +20,7 @@ namespace MapBoard.Main.Util
     {
         public static string GetFileName(this MapLayerInfo layer)
         {
-            return Path.Combine(Parameters.Instance.DataPath, layer.Name + ".shp");
+            return Path.Combine(Parameters.DataPath, layer.Name + ".shp");
         }
 
         public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
@@ -34,7 +34,7 @@ namespace MapBoard.Main.Util
             {
                 await Task.Run(() =>
                 {
-                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.Instance.DataPath, layer.Name))
+                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
                     {
                         if (Path.GetFileNameWithoutExtension(file) == layer.Name)
                         {
@@ -147,7 +147,7 @@ namespace MapBoard.Main.Util
             {
                 return;
             }
-            //if (!layer.Fields.Any(p => p.Type == FieldInfoType.Date && p.Name == Resource.DateFieldName))
+            //if (!layer.Fields.Any(p => p.Type == FieldInfoType.Date && p.Name == Parameters.DateFieldName))
             //{
             //    throw new Exception("shapefile没有指定的日期属性");
             //}
@@ -162,7 +162,7 @@ namespace MapBoard.Main.Util
 
                 foreach (var feature in features)
                 {
-                    if (feature.Attributes[Resource.DateFieldName] is DateTimeOffset date)
+                    if (feature.Attributes[Parameters.DateFieldName] is DateTimeOffset date)
                     {
                         if (date.UtcDateTime >= layer.TimeExtent.From && date.UtcDateTime <= layer.TimeExtent.To)
                         {

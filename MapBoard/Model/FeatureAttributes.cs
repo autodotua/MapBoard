@@ -37,10 +37,10 @@ namespace MapBoard.Main.Model
 
         public string Label
         {
-            get => all.FirstOrDefault(p => p.Name == Resource.LabelFieldName)?.TextValue;
+            get => all.FirstOrDefault(p => p.Name == Parameters.LabelFieldName)?.TextValue;
             set
             {
-                var item = all.First(p => p.Name == Resource.LabelFieldName);
+                var item = all.First(p => p.Name == Parameters.LabelFieldName);
                 item.TextValue = value;
                 this.Notify(nameof(Label));
             }
@@ -48,10 +48,10 @@ namespace MapBoard.Main.Model
 
         public string Key
         {
-            get => all.FirstOrDefault(p => p.Name == Resource.ClassFieldName)?.TextValue;
+            get => all.FirstOrDefault(p => p.Name == Parameters.ClassFieldName)?.TextValue;
             set
             {
-                var item = all.First(p => p.Name == Resource.ClassFieldName);
+                var item = all.First(p => p.Name == Parameters.ClassFieldName);
                 item.TextValue = value;
                 this.Notify(nameof(Key));
             }
@@ -59,10 +59,10 @@ namespace MapBoard.Main.Model
 
         public DateTime? Date
         {
-            get => all.FirstOrDefault(p => p.Name == Resource.DateFieldName)?.DateValue;
+            get => all.FirstOrDefault(p => p.Name == Parameters.DateFieldName)?.DateValue;
             set
             {
-                var item = all.First(p => p.Name == Resource.DateFieldName);
+                var item = all.First(p => p.Name == Parameters.DateFieldName);
                 item.DateValue = value;
                 this.Notify(nameof(Date));
             }
@@ -94,9 +94,9 @@ namespace MapBoard.Main.Model
                 Feature = feature
             };
 
-            attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Resource.LabelFieldName] as string));
-            attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Resource.ClassFieldName] as string));
-            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, (feature.Attributes[Resource.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Parameters.LabelFieldName] as string));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Parameters.ClassFieldName] as string));
+            attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, (feature.Attributes[Parameters.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
             foreach (var attr in feature.Attributes.GetCustomAttributes())
             {
                 FeatureAttribute newAttr = null;

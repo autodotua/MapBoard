@@ -12,15 +12,15 @@ namespace MapBoard.Main.Model.Extension
     {
         public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
         {
-            if (!fields.Any(p => p.Name == Resource.LabelFieldName))
+            if (!fields.Any(p => p.Name == Parameters.LabelFieldName))
             {
                 yield return FieldInfo.LabelField;
             }
-            if (!fields.Any(p => p.Name == Resource.DateFieldName))
+            if (!fields.Any(p => p.Name == Parameters.DateFieldName))
             {
                 yield return FieldInfo.DateField;
             }
-            if (!fields.Any(p => p.Name == Resource.ClassFieldName))
+            if (!fields.Any(p => p.Name == Parameters.ClassFieldName))
             {
                 yield return FieldInfo.ClassField;
             }

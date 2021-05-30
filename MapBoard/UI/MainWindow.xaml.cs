@@ -255,9 +255,9 @@ namespace MapBoard.Main.UI
 
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
-            if (Directory.Exists(Parameters.Instance.DataPath))
+            if (Directory.Exists(Parameters.DataPath))
             {
-                IOUtility.OpenFileOrFolder(Parameters.Instance.DataPath);
+                IOUtility.OpenFileOrFolder(Parameters.DataPath);
             }
             else
             {
@@ -440,9 +440,9 @@ namespace MapBoard.Main.UI
 
         private void ExportMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(Parameters.Instance.DataPath))
+            if (!Directory.Exists(Parameters.DataPath))
             {
-                SnakeBar.ShowError("数据目录" + Parameters.Instance.DataPath + "不存在");
+                SnakeBar.ShowError("数据目录" + Parameters.DataPath + "不存在");
                 return;
             }
             canClosing = false;

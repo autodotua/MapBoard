@@ -91,9 +91,9 @@ namespace MapBoard.Main.IO
                                 Dictionary<string, object> attr = new Dictionary<string, object>();
                                 if (info.Value.time.HasValue)
                                 {
-                                    attr.Add(Resource.DateFieldName, info.Value.time);
+                                    attr.Add(Parameters.DateFieldName, info.Value.time);
                                 }
-                                attr.Add(Resource.LabelFieldName, Path.GetFileName(file));
+                                attr.Add(Parameters.LabelFieldName, Path.GetFileName(file));
                                 attr.Add(addressField, file);
                                 var feature = layer.CreateFeature(attr, point);
                                 features.Add(feature);

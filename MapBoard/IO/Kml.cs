@@ -60,7 +60,7 @@ namespace MapBoard.Main.IO
                     }
                     placemark.Style = new KmlStyle();
                     SymbolInfo symbol;
-                    var c = feature.Attributes[Resource.ClassFieldName] as string;
+                    var c = feature.Attributes[Parameters.ClassFieldName] as string;
                     if (!string.IsNullOrEmpty(c) && layer.Symbols.ContainsKey(c))
                     {
                         symbol = layer.Symbols[c];

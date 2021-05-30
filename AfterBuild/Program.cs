@@ -2,6 +2,7 @@
 
 using FzLib.IO;
 using FzLib.Program;
+using MapBoard.Common;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -35,7 +36,7 @@ namespace MapBoard.AfterBuild
 
         private static void CreateConfig()
         {
-            File.WriteAllText("config_tile.json",
+            File.WriteAllText(Parameters.TileConfigPath,
                 JsonConvert.SerializeObject(new
                 {
                     UrlCollection = new
@@ -67,16 +68,7 @@ namespace MapBoard.AfterBuild
       }
                     }
                     }
-                })); File.WriteAllText("config.json",
-            JsonConvert.SerializeObject(new
-            {
-                BaseLayers = new dynamic[] {
-            new   {
-   Type="WebTiledLayer",
-      Path= "https://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}",
-      Enable= true      }
-                }
-            }));
+                }));
         }
 
         private static void CreateShortcuts()
@@ -132,7 +124,13 @@ namespace MapBoard.AfterBuild
             }
 
             foreach (var dir in Directory.EnumerateDirectories(App.ProgramDirectoryPath)
-                .Where(p => !(new string[] { "Data", appPath, "Download" }).Contains(Path.GetFileName(p)))
+                .Where(p => !(new string[] {appPath,
+                    Path.GetFileName(Parameters.DataPath),
+                    Path.GetFileName(Parameters.TileDownloadPath),
+                    Path.GetFileName(Parameters.BackupPath),
+                    Path.GetFileName(Parameters.RecordsPath),
+                    "res",
+                }).Contains(Path.GetFileName(p)))
                 .ToArray())
             {
                 string target = Path.Combine(App.ProgramDirectoryPath, appPath, Path.GetFileName(dir));

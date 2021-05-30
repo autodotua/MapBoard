@@ -91,16 +91,16 @@ namespace MapBoard.Main.UI.Panel
                     SnakeBar.ShowError("新文件名不合法");
                     goto end;
                 }
-                if (File.Exists(Path.Combine(Parameters.Instance.DataPath, newName + ".shp")))
+                if (File.Exists(Path.Combine(Parameters.DataPath, newName + ".shp")))
                 {
                     SnakeBar.ShowError("文件已存在");
                 }
                 try
                 {
                     await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
-                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.Instance.DataPath, layer.Name))
+                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
                     {
-                        File.Move(file, Path.Combine(Parameters.Instance.DataPath, newName + Path.GetExtension(file)));
+                        File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
                     }
                     layer.Name = newName;
                 }
@@ -232,7 +232,7 @@ namespace MapBoard.Main.UI.Panel
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
             var layer = Layers.Selected;
-            var keys = (await layer.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Resource.ClassFieldName) as string).Distinct();
+            var keys = (await layer.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Parameters.ClassFieldName) as string).Distinct();
             foreach (var key in keys)
             {
                 if (!Keys.Any(p => p.Key == key) && key != "")

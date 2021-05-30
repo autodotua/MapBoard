@@ -7,18 +7,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Common
 {
-    public class Parameters
+    public static class Parameters
     {
-        public const string ConfigUp = "CONFIG_UP";
-        public const string ConfigHere = "CONFIG_HERE";
-        public const string AppName = "MapBoard";
-
         static Parameters()
-        {
-            Instance = new Parameters();
-        }
-
-        public Parameters()
         {
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
             if (File.Exists(Path.Combine(appPath, ConfigHere)))
@@ -51,13 +42,18 @@ namespace MapBoard.Common
             }
         }
 
-        public static Parameters Instance { get; }
+        public const string ConfigUp = "CONFIG_UP";
+        public const string ConfigHere = "CONFIG_HERE";
+        public const string AppName = "MapBoard";
+        public const string ClassFieldName = "Key";
+        public const string DateFieldName = "Date";
+        public const string LabelFieldName = "Info";
 
-        public string ConfigPath { get; }
-        public string TileConfigPath { get; }
-        public string DataPath { get; }
-        public string TileDownloadPath { get; }
-        public string BackupPath { get; }
-        public string RecordsPath { get; }
+        public static readonly string ConfigPath;
+        public static readonly string TileConfigPath;
+        public static readonly string DataPath;
+        public static readonly string TileDownloadPath;
+        public static readonly string BackupPath;
+        public static readonly string RecordsPath;
     }
 }

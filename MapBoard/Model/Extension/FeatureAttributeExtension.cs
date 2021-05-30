@@ -10,9 +10,9 @@ namespace MapBoard.Main.Model.Extension
             Dictionary<string, object> result = new Dictionary<string, object>();
             foreach (var a in attributes)
             {
-                if (a.Key != Resource.ClassFieldName
-                    && a.Key != Resource.LabelFieldName
-                    && a.Key != Resource.DateFieldName
+                if (a.Key != Parameters.ClassFieldName
+                    && a.Key != Parameters.LabelFieldName
+                    && a.Key != Parameters.DateFieldName
                     && a.Key != "FID")
                 {
                     result.Add(a.Key, a.Value);

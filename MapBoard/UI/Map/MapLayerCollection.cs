@@ -52,7 +52,7 @@ namespace MapBoard.Main.UI.Map
 
         public static async Task<MapLayerCollection> GetInstanceAsync(ELayerCollection esriLayers)
         {
-            string path = Path.Combine(Parameters.Instance.DataPath, LayersFileName);
+            string path = Path.Combine(Parameters.DataPath, LayersFileName);
             if (!File.Exists(path))
             {
                 return new MapLayerCollection(esriLayers);
@@ -134,7 +134,7 @@ namespace MapBoard.Main.UI.Map
 
         public void Save()
         {
-            Save(Path.Combine(Parameters.Instance.DataPath, LayersFileName));
+            Save(Path.Combine(Parameters.DataPath, LayersFileName));
         }
 
         protected override void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -186,15 +186,15 @@ namespace MapBoard.Main.UI.Map
 
         public async Task LoadLayersAsync()
         {
-            if (!Directory.Exists(Parameters.Instance.DataPath))
+            if (!Directory.Exists(Parameters.DataPath))
             {
-                Directory.CreateDirectory(Parameters.Instance.DataPath);
+                Directory.CreateDirectory(Parameters.DataPath);
                 return;
             }
 
             foreach (var layer in layers.Cast<MapLayerInfo>().ToList())
             {
-                if (File.Exists(Path.Combine(Parameters.Instance.DataPath, layer.Name + ".shp")))
+                if (File.Exists(Path.Combine(Parameters.DataPath, layer.Name + ".shp")))
                 {
                     await LoadLayerAsync(layer);
                 }
@@ -204,7 +204,7 @@ namespace MapBoard.Main.UI.Map
                 }
             }
 
-            HashSet<string> files = Directory.EnumerateFiles(Parameters.Instance.DataPath)
+            HashSet<string> files = Directory.EnumerateFiles(Parameters.DataPath)
                 .Where(p => Path.GetExtension(p) == ".shp")
                 .Select(p =>
                 {
@@ -213,7 +213,7 @@ namespace MapBoard.Main.UI.Map
                     {
                         return p;
                     }
-                    return p.Remove(index, p.Length - index).RemoveStart(Parameters.Instance.DataPath + "\\");
+                    return p.Remove(index, p.Length - index).RemoveStart(Parameters.DataPath + "\\");
                 }).ToHashSet();
 
             foreach (var name in files)
@@ -231,7 +231,7 @@ namespace MapBoard.Main.UI.Map
         {
             try
             {
-                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Parameters.Instance.DataPath + "\\" + layer.Name + ".shp");
+                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Parameters.DataPath + "\\" + layer.Name + ".shp");
                 await featureTable.LoadAsync();
                 if (featureTable.LoadStatus == LoadStatus.Loaded)
                 {
@@ -309,7 +309,7 @@ namespace MapBoard.Main.UI.Map
 
 //        public static async Task<MapLayerCollection> GetInstanceAsync(Esri.ArcGISRuntime.Mapping.LayerCollection esriLayers)
 //        {
-//            string path = Path.Combine(Parameters.Instance.DataPath, LayersFileName);
+//            string path = Path.Combine(Parameters.DataPath, LayersFileName);
 //            if (!File.Exists(path))
 //            {
 //                return new MapLayerCollection(esriLayers);
@@ -391,7 +391,7 @@ namespace MapBoard.Main.UI.Map
 
 //        public void Save()
 //        {
-//            Save(Path.Combine(Parameters.Instance.DataPath, LayersFileName));
+//            Save(Path.Combine(Parameters.DataPath, LayersFileName));
 //        }
 
 //        protected override void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -441,15 +441,15 @@ namespace MapBoard.Main.UI.Map
 
 //        public async Task LoadLayersAsync()
 //        {
-//            if (!Directory.Exists(Parameters.Instance.DataPath))
+//            if (!Directory.Exists(Parameters.DataPath))
 //            {
-//                Directory.CreateDirectory(Parameters.Instance.DataPath);
+//                Directory.CreateDirectory(Parameters.DataPath);
 //                return;
 //            }
 
 //            foreach (var layer in layers)
 //            {
-//                if (File.Exists(Path.Combine(Parameters.Instance.DataPath, layer.Name + ".shp")))
+//                if (File.Exists(Path.Combine(Parameters.DataPath, layer.Name + ".shp")))
 //                {
 //                    await LoadLayerAsync(layer);
 //                }
@@ -459,7 +459,7 @@ namespace MapBoard.Main.UI.Map
 //                }
 //            }
 
-//            HashSet<string> files = Directory.EnumerateFiles(Parameters.Instance.DataPath)
+//            HashSet<string> files = Directory.EnumerateFiles(Parameters.DataPath)
 //                .Where(p => Path.GetExtension(p) == ".shp")
 //                .Select(p =>
 //                {
@@ -468,7 +468,7 @@ namespace MapBoard.Main.UI.Map
 //                    {
 //                        return p;
 //                    }
-//                    return p.Remove(index, p.Length - index).RemoveStart(Parameters.Instance.DataPath + "\\");
+//                    return p.Remove(index, p.Length - index).RemoveStart(Parameters.DataPath + "\\");
 //                }).ToHashSet();
 
 //            foreach (var name in files)
@@ -486,7 +486,7 @@ namespace MapBoard.Main.UI.Map
 //        {
 //            try
 //            {
-//                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Parameters.Instance.DataPath + "\\" + layer.Name + ".shp");
+//                ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Parameters.DataPath + "\\" + layer.Name + ".shp");
 //                await featureTable.LoadAsync();
 //                if (featureTable.LoadStatus == LoadStatus.Loaded)
 //                {

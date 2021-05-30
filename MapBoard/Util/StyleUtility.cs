@@ -25,7 +25,7 @@ namespace MapBoard.Main.Util
         private static void ApplyRenderer(this MapLayerInfo layer)
         {
             UniqueValueRenderer renderer = new UniqueValueRenderer();
-            renderer.FieldNames.Add(Resource.ClassFieldName);
+            renderer.FieldNames.Add(Parameters.ClassFieldName);
             if (layer.Symbols.Count == 0)
             {
                 layer.Symbols.Add("", layer.GetDefaultSymbol());
@@ -109,9 +109,9 @@ namespace MapBoard.Main.Util
 
         private static string GetExpression(this LabelInfo label)
         {
-            string l = Resource.LabelFieldName;
-            string d = Resource.DateFieldName;
-            string c = Resource.ClassFieldName;
+            string l = Parameters.LabelFieldName;
+            string d = Parameters.DateFieldName;
+            string c = Parameters.ClassFieldName;
 
             string newLine = $@"
 if({label.NewLine})
