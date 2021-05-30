@@ -28,9 +28,11 @@
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
-            DataGridCell.Selected="DataGrid_Selected"
+            DataGridCell.Selected="DataGridCell_Selected"
             HeadersVisibility="Column"
-            ItemsSource="{Binding Attributes.All}">
+            ItemsSource="{Binding Attributes.All}"
+            SelectionMode="Single"
+            SelectionUnit="Cell">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="属性名" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>

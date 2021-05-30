@@ -95,14 +95,22 @@ namespace ModernWpf.FzExtension.CommonDialog
         {
             DetailTextDialog dialog = new DetailTextDialog()
             {
-                Title = message ?? "错误",
-                Message = ex.Message,
                 Detail = ex == null ? null : ex.ToString(),
                 PrimaryButtonText = "确定",
                 IsPrimaryButtonEnabled = true,
                 Icon = "\uEA39",
                 IconBrush = System.Windows.Media.Brushes.Red
             };
+            if (ex == null)
+            {
+                dialog.Title = "错误";
+                dialog.Message = message;
+            }
+            else
+            {
+                dialog.Title = message ?? "错误";
+                dialog.Message = ex.Message;
+            }
             return dialog.ShowAsync();
         }
 

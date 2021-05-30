@@ -61,15 +61,6 @@ namespace MapBoard.Main.UI.Bar
             Expand();
         }
 
-        private void DataGrid_Selected(object sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource.GetType() == typeof(DataGridCell))
-            {
-                DataGrid grd = (DataGrid)sender;
-                grd.BeginEdit(e);
-            }
-        }
-
         private void TextBlock_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (!dataGrid.Columns[1].IsReadOnly)
@@ -118,6 +109,15 @@ namespace MapBoard.Main.UI.Bar
 
             Clipboard.SetText(text);
             SnakeBar.Show($"已复制{text}到剪贴板");
+        }
+
+        private void DataGridCell_Selected(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource.GetType() == typeof(DataGridCell) && MapView.CurrentTask == BoardTask.Draw)
+            {
+                DataGrid grd = (DataGrid)sender;
+                grd.BeginEdit(e);
+            }
         }
     }
 }

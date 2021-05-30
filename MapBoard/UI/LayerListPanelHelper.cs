@@ -19,7 +19,7 @@ using MapBoard.Main.UI.Map;
 using ModernWpf.Controls;
 using ListView = System.Windows.Controls.ListView;
 
-namespace MapBoard.Main.UI.Panel
+namespace MapBoard.Main.UI
 {
     public class LayerListPanelHelper
     {

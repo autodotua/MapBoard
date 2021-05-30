@@ -4,12 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.Bar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+    xmlns:component="clr-namespace:MapBoard.Main.UI.Component"
     xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
+    xmlns:local="clr-namespace:MapBoard.Main.UI"
     xmlns:map="clr-namespace:MapBoard.Main.UI.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:panel="clr-namespace:MapBoard.Main.UI.Panel"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
     Height="700"
@@ -43,9 +44,10 @@
                 <TextBlock
                     VerticalAlignment="Center" FontSize="13"
                     Text="地图画板" />
-                <ui:TitleBarButton x:Name="btnTitleBarMore"
-                    Grid.Column="2" Width="NaN"
-                    Padding="16,0" FontSize="13"
+                <ui:TitleBarButton
+                    x:Name="btnTitleBarMore" Grid.Column="2"
+                    Width="NaN" Padding="16,0"
+                    FontSize="13"
                     Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
@@ -107,9 +109,16 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="grdCenter" Grid.Column="2">
                 <Border ClipToBounds="True">
-                    <map:ArcMapView x:Name="arcMap" PreviewDrop="arcMap_PreviewDrop" />
+                    <map:ArcMapView
+                        x:Name="arcMap"
+                        PreviewDrop="arcMap_PreviewDrop"
+                        ViewpointChanged="arcMap_ViewpointChanged" />
                 </Border>
-
+                <component:MapViewInfoPanel
+                    x:Name="mapInfo" Margin="0,0,8,12"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    IsHitTestVisible="False" />
                 <bar:EditionBar
                     x:Name="editBar"
                     HorizontalAlignment="Stretch"
@@ -155,7 +164,7 @@
                     </Grid.RowDefinitions>
                     <ui:SimpleStackPanel Spacing="12">
 
-                        <panel:LayerSettingPanel x:Name="layerSettings" />
+                        <local:LayerSettingPanel x:Name="layerSettings" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
                             Margin="0,0,12,0"
@@ -249,16 +258,13 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Button Grid.Column="0" HorizontalAlignment="Stretch">
-                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
-                                <ui:SymbolIcon Symbol="Import" />
-                                <TextBlock>导入</TextBlock>
-                            </ui:SimpleStackPanel>
-                            <ui:FlyoutService.Flyout>
+                        <ui:SplitButton
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            Click="ImportMenu_Click" Content="导入"
+                            Tag="1">
+                            <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
-                                    <MenuItem
-                                        Click="ImportMenu_Click"
-                                        Header="地图包（覆盖）" Tag="1" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
                                         Header="地图包（追加）" Tag="2" />
@@ -272,18 +278,15 @@
                                         Click="ImportMenu_Click"
                                         Header="Shapefile" Tag="5" />
                                 </ui:MenuFlyout>
-                            </ui:FlyoutService.Flyout>
-                        </Button>
-                        <Button Grid.Column="2" HorizontalAlignment="Stretch">
-                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
-                                <ui:FontIcon Glyph="&#xEDE1;" />
-                                <TextBlock>导出</TextBlock>
-                            </ui:SimpleStackPanel>
-                            <ui:FlyoutService.Flyout>
+                            </ui:SplitButton.Flyout>
+                        </ui:SplitButton>
+                        <ui:SplitButton
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="ExportMenu_Click" Content="导出"
+                            Tag="1">
+                            <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
-                                    <MenuItem
-                                        Click="ExportMenu_Click" Header="地图包"
-                                        Tag="1" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="移动GIS工具箱图层包" Tag="2" />
@@ -294,17 +297,13 @@
                                         Click="ExportMenu_Click" Header="截图"
                                         Tag="4" />
                                 </ui:MenuFlyout>
-                            </ui:FlyoutService.Flyout>
-                        </Button>
+                            </ui:SplitButton.Flyout>
+                        </ui:SplitButton>
                         <Button
                             Grid.Row="0" Grid.Column="6"
                             HorizontalAlignment="Stretch"
-                            Click="OpenFolderButtonClick">
-                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
-                                <ui:FontIcon Glyph="&#xE838;" />
-                                <TextBlock>目录</TextBlock>
-                            </ui:SimpleStackPanel>
-                        </Button>
+                            Click="OpenFolderButtonClick"
+                            Content="目录" />
                     </Grid>
                     <Grid x:Name="grdButtons" Grid.Row="100">
                         <Grid.ColumnDefinitions>

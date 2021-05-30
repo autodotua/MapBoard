@@ -22,7 +22,7 @@ using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 
-namespace MapBoard.Main.UI.Panel
+namespace MapBoard.Main.UI
 {
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
