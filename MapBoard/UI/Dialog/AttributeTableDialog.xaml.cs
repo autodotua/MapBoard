@@ -14,6 +14,7 @@ using MapBoard.Main.Model.Extension;
 using FzLib.Extension;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -22,7 +23,8 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class AttributeTableDialog : Common.DialogWindowBase
     {
-        private FeatureAttributes[] attributes;
+        private ObservableCollection<FeatureAttributes> attributes;
+        private Dictionary<Feature, FeatureAttributes> feature2Attributes;
 
         private bool close = false;
 
@@ -36,9 +38,15 @@ namespace MapBoard.Main.UI.Dialog
             MapView = mapView;
             Width = 800;
             Height = 600;
+            mapView.BoardTaskChanged += MapView_BoardTaskChanged;
         }
 
-        public FeatureAttributes[] Attributes
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            IsEnabled = e.NewTask != BoardTask.Draw;
+        }
+
+        public ObservableCollection<FeatureAttributes> Attributes
         {
             get => attributes;
             private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
@@ -62,7 +70,7 @@ namespace MapBoard.Main.UI.Dialog
         public MapLayerInfo Layer { get; }
         public ArcMapView MapView { get; }
 
-        public bool IsLoaded { get; private set; } = false;
+        public bool isLoaded = false;
 
         /// <summary>
         /// 加载数据
@@ -70,17 +78,22 @@ namespace MapBoard.Main.UI.Dialog
         /// <returns></returns>
         public async Task LoadAsync()
         {
-            if (IsLoaded)
+            if (isLoaded)
             {
                 return;
             }
-            IsLoaded = true;
+            isLoaded = true;
             var features = await Layer.GetAllFeaturesAsync();
-            Attributes = features.Select(p => FeatureAttributes.FromFeature(Layer, p)).ToArray();
-            if (Attributes.Length == 0)
+            await Task.Run(() =>
+            {
+                Attributes = new ObservableCollection<FeatureAttributes>(features.Select(p => FeatureAttributes.FromFeature(Layer, p)));
+                feature2Attributes = attributes.ToDictionary(p => p.Feature);
+            });
+            if (Attributes.Count == 0)
             {
                 throw new Exception("没有任何要素");
             }
+            Layer.FeaturesChanged += Layer_FeaturesChanged;
             var fields = Layer.Fields.IncludeDefaultFields().ToList();
 
             int column = 0;
@@ -119,6 +132,47 @@ namespace MapBoard.Main.UI.Dialog
             AddButton(dg, "缩放到图形", new RoutedEventHandler(LocateButton_Click));
             AddButton(dg, "选择", new RoutedEventHandler(SelectButton_Click));
             AddButton(dg, "加入选择", new RoutedEventHandler(AddSelectButton_Click));
+        }
+
+        private void Layer_FeaturesChanged(object sender, FeaturesChangedEventArgs e)
+        {
+            if (e.AddedFeatures != null)
+            {
+                foreach (var f in e.AddedFeatures)
+                {
+                    var attr = FeatureAttributes.FromFeature(Layer, f);
+                    Attributes.Add(attr);
+                    feature2Attributes.Add(f, attr);
+                }
+            }
+            else if (e.DeletedFeatures != null)
+            {
+                foreach (var f in e.DeletedFeatures)
+                {
+                    if (feature2Attributes.ContainsKey(f))
+                    {
+                        Attributes.Remove(feature2Attributes[f]);
+                        feature2Attributes.Remove(f);
+                    }
+                    else
+                    {
+                    }
+                }
+            }
+            else if (e.UpdatedFeatures != null)
+            {
+                foreach (var f in e.UpdatedFeatures)
+                {
+                    if (feature2Attributes.ContainsKey(f.Feature))
+                    {
+                        int index = Attributes.IndexOf(feature2Attributes[f.Feature]);
+                        Attributes.RemoveAt(index);
+                        var attr = FeatureAttributes.FromFeature(Layer, f.Feature);
+                        feature2Attributes[f.Feature] = attr;
+                        Attributes.Insert(index, attr);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -179,7 +233,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             btnSave.IsEnabled = false;
             List<UpdatedFeature> features = new List<UpdatedFeature>();
-            foreach (var attr in editedAttributes)
+            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature)))
             {
                 var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
                 attr.SaveToFeature();

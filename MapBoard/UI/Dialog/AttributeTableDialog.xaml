@@ -60,7 +60,9 @@
             <TextBlock
                 Grid.Row="2" HorizontalAlignment="Left"
                 VerticalAlignment="Bottom">
-                <Run>共编辑了</Run>
+                <Run>共</Run>
+                <Run Text="{Binding Attributes.Count, Mode=OneWay}" />
+                <Run>项，编辑了</Run>
                 <Run Text="{Binding EditedFeaturesCount, Mode=OneWay}" />
                 <Run>项</Run>
             </TextBlock>
