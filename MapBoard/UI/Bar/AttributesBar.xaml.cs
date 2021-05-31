@@ -5,8 +5,12 @@ using MapBoard.Main.UI.Map;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using static MapBoard.Main.UI.Map.EditorHelper;
 
 namespace MapBoard.Main.UI.Bar
@@ -25,7 +29,7 @@ namespace MapBoard.Main.UI.Bar
         public override void Initialize()
         {
             MapView.BoardTaskChanged += (s, e) => ExpandOrCollapse();
-            MapView.Selection.SelectedFeatures.CollectionChanged += (s, e) => ExpandOrCollapse();
+            MapView.Selection.CollectionChanged += (s, e) => ExpandOrCollapse();
         }
 
         private FeatureAttributes attributes;
@@ -49,7 +53,7 @@ namespace MapBoard.Main.UI.Bar
                 case BoardTask.Select
                             when MapView.Layers.Selected != null
                             && MapView.Selection.SelectedFeatures.Count == 1:
-                    attributes = FeatureAttributes.FromFeature(MapView.Layers.Selected, MapView.Selection.SelectedFeatures[0]);
+                    attributes = FeatureAttributes.FromFeature(MapView.Layers.Selected, MapView.Selection.SelectedFeatures.First());
                     dataGrid.Columns[1].IsReadOnly = true;
                     break;
 
@@ -117,6 +121,26 @@ namespace MapBoard.Main.UI.Bar
             {
                 DataGrid grd = (DataGrid)sender;
                 grd.BeginEdit(e);
+                //找到DataGridCell中第一个（唯一一个）TextBox
+                var txt = FzLib.WPF.Common.GetFirstChildOfType<TextBox>(e.OriginalSource as FrameworkElement);
+                if (txt != null)
+                {
+                    //让TextBox获取焦点和键盘焦点
+                    txt.Focus();
+                    Keyboard.Focus(txt);
+                }
+            }
+        }
+
+        private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                //让编辑控件失去焦点以更新绑定数据源
+                (sender as FrameworkElement).Focus();
+                //等待一段时间让数据更新
+                await Task.Delay(100);
+                MapView.Editor.StopAndSave();
             }
         }
     }

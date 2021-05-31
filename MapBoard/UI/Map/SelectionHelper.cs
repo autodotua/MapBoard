@@ -2,8 +2,10 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
+using FzLib.Basic;
 using FzLib.Basic.Collection;
 using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +22,7 @@ namespace MapBoard.Main.UI.Map
         public SelectionHelper(ArcMapView map)
         {
             map.GeoViewTapped += MapviewTapped;
-            SelectedFeatures.CollectionChanged += SelectedFeatures_CollectionChanged;
+            CollectionChanged += SelectedFeatures_CollectionChanged;
             MapView = map;
             Editor.EditorStatusChanged += Editor_EditorStatusChanged;
         }
@@ -31,38 +33,42 @@ namespace MapBoard.Main.UI.Map
 
         public ArcMapView MapView { get; }
 
-        public ExtendedObservableCollection<Feature> SelectedFeatures { get; } = new ExtendedObservableCollection<Feature>();
+        public Dictionary<long, Feature>.ValueCollection SelectedFeatures => selectedFeatures.Values;
+        private Dictionary<long, Feature> selectedFeatures = new Dictionary<long, Feature>();
+
+        public event EventHandler CollectionChanged;
 
         public void ClearSelection()
         {
             isClearing = true;
             Editor.Cancel();
-            foreach (var layer in SelectedFeatures.Select(p => p.FeatureTable.Layer as FeatureLayer).ToHashSet())
-            {
-                layer.ClearSelection();
-            }
-            SelectedFeatures.Clear();
+            Debug.Assert(MapView.Layers.Selected != null);
+            MapView.Layers.Selected.Layer.ClearSelection();
+            selectedFeatures.Clear();
             isClearing = false;
+            CollectionChanged?.Invoke(this, new EventArgs());
         }
 
         public bool Select(Feature feature, bool clearAll = false)
         {
             var layer = feature.FeatureTable.Layer as FeatureLayer;
+            //Debug.Assert(MapView.Layers.Selected.Layer == layer);
             if (layer == null)
             {
                 return false;
             }
             if (clearAll && SelectedFeatures.Count > 0)
             {
-                (SelectedFeatures[0].FeatureTable.Layer as FeatureLayer).ClearSelection();
-                SelectedFeatures.Clear();
+                layer.ClearSelection();
+                selectedFeatures.Clear();
             }
-            if (SelectedFeatures.Any(p => p.GetAttributeValue("FID").Equals(feature.GetAttributeValue("FID"))))
+            if (selectedFeatures.ContainsKey(feature.GetFID()))
             {
                 return false;
             }
             layer.SelectFeature(feature);
-            SelectedFeatures.Add(feature);
+            selectedFeatures.Add(feature.GetFID(), feature);
+            CollectionChanged?.Invoke(this, new EventArgs());
             return true;
         }
 
@@ -74,7 +80,11 @@ namespace MapBoard.Main.UI.Map
                 return;
             }
             layer.SelectFeatures(features);
-            SelectedFeatures.AddRange(features);
+            foreach (var feature in features)
+            {
+                selectedFeatures.TryAdd(feature.GetFID(), feature);
+            }
+            CollectionChanged?.Invoke(this, new EventArgs());
         }
 
         public async Task SelectRectangleAsync()
@@ -108,26 +118,38 @@ namespace MapBoard.Main.UI.Map
             if (MapView.CurrentTask == BoardTask.Draw //正在绘制
                 || (MapView.CurrentTask != BoardTask.Select)//当前不在选择状态，
                     && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)))
+                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                    )
             {
                 return;
             }
             MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
             double tolerance = MapView.MapScale / 1e8;
             Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
+            //在“继续选择”的情况下：
+            //按Ctrl表示先清除选择然后再选择
+            //按Alt表示从已选择的图形中删去
             SelectionMode mode = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
                SelectionMode.New
                : (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) ?
                SelectionMode.Subtract
                : SelectionMode.Add);
-            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, Keyboard.Modifiers == ModifierKeys.Shift);
+            //在“新建选择”的情况下：
+            //按Ctrl表示从当前图层中点选
+            //按Shift表示从所有图层中点选
+            //按Alt表示从选择后立刻进入编辑模式
+            bool allLayers = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Shift;
+            bool edit = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Alt;
+            await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, allLayers, edit);
         }
 
         private async Task SelectAsync(Envelope envelope,
             System.Windows.Point? point,
             SpatialRelationship relationship,
              SelectionMode mode,
-             bool allLayers = false)
+             bool allLayers = false,
+             bool startEdit = false)
         {
             if (allLayers && !point.HasValue)
             {
@@ -143,7 +165,7 @@ namespace MapBoard.Main.UI.Map
                  QueryParameters query = new QueryParameters();
                  query.Geometry = envelope;
                  query.SpatialRelationship = relationship;
-
+                 bool first = SelectedFeatures.Count == 0;
                  List<Feature> features = null;
                  if (allLayers)
                  {
@@ -174,31 +196,69 @@ namespace MapBoard.Main.UI.Map
                          features = result.ToList();
                      });
                  }
-                 switch (mode)
+                 if (features.Count == 0)
                  {
-                     case SelectionMode.Add:
-                         features = features.Where(p =>
-                              !SelectedFeatures.Any(q => p.GetAttributeValue("FID")
-                              .Equals(q.GetAttributeValue("FID")))).ToList();
-                         SelectedFeatures.AddRange(features);
-                         break;
-
-                     case SelectionMode.New:
-                         SelectedFeatures.Clear();
-                         SelectedFeatures.AddRange(features);
-                         break;
-
-                     case SelectionMode.Subtract:
-                         SelectedFeatures.RemoveRange(features);
-                         break;
-
-                     default:
-                         break;
+                     return;
                  }
+
+                 if (first)//首次选择
+                 {
+                     if (startEdit)
+                     {
+                         ClearSelection();
+                         MapView.Editor.EditAsync(MapView.Layers.Selected, features[0]).ConfigureAwait(false);
+                     }
+                     else
+                     {
+                         foreach (var feature in features)
+                         {
+                             selectedFeatures.Add(feature.GetFID(), feature);
+                         }
+                     }
+                 }
+                 else//继续选择
+                 {
+                     switch (mode)
+                     {
+                         case SelectionMode.Add:
+                             foreach (var feature in features)
+                             {
+                                 long fid = feature.GetFID();
+                                 if (!selectedFeatures.ContainsKey(fid))
+                                 {
+                                     selectedFeatures.Add(fid, feature);
+                                 }
+                             }
+                             break;
+
+                         case SelectionMode.New:
+                             selectedFeatures.Clear();
+                             foreach (var feature in features)
+                             {
+                                 selectedFeatures.Add(feature.GetFID(), feature);
+                             }
+                             break;
+
+                         case SelectionMode.Subtract:
+                             foreach (var feature in features)
+                             {
+                                 long fid = feature.GetFID();
+                                 if (selectedFeatures.ContainsKey(fid))
+                                 {
+                                     selectedFeatures.Remove(fid);
+                                 }
+                             }
+                             break;
+
+                         default:
+                             throw new ArgumentOutOfRangeException();
+                     }
+                 }
+                 CollectionChanged?.Invoke(this, new EventArgs());
              });
         }
 
-        private void SelectedFeatures_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void SelectedFeatures_CollectionChanged(object sender, EventArgs e)
         {
             if (SelectedFeatures.Count == 0 && MapView.CurrentTask == BoardTask.Select)
             {

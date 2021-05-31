@@ -14,7 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.UI.Map
+namespace MapBoard.Main.UI.Map.Model
 {
     public class MapLayerInfo : LayerInfo, IDisposable
     {

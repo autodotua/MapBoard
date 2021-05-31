@@ -15,6 +15,7 @@ using FzLib.Extension;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {

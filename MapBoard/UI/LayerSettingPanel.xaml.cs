@@ -21,6 +21,7 @@ using System.Windows.Media;
 using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI
 {

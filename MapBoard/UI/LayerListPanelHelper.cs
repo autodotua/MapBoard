@@ -11,6 +11,7 @@ using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
+using MapBoard.Main.UI.Map.Model;
 
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,8 @@ using System.Windows.Input;
 using MapBoard.Main.UI.Map;
 using ModernWpf.Controls;
 using ListView = System.Windows.Controls.ListView;
+
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI
 {

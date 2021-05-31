@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System;
 using System.Diagnostics;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -43,11 +44,11 @@ namespace MapBoard.Main.UI.Dialog
             Layers = layers;
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
-            Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
+            Selection.CollectionChanged += SelectedFeaturesChanged;
             SelectedFeaturesChanged(null, null);
         }
 
-        private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void SelectedFeaturesChanged(object sender, EventArgs e)
         {
             if (Selection.SelectedFeatures.Count < 2)
             {

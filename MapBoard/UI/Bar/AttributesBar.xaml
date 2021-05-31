@@ -31,6 +31,7 @@
             DataGridCell.Selected="DataGridCell_Selected"
             HeadersVisibility="Column"
             ItemsSource="{Binding Attributes.All}"
+            PreviewKeyDown="dataGrid_PreviewKeyDown"
             SelectionMode="Single"
             SelectionUnit="Cell">
             <DataGrid.Columns>
@@ -53,8 +54,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
-                                Margin="3" VerticalAlignment="Center"
-                                Cursor="Hand"
+                                Margin="8,3,3,3"
+                                VerticalAlignment="Center" Cursor="Hand"
                                 PreviewMouseLeftButtonDown="TextBlock_PreviewMouseLeftButtonDown"
                                 Text="{Binding .}"
                                 TextWrapping="Wrap" />
@@ -73,7 +74,7 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <DatePicker SelectedDate="{Binding DateValue}" />
+                                                            <DatePicker BorderThickness="0" SelectedDate="{Binding DateValue}" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>
@@ -86,7 +87,10 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <TextBox Text="{Binding TextValue, Mode=TwoWay}" TextWrapping="Wrap" />
+                                                            <TextBox
+                                                                BorderThickness="0"
+                                                                Text="{Binding TextValue, Mode=TwoWay}"
+                                                                TextWrapping="Wrap" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>
@@ -98,7 +102,10 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <TextBox Text="{Binding IntValue, Mode=TwoWay}" TextWrapping="Wrap" />
+                                                            <TextBox
+                                                                BorderThickness="0"
+                                                                Text="{Binding IntValue, Mode=TwoWay}"
+                                                                TextWrapping="Wrap" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>
@@ -110,7 +117,10 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <TextBox Text="{Binding FloatValue, Mode=TwoWay}" TextWrapping="Wrap" />
+                                                            <TextBox
+                                                                BorderThickness="0"
+                                                                Text="{Binding FloatValue, Mode=TwoWay}"
+                                                                TextWrapping="Wrap" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>

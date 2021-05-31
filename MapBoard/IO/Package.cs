@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.IO
 {

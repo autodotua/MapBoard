@@ -29,6 +29,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI.Bar
 {
@@ -47,12 +48,17 @@ namespace MapBoard.Main.UI.Bar
             MapView.BoardTaskChanged += BoardTaskChanged;
             Application.Current.MainWindow.SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             Application.Current.MainWindow.LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
         }
 
         private SelectFeatureDialog selectFeatureDialog;
 
-        private void SelectedFeaturesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void SelectedFeaturesChanged(object sender, EventArgs e)
         {
+            if (MapView.CurrentTask != BoardTask.Select)
+            {
+                return;
+            }
             int count = MapView.Selection.SelectedFeatures.Count;
             btnRedraw.IsEnabled = count == 1;
             //btnMoreAttributes.IsEnabled = count == 1;
@@ -86,7 +92,7 @@ namespace MapBoard.Main.UI.Bar
 
             if (count == 1)
             {
-                attributes = FeatureAttributes.FromFeature(layer, MapView.Selection.SelectedFeatures[0]);
+                attributes = FeatureAttributes.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
             }
             else
             {
@@ -103,13 +109,11 @@ namespace MapBoard.Main.UI.Bar
         {
             if (e.NewTask == BoardTask.Select)
             {
-                MapView.Selection.SelectedFeatures.CollectionChanged += SelectedFeaturesChanged;
                 SelectedFeaturesChanged(null, null);
                 Expand();
             }
             else
             {
-                MapView.Selection.SelectedFeatures.CollectionChanged -= SelectedFeaturesChanged;
                 Collapse();
             }
         }
@@ -169,7 +173,7 @@ namespace MapBoard.Main.UI.Bar
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            var feature = MapView.Selection.SelectedFeatures[0];
+            var feature = MapView.Selection.SelectedFeatures.First();
             MapView.Selection.ClearSelection();
             await MapView.Editor.EditAsync(Layers.Selected, feature);
         }
@@ -377,7 +381,7 @@ namespace MapBoard.Main.UI.Bar
                         ShowButton = true,
                         ButtonContent = "打开"
                     };
-                    snake.ButtonClick += (p1, p2) =>IOUtility. OpenFileOrFolder(path);
+                    snake.ButtonClick += (p1, p2) => IOUtility.OpenFileOrFolder(path);
 
                     snake.ShowMessage("已导出到" + path);
                 }

@@ -23,6 +23,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static MapBoard.Common.CoordinateTransformation;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {

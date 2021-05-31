@@ -25,6 +25,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using static FzLib.Basic.Loop;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI
 {
@@ -124,7 +125,7 @@ namespace MapBoard.Main.UI
 
         private void RegistEvents()
         {
-            arcMap.Selection.SelectedFeatures.CollectionChanged += (p1, p2) => JudgeControlsEnable();
+            arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI.Map
 {

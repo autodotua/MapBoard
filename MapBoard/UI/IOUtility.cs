@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.UI
 {

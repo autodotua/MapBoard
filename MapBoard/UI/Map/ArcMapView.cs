@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using MapBoard.Common;
 using MapBoard.Common.UI;
+using MapBoard.Main.UI.Map.Model;
 using MapBoard.Main.Util;
 using System;
 using System.Collections.Generic;
@@ -128,6 +129,19 @@ namespace MapBoard.Main.UI.Map
             Editor = new EditorHelper(this);
             Selection = new SelectionHelper(this);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
+            Selection.CollectionChanged += Selection_CollectionChanged;
+        }
+
+        private void Selection_CollectionChanged(object sender, EventArgs e)
+        {
+            if (Selection.SelectedFeatures.Count > 0)
+            {
+                Layer selectionLayer = Selection.SelectedFeatures.First().FeatureTable.Layer;
+                if (selectionLayer != Layers.Selected.Layer)
+                {
+                    Layers.Selected = Layers.FirstOrDefault(p => (p as MapLayerInfo).Layer == selectionLayer) as MapLayerInfo;
+                }
+            }
         }
 
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)

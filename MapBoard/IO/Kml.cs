@@ -8,6 +8,7 @@ using MapBoard.Main.Util;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MapBoard.Main.UI.Map.Model;
 
 namespace MapBoard.Main.IO
 {
@@ -86,6 +87,10 @@ namespace MapBoard.Main.IO
                             {
                                 placemark.Style.PolygonStyle.IsOutlined = true;
                                 placemark.Style.LineStyle = new KmlLineStyle(symbol.LineColor, symbol.OutlineWidth);
+                            }
+                            else
+                            {
+                                placemark.Style.PolygonStyle.IsOutlined = false;
                             }
                             break;
                     }
