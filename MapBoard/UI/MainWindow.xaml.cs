@@ -69,6 +69,12 @@ namespace MapBoard.Main.UI
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 显示处理中遮罩并处理需要长时间运行的方法
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="catchException"></param>
+        /// <returns></returns>
         public async Task DoAsync(Func<Task> action, bool catchException = false)
         {
             loading.Show();
@@ -93,17 +99,37 @@ namespace MapBoard.Main.UI
             }
         }
 
+        /// <summary>
+        /// 初始化各组件
+        /// </summary>
+        /// <returns></returns>
         public async Task InitializeAsync()
         {
+            //加载地图
             await arcMap.LoadAsync();
             layerSettings.MapView = arcMap;
+            //初始化各操作工具条
             foreach (var bar in new BarBase[] { editBar, selectBar, measureBar, attributesBar })
             {
                 bar.MapView = arcMap;
                 bar.Initialize();
             }
+            //设置图层列表的数据源并初始化选中的图层
             dataGrid.ItemsSource = arcMap.Layers;
             dataGrid.SelectedItem = arcMap.Layers.Selected;
+            //注册事件
+            RegistEvents();
+            //为图层列表提供拖动改变次序支持
+            layerListHelper = new LayerListPanelHelper(dataGrid, p => DoAsync(p), arcMap);
+            //初始化控件可用性
+            JudgeControlsEnable();
+        }
+
+        /// <summary>
+        /// 为需要延迟初始化的事件进行注册
+        /// </summary>
+        private void RegistEvents()
+        {
             arcMap.Layers.PropertyChanged += (p1, p2) =>
             {
                 if (p2.PropertyName == nameof(arcMap.Layers.Selected) && !changingSelection)
@@ -111,20 +137,6 @@ namespace MapBoard.Main.UI
                     dataGrid.SelectedItem = arcMap.Layers.Selected;
                 }
             };
-            RegistEvents();
-            layerListHelper = new LayerListPanelHelper(dataGrid, p => DoAsync(p), arcMap);
-            JudgeControlsEnable();
-
-            if (arcMap.Layers.Selected != null
-                && arcMap.Layers.Selected != null
-                && arcMap.Layers.Selected.NumberOfFeatures > 0)
-            {
-                layerSettings.ResetLayerSettingUI();
-            }
-        }
-
-        private void RegistEvents()
-        {
             arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
@@ -141,6 +153,9 @@ namespace MapBoard.Main.UI
             };
         }
 
+        /// <summary>
+        /// 在某些状态发生变更之后，重新判断各控件是否可用
+        /// </summary>
         private void JudgeControlsEnable()
         {
             if (arcMap.CurrentTask == BoardTask.Draw
@@ -235,7 +250,12 @@ namespace MapBoard.Main.UI
             await InitializeAsync();
         }
 
-        private async void arcMap_PreviewDrop(object sender, DragEventArgs e)
+        /// <summary>
+        /// 在地图上托放如文件的事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void ArcMap_PreviewDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(typeof(MapLayerInfo).FullName))
             {
@@ -269,13 +289,22 @@ namespace MapBoard.Main.UI
             });
         }
 
+        /// <summary>
+        /// 鼠标移动事件，主要用于更新右下角的位置和比例尺信息
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
             mapInfo.Update(arcMap, e.GetPosition(arcMap));
         }
 
-        private void arcMap_ViewpointChanged(object sender, EventArgs e)
+        /// <summary>
+        /// 地图视角变化事件，用于更新右下角的位置和比例尺信息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ArcMap_ViewpointChanged(object sender, EventArgs e)
         {
             mapInfo.Update(arcMap, null);
         }
@@ -284,16 +313,31 @@ namespace MapBoard.Main.UI
 
         #region 菜单栏操作
 
+        /// <summary>
+        /// 单击设置按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
             new SettingDialog(arcMap) { Owner = this }.ShowDialog();
         }
 
+        /// <summary>
+        /// 单击关于按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AboutMenu_Click(object sender, RoutedEventArgs e)
         {
             CommonDialog.ShowOkDialogAsync("关于", "开发人员：autodotua", "github:https://github.com/autodotua/MapBoard");
         }
 
+        /// <summary>
+        /// 单击清除图层历史操作按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearHistoriesButton_Click(object sender, RoutedEventArgs e)
         {
             foreach (MapLayerInfo layer in arcMap.Layers)
@@ -302,21 +346,41 @@ namespace MapBoard.Main.UI
             }
         }
 
+        /// <summary>
+        /// 单击测量面积和周长按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MeasureAreaMenuItem_Click(object sender, RoutedEventArgs e)
         {
             arcMap.Editor.MeasureArea();
         }
 
+        /// <summary>
+        /// 单击测量长度按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MeasureLengthMenuItem_Click(object sender, RoutedEventArgs e)
         {
             arcMap.Editor.MeasureLength();
         }
 
+        /// <summary>
+        /// 单击GPX工具箱按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GpxMenu_Click(object sender, RoutedEventArgs e)
         {
             new GpxToolbox.UI.MainWindow().Show();
         }
 
+        /// <summary>
+        /// 单击瓦片地图下载器按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TileMenu_Click(object sender, RoutedEventArgs e)
         {
             new TileDownloaderSplicer.UI.MainWindow().Show();
@@ -326,17 +390,32 @@ namespace MapBoard.Main.UI
 
         #region 样式设置区事件
 
+        /// <summary>
+        /// 单击新建图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void CreateLayerButtonClick(object sender, RoutedEventArgs e)
         {
             await new CreateLayerDialog(arcMap.Layers).ShowAsync();
         }
 
+        /// <summary>
+        /// 单击应用样式按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
         {
             await layerSettings.SetStyleFromUI();
             arcMap.Layers.Save();
         }
 
+        /// <summary>
+        /// 单击浏览模式按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
             dataGrid.SelectedItem = null;
@@ -346,6 +425,11 @@ namespace MapBoard.Main.UI
 
         #region 导入导出区事件
 
+        /// <summary>
+        ///单击导出菜单项
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ExportMenu_Click(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(Parameters.DataPath) || !Directory.EnumerateFiles(Parameters.DataPath).Any())
@@ -361,11 +445,21 @@ namespace MapBoard.Main.UI
             canClosing = true;
         }
 
-        private void ExportMenu_Click(object sender, SplitButtonClickEventArgs e)
+        /// <summary>
+        /// 单击导出按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExportButton_Click(object sender, SplitButtonClickEventArgs e)
         {
             ExportMenu_Click(sender, (RoutedEventArgs)null);
         }
 
+        /// <summary>
+        /// 单击导入菜单项
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImportMenu_Click(object sender, RoutedEventArgs e)
         {
             DoAsync(async () =>
@@ -374,11 +468,21 @@ namespace MapBoard.Main.UI
             });
         }
 
-        private void ImportMenu_Click(SplitButton sender, SplitButtonClickEventArgs args)
+        /// <summary>
+        /// 单击导入按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void ImportButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
             ImportMenu_Click(sender, (RoutedEventArgs)null);
         }
 
+        /// <summary>
+        /// 单击“目录”按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
             if (Directory.Exists(Parameters.DataPath))
@@ -395,21 +499,41 @@ namespace MapBoard.Main.UI
 
         #region 绘制区域事件
 
+        /// <summary>
+        /// 单击绘制按钮事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void DrawButtonsClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await StartDraw(sender);
         }
 
+        /// <summary>
+        /// 单击绘制按钮事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void DrawButtonsClick(object sender, RoutedEventArgs e)
         {
             await StartDraw(sender);
         }
 
+        /// <summary>
+        /// 单击选择按钮事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
         {
             await arcMap.Selection.SelectRectangleAsync();
         }
 
+        /// <summary>
+        /// 单击绘制按钮事件，根据按钮绘制指定类型
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <returns></returns>
         private async Task StartDraw(object sender)
         {
             string text;
@@ -435,6 +559,11 @@ namespace MapBoard.Main.UI
 
         #region 图层列表事件
 
+        /// <summary>
+        /// 单击左侧图层设置区域的长条
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LayerSettingOpenCloseButton_Click(object sender, RoutedEventArgs e)
         {
             Button btn = sender as Button;
@@ -464,16 +593,31 @@ namespace MapBoard.Main.UI
             grdLeft.BeginAnimation(WidthProperty, ani);
         }
 
+        /// <summary>
+        /// 图层项右键，用于显示菜单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             layerListHelper.ShowContextMenu();
         }
 
-        private void lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// 图层列表右键按下时，就使列表项被选中
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             layerListHelper.RightButtonClickToSelect(e);
         }
 
+        /// <summary>
+        /// 选中的图层变化事件。图层列表选中项不使用绑定。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
         {
             changingSelection = true;

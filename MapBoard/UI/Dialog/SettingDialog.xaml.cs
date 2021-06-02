@@ -164,17 +164,30 @@ namespace MapBoard.Main.UI.Dialog
         private async void RbtnDataPath_Click(object sender, RoutedEventArgs e)
         {
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
-            File.Delete(Path.Combine(appPath, Parameters.ConfigHere));
-            File.Delete(Path.Combine(appPath, Parameters.ConfigUp));
-            if (rbtnHere.IsChecked.Value)
+            try
             {
-                File.WriteAllText(Path.Combine(appPath, Parameters.ConfigHere), "");
+                if (File.Exists(Path.Combine(appPath, Parameters.ConfigHere)))
+                {
+                    File.Delete(Path.Combine(appPath, Parameters.ConfigHere));
+                }
+                if (File.Exists(Path.Combine(appPath, Parameters.ConfigUp)))
+                {
+                    File.Delete(Path.Combine(appPath, Parameters.ConfigUp));
+                }
+                if (rbtnHere.IsChecked.Value)
+                {
+                    File.WriteAllText(Path.Combine(appPath, Parameters.ConfigHere), "");
+                }
+                else if (rbtnUp.IsChecked.Value)
+                {
+                    File.WriteAllText(Path.Combine(appPath, Parameters.ConfigUp), "");
+                }
+                await CommonDialog.ShowOkDialogAsync("修改数据位置", "将在重启后生效");
             }
-            else if (rbtnUp.IsChecked.Value)
+            catch (Exception ex)
             {
-                File.WriteAllText(Path.Combine(appPath, Parameters.ConfigUp), "");
+                await CommonDialog.ShowErrorDialogAsync(ex, "修改数据位置失败");
             }
-            await CommonDialog.ShowOkDialogAsync("修改数据位置", "将在重启后生效");
         }
     }
 

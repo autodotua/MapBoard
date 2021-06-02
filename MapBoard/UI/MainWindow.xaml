@@ -111,8 +111,8 @@
                 <Border ClipToBounds="True">
                     <map:ArcMapView
                         x:Name="arcMap"
-                        PreviewDrop="arcMap_PreviewDrop"
-                        ViewpointChanged="arcMap_ViewpointChanged" />
+                        PreviewDrop="ArcMap_PreviewDrop"
+                        ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
                 <component:MapViewInfoPanel
                     x:Name="mapInfo" Margin="0,0,8,12"
@@ -194,7 +194,7 @@
                         </Grid.RowDefinitions>
                         <ListView
                             x:Name="dataGrid"
-                            PreviewMouseRightButtonDown="lvw_PreviewMouseRightButtonDown"
+                            PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
                             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
                             SelectionChanged="SelectedLayerChanged"
                             SelectionMode="Extended">
@@ -261,7 +261,7 @@
                         <ui:SplitButton
                             Grid.Column="0"
                             HorizontalAlignment="Stretch"
-                            Click="ImportMenu_Click" Content="导入"
+                            Click="ImportButton_Click" Content="导入"
                             Tag="1">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
@@ -283,7 +283,7 @@
                         <ui:SplitButton
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
-                            Click="ExportMenu_Click" Content="导出"
+                            Click="ExportButton_Click" Content="导出"
                             Tag="1">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
