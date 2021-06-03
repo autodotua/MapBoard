@@ -24,6 +24,10 @@ namespace MapBoard.Main.Model.Extension
             {
                 yield return FieldInfo.ClassField;
             }
+            if (!fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+            {
+                yield return FieldInfo.CreateTimeField;
+            }
             foreach (var field in fields)
             {
                 yield return field;

@@ -13,6 +13,7 @@ namespace MapBoard.Main.Model.Extension
                 if (a.Key != Parameters.ClassFieldName
                     && a.Key != Parameters.LabelFieldName
                     && a.Key != Parameters.DateFieldName
+                    && a.Key != Parameters.CreateTimeFieldName
                     && a.Key != "FID")
                 {
                     result.Add(a.Key, a.Value);

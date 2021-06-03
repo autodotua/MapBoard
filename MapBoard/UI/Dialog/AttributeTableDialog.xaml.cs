@@ -133,8 +133,9 @@ namespace MapBoard.Main.UI.Dialog
                 dg.Columns.Add(new DataGridTextColumn()
                 {
                     Header = field.DisplayName,
-                    Binding = binding
-                });
+                    Binding = binding,
+                    IsReadOnly = field.Name == Parameters.CreateTimeFieldName
+                }) ;
                 column++;
             }
             AddButton(dg, "缩放到图形", new RoutedEventHandler(LocateButton_Click));

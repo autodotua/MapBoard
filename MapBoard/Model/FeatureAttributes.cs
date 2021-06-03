@@ -97,6 +97,16 @@ namespace MapBoard.Main.Model
             attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, feature.Attributes[Parameters.LabelFieldName] as string));
             attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, feature.Attributes[Parameters.ClassFieldName] as string));
             attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, (feature.Attributes[Parameters.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
+            var createTimeString = feature.Attributes[Parameters.CreateTimeFieldName] as string;
+            DateTime? createTime = null;
+            try
+            {
+                createTime = createTimeString == null ? null : DateTime.Parse(createTimeString);
+            }
+            catch
+            {
+            }
+            attributes.all.Add(new FeatureAttribute(FieldInfo.CreateTimeField, createTime));
             foreach (var attr in feature.Attributes.GetCustomAttributes())
             {
                 FeatureAttribute newAttr = null;

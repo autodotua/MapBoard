@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
+using MapBoard.Common;
 using MapBoard.Main.Model;
 using MapBoard.Main.Util;
 using Newtonsoft.Json;
@@ -97,6 +98,11 @@ namespace MapBoard.Main.UI.Map.Model
 
         public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
+            if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
+                || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+            {
+                feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+            }
             await table.AddFeatureAsync(feature);
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
@@ -115,6 +121,14 @@ namespace MapBoard.Main.UI.Map.Model
 
         public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
+            foreach (var feature in features)
+            {
+                if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
+                    || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+                {
+                    feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                }
+            }
             await table.AddFeaturesAsync(features);
             NotifyFeaturesChanged(features, null, null, source);
         }

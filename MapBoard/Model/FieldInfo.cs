@@ -44,10 +44,11 @@ namespace MapBoard.Main.Model
         {
         }
 
-        public static FieldInfo[] DefaultFields => new[] { LabelField, DateField, ClassField };
+        public static FieldInfo[] DefaultFields => new[] { LabelField, DateField, ClassField, CreateTimeField };
         public static readonly FieldInfo LabelField = new FieldInfo(Parameters.LabelFieldName, "标签", FieldInfoType.Text);
         public static readonly FieldInfo DateField = new FieldInfo(Parameters.DateFieldName, "日期", FieldInfoType.Date);
         public static readonly FieldInfo ClassField = new FieldInfo(Parameters.ClassFieldName, "分类", FieldInfoType.Text);
+        public static readonly FieldInfo CreateTimeField = new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
