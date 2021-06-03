@@ -176,6 +176,7 @@ namespace MapBoard.Main.IO
                         break;
 
                     case FieldInfoType.Text:
+                    case FieldInfoType.Time:
                         fieldType = DbfFieldType.Character;
                         break;
                 }

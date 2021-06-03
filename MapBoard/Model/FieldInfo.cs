@@ -19,7 +19,10 @@ namespace MapBoard.Main.Model
         Date,
 
         [Description("文本")]
-        Text
+        Text,
+
+        [Description("日期时间")]
+        Time
     }
 
     [DebuggerDisplay("Name={Name} Disp={DisplayName} Type={Type}")]

@@ -6,8 +6,10 @@
     xmlns:cvt="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.Main.UI.Bar"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mode="clr-namespace:MapBoard.Main.Model"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
     <local:BarBase.Resources>
         <c:Enum2DescriptionConverter x:Key="e2dc" />
@@ -50,7 +52,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Width="128" Header="属性值">
+                <DataGridTemplateColumn Width="152" Header="属性值">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -75,6 +77,21 @@
                                                     <Setter.Value>
                                                         <DataTemplate>
                                                             <DatePicker BorderThickness="0" SelectedDate="{Binding DateValue}" />
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Type}">
+                                                <DataTrigger.Value>
+                                                    <mode:FieldInfoType>Time</mode:FieldInfoType>
+                                                </DataTrigger.Value>
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Vertical">
+                                                                <DatePicker BorderThickness="0" SelectedDate="{Binding TimeValue}" />
+                                                                <TextBox BorderThickness="0" Text="{Binding TimeValue, StringFormat={}{0: HH:mm:ss}}" />
+                                                            </StackPanel>
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>

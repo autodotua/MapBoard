@@ -429,33 +429,41 @@ namespace MapBoard.Main.Util
                     {
                         switch (fieldTarget.Type)
                         {
+                            //小数转整数
                             case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
                                 result = Convert.ToInt32(value);
                                 break;
-
+                            //文本转整数
                             case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
                                 result = int.Parse(value as string);
                                 break;
-
+                            //整数转小数
                             case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
                                 result = Convert.ToDouble(value);
                                 break;
-
+                            //文本转小数
                             case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
                                 result = double.Parse(value as string);
                                 break;
-
+                            //文本转日期
                             case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
                                 result = DateTime.ParseExact(value as string, dateFormat, CultureInfo.CurrentCulture);
                                 break;
-
+                            //文本转时间
+                            case FieldInfoType.Time when fieldSource.Type == FieldInfoType.Text:
+                                result = value;
+                                break;
+                            //日期转文本
                             case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
                                 result = ((DateTime)value).Date.ToString(dateFormat);
                                 break;
-
+                            //任意转文本
                             case FieldInfoType.Text:
                                 result = value.ToString();
                                 break;
+
+                            default:
+                                throw new Exception();
                         }
                     }
                     catch { }

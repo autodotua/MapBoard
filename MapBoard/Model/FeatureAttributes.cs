@@ -130,13 +130,20 @@ namespace MapBoard.Main.Model
         {
             foreach (var attr in All)
             {
-                if (attr.Type == FieldInfoType.Date)
+                switch (attr.Type)
                 {
-                    feature.SetAttributeValue(attr.Name, attr.DateValue.HasValue ? new DateTimeOffset(attr.DateValue.Value, TimeSpan.Zero) : (DateTimeOffset?)null);
-                }
-                else
-                {
-                    feature.SetAttributeValue(attr.Name, attr.Value);
+                    case FieldInfoType.Date:
+                        feature.SetAttributeValue(attr.Name, attr.DateValue.HasValue ? new DateTimeOffset(attr.DateValue.Value, TimeSpan.Zero) : (DateTimeOffset?)null);
+
+                        break;
+
+                    case FieldInfoType.Time:
+                        feature.SetAttributeValue(attr.Name, attr.TimeValue.HasValue ? attr.TimeValue.Value.ToString(Parameters.TimeFormat) : null);
+                        break;
+
+                    default:
+                        feature.SetAttributeValue(attr.Name, attr.Value);
+                        break;
                 }
             }
         }

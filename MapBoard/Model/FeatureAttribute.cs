@@ -1,5 +1,8 @@
-﻿using FzLib.Extension;
+﻿using Esri.ArcGISRuntime;
+using FzLib.Extension;
+using MapBoard.Common;
 using System;
+using System.Globalization;
 
 namespace MapBoard.Main.Model
 {
@@ -115,10 +118,46 @@ namespace MapBoard.Main.Model
                             }
                             if (value is string str3)
                             {
-                                if (DateTime.TryParse(str3, out DateTime result))
+                                DateTime result;
+                                if (DateTime.TryParse(str3, out result))
                                 {
                                     dateValue = result;
                                     attrValue = dateValue;
+                                    break;
+                                }
+                                if (DateTime.TryParseExact(str3, Parameters.TimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None, out result))
+                                {
+                                    dateValue = result;
+                                    attrValue = dateValue;
+                                    break;
+                                }
+                            }
+                            throw new ApplicationException("输入的值无法转换为日期");
+                        case FieldInfoType.Time:
+                            if (value == null)
+                            {
+                                timeValue = null;
+                                attrValue = timeValue;
+                                break;
+                            }
+                            if (value is DateTime t)
+                            {
+                                timeValue = t;
+                                attrValue = timeValue;
+                                break;
+                            }
+                            if (value is DateTimeOffset to)
+                            {
+                                timeValue = to.DateTime;
+                                attrValue = timeValue;
+                                break;
+                            }
+                            if (value is string str5)
+                            {
+                                if (DateTime.TryParse(str5, out DateTime result))
+                                {
+                                    timeValue = result;
+                                    attrValue = timeValue;
                                     break;
                                 }
                             }
@@ -217,6 +256,23 @@ namespace MapBoard.Main.Model
                 attrValue = value;
                 dateValue = value;
                 this.Notify(nameof(DateValue), nameof(Value));
+            }
+        }
+
+        private DateTime? timeValue;
+
+        public DateTime? TimeValue
+        {
+            get => timeValue;
+            set
+            {
+                if (Type != FieldInfoType.Time)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                timeValue = value;
+                this.Notify(nameof(TimeValue), nameof(Value));
             }
         }
 

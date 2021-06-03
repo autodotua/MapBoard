@@ -16,6 +16,7 @@ using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using MapBoard.Main.UI.Map.Model;
+using MapBoard.Common;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -25,7 +26,7 @@ namespace MapBoard.Main.UI.Dialog
     public partial class AttributeTableDialog : Common.DialogWindowBase
     {
         private ObservableCollection<FeatureAttributes> attributes;
-        private Dictionary<Feature, FeatureAttributes> feature2Attributes;
+        private Dictionary<long, FeatureAttributes> feature2Attributes;
 
         private bool close = false;
 
@@ -88,7 +89,7 @@ namespace MapBoard.Main.UI.Dialog
             await Task.Run(() =>
             {
                 Attributes = new ObservableCollection<FeatureAttributes>(features.Select(p => FeatureAttributes.FromFeature(Layer, p)));
-                feature2Attributes = attributes.ToDictionary(p => p.Feature);
+                feature2Attributes = attributes.ToDictionary(p => p.Feature.GetFID());
             });
             if (Attributes.Count == 0)
             {
@@ -102,6 +103,8 @@ namespace MapBoard.Main.UI.Dialog
             foreach (var field in Attributes[0].All)
             {
                 string path = null;
+                var binding = new Binding();
+
                 switch (field.Type)
                 {
                     case FieldInfoType.Integer:
@@ -114,19 +117,23 @@ namespace MapBoard.Main.UI.Dialog
 
                     case FieldInfoType.Date:
                         path = nameof(field.DateValue);
+                        binding.StringFormat = Parameters.DateFormat;
+                        break;
+
+                    case FieldInfoType.Time:
+                        path = nameof(field.TimeValue);
+                        binding.StringFormat = Parameters.TimeFormat;
                         break;
 
                     case FieldInfoType.Text:
                         path = nameof(field.TextValue);
                         break;
                 }
+                binding.Path = new PropertyPath($"All[{column}].{path}");
                 dg.Columns.Add(new DataGridTextColumn()
                 {
                     Header = field.DisplayName,
-                    Binding = new Binding($"All[{column}].{path}")
-                    {
-                        StringFormat = field.Type == FieldInfoType.Date ? "{0:yyyy-MM-dd}" : null
-                    }
+                    Binding = binding
                 });
                 column++;
             }
@@ -141,19 +148,21 @@ namespace MapBoard.Main.UI.Dialog
             {
                 foreach (var f in e.AddedFeatures)
                 {
+                    long fid = f.GetFID();
                     var attr = FeatureAttributes.FromFeature(Layer, f);
                     Attributes.Add(attr);
-                    feature2Attributes.Add(f, attr);
+                    feature2Attributes.Add(fid, attr);
                 }
             }
             else if (e.DeletedFeatures != null)
             {
                 foreach (var f in e.DeletedFeatures)
                 {
-                    if (feature2Attributes.ContainsKey(f))
+                    long fid = f.GetFID();
+                    if (feature2Attributes.ContainsKey(fid))
                     {
-                        Attributes.Remove(feature2Attributes[f]);
-                        feature2Attributes.Remove(f);
+                        Attributes.Remove(feature2Attributes[fid]);
+                        feature2Attributes.Remove(fid);
                     }
                     else
                     {
@@ -164,12 +173,13 @@ namespace MapBoard.Main.UI.Dialog
             {
                 foreach (var f in e.UpdatedFeatures)
                 {
-                    if (feature2Attributes.ContainsKey(f.Feature))
+                    long fid = f.Feature.GetFID();
+                    if (feature2Attributes.ContainsKey(fid))
                     {
-                        int index = Attributes.IndexOf(feature2Attributes[f.Feature]);
+                        int index = Attributes.IndexOf(feature2Attributes[fid]);
                         Attributes.RemoveAt(index);
                         var attr = FeatureAttributes.FromFeature(Layer, f.Feature);
-                        feature2Attributes[f.Feature] = attr;
+                        feature2Attributes[fid] = attr;
                         Attributes.Insert(index, attr);
                     }
                 }
@@ -234,7 +244,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             btnSave.IsEnabled = false;
             List<UpdatedFeature> features = new List<UpdatedFeature>();
-            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature)))
+            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetFID())))
             {
                 var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
                 attr.SaveToFeature();

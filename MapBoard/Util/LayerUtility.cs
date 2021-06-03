@@ -115,8 +115,10 @@ namespace MapBoard.Main.Util
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
-
-            await layer.SetTimeExtentAsync();
+            if (layer.TimeExtent!=null&&layer.TimeExtent.IsEnable)
+            {
+                await layer.SetTimeExtentAsync();
+            }
         }
 
         public async static Task BufferAsync(this MapLayerInfo layer, MapLayerCollection layers, double meters)
@@ -141,17 +143,17 @@ namespace MapBoard.Main.Util
             }
             await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
-
+        /// <summary>
+        /// 根据时间范围，控制每个要素的可见性。
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         public async static Task SetTimeExtentAsync(this MapLayerInfo layer)
         {
             if (layer.TimeExtent == null)
             {
                 return;
             }
-            //if (!layer.Fields.Any(p => p.Type == FieldInfoType.Date && p.Name == Parameters.DateFieldName))
-            //{
-            //    throw new Exception("shapefile没有指定的日期属性");
-            //}
             FeatureLayer featureLayer = layer.Layer;
 
             if (layer.TimeExtent.IsEnable)

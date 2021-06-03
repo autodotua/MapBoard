@@ -73,9 +73,11 @@ namespace MapBoard.Main.IO
         public static async Task ImportImageLocation(IEnumerable<string> files, MapLayerCollection layers)
         {
             string addressField = "Addr";
+            string timeField = "Time";
             var fields = new[]
             {
                       new FieldInfo(addressField,"照片位置",FieldInfoType.Text),
+                      new FieldInfo(addressField,"拍摄时间",FieldInfoType.Text),
             };
             var layer = await LayerUtility.CreateLayerAsync(GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
@@ -93,6 +95,7 @@ namespace MapBoard.Main.IO
                                 if (info.Value.time.HasValue)
                                 {
                                     attr.Add(Parameters.DateFieldName, info.Value.time);
+                                    attr.Add(timeField, info.Value.time);
                                 }
                                 attr.Add(Parameters.LabelFieldName, Path.GetFileName(file));
                                 attr.Add(addressField, file);

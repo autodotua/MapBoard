@@ -89,14 +89,14 @@ namespace MapBoard.Main.UI.Dialog
                 }
                 if (FieldSource.Type != FieldTarget.Type)
                 {
-                    if (FieldSource.Type == FieldInfoType.Date)
+                    if (FieldSource.Type is FieldInfoType.Date or FieldInfoType.Time)
                     {
                         if (FieldTarget.Type == FieldInfoType.Integer || FieldTarget.Type == FieldInfoType.Float)
                         {
                             throw new Exception("数值与日期之间不可互转");
                         }
                     }
-                    if (FieldTarget.Type == FieldInfoType.Date)
+                    if (FieldTarget.Type is FieldInfoType.Date or FieldInfoType.Time)
                     {
                         if (FieldSource.Type == FieldInfoType.Integer || FieldSource.Type == FieldInfoType.Float)
                         {

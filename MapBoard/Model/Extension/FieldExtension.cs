@@ -56,6 +56,12 @@ namespace MapBoard.Main.Model.Extension
                     length = 254;
                     break;
 
+                case FieldInfoType.Time:
+                    type = FieldType.Text;
+                    //yyyy-MM-dd-HH-mm-ss
+                    length = 20;
+                    break;
+
                 default:
                     break;
             }
@@ -129,6 +135,9 @@ namespace MapBoard.Main.Model.Extension
 
                 case FieldInfoType.Text:
                     return 254;
+
+                case FieldInfoType.Time:
+                    return 20;
 
                 default:
                     throw new ArgumentException();

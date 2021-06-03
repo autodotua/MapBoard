@@ -119,7 +119,7 @@ namespace MapBoard.Main.UI
             dataGrid.SelectedItem = arcMap.Layers.Selected;
             //注册事件
             RegistEvents();
-            //为图层列表提供拖动改变次序支持
+            //初始化图层列表相关操作
             layerListHelper = new LayerListPanelHelper(dataGrid, p => DoAsync(p), arcMap);
             //初始化控件可用性
             JudgeControlsEnable();
@@ -141,6 +141,7 @@ namespace MapBoard.Main.UI
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
 
+            //为图层列表提供拖动改变次序支持
             var lvwHelper = new LayerListViewHelper(dataGrid);
             lvwHelper.EnableDragAndDropItem();
 
@@ -247,7 +248,26 @@ namespace MapBoard.Main.UI
 
         private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            await InitializeAsync();
+        }
+
+        private bool initialized = false;
+
+        protected async override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+            if (initialized)
+            {
+                return;
+            }
+            initialized = true;
+            try
+            {
+                await DoAsync(InitializeAsync);
+            }
+            catch (Exception ex)
+            {
+                CommonDialog.ShowErrorDialogAsync(ex, "初始化失败");
+            }
         }
 
         /// <summary>
@@ -296,7 +316,10 @@ namespace MapBoard.Main.UI
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            mapInfo.Update(arcMap, e.GetPosition(arcMap));
+            if (IsLoaded)
+            {
+                mapInfo.Update(arcMap, e.GetPosition(arcMap));
+            }
         }
 
         /// <summary>
@@ -306,7 +329,10 @@ namespace MapBoard.Main.UI
         /// <param name="e"></param>
         private void ArcMap_ViewpointChanged(object sender, EventArgs e)
         {
-            mapInfo.Update(arcMap, null);
+            if (IsLoaded)
+            {
+                mapInfo.Update(arcMap, null);
+            }
         }
 
         #endregion 基本方法
@@ -398,6 +424,7 @@ namespace MapBoard.Main.UI
         private async void CreateLayerButtonClick(object sender, RoutedEventArgs e)
         {
             await new CreateLayerDialog(arcMap.Layers).ShowAsync();
+            arcMap.Layers.Save();
         }
 
         /// <summary>
