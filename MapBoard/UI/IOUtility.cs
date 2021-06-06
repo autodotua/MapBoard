@@ -81,6 +81,7 @@ namespace MapBoard.Main.UI
                 ExportLayerType.LayerPackge => filter.Add("mblpkg地图画板包", "mblpkg"),
                 ExportLayerType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
                 ExportLayerType.KML => filter.Add("KML打包文件", "kmz"),
+                ExportLayerType.GeoJSON => filter.Add("GeoJSON文件", "geojson"),
                 _ => throw new ArgumentOutOfRangeException()
             };
             string path = FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
@@ -100,6 +101,10 @@ namespace MapBoard.Main.UI
 
                         case ExportLayerType.KML:
                             await Kml.ExportAsync(path, layer);
+                            break;
+
+                        case ExportLayerType.GeoJSON:
+                            await GeoJson.ExportAsync(path, layer);
                             break;
 
                         default:
@@ -364,6 +369,7 @@ namespace MapBoard.Main.UI
     {
         LayerPackge = 1,
         GISToolBoxZip = 2,
-        KML = 3
+        KML = 3,
+        GeoJSON = 4
     }
 }

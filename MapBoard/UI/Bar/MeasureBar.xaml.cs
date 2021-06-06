@@ -2,6 +2,7 @@
 using FzLib.Extension;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.Util;
 using System.Windows;
 using System.Windows.Controls;
 using static MapBoard.Main.UI.Map.EditorHelper;
@@ -32,7 +33,7 @@ namespace MapBoard.Main.UI.Bar
             {
                 if (e.NewGeometry is Polyline line)
                 {
-                    var length = GeometryEngine.LengthGeodetic(line, null, GeodeticCurveType.NormalSection);
+                    var length = line.GetLength();
                     if (length < 10000)
                     {
                         Length = string.Format("{0:0.000}米", length);
@@ -44,8 +45,8 @@ namespace MapBoard.Main.UI.Bar
                 }
                 else if (e.NewGeometry is Polygon polygon)
                 {
-                    var length = GeometryEngine.LengthGeodetic(polygon, null, GeodeticCurveType.NormalSection);
-                    var area = GeometryEngine.AreaGeodetic(polygon, null, GeodeticCurveType.NormalSection);
+                    var length = polygon.GetLength();
+                    var area = polygon.GetArea();
 
                     if (length < 10000)
                     {

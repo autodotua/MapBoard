@@ -15,15 +15,15 @@ namespace MapBoard.Main.IO
 {
     public static class Csv
     {
-        public static Task ExportAsync(IEnumerable<Feature> features, string path)
+        public static Task ExportAsync(string path, IEnumerable<Feature> features)
         {
             return Task.Run(() =>
             {
-                Export(features, path);
+                Export(path, features);
             });
         }
 
-        public static void Export(IEnumerable<Feature> features, string path)
+        public static void Export(string path, IEnumerable<Feature> features)
         {
             StringBuilder sb = new StringBuilder();
 

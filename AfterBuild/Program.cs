@@ -110,6 +110,7 @@ namespace MapBoard.AfterBuild
                                 let dir = new DirectoryInfo(folderName)
                                 where dir.Name.Length == 2 || dir.Name.Contains("-")
                                 where !dir.Name.StartsWith("zh")
+                                where dir.Name != "res"
                                 select dir)
             {
                 dir.Delete(true);
@@ -129,7 +130,6 @@ namespace MapBoard.AfterBuild
                     Path.GetFileName(Parameters.TileDownloadPath),
                     Path.GetFileName(Parameters.BackupPath),
                     Path.GetFileName(Parameters.RecordsPath),
-                    "res",
                 }).Contains(Path.GetFileName(p)))
                 .ToArray())
             {

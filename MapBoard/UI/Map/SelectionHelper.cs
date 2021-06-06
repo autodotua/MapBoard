@@ -72,12 +72,17 @@ namespace MapBoard.Main.UI.Map
             return true;
         }
 
-        public void Select(IEnumerable<Feature> features)
+        public void Select(IEnumerable<Feature> features, bool clearAll = false)
         {
             var layer = Layers.Selected?.Layer;
             if (layer == null)
             {
                 return;
+            }
+            if (clearAll && SelectedFeatures.Count > 0)
+            {
+                layer.ClearSelection();
+                selectedFeatures.Clear();
             }
             layer.SelectFeatures(features);
             foreach (var feature in features)

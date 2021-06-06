@@ -20,7 +20,7 @@
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="WindowLoaded"
     WindowStartupLocation="CenterScreen"
-    mc:Ignorable="d">
+    WindowState="Maximized" mc:Ignorable="d">
     <Window.Resources>
         <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
     </Window.Resources>

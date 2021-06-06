@@ -83,6 +83,7 @@ namespace MapBoard.Main.UI
                 AddToMenu(menuExport, "图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.LayerPackge));
                 AddToMenu(menuExport, "GPS工具箱图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.GISToolBoxZip));
                 AddToMenu(menuExport, "KML打包文件", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.KML));
+                AddToMenu(menuExport, "GeoJSON文件", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.GeoJSON));
             }
             else
             {

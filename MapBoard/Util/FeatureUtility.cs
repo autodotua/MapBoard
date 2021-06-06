@@ -55,12 +55,88 @@ namespace MapBoard.Main.Util
             return added.AsReadOnly();
         }
 
+        public static async Task<Feature> AutoLinkAsync(MapLayerInfo layer, Feature[] features)
+        {
+            List<MapPoint> points = new List<MapPoint>();
+            if (features.Length <= 1)
+            {
+                throw new ArgumentException("要素数量小于2");
+            }
+
+            if (features.Any(p => p.Geometry.GeometryType != GeometryType.Polyline))
+            {
+                throw new ArgumentException("不是折线类型");
+            }
+
+            List<ReadOnlyPart> parts = new List<ReadOnlyPart>();
+            foreach (var f in features)
+            {
+                parts.AddRange((f.Geometry as Polyline).Parts);
+            }
+            var line1 = parts[0];
+            var line2 = parts[1];
+
+            double min = Math.Min(
+                GeometryUtility.GetDistance(line1.StartPoint, line2.StartPoint),
+                GeometryUtility.GetDistance(line1.StartPoint, line2.EndPoint));
+            //首先假设，最近点是起点，那么连接后的线起点就是line1的终点
+            int start = 1;//0代表起点，1代表终点
+
+            //如果发现终点到line2起点或终点的距离更小，那么最近点就是line1的终点
+            if (Math.Min(
+                GeometryUtility.GetDistance(line1.EndPoint, line2.StartPoint),
+                GeometryUtility.GetDistance(line1.EndPoint, line2.EndPoint)) < min)
+            {
+                start = 0;
+            }
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                ReadOnlyPart part1 = parts[i];
+                ReadOnlyPart part2 = null;
+                if (i < parts.Count - 1)
+                {
+                    part2 = parts[i + 1];
+                }
+                if (start == 0)//顺序不变
+                {
+                    points.AddRange(part1.Points);
+                }
+                else//逆序
+                {
+                    points.AddRange(part1.Points.Reverse());
+                }
+                if (i < parts.Count - 1)
+                {
+                    //part2需要连接的点
+                    MapPoint p = start == 0 ? part1.EndPoint : part1.StartPoint;
+                    //寻找part2中离p最近的点
+
+                    start = GeometryUtility.GetDistance(p, part2.StartPoint)
+                        < GeometryUtility.GetDistance(p, part2.EndPoint) ?
+                        0 : 1;
+                }
+            }
+
+            var newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
+
+            await layer.DeleteFeaturesAsync(features, FeatureOperation);
+            await layer.AddFeatureAsync(newFeature, FeatureOperation);
+
+            return newFeature;
+        }
+
         public static async Task<Feature> LinkAsync(MapLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
             if (features.Length <= 1)
             {
                 throw new ArgumentException("要素数量小于2");
+            }
+
+            if (features.Any(p => p.Geometry.GeometryType != GeometryType.Polyline))
+            {
+                throw new ArgumentException("不是折线类型");
             }
             if (features.Length == 2)
             {

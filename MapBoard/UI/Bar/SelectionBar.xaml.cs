@@ -68,16 +68,13 @@ namespace MapBoard.Main.UI.Bar
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
             if (layer.GeometryType == GeometryType.Polyline)//线
             {
-                double length = MapView.Selection.SelectedFeatures.Sum(p =>
-                GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+                double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
                 sb.Append("，长度：" + Number.MeterToFitString(length));
             }
             else if (layer.GeometryType == GeometryType.Polygon)//面
             {
-                double length = MapView.Selection.SelectedFeatures.Sum(p =>
-                GeometryEngine.LengthGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
-                double area = MapView.Selection.SelectedFeatures.Sum(p =>
-                GeometryEngine.AreaGeodetic(p.Geometry, null, GeodeticCurveType.NormalSection));
+                double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
                 sb.Append("，周长：" + Number.MeterToFitString(length));
                 sb.Append("，面积：" + Number.SquareMeterToFitString(area));
             }
@@ -207,7 +204,8 @@ namespace MapBoard.Main.UI.Bar
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
                 layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
-                ("导出CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
+                ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
+                ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
             };
 
             foreach (var (header, desc, action, visiable) in menus)
@@ -246,13 +244,15 @@ namespace MapBoard.Main.UI.Bar
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;
 
-            Task SeparateAsync()
+            async Task SeparateAsync()
             {
-                return FeatureUtility.SeparateAsync(layer, features);
+                var result = await FeatureUtility.SeparateAsync(layer, features);
+                MapView.Selection.Select(result, true);
             }
-            Task UnionAsync()
+            async Task UnionAsync()
             {
-                return FeatureUtility.UnionAsync(layer, features);
+                var result = await FeatureUtility.UnionAsync(layer, features);
+                MapView.Selection.Select(result, true);
             }
 
             async Task LinkAsync()
@@ -260,6 +260,8 @@ namespace MapBoard.Main.UI.Bar
                 List<DialogItem> typeList = new List<DialogItem>();
                 bool headToHead = false;
                 bool reverse = false;
+                bool auto = false;
+                typeList.Add(new DialogItem("自动", "根据选择的顺序自动判断需要连接的点", () => auto = true));
                 if (MapView.Selection.SelectedFeatures.Count == 2)
                 {
                     typeList.Add(new DialogItem("起点相连", "起始点与起始点相连接", () => headToHead = true));
@@ -297,13 +299,22 @@ namespace MapBoard.Main.UI.Bar
                 {
                     return;
                 }
-
-                await FeatureUtility.LinkAsync(layer, features, headToHead, reverse);
+                Feature feature;
+                if (auto)
+                {
+                    feature = await FeatureUtility.AutoLinkAsync(layer, features);
+                }
+                else
+                {
+                    feature = await FeatureUtility.LinkAsync(layer, features, headToHead, reverse);
+                }
+                MapView.Selection.Select(feature, true);
             }
 
-            Task ReverseAsync()
+            async Task ReverseAsync()
             {
-                return FeatureUtility.ReverseAsync(layer, features);
+                IReadOnlyList<Feature> result = await FeatureUtility.ReverseAsync(layer, features);
+                MapView.Selection.Select(result, true);
             }
 
             async Task DensifyAsync()
@@ -369,22 +380,31 @@ namespace MapBoard.Main.UI.Bar
                 var newFeatures = await FeatureUtility.CreateCopyAsync(layer, features);
                 MapView.Selection.Select(newFeatures);
             }
-            async Task ToCsvAsync()
+            Task ToCsvAsync()
             {
-                string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("Csv表格", "csv"), ensureExtension: true, defaultFileName: "图形");
-                if (path != null)
+                return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, MapView.Selection.SelectedFeatures));
+            }
+            Task ToGeoJsonAsync()
+            {
+                return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, MapView.Selection.SelectedFeatures));
+            }
+        }
+
+        private async Task ExportBase(FileFilterCollection filter, Func<string, Task> task)
+        {
+            string path = FileSystemDialog.GetSaveFile(filter, ensureExtension: true, defaultFileName: "图形");
+            if (path != null)
+            {
+                await task(path);
+
+                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
                 {
-                    await Csv.ExportAsync(MapView.Selection.SelectedFeatures, path);
+                    ShowButton = true,
+                    ButtonContent = "打开"
+                };
+                snake.ButtonClick += (p1, p2) => IOUtility.OpenFileOrFolder(path);
 
-                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
-                    {
-                        ShowButton = true,
-                        ButtonContent = "打开"
-                    };
-                    snake.ButtonClick += (p1, p2) => IOUtility.OpenFileOrFolder(path);
-
-                    snake.ShowMessage("已导出到" + path);
-                }
+                snake.ShowMessage("已导出到" + path);
             }
         }
 
