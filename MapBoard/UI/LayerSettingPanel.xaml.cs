@@ -87,31 +87,32 @@ namespace MapBoard.Main.UI
             {
                 int index = Layers.IndexOf(Layers.Selected);
 
-                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240)
+                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240||newName.Length<1)
                 {
-                    SnakeBar.ShowError("新文件名不合法");
-                    goto end;
+                    await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
                 }
-                if (File.Exists(Path.Combine(Parameters.DataPath, newName + ".shp")))
+                else if (File.Exists(Path.Combine(Parameters.DataPath, newName + ".shp")))
                 {
-                    SnakeBar.ShowError("文件已存在");
+                    await CommonDialog.ShowErrorDialogAsync("该名称的文件已存在");
                 }
-                try
+                else
                 {
-                    await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
-                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
+                    try
                     {
-                        File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
+                        await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
+                        foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
+                        {
+                            File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
+                        }
+                        layer.Name = newName;
                     }
-                    layer.Name = newName;
+                    catch (Exception ex)
+                    {
+                        await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
+                    }
+                    await Layers.InsertAsync(index, layer);
+                    Layers.Selected = layer;
                 }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
-                }
-                end:
-                layer = null;
-                await Layers.InsertAsync(index, layer);
             }
             try
             {

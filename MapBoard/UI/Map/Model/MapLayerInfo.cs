@@ -55,7 +55,7 @@ namespace MapBoard.Main.UI.Map.Model
         public override object Clone()
         {
             MapLayerInfo layer = MemberwiseClone() as MapLayerInfo;
-            layer = null;
+            layer.table = null;
             foreach (var key in Symbols.Keys.ToList())
             {
                 layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
@@ -104,6 +104,7 @@ namespace MapBoard.Main.UI.Map.Model
                 feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
             }
             await table.AddFeatureAsync(feature);
+
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
 
@@ -162,7 +163,21 @@ namespace MapBoard.Main.UI.Map.Model
             NotifyFeaturesChanged(null, null, features, source);
         }
 
-        public long NumberOfFeatures => table == null ? 0 : table.NumberOfFeatures;
+        [JsonIgnore]
+        public long NumberOfFeatures
+        {
+            get
+            {
+                try
+                {
+                    return table == null ? 0 : table.NumberOfFeatures;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
 
         public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
         {
@@ -177,6 +192,7 @@ namespace MapBoard.Main.UI.Map.Model
         public void Dispose()
         {
             table?.Close();
+            table = null;
         }
 
         public Task<Envelope> QueryExtentAsync(QueryParameters queryParameters)
