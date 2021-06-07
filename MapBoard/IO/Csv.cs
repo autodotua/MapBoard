@@ -50,7 +50,7 @@ namespace MapBoard.Main.IO
                         case GeometryType.Point:
                             part = new MapPoint[] { geometry as MapPoint };
                             featureIndexs.Add(part, featureIndex);
-                            featureIndexs.Add(part, featureIndex);
+                            parts.Add(part);
                             break;
 
                         case GeometryType.Polygon:

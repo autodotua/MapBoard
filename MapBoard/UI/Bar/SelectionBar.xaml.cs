@@ -180,33 +180,9 @@ namespace MapBoard.Main.UI.Bar
             MapView.Selection.ClearSelection();
         }
 
-        private void BtnMenuClick(object sender, RoutedEventArgs e)
+        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent)
         {
             ContextMenu menu = new ContextMenu();
-
-            var layer = Layers.Selected;
-
-            var features = MapView.Selection.SelectedFeatures.ToArray();
-            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
-           {
-                ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
-                (layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)
-                && features.Length>1),
-                ("分离","将拥有多个部分的图形分离为单独的图形",
-                SeparateAsync,(layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)),
-                ("连接","将折线的端点互相连接",LinkAsync,layer.GeometryType==GeometryType.Polyline
-                && features.Length>1
-                && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
-                ("反转","交换点的顺序",ReverseAsync,
-                layer.GeometryType==GeometryType.Polyline||layer.GeometryType==GeometryType.Polygon),
-                ("加密","在每两个折点之间添加更多的点",DensifyAsync,
-                (layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon)),
-                ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
-                layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
-                ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
-                ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
-                ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
-            };
 
             foreach (var (header, desc, action, visiable) in menus)
             {
@@ -241,8 +217,33 @@ namespace MapBoard.Main.UI.Bar
             }
 
             menu.Placement = PlacementMode.Bottom;
-            menu.PlacementTarget = sender as UIElement;
+            menu.PlacementTarget = parent;
             menu.IsOpen = true;
+        }
+
+        private void BtnMenuClick(object sender, RoutedEventArgs e)
+        {
+            var layer = Layers.Selected;
+            var features = MapView.Selection.SelectedFeatures.ToArray();
+            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
+           {
+                ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
+                (layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)
+                && features.Length>1),
+                ("分离","将拥有多个部分的图形分离为单独的图形",
+                SeparateAsync,(layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)),
+                ("连接","将折线的端点互相连接",LinkAsync,layer.GeometryType==GeometryType.Polyline
+                && features.Length>1
+                && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
+                ("反转","交换点的顺序",ReverseAsync,
+                layer.GeometryType==GeometryType.Polyline||layer.GeometryType==GeometryType.Polygon),
+                ("加密","在每两个折点之间添加更多的点",DensifyAsync,
+                (layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon)),
+                ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
+                layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
+                ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
+            };
+            OpenMenus(menus, sender as UIElement);
 
             async Task SeparateAsync()
             {
@@ -380,14 +381,6 @@ namespace MapBoard.Main.UI.Bar
                 var newFeatures = await FeatureUtility.CreateCopyAsync(layer, features);
                 MapView.Selection.Select(newFeatures);
             }
-            Task ToCsvAsync()
-            {
-                return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, MapView.Selection.SelectedFeatures));
-            }
-            Task ToGeoJsonAsync()
-            {
-                return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, MapView.Selection.SelectedFeatures));
-            }
         }
 
         private async Task ExportBase(FileFilterCollection filter, Func<string, Task> task)
@@ -417,6 +410,27 @@ namespace MapBoard.Main.UI.Bar
                     Clipboard.SetText(tbk.Text);
                     SnakeBar.Show($"已复制“{tbk.Text}”到剪贴板");
                 }
+            }
+        }
+
+        private void BtnExportClick(object sender, RoutedEventArgs e)
+        {
+            var layer = Layers.Selected;
+            var features = MapView.Selection.SelectedFeatures.ToArray();
+            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
+           {
+                ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
+                ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
+            };
+            OpenMenus(menus, sender as UIElement);
+
+            Task ToCsvAsync()
+            {
+                return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, MapView.Selection.SelectedFeatures));
+            }
+            Task ToGeoJsonAsync()
+            {
+                return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, MapView.Selection.SelectedFeatures));
             }
         }
     }
