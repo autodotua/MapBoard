@@ -1,4 +1,6 @@
-﻿using Esri.ArcGISRuntime;
+﻿//#define ERROR
+
+using Esri.ArcGISRuntime;
 using FzLib.Extension;
 using MapBoard.Common;
 using System;
@@ -173,14 +175,23 @@ namespace MapBoard.Main.Model
                                 attrValue = value;
                                 break;
                             }
-                            throw new ApplicationException("输入的值无法转换为字符串");
+                            else if (value is null)
+                            {
+                                attrValue = textValue = null;
+                            }
+                            else
+                            {
+                                attrValue = textValue = value.ToString();
+                            }
+                            break;
+
                         default:
                             throw new NotSupportedException();
                     }
                 }
                 catch (Exception ex)
                 {
-#if !DEBUG
+#if !DEBUG||ERROR
                     throw;
 #endif
                 }
