@@ -175,7 +175,7 @@ namespace MapBoard.Main.UI.Map
                    {
                        await FeatureUtility.DeleteAsync(Layers.Selected, Selection.SelectedFeatures.ToArray());
                        Selection.ClearSelection();
-                   }, true);
+                   }, "正在删除", true);
                     break;
 
                 case Key.Space:

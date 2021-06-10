@@ -28,13 +28,13 @@ namespace MapBoard.Main.UI
     {
         private readonly ListView list;
 
-        public Func<Func<Task>, Task> DoAsync { get; }
+        public IDoAsync DoAsyncObj { get; }
         public ArcMapView MapView { get; }
 
-        public LayerListPanelHelper(ListView list, Func<Func<Task>, Task> d, ArcMapView mapView)
+        public LayerListPanelHelper(ListView list, IDoAsync d, ArcMapView mapView)
         {
             this.list = list;
-            DoAsync = d;
+            DoAsyncObj = d;
             MapView = mapView;
         }
 
@@ -73,17 +73,36 @@ namespace MapBoard.Main.UI
                     || layer.GeometryType == GeometryType.Point
                     || layer.GeometryType == GeometryType.Multipoint)
                 {
-                    AddToMenu(menuImport, "GPX轨迹文件", () => IOUtility.ImportFeatureAsync(layer, MapView, ImportLayerType.Gpx));
+                    AddToMenu(menuImport, "GPX轨迹文件",
+                        () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
+                        p => IOUtility.ImportFeatureAsync(p, layer, MapView, ImportLayerType.Gpx),
+                        "正在导入GPX轨迹文件");
                 }
-                AddToMenu(menuImport, "CSV表格", () => IOUtility.ImportFeatureAsync(layer, MapView, ImportLayerType.Csv));
+
+                AddToMenu(menuImport, "CSV文件",
+                    () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
+                    p => IOUtility.ImportFeatureAsync(p, layer, MapView, ImportLayerType.Csv),
+                    "正在导入CSV文件");
 
                 var menuExport = new MenuItem() { Header = "导出" };
                 menu.Items.Add(menuExport);
 
-                AddToMenu(menuExport, "图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.LayerPackge));
-                AddToMenu(menuExport, "GPS工具箱图层包", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.GISToolBoxZip));
-                AddToMenu(menuExport, "KML打包文件", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.KML));
-                AddToMenu(menuExport, "GeoJSON文件", () => IOUtility.ExportLayerAsync(layer, MapView.Layers, ExportLayerType.GeoJSON));
+                AddToMenu(menuExport, "图层包",
+                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
+                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.LayerPackge),
+                    "正在导出图层包");
+                AddToMenu(menuExport, "GPS工具箱图层包",
+                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
+                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
+                    "正在导出GPS工具箱图层包");
+                AddToMenu(menuExport, "KML打包文件",
+                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML),
+                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.KML),
+                    "正在导出KML打包文件");
+                AddToMenu(menuExport, "GeoJSON文件",
+                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON),
+                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.GeoJSON),
+                    "正在导出GeoJSON文件");
             }
             else
             {
@@ -112,7 +131,28 @@ namespace MapBoard.Main.UI
             {
                 try
                 {
-                    await DoAsync(func);
+                    await DoAsyncObj.DoAsync(func, "正在处理");
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex);
+                }
+            };
+            menu.Items.Add(item);
+        }
+
+        private void AddToMenu(ItemsControl menu, string header, Func<string> getPath, Func<string, Task> func, string message)
+        {
+            MenuItem item = new MenuItem() { Header = header };
+            item.Click += async (p1, p2) =>
+            {
+                try
+                {
+                    string path = getPath();
+                    if (path != null)
+                    {
+                        await DoAsyncObj.DoAsync(async () => await func(path), message);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -179,12 +219,12 @@ namespace MapBoard.Main.UI
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await DoAsync(async () =>
+                await DoAsyncObj.DoAsync(async () =>
                 {
                     string from = dialog.SelectedCoordinateSystem1;
                     string to = dialog.SelectedCoordinateSystem2;
                     await LayerUtility.CoordinateTransformateAsync(layer, from, to);
-                });
+                }, "正在进行坐标转换");
             }
         }
 
@@ -224,7 +264,7 @@ namespace MapBoard.Main.UI
             var dialog = AttributeTableDialog.Get(layer, MapView);
             try
             {
-                await DoAsync(dialog.LoadAsync);
+                await DoAsyncObj.DoAsync(dialog.LoadAsync, "正在加载属性表");
             }
             catch (Exception ex)
             {

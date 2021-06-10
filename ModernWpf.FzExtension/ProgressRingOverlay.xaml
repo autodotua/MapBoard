@@ -19,10 +19,35 @@
             x:Name="border"
             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
             Opacity="0.5" />
-
-        <ui:ProgressRing
-            x:Name="loading" Width="60"
-            Height="60" IsActive="True"
-            IsHitTestVisible="False" />
+        <Grid
+            Width="240" HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+            IsHitTestVisible="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="24" />
+                <RowDefinition Height="18" />
+            </Grid.RowDefinitions>
+            <TextBlock Margin="16,12" Style="{StaticResource TitleTextBlockStyle}">请稍等</TextBlock>
+            <ui:ProgressRing
+                x:Name="loading" Grid.Row="2"
+                Width="48" Height="48"
+                Foreground="{DynamicResource SystemControlHighlightChromeAltLowBrush}"
+                IsActive="True" />
+            <TextBlock
+                Grid.Row="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Text="{Binding Message}" />
+            <Grid.Effect>
+                <DropShadowEffect
+                    BlurRadius="16" ShadowDepth="0"
+                    Color="Gray" />
+            </Grid.Effect>
+        </Grid>
     </Grid>
 </UserControl>

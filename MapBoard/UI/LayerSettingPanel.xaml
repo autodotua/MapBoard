@@ -159,7 +159,7 @@
                                     <TextBlock Grid.Row="0" Text="宽度" />
                                     <TextBox
                                         Grid.Row="0" Grid.Column="2"
-                                        Text="{Binding OutlineWidth}" />
+                                        Text="{Binding OutlineWidth, Mode=TwoWay}" />
                                     <TextBlock Grid.Row="2" Text="颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="2 " Grid.Column="2"

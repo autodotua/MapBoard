@@ -51,7 +51,7 @@ namespace MapBoard.Main.Util
                         break;
 
                     case GeometryType.Polyline:
-                        symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.Size);
+                        symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
                         if (symbolInfo.Arrow > 0)
                         {
                             (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow - 1);

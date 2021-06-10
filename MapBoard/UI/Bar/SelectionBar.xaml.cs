@@ -135,7 +135,7 @@ namespace MapBoard.Main.UI.Bar
             {
                 await FeatureUtility.DeleteAsync(Layers.Selected, MapView.Selection.SelectedFeatures.ToArray());
                 MapView.Selection.ClearSelection();
-            }, true);
+            }, "正在删除", true);
         }
 
         private async void CopyButtonClick(object sender, RoutedEventArgs e)
@@ -151,7 +151,7 @@ namespace MapBoard.Main.UI.Bar
                     MapView.Selection.ClearSelection();
                     Layers.Selected = dialog.SelectedLayer;
                 }
-            });
+            }, "正在复制图形");
         }
 
         private async void CutButtonClick(object sender, RoutedEventArgs e)
@@ -163,7 +163,7 @@ namespace MapBoard.Main.UI.Bar
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
                     await FeatureUtility.CutAsync(Layers.Selected, features, line);
-                }, true);
+                }, "正在分割", true);
             }
         }
 
@@ -180,7 +180,7 @@ namespace MapBoard.Main.UI.Bar
             MapView.Selection.ClearSelection();
         }
 
-        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent)
+        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent, Func<string, string> getMessage)
         {
             ContextMenu menu = new ContextMenu();
 
@@ -205,7 +205,7 @@ namespace MapBoard.Main.UI.Bar
                     {
                         try
                         {
-                            await (Window.GetWindow(this) as MainWindow).DoAsync(action);
+                            await (Window.GetWindow(this) as MainWindow).DoAsync(action, getMessage(header));
                         }
                         catch (Exception ex)
                         {
@@ -243,7 +243,7 @@ namespace MapBoard.Main.UI.Bar
                 layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
             };
-            OpenMenus(menus, sender as UIElement);
+            OpenMenus(menus, sender as UIElement, header => $"正在进行{header}操作");
 
             async Task SeparateAsync()
             {
@@ -422,7 +422,7 @@ namespace MapBoard.Main.UI.Bar
                 ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
                 ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
             };
-            OpenMenus(menus, sender as UIElement);
+            OpenMenus(menus, sender as UIElement, header => $"正在{header}");
 
             Task ToCsvAsync()
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -13,6 +14,7 @@ namespace ModernWpf.FzExtension
     {
         public ProgressRingOverlay()
         {
+            TaskArgs = new ProgressRingOverlayArgs(this);
             InitializeComponent();
         }
 
@@ -37,6 +39,36 @@ namespace ModernWpf.FzExtension
             grd.BeginAnimation(OpacityProperty, ani);
         }
 
+        public static readonly DependencyProperty MessageProperty = DependencyProperty.Register(
+              nameof(Message),
+              typeof(string),
+              typeof(ProgressRingOverlay));
+
+        public string Message
+        {
+            get => (string)GetValue(MessageProperty);
+            set => SetValue(MessageProperty, value);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private TaskCompletionSource taskSource = null;
+
+        public ProgressRingOverlayArgs TaskArgs { get; }
+    }
+
+    public class ProgressRingOverlayArgs
+    {
+        public ProgressRingOverlayArgs(ProgressRingOverlay ui)
+        {
+            this.ui = ui;
+        }
+
+        private ProgressRingOverlay ui;
+
+        public void SetMessage(string message)
+        {
+            ui.Message = message;
+        }
     }
 }

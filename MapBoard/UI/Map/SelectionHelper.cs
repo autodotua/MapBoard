@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace MapBoard.Main.UI.Map
@@ -150,7 +151,7 @@ namespace MapBoard.Main.UI.Map
         }
 
         private async Task SelectAsync(Envelope envelope,
-            System.Windows.Point? point,
+            Point? point,
             SpatialRelationship relationship,
              SelectionMode mode,
              bool allLayers = false,
@@ -160,8 +161,9 @@ namespace MapBoard.Main.UI.Map
             {
                 throw new ArgumentException("需要选取多图层，但是没有给鼠标位置");
             }
-            await (App.Current.MainWindow as MainWindow).DoAsync(async () =>
+            await (Window.GetWindow(MapView) as IDoAsync).DoAsync(async () =>
              {
+                 await Task.Delay(100);
                  if (envelope == null)
                  {
                      return;
@@ -260,7 +262,7 @@ namespace MapBoard.Main.UI.Map
                      }
                  }
                  CollectionChanged?.Invoke(this, new EventArgs());
-             });
+             }, "正在选取");
         }
 
         private void SelectedFeatures_CollectionChanged(object sender, EventArgs e)

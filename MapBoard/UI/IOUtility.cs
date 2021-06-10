@@ -23,12 +23,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using MapBoard.Main.UI.Map.Model;
+using ModernWpf.FzExtension;
 
 namespace MapBoard.Main.UI
 {
     public static class IOUtility
     {
-        public async static Task ImportFeatureAsync(MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
+        public static string GetImportFeaturePath(ImportLayerType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -37,43 +38,46 @@ namespace MapBoard.Main.UI
                 ImportLayerType.Csv => filter.Add("CSV表格", "csv"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            string path = FileSystemDialog.GetOpenFile(filter);
-            if (path != null)
+            return FileSystemDialog.GetOpenFile(filter);
+        }
+
+        public async static Task ImportFeatureAsync(string path, MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
+        {
+            Debug.Assert(path != null);
+
+            try
             {
-                try
+                IReadOnlyList<Feature> features = null;
+                switch (type)
                 {
-                    IReadOnlyList<Feature> features = null;
-                    switch (type)
-                    {
-                        case ImportLayerType.Gpx:
-                            features = await Gpx.ImportToLayerAsync(path, layer);
-                            break;
+                    case ImportLayerType.Gpx:
+                        features = await Gpx.ImportToLayerAsync(path, layer);
+                        break;
 
-                        case ImportLayerType.Csv:
-                            features = await Csv.ImportAsync(path, layer);
-                            break;
+                    case ImportLayerType.Csv:
+                        features = await Csv.ImportAsync(path, layer);
+                        break;
 
-                        default:
-                            break;
-                    }
-                    SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
-                    snake.ShowButton = true;
-                    snake.ButtonContent = "查看";
-                    snake.ButtonClick += async (p1, p2) =>
-                    {
-                        var geom = GeometryEngine.CombineExtents(features.Select(p => p.Geometry));
-                        await mapView.ZoomToGeometryAsync(geom);
-                    };
-                    snake.ShowMessage("导入成功");
+                    default:
+                        break;
                 }
-                catch (Exception ex)
+                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
+                snake.ShowButton = true;
+                snake.ButtonContent = "查看";
+                snake.ButtonClick += async (p1, p2) =>
                 {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
-                }
+                    var geom = GeometryEngine.CombineExtents(features.Select(p => p.Geometry));
+                    await mapView.ZoomToGeometryAsync(geom);
+                };
+                snake.ShowMessage("导入成功");
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
 
-        public async static Task ExportLayerAsync(MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
+        public static string GetExportLayerPath(LayerInfo layer, ExportLayerType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -84,42 +88,44 @@ namespace MapBoard.Main.UI
                 ExportLayerType.GeoJSON => filter.Add("GeoJSON文件", "geojson"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            string path = FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-            if (path != null)
+            return FileSystemDialog.GetSaveFile(filter, true, layer.Name);
+        }
+
+        public async static Task ExportLayerAsync(string path, MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
+        {
+            Debug.Assert(path != null);
+            try
             {
-                try
+                switch (type)
                 {
-                    switch (type)
-                    {
-                        case ExportLayerType.LayerPackge:
-                            await Package.ExportLayer2Async(path, layer, layers);
-                            break;
+                    case ExportLayerType.LayerPackge:
+                        await Package.ExportLayer2Async(path, layer, layers);
+                        break;
 
-                        case ExportLayerType.GISToolBoxZip:
-                            await MobileGISToolBox.ExportLayerAsync(path, layer);
-                            break;
+                    case ExportLayerType.GISToolBoxZip:
+                        await MobileGISToolBox.ExportLayerAsync(path, layer);
+                        break;
 
-                        case ExportLayerType.KML:
-                            await Kml.ExportAsync(path, layer);
-                            break;
+                    case ExportLayerType.KML:
+                        await Kml.ExportAsync(path, layer);
+                        break;
 
-                        case ExportLayerType.GeoJSON:
-                            await GeoJson.ExportAsync(path, layer);
-                            break;
+                    case ExportLayerType.GeoJSON:
+                        await GeoJson.ExportAsync(path, layer);
+                        break;
 
-                        default:
-                            break;
-                    }
-                    SnakeBar.Show(App.Current.MainWindow, "导出成功");
+                    default:
+                        break;
                 }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
-                }
+                SnakeBar.Show(App.Current.MainWindow, "导出成功");
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
 
-        public async static Task ImportMapAsync(MapLayerCollection layers, ImportMapType type)
+        public static string GetImportMapPath(ImportMapType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -131,50 +137,54 @@ namespace MapBoard.Main.UI
                 ImportMapType.Shapefile => filter.Add("Shapefile", "shp"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            string path = FileSystemDialog.GetOpenFile(filter);
-            if (path != null)
+            return FileSystemDialog.GetOpenFile(filter);
+        }
+
+        public async static Task ImportMapAsync(string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
+        {
+            Debug.Assert(path != null);
+            try
             {
-                try
+                switch (type)
                 {
-                    switch (type)
-                    {
-                        case ImportMapType.MapPackageOverwrite:
-                            if (Config.Instance.BackupWhenReplace)
-                            {
-                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
-                            }
-                            await Package.ImportMapAsync(path, layers, true);
-                            break;
+                    case ImportMapType.MapPackageOverwrite:
+                        args.SetMessage("正在备份当前地图");
+                        if (Config.Instance.BackupWhenReplace)
+                        {
+                            await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
+                        }
+                        args.SetMessage("正在导入新的地图");
+                        await Package.ImportMapAsync(path, layers, true);
+                        break;
 
-                        case ImportMapType.MapPackgeAppend:
-                            await Package.ImportMapAsync(path, layers, false);
-                            break;
+                    case ImportMapType.MapPackgeAppend:
+                        await Package.ImportMapAsync(path, layers, false);
+                        break;
 
-                        case ImportMapType.LayerPackge:
-                            await Package.ImportLayerAsync(path, layers);
-                            break;
+                    case ImportMapType.LayerPackge:
+                        await Package.ImportLayerAsync(path, layers);
+                        break;
 
-                        case ImportMapType.Gpx:
-                            await ImportGpxAsync(new[] { path }, layers.Selected, layers);
-                            break;
+                    case ImportMapType.Gpx:
+                        await ImportGpxAsync(new[] { path }, layers.Selected, layers);
+                        break;
 
-                        case ImportMapType.Shapefile:
-                            await Shapefile.ImportAsync(path, layers);
-                            break;
+                    case ImportMapType.Shapefile:
+                        await Shapefile.ImportAsync(path, layers);
+                        break;
 
-                        default:
-                            break;
-                    }
-                    SnakeBar.Show(App.Current.MainWindow, "导入成功");
+                    default:
+                        break;
                 }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
-                }
+                SnakeBar.Show(App.Current.MainWindow, "导入成功");
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
 
-        public static async Task ExportMapAsync(MapView mapView, MapLayerCollection layers, ExportMapType type)
+        public static string GetExportMapPath(ExportMapType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -186,38 +196,40 @@ namespace MapBoard.Main.UI
                 ExportMapType.Screenshot => filter.Add("截图", "png"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            string path = FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-            if (path != null)
+            return FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+        }
+
+        public static async Task ExportMapAsync(string path, MapView mapView, MapLayerCollection layers, ExportMapType type)
+        {
+            Debug.Assert(path != null);
+            try
             {
-                try
+                switch (type)
                 {
-                    switch (type)
-                    {
-                        case ExportMapType.MapPackage:
-                            await Package.ExportMap2Async(path, layers);
-                            break;
+                    case ExportMapType.MapPackage:
+                        await Package.ExportMap2Async(path, layers);
+                        break;
 
-                        case ExportMapType.GISToolBoxZip:
-                            await MobileGISToolBox.ExportMapAsync(path, layers);
-                            break;
+                    case ExportMapType.GISToolBoxZip:
+                        await MobileGISToolBox.ExportMapAsync(path, layers);
+                        break;
 
-                        case ExportMapType.KML:
-                            await Kml.ExportAsync(path, layers.Cast<MapLayerInfo>());
-                            break;
+                    case ExportMapType.KML:
+                        await Kml.ExportAsync(path, layers.Cast<MapLayerInfo>());
+                        break;
 
-                        case ExportMapType.Screenshot:
-                            await SaveImageAsync(path, mapView);
-                            break;
+                    case ExportMapType.Screenshot:
+                        await SaveImageAsync(path, mapView);
+                        break;
 
-                        default:
-                            break;
-                    }
-                    SnakeBar.Show(App.Current.MainWindow, "导出成功");
+                    default:
+                        break;
                 }
-                catch (Exception ex)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
-                }
+                SnakeBar.Show(App.Current.MainWindow, "导出成功");
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
 

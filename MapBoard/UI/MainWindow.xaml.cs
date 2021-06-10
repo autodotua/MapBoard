@@ -26,13 +26,14 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using static FzLib.Basic.Loop;
 using MapBoard.Main.UI.Map.Model;
+using ModernWpf.FzExtension;
 
 namespace MapBoard.Main.UI
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : WindowBase
+    public partial class MainWindow : WindowBase, IDoAsync
     {
         #region 属性和字段
 
@@ -75,12 +76,28 @@ namespace MapBoard.Main.UI
         /// <param name="action"></param>
         /// <param name="catchException"></param>
         /// <returns></returns>
-        public async Task DoAsync(Func<Task> action, bool catchException = false)
+        public Task DoAsync(Func<Task> action, string message, bool catchException = false)
         {
+            return DoAsync(async p => await action(), message, catchException);
+        }
+
+        /// <summary>
+        /// 显示处理中遮罩并处理需要长时间运行的方法
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="catchException"></param>
+        /// <returns></returns>
+        public async Task DoAsync(Func<ProgressRingOverlayArgs, Task> action, string message, bool catchException = false)
+        {
+            loading.Message = message;
             loading.Show();
             try
             {
-                await action();
+                await action(loading.TaskArgs);
+                while (arcMap.DrawStatus == DrawStatus.InProgress)
+                {
+                    await Task.Delay(20);
+                }
             }
             catch (Exception ex)
             {
@@ -120,7 +137,7 @@ namespace MapBoard.Main.UI
             //注册事件
             RegistEvents();
             //初始化图层列表相关操作
-            layerListHelper = new LayerListPanelHelper(dataGrid, p => DoAsync(p), arcMap);
+            layerListHelper = new LayerListPanelHelper(dataGrid, this, arcMap);
             //初始化控件可用性
             JudgeControlsEnable();
         }
@@ -246,8 +263,10 @@ namespace MapBoard.Main.UI
             Close();
         }
 
-        private async void WindowLoaded(object sender, RoutedEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+            loading.Message = "正在初始化";
+            loading.Show();
         }
 
         private bool initialized = false;
@@ -262,7 +281,7 @@ namespace MapBoard.Main.UI
             initialized = true;
             try
             {
-                await DoAsync(InitializeAsync);
+                await DoAsync(InitializeAsync, "正在初始化");
             }
             catch (Exception ex)
             {
@@ -306,7 +325,7 @@ namespace MapBoard.Main.UI
                 {
                     await IOUtility.DropFoldersAsync(files, arcMap.Layers);
                 }
-            });
+            }, "正在导入");
         }
 
         /// <summary>
@@ -316,7 +335,7 @@ namespace MapBoard.Main.UI
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (IsLoaded)
+            if (IsLoaded && arcMap.IsMouseOver)
             {
                 mapInfo.Update(arcMap, e.GetPosition(arcMap));
             }
@@ -457,18 +476,22 @@ namespace MapBoard.Main.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ExportMenu_Click(object sender, RoutedEventArgs e)
+        private async void ExportMenu_Click(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(Parameters.DataPath) || !Directory.EnumerateFiles(Parameters.DataPath).Any())
             {
                 SnakeBar.ShowError("没有任何数据");
                 return;
             }
-            canClosing = false;
-            DoAsync(async () =>
+            canClosing = false; ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
+            string path = IOUtility.GetExportMapPath(type);
+            if (path != null)
             {
-                await IOUtility.ExportMapAsync(arcMap, arcMap.Layers, (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string));
-            });
+                await DoAsync(async () =>
+             {
+                 await IOUtility.ExportMapAsync(path, arcMap, arcMap.Layers, type);
+             }, "正在导出");
+            }
             canClosing = true;
         }
 
@@ -487,12 +510,17 @@ namespace MapBoard.Main.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ImportMenu_Click(object sender, RoutedEventArgs e)
+        private async void ImportMenu_Click(object sender, RoutedEventArgs e)
         {
-            DoAsync(async () =>
+            var type = (ImportMapType)int.Parse((sender as FrameworkElement).Tag as string);
+            string path = IOUtility.GetImportMapPath(type);
+            if (path != null)
             {
-                await IOUtility.ImportMapAsync(arcMap.Layers, (ImportMapType)int.Parse((sender as FrameworkElement).Tag as string));
-            });
+                await DoAsync(async p =>
+                 {
+                     await IOUtility.ImportMapAsync(path, arcMap.Layers, type, p);
+                 }, "正在导入");
+            };
         }
 
         /// <summary>
