@@ -58,5 +58,7 @@ namespace MapBoard.Common
         public static readonly string TileDownloadPath;
         public static readonly string BackupPath;
         public static readonly string RecordsPath;
+
+        public static readonly TimeSpan AnimationDuration = TimeSpan.FromSeconds(0.5);
     }
 }

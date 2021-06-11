@@ -111,12 +111,8 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
-            Config.Instance.BaseLayers.Clear();
+            Config.Instance.BaseLayers = BaseLayers.ToList();
 
-            foreach (var item in BaseLayers)
-            {
-                Config.Instance.BaseLayers.Add(item);
-            }
             await MapView.LoadBasemapAsync();
             Config.Instance.Save();
         }

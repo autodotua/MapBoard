@@ -1,0 +1,165 @@
+﻿<common:UserControlBase
+    x:Class="MapBoard.Main.UI.MapViewSidePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:MapBoard.Main.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    d:DesignHeight="600" d:DesignWidth="120"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <DropShadowEffect
+            x:Key="shadow" BlurRadius="8"
+            Direction="0" Opacity="1"
+            ShadowDepth="0"
+            Color="{DynamicResource SystemAltHighColor}" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Viewbox
+            x:Name="vbxRotate" Width="36"
+            Height="36" HorizontalAlignment="Right"
+            Cursor="Hand"
+            PreviewMouseDown="vbxRotate_PreviewMouseDown"
+            RenderTransformOrigin="0.5,0.5">
+            <Viewbox.RenderTransform>
+                <RotateTransform CenterX="0.5" CenterY="0.5" />
+            </Viewbox.RenderTransform>
+            <Grid RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform Angle="-45" />
+                </Grid.RenderTransform>
+                <Path Data="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z" Fill="{DynamicResource SystemControlForegroundChromeMediumBrush}" />
+                <Path Data="M434.688 568.302345L142.106483 519.273931 773.490759 229.517241 468.197517 845.364966z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+            </Grid>
+        </Viewbox>
+
+        <Border
+            x:Name="bdLayers" Grid.Row="2"
+            Width="36" Height="36"
+            HorizontalAlignment="Right"
+            Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
+            CornerRadius="2" Cursor="Hand"
+            PreviewMouseDown="bdLayers_PreviewMouseDown">
+            <Grid>
+                <Viewbox
+                    x:Name="iconLayers" Width="24"
+                    Margin="0,0,4,4">
+                    <Grid>
+                        <Path Data="M512 544c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a32.032 32.032 0 0 1 0-57.248l352-176a31.968 31.968 0 0 1 28.629334 0l352 176a32 32 0 0 1 0 57.237334l-352 176A31.893333 31.893333 0 0 1 512 544zM231.552 336L512 476.224 792.448 336 512 195.776 231.552 336z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                        <Path Data="M512 720c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a31.989333 31.989333 0 1 1 28.629334-57.237333L512 652.224l337.685333-168.842667a32 32 0 1 1 28.618667 57.237334l-352 176A31.818667 31.818667 0 0 1 512 720z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                        <Path Data="M512 896c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a31.989333 31.989333 0 0 1-14.304-42.933333 32.021333 32.021333 0 0 1 42.933334-14.314667L512 828.224l337.685333-168.842667a32.010667 32.010667 0 0 1 28.618667 57.248l-352 176A31.946667 31.946667 0 0 1 512 896z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                    </Grid>
+                </Viewbox>
+                <Grid
+                    x:Name="grdLayers" Opacity="0"
+                    Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Margin="8,8,0,0"
+                        Style="{DynamicResource SubtitleTextBlockStyle}"
+                        Text="底图图层" />
+                    <DataGrid
+                        x:Name="dgLayers" Grid.Row="2"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="True"
+                        CanUserResizeColumns="False"
+                        CanUserSortColumns="False"
+                        CellEditEnding="dgLayers_CellEditEnding"
+                        Focusable="True"
+                        HeadersVisibility="Column"
+                        ItemsSource="{Binding BaseLayers}"
+                        LostFocus="bdLayers_LostFocus"
+                        SelectionMode="Single"
+                        SelectionUnit="Cell">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="8"
+                                Binding="{Binding Index}"
+                                CanUserSort="False" Header="序号"
+                                IsReadOnly="True"
+                                SortDirection="Ascending" />
+                            <DataGridTemplateColumn Width="56" Header="启用">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox
+                                            Margin="16,-2,0,-2"
+                                            Click="CheckBox_Click" Focusable="False"
+                                            IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}"
+                                            Tag="{Binding .}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn
+                                Width="180"
+                                Binding="{Binding Name}"
+                                Header="名称" IsReadOnly="True" />
+
+                            <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Opacity, StringFormat=P0}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <Slider
+                                            Width="120" LargeChange="0.1"
+                                            Maximum="1" Minimum="0"
+                                            SmallChange="0.01"
+                                            Tag="{Binding .}"
+                                            ValueChanged="Slider_ValueChanged"
+                                            Value="{Binding Opacity, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Grid>
+        </Border>
+        <ui:SimpleStackPanel
+            Grid.Row="99" IsHitTestVisible="False"
+            Orientation="Vertical" Spacing="4">
+            <TextBlock Effect="{StaticResource shadow}">
+                <Run Text="经度：" />
+                <Run Text="{Binding Longitude, Mode=OneWay}" />
+            </TextBlock>
+            <TextBlock Effect="{StaticResource shadow}">
+                <Run Text="纬度：" />
+                <Run Text="{Binding Latitude, Mode=OneWay}" />
+            </TextBlock>
+            <TextBlock
+                Margin="0,4,0,-8"
+                HorizontalAlignment="Center"
+                Effect="{StaticResource shadow}"
+                Text="{Binding Scale}" />
+            <Canvas Width="120" Height="10">
+                <Path
+                    Data="M 0,0 0,10 120,10 120,0  "
+                    Effect="{StaticResource shadow}"
+                    Stroke="{DynamicResource SystemControlBackgroundBaseHighBrush}"
+                    StrokeThickness="3" />
+            </Canvas>
+        </ui:SimpleStackPanel>
+    </Grid>
+</common:UserControlBase>

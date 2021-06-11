@@ -23,11 +23,13 @@ namespace MapBoard.Common.UI
             {
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers.Where(p => p.Enable))
+                foreach (var item in Config.Instance.BaseLayers)
                 {
                     try
                     {
-                        BaseLayerHelper.AddLayer(basemap, item);
+                        var layer = BaseLayerHelper.AddLayer(basemap, item);
+                        layer.Id = item.TempID.ToString();
+                        layer.IsVisible = item.Enable;
                     }
                     catch (Exception ex)
                     {

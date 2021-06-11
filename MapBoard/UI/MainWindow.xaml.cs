@@ -7,7 +7,6 @@ using MapBoard.Common;
 using MapBoard.Main.IO;
 using MapBoard.Main.Model;
 using MapBoard.Main.UI.Bar;
-using MapBoard.Main.UI.Component;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
@@ -68,6 +67,7 @@ namespace MapBoard.Main.UI
         public MainWindow()
         {
             InitializeComponent();
+            mapInfo.Initialize(arcMap);
         }
 
         /// <summary>
@@ -157,10 +157,6 @@ namespace MapBoard.Main.UI
             arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
-
-            //为图层列表提供拖动改变次序支持
-            var lvwHelper = new LayerListViewHelper(dataGrid);
-            lvwHelper.EnableDragAndDropItem();
 
             arcMap.Layers.PropertyChanged += (p1, p2) =>
             {
@@ -335,10 +331,7 @@ namespace MapBoard.Main.UI
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (IsLoaded && arcMap.IsMouseOver)
-            {
-                mapInfo.Update(arcMap, e.GetPosition(arcMap));
-            }
+        
         }
 
         /// <summary>
@@ -348,10 +341,6 @@ namespace MapBoard.Main.UI
         /// <param name="e"></param>
         private void ArcMap_ViewpointChanged(object sender, EventArgs e)
         {
-            if (IsLoaded)
-            {
-                mapInfo.Update(arcMap, null);
-            }
         }
 
         #endregion 基本方法

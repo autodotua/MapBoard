@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.Bar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
-    xmlns:component="clr-namespace:MapBoard.Main.UI.Component"
     xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
@@ -114,11 +113,10 @@
                         PreviewDrop="ArcMap_PreviewDrop"
                         ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
-                <component:MapViewInfoPanel
-                    x:Name="mapInfo" Margin="0,0,8,12"
+                <local:MapViewSidePanel
+                    x:Name="mapInfo" Margin="0,12,8,12"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    IsHitTestVisible="False" />
+                    VerticalAlignment="Stretch" />
                 <bar:EditionBar
                     x:Name="editBar"
                     HorizontalAlignment="Stretch"

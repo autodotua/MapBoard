@@ -39,11 +39,20 @@
                             <system:String>GCJ02</system:String>
                         </ComboBox>
                     </WrapPanel>
-                    <ui:SimpleStackPanel Spacing="8" Orientation="Horizontal">
-                        <TextBlock Text="数据文件位置：" VerticalAlignment="Center" />
-                        <RadioButton x:Name="rbtnAppData" Click="RbtnDataPath_Click" Content="默认位置（AppData）" />
-                        <RadioButton x:Name="rbtnHere" Click="RbtnDataPath_Click" Content="程序目录" />
-                        <RadioButton x:Name="rbtnUp" Click="RbtnDataPath_Click" Content="程序上级目录" />
+                    <ui:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock VerticalAlignment="Center" Text="数据文件位置：" />
+                        <RadioButton
+                            x:Name="rbtnAppData"
+                            Click="RbtnDataPath_Click"
+                            Content="默认位置（AppData）" />
+                        <RadioButton
+                            x:Name="rbtnHere"
+                            Click="RbtnDataPath_Click"
+                            Content="程序目录" />
+                        <RadioButton
+                            x:Name="rbtnUp"
+                            Click="RbtnDataPath_Click"
+                            Content="程序上级目录" />
                     </ui:SimpleStackPanel>
                     <TextBlock>底图设置</TextBlock>
                     <Grid Margin="4">
@@ -57,6 +66,7 @@
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="True"
+                            CanUserSortColumns="False"
                             ItemsSource="{Binding BaseLayers}"
                             SelectionMode="Single">
                             <DataGrid.Columns>
@@ -66,7 +76,7 @@
                                     IsReadOnly="True"
                                     SortDirection="Ascending" />
                                 <DataGridCheckBoxColumn Binding="{Binding Enable}" Header="启用" />
-
+                                <DataGridTextColumn Binding="{Binding Name}" Header="名称" />
                                 <DataGridTemplateColumn CanUserSort="False" Header="类型">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -103,8 +113,9 @@
                                     <DataGridTemplateColumn.CellEditingTemplate>
                                         <DataTemplate>
                                             <Slider
-                                                Width="120" Maximum="1"
-                                                Minimum="0"
+                                                Width="120" LargeChange="0.1"
+                                                Maximum="1" Minimum="0"
+                                                SmallChange="0.01"
                                                 Value="{Binding Opacity}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellEditingTemplate>

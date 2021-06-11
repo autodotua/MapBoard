@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace MapBoard.Common
 {
-    public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase
+    public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
         private static Config instance;
 
@@ -23,7 +23,13 @@ namespace MapBoard.Common
             }
         }
 
-        public List<BaseLayerInfo> BaseLayers { get; } = new List<BaseLayerInfo>();
+        private List<BaseLayerInfo> baseLayers = new List<BaseLayerInfo>();
+
+        public List<BaseLayerInfo> BaseLayers
+        {
+            get => baseLayers;
+            set => this.SetValueAndNotify(ref baseLayers, value, nameof(BaseLayers));
+        }
 
         public bool GpxHeight { get; set; } = true;
         public double GpxHeightExaggeratedMagnification { get; set; } = 5;
@@ -61,6 +67,8 @@ namespace MapBoard.Common
         }
 
         public event EventHandler ThemeChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     public class BrowseInfo : INotifyPropertyChanged
@@ -156,6 +164,10 @@ namespace MapBoard.Common
     {
         private int index;
 
+        public BaseLayerInfo()
+        {
+        }
+
         public BaseLayerInfo(BaseLayerType type, string path)
         {
             Type = type;
@@ -164,6 +176,7 @@ namespace MapBoard.Common
 
         public BaseLayerType Type { get; set; }
         public string Path { get; set; }
+        public string Name { get; set; }
 
         public int Index
         {
@@ -194,6 +207,8 @@ namespace MapBoard.Common
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Opacity)));
             }
         }
+
+        public Guid TempID { get; } = Guid.NewGuid();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
