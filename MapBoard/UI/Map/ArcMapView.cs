@@ -124,6 +124,7 @@ namespace MapBoard.Main.UI.Map
         public async Task LoadAsync()
         {
             await LoadBasemapAsync();
+            Map.MaxScale = 100;
             Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);

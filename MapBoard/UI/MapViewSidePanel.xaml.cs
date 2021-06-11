@@ -2,10 +2,13 @@
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Extension;
 using MapBoard.Common;
-using MapBoard.GpxToolbox.UI;
+using MapBoard.Common.Model;
+using MapBoard.Main.UI.Dialog;
+using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -28,9 +31,10 @@ namespace MapBoard.Main.UI
     /// </summary>
     public partial class MapViewSidePanel : UserControlBase
     {
-        private object lockObj = new object();
-        private bool canUpdate = true;
         private Timer timer;
+        private Action updateScaleAndPositionAction;
+        private Action setScaleAction;
+        private object lockObj = new object();
 
         public MapViewSidePanel()
         {
@@ -42,7 +46,16 @@ namespace MapBoard.Main.UI
              {
                  lock (lockObj)
                  {
-                     canUpdate = true;
+                     if (updateScaleAndPositionAction != null)
+                     {
+                         Dispatcher.Invoke(updateScaleAndPositionAction);
+                         updateScaleAndPositionAction = null;
+                     }
+                     if (setScaleAction != null)
+                     {
+                         Dispatcher.Invoke(setScaleAction);
+                         setScaleAction = null;
+                     }
                  }
              }), null, 100, 100);
         }
@@ -56,9 +69,9 @@ namespace MapBoard.Main.UI
         }
 
         private MapPoint location;
-        public MapView MapView { get; private set; }
+        public ArcMapView MapView { get; private set; }
 
-        public void Initialize(MapView mapView)
+        public void Initialize(ArcMapView mapView)
         {
             MapView = mapView;
             mapView.ViewpointChanged += MapView_ViewpointChanged;
@@ -84,25 +97,32 @@ namespace MapBoard.Main.UI
 
         public void UpdateScaleAndPosition(Point? position = null)
         {
-            lock (lockObj)
+            updateScaleAndPositionAction = () =>
             {
-                if (!canUpdate)
+                if (position.HasValue)
                 {
-                    return;
+                    location = MapView.ScreenToLocation(position.Value);
                 }
-                canUpdate = false;
-            }
-            if (position.HasValue)
-            {
-                location = MapView.ScreenToLocation(position.Value);
-            }
-            if (location != null)
-            {
-                location = GeometryEngine.Project(location, SpatialReferences.Wgs84) as MapPoint;
-                Latitude = location.Y.ToString("0.000000");
-                Longitude = location.X.ToString("0.000000");
-                Scale = (MapView.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
-            }
+                if (location != null)
+                {
+                    location = GeometryEngine.Project(location, SpatialReferences.Wgs84) as MapPoint;
+                    Latitude = location.Y.ToString("0.000000");
+                    Longitude = location.X.ToString("0.000000");
+                    Scale = (MapView.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
+                }
+                var level = 5 * (20 + Math.Log(MapView.Map.MaxScale / MapView.MapScale, 2));
+                if (level < 0)
+                {
+                    level = 0;
+                }
+                ScaleLevel = level.ToString("0") + "%";
+
+                if (!sldScale.IsMouseOver)
+                {
+                    mapScalePercent = level;
+                    this.Notify(nameof(MapScalePercent));
+                }
+            };
         }
 
         private string latitude;
@@ -129,6 +149,31 @@ namespace MapBoard.Main.UI
             private set => this.SetValueAndNotify(ref scale, value, nameof(Scale));
         }
 
+        private string scaleLevel;
+
+        public string ScaleLevel
+        {
+            get => scaleLevel;
+            private set => this.SetValueAndNotify(ref scaleLevel, value, nameof(ScaleLevel));
+        }
+
+        private double mapScalePercent = 0;
+
+        public double MapScalePercent
+        {
+            get => mapScalePercent;
+
+            set
+            {
+                if (mapScalePercent is < 0 or > 100)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+                mapScalePercent = value;
+                setScaleAction = () => MapView.SetViewpointScaleAsync(MapView.Map.MaxScale / Math.Pow(2, value / 5 - 20));
+            }
+        }
+
         private List<BaseLayerInfo> baseLayers;
 
         public List<BaseLayerInfo> BaseLayers
@@ -152,7 +197,7 @@ namespace MapBoard.Main.UI
             isLayerPanelOpened = true;
             DoubleAnimation aniWidth = new DoubleAnimation(360, Parameters.AnimationDuration)
             { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniHeight = new DoubleAnimation(180, Parameters.AnimationDuration)
+            DoubleAnimation aniHeight = new DoubleAnimation(360, Parameters.AnimationDuration)
             { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
             DoubleAnimation aniIconOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
             { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
@@ -163,6 +208,7 @@ namespace MapBoard.Main.UI
             iconLayers.BeginAnimation(OpacityProperty, aniIconOpacity);
             grdLayers.Visibility = Visibility.Visible;
             grdLayers.BeginAnimation(OpacityProperty, aniDgOpacity);
+            bdLayers.Cursor = Cursors.Arrow;
             dgLayers.Focus();
         }
 
@@ -185,6 +231,7 @@ namespace MapBoard.Main.UI
             bdLayers.BeginAnimation(HeightProperty, aniHeight);
             iconLayers.BeginAnimation(OpacityProperty, aniIconOpacity);
             grdLayers.BeginAnimation(OpacityProperty, aniDgOpacity);
+            bdLayers.Cursor = Cursors.Hand;
         }
 
         private void bdLayers_LostFocus(object sender, RoutedEventArgs e)
@@ -228,6 +275,53 @@ namespace MapBoard.Main.UI
         private void vbxRotate_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             MapView.SetViewpointRotationAsync(0);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            CloseLayersPanel();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            CloseLayersPanel();
+            new SettingDialog(MapView) { Owner = Window.GetWindow(this) }.ShowDialog();
+        }
+
+        private void bdScale_MouseEnter(object sender, MouseEventArgs e)
+        {
+            OpenScalePanel();
+        }
+
+        private void OpenScalePanel()
+        {
+            DoubleAnimation aniHeight = new DoubleAnimation(240, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniTbkOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniSliderOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            bdScale.BeginAnimation(HeightProperty, aniHeight);
+            tbkScale.BeginAnimation(OpacityProperty, aniTbkOpacity);
+            grdScale.BeginAnimation(OpacityProperty, aniSliderOpacity);
+        }
+
+        private void bdScale_MouseLeave(object sender, MouseEventArgs e)
+        {
+            CloseScalePanel();
+        }
+
+        private void CloseScalePanel()
+        {
+            DoubleAnimation aniHeight = new DoubleAnimation(36, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniTbkOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniSliderOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            bdScale.BeginAnimation(HeightProperty, aniHeight);
+            tbkScale.BeginAnimation(OpacityProperty, aniTbkOpacity);
+            grdScale.BeginAnimation(OpacityProperty, aniSliderOpacity);
         }
     }
 }

@@ -15,6 +15,8 @@
             Direction="0" Opacity="1"
             ShadowDepth="0"
             Color="{DynamicResource SystemAltHighColor}" />
+
+        <SolidColorBrush x:Key="backgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -26,35 +28,39 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Viewbox
-            x:Name="vbxRotate" Width="36"
-            Height="36" HorizontalAlignment="Right"
-            Cursor="Hand"
-            PreviewMouseDown="vbxRotate_PreviewMouseDown"
-            RenderTransformOrigin="0.5,0.5">
-            <Viewbox.RenderTransform>
-                <RotateTransform CenterX="0.5" CenterY="0.5" />
-            </Viewbox.RenderTransform>
-            <Grid RenderTransformOrigin="0.5,0.5">
-                <Grid.RenderTransform>
-                    <RotateTransform Angle="-45" />
-                </Grid.RenderTransform>
-                <Path Data="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z" Fill="{DynamicResource SystemControlForegroundChromeMediumBrush}" />
-                <Path Data="M434.688 568.302345L142.106483 519.273931 773.490759 229.517241 468.197517 845.364966z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-            </Grid>
-        </Viewbox>
-
+        <Border
+            Width="36" Height="36"
+            HorizontalAlignment="Right"
+            Background="{DynamicResource backgroundBrush}"
+            CornerRadius="2" Cursor="Hand"
+            ToolTip="点击返回正北朝上">
+            <Viewbox
+                x:Name="vbxRotate" Cursor="Hand"
+                PreviewMouseDown="vbxRotate_PreviewMouseDown"
+                RenderTransformOrigin="0.5,0.5">
+                <Viewbox.RenderTransform>
+                    <RotateTransform CenterX="0.5" CenterY="0.5" />
+                </Viewbox.RenderTransform>
+                <Grid RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <RotateTransform Angle="-45" />
+                    </Grid.RenderTransform>
+                    <Path Data="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z" Fill="Transparent" />
+                    <Path Data="M434.688 568.302345L142.106483 519.273931 773.490759 229.517241 468.197517 845.364966z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                </Grid>
+            </Viewbox>
+        </Border>
         <Border
             x:Name="bdLayers" Grid.Row="2"
             Width="36" Height="36"
             HorizontalAlignment="Right"
-            Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
+            Background="{DynamicResource backgroundBrush}"
             CornerRadius="2" Cursor="Hand"
             PreviewMouseDown="bdLayers_PreviewMouseDown">
             <Grid>
                 <Viewbox
                     x:Name="iconLayers" Width="24"
-                    Margin="0,0,4,4">
+                    Margin="0,0,4,4" ToolTip="点击打开图层列表">
                     <Grid>
                         <Path Data="M512 544c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a32.032 32.032 0 0 1 0-57.248l352-176a31.968 31.968 0 0 1 28.629334 0l352 176a32 32 0 0 1 0 57.237334l-352 176A31.893333 31.893333 0 0 1 512 544zM231.552 336L512 476.224 792.448 336 512 195.776 231.552 336z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
                         <Path Data="M512 720c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a31.989333 31.989333 0 1 1 28.629334-57.237333L512 652.224l337.685333-168.842667a32 32 0 1 1 28.618667 57.237334l-352 176A31.818667 31.818667 0 0 1 512 720z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
@@ -68,6 +74,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock
                         Margin="8,8,0,0"
@@ -82,7 +90,7 @@
                         CanUserSortColumns="False"
                         CellEditEnding="dgLayers_CellEditEnding"
                         Focusable="True"
-                        HeadersVisibility="Column"
+                        HeadersVisibility="Column" Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
                         ItemsSource="{Binding BaseLayers}"
                         LostFocus="bdLayers_LostFocus"
                         SelectionMode="Single"
@@ -134,11 +142,70 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+                    <Grid Grid.Row="4" Margin="8,0,8,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="Button_Click_1" Content="设置" />
+                        <Button
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="Button_Click" Content="关闭" />
+                    </Grid>
                 </Grid>
             </Grid>
         </Border>
+
+        <Border
+            x:Name="bdScale" Grid.Row="4"
+            Width="36" Height="36"
+            HorizontalAlignment="Right"
+            Background="{DynamicResource backgroundBrush}"
+            CornerRadius="2"
+            MouseEnter="bdScale_MouseEnter"
+            MouseLeave="bdScale_MouseLeave">
+            <Grid>
+                <TextBlock
+                    x:Name="tbkScale"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    RenderTransformOrigin="0.5,0.5"
+                    Text="{Binding ScaleLevel}">
+                    <TextBlock.RenderTransform>
+                        <ScaleTransform ScaleX="0.9" ScaleY="1.5" />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                <Grid
+                    x:Name="grdScale" Margin="0,8"
+                    Background="Transparent" Opacity="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        RenderTransformOrigin="0.5,0.5"
+                        Text="{Binding ScaleLevel}" />
+                    <Slider
+                        x:Name="sldScale" Grid.Row="2"
+                        FocusVisualStyle="{x:Null}"
+                        Maximum="100" Minimum="0"
+                        Orientation="Vertical"
+                        Value="{Binding MapScalePercent}" />
+                </Grid>
+            </Grid>
+        </Border>
+
         <ui:SimpleStackPanel
-            Grid.Row="99" IsHitTestVisible="False"
+            Grid.Row="99"
+            HorizontalAlignment="Right"
+            IsHitTestVisible="False"
             Orientation="Vertical" Spacing="4">
             <TextBlock Effect="{StaticResource shadow}">
                 <Run Text="经度：" />

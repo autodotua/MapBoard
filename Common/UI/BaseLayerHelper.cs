@@ -1,5 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
+using MapBoard.Common.Model;
 using System;
 
 namespace MapBoard.Common.UI

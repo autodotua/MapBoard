@@ -1,4 +1,5 @@
 ﻿using FzLib.Extension;
+using MapBoard.Common.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -158,76 +159,5 @@ namespace MapBoard.Common
                 this.Notify(nameof(Angle));
             }
         }
-    }
-
-    public class BaseLayerInfo : INotifyPropertyChanged, ICloneable
-    {
-        private int index;
-
-        public BaseLayerInfo()
-        {
-        }
-
-        public BaseLayerInfo(BaseLayerType type, string path)
-        {
-            Type = type;
-            Path = path ?? throw new ArgumentNullException(nameof(path));
-        }
-
-        public BaseLayerType Type { get; set; }
-        public string Path { get; set; }
-        public string Name { get; set; }
-
-        public int Index
-        {
-            get => index;
-            set => this.SetValueAndNotify(ref index, value, nameof(Index));
-        }
-
-        private bool enable = true;
-
-        public bool Enable
-        {
-            get => enable;
-            set
-            {
-                enable = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enable)));
-            }
-        }
-
-        private double opacity = 1;
-
-        public double Opacity
-        {
-            get => opacity;
-            set
-            {
-                opacity = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Opacity)));
-            }
-        }
-
-        public Guid TempID { get; } = Guid.NewGuid();
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public BaseLayerInfo Clone()
-        {
-            return MemberwiseClone() as BaseLayerInfo;
-        }
-
-        object ICloneable.Clone()
-        {
-            return MemberwiseClone();
-        }
-    }
-
-    public enum BaseLayerType
-    {
-        WebTiledLayer,
-        RasterLayer,
-        ShapefileLayer,
-        TpkLayer
     }
 }
