@@ -18,11 +18,13 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\Generation\Debug\</OutputPath>
     <LangVersion>latest</LangVersion>
     <NoWarn>CS0067;CS4014;CS0168;CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\Generation\Release\</OutputPath>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -64,6 +66,7 @@
     <ProjectReference Include="..\EGIS.ShapeFileLib\EGIS.ShapeFileLib.csproj" />
     <ProjectReference Include="..\GpxToolbox\MapBoard.GpxToolbox.csproj" />
     <ProjectReference Include="..\Common\MapBoard.Common.csproj" />
+    <ProjectReference Include="..\MapBoard.Extension\MapBoard.Extension.csproj" />
     <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj" />
     <ProjectReference Include="..\TileDownloaderSplicer\MapBoard.TileDownloaderSplicer.csproj" />
   </ItemGroup>

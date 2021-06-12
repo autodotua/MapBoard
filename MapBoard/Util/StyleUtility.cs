@@ -80,6 +80,14 @@ namespace MapBoard.Main.Util
         private static void ApplyLabel(this MapLayerInfo layer)
         {
             LabelInfo label = layer.Label;
+
+            layer.Layer.LabelDefinitions.Clear();
+            layer.Layer.LabelDefinitions.Add(label.GetLabelDefinition());
+            layer.Layer.LabelsEnabled = true;
+        }
+
+        public static LabelDefinition GetLabelDefinition(this LabelInfo label)
+        {
             var exp = new ArcadeLabelExpression(label.GetExpression());
             TextSymbol symbol = new TextSymbol()
             {
@@ -103,9 +111,7 @@ namespace MapBoard.Main.Util
                 FeatureInteriorOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
                 FeatureBoundaryOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
             };
-            layer.Layer.LabelDefinitions.Clear();
-            layer.Layer.LabelDefinitions.Add(labelDefinition);
-            layer.Layer.LabelsEnabled = true;
+            return labelDefinition;
         }
 
         private static string GetExpression(this LabelInfo label)

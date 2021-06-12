@@ -66,6 +66,7 @@ namespace MapBoard.Main.UI
         /// </summary>
         public MainWindow()
         {
+            PoiUtility.LoadExtensions();
             InitializeComponent();
             mapInfo.Initialize(arcMap);
         }
@@ -331,7 +332,6 @@ namespace MapBoard.Main.UI
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-        
         }
 
         /// <summary>

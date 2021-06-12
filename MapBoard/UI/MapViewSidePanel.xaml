@@ -6,7 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.Main.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:util="clr-namespace:MapBoard.Main.Util"
     d:DesignHeight="600" d:DesignWidth="120"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -25,6 +27,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="16" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -32,11 +38,11 @@
             Width="36" Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="2" Cursor="Hand"
+            CornerRadius="4" Cursor="Hand"
             ToolTip="点击返回正北朝上">
             <Viewbox
                 x:Name="vbxRotate" Cursor="Hand"
-                PreviewMouseDown="vbxRotate_PreviewMouseDown"
+                PreviewMouseDown="RotatePanel_PreviewMouseDown"
                 RenderTransformOrigin="0.5,0.5">
                 <Viewbox.RenderTransform>
                     <RotateTransform CenterX="0.5" CenterY="0.5" />
@@ -55,8 +61,8 @@
             Width="36" Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="2" Cursor="Hand"
-            PreviewMouseDown="bdLayers_PreviewMouseDown">
+            CornerRadius="4" Cursor="Hand"
+            PreviewMouseDown="LayersPanel_PreviewMouseDown">
             <Grid>
                 <Viewbox
                     x:Name="iconLayers" Width="24"
@@ -84,15 +90,16 @@
                     <DataGrid
                         x:Name="dgLayers" Grid.Row="2"
                         AutoGenerateColumns="False"
+                        Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
                         CanUserAddRows="False"
                         CanUserDeleteRows="True"
                         CanUserResizeColumns="False"
                         CanUserSortColumns="False"
-                        CellEditEnding="dgLayers_CellEditEnding"
+                        CellEditEnding="LayersDataGrid_CellEditEnding"
                         Focusable="True"
-                        HeadersVisibility="Column" Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
+                        HeadersVisibility="Column"
                         ItemsSource="{Binding BaseLayers}"
-                        LostFocus="bdLayers_LostFocus"
+                        LostFocus="LayersPanel_LostFocus"
                         SelectionMode="Single"
                         SelectionUnit="Cell">
                         <DataGrid.Columns>
@@ -150,11 +157,13 @@
                         </Grid.ColumnDefinitions>
                         <Button
                             HorizontalAlignment="Stretch"
-                            Click="Button_Click_1" Content="设置" />
+                            Click="OpenSettingDialogButton_Click"
+                            Content="设置" />
                         <Button
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
-                            Click="Button_Click" Content="关闭" />
+                            Click="CloseLayerPanelButton_Click"
+                            Content="关闭" />
                     </Grid>
                 </Grid>
             </Grid>
@@ -165,9 +174,9 @@
             Width="36" Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="2"
-            MouseEnter="bdScale_MouseEnter"
-            MouseLeave="bdScale_MouseLeave">
+            CornerRadius="4"
+            MouseEnter="ScaleButton_MouseEnter"
+            MouseLeave="PanelScale_MouseLeave">
             <Grid>
                 <TextBlock
                     x:Name="tbkScale"
@@ -199,6 +208,137 @@
                         Orientation="Vertical"
                         Value="{Binding MapScalePercent}" />
                 </Grid>
+            </Grid>
+        </Border>
+
+        <Border
+            x:Name="bdSearch" Grid.Row="6"
+            Width="36" Height="36"
+            HorizontalAlignment="Right"
+            Background="{DynamicResource backgroundBrush}"
+            CornerRadius="4" Cursor="Hand"
+            PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown">
+            <Viewbox
+                Width="24" Height="24"
+                Margin="0,0,2,2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Path Data="M916.33 859.76L678.51 621.94A318.92 318.92 0 0 0 768 400c0-176.73-143.27-320-320-320S128 223.27 128 400s143.27 320 320 320a318.48 318.48 0 0 0 167.88-47.55l243.88 243.88a40 40 0 1 0 56.57-56.57zM192 400c0-141.38 114.62-256 256-256s256 114.62 256 256-114.62 256-256 256-256-114.62-256-256z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+            </Viewbox>
+        </Border>
+        <Border
+            x:Name="bdSearchPanel" Grid.Row="8"
+            Width="320" Height="0"
+            Padding="8" HorizontalAlignment="Right"
+            Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
+            CornerRadius="4" Opacity="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="96" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox
+                        Height="32"
+                        HorizontalAlignment="Stretch"
+                        DisplayMemberPath="Name"
+                        ItemsSource="{Binding Source={x:Static util:PoiUtility.PoiEngines}}"
+                        SelectedItem="{Binding SelectedPoiEngine}" />
+                    <TextBox
+                        Grid.Column="2"
+                        VerticalContentAlignment="Center"
+                        PreviewKeyDown="TextBox_PreviewKeyDown"
+                        Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button
+                        x:Name="btnSearch" Grid.Column="4"
+                        Click="SearchButton_Click" Content="搜索" />
+                </Grid>
+                <ui:SimpleStackPanel
+                    Grid.Row="2" Orientation="Horizontal"
+                    Spacing="12">
+
+                    <RadioButton
+                        x:Name="rbtnAround" Margin="0,0,-72,0"
+                        VerticalAlignment="Center" Content="周边" />
+                    <ComboBox
+                        Width="88" Padding="0"
+                        VerticalAlignment="Center"
+                        IsEditable="True"
+                        Text="{Binding Radius}">
+                        <sys:Int32>100</sys:Int32>
+                        <sys:Int32>500</sys:Int32>
+                        <sys:Int32>1000</sys:Int32>
+                        <sys:Int32>5000</sys:Int32>
+                        <sys:Int32>10000</sys:Int32>
+                        <sys:Int32>20000</sys:Int32>
+                        <sys:Int32>50000</sys:Int32>
+                    </ComboBox>
+                    <TextBlock VerticalAlignment="Center">米</TextBlock>
+                    <RadioButton x:Name="rbtnRange" IsChecked="True">视图范围</RadioButton>
+                </ui:SimpleStackPanel>
+                <ScrollViewer
+                    Grid.Row="4" Grid.ColumnSpan="99"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding SearchResult}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="6,6,16,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="4" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock FontWeight="Bold" Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="2 " Text="{Binding Distance, StringFormat={}{0:0m}}" />
+                                    <TextBlock
+                                        Grid.Row="2 " Grid.ColumnSpan="3"
+                                        Text="{Binding Address}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <Button
+                                        Grid.RowSpan="99" Grid.Column="99"
+                                        Margin="0,-8" Padding="8,8"
+                                        Background="Transparent"
+                                        Click="Button_Click"
+                                        Tag="{Binding .}">
+                                        <ui:FontIcon Glyph="&#xE81D;" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Button
+                    Grid.Row="6" HorizontalAlignment="Right"
+                    Click="ClearSearchButton_Click"
+                    Content="清除" />
+                <TextBlock
+                    Grid.Row="6" HorizontalAlignment="Left"
+                    VerticalAlignment="Center">
+                    <Run>共</Run>
+                    <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />
+                    <Run>条搜索结果</Run>
+                </TextBlock>
             </Grid>
         </Border>
 

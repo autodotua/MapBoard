@@ -71,23 +71,20 @@ namespace MapBoard.Common
         }
 
         /// <summary>
-        /// 对一个要素进行坐标系统的转换，无视其内置的坐标系统的描述
+        /// 对一个图形进行坐标系统的转换，无视其内置的坐标系统的描述
         /// </summary>
         /// <param name="feature"></param>
-        public void Transformate(Feature feature)
+
+        public Geometry Transformate(Geometry geometry)
         {
-            Geometry geometry = feature.Geometry;
-            Geometry newGeometry = null;
-            switch (feature.FeatureTable.GeometryType)
+            switch (geometry.GeometryType)
             {
                 case GeometryType.Multipoint:
                     Multipoint multipoint = geometry as Multipoint;
-                    newGeometry = new Multipoint(multipoint.Points.Select(p => Transformate(p)));
-                    break;
+                    return new Multipoint(multipoint.Points.Select(p => Transformate(p)));
 
                 case GeometryType.Point:
-                    newGeometry = Transformate(geometry as MapPoint);
-                    break;
+                    return Transformate(geometry as MapPoint);
 
                 case GeometryType.Polygon:
                     Polygon polygon = geometry as Polygon;
@@ -97,8 +94,7 @@ namespace MapBoard.Common
                         IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p));
                         newPolygonParts.Add(newPart);
                     }
-                    newGeometry = new Polygon(newPolygonParts);
-                    break;
+                    return new Polygon(newPolygonParts);
 
                 case GeometryType.Polyline:
                     Polyline polyline = geometry as Polyline;
@@ -108,13 +104,19 @@ namespace MapBoard.Common
                         IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p));
                         newPolylineParts.Add(newPart);
                     }
-                    newGeometry = new Polyline(newPolylineParts);
-                    break;
+                    return new Polyline(newPolylineParts);
+
+                case GeometryType.Envelope:
+                    Envelope rect = geometry as Envelope;
+                    MapPoint leftTop = new MapPoint(rect.XMin, rect.YMax, rect.SpatialReference);
+                    MapPoint rightBottom = new MapPoint(rect.XMax, rect.YMin, rect.SpatialReference);
+                    MapPoint newLeftTop = Transformate(leftTop);
+                    MapPoint newRightBottom = Transformate(rightBottom);
+                    return new Envelope(newLeftTop, newRightBottom);
 
                 default:
                     throw new Exception("未知类型");
             }
-            feature.Geometry = newGeometry;
         }
 
         /// <summary>

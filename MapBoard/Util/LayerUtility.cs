@@ -115,7 +115,7 @@ namespace MapBoard.Main.Util
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
-            if (layer.TimeExtent!=null&&layer.TimeExtent.IsEnable)
+            if (layer.TimeExtent != null && layer.TimeExtent.IsEnable)
             {
                 await layer.SetTimeExtentAsync();
             }
@@ -143,6 +143,7 @@ namespace MapBoard.Main.Util
             }
             await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
+
         /// <summary>
         /// 根据时间范围，控制每个要素的可见性。
         /// </summary>
@@ -206,7 +207,7 @@ namespace MapBoard.Main.Util
             foreach (var feature in features)
             {
                 newFeatures.Add(new UpdatedFeature(feature));
-                coordinate.Transformate(feature);
+                feature.Geometry = coordinate.Transformate(feature.Geometry);
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }

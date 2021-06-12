@@ -39,6 +39,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EGIS.Projections", "EGIS.Pr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EGIS", "EGIS", "{78B828B7-73EE-48AA-A61D-CE5A1469F6E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Extension.AMap", "MapBoard.Extension.AMap\MapBoard.Extension.AMap.csproj", "{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extension", "Extension", "{B23DB5AB-F196-41BE-BFE9-9EB866D37D95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Extension", "MapBoard.Extension\MapBoard.Extension.csproj", "{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +83,14 @@ Global
 		{0BA966E0-99DA-4F9F-8598-42A8EC30BB33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BA966E0-99DA-4F9F-8598-42A8EC30BB33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BA966E0-99DA-4F9F-8598-42A8EC30BB33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -84,6 +98,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EAB9F034-409B-4DCD-9375-4FF08D0E05AC} = {78B828B7-73EE-48AA-A61D-CE5A1469F6E7}
 		{0BA966E0-99DA-4F9F-8598-42A8EC30BB33} = {78B828B7-73EE-48AA-A61D-CE5A1469F6E7}
+		{B41ABD5F-F590-40E1-BA8E-1B1B2022E55A} = {B23DB5AB-F196-41BE-BFE9-9EB866D37D95}
+		{D94F4B33-78A5-4F0B-B18C-E6FC5E2F4372} = {B23DB5AB-F196-41BE-BFE9-9EB866D37D95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8397796-2201-4232-B77E-520F2EA99383}
