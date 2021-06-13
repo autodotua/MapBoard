@@ -414,22 +414,16 @@ namespace MapBoard.Main.UI
                 if (rbtnAround.IsChecked.Value)
                 {
                     var point = GeometryEngine.Project(MapView.GetCurrentViewpoint(ViewpointType.CenterAndScale).TargetGeometry, SpatialReferences.Wgs84) as MapPoint;
-                    if (SelectedPoiEngine.IsGcj02)
-                    {
-                        CoordinateTransformation wgs2gcj = new CoordinateTransformation("WGS84", "GCJ02");
-                        point = wgs2gcj.Transformate(point);
-                    }
+                    CoordinateSystem target = SelectedPoiEngine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+                    point = CoordinateTransformation.Transformate(point, Config.Instance.BasemapCoordinateSystem, target);
                     SearchResult = await SelectedPoiEngine.SearchAsync(Keyword, point, Radius);
                 }
                 //视图范围搜索
                 else
                 {
                     var rect = GeometryEngine.Project(MapView.GetCurrentViewpoint(ViewpointType.BoundingGeometry).TargetGeometry, SpatialReferences.Wgs84) as Envelope;
-                    if (SelectedPoiEngine.IsGcj02)
-                    {
-                        CoordinateTransformation wgs2gcj = new CoordinateTransformation("WGS84", "GCJ02");
-                        rect = wgs2gcj.Transformate(rect) as Envelope;
-                    }
+                    CoordinateSystem target = SelectedPoiEngine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+                    rect = CoordinateTransformation.Transformate(rect, Config.Instance.BasemapCoordinateSystem, target) as Envelope;
                     SearchResult = await SelectedPoiEngine.SearchAsync(Keyword, rect);
                 }
 

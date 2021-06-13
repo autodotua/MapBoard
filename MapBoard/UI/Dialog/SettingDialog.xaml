@@ -7,6 +7,7 @@
     xmlns:local="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="设置" Width="600"
     Height="540"
@@ -33,11 +34,7 @@
                             <ComboBoxItem>亮色</ComboBoxItem>
                             <ComboBoxItem>暗色</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox ui:ControlHelper.Header="底图坐标系" SelectedItem="{Binding Config.BasemapCoordinateSystem}">
-                            <system:String>WGS84</system:String>
-                            <system:String>CGCS2000</system:String>
-                            <system:String>GCJ02</system:String>
-                        </ComboBox>
+                        <ComboBox ui:ControlHelper.Header="底图坐标系" SelectedItem="{Binding Config.BasemapCoordinateSystem}" x:Name="cbbCoords" />
                     </WrapPanel>
                     <ui:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock VerticalAlignment="Center" Text="数据文件位置：" />

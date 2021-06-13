@@ -14,21 +14,25 @@ namespace MapBoard.Main.UI.Dialog
             InitializeComponent();
         }
 
-        /// <summary>
-        /// 支持的坐标系
-        /// </summary>
-        public string[] CoordinateSystems => CoordinateTransformation.CoordinateSystems;
+        public bool OK { get; private set; } = false;
+        public CoordinateSystem Source { get; private set; }
 
-        public string SelectedCoordinateSystem1 { get; set; } = "GCJ02";
-        public string SelectedCoordinateSystem2 { get; set; } = "WGS84";
+        public CoordinateSystem Target { get; private set; }
 
-        private void ComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void GCJ2WGSButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (!IsLoaded)
-            {
-                return;
-            }
-            IsPrimaryButtonEnabled = SelectedCoordinateSystem1 != SelectedCoordinateSystem2;
+            OK = true;
+            Source = CoordinateSystem.GCJ02;
+            Target = CoordinateSystem.WGS84;
+            Hide();
+        }
+
+        private void WGS2GCJButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OK = true;
+            Source = CoordinateSystem.WGS84;
+            Target = CoordinateSystem.GCJ02;
+            Hide();
         }
     }
 }

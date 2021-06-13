@@ -37,6 +37,7 @@ namespace MapBoard.Main.UI.Dialog
             ResetIndex();
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
+            cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
             new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
         }
 

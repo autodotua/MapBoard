@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LibGpx = FzLib.Geography.IO.Gpx.Gpx;
 using MapBoard.Main.UI.Map.Model;
+using static MapBoard.Common.CoordinateSystem;
 
 namespace MapBoard.Main.IO
 {
@@ -35,13 +36,12 @@ namespace MapBoard.Main.IO
             List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
             {
-                CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
 
                 if (type == GpxImportType.Point)
                 {
                     foreach (var point in track.Points)
                     {
-                        MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
+                        MapPoint TransformateToMapPoint = CoordinateTransformation.TransformateToMapPoint(point, WGS84, Config.Instance.BasemapCoordinateSystem);
                         Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         newFeatures.Add(feature);
@@ -52,7 +52,7 @@ namespace MapBoard.Main.IO
                     List<MapPoint> points = new List<MapPoint>();
                     foreach (var point in track.Points)
                     {
-                        points.Add(transformation.TransformateToMapPoint(point));
+                        points.Add(CoordinateTransformation.TransformateToMapPoint(point, WGS84, Config.Instance.BasemapCoordinateSystem));
                     }
                     Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points);
@@ -87,7 +87,6 @@ namespace MapBoard.Main.IO
             string content = File.ReadAllText(path);
 
             var gpx = LibGpx.FromString(content);
-            CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)
@@ -97,7 +96,7 @@ namespace MapBoard.Main.IO
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
                     {
-                        MapPoint TransformateToMapPoint = transformation.TransformateToMapPoint(point);
+                        MapPoint TransformateToMapPoint = CoordinateTransformation.TransformateToMapPoint(point, WGS84, Config.Instance.BasemapCoordinateSystem);
                         Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
@@ -111,9 +110,9 @@ namespace MapBoard.Main.IO
                 }
                 else if (layer.GeometryType == GeometryType.Polyline)
                 {
-                    var points = track.Points.Select(p => transformation.TransformateToMapPoint(p));
+                    var points = track.Points.Select(p => CoordinateTransformation.TransformateToMapPoint(p, WGS84, Config.Instance.BasemapCoordinateSystem));
                     Feature feature = layer.CreateFeature();
-                    feature.Geometry = new Polyline(points, transformation.ToSpatialReference);
+                    feature.Geometry = new Polyline(points, SpatialReferences.Wgs84);
                     importedFeatures.Add(feature);
                 }
                 else

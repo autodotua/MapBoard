@@ -99,12 +99,13 @@ namespace MapBoard.Main.Util
             }
             string json = await GetAsync(url);
             var pois = pe.ParsePois(json);
-            if (pe.IsGcj02)
+            CoordinateSystem source = pe.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+
+            if (source != Config.Instance.BasemapCoordinateSystem)
             {
-                CoordinateTransformation gcj2wgs = new CoordinateTransformation("GCJ02", "WGS84");
                 foreach (var poi in pois)
                 {
-                    var wgs = gcj2wgs.Transformate(new MapPoint(poi.Longitude, poi.Latitude, SpatialReferences.Wgs84));
+                    var wgs = CoordinateTransformation.Transformate(new MapPoint(poi.Longitude, poi.Latitude, SpatialReferences.Wgs84), source, Config.Instance.BasemapCoordinateSystem);
                     poi.Longitude = wgs.X;
                     poi.Latitude = wgs.Y;
                 }

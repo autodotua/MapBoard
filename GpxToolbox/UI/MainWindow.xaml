@@ -326,7 +326,7 @@
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2" />-->
         </Grid>
         <Expander
-            Grid.Column="2" Padding="0"
+            Grid.Column="2" Padding="8,0,8,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"

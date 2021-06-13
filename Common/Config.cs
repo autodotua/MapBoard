@@ -42,7 +42,7 @@ namespace MapBoard.Common
             base.Save();
         }
 
-        public string BasemapCoordinateSystem { get; set; } = "WGS84";
+        public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;
         public bool HideWatermark { get; set; } = true;
         public static int WatermarkHeight = 72;
         public bool RemainLabel { get; set; } = false;

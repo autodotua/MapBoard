@@ -392,10 +392,9 @@ namespace MapBoard.GpxToolbox.UI
             foreach (var p in trackInfo.Track.Points)
             {
                 GeoPoint newP = p;
-                if (Config.Instance.BasemapCoordinateSystem != "WGS84")
+                if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
                 {
-                    CoordinateTransformation transformation = new CoordinateTransformation("WGS84", Config.Instance.BasemapCoordinateSystem);
-                    transformation.TransformateSelf(newP);
+                    CoordinateTransformation.TransformateSelf(newP, CoordinateSystem.WGS84, Config.Instance.BasemapCoordinateSystem);
                 }
 
                 ArcMapPoint point = new ArcMapPoint(newP.X, newP.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);

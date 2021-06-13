@@ -11,87 +11,30 @@ namespace MapBoard.Common
     /// <summary>
     /// 坐标转换类
     /// </summary>
-    public class CoordinateTransformation
+    public static class CoordinateTransformation
     {
-        /// <summary>
-        /// 支持的地理坐标系统
-        /// </summary>
-        public static readonly string[] CoordinateSystems = new string[]
-        {
-            "WGS84",
-            "CGCS2000",
-            "GCJ02"
-        };
-
-        /// <summary>
-        /// CGCS2000的SpatialReference
-        /// </summary>
-        public static readonly SpatialReference Cgcs2000 = new SpatialReference(4490);
-
-        /// <summary>
-        /// WGS84的SpatialReference
-        /// </summary>
-        public static readonly SpatialReference Wgs84 = SpatialReferences.Wgs84;
-
-        public CoordinateTransformation(string from, string to)
-        {
-            From = from ?? throw new ArgumentNullException(nameof(from));
-            To = to ?? throw new ArgumentNullException(nameof(to));
-        }
-
-        /// <summary>
-        /// 转换前的坐标系统
-        /// </summary>
-        public string From { get; private set; }
-
-        /// <summary>
-        /// 转换后的坐标系统
-        /// </summary>
-        public string To { get; private set; }
-
-        public SpatialReference ToSpatialReference
-        {
-            get
-            {
-                switch (To)
-                {
-                    case "WGS84":
-                        return Wgs84;
-
-                    case "GCJ02":
-                        return Wgs84;
-
-                    case "CGCS2000":
-                        return Cgcs2000;
-
-                    default:
-                        throw new Exception("未知坐标系");
-                }
-            }
-        }
-
         /// <summary>
         /// 对一个图形进行坐标系统的转换，无视其内置的坐标系统的描述
         /// </summary>
         /// <param name="feature"></param>
 
-        public Geometry Transformate(Geometry geometry)
+        public static Geometry Transformate(Geometry geometry, CoordinateSystem source, CoordinateSystem target)
         {
             switch (geometry.GeometryType)
             {
                 case GeometryType.Multipoint:
                     Multipoint multipoint = geometry as Multipoint;
-                    return new Multipoint(multipoint.Points.Select(p => Transformate(p)));
+                    return new Multipoint(multipoint.Points.Select(p => Transformate(p, source, target)));
 
                 case GeometryType.Point:
-                    return Transformate(geometry as MapPoint);
+                    return Transformate(geometry as MapPoint, source, target);
 
                 case GeometryType.Polygon:
                     Polygon polygon = geometry as Polygon;
                     List<IEnumerable<MapPoint>> newPolygonParts = new List<IEnumerable<MapPoint>>();
                     foreach (var part in polygon.Parts)
                     {
-                        IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p));
+                        IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p, source, target));
                         newPolygonParts.Add(newPart);
                     }
                     return new Polygon(newPolygonParts);
@@ -101,7 +44,7 @@ namespace MapBoard.Common
                     List<IEnumerable<MapPoint>> newPolylineParts = new List<IEnumerable<MapPoint>>();
                     foreach (var part in polyline.Parts)
                     {
-                        IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p));
+                        IEnumerable<MapPoint> newPart = part.Points.Select(p => Transformate(p, source, target));
                         newPolylineParts.Add(newPart);
                     }
                     return new Polyline(newPolylineParts);
@@ -110,8 +53,8 @@ namespace MapBoard.Common
                     Envelope rect = geometry as Envelope;
                     MapPoint leftTop = new MapPoint(rect.XMin, rect.YMax, rect.SpatialReference);
                     MapPoint rightBottom = new MapPoint(rect.XMax, rect.YMin, rect.SpatialReference);
-                    MapPoint newLeftTop = Transformate(leftTop);
-                    MapPoint newRightBottom = Transformate(rightBottom);
+                    MapPoint newLeftTop = Transformate(leftTop, source, target);
+                    MapPoint newRightBottom = Transformate(rightBottom, source, target);
                     return new Envelope(newLeftTop, newRightBottom);
 
                 default:
@@ -124,40 +67,14 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public MapPoint Transformate(MapPoint point)
+        public static MapPoint Transformate(MapPoint point, CoordinateSystem source, CoordinateSystem target)
         {
-            MapPoint wgs84 = ToWgs84(point);
-            return FromWgs84(wgs84);
-        }
-
-        /// <summary>
-        /// 对一个点进行坐标转换
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public GeoPoint Transformate(GeoPoint point)
-        {
-            MapPoint wgs84 = GeoPointToWgs84(point);
-            return FromWgs84GeoPoint(wgs84);
-        }
-
-        /// <summary>
-        /// 对一个点进行坐标转换
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public MapPoint TransformateToMapPoint(GeoPoint point)
-        {
-            if (From != To)
+            if (source == target)
             {
-                MapPoint wgs84 = GeoPointToWgs84(point);
-                GeoPoint newPoint = FromWgs84GeoPoint(wgs84);
-                return new MapPoint(newPoint.X, newPoint.Y);
+                return point;
             }
-            else
-            {
-                return new MapPoint(point.X, point.Y);
-            }
+            MapPoint wgs84 = ToWgs84(point, source);
+            return FromWgs84(wgs84, target);
         }
 
         /// <summary>
@@ -165,12 +82,39 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public void TransformateSelf(GeoPoint point)
+        public static GeoPoint Transformate(GeoPoint point, CoordinateSystem source, CoordinateSystem target)
         {
-            if (From != To)
+            GeoPoint wgs84 = ToWgs84(point, source);
+            return FromWgs84(wgs84, target);
+        }
+
+        /// <summary>
+        /// 对一个点进行坐标转换
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static MapPoint TransformateToMapPoint(GeoPoint point, CoordinateSystem source, CoordinateSystem target)
+        {
+            if (source == target)
             {
-                MapPoint wgs84 = GeoPointToWgs84(point);
-                GeoPoint newPoint = FromWgs84GeoPoint(wgs84);
+                return new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
+            }
+            GeoPoint wgs84 = ToWgs84(point, source);
+            GeoPoint newPoint = FromWgs84(wgs84, target);
+            return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
+        }
+
+        /// <summary>
+        /// 对一个点进行坐标转换
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static void TransformateSelf(GeoPoint point, CoordinateSystem source, CoordinateSystem target)
+        {
+            if (source != target)
+            {
+                GeoPoint wgs84 = ToWgs84(point, source);
+                GeoPoint newPoint = FromWgs84(wgs84, target);
                 point.X = newPoint.X;
                 point.Y = newPoint.Y;
             }
@@ -181,21 +125,17 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private MapPoint ToWgs84(MapPoint point)
+        private static MapPoint ToWgs84(MapPoint point, CoordinateSystem source)
         {
-            switch (From)
+            switch (source)
             {
-                case "WGS84":
+                case CoordinateSystem.WGS84:
                     return point;
 
-                case "GCJ02":
+                case CoordinateSystem.GCJ02:
                     GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
                     GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(geoPoint);
-                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
-
-                case "CGCS2000":
-                    MapPoint cgcs2000Point = new MapPoint(point.X, point.Y, Cgcs2000);
-                    return GeometryEngine.Project(cgcs2000Point, Wgs84) as MapPoint;
+                    return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
 
                 default:
                     throw new Exception("未知坐标系");
@@ -207,20 +147,17 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private MapPoint FromWgs84(MapPoint point)
+        private static MapPoint FromWgs84(MapPoint point, CoordinateSystem target)
         {
-            switch (To)
+            switch (target)
             {
-                case "WGS84":
+                case CoordinateSystem.WGS84:
                     return point;
 
-                case "GCJ02":
+                case CoordinateSystem.GCJ02:
                     GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
                     GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
-                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
-
-                case "CGCS2000":
-                    return GeometryEngine.Project(point, Cgcs2000) as MapPoint;
+                    return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
 
                 default:
                     throw new Exception("未知坐标系");
@@ -232,20 +169,15 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private MapPoint GeoPointToWgs84(GeoPoint point)
+        private static GeoPoint ToWgs84(GeoPoint point, CoordinateSystem source)
         {
-            switch (From)
+            switch (source)
             {
-                case "WGS84":
-                    return new MapPoint(point.X, point.Y, Wgs84);
+                case CoordinateSystem.WGS84:
+                    return point;
 
-                case "GCJ02":
-                    GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(point);
-                    return new MapPoint(newPoint.X, newPoint.Y, Wgs84);
-
-                case "CGCS2000":
-                    MapPoint arcPoint = new MapPoint(point.X, point.Y, Cgcs2000);
-                    return GeometryEngine.Project(arcPoint, Wgs84) as MapPoint;
+                case CoordinateSystem.GCJ02:
+                    return ChineseCoordinateTransformation.GCJ02ToWGS84(point);
 
                 default:
                     throw new Exception("未知坐标系");
@@ -257,20 +189,15 @@ namespace MapBoard.Common
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private GeoPoint FromWgs84GeoPoint(MapPoint point)
+        private static GeoPoint FromWgs84(GeoPoint point, CoordinateSystem target)
         {
-            switch (To)
+            switch (target)
             {
-                case "WGS84":
-                    return new GeoPoint(point.X, point.Y);
+                case CoordinateSystem.WGS84:
+                    return point;
 
-                case "GCJ02":
-                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
-                    return ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
-
-                case "CGCS2000":
-                    MapPoint wgs84Point = GeometryEngine.Project(point, Wgs84) as MapPoint;
-                    return new GeoPoint(wgs84Point.X, wgs84Point.Y);
+                case CoordinateSystem.GCJ02:
+                    return ChineseCoordinateTransformation.WGS84ToGCJ02(point);
 
                 default:
                     throw new Exception("未知坐标系");

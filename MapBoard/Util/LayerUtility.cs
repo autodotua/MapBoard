@@ -192,14 +192,12 @@ namespace MapBoard.Main.Util
             }
         }
 
-        public async static Task CoordinateTransformateAsync(this MapLayerInfo layer, string from, string to)
+        public async static Task CoordinateTransformateAsync(this MapLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
         {
-            if (!CoordinateSystems.Contains(from) || !CoordinateSystems.Contains(to))
+            if (source == target)
             {
-                throw new ArgumentException("不能识别坐标系");
+                return;
             }
-
-            CoordinateTransformation coordinate = new CoordinateTransformation(from, to);
 
             var features = await layer.GetAllFeaturesAsync();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -207,7 +205,7 @@ namespace MapBoard.Main.Util
             foreach (var feature in features)
             {
                 newFeatures.Add(new UpdatedFeature(feature));
-                feature.Geometry = coordinate.Transformate(feature.Geometry);
+                feature.Geometry = CoordinateTransformation.Transformate(feature.Geometry, source, target);
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }

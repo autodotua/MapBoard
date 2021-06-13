@@ -57,8 +57,9 @@ namespace MapBoard.Main.UI
                 }
                 AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                 AddToMenu(menu, "复制", () => CopyFeaturesAsync(layer));
-                AddToMenu(menu, "删除", () => DeleteSelectedLayersAsync());
+                AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
                 AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
+                AddToMenu(menu, "编辑字段显示名", () => EditFieldDisplayAsync(layer));
                 menu.Items.Add(new Separator());
                 if (layer.GeometryType == GeometryType.Polyline
                     || layer.GeometryType == GeometryType.Point
@@ -115,7 +116,8 @@ namespace MapBoard.Main.UI
                 {
                     AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
-                AddToMenu(menu, "删除", () => DeleteSelectedLayersAsync());
+                AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
+                AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layers));
             }
             if (menu.Items.Count > 0)
             {
@@ -222,13 +224,30 @@ namespace MapBoard.Main.UI
         private async Task CoordinateTransformateAsync(MapLayerInfo layer)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            await dialog.ShowAsync();
+            if (dialog.OK)
             {
                 await DoAsyncObj.DoAsync(async () =>
                 {
-                    string from = dialog.SelectedCoordinateSystem1;
-                    string to = dialog.SelectedCoordinateSystem2;
-                    await LayerUtility.CoordinateTransformateAsync(layer, from, to);
+                    await LayerUtility.CoordinateTransformateAsync(layer, dialog.Source, dialog.Target);
+                }, "正在进行坐标转换");
+            }
+        }
+
+        private async Task CoordinateTransformateAsync(IList<MapLayerInfo> layers)
+        {
+            CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
+            await dialog.ShowAsync();
+            if (dialog.OK)
+            {
+                await DoAsyncObj.DoAsync(async p =>
+                {
+                    int index = 0;
+                    foreach (var layer in layers)
+                    {
+                        p.SetMessage($"正在转换图层{++index}/{layers.Count}：{layer.Name}");
+                        await LayerUtility.CoordinateTransformateAsync(layer, dialog.Source, dialog.Target);
+                    }
                 }, "正在进行坐标转换");
             }
         }
@@ -242,14 +261,14 @@ namespace MapBoard.Main.UI
             }
         }
 
-        private async Task DeleteSelectedLayersAsync()
+        private async Task DeleteLayersAsync(IList<MapLayerInfo> layers)
         {
             if (list.SelectedItems.Count == 0)
             {
                 SnakeBar.ShowError("没有选择任何样式");
                 return;
             }
-            foreach (MapLayerInfo layer in list.SelectedItems.Cast<MapLayerInfo>().ToArray())
+            foreach (MapLayerInfo layer in layers)
             {
                 await layer.DeleteLayerAsync(MapView.Layers, true);
             }
