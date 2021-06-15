@@ -25,12 +25,7 @@
         /// <summary>
         /// 经度
         /// </summary>
-        public double Longitude { get; set; }
-
-        /// <summary>
-        /// 纬度
-        /// </summary>
-        public double Latitude { get; set; }
+        public Location Location { get; set; }
 
         /// <summary>
         /// 距离中心点距离

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MapBoard.Main.UI.Map
@@ -20,15 +21,24 @@ namespace MapBoard.Main.UI.Map
     {
         private GraphicsOverlay headAndTailOverlay = new GraphicsOverlay();
         private GraphicsOverlay searchOverlay = new GraphicsOverlay();
+        private GraphicsOverlay routeOverlay = new GraphicsOverlay();
 
         public OverlayHelper(GraphicsOverlayCollection overlays, Func<Geometry, Task> zoomAsync)
         {
             overlays.Add(headAndTailOverlay);
+
             var d = new LabelInfo().GetLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
             searchOverlay.LabelDefinitions.Add(d);
             searchOverlay.LabelsEnabled = true;
             overlays.Add(searchOverlay);
+
+            d = new LabelInfo().GetLabelDefinition();
+            d.Expression = new ArcadeLabelExpression("$feature.Name");
+            routeOverlay.LabelDefinitions.Add(d);
+            routeOverlay.LabelsEnabled = true;
+
+            overlays.Add(routeOverlay);
             this.zoomAsync = zoomAsync;
         }
 
@@ -124,7 +134,7 @@ namespace MapBoard.Main.UI.Map
             int index = 0;
             foreach (var poi in pois)
             {
-                Graphic g = new Graphic(new MapPoint(poi.Longitude, poi.Latitude, SpatialReferences.Wgs84));
+                Graphic g = new Graphic(poi.Location.ToMapPoint());
                 if (index < 3)
                 {
                     g.Symbol = GetPointSymbol(1);
@@ -144,10 +154,69 @@ namespace MapBoard.Main.UI.Map
             await zoomAsync(searchOverlay.Extent);
         }
 
+        public async Task ShowRoutes(IEnumerable<RouteInfo> routes)
+        {
+            foreach (var graphic in routeOverlay.Graphics.Where(p => p.Geometry is Polyline).ToList())
+            {
+                routeOverlay.Graphics.Remove(graphic);
+            }
+            Color[] colors = new Color[]
+            {
+                Color.Red,
+                Color.Orange,
+                Color.Blue,
+                Color.Purple
+            };
+            int index = 0;
+            foreach (var route in routes)
+            {
+                foreach (var step in route.Steps)
+                {
+                    Polyline line = new Polyline(step.Locations.Select(p => p.ToMapPoint()));
+                    Graphic g = new Graphic(line);
+                    g.Attributes.Add("Name", step.Name);
+                    g.Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, colors[index % colors.Length], 4);
+                    routeOverlay.Graphics.Add(g);
+                }
+                index++;
+            }
+            await zoomAsync(routeOverlay.Extent);
+        }
+
+        public void SetRouteOrigin(MapPoint point)
+        {
+            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
+                .FirstOrDefault(p => p.Attributes["Name"] == "起点");
+            if (graphic != null)
+            {
+                routeOverlay.Graphics.Remove(graphic);
+            }
+            graphic = new Graphic(point);
+            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Orange, 8)
+            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
+            graphic.Attributes.Add("Name", "起点");
+            routeOverlay.Graphics.Add(graphic);
+        }
+
+        public void SetRouteDestination(MapPoint point)
+        {
+            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
+                  .FirstOrDefault(p => p.Attributes["Name"] == "终点");
+            if (graphic != null)
+            {
+                routeOverlay.Graphics.Remove(graphic);
+            }
+            graphic = new Graphic(point);
+            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, Color.Blue, 8)
+            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
+            graphic.Attributes.Add("Name", "终点");
+            routeOverlay.Graphics.Add(graphic);
+        }
+
         /// <summary>
         /// 清除POI显示
         /// </summary>
-        public void ClearSearchedPois()
+        public void ClearPois()
         {
             searchOverlay.Graphics.Clear();
         }

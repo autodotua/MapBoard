@@ -43,8 +43,10 @@ namespace MapBoard.Main.UI.Map
         {
             isClearing = true;
             Editor.Cancel();
-            Debug.Assert(MapView.Layers.Selected != null);
-            MapView.Layers.Selected.Layer.ClearSelection();
+            if (MapView.Layers.Selected != null)
+            {
+                MapView.Layers.Selected.Layer.ClearSelection();
+            }
             selectedFeatures.Clear();
             isClearing = false;
             CollectionChanged?.Invoke(this, new EventArgs());

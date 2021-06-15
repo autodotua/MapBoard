@@ -4,11 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extension="clr-namespace:MapBoard.Main.UI.Extension"
     xmlns:local="clr-namespace:MapBoard.Main.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:util="clr-namespace:MapBoard.Main.Util"
     d:DesignHeight="600" d:DesignWidth="120"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -22,6 +22,8 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="16" />
             <RowDefinition Height="Auto" />
@@ -230,117 +232,25 @@
             x:Name="bdSearchPanel" Grid.Row="8"
             Width="320" Height="0"
             Padding="8" HorizontalAlignment="Right"
-            Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
-            CornerRadius="4" Opacity="0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="96" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <ComboBox
-                        Height="32"
-                        HorizontalAlignment="Stretch"
-                        DisplayMemberPath="Name"
-                        ItemsSource="{Binding Source={x:Static util:PoiUtility.PoiEngines}}"
-                        SelectedItem="{Binding SelectedPoiEngine}" />
-                    <TextBox
-                        Grid.Column="2"
-                        VerticalContentAlignment="Center"
-                        PreviewKeyDown="TextBox_PreviewKeyDown"
-                        Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button
-                        x:Name="btnSearch" Grid.Column="4"
-                        Click="SearchButton_Click" Content="搜索" />
-                </Grid>
-                <ui:SimpleStackPanel
-                    Grid.Row="2" Orientation="Horizontal"
-                    Spacing="12">
-
-                    <RadioButton
-                        x:Name="rbtnAround" Margin="0,0,-72,0"
-                        VerticalAlignment="Center" Content="周边" />
-                    <ComboBox
-                        Width="88" Padding="0"
-                        VerticalAlignment="Center"
-                        IsEditable="True"
-                        Text="{Binding Radius}">
-                        <sys:Int32>100</sys:Int32>
-                        <sys:Int32>500</sys:Int32>
-                        <sys:Int32>1000</sys:Int32>
-                        <sys:Int32>5000</sys:Int32>
-                        <sys:Int32>10000</sys:Int32>
-                        <sys:Int32>20000</sys:Int32>
-                        <sys:Int32>50000</sys:Int32>
-                    </ComboBox>
-                    <TextBlock VerticalAlignment="Center">米</TextBlock>
-                    <RadioButton x:Name="rbtnRange" IsChecked="True">视图范围</RadioButton>
-                </ui:SimpleStackPanel>
-                <ScrollViewer
-                    Grid.Row="4" Grid.ColumnSpan="99"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding SearchResult}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="6,6,16,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="4" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock FontWeight="Bold" Text="{Binding Name}" />
-                                    <TextBlock Grid.Column="2 " Text="{Binding Distance, StringFormat={}{0:0m}}" />
-                                    <TextBlock
-                                        Grid.Row="2 " Grid.ColumnSpan="3"
-                                        Text="{Binding Address}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <Button
-                                        Grid.RowSpan="99" Grid.Column="99"
-                                        Margin="0,-8" Padding="8,8"
-                                        Background="Transparent"
-                                        Click="Button_Click"
-                                        Tag="{Binding .}">
-                                        <ui:FontIcon Glyph="&#xE81D;" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-                <Button
-                    Grid.Row="6" HorizontalAlignment="Right"
-                    Click="ClearSearchButton_Click"
-                    Content="清除" />
-                <TextBlock
-                    Grid.Row="6" HorizontalAlignment="Left"
-                    VerticalAlignment="Center">
-                    <Run>共</Run>
-                    <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />
-                    <Run>条搜索结果</Run>
-                </TextBlock>
-            </Grid>
+            ClipToBounds="True" CornerRadius="4"
+            Opacity="0">
+            <TabControl>
+                <TabControl.Background>
+                    <SolidColorBrush Color="{DynamicResource SystemChromeMediumHighColor}" />
+                </TabControl.Background>
+                <TabItem Header="地点搜索">
+                    <extension:SearchPanel x:Name="searchPanel" />
+                </TabItem>
+                <TabItem Header="路径搜索">
+                    <extension:RoutePanel x:Name="routePanel" />
+                </TabItem>
+            </TabControl>
         </Border>
+        <Border
+            x:Name="bdRoutePanel" Grid.Row="10"
+            Width="320" Height="0"
+            Padding="8" HorizontalAlignment="Right"
+            CornerRadius="4" Opacity="0" />
 
         <ui:SimpleStackPanel
             Grid.Row="99"

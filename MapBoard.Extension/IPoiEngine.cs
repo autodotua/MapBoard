@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MapBoard.Extension
 {
-    public interface IPoiEngine
+    public interface IPoiEngine : IExtensionEngine
     {
         /// <summary>
         /// 获取周边搜索的网址
@@ -15,8 +15,7 @@ namespace MapBoard.Extension
         /// <returns></returns>
         string GetUrl(
            string keyword,
-           double centerLongitude,
-           double centerLatitude,
+           Location center,
            double radius);
 
         /// <summary>
@@ -30,10 +29,8 @@ namespace MapBoard.Extension
         /// <returns></returns>
         string GetUrl(
            string keyword,
-           double leftTopLongitude,
-           double leftTopLatitude,
-           double rightBottomLongitude,
-           double rightBottomLatitude);
+           Location leftTop,
+           Location rightBottom);
 
         /// <summary>
         /// 根据范围的字符串，解析为<see cref="PoiInfo"/>
@@ -41,15 +38,5 @@ namespace MapBoard.Extension
         /// <param name="json"></param>
         /// <returns></returns>
         PoiInfo[] ParsePois(string json);
-
-        /// <summary>
-        /// POI搜索引擎名
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// 是否接受和返回GCJ02坐标而不是WGS84坐标
-        /// </summary>
-        bool IsGcj02 { get; }
     }
 }

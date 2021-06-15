@@ -48,6 +48,7 @@ namespace MapBoard.Main.UI.Map
             Creat,
             Edit,
             GetLine,
+            GetPoint,
             GetRectangle,
             MeasureLength,
             MeasureArea
@@ -164,6 +165,22 @@ namespace MapBoard.Main.UI.Map
                     return line;
                 }
                 return null;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 获取一个点
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MapPoint> GetPointAsync()
+        {
+            StartDraw(EditMode.GetPoint);
+            var geom = await SketchEditor.StartAsync(SketchCreationMode.Point, false);
+            Cancel();
+            if (geom is MapPoint point)
+            {
+                return point;
             }
             return null;
         }

@@ -66,9 +66,22 @@ namespace MapBoard.Main.UI
         /// </summary>
         public MainWindow()
         {
-            PoiUtility.LoadExtensions();
+            Exception extensionEx = null;
+            try
+            {
+                ExtensionUtility.LoadExtensions();
+            }
+            catch (Exception ex)
+            {
+                extensionEx = ex;
+            }
             InitializeComponent();
+
             mapInfo.Initialize(arcMap);
+            if (extensionEx != null)
+            {
+                CommonDialog.ShowErrorDialogAsync(extensionEx, "加载扩展插件失败");
+            }
         }
 
         /// <summary>
@@ -95,10 +108,6 @@ namespace MapBoard.Main.UI
             try
             {
                 await action(loading.TaskArgs);
-                while (arcMap.DrawStatus == DrawStatus.InProgress)
-                {
-                    await Task.Delay(20);
-                }
             }
             catch (Exception ex)
             {
@@ -245,7 +254,10 @@ namespace MapBoard.Main.UI
                 return;
             }
             Config.Save();
-            arcMap.Layers.Save();
+            if (arcMap.Layers != null)
+            {
+                arcMap.Layers.Save();
+            }
             if (arcMap.CurrentTask == BoardTask.Draw)
             {
                 await CommonDialog.ShowErrorDialogAsync("请先结束绘制");

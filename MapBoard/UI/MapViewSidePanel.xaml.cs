@@ -33,10 +33,6 @@ namespace MapBoard.Main.UI
 
         public MapViewSidePanel()
         {
-            if (PoiUtility.PoiEngines.Count > 0)
-            {
-                SelectedPoiEngine = PoiUtility.PoiEngines[0];
-            }
             InitializeComponent();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
             BaseLayers = Config.Instance.BaseLayers;
@@ -66,6 +62,8 @@ namespace MapBoard.Main.UI
             MapView = mapView;
             mapView.ViewpointChanged += MapView_ViewpointChanged;
             mapView.PreviewMouseMove += MapView_PreviewMouseMove;
+            searchPanel.Initialize(mapView);
+            routePanel.Initialize(mapView);
         }
 
         private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -342,105 +340,6 @@ namespace MapBoard.Main.UI
 
         private bool isSearchPanelOpen = false;
 
-        private int radius = 1000;
-
-        private PoiInfo[] searchResult;
-
-        /// <summary>
-        /// 关键次
-        /// </summary>
-        public string Keyword { get; set; }
-
-        /// <summary>
-        /// 搜索半径
-        /// </summary>
-        public int Radius
-        {
-            get => radius;
-            set
-            {
-                if (value < 100)
-                {
-                    radius = 100;
-                }
-                else if (value > 50000)
-                {
-                    radius = 50000;
-                }
-                radius = value;
-                this.Notify(nameof(radius));
-            }
-        }
-
-        /// <summary>
-        /// 搜索结果
-        /// </summary>
-        public PoiInfo[] SearchResult
-        {
-            get => searchResult;
-            set => this.SetValueAndNotify(ref searchResult, value, nameof(SearchResult));
-        }
-
-        /// <summary>
-        /// 使用的搜索引擎
-        /// </summary>
-        public IPoiEngine SelectedPoiEngine { get; set; }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.Tag is PoiInfo poi)
-            {
-                MapView.ZoomToGeometryAsync(new MapPoint(poi.Longitude, poi.Latitude, SpatialReferences.Wgs84));
-            }
-        }
-
-        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            SearchResult = null;
-            MapView.Overlay.ClearSearchedPois();
-        }
-
-        private async void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as Button).IsEnabled == false)
-            {
-                return;
-            }
-            try
-            {
-                (sender as Button).IsEnabled = false;
-
-                //周边搜索
-                if (rbtnAround.IsChecked.Value)
-                {
-                    var point = GeometryEngine.Project(MapView.GetCurrentViewpoint(ViewpointType.CenterAndScale).TargetGeometry, SpatialReferences.Wgs84) as MapPoint;
-                    CoordinateSystem target = SelectedPoiEngine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
-                    point = CoordinateTransformation.Transformate(point, Config.Instance.BasemapCoordinateSystem, target);
-                    SearchResult = await SelectedPoiEngine.SearchAsync(Keyword, point, Radius);
-                }
-                //视图范围搜索
-                else
-                {
-                    var rect = GeometryEngine.Project(MapView.GetCurrentViewpoint(ViewpointType.BoundingGeometry).TargetGeometry, SpatialReferences.Wgs84) as Envelope;
-                    CoordinateSystem target = SelectedPoiEngine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
-                    rect = CoordinateTransformation.Transformate(rect, Config.Instance.BasemapCoordinateSystem, target) as Envelope;
-                    SearchResult = await SelectedPoiEngine.SearchAsync(Keyword, rect);
-                }
-
-                //将搜索结果从GCJ02转为WGS84
-
-                MapView.Overlay.ShowSearchedPois(SearchResult);
-            }
-            catch (Exception ex)
-            {
-                await CommonDialog.ShowErrorDialogAsync(ex, "搜索失败");
-            }
-            finally
-            {
-                (sender as Button).IsEnabled = true;
-            }
-        }
-
         private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (isSearchPanelOpen)
@@ -454,7 +353,7 @@ namespace MapBoard.Main.UI
             }
             else
             {
-                DoubleAnimation aniHeight = new DoubleAnimation(280, Parameters.AnimationDuration)
+                DoubleAnimation aniHeight = new DoubleAnimation(400, Parameters.AnimationDuration)
                 { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
                 DoubleAnimation aniOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
                 { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
@@ -462,14 +361,6 @@ namespace MapBoard.Main.UI
                 bdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
             }
             isSearchPanelOpen = !isSearchPanelOpen;
-        }
-
-        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                btnSearch.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-            }
         }
 
         #endregion 搜索

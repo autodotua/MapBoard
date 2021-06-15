@@ -115,8 +115,18 @@
     <Compile Remove="Model\TimeExtent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="UI\Extension\RoutePanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+ 
+  <ItemGroup>
     <Page Update="UI\Dialog\FeatureHistoryDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="UI\Extension\RoutePanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
