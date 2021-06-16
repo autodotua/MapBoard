@@ -145,27 +145,38 @@ namespace MapBoard.Main.Util
             return pois;
         }
 
+        /// <summary>
+        /// 获取路径规划
+        /// </summary>
+        /// <param name="pe"></param>
+        /// <param name="type"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
         private static async Task<RouteInfo[]> GetRoutesAsync(IRouteEngine pe, RouteType type, string url)
         {
             string json = await HttpGetAsync(url);
-            var paths = pe.ParseRoute(type, json);
-            CoordinateSystem source = pe.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
-
-            if (source != Config.Instance.BasemapCoordinateSystem)
+            RouteInfo[] paths = null;
+            await Task.Run(() =>
             {
-                foreach (var path in paths)
+                paths = pe.ParseRoute(type, json);
+                CoordinateSystem source = pe.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+
+                if (source != Config.Instance.BasemapCoordinateSystem)
                 {
-                    foreach (var step in path.Steps)
+                    foreach (var path in paths)
                     {
-                        foreach (var loc in step.Locations)
+                        foreach (var step in path.Steps)
                         {
-                            var wgs = CoordinateTransformation.Transformate(new MapPoint(loc.Longitude, loc.Latitude, SpatialReferences.Wgs84), source, Config.Instance.BasemapCoordinateSystem);
-                            loc.Longitude = wgs.X;
-                            loc.Latitude = wgs.Y;
+                            foreach (var loc in step.Locations)
+                            {
+                                var wgs = CoordinateTransformation.Transformate(new MapPoint(loc.Longitude, loc.Latitude, SpatialReferences.Wgs84), source, Config.Instance.BasemapCoordinateSystem);
+                                loc.Longitude = wgs.X;
+                                loc.Latitude = wgs.Y;
+                            }
                         }
                     }
                 }
-            }
+            });
             return paths;
         }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using MapBoard.Main.UI.Map.Model;
+using Esri.ArcGISRuntime.Geometry;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -15,13 +16,22 @@ namespace MapBoard.Main.UI.Dialog
     {
         private bool canSelect = false;
 
-        public SelectLayerDialog(MapLayerCollection layers)
+        public SelectLayerDialog(MapLayerCollection layers, GeometryType[] allowedGeometryTypes, bool notSelectedLayer)
         {
             InitializeComponent();
-            var list = layers.Cast<MapLayerInfo>().Where(p => p.GeometryType == layers.Selected.GeometryType && p != layers.Selected);
+            var list = layers.Cast<MapLayerInfo>();
+            if (allowedGeometryTypes != null)
+            {
+                list = list.Where(p => allowedGeometryTypes.Contains(p.GeometryType));
+            }
+            if (notSelectedLayer)
+            {
+                list = list.Where(p => p != layers.Selected);
+            }
+
             if (list.Count() > 0)
             {
-                lbx.ItemsSource = list;
+                lbx.ItemsSource = list.ToList();
                 lbx.SelectedIndex = 0;
                 canSelect = true;
             }

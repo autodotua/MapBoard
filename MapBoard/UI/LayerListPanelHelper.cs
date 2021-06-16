@@ -171,7 +171,7 @@ namespace MapBoard.Main.UI
 
         private async Task CopyFeaturesAsync(MapLayerInfo layer)
         {
-            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers);
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { layer.GeometryType }, true);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer);

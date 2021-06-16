@@ -142,7 +142,7 @@ namespace MapBoard.Main.UI.Bar
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers);
+                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { MapView.Layers.Selected.GeometryType }, true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
                     bool copy = await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");

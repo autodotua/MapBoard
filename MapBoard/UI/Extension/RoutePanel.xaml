@@ -106,32 +106,66 @@
                 <ui:FontIcon Glyph="&#xE707;" />
             </Button>
         </Grid>
-        <ScrollViewer
+        <ListView
             Grid.Row="4" Grid.ColumnSpan="99"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <ListView ItemsSource="{Binding SearchResult}">
-                <ListView.View>
-                    <GridView>
-                        <GridView.Columns>
-                            <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}" Header="序号" />
-                            <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
-                            <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="用时" />
-                        </GridView.Columns>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </ScrollViewer>
-        <Button
-            Grid.Row="6" HorizontalAlignment="Right"
-            Click="ClearSearchButton_Click"
-            Content="清除" />
-        <TextBlock
-            Grid.Row="6" HorizontalAlignment="Left"
-            VerticalAlignment="Center">
-            <Run>共</Run>
-            <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />
-            <Run>个方案</Run>
-        </TextBlock>
+            ItemsSource="{Binding SearchResult}"
+            SelectedItem="{Binding SelectedRoute}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}" Header="序号" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Strategy}" Header="策略" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="用时" />
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Grid Grid.Row="99">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.Row="6" HorizontalAlignment="Left"
+                VerticalAlignment="Center">
+                <Run>共</Run>
+                <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />
+                <Run>个方案</Run>
+            </TextBlock>
+            <Button
+                Grid.Column="2"
+                Click="ImportButton_Click" Content="导入"
+                IsEnabled="{Binding SelectedRoute, Converter={StaticResource nn2bc}}" />
+            <Button
+                Grid.Column="4" Content="详情"
+                IsEnabled="{Binding SelectedRoute, Converter={StaticResource nn2bc}}">
+                <ui:FlyoutService.Flyout>
+                    <ui:Flyout Closed="Flyout_Closed">
+                        <ListView
+                            MaxHeight="480" Padding="0,0,16,0"
+                            ItemsSource="{Binding SelectedRoute.Steps}"
+                            SelectedItem="{Binding SelectedStep}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn DisplayMemberBinding="{Binding Road}" Header="路名" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Distance}" Header="长度" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="耗时" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </ui:Flyout>
+                </ui:FlyoutService.Flyout>
+            </Button>
+            <Button
+                Grid.Column="6"
+                Click="ClearSearchButton_Click"
+                Content="清除" />
+        </Grid>
     </Grid>
 </common:UserControlBase>

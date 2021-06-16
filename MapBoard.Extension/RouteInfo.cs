@@ -4,7 +4,8 @@ namespace MapBoard.Extension
 {
     public class RouteInfo
     {
-        public PathStepInfo[] Steps { get; set; }
+        public string Strategy { get; set; }
+        public RouteStepInfo[] Steps { get; set; }
         public double Distance { get; set; }
         public TimeSpan? Duration { get; set; }
     }

@@ -79,18 +79,24 @@ namespace MapBoard.Main.UI.Extension
             set => this.SetValueAndNotify(ref searchResult, value, nameof(SearchResult));
         }
 
+        private PoiInfo selectedPoi;
+        /// <summary>
+        /// 选中的POI
+        /// </summary>
+        public PoiInfo SelectedPoi
+        {
+            get => selectedPoi;
+            set
+            {
+                this.SetValueAndNotify(ref selectedPoi, value, nameof(SelectedPoi));
+                MapView.Overlay.SelectPoi(value);
+            }
+        }
+
         /// <summary>
         /// 使用的搜索引擎
         /// </summary>
         public IPoiEngine SelectedPoiEngine { get; set; }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.Tag is PoiInfo poi)
-            {
-                MapView.ZoomToGeometryAsync(poi.Location.ToMapPoint());
-            }
-        }
 
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
@@ -134,7 +140,7 @@ namespace MapBoard.Main.UI.Extension
 
                 //将搜索结果从GCJ02转为WGS84
 
-                MapView.Overlay.ShowSearchedPois(SearchResult);
+                MapView.Overlay.ShowPois(SearchResult);
             }
             catch (Exception ex)
             {

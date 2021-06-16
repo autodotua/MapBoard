@@ -12,6 +12,9 @@
     d:DesignHeight="450" d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:IndexConverter x:Key="IndexConverter" />
+    </UserControl.Resources>
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -45,7 +48,8 @@
                 Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
             <Button
                 x:Name="btnSearch" Grid.Column="4"
-                Click="SearchButton_Click"  VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                Click="SearchButton_Click">
                 <ui:FontIcon Glyph="&#xE721;" />
             </Button>
         </Grid>
@@ -72,45 +76,21 @@
             <TextBlock VerticalAlignment="Center">米</TextBlock>
             <RadioButton x:Name="rbtnRange" IsChecked="True">视图范围</RadioButton>
         </ui:SimpleStackPanel>
-        <ScrollViewer
+        <ListView
             Grid.Row="4" Grid.ColumnSpan="99"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding SearchResult}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="6,6,16,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="4" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock FontWeight="Bold" Text="{Binding Name}" />
-                            <TextBlock Grid.Column="2 " Text="{Binding Distance, StringFormat={}{0:0m}}" />
-                            <TextBlock
-                                Grid.Row="2 " Grid.ColumnSpan="3"
-                                Text="{Binding Address}"
-                                TextTrimming="CharacterEllipsis" />
-                            <Button
-                                Grid.RowSpan="99" Grid.Column="99"
-                                Margin="0,-8" Padding="8,8"
-                                Background="Transparent"
-                                Click="Button_Click"
-                                Tag="{Binding .}">
-                                <ui:FontIcon Glyph="&#xE81D;" />
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            ItemsSource="{Binding SearchResult}"
+            SelectedItem="{Binding SelectedPoi}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}" Header="序号" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="地名" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Address}" Header="地址" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
         <Button
             Grid.Row="6" HorizontalAlignment="Right"
             Click="ClearSearchButton_Click"
