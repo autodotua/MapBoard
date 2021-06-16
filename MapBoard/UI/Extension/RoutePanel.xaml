@@ -30,7 +30,7 @@
                 <ColumnDefinition Width="96" />
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -77,32 +77,34 @@
                 Grid.Row="2" VerticalAlignment="Center"
                 Text="终点" />
             <TextBox
-                Grid.Row="0" Grid.Column="2"
+                Grid.Row="0" Grid.Column="2" GotFocus="LocationTextBox_GotFocus"
                 ui:ControlHelper.PlaceholderText="经度"
                 Text="{Binding Origin.Longitude}" />
             <TextBox
-                Grid.Row="0" Grid.Column="4"
+                Grid.Row="0" Grid.Column="4"  GotFocus="LocationTextBox_GotFocus"
                 ui:ControlHelper.PlaceholderText="纬度"
                 Text="{Binding Origin.Latitude}" />
             <TextBox
-                Grid.Row="2" Grid.Column="2"
+                Grid.Row="2" Grid.Column="2"  GotFocus="LocationTextBox_GotFocus"
                 ui:ControlHelper.PlaceholderText="经度"
                 Text="{Binding Destination.Longitude}" />
             <TextBox
-                Grid.Row="2" Grid.Column="4"
+                Grid.Row="2" Grid.Column="4"  GotFocus="LocationTextBox_GotFocus"
                 ui:ControlHelper.PlaceholderText="纬度"
                 Text="{Binding Destination.Latitude}" />
             <Button
                 Grid.Column="6" Padding="8,2"
                 Click="ChoosePointButton_Click"
-                Tag="{Binding Origin, Mode=OneTime}">
+                Tag="1"
+                ToolTip="地图选点">
                 <ui:FontIcon Glyph="&#xE707;" />
             </Button>
             <Button
                 Grid.Row="2" Grid.Column="6"
                 Padding="8,2"
                 Click="ChoosePointButton_Click"
-                Tag="{Binding Destination, Mode=OneTime}">
+                Tag="2"
+                ToolTip="地图选点">
                 <ui:FontIcon Glyph="&#xE707;" />
             </Button>
         </Grid>

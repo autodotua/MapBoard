@@ -22,10 +22,12 @@ namespace MapBoard.Main.UI.Map
         private GraphicsOverlay headAndTailOverlay = new GraphicsOverlay();
         private GraphicsOverlay poiOverlay = new GraphicsOverlay();
         private GraphicsOverlay routeOverlay = new GraphicsOverlay();
+        private GraphicsOverlay locationInfoOverlay = new GraphicsOverlay();
 
         public OverlayHelper(GraphicsOverlayCollection overlays, Func<Geometry, Task> zoomAsync)
         {
             overlays.Add(headAndTailOverlay);
+            overlays.Add(locationInfoOverlay);
 
             var d = new LabelInfo().GetLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
@@ -35,6 +37,11 @@ namespace MapBoard.Main.UI.Map
 
             d = new LabelInfo().GetLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
+            d.WhereClause = "Distance is null";
+            routeOverlay.LabelDefinitions.Add(d);
+            d = new LabelInfo().GetLabelDefinition();
+            d.Expression = new ArcadeLabelExpression(@"$feature.Name +'\n'+ $feature.Distance + 'm\n' + $feature.Duration");
+            d.WhereClause = "Distance is not null";
             routeOverlay.LabelDefinitions.Add(d);
             routeOverlay.LabelsEnabled = true;
 
@@ -216,6 +223,8 @@ namespace MapBoard.Main.UI.Map
                     Polyline line = new Polyline(step.Locations.Select(p => p.ToMapPoint()));
                     Graphic g = new Graphic(line);
                     g.Attributes.Add("Name", step.Road);
+                    g.Attributes.Add("Distance", step.Distance);
+                    g.Attributes.Add("Duration", step.Duration.ToString());
                     g.Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, colors[index % colors.Length], 4);
                     routeOverlay.Graphics.Add(g);
                     step2Graphic.Add(step, g);
@@ -289,5 +298,23 @@ namespace MapBoard.Main.UI.Map
         }
 
         #endregion 路径
+
+        #region 地理逆编码
+
+        public void ShowLocation(MapPoint point)
+        {
+            locationInfoOverlay.ClearSelection();
+            Graphic g = new Graphic(point);
+            g.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Cross, Color.Orange, 24)
+            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
+            locationInfoOverlay.Graphics.Add(g);
+        }
+
+        public void ClearLocation()
+        {
+            locationInfoOverlay.Graphics.Clear();
+        }
+
+        #endregion 地理逆编码
     }
 }

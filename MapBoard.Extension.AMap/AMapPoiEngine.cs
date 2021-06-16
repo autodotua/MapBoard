@@ -6,6 +6,10 @@ namespace MapBoard.Extension.AMap
 {
     public class AMapPoiEngine : IPoiEngine
     {
+        public AMapPoiEngine()
+        {
+        }
+
         public string Name => "高德";
         public bool IsGcj02 => true;
 
@@ -27,26 +31,31 @@ namespace MapBoard.Extension.AMap
             try
             {
                 JArray jPois = root["pois"] as JArray;
-                List<PoiInfo> pois = new List<PoiInfo>();
-                foreach (var jPoi in jPois)
-                {
-                    var location = jPoi["location"].Value<string>().Split(',');
-                    pois.Add(new PoiInfo()
-                    {
-                        Name = jPoi["name"] is JValue ? jPoi["name"].Value<string>() : null,
-                        Address = jPoi["address"] is JValue ? jPoi["address"].Value<string>() : null,
-                        Location = new Location(double.Parse(location[0]), double.Parse(location[1])),
-                        Province = jPoi["pname"].Value<string>(),
-                        City = jPoi["cityname"].Value<string>(),
-                        Distance = jPoi["distance"] is JValue ? double.Parse(jPoi["distance"].Value<string>()) : (double?)null,
-                    });
-                }
-                return pois.ToArray();
+                return ParsePois(jPois);
             }
             catch (Exception ex)
             {
                 throw new Exception("解析失败", ex);
             }
+        }
+
+        internal static PoiInfo[] ParsePois(JArray jPois)
+        {
+            List<PoiInfo> pois = new List<PoiInfo>();
+            foreach (var jPoi in jPois)
+            {
+                pois.Add(new PoiInfo()
+                {
+                    Name = jPoi.TryGetValue<string>("name"),
+                    Address = jPoi["address"] is JValue ? jPoi["address"].Value<string>() : null,
+                    Type = jPoi.TryGetValue<string>("type"),
+                    Location = jPoi.TryGetValue<string>("location").ToLocation(),
+                    Province = jPoi.TryGetValue<string>("pname"),
+                    City = jPoi.TryGetValue<string>("cityname"),
+                    Distance = jPoi["distance"] is JValue ? double.Parse(jPoi["distance"].Value<string>()) : (double?)null,
+                });
+            }
+            return pois.ToArray();
         }
     }
 }

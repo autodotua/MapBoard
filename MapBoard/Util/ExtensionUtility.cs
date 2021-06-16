@@ -20,6 +20,7 @@ namespace MapBoard.Main.Util
     {
         private static List<IPoiEngine> poiEngines = new List<IPoiEngine>();
         private static List<IRouteEngine> routeEngines = new List<IRouteEngine>();
+        private static List<IReGeoCodeEngine> reGeoCodeEngine = new List<IReGeoCodeEngine>();
 
         /// <summary>
         /// 加载到的所有POI引擎
@@ -27,6 +28,7 @@ namespace MapBoard.Main.Util
         public static IReadOnlyList<IPoiEngine> PoiEngines => poiEngines.AsReadOnly();
 
         public static IReadOnlyList<IRouteEngine> RouteEngines => routeEngines.AsReadOnly();
+        public static IReadOnlyList<IReGeoCodeEngine> ReGeoCodeEngines => reGeoCodeEngine.AsReadOnly();
 
         private static bool isLoaded = false;
 
@@ -57,6 +59,15 @@ namespace MapBoard.Main.Util
                     if (tempTypes.Count > 0)
                     {
                         routeEngines.AddRange(tempTypes.Select(t => (IRouteEngine)Activator.CreateInstance(t)));
+                    }
+
+                    tempTypes = Assembly.LoadFile(dll)
+                         .GetTypes()
+                         .Where(p => p.GetInterface(typeof(IReGeoCodeEngine).FullName) != null)
+                         .ToList();
+                    if (tempTypes.Count > 0)
+                    {
+                        reGeoCodeEngine.AddRange(tempTypes.Select(t => (IReGeoCodeEngine)Activator.CreateInstance(t)));
                     }
                 }
                 catch
@@ -99,7 +110,7 @@ namespace MapBoard.Main.Util
         }
 
         /// <summary>
-        /// 范围搜索
+        /// 路径搜索
         /// </summary>
         /// <param name="poi"></param>
         /// <param name="keyword"></param>
@@ -116,6 +127,22 @@ namespace MapBoard.Main.Util
 
             string url = route.GetUrl(type, origin.ToLocation(), destination.ToLocation());
             return await GetRoutesAsync(route, type, url);
+        }
+
+        /// <summary>
+        /// 位置信息搜索
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <param name="keyword"></param>
+        /// <param name="center"></param>
+        /// <param name="radius"></param>
+        /// <returns></returns>
+        public static async Task<LocationInfo> SearchAsync(this IReGeoCodeEngine engine, MapPoint point, double radius)
+        {
+            CoordinateSystem target = engine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+            point = CoordinateTransformation.Transformate(point, Config.Instance.BasemapCoordinateSystem, target);
+            string url = engine.GetUrl(point.ToLocation(), radius);
+            return await GetLocationInfosAsync(engine, url);
         }
 
         /// <summary>
@@ -143,6 +170,38 @@ namespace MapBoard.Main.Util
                 }
             }
             return pois;
+        }
+
+        /// <summary>
+        /// 根据搜索引擎和网址，获得POI信息
+        /// </summary>
+        /// <param name="pe"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private static async Task<LocationInfo> GetLocationInfosAsync(IReGeoCodeEngine engine, string url)
+        {
+            if (!isLoaded)
+            {
+                throw new Exception("还未加载POI引擎");
+            }
+            string json = await HttpGetAsync(url);
+            var loc = engine.ParseLocationInfo(json);
+            CoordinateSystem source = engine.IsGcj02 ? CoordinateSystem.GCJ02 : CoordinateSystem.WGS84;
+
+            if (source != Config.Instance.BasemapCoordinateSystem)
+            {
+                foreach (var poi in loc.Pois)
+                {
+                    var wgs = CoordinateTransformation.Transformate(new MapPoint(poi.Location.Longitude, poi.Location.Latitude, SpatialReferences.Wgs84), source, Config.Instance.BasemapCoordinateSystem);
+                    poi.Location = new Location(wgs.X, wgs.Y);
+                }
+                foreach (var road in loc.Roads)
+                {
+                    var wgs = CoordinateTransformation.Transformate(new MapPoint(road.Location.Longitude, road.Location.Latitude, SpatialReferences.Wgs84), source, Config.Instance.BasemapCoordinateSystem);
+                    road.Location = new Location(wgs.X, wgs.Y);
+                }
+            }
+            return loc;
         }
 
         /// <summary>

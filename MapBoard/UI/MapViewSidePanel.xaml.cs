@@ -64,6 +64,7 @@ namespace MapBoard.Main.UI
             mapView.PreviewMouseMove += MapView_PreviewMouseMove;
             searchPanel.Initialize(mapView);
             routePanel.Initialize(mapView);
+            reGeoCodePanel.Initialize(mapView);
         }
 
         private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -338,31 +339,56 @@ namespace MapBoard.Main.UI
 
         #region 搜索
 
-        private bool isSearchPanelOpen = false;
+        private bool isSearchPanelOpened = false;
 
         private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (isSearchPanelOpen)
+            if (isSearchPanelOpened)
             {
-                DoubleAnimation aniHeight = new DoubleAnimation(0, Parameters.AnimationDuration)
-                { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-                DoubleAnimation aniOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-                { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-                bdSearchPanel.BeginAnimation(HeightProperty, aniHeight);
-                bdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
+                return;
             }
-            else
-            {
-                DoubleAnimation aniHeight = new DoubleAnimation(400, Parameters.AnimationDuration)
-                { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-                DoubleAnimation aniOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-                { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-                bdSearchPanel.BeginAnimation(HeightProperty, aniHeight);
-                bdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
-            }
-            isSearchPanelOpen = !isSearchPanelOpen;
+            isSearchPanelOpened = true;
+            vwSearchIcon.IsHitTestVisible = false;
+            grdSearchPanel.IsHitTestVisible = true;
+            DoubleAnimation aniHeight = new DoubleAnimation(400, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniWidth = new DoubleAnimation(360, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniIconOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            bdSearch.BeginAnimation(HeightProperty, aniHeight);
+            bdSearch.BeginAnimation(WidthProperty, aniWidth);
+            grdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
+            vwSearchIcon.BeginAnimation(OpacityProperty, aniIconOpacity);
+            bdSearch.Cursor = Cursors.Arrow;
         }
 
         #endregion 搜索
+
+        private void CloseSearchPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isSearchPanelOpened)
+            {
+                return;
+            }
+            isSearchPanelOpened = false;
+            vwSearchIcon.IsHitTestVisible = true;
+            grdSearchPanel.IsHitTestVisible = false;
+            DoubleAnimation aniHeight = new DoubleAnimation(36, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniWidth = new DoubleAnimation(36, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            DoubleAnimation aniIconOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
+            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
+            bdSearch.BeginAnimation(HeightProperty, aniHeight);
+            bdSearch.BeginAnimation(WidthProperty, aniWidth);
+            grdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
+            vwSearchIcon.BeginAnimation(OpacityProperty, aniIconOpacity);
+            bdSearch.Cursor = Cursors.Hand;
+        }
     }
 }

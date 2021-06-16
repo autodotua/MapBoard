@@ -118,6 +118,9 @@
     <Compile Update="UI\Extension\RoutePanel.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="UI\Extension\ReGeoCodePanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
  
   <ItemGroup>
@@ -125,6 +128,10 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="UI\Extension\RoutePanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="UI\Extension\ReGeoCodePanel.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

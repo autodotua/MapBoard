@@ -31,5 +31,10 @@
         /// 距离中心点距离
         /// </summary>
         public double? Distance { get; set; }
+
+        /// <summary>
+        /// 类型描述
+        /// </summary>
+        public string Type { get; set; }
     }
 }

@@ -30,7 +30,7 @@
                 <ColumnDefinition Width="96" />
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -86,6 +86,8 @@
                         <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}" Header="序号" />
                         <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="地名" />
                         <GridViewColumn DisplayMemberBinding="{Binding Address}" Header="地址" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Type}" Header="类型" />
+
                         <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
                     </GridView.Columns>
                 </GridView>

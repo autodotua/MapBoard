@@ -218,34 +218,44 @@
             Width="36" Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="4" Cursor="Hand"
-            PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown">
-            <Viewbox
-                Width="24" Height="24"
-                Margin="0,0,2,2"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <Path Data="M916.33 859.76L678.51 621.94A318.92 318.92 0 0 0 768 400c0-176.73-143.27-320-320-320S128 223.27 128 400s143.27 320 320 320a318.48 318.48 0 0 0 167.88-47.55l243.88 243.88a40 40 0 1 0 56.57-56.57zM192 400c0-141.38 114.62-256 256-256s256 114.62 256 256-114.62 256-256 256-256-114.62-256-256z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-            </Viewbox>
+                    PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown"
+            CornerRadius="4" Cursor="Hand">
+            <Grid>
+                <Viewbox
+                    x:Name="vwSearchIcon" Width="24"
+                    Height="24" Margin="0,0,2,2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <Path Data="M916.33 859.76L678.51 621.94A318.92 318.92 0 0 0 768 400c0-176.73-143.27-320-320-320S128 223.27 128 400s143.27 320 320 320a318.48 318.48 0 0 0 167.88-47.55l243.88 243.88a40 40 0 1 0 56.57-56.57zM192 400c0-141.38 114.62-256 256-256s256 114.62 256 256-114.62 256-256 256-256-114.62-256-256z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+                </Viewbox>
+                <Grid
+                    x:Name="grdSearchPanel"
+                    IsHitTestVisible="False" Opacity="0">
+                    <TabControl>
+                        <TabControl.Background>
+                            <SolidColorBrush Color="{DynamicResource SystemChromeMediumHighColor}" />
+                        </TabControl.Background>
+                        <TabItem Header="地点搜索">
+                            <extension:SearchPanel x:Name="searchPanel" />
+                        </TabItem>
+                        <TabItem Header="路径搜索">
+                            <extension:RoutePanel x:Name="routePanel" />
+                        </TabItem>
+                        <TabItem Header="地点信息查询">
+                            <extension:ReGeoCodePanel x:Name="reGeoCodePanel" />
+                        </TabItem>
+                    </TabControl>
+                    <Button
+                        HorizontalAlignment="Right" Height="40"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Click="CloseSearchPanelButton_Click">
+                        <ui:SymbolIcon Symbol="Back" />
+                    </Button>
+                </Grid>
+            </Grid>
         </Border>
-        <Border
-            x:Name="bdSearchPanel" Grid.Row="8"
-            Width="320" Height="0"
-            Padding="8" HorizontalAlignment="Right"
-            ClipToBounds="True" CornerRadius="4"
-            Opacity="0">
-            <TabControl>
-                <TabControl.Background>
-                    <SolidColorBrush Color="{DynamicResource SystemChromeMediumHighColor}" />
-                </TabControl.Background>
-                <TabItem Header="地点搜索">
-                    <extension:SearchPanel x:Name="searchPanel" />
-                </TabItem>
-                <TabItem Header="路径搜索">
-                    <extension:RoutePanel x:Name="routePanel" />
-                </TabItem>
-            </TabControl>
-        </Border>
+
         <Border
             x:Name="bdRoutePanel" Grid.Row="10"
             Width="320" Height="0"

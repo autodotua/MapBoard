@@ -187,9 +187,11 @@ namespace MapBoard.Main.UI
             {
                 grdLeft.IsEnabled = false;
                 btnTitleBarMore.IsEnabled = false;
+                mapInfo.IsEnabled = false;
             }
             else
             {
+                mapInfo.IsEnabled = true;
                 btnTitleBarMore.IsEnabled = true;
                 if (arcMap.Selection.SelectedFeatures.Count > 0)
                 {

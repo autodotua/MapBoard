@@ -52,12 +52,24 @@ namespace MapBoard.Main.UI.Extension
         /// <summary>
         /// 起点
         /// </summary>
-        public Location Origin { get; } = new Location();
+        private Location origin;
+
+        public Location Origin
+        {
+            get => origin;
+            private set => this.SetValueAndNotify(ref origin, value, nameof(Origin));
+        }
 
         /// <summary>
         /// 终点
         /// </summary>
-        public Location Destination { get; } = new Location();
+        private Location destination;
+
+        public Location Destination
+        {
+            get => destination;
+            private set => this.SetValueAndNotify(ref destination, value, nameof(Destination));
+        }
 
         /// <summary>
         /// 搜索结果
@@ -126,7 +138,7 @@ namespace MapBoard.Main.UI.Extension
                 await CommonDialog.ShowErrorDialogAsync("没有选择任何POI搜索引擎");
                 return;
             }
-            if (Origin.Longitude * Origin.Latitude * Destination.Longitude * Destination.Latitude == 0)
+            if (Origin == null || Destination == null || Origin.Longitude * Origin.Latitude * Destination.Longitude * Destination.Latitude == 0)
             {
                 await CommonDialog.ShowErrorDialogAsync("请先完全设置起点和终点的经纬度");
                 return;
@@ -167,17 +179,14 @@ namespace MapBoard.Main.UI.Extension
             if (point != null)
             {
                 point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
-                Location l = (sender as FrameworkElement).Tag as Location;
-                l.Longitude = point.X;
-                l.Latitude = point.Y;
-                if (l == Origin)
+                if ((sender as FrameworkElement).Tag.Equals("1"))
                 {
-                    this.Notify(nameof(Origin));
+                    Origin = point.ToLocation();
                     MapView.Overlay.SetRouteOrigin(point);
                 }
                 else
                 {
-                    this.Notify(nameof(Destination));
+                    Destination = point.ToLocation();
                     MapView.Overlay.SetRouteDestination(point);
                 }
             }
@@ -273,6 +282,18 @@ namespace MapBoard.Main.UI.Extension
                 {
                     layer.LayerVisible = true;
                 }
+            }
+        }
+
+        private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (Origin == null)
+            {
+                Origin = new Location();
+            }
+            if (Destination == null)
+            {
+                Destination = new Location();
             }
         }
     }

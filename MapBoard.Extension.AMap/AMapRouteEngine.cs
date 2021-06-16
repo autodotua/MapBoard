@@ -22,7 +22,7 @@ namespace MapBoard.Extension.AMap
                     return $"https://restapi.amap.com/v4/direction/bicycling?origin={strOrigin}&destination={strDestination}&key={KeyManager.Key}";
 
                 case RouteType.Car:
-                    return $"https://restapi.amap.com/v3/direction/driving?strategy=11&origin={strOrigin}&destination={strDestination}&extensions=base&key={KeyManager.Key}";
+                    return $"https://restapi.amap.com/v3/direction/driving?strategy=10&origin={strOrigin}&destination={strDestination}&extensions=base&key={KeyManager.Key}";
 
                 default:
                     break;
