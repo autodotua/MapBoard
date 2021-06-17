@@ -8,6 +8,10 @@ using System.Windows.Media;
 using System;
 using System.Diagnostics;
 using MapBoard.Main.UI.Map.Model;
+using System.Threading.Tasks;
+using System.Windows.Documents;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -36,7 +40,7 @@ namespace MapBoard.Main.UI.Dialog
         public SelectionHelper Selection { get; }
         public MapLayerCollection Layers { get; }
 
-        public SelectFeatureDialog(SelectionHelper selection, MapLayerCollection layers)
+        public SelectFeatureDialog(Window owner, SelectionHelper selection, MapLayerCollection layers) : base(owner)
         {
             var mainWindow = Application.Current.MainWindow;
             Owner = mainWindow;
@@ -48,7 +52,7 @@ namespace MapBoard.Main.UI.Dialog
             SelectedFeaturesChanged(null, null);
         }
 
-        private void SelectedFeaturesChanged(object sender, EventArgs e)
+        private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {
             if (Selection.SelectedFeatures.Count < 2)
             {
@@ -56,10 +60,14 @@ namespace MapBoard.Main.UI.Dialog
             }
             SelectedFeatures.Clear();
             int index = 0;
-            foreach (var feature in Selection.SelectedFeatures)
+            List<FeatureSelectionInfo> featureSelections = null;
+            await Task.Run(() =>
             {
-                SelectedFeatures.Add(new FeatureSelectionInfo(Layers.Selected, feature, ++index));
-            }
+                featureSelections = Selection.SelectedFeatures
+                .Select(p => new FeatureSelectionInfo(Layers.Selected, p, ++index))
+                .ToList();
+            });
+            featureSelections.ForEach(p => SelectedFeatures.Add(p));
         }
 
         public void ResetLocation()

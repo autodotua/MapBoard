@@ -27,7 +27,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
 
-        private FeatureHistoryDialog(MapLayerInfo layer, ArcMapView arcMap)
+        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, ArcMapView arcMap) : base(owner)
         {
             Layer = layer;
             InitializeComponent();
@@ -48,13 +48,13 @@ namespace MapBoard.Main.UI.Dialog
 
         private static Dictionary<MapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<MapLayerInfo, FeatureHistoryDialog>();
 
-        public static FeatureHistoryDialog Get(MapLayerInfo layer, ArcMapView arcMap)
+        public static FeatureHistoryDialog Get(Window owner, MapLayerInfo layer, ArcMapView arcMap)
         {
             if (dialogs.ContainsKey(layer))
             {
                 return dialogs[layer];
             }
-            var dialog = new FeatureHistoryDialog(layer, arcMap);
+            var dialog = new FeatureHistoryDialog(owner, layer, arcMap);
             dialogs.Add(layer, dialog);
             return dialog;
         }

@@ -134,11 +134,6 @@ namespace MapBoard.Main.UI.Map.Model
             NotifyFeaturesChanged(features, null, null, source);
         }
 
-        public Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters queryParameters)
-        {
-            return table.QueryFeaturesAsync(queryParameters);
-        }
-
         public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
             await table.DeleteFeatureAsync(feature);
@@ -195,10 +190,11 @@ namespace MapBoard.Main.UI.Map.Model
             table = null;
         }
 
-        public Task<Envelope> QueryExtentAsync(QueryParameters queryParameters)
-        {
-            return table.QueryExtentAsync(queryParameters);
-        }
+        [JsonIgnore]
+        public Func<QueryParameters, Task<Envelope>> QueryExtentAsync => table.QueryExtentAsync;
+
+        [JsonIgnore]
+        public Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync => table.QueryFeaturesAsync;
 
         public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
 

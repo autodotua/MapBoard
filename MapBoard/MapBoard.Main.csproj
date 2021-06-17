@@ -124,6 +124,12 @@
   </ItemGroup>
  
   <ItemGroup>
+    <Page Update="UI\Bar\GetGeometryBar.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="UI\Dialog\QueryFeaturesDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="UI\Dialog\FeatureHistoryDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>

@@ -54,22 +54,27 @@ namespace MapBoard.Main.UI.Map
 
         public bool Select(Feature feature, bool clearAll = false)
         {
-            var layer = feature.FeatureTable.Layer as FeatureLayer;
+            var layer = Layers.Find(feature.FeatureTable.Layer as FeatureLayer);
+
             //Debug.Assert(MapView.Layers.Selected.Layer == layer);
             if (layer == null)
             {
-                return false;
+                throw new ArgumentException("找不到图层");
+            }
+            if (Layers.Selected != layer)
+            {
+                Layers.Selected = layer;
             }
             if (clearAll && SelectedFeatures.Count > 0)
             {
-                layer.ClearSelection();
+                layer.Layer.ClearSelection();
                 selectedFeatures.Clear();
             }
             if (selectedFeatures.ContainsKey(feature.GetFID()))
             {
                 return false;
             }
-            layer.SelectFeature(feature);
+            layer.Layer.SelectFeature(feature);
             selectedFeatures.Add(feature.GetFID(), feature);
             CollectionChanged?.Invoke(this, new EventArgs());
             return true;
@@ -77,17 +82,26 @@ namespace MapBoard.Main.UI.Map
 
         public void Select(IEnumerable<Feature> features, bool clearAll = false)
         {
-            var layer = Layers.Selected?.Layer;
+            if (features == null || !features.Any())
+            {
+                throw new ArgumentException("要选择的要素为空");
+            }
+            Debug.Assert(features.Select(p => p.FeatureTable.Layer).Distinct().Count() == 1);
+            var layer = Layers.Find(features.First().FeatureTable.Layer as FeatureLayer);
             if (layer == null)
             {
-                return;
+                throw new ArgumentException("找不到图层");
+            }
+            if (Layers.Selected != layer)
+            {
+                Layers.Selected = layer;
             }
             if (clearAll && SelectedFeatures.Count > 0)
             {
-                layer.ClearSelection();
+                layer.Layer.ClearSelection();
                 selectedFeatures.Clear();
             }
-            layer.SelectFeatures(features);
+            layer.Layer.SelectFeatures(features);
             foreach (var feature in features)
             {
                 selectedFeatures.TryAdd(feature.GetFID(), feature);

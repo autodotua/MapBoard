@@ -29,7 +29,7 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class SettingDialog : Common.DialogWindowBase
     {
-        public SettingDialog(ArcMapView mapView)
+        public SettingDialog(Window owner, ArcMapView mapView) : base(owner)
         {
             MapView = mapView;
             BaseLayers = new ObservableCollection<BaseLayerInfo>(

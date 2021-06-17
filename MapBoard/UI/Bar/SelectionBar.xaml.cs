@@ -83,7 +83,7 @@ namespace MapBoard.Main.UI.Bar
             if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
             {
                 var mainWindow = Application.Current.MainWindow;
-                selectFeatureDialog = new SelectFeatureDialog(MapView.Selection, MapView.Layers);
+                selectFeatureDialog = new SelectFeatureDialog(Window.GetWindow(this), MapView.Selection, MapView.Layers);
                 selectFeatureDialog.Show();
             }
 

@@ -101,7 +101,7 @@ namespace MapBoard.Main.Model
             DateTime? createTime = null;
             try
             {
-                createTime = createTimeString == null ? null : DateTime.Parse(createTimeString);
+                createTime = string.IsNullOrEmpty(createTimeString) ? null : DateTime.Parse(createTimeString);
             }
             catch
             {

@@ -32,7 +32,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
 
-        private AttributeTableDialog(MapLayerInfo layer, ArcMapView mapView)
+        private AttributeTableDialog(Window owner, MapLayerInfo layer, ArcMapView mapView) : base(owner)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
@@ -56,13 +56,13 @@ namespace MapBoard.Main.UI.Dialog
 
         private static Dictionary<MapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<MapLayerInfo, AttributeTableDialog>();
 
-        public static AttributeTableDialog Get(MapLayerInfo layer, ArcMapView mapView)
+        public static AttributeTableDialog Get(Window owner, MapLayerInfo layer, ArcMapView mapView)
         {
             if (dialogs.ContainsKey(layer))
             {
                 return dialogs[layer];
             }
-            var dialog = new AttributeTableDialog(layer, mapView);
+            var dialog = new AttributeTableDialog(owner, layer, mapView);
             dialogs.Add(layer, dialog);
             return dialog;
         }
@@ -135,7 +135,7 @@ namespace MapBoard.Main.UI.Dialog
                     Header = field.DisplayName,
                     Binding = binding,
                     IsReadOnly = field.Name == Parameters.CreateTimeFieldName
-                }) ;
+                });
                 column++;
             }
             AddButton(dg, "缩放到图形", new RoutedEventHandler(LocateButton_Click));

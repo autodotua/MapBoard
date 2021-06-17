@@ -136,7 +136,7 @@ namespace MapBoard.Main.UI
             await arcMap.LoadAsync();
             layerSettings.MapView = arcMap;
             //初始化各操作工具条
-            foreach (var bar in new BarBase[] { editBar, selectBar, measureBar, attributesBar })
+            foreach (var bar in grdCenter.Children.OfType<BarBase>())
             {
                 bar.MapView = arcMap;
                 bar.Initialize();
@@ -368,7 +368,7 @@ namespace MapBoard.Main.UI
         /// <param name="e"></param>
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            new SettingDialog(arcMap) { Owner = this }.ShowDialog();
+            new SettingDialog(this, arcMap).ShowDialog();
         }
 
         /// <summary>

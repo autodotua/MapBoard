@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:bar="clr-namespace:MapBoard.Main.UI.Bar"
     xmlns:common="clr-namespace:MapBoard.Common;assembly=MapBoard.Common"
-    xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
     xmlns:local="clr-namespace:MapBoard.Main.UI"
@@ -20,9 +19,6 @@
     Loaded="WindowLoaded"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized" mc:Ignorable="d">
-    <Window.Resources>
-        <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -127,6 +123,10 @@
                     VerticalAlignment="Top" />
                 <bar:MeasureBar
                     x:Name="measureBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top" />
+                <bar:GetGeometryBar
+                    x:Name="getGeometryBar"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top" />
                 <bar:AttributesBar

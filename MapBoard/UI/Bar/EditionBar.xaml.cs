@@ -69,10 +69,10 @@ namespace MapBoard.Main.UI.Bar
                         //SetBarHeight(false);
                         break;
 
-                    case EditMode.GetLine:
-                        Title = "正在切割（请绘制用于切割的线段）";
-                        //SetBarHeight(true);
-                        break;
+                    //case EditMode.GetLine:
+                    //    Title = "正在切割（请绘制用于切割的线段）";
+                    //    //SetBarHeight(true);
+                    //    break;
 
                     default:
                         return;

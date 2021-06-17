@@ -40,7 +40,7 @@ namespace MapBoard.Main.UI
             }
             InitializeComponent();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
-         
+
             //用于限制最多100毫秒更新一次
             timer = new Timer(new TimerCallback(p =>
              {
@@ -159,7 +159,7 @@ namespace MapBoard.Main.UI
         #region 缩放按钮和缩放条
 
         private double mapScalePercent = 0;
-        private string scaleLevel="50%";
+        private string scaleLevel = "50%";
 
         public double MapScalePercent
         {
@@ -318,7 +318,7 @@ namespace MapBoard.Main.UI
         private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
             CloseLayersPanel();
-            new SettingDialog(MapView) { Owner = Window.GetWindow(this) }.ShowDialog();
+            new SettingDialog(Window.GetWindow(this), MapView).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

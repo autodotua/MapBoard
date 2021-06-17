@@ -25,6 +25,9 @@ namespace MapBoard.Main.UI.Converter
                     case GeometryType.Multipoint:
                         return "多点";
 
+                    case GeometryType.Envelope:
+                        return "矩形";
+
                     default:
                         return "未知";
                 }

@@ -7,14 +7,10 @@ namespace MapBoard.Common
 {
     public class DialogWindowBase : WindowBase, INotifyPropertyChanged
     {
-        public DialogWindowBase()
+        public DialogWindowBase(Window owner)
         {
+            Owner = owner;
             WindowHelper.SetUseModernWindowStyle(this, true);
-            Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
-            if (Owner == null)
-            {
-                Owner = Application.Current.MainWindow;
-            }
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.ToolWindow;

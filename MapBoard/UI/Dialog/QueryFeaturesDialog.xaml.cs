@@ -1,0 +1,162 @@
+﻿using MapBoard.Main.Model;
+using MapBoard.Main.UI.Map;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using MapBoard.Main.Util;
+using ModernWpf.FzExtension.CommonDialog;
+using MapBoard.Main.Model.Extension;
+using FzLib.Extension;
+using Esri.ArcGISRuntime.Data;
+using System.Diagnostics;
+using System.Collections.ObjectModel;
+using MapBoard.Main.UI.Map.Model;
+using MapBoard.Common;
+using Esri.ArcGISRuntime.Geometry;
+using static Esri.ArcGISRuntime.Data.SpatialRelationship;
+
+namespace MapBoard.Main.UI.Dialog
+{
+    /// <summary>
+    /// SelectStyleDialog.xaml 的交互逻辑
+    /// </summary>
+    public partial class QueryFeaturesDialog : DialogWindowBase
+    {
+        public QueryFeaturesDialog(Window owner, ArcMapView mapView, MapLayerInfo layer) : base(owner)
+        {
+            MapView = mapView;
+            InitializeComponent();
+            Layer = layer;
+        }
+
+        private MapLayerInfo layer;
+
+        public MapLayerInfo Layer
+        {
+            get => layer;
+            set
+            {
+                this.SetValueAndNotify(ref layer, value, nameof(Layer));
+                if (menuFields == null)
+                {
+                    return;
+                }
+                menuFields.Items.Clear();
+                foreach (var field in value.Fields.IncludeDefaultFields())
+                {
+                    var menu = new MenuItem()
+                    {
+                        Header = field.DisplayName,
+                        Tag = field.Name
+                    };
+                    menu.Click += (s, e) =>
+                    {
+                        string text = (s as MenuItem).Tag as string;
+                        txtWhere.SelectedText = text;
+                    };
+
+                    menuFields.Items.Add(menu);
+                }
+            }
+        }
+
+        public ArcMapView MapView { get; }
+
+        public QueryParameters Parameters { get; } = new QueryParameters();
+        private void ChooseGeometryButton_Click(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        {
+            ChooseGeometryButton_Click(sender, (RoutedEventArgs)null);
+        }
+        private async void ChooseGeometryButton_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            GetWindow(MapView).Activate();
+            try
+            {
+                Geometry g = ((sender as FrameworkElement).Tag as string) switch
+                {
+                    "1" => await MapView.Editor.GetRectangleAsync(),
+                    "2" => await MapView.Editor.GetPolygonAsync(),
+                    "3" => await MapView.Editor.GetPolylineAsync(),
+                    "4" => await MapView.Editor.GetPointAsync(),
+                    "5" => await MapView.Editor.GetMultiPointAsync(),
+                    _ => throw new NotSupportedException(),
+                };
+                if (g != null)
+                {
+                    Parameters.Geometry = g;
+                    this.Notify(nameof(Parameters));
+                }
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "选取范围失败");
+            }
+            finally
+            {
+                Visibility = Visibility.Visible;
+            }
+        }
+
+        public Dictionary<string, SpatialRelationship> Str2SpatialRelationships { get; } = new Dictionary<string, SpatialRelationship>()
+        {
+            ["相交（Intersects）"] = Intersects,
+            ["相关（Relate）"] = Relate,
+            ["相等（Equals）"] = SpatialRelationship.Equals,
+            ["相离（Disjoint）"] = Disjoint,
+            ["外部接触（Touches）"] = Touches,
+            ["相交且交集维度小于最大纬度（Corsses）"] = Crosses,
+            ["被包含（Within）"] = Within,
+            ["包含（Contains）"] = Contains,
+            ["同纬度相交但不相同（Overlaps）"] = Overlaps,
+            ["包围盒相交（EnvelopeIntersects）"] = EnvelopeIntersects,
+        };
+
+        private void CancelGeometryButton_Click(object sender, RoutedEventArgs e)
+        {
+            Parameters.Geometry = null;
+            this.Notify(nameof(Parameters));
+        }
+
+        private async void QueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Layer != null);
+            Debug.Assert(Owner is MainWindow);
+            try
+            {
+                IsEnabled = false;
+                await (Owner as MainWindow).DoAsync(async () =>
+                 {
+                     FeatureQueryResult result = await Layer.QueryFeaturesAsync(Parameters);
+                     List<Feature> features = null;
+                     await Task.Run(() => features = result.ToList());
+                     if (features.Count > 0)
+                     {
+                         MapView.Selection.Select(features, true);
+                     }
+                     else
+                     {
+                         IsEnabled = true;
+                         await CommonDialog.ShowErrorDialogAsync("没有找到任何符合条件的结果");
+                     }
+                 }, "正在查询");
+            }
+            catch (Exception ex)
+            {
+                IsEnabled = true;
+                await CommonDialog.ShowErrorDialogAsync(ex, "查询失败");
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
+        }
+
+    
+    }
+}

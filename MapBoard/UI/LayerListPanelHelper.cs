@@ -29,13 +29,13 @@ namespace MapBoard.Main.UI
     {
         private readonly ListView list;
 
-        public IDoAsync DoAsyncObj { get; }
+        public MainWindow MainWindow { get; }
         public ArcMapView MapView { get; }
 
-        public LayerListPanelHelper(ListView list, IDoAsync d, ArcMapView mapView)
+        public LayerListPanelHelper(ListView list, MainWindow win, ArcMapView mapView)
         {
             this.list = list;
-            DoAsyncObj = d;
+            MainWindow = win;
             MapView = mapView;
 
             //为图层列表提供拖动改变次序支持
@@ -61,6 +61,8 @@ namespace MapBoard.Main.UI
                 AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
                 AddToMenu(menu, "编辑字段显示名", () => EditFieldDisplayAsync(layer));
                 menu.Items.Add(new Separator());
+                AddToMenu(menu, "查询要素", () => QueryAsync(layer));
+
                 if (layer.GeometryType == GeometryType.Polyline
                     || layer.GeometryType == GeometryType.Point
                     || layer.GeometryType == GeometryType.Multipoint)
@@ -125,9 +127,15 @@ namespace MapBoard.Main.UI
             }
         }
 
+        private async Task QueryAsync(MapLayerInfo layer)
+        {
+            var dialog = new QueryFeaturesDialog(MainWindow, MapView, layer);
+            dialog.BringToFront();
+        }
+
         private async Task OpenHistoryDialog(MapLayerInfo layer)
         {
-            var dialog = FeatureHistoryDialog.Get(layer, MapView);
+            var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
             dialog.BringToFront();
         }
 
@@ -138,7 +146,7 @@ namespace MapBoard.Main.UI
             {
                 try
                 {
-                    await DoAsyncObj.DoAsync(func, "正在处理");
+                    await MainWindow.DoAsync(func, "正在处理");
                 }
                 catch (Exception ex)
                 {
@@ -158,7 +166,7 @@ namespace MapBoard.Main.UI
                     string path = getPath();
                     if (path != null)
                     {
-                        await DoAsyncObj.DoAsync(async () => await func(path), message);
+                        await MainWindow.DoAsync(async () => await func(path), message);
                     }
                 }
                 catch (Exception ex)
@@ -227,7 +235,7 @@ namespace MapBoard.Main.UI
             await dialog.ShowAsync();
             if (dialog.OK)
             {
-                await DoAsyncObj.DoAsync(async () =>
+                await MainWindow.DoAsync(async () =>
                 {
                     await LayerUtility.CoordinateTransformateAsync(layer, dialog.Source, dialog.Target);
                 }, "正在进行坐标转换");
@@ -240,7 +248,7 @@ namespace MapBoard.Main.UI
             await dialog.ShowAsync();
             if (dialog.OK)
             {
-                await DoAsyncObj.DoAsync(async p =>
+                await MainWindow.DoAsync(async p =>
                 {
                     int index = 0;
                     foreach (var layer in layers)
@@ -285,10 +293,10 @@ namespace MapBoard.Main.UI
 
         private async Task ShowAttributeTableAsync(MapLayerInfo layer)
         {
-            var dialog = AttributeTableDialog.Get(layer, MapView);
+            var dialog = AttributeTableDialog.Get(MainWindow, layer, MapView);
             try
             {
-                await DoAsyncObj.DoAsync(dialog.LoadAsync, "正在加载属性表");
+                await MainWindow.DoAsync(dialog.LoadAsync, "正在加载属性表");
             }
             catch (Exception ex)
             {

@@ -33,6 +33,11 @@ namespace MapBoard.Main.UI.Map.Model
             layers = new ObservableCollection<LayerInfo>();
         }
 
+        public MapLayerInfo Find(FeatureLayer layer)
+        {
+            return layers.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
+        }
+
         public MapLayerInfo Selected
         {
             get => selected;

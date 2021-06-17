@@ -47,9 +47,8 @@ namespace MapBoard.Main.UI.Map
             None,
             Creat,
             Edit,
-            GetLine,
-            GetPoint,
-            GetRectangle,
+            GetGeometry,
+
             MeasureLength,
             MeasureArea
         }
@@ -150,41 +149,6 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        /// <summary>
-        /// 获取一条折线
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Polyline> GetPolylineAsync()
-        {
-            StartDraw(EditMode.GetLine);
-            await SketchEditor.StartAsync(SketchCreationMode.Polyline);
-            if (geometry is Polyline line)
-            {
-                if (line.Parts[0].PointCount > 1)
-                {
-                    return line;
-                }
-                return null;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 获取一个点
-        /// </summary>
-        /// <returns></returns>
-        public async Task<MapPoint> GetPointAsync()
-        {
-            StartDraw(EditMode.GetPoint);
-            var geom = await SketchEditor.StartAsync(SketchCreationMode.Point, false);
-            Cancel();
-            if (geom is MapPoint point)
-            {
-                return point;
-            }
-            return null;
-        }
-
         public async Task MeasureLength()
         {
             StartDraw(EditMode.MeasureLength);
@@ -228,12 +192,74 @@ namespace MapBoard.Main.UI.Map
 
         public async Task<Envelope> GetRectangleAsync()
         {
-            StartDraw(EditMode.GetRectangle);
+            StartDraw(EditMode.GetGeometry);
             var geometry = await SketchEditor.StartAsync(SketchCreationMode.Rectangle, false);
             StopAndSave();
             if (geometry is Polygon rect)
             {
                 return rect.Extent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 获取一条折线
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Polyline> GetPolylineAsync()
+        {
+            StartDraw(EditMode.GetGeometry);
+            await SketchEditor.StartAsync(SketchCreationMode.Polyline);
+            if (geometry is Polyline line)
+            {
+                if (line.Parts[0].PointCount > 1)
+                {
+                    return line;
+                }
+                return null;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 获取一个点
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MapPoint> GetPointAsync()
+        {
+            StartDraw(EditMode.GetGeometry);
+            var geom = await SketchEditor.StartAsync(SketchCreationMode.Point, false);
+            Cancel();
+            if (geom is MapPoint point)
+            {
+                return point;
+            }
+            return null;
+        }    /// <summary>
+
+             /// 获取一个多点
+             /// </summary>
+             /// <returns></returns>
+        public async Task<Multipoint> GetMultiPointAsync()
+        {
+            StartDraw(EditMode.GetGeometry);
+            var geom = await SketchEditor.StartAsync(SketchCreationMode.Multipoint, false);
+            Cancel();
+            if (geom is Multipoint point)
+            {
+                return point;
+            }
+            return null;
+        }
+
+        public async Task<Polygon> GetPolygonAsync()
+        {
+            StartDraw(EditMode.GetGeometry);
+            var geometry = await SketchEditor.StartAsync(SketchCreationMode.Polygon, false);
+            StopAndSave();
+            if (geometry is Polygon rect)
+            {
+                return rect;
             }
             return null;
         }
