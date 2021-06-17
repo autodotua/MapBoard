@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Extension;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.UI.Model;
 using MapBoard.Main.Util;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +14,7 @@ namespace MapBoard.Main.UI.Bar
     /// </summary>
     public partial class MeasureBar : BarBase
     {
-        public override FeatureAttributes Attributes => throw new System.NotImplementedException();
+        public override FeatureAttributeCollection Attributes => throw new System.NotImplementedException();
 
         public MeasureBar()
         {

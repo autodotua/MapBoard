@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib.Extension;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.UI.Model;
 using MapBoard.Main.Util;
 using System;
 using System.Windows;
@@ -16,7 +16,7 @@ namespace MapBoard.Main.UI.Bar
     public partial class GetGeometryBar : BarBase
     {
         protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
-        public override FeatureAttributes Attributes => throw new NotSupportedException();
+        public override FeatureAttributeCollection Attributes => throw new NotSupportedException();
 
         public GetGeometryBar()
         {

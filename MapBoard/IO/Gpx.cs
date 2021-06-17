@@ -11,8 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using LibGpx = FzLib.Geography.IO.Gpx.Gpx;
-using MapBoard.Main.UI.Map.Model;
 using static MapBoard.Common.CoordinateSystem;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.IO
 {

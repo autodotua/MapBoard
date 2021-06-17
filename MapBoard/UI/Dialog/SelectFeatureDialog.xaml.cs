@@ -1,5 +1,4 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.UI.Bar;
 using System.Collections.ObjectModel;
@@ -7,11 +6,11 @@ using System.Windows;
 using System.Windows.Media;
 using System;
 using System.Diagnostics;
-using MapBoard.Main.UI.Map.Model;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -115,12 +114,12 @@ namespace MapBoard.Main.UI.Dialog
             {
                 Feature = feature;
                 Index = index;
-                Attributes = FeatureAttributes.FromFeature(layer, feature);
+                Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             }
 
             public Feature Feature { get; }
             public int Index { get; }
-            public FeatureAttributes Attributes { get; set; }
+            public FeatureAttributeCollection Attributes { get; set; }
         }
     }
 }

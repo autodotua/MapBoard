@@ -4,8 +4,8 @@ using ModernWpf.FzExtension.CommonDialog;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using MapBoard.Main.UI.Map.Model;
 using Esri.ArcGISRuntime.Geometry;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {

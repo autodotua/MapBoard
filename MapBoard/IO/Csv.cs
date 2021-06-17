@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.IO
 {

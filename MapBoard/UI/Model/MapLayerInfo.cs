@@ -15,7 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.UI.Map.Model
+namespace MapBoard.Main.UI.Model
 {
     public class MapLayerInfo : LayerInfo, IDisposable
     {
@@ -211,27 +211,6 @@ namespace MapBoard.Main.UI.Map.Model
 
         [JsonIgnore]
         public ObservableCollection<FeaturesChangedEventArgs> Histories { get; } = new ObservableCollection<FeaturesChangedEventArgs>();
-    }
-
-    public class UpdatedFeature
-    {
-        public UpdatedFeature(Feature newFeature)
-        {
-            Feature = newFeature;
-            OldGeometry = Feature.Geometry;
-            OldAttributes = new Dictionary<string, object>(Feature.Attributes);
-        }
-
-        public UpdatedFeature(Feature newFeature, Geometry oldGeometry, IDictionary<string, object> oldAttributes)
-        {
-            Feature = newFeature;
-            OldGeometry = oldGeometry;
-            OldAttributes = oldAttributes;
-        }
-
-        public Feature Feature { get; }
-        public Geometry OldGeometry { get; }
-        public IDictionary<string, object> OldAttributes { get; }
     }
 
     public enum FeaturesChangedSource

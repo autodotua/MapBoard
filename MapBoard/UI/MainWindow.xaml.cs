@@ -24,8 +24,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using static FzLib.Basic.Loop;
-using MapBoard.Main.UI.Map.Model;
 using ModernWpf.FzExtension;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI
 {

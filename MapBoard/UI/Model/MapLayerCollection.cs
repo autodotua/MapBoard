@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using MLayerCollection = MapBoard.Main.Model.LayerCollection;
 using ELayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 
-namespace MapBoard.Main.UI.Map.Model
+namespace MapBoard.Main.UI.Model
 {
     public class MapLayerCollection : MLayerCollection//, IReadOnlyList<MapLayerInfo>,IEnumerable<MapLayerInfo>
     {

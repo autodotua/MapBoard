@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using MapBoard.Common;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 using MapBoard.Main.Util;
 using Newtonsoft.Json.Linq;
 using System;

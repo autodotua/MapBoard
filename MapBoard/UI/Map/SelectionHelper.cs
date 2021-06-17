@@ -5,7 +5,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.Basic;
 using FzLib.Basic.Collection;
 using MapBoard.Main.Model;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,53 +34,100 @@ namespace MapBoard.Main.UI.Map
 
         public ArcMapView MapView { get; }
 
+        public Dictionary<long, Feature>.KeyCollection SelectedFeatureIDs => selectedFeatures.Keys;
         public Dictionary<long, Feature>.ValueCollection SelectedFeatures => selectedFeatures.Values;
         private Dictionary<long, Feature> selectedFeatures = new Dictionary<long, Feature>();
 
-        public event EventHandler CollectionChanged;
+        public event EventHandler<SelectedFeaturesChangedEventArgs> CollectionChanged;
 
         public void ClearSelection()
         {
+            ClearSelection(true);
+        }
+
+        private void ClearSelection(bool raiseEvent)
+        {
             isClearing = true;
             Editor.Cancel();
-            if (MapView.Layers.Selected != null)
-            {
-                MapView.Layers.Selected.Layer.ClearSelection();
-            }
+            var layers = selectedFeatures.Select(p => p.Value.FeatureTable.Layer as FeatureLayer).Distinct().ToList();
+            Debug.Assert(layers.Count == 1);
+            layers[0].ClearSelection();
+            SelectedFeaturesChangedEventArgs e = new SelectedFeaturesChangedEventArgs(Layers.Find(layers[0]), null, selectedFeatures.Values);
             selectedFeatures.Clear();
             isClearing = false;
-            CollectionChanged?.Invoke(this, new EventArgs());
+            if (raiseEvent)
+            {
+                CollectionChanged?.Invoke(this, e);
+            }
         }
 
         public bool Select(Feature feature, bool clearAll = false)
         {
-            var layer = Layers.Find(feature.FeatureTable.Layer as FeatureLayer);
-
-            //Debug.Assert(MapView.Layers.Selected.Layer == layer);
-            if (layer == null)
-            {
-                throw new ArgumentException("找不到图层");
-            }
-            if (Layers.Selected != layer)
-            {
-                Layers.Selected = layer;
-            }
-            if (clearAll && SelectedFeatures.Count > 0)
-            {
-                layer.Layer.ClearSelection();
-                selectedFeatures.Clear();
-            }
             if (selectedFeatures.ContainsKey(feature.GetFID()))
             {
                 return false;
             }
-            layer.Layer.SelectFeature(feature);
-            selectedFeatures.Add(feature.GetFID(), feature);
-            CollectionChanged?.Invoke(this, new EventArgs());
-            return true;
+            return Select(new[] { feature }, clearAll) == 1;
         }
 
-        public void Select(IEnumerable<Feature> features, bool clearAll = false)
+        /// <summary>
+        /// 选取一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="clearAll"></param>
+        /// <returns>新增选取的个数</returns>
+        public int Select(IEnumerable<Feature> features, bool clearAll = false)
+        {
+            if (features == null || !features.Any())
+            {
+                throw new ArgumentException("要选择的要素为空");
+            }
+            Debug.Assert(features.Select(p => p.FeatureTable.Layer).Distinct().Count() == 1);
+            var layer = Layers.Find(features.First().FeatureTable.Layer as FeatureLayer);
+            if (layer == null)
+            {
+                throw new ArgumentException("找不到图层");
+            }
+            //如果图层不匹配，那么要先把之前图层给清除选择，保证只有一个图层被选择
+            if (Layers.Selected != layer)
+            {
+                ClearSelection();
+                Layers.Selected = layer;
+            }
+            List<Feature> add = new List<Feature>();
+            List<Feature> remove = new List<Feature>();
+            if (clearAll && SelectedFeatures.Count > 0)
+            {
+                remove.AddRange(SelectedFeatures);
+                layer.Layer.ClearSelection();
+                selectedFeatures.Clear();
+            }
+            add.AddRange(features);
+            layer.Layer.SelectFeatures(features);
+            foreach (var feature in features)
+            {
+                selectedFeatures.TryAdd(feature.GetFID(), feature);
+            }
+            CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
+            return add.Count;
+        }
+
+        public bool UnSelect(Feature feature)
+        {
+            if (!selectedFeatures.ContainsKey(feature.GetFID()))
+            {
+                return false;
+            }
+            return UnSelect(new[] { feature }) == 1;
+        }
+
+        /// <summary>
+        /// 取消选取一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="clearAll"></param>
+        /// <returns>新增选取的个数</returns>
+        public int UnSelect(IEnumerable<Feature> features)
         {
             if (features == null || !features.Any())
             {
@@ -96,17 +143,18 @@ namespace MapBoard.Main.UI.Map
             {
                 Layers.Selected = layer;
             }
-            if (clearAll && SelectedFeatures.Count > 0)
-            {
-                layer.Layer.ClearSelection();
-                selectedFeatures.Clear();
-            }
-            layer.Layer.SelectFeatures(features);
+            List<Feature> remove = new List<Feature>();
+
+            layer.Layer.UnselectFeatures(features);
             foreach (var feature in features)
             {
-                selectedFeatures.TryAdd(feature.GetFID(), feature);
+                if (selectedFeatures.Remove(feature.GetFID()))
+                {
+                    remove.Add(feature);
+                }
             }
-            CollectionChanged?.Invoke(this, new EventArgs());
+            CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, null, remove));
+            return remove.Count;
         }
 
         public async Task SelectRectangleAsync()
@@ -135,7 +183,7 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        private async void MapviewTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
+        private async void MapviewTapped(object sender, GeoViewInputEventArgs e)
         {
             if (MapView.CurrentTask == BoardTask.Draw //正在绘制
                 || (MapView.CurrentTask != BoardTask.Select)//当前不在选择状态，
@@ -185,11 +233,14 @@ namespace MapBoard.Main.UI.Map
                      return;
                  }
 
-                 QueryParameters query = new QueryParameters();
-                 query.Geometry = envelope;
-                 query.SpatialRelationship = relationship;
+                 QueryParameters query = new QueryParameters
+                 {
+                     Geometry = envelope,
+                     SpatialRelationship = relationship
+                 };
                  bool first = SelectedFeatures.Count == 0;
                  List<Feature> features = null;
+                 MapLayerInfo layer = null;
                  if (allLayers)
                  {
                      IdentifyLayerResult result =
@@ -199,7 +250,7 @@ namespace MapBoard.Main.UI.Map
                      {
                          return;
                      }
-                     MapLayerInfo layer = MapView.Layers.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == result.LayerContent);
+                     layer = Layers.Find(result.LayerContent as FeatureLayer);
                      Debug.Assert(layer != null);
                      MapView.Layers.Selected = layer;
                      features = result.GeoElements.Cast<Feature>().ToList();
@@ -207,12 +258,13 @@ namespace MapBoard.Main.UI.Map
                  }
                  else
                  {
-                     FeatureLayer layer = Layers.Selected?.Layer;
+                     layer = Layers.Selected;
+                     FeatureLayer fLayer = Layers.Selected?.Layer;
                      if (Layers.Selected == null || !Layers.Selected.LayerVisible)
                      {
                          return;
                      }
-                     FeatureQueryResult result = await layer.SelectFeaturesAsync(query, mode);
+                     FeatureQueryResult result = await fLayer.SelectFeaturesAsync(query, mode);
 
                      await Task.Run(() =>
                      {
@@ -223,6 +275,8 @@ namespace MapBoard.Main.UI.Map
                  {
                      return;
                  }
+                 List<Feature> add = new List<Feature>();
+                 List<Feature> remove = new List<Feature>();
 
                  if (first)//首次选择
                  {
@@ -236,6 +290,7 @@ namespace MapBoard.Main.UI.Map
                          foreach (var feature in features)
                          {
                              selectedFeatures.Add(feature.GetFID(), feature);
+                             add.Add(feature);
                          }
                      }
                  }
@@ -250,11 +305,13 @@ namespace MapBoard.Main.UI.Map
                                  if (!selectedFeatures.ContainsKey(fid))
                                  {
                                      selectedFeatures.Add(fid, feature);
+                                     add.Add(feature);
                                  }
                              }
                              break;
 
                          case SelectionMode.New:
+                             remove.AddRange(selectedFeatures.Values);
                              selectedFeatures.Clear();
                              foreach (var feature in features)
                              {
@@ -269,6 +326,7 @@ namespace MapBoard.Main.UI.Map
                                  if (selectedFeatures.ContainsKey(fid))
                                  {
                                      selectedFeatures.Remove(fid);
+                                     remove.Add(feature);
                                  }
                              }
                              break;
@@ -277,11 +335,11 @@ namespace MapBoard.Main.UI.Map
                              throw new ArgumentOutOfRangeException();
                      }
                  }
-                 CollectionChanged?.Invoke(this, new EventArgs());
+                 CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
              }, "正在选取");
         }
 
-        private void SelectedFeatures_CollectionChanged(object sender, EventArgs e)
+        private void SelectedFeatures_CollectionChanged(object sender, SelectedFeaturesChangedEventArgs e)
         {
             if (SelectedFeatures.Count == 0 && MapView.CurrentTask == BoardTask.Select)
             {
@@ -292,5 +350,33 @@ namespace MapBoard.Main.UI.Map
                 MapView.CurrentTask = BoardTask.Select;
             }
         }
+    }
+
+    public class SelectedFeaturesChangedEventArgs : EventArgs
+    {
+        public SelectedFeaturesChangedEventArgs(MapLayerInfo layer, IEnumerable<Feature> selected, IEnumerable<Feature> unSelected)
+        {
+            if (selected != null)
+            {
+                Selected = selected.ToArray();
+            }
+            else
+            {
+                Selected = Array.Empty<Feature>();
+            }
+            if (unSelected != null)
+            {
+                UnSelected = unSelected.ToArray();
+            }
+            else
+            {
+                UnSelected = Array.Empty<Feature>();
+            }
+            Layer = layer;
+        }
+
+        public Feature[] Selected { get; }
+        public Feature[] UnSelected { get; }
+        public MapLayerInfo Layer { get; }
     }
 }

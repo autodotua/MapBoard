@@ -1,5 +1,4 @@
-﻿using MapBoard.Main.Model;
-using MapBoard.Main.UI.Map;
+﻿using MapBoard.Main.UI.Map;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -9,7 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Bar
 {
@@ -70,7 +69,7 @@ namespace MapBoard.Main.UI.Bar
         public virtual void Initialize()
         { }
 
-        public abstract FeatureAttributes Attributes { get; }
+        public abstract FeatureAttributeCollection Attributes { get; }
 
         public bool IsOpen { get; private set; }
 

@@ -48,6 +48,20 @@
                     </Style.Triggers>
                 </Style>
             </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn
+                    Width="56" CanUserResize="False"
+                    Header="选择">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                Margin="18,0,0,0" Click="CheckBox_Click"
+                                IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                Tag="{Binding .}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
         </DataGrid>
         <Grid Grid.Row="2" Margin="8">
             <Grid.ColumnDefinitions>

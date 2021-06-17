@@ -17,7 +17,6 @@
     Loaded="Window_Loaded" mc:Ignorable="d">
     <local:DialogWindowBase.Resources>
         <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
-        <dialog:BaseLayerTypeConverter x:Key="bl2str" />
     </local:DialogWindowBase.Resources>
     <Grid Margin="8">
         <Grid.RowDefinitions>
@@ -77,7 +76,7 @@
                                 <DataGridTemplateColumn CanUserSort="False" Header="类型">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding Type, Converter={StaticResource bl2str}}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Type, Converter={StaticResource bltc}}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 

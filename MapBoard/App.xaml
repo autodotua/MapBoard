@@ -12,13 +12,13 @@
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
                 <ResourceDictionary Source="UI/PathIcons.xaml" />
+                <ResourceDictionary Source="UI/Converter/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="{x:Type TextBox}">
                 <Setter Property="Padding" Value="8,2,6,1" />
             </Style>
             <converters:NotNull2BoolConverter x:Key="nn2bc" />
             <converters:Null2InvisiableConverter x:Key="n2ic" />
-            <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

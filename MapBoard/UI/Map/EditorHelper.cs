@@ -3,7 +3,6 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using FzLib.Extension;
 using MapBoard.Common;
-using MapBoard.Main.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Map
 {
@@ -33,7 +32,7 @@ namespace MapBoard.Main.UI.Map
         /// <summary>
         /// 正在编辑的要素的属性
         /// </summary>
-        private FeatureAttributes attributes;
+        private FeatureAttributeCollection attributes;
 
         /// <summary>
         /// 绘制完成的图形
@@ -42,21 +41,11 @@ namespace MapBoard.Main.UI.Map
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public enum EditMode
-        {
-            None,
-            Creat,
-            Edit,
-            GetGeometry,
-
-            MeasureLength,
-            MeasureArea
-        }
 
         /// <summary>
         /// 正在编辑的要素的属性
         /// </summary>
-        public FeatureAttributes Attributes
+        public FeatureAttributeCollection Attributes
         {
             get => attributes;
             set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
@@ -101,7 +90,7 @@ namespace MapBoard.Main.UI.Map
                 var label = Attributes.Label;
                 var key = Attributes.Key;
                 var date = Attributes.Date;
-                Attributes = FeatureAttributes.Empty(Layers.Selected);
+                Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
                 if (Config.Instance.RemainLabel)
                 {
                     Attributes.Label = label;
@@ -117,7 +106,7 @@ namespace MapBoard.Main.UI.Map
             }
             else
             {
-                Attributes = FeatureAttributes.Empty(Layers.Selected);
+                Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
             }
             StartDraw(EditMode.Creat);
 
@@ -137,7 +126,7 @@ namespace MapBoard.Main.UI.Map
         /// <returns></returns>
         public async Task EditAsync(MapLayerInfo layer, Feature feature)
         {
-            Attributes = FeatureAttributes.FromFeature(layer, feature);
+            Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);
             await SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
             if (geometry != null)
@@ -267,6 +256,15 @@ namespace MapBoard.Main.UI.Map
         public event EventHandler<EditorStatusChangedEventArgs> EditorStatusChanged;
     }
 
+    public enum EditMode
+    {
+        None,
+        Creat,
+        Edit,
+        GetGeometry,
+        MeasureLength,
+        MeasureArea
+    }
     public class EditorStatusChangedEventArgs : EventArgs
     {
         public EditorStatusChangedEventArgs(bool isRunning)

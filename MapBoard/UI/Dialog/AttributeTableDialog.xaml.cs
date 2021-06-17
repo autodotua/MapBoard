@@ -15,8 +15,8 @@ using FzLib.Extension;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
-using MapBoard.Main.UI.Map.Model;
 using MapBoard.Common;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -25,12 +25,12 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class AttributeTableDialog : Common.DialogWindowBase
     {
-        private ObservableCollection<FeatureAttributes> attributes;
-        private Dictionary<long, FeatureAttributes> feature2Attributes;
+        private ObservableCollection<FeatureAttributeCollection> attributes;
+        private Dictionary<long, FeatureAttributeCollection> feature2Attributes;
 
         private bool close = false;
 
-        private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
+        private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
         private AttributeTableDialog(Window owner, MapLayerInfo layer, ArcMapView mapView) : base(owner)
         {
@@ -48,7 +48,7 @@ namespace MapBoard.Main.UI.Dialog
             IsEnabled = e.NewTask != BoardTask.Draw;
         }
 
-        public ObservableCollection<FeatureAttributes> Attributes
+        public ObservableCollection<FeatureAttributeCollection> Attributes
         {
             get => attributes;
             private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
@@ -88,17 +88,29 @@ namespace MapBoard.Main.UI.Dialog
             var features = await Layer.GetAllFeaturesAsync();
             await Task.Run(() =>
             {
-                Attributes = new ObservableCollection<FeatureAttributes>(features.Select(p => FeatureAttributes.FromFeature(Layer, p)));
+                Attributes = new ObservableCollection<FeatureAttributeCollection>(
+                    features.Select(p =>
+                        FeatureAttributeCollection.FromFeature(Layer, p)));
+
                 feature2Attributes = attributes.ToDictionary(p => p.Feature.GetFID());
             });
+            //对已经选择的要素应用到属性表中（理论上，不该存在的吧）
+            foreach (var attr in Attributes)
+            {
+                if (MapView.Selection.SelectedFeatureIDs.Contains(attr.Feature.GetFID()))
+                {
+                    attr.IsSelected = true;
+                }
+            }
             if (Attributes.Count == 0)
             {
                 throw new Exception("没有任何要素");
             }
             Layer.FeaturesChanged += Layer_FeaturesChanged;
+
             var fields = Layer.Fields.IncludeDefaultFields().ToList();
 
-            int column = 0;
+            int column = 1;
 
             foreach (var field in Attributes[0].All)
             {
@@ -141,6 +153,64 @@ namespace MapBoard.Main.UI.Dialog
             AddButton(dg, "缩放到图形", new RoutedEventHandler(LocateButton_Click));
             AddButton(dg, "选择", new RoutedEventHandler(SelectButton_Click));
             AddButton(dg, "加入选择", new RoutedEventHandler(AddSelectButton_Click));
+
+            MapView.Selection.CollectionChanged += Selection_CollectionChanged;
+        }
+
+        /// <summary>
+        /// 图层中选择的要素修改后，同步更新属性表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Selection_CollectionChanged(object sender, Map.SelectedFeaturesChangedEventArgs e)
+        {
+            if (e.Layer != Layer)
+            {
+                return;
+            }
+            if (e.Selected.Length + e.UnSelected.Length == 0)
+            {
+                return;
+            }
+            foreach (var feature in e.Selected)
+            {
+                long id = feature.GetFID();
+                if (feature2Attributes.ContainsKey(id))
+                {
+                    feature2Attributes[id].IsSelected = true;
+                }
+            }
+            foreach (var feature in e.UnSelected)
+            {
+                long id = feature.GetFID();
+                if (feature2Attributes.ContainsKey(id))
+                {
+                    feature2Attributes[id].IsSelected = false;
+                }
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <remarks>
+        /// 不知道什么原因，用DataGridCheckBoxColumn无法双向绑定IsSelected，
+        /// 因此改用更灵活的方式，并且使用单向绑定+事件的方式更新数据
+        /// </remarks>
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var fa = (sender as FrameworkElement).Tag as FeatureAttributeCollection;
+            Debug.Assert(fa != null);
+            if ((sender as CheckBox).IsChecked == true)
+            {
+                MapView.Selection.Select(fa.Feature);
+            }
+            else
+            {
+                MapView.Selection.UnSelect(fa.Feature);
+            }
         }
 
         private void Layer_FeaturesChanged(object sender, FeaturesChangedEventArgs e)
@@ -150,7 +220,7 @@ namespace MapBoard.Main.UI.Dialog
                 foreach (var f in e.AddedFeatures)
                 {
                     long fid = f.GetFID();
-                    var attr = FeatureAttributes.FromFeature(Layer, f);
+                    var attr = FeatureAttributeCollection.FromFeature(Layer, f);
                     Attributes.Add(attr);
                     feature2Attributes.Add(fid, attr);
                 }
@@ -179,7 +249,7 @@ namespace MapBoard.Main.UI.Dialog
                     {
                         int index = Attributes.IndexOf(feature2Attributes[fid]);
                         Attributes.RemoveAt(index);
-                        var attr = FeatureAttributes.FromFeature(Layer, f.Feature);
+                        var attr = FeatureAttributeCollection.FromFeature(Layer, f.Feature);
                         feature2Attributes[fid] = attr;
                         Attributes.Insert(index, attr);
                     }
@@ -204,7 +274,7 @@ namespace MapBoard.Main.UI.Dialog
             factory.AddHandler(Button.ClickEvent, handler);
             dg.Columns.Add(new DataGridTemplateColumn()
             {
-                CellTemplate = new DataTemplate(typeof(FeatureAttributes))
+                CellTemplate = new DataTemplate(typeof(FeatureAttributeCollection))
                 {
                     VisualTree = factory
                 }
@@ -213,7 +283,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private void AddSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
+            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
             MapView.Selection.Select(feature);
         }
 
@@ -259,13 +329,13 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void LocateButton_Click(object sender, RoutedEventArgs e)
         {
-            var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
+            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
             await MapView.ZoomToGeometryAsync(feature.Geometry);
         }
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var feature = ((sender as Button).Tag as FeatureAttributes).Feature;
+            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
             MapView.Selection.Select(feature, true);
         }
 
@@ -273,7 +343,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             if (e.EditAction == DataGridEditAction.Commit)
             {
-                if (e.Row.Item is FeatureAttributes attribute)
+                if (e.Row.Item is FeatureAttributeCollection attribute)
                 {
                     editedAttributes.Add(attribute);
                     btnSave.IsEnabled = true;

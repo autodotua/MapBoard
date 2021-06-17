@@ -6,7 +6,6 @@ using FzLib.Extension;
 using FzLib.WPF.Dialog;
 using MapBoard.Common;
 using MapBoard.Main.IO;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.UI.Map;
 using MapBoard.Main.Util;
@@ -29,7 +28,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Bar
 {
@@ -89,7 +88,7 @@ namespace MapBoard.Main.UI.Bar
 
             if (count == 1)
             {
-                attributes = FeatureAttributes.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
+                attributes = FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
             }
             else
             {
@@ -98,9 +97,9 @@ namespace MapBoard.Main.UI.Bar
             this.Notify(nameof(Attributes));
         }
 
-        private FeatureAttributes attributes;
+        private FeatureAttributeCollection attributes;
 
-        public override FeatureAttributes Attributes => attributes;
+        public override FeatureAttributeCollection Attributes => attributes;
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {

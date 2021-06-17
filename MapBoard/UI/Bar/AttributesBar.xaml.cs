@@ -1,7 +1,7 @@
 ﻿using FzLib.Extension;
 using FzLib.WPF.Dialog;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.UI.Model;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -32,8 +32,8 @@ namespace MapBoard.Main.UI.Bar
             MapView.Selection.CollectionChanged += (s, e) => ExpandOrCollapse();
         }
 
-        private FeatureAttributes attributes;
-        public override FeatureAttributes Attributes => attributes;
+        private FeatureAttributeCollection attributes;
+        public override FeatureAttributeCollection Attributes => attributes;
 
         public override double ExpandDistance => 240;
 
@@ -53,7 +53,7 @@ namespace MapBoard.Main.UI.Bar
                 case BoardTask.Select
                             when MapView.Layers.Selected != null
                             && MapView.Selection.SelectedFeatures.Count == 1:
-                    attributes = FeatureAttributes.FromFeature(MapView.Layers.Selected, MapView.Selection.SelectedFeatures.First());
+                    attributes = FeatureAttributeCollection.FromFeature(MapView.Layers.Selected, MapView.Selection.SelectedFeatures.First());
                     dataGrid.Columns[1].IsReadOnly = true;
                     break;
 

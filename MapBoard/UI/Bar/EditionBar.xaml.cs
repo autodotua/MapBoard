@@ -1,6 +1,6 @@
 ﻿using FzLib.Extension;
-using MapBoard.Main.Model;
 using MapBoard.Main.UI.Map;
+using MapBoard.Main.UI.Model;
 using System.Windows;
 using System.Windows.Controls;
 using static MapBoard.Main.UI.Map.EditorHelper;
@@ -23,35 +23,17 @@ namespace MapBoard.Main.UI.Bar
             MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
         }
 
-        public override FeatureAttributes Attributes => MapView.Editor.Attributes;
+        public override FeatureAttributeCollection Attributes => MapView.Editor.Attributes;
 
         private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
         {
             btnDeleteSelectedVertex.IsEnabled = MapView.SketchEditor.SelectedVertex != null;
         }
 
-        //private double barHeight = 56;
         public override double ExpandDistance => 28;
 
         protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
 
-        //public void SetBarHeight(bool oneLine)
-        //{
-        //    if (oneLine)
-        //    {
-        //        grdProperties.Visibility = Visibility.Collapsed;
-        //        barHeight = 28;
-        //        grd.RowDefinitions[2].Height = new GridLength(0);
-        //        grd.RowDefinitions[3].Height = new GridLength(0);
-        //    }
-        //    else
-        //    {
-        //        barHeight = 56;
-        //        grdProperties.Visibility = Visibility.Visible;
-        //        grd.RowDefinitions[2].Height = new GridLength(24);
-        //        grd.RowDefinitions[3].Height = new GridLength(4);
-        //    }
-        //}
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {

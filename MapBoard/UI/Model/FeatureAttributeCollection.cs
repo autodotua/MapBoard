@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using FzLib.Extension;
 using MapBoard.Common;
+using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
 using MapBoard.Main.Util;
 using Newtonsoft.Json;
@@ -12,14 +13,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.Model
+namespace MapBoard.Main.UI.Model
 {
-    public class FeatureAttributes : INotifyPropertyChanged
+    public class FeatureAttributeCollection : INotifyPropertyChanged
     {
         private List<FeatureAttribute> others = new List<FeatureAttribute>();
         private List<FeatureAttribute> all = new List<FeatureAttribute>();
 
-        private FeatureAttributes()
+        private FeatureAttributeCollection()
         {
         }
 
@@ -31,6 +32,23 @@ namespace MapBoard.Main.Model
         {
             get => feature;
             private set => this.SetValueAndNotify(ref feature, value, nameof(Feature));
+        }
+
+        private bool isSelected;
+
+        [JsonIgnore]
+        public bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                if (isSelected == value)
+                {
+                    return;
+                }
+                isSelected = value;
+                this.Notify(nameof(IsSelected));
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -71,9 +89,9 @@ namespace MapBoard.Main.Model
         public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
         public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
 
-        public static FeatureAttributes Empty(LayerInfo layer)
+        public static FeatureAttributeCollection Empty(LayerInfo layer)
         {
-            var attributes = new FeatureAttributes();
+            var attributes = new FeatureAttributeCollection();
             attributes.all.Add(new FeatureAttribute(FieldInfo.LabelField, null));
             attributes.all.Add(new FeatureAttribute(FieldInfo.ClassField, null));
             attributes.all.Add(new FeatureAttribute(FieldInfo.DateField, null));
@@ -87,9 +105,9 @@ namespace MapBoard.Main.Model
             return attributes;
         }
 
-        public static FeatureAttributes FromFeature(LayerInfo layer, Feature feature)
+        public static FeatureAttributeCollection FromFeature(LayerInfo layer, Feature feature)
         {
-            FeatureAttributes attributes = new FeatureAttributes
+            FeatureAttributeCollection attributes = new FeatureAttributeCollection
             {
                 Feature = feature
             };

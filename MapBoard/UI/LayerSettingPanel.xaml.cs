@@ -21,7 +21,7 @@ using System.Windows.Media;
 using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI
 {
@@ -87,7 +87,7 @@ namespace MapBoard.Main.UI
             {
                 int index = Layers.IndexOf(Layers.Selected);
 
-                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240||newName.Length<1)
+                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240 || newName.Length < 1)
                 {
                     await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
                 }

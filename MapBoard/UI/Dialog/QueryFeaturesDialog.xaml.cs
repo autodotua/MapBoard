@@ -15,10 +15,10 @@ using FzLib.Extension;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
-using MapBoard.Main.UI.Map.Model;
 using MapBoard.Common;
 using Esri.ArcGISRuntime.Geometry;
 using static Esri.ArcGISRuntime.Data.SpatialRelationship;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -68,10 +68,12 @@ namespace MapBoard.Main.UI.Dialog
         public ArcMapView MapView { get; }
 
         public QueryParameters Parameters { get; } = new QueryParameters();
+
         private void ChooseGeometryButton_Click(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
         {
             ChooseGeometryButton_Click(sender, (RoutedEventArgs)null);
         }
+
         private async void ChooseGeometryButton_Click(object sender, RoutedEventArgs e)
         {
             Hide();
@@ -127,6 +129,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             Debug.Assert(Layer != null);
             Debug.Assert(Owner is MainWindow);
+            Layer.LayerVisible = true;
             try
             {
                 IsEnabled = false;
@@ -156,7 +159,5 @@ namespace MapBoard.Main.UI.Dialog
                 IsEnabled = true;
             }
         }
-
-    
     }
 }

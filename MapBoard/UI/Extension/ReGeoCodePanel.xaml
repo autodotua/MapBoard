@@ -12,9 +12,7 @@
     d:DesignHeight="450" d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <local:IndexConverter x:Key="IndexConverter" />
-    </UserControl.Resources>
+
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -194,7 +192,7 @@
                             <ListView.View>
                                 <GridView>
                                     <GridView.Columns>
-                                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}" Header="序号" />
+                                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ic}}" Header="序号" />
                                         <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="地名" />
                                         <GridViewColumn DisplayMemberBinding="{Binding Address}" Header="地址" />
                                         <GridViewColumn DisplayMemberBinding="{Binding Type}" Header="类型" />

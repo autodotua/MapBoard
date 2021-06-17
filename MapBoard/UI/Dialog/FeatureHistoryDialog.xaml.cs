@@ -1,5 +1,4 @@
-﻿using MapBoard.Main.Model;
-using MapBoard.Main.UI.Map;
+﻿using MapBoard.Main.UI.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ using MapBoard.Main.Model.Extension;
 using FzLib.Extension;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
-using MapBoard.Main.UI.Map.Model;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI.Dialog
 {
@@ -23,9 +22,9 @@ namespace MapBoard.Main.UI.Dialog
     /// </summary>
     public partial class FeatureHistoryDialog : Common.DialogWindowBase
     {
-        private FeatureAttributes[] attributes;
+        private FeatureAttributeCollection[] attributes;
 
-        private HashSet<FeatureAttributes> editedAttributes = new HashSet<FeatureAttributes>();
+        private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
         private FeatureHistoryDialog(Window owner, MapLayerInfo layer, ArcMapView arcMap) : base(owner)
         {
@@ -59,7 +58,7 @@ namespace MapBoard.Main.UI.Dialog
             return dialog;
         }
 
-        public FeatureAttributes[] Attributes
+        public FeatureAttributeCollection[] Attributes
         {
             get => attributes;
             private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));

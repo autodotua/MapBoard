@@ -8,7 +8,6 @@ using FzLib.WPF.Dialog;
 using MapBoard.Main.UI.Dialog;
 using MapBoard.Main.Util;
 using ModernWpf.FzExtension.CommonDialog;
-using MapBoard.Main.UI.Map.Model;
 
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +21,7 @@ using System.Collections;
 using System.Windows.Controls.Primitives;
 
 using System.Windows.Media;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.UI
 {

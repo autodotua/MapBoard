@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapBoard.Main.UI.Map.Model
+namespace MapBoard.Main.UI.Model
 {
     public static class FeatureExtension
     {

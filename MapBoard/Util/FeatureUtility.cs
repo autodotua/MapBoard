@@ -10,8 +10,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using static MapBoard.Main.UI.Map.Model.FeaturesChangedSource;
-using MapBoard.Main.UI.Map.Model;
+using static MapBoard.Main.UI.Model.FeaturesChangedSource;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.Util
 {

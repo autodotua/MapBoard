@@ -3,7 +3,6 @@ using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using FzLib.Basic;
 using MapBoard.Common;
-using MapBoard.Main.UI.Map.Model;
 
 using MapBoard.Main.Model;
 using MapBoard.Main.Model.Extension;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MapBoard.Main.UI.Model;
 
 namespace MapBoard.Main.IO
 {
