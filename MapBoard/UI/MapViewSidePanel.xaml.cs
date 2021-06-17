@@ -33,9 +33,14 @@ namespace MapBoard.Main.UI
 
         public MapViewSidePanel()
         {
+            BaseLayers = Config.Instance.BaseLayers;
+            for (int i = 0; i < BaseLayers.Count; i++)
+            {
+                BaseLayers[i].Index = i + 1;
+            }
             InitializeComponent();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
-            BaseLayers = Config.Instance.BaseLayers;
+         
             //用于限制最多100毫秒更新一次
             timer = new Timer(new TimerCallback(p =>
              {
@@ -154,7 +159,7 @@ namespace MapBoard.Main.UI
         #region 缩放按钮和缩放条
 
         private double mapScalePercent = 0;
-        private string scaleLevel;
+        private string scaleLevel="50%";
 
         public double MapScalePercent
         {

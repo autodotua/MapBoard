@@ -42,21 +42,16 @@
             Background="{DynamicResource backgroundBrush}"
             CornerRadius="4" Cursor="Hand"
             ToolTip="点击返回正北朝上">
-            <Viewbox
-                x:Name="vbxRotate" Cursor="Hand"
+            <ContentControl
+                x:Name="vbxRotate"
+                Content="{StaticResource CompassIcon}"
+                Cursor="Hand"
                 PreviewMouseDown="RotatePanel_PreviewMouseDown"
                 RenderTransformOrigin="0.5,0.5">
-                <Viewbox.RenderTransform>
+                <ContentControl.RenderTransform>
                     <RotateTransform CenterX="0.5" CenterY="0.5" />
-                </Viewbox.RenderTransform>
-                <Grid RenderTransformOrigin="0.5,0.5">
-                    <Grid.RenderTransform>
-                        <RotateTransform Angle="-45" />
-                    </Grid.RenderTransform>
-                    <Path Data="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z" Fill="Transparent" />
-                    <Path Data="M434.688 568.302345L142.106483 519.273931 773.490759 229.517241 468.197517 845.364966z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                </Grid>
-            </Viewbox>
+                </ContentControl.RenderTransform>
+            </ContentControl>
         </Border>
         <Border
             x:Name="bdLayers" Grid.Row="2"
@@ -66,29 +61,35 @@
             CornerRadius="4" Cursor="Hand"
             PreviewMouseDown="LayersPanel_PreviewMouseDown">
             <Grid>
-                <Viewbox
+                <ContentControl
                     x:Name="iconLayers" Width="24"
-                    Margin="0,0,4,4" ToolTip="点击打开图层列表">
-                    <Grid>
-                        <Path Data="M512 544c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a32.032 32.032 0 0 1 0-57.248l352-176a31.968 31.968 0 0 1 28.629334 0l352 176a32 32 0 0 1 0 57.237334l-352 176A31.893333 31.893333 0 0 1 512 544zM231.552 336L512 476.224 792.448 336 512 195.776 231.552 336z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                        <Path Data="M512 720c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a31.989333 31.989333 0 1 1 28.629334-57.237333L512 652.224l337.685333-168.842667a32 32 0 1 1 28.618667 57.237334l-352 176A31.818667 31.818667 0 0 1 512 720z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                        <Path Data="M512 896c-4.896 0-9.802667-1.12-14.314667-3.370667l-352-176a31.989333 31.989333 0 0 1-14.304-42.933333 32.021333 32.021333 0 0 1 42.933334-14.314667L512 828.224l337.685333-168.842667a32.010667 32.010667 0 0 1 28.618667 57.248l-352 176A31.946667 31.946667 0 0 1 512 896z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Grid>
-                </Viewbox>
+                    Margin="0,0,4,4"
+                    Content="{StaticResource LayersIcon}"
+                    ToolTip="点击打开图层列表" />
                 <Grid
                     x:Name="grdLayers" Opacity="0"
                     Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="0" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock
                         Margin="8,8,0,0"
                         Style="{DynamicResource SubtitleTextBlockStyle}"
                         Text="底图图层" />
+                    <Button
+                        Margin="0,0,72,0" Background="Transparent"
+                        HorizontalAlignment="Right"
+                        Click="OpenSettingDialogButton_Click"
+                        Content="设置" />
+                    <Button
+                        Height="40" HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Click="CloseLayerPanelButton_Click">
+                        <ui:SymbolIcon Symbol="Back" />
+                    </Button>
                     <DataGrid
                         x:Name="dgLayers" Grid.Row="2"
                         AutoGenerateColumns="False"
@@ -151,22 +152,6 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Grid Grid.Row="4" Margin="8,0,8,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Click="OpenSettingDialogButton_Click"
-                            Content="设置" />
-                        <Button
-                            Grid.Column="2"
-                            HorizontalAlignment="Stretch"
-                            Click="CloseLayerPanelButton_Click"
-                            Content="关闭" />
-                    </Grid>
                 </Grid>
             </Grid>
         </Border>
@@ -218,16 +203,13 @@
             Width="36" Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-                    PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown"
-            CornerRadius="4" Cursor="Hand">
+            CornerRadius="4" Cursor="Hand"
+            PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown">
             <Grid>
-                <Viewbox
+                <ContentControl
                     x:Name="vwSearchIcon" Width="24"
-                    Height="24" Margin="0,0,2,2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                    <Path Data="M916.33 859.76L678.51 621.94A318.92 318.92 0 0 0 768 400c0-176.73-143.27-320-320-320S128 223.27 128 400s143.27 320 320 320a318.48 318.48 0 0 0 167.88-47.55l243.88 243.88a40 40 0 1 0 56.57-56.57zM192 400c0-141.38 114.62-256 256-256s256 114.62 256 256-114.62 256-256 256-256-114.62-256-256z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                </Viewbox>
+                    Height="24"
+                    Content="{StaticResource SearchIcon}" />
                 <Grid
                     x:Name="grdSearchPanel"
                     IsHitTestVisible="False" Opacity="0">
@@ -246,7 +228,7 @@
                         </TabItem>
                     </TabControl>
                     <Button
-                        HorizontalAlignment="Right" Height="40"
+                        Height="40" HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Background="Transparent"
                         Click="CloseSearchPanelButton_Click">

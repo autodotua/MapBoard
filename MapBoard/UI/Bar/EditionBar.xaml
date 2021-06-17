@@ -18,8 +18,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="4" />
-            <!--<RowDefinition Height="24" />
-            <RowDefinition Height="4" />-->
         </Grid.RowDefinitions>
         <TextBlock
             Grid.RowSpan="3"
@@ -46,9 +44,7 @@
 
             <Button Command="{Binding MapView.SketchEditor.UndoCommand}" Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="16">
-                        <Path Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Viewbox>
+                    <ContentControl Width="12" Content="{StaticResource UndoIcon}" />
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">撤销</TextBlock>
                 </StackPanel>
             </Button>
@@ -57,12 +53,7 @@
                 Command="{Binding MapView.SketchEditor.RedoCommand}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="16" RenderTransformOrigin="0.5,0.5">
-                        <Viewbox.RenderTransform>
-                            <ScaleTransform ScaleX="-1" />
-                        </Viewbox.RenderTransform>
-                        <Path Data="M426.053024 331.626933l0-169.619142-331.490833 300.725132 331.490833 300.789601L426.053024 581.63394c92.097558 0 376.594077 0 499.373425 281.257755l0-31.251771C925.426449 706.636932 802.629705 305.014832 426.053024 331.626933z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Viewbox>
+                    <ContentControl Width="12" Content="{StaticResource RedoIcon}" />
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">恢复</TextBlock>
                 </StackPanel>
             </Button>
@@ -74,9 +65,7 @@
                 IsEnabled="False"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="14">
-                        <Path Data="M853.4 333.5H199.8c-3.9 0-7 3.4-6.6 7.3l60.1 630c0 29.3 23.8 53.1 53.1 53.1H747c29.3 0 53.1-23.8 53.1-53.1l60.1-630c0.2-3.9-2.8-7.3-6.8-7.3zM388.8 890.9h-19.5c-13 0-23.6-10.6-23.6-23.6l-24.3-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6l24.3 376c0 13-10.6 23.6-23.6 23.6z m171.3-23.6c0 13-10.6 23.6-23.6 23.6H517c-13 0-23.6-10.6-23.6-23.6v-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6v376z m148.3 0c0 13-10.6 23.6-23.6 23.6h-19.5c-13 0-23.6-10.6-23.6-23.6l24.3-376c0-13 10.6-23.6 23.6-23.6h19.5c13 0 23.6 10.6 23.6 23.6l-24.3 376zM869.3 153.2l-705 162c-4 0.9-7.9-1.6-8.8-5.5l-8.8-38.5c-6.8-29.5 11.8-59.2 41.3-66L800 64.5c29.5-6.8 59.2 11.8 66 41.3l8.8 38.5c0.9 4-1.5 8-5.5 8.9zM386.5 127.3c-6.5-27.9 11-56.1 39-62.6l98.2-22.8c27.9-6.5 56.1 11 62.6 39l3.8 16.2 44.3-10.3-3.1-13.3c-11.7-50.4-62.5-82-112.8-70.3L413.6 27.6c-50.4 11.7-82 62.5-70.3 112.8l3 13.1 43.9-10.2-3.7-16z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Viewbox>
+                    <ContentControl Width="12" Content="{StaticResource DeleteIcon}" />
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">删除节点</TextBlock>
                 </StackPanel>
             </Button>
@@ -85,9 +74,7 @@
                 Grid.Column="8" Click="OkButtonClick"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="14">
-                        <Path Data="M448 896c-16.9 0-33.2-6.7-45.3-18.8l-320-320c-25-25-25-65.5 0-90.5s65.5-25 90.5 0l266.1 266.1 404.3-577.5c20.3-28.9 60.2-36 89.1-15.8 29 20.3 36 60.2 15.8 89.1l-448 640c-10.8 15.5-28 25.4-46.8 27.1-2 0.2-3.9 0.3-5.7 0.3z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Viewbox>
+                    <ContentControl Width="14" Content="{StaticResource OkIcon}" />
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">完成</TextBlock>
                 </StackPanel>
             </Button>
@@ -97,9 +84,7 @@
                 Click="CancelButtonClick"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="14">
-                        <Path Data="M842.947458 778.116917 576.847937 512.013303 842.946434 245.883083c8.67559-8.674567 13.447267-20.208251 13.43908-32.477692-0.008186-12.232602-4.7727-23.715121-13.414521-32.332383-8.655124-8.677637-20.149922-13.450337-32.384571-13.4575-12.286838 0-23.808242 4.771677-32.474622 13.434987L512.019443 447.143876 245.88206 181.050496c-8.66331-8.66331-20.175505-13.434987-32.416294-13.434987-12.239765 0-23.75196 4.770653-32.414247 13.43294-8.66024 8.636704-13.428847 20.12434-13.437034 32.356942-0.008186 12.269441 4.76349 23.803125 13.437034 32.476669l266.135336 266.13022L181.050496 778.11794c-8.664334 8.66331-13.43601 20.173458-13.43601 32.41527 0 12.239765 4.7727 23.752983 13.437034 32.417317 8.662287 8.66331 20.173458 13.43294 32.413224 13.43294 12.240789 0 23.754007-4.770653 32.416294-13.43294l266.134313-266.100544 266.101567 266.100544c8.66331 8.66331 20.185738 13.43294 32.4429 13.43294 12.265348-0.008186 23.74889-4.771677 32.369222-13.412474C860.81643 825.081555 860.821547 795.991006 842.947458 778.116917z" Fill="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-                    </Viewbox>
+                    <ContentControl Width="14" Content="{StaticResource CancelIcon}" />
                     <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">取消</TextBlock>
                 </StackPanel>
             </Button>

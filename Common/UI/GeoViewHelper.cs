@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
+using MapBoard.Common.Model;
 using System;
 using System.IO;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace MapBoard.Common.UI
             {
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers)
+                foreach (var item in Config.Instance.BaseLayers.Reverse<BaseLayerInfo>())
                 {
                     try
                     {

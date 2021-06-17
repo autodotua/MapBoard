@@ -265,7 +265,7 @@ namespace MapBoard.Main.UI.Map
         public void SetRouteOrigin(MapPoint point)
         {
             Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
-                .FirstOrDefault(p => p.Attributes["Name"] == "起点");
+                .FirstOrDefault(p => p.Attributes["Name"].Equals("起点"));
             if (graphic != null)
             {
                 routeOverlay.Graphics.Remove(graphic);
@@ -280,7 +280,7 @@ namespace MapBoard.Main.UI.Map
         public void SetRouteDestination(MapPoint point)
         {
             Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
-                  .FirstOrDefault(p => p.Attributes["Name"] == "终点");
+                  .FirstOrDefault(p => p.Attributes["Name"].Equals("终点"));
             if (graphic != null)
             {
                 routeOverlay.Graphics.Remove(graphic);
