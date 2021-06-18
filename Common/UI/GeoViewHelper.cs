@@ -18,7 +18,7 @@ namespace MapBoard.Common.UI
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public async static Task<bool> LoadBaseGeoViewAsync(GeoView map)
+        public async static Task<bool> LoadBaseGeoViewAsync(this GeoView map)
         {
             try
             {

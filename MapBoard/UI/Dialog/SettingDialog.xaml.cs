@@ -114,9 +114,17 @@ namespace MapBoard.Main.UI.Dialog
         private async void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
-
-            await MapView.LoadBasemapAsync();
             Config.Instance.Save();
+            App.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            (Owner as MainWindow).Close(true);
+            foreach (Window window in App.Current.Windows.Cast<Window>().ToList())
+            {
+                window.Close();
+            }
+            App.Current.MainWindow = new MainWindow();
+            App.Current.MainWindow.Show();
+            App.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
+            Close();
         }
 
         private void AddButtonClick(object sender, RoutedEventArgs e)
@@ -188,5 +196,4 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
     }
-
 }

@@ -244,6 +244,15 @@ namespace MapBoard.Main.UI
             }
         }
 
+        public void Close(bool force)
+        {
+            if (force)
+            {
+                closing = true;
+            }
+            Close();
+        }
+
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
             if (closing)

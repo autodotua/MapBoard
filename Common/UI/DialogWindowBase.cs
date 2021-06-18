@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 namespace MapBoard.Common
 {
@@ -15,6 +16,7 @@ namespace MapBoard.Common
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.ToolWindow;
             ShowInTaskbar = false;
+            KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

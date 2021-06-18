@@ -123,7 +123,7 @@ namespace MapBoard.Main.UI.Map
 
         public async Task LoadAsync()
         {
-            await LoadBasemapAsync();
+            await GeoViewHelper.LoadBaseGeoViewAsync(this);
             Map.MaxScale = 100;
             Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
@@ -232,14 +232,10 @@ namespace MapBoard.Main.UI.Map
             }
         }
 
-        public async Task LoadBasemapAsync()
-        {
-            await GeoViewHelper.LoadBaseGeoViewAsync(this);
-        }
-    } /// <summary>
+    }
 
-      /// 画板任务类型
-      /// </summary>
+    /// 画板任务类型
+    /// </summary>
     public enum BoardTask
     {
         Ready,

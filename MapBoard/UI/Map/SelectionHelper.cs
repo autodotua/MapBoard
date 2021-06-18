@@ -49,6 +49,10 @@ namespace MapBoard.Main.UI.Map
         {
             isClearing = true;
             Editor.Cancel();
+            if (selectedFeatures.Count == 0)
+            {
+                return;
+            }
             var layers = selectedFeatures.Select(p => p.Value.FeatureTable.Layer as FeatureLayer).Distinct().ToList();
             Debug.Assert(layers.Count == 1);
             layers[0].ClearSelection();
