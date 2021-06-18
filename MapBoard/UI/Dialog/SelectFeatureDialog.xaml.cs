@@ -75,14 +75,13 @@ namespace MapBoard.Main.UI.Dialog
             {
                 return;
             }
-            var mainWindow = Application.Current.MainWindow;
-            double left = mainWindow.Left;
-            double top = mainWindow.Top;
-            if (mainWindow.WindowState == WindowState.Maximized)
+            double left = Owner.Left;
+            double top = Owner.Top;
+            if (Owner.WindowState == WindowState.Maximized)
             {
                 left = top = 0;
             }
-            mainWindow.IsVisibleChanged += (p1, p2) =>
+            Owner.IsVisibleChanged += (p1, p2) =>
             {
                 if (p2.NewValue.Equals(false))
                 {
@@ -90,8 +89,8 @@ namespace MapBoard.Main.UI.Dialog
                 }
             };
 
-            Left = left + mainWindow.ActualWidth - ActualWidth;
-            Top = top + mainWindow.ActualHeight - Height;
+            Left = left + Owner.ActualWidth - ActualWidth;
+            Top = top + Owner.ActualHeight - Height;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -103,9 +102,7 @@ namespace MapBoard.Main.UI.Dialog
         {
             ResetLocation();
             base.OnContentRendered(e);
-            var mainWindow = Application.Current.MainWindow;
-
-            mainWindow.Focus();
+            Owner.Focus();
         }
 
         public class FeatureSelectionInfo

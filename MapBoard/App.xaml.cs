@@ -9,6 +9,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using log4net;
+
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
 namespace MapBoard.Main
 {
@@ -17,8 +20,13 @@ namespace MapBoard.Main
     /// </summary>
     public partial class App : Application
     {
+        public static ILog Log { get; private set; }
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            Log = LogManager.GetLogger(GetType());
+            Log.Info("程序启动");
+
 #if (DEBUG)
             //StartupUri = new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute);
             //var win = new GpxToolbox.MainWindow();
@@ -33,14 +41,11 @@ namespace MapBoard.Main
 
 #endif
             Config.Instance.ThemeChanged += (p1, p2) =>
-            {
                 Theme.SetTheme(Config.Instance.Theme);
-            };
             WindowBase.WindowCreated += (p1, p2) =>
-            {
                 Theme.SetTheme(Config.Instance.Theme, p1 as Window);
-            };
             SnakeBar.DefaultOwner = new WindowOwner(true);
+
             if (e.Args.Length > 0)
             {
                 string arg = e.Args[0];
@@ -63,38 +68,16 @@ namespace MapBoard.Main
             }
         }
 
-        private async void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
+        private void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
         {
-            //await Task.Run(() =>
-            //{
-            //    try
-            //    {
-            //        LogUtility.AddLog(e.Exception.Message, e.Exception.ToString());
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //    }
-            //});
-            if (!e.Exception.Source.StartsWith("Microsoft.EntityFrameworkCore"))
-            {
-                await Dispatcher.Invoke(async () =>
-                {
-                    try
-                    {
-                        await CommonDialog.ShowErrorDialogAsync(e.Exception, "程序出现异常");
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            MessageBox.Show(e.Exception.ToString());
-                        }
-                        catch
-                        {
-                        }
-                    }
-                });
-            }
+            Log.Error("未捕获的异常", e.Exception);
+            MessageBox.Show(e.Exception.ToString(), "MapBoard - 未捕获的异常", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(-1);
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Log.Info("程序正常关闭");
         }
     }
 }

@@ -83,12 +83,12 @@ namespace MapBoard.Main.UI.Dialog
             }
             isLoaded = true;
             var features = await Layer.GetAllFeaturesAsync();
+            //获取要素的属性列表
             await Task.Run(() =>
             {
                 Attributes = new ObservableCollection<FeatureAttributeCollection>(
                     features.Select(p =>
                         FeatureAttributeCollection.FromFeature(Layer, p)));
-
                 feature2Attributes = attributes.ToDictionary(p => p.Feature.GetFID());
             });
             //对已经选择的要素应用到属性表中（理论上，不该存在的吧）
@@ -105,10 +105,9 @@ namespace MapBoard.Main.UI.Dialog
             }
             Layer.FeaturesChanged += Layer_FeaturesChanged;
 
+            //将属性加入DataGrid中
             var fields = Layer.Fields.IncludeDefaultFields().ToList();
-
             int column = 1;
-
             foreach (var field in Attributes[0].All)
             {
                 string path = null;
@@ -148,9 +147,8 @@ namespace MapBoard.Main.UI.Dialog
                 column++;
             }
             AddButton(dg, "缩放到图形", new RoutedEventHandler(LocateButton_Click));
-            AddButton(dg, "选择", new RoutedEventHandler(SelectButton_Click));
-            AddButton(dg, "加入选择", new RoutedEventHandler(AddSelectButton_Click));
 
+            //地图的选择发生改变后，需要同步更新表格的选择
             MapView.Selection.CollectionChanged += Selection_CollectionChanged;
         }
 

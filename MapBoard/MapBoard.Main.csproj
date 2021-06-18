@@ -90,6 +90,7 @@
       <Version>1.15.0</Version>
     </PackageReference>
     <PackageReference Include="Esri.ArcGISRuntime.WPF" Version="100.11.0" />
+    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
       <Version>1.1.4</Version>
     </PackageReference>
@@ -115,12 +116,22 @@
     <Compile Remove="Model\TimeExtent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ApplicationDefinition Update="App.xaml">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="UI\Extension\RoutePanel.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="UI\Extension\ReGeoCodePanel.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
  
   <ItemGroup>

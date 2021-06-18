@@ -46,6 +46,7 @@ namespace MapBoard.Main.UI.Dialog
                 {
                     return;
                 }
+                //选择的图层修改后，更新字段菜单
                 menuFields.Items.Clear();
                 if (value != null)
                 {
@@ -69,7 +70,9 @@ namespace MapBoard.Main.UI.Dialog
         }
 
         public ArcMapView MapView { get; }
-
+        /// <summary>
+        /// 查询参数
+        /// </summary>
         public QueryParameters Parameters { get; } = new QueryParameters();
 
         private void ChooseGeometryButton_Click(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
@@ -79,6 +82,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void ChooseGeometryButton_Click(object sender, RoutedEventArgs e)
         {
+            //隐藏本窗口并激活主窗口
             Hide();
             GetWindow(MapView).Activate();
             try
@@ -108,6 +112,9 @@ namespace MapBoard.Main.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 用于将显示在组合框中的字符串转换到空间关系枚举
+        /// </summary>
         public Dictionary<string, SpatialRelationship> Str2SpatialRelationships { get; } = new Dictionary<string, SpatialRelationship>()
         {
             ["相交（Intersects）"] = Intersects,

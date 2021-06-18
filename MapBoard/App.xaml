@@ -5,6 +5,7 @@
     xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
     xmlns:converters="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    Exit="Application_Exit"
     Startup="Application_Startup">
     <Application.Resources>
         <ResourceDictionary>
