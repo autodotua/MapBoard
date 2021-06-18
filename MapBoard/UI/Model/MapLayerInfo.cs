@@ -188,6 +188,8 @@ namespace MapBoard.Main.UI.Model
         {
             table?.Close();
             table = null;
+
+            Unattached?.Invoke(this, new EventArgs());
         }
 
         [JsonIgnore]
@@ -211,6 +213,8 @@ namespace MapBoard.Main.UI.Model
 
         [JsonIgnore]
         public ObservableCollection<FeaturesChangedEventArgs> Histories { get; } = new ObservableCollection<FeaturesChangedEventArgs>();
+
+        public event EventHandler Unattached;
     }
 
     public enum FeaturesChangedSource

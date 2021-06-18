@@ -20,15 +20,14 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class FeatureHistoryDialog : Common.DialogWindowBase
+    public partial class FeatureHistoryDialog : LayerDialogBase
     {
         private FeatureAttributeCollection[] attributes;
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, ArcMapView arcMap) : base(owner)
+        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, ArcMapView arcMap) : base(owner, layer)
         {
-            Layer = layer;
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
             Layer.Histories.CollectionChanged += Histories_CollectionChanged;
@@ -65,8 +64,6 @@ namespace MapBoard.Main.UI.Dialog
         }
 
         public int EditedFeaturesCount => editedAttributes.Count;
-
-        public MapLayerInfo Layer { get; }
 
         private void Dialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

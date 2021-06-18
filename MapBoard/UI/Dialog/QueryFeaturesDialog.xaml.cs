@@ -47,20 +47,23 @@ namespace MapBoard.Main.UI.Dialog
                     return;
                 }
                 menuFields.Items.Clear();
-                foreach (var field in value.Fields.IncludeDefaultFields())
+                if (value != null)
                 {
-                    var menu = new MenuItem()
+                    foreach (var field in value.Fields.IncludeDefaultFields())
                     {
-                        Header = field.DisplayName,
-                        Tag = field.Name
-                    };
-                    menu.Click += (s, e) =>
-                    {
-                        string text = (s as MenuItem).Tag as string;
-                        txtWhere.SelectedText = text;
-                    };
+                        var menu = new MenuItem()
+                        {
+                            Header = field.DisplayName,
+                            Tag = field.Name
+                        };
+                        menu.Click += (s, e) =>
+                        {
+                            string text = (s as MenuItem).Tag as string;
+                            txtWhere.SelectedText = text;
+                        };
 
-                    menuFields.Items.Add(menu);
+                        menuFields.Items.Add(menu);
+                    }
                 }
             }
         }
@@ -127,7 +130,10 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void QueryButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layer != null);
+            if (Layer == null)
+            {
+                await CommonDialog.ShowErrorDialogAsync("请先选择图层");
+            }
             Debug.Assert(Owner is MainWindow);
             Layer.LayerVisible = true;
             try

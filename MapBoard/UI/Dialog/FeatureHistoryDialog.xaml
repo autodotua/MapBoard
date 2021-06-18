@@ -1,4 +1,5 @@
-﻿<local:DialogWindowBase
+﻿<dialog:LayerDialogBase
+    xmlns:dialog="clr-namespace:MapBoard.Main.UI.Dialog"
     x:Class="MapBoard.Main.UI.Dialog.FeatureHistoryDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -88,4 +89,4 @@
             </TextBlock>
         </Grid>
     </Grid>
-</local:DialogWindowBase>
+</dialog:LayerDialogBase>

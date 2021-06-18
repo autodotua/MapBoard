@@ -95,7 +95,10 @@ namespace MapBoard.Main.UI.Model
             foreach (var layer in EsriLayers.ToArray())
             {
                 EsriLayers.Remove(layer);
-                ((layer as FeatureLayer).FeatureTable as ShapefileFeatureTable).Close();
+            }
+            foreach (MapLayerInfo layer in layers)
+            {
+                layer.Dispose();
             }
             layers.Clear();
         }

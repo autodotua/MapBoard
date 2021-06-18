@@ -23,20 +23,18 @@ namespace MapBoard.Main.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class AttributeTableDialog : Common.DialogWindowBase
+    public partial class AttributeTableDialog : LayerDialogBase
     {
         private ObservableCollection<FeatureAttributeCollection> attributes;
         private Dictionary<long, FeatureAttributeCollection> feature2Attributes;
 
-        private bool close = false;
-
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private AttributeTableDialog(Window owner, MapLayerInfo layer, ArcMapView mapView) : base(owner)
+        private AttributeTableDialog(Window owner, MapLayerInfo layer, ArcMapView mapView) : base(owner, layer)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
-            Layer = layer;
+
             MapView = mapView;
             Width = 800;
             Height = 600;
@@ -69,7 +67,6 @@ namespace MapBoard.Main.UI.Dialog
 
         public int EditedFeaturesCount => editedAttributes.Count;
 
-        public MapLayerInfo Layer { get; }
         public ArcMapView MapView { get; }
 
         public bool isLoaded = false;
@@ -289,7 +286,7 @@ namespace MapBoard.Main.UI.Dialog
 
         private async void AttributeTableDialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (close)
+            if (closing)
             {
                 Debug.Assert(dialogs.ContainsKey(Layer));
                 dialogs.Remove(Layer);
@@ -300,7 +297,7 @@ namespace MapBoard.Main.UI.Dialog
                 e.Cancel = true;
                 if (await CommonDialog.ShowYesNoDialogAsync("是否关闭", "当前编辑未保存，是否关闭？"))
                 {
-                    close = true;
+                    closing = true;
                     Close();
                 }
             }
