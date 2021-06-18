@@ -1,5 +1,7 @@
 ﻿using MapBoard.Common;
 using ModernWpf.FzExtension.CommonDialog;
+using System;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace MapBoard.Main.UI.Dialog
@@ -14,25 +16,14 @@ namespace MapBoard.Main.UI.Dialog
             InitializeComponent();
         }
 
-        public bool OK { get; private set; } = false;
-        public CoordinateSystem Source { get; private set; }
+        public CoordinateSystem[] CoordinateSystems { get; } = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>().ToArray();
+        public CoordinateSystem Source { get; set; } = CoordinateSystem.GCJ02;
 
-        public CoordinateSystem Target { get; private set; }
+        public CoordinateSystem Target { get; set; } = CoordinateSystem.WGS84;
 
-        private void GCJ2WGSButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            OK = true;
-            Source = CoordinateSystem.GCJ02;
-            Target = CoordinateSystem.WGS84;
-            Hide();
-        }
-
-        private void WGS2GCJButton_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            OK = true;
-            Source = CoordinateSystem.WGS84;
-            Target = CoordinateSystem.GCJ02;
-            Hide();
+            IsPrimaryButtonEnabled = Source != Target;
         }
     }
 }

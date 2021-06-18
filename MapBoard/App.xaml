@@ -18,8 +18,6 @@
             <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="{x:Type TextBox}">
                 <Setter Property="Padding" Value="8,2,6,1" />
             </Style>
-            <converters:NotNull2BoolConverter x:Key="nn2bc" />
-            <converters:Null2InvisiableConverter x:Key="n2ic" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

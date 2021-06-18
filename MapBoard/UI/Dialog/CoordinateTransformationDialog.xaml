@@ -8,13 +8,15 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="坐标转换" CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    mc:Ignorable="d">
-    <ui:SimpleStackPanel
-        Margin="8" HorizontalAlignment="Stretch"
-        VerticalAlignment="Center"
-        Orientation="Vertical" Spacing="12">
-
-        <Button Click="WGS2GCJButton_Click" Content="WGS84 转 GCJ02"  HorizontalAlignment="Stretch" />
-        <Button Click="GCJ2WGSButton_Click" Content="GCJ02 转 WGS84"  HorizontalAlignment="Stretch" />
-    </ui:SimpleStackPanel>
+    PrimaryButtonText="确定" mc:Ignorable="d">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="到" Margin="8" Grid.Column="1"  VerticalAlignment="Center" />
+        <ListView SelectionChanged="ListView_SelectionChanged" ItemsSource="{Binding CoordinateSystems}" SelectedItem="{Binding Source}" />
+        <ListView  SelectionChanged="ListView_SelectionChanged" Grid.Column="2" ItemsSource="{Binding CoordinateSystems}" SelectedItem="{Binding Target}" />
+    </Grid>
 </commondialog:CommonDialog>

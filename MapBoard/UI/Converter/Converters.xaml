@@ -1,7 +1,12 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converter="clr-namespace:MapBoard.Main.UI.Converter"
+    xmlns:converters="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows">
     <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
     <converter:BaseLayerTypeConverter x:Key="bltc" />
     <converter:IndexConverter x:Key="ic" />
+    <converters:Enum2DescriptionConverter x:Key="e2dc" />
+    <converters:NotNull2BoolConverter x:Key="nn2bc" />
+    <converters:Null2InvisiableConverter x:Key="n2ic" />
 </ResourceDictionary>

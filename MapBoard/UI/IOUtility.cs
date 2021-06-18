@@ -24,6 +24,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using ModernWpf.FzExtension;
 using MapBoard.Main.UI.Model;
+using MapBoard.Main.UI.Dialog;
 
 namespace MapBoard.Main.UI
 {
@@ -135,6 +136,7 @@ namespace MapBoard.Main.UI
                 ImportMapType.LayerPackge => filter.Add("mblpkg地图画板图层包", "mblpkg"),
                 ImportMapType.Gpx => filter.Add("GPS轨迹文件", "gpx"),
                 ImportMapType.Shapefile => filter.Add("Shapefile", "shp"),
+                ImportMapType.CSV => filter.Add("CSV表格", "csv"),
                 _ => throw new ArgumentOutOfRangeException()
             };
             return FileSystemDialog.GetOpenFile(filter);
@@ -171,6 +173,12 @@ namespace MapBoard.Main.UI
 
                     case ImportMapType.Shapefile:
                         await Shapefile.ImportAsync(path, layers);
+                        break;
+
+                    case ImportMapType.CSV:
+                        var table = await Csv.ImportToDataTableAsync(path);
+                        await new ImportTableDialog(layers, table, Path.GetFileNameWithoutExtension(path))
+                            .ShowAsync();
                         break;
 
                     default:
@@ -360,7 +368,8 @@ namespace MapBoard.Main.UI
         MapPackgeAppend = 2,
         LayerPackge = 3,
         Gpx = 4,
-        Shapefile = 5
+        Shapefile = 5,
+        CSV = 6
     }
 
     public enum ExportMapType

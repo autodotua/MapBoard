@@ -133,10 +133,17 @@ namespace MapBoard.Common
                     return point;
 
                 case CoordinateSystem.GCJ02:
-                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
-                    GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(geoPoint);
-                    return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
-
+                    {
+                        GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
+                        GeoPoint newPoint = ChineseCoordinateTransformation.GCJ02ToWGS84(geoPoint);
+                        return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
+                    }
+                case CoordinateSystem.BD09:
+                    {
+                        GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
+                        GeoPoint newPoint = ChineseCoordinateTransformation.BD09ToWgs84(geoPoint);
+                        return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
+                    }
                 default:
                     throw new Exception("未知坐标系");
             }
@@ -155,10 +162,16 @@ namespace MapBoard.Common
                     return point;
 
                 case CoordinateSystem.GCJ02:
-                    GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
-                    GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
-                    return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
-
+                    {
+                        GeoPoint geoPoint = new GeoPoint(point.X, point.Y);
+                        GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToGCJ02(geoPoint);
+                        return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
+                    }
+                case CoordinateSystem.BD09:
+                    {
+                        GeoPoint newPoint = ChineseCoordinateTransformation.WGS84ToBD09(point.Y, point.X);
+                        return new MapPoint(newPoint.X, newPoint.Y, SpatialReferences.Wgs84);
+                    }
                 default:
                     throw new Exception("未知坐标系");
             }
@@ -179,6 +192,9 @@ namespace MapBoard.Common
                 case CoordinateSystem.GCJ02:
                     return ChineseCoordinateTransformation.GCJ02ToWGS84(point);
 
+                case CoordinateSystem.BD09:
+                    return ChineseCoordinateTransformation.BD09ToWgs84(point);
+
                 default:
                     throw new Exception("未知坐标系");
             }
@@ -198,6 +214,9 @@ namespace MapBoard.Common
 
                 case CoordinateSystem.GCJ02:
                     return ChineseCoordinateTransformation.WGS84ToGCJ02(point);
+
+                case CoordinateSystem.BD09:
+                    return ChineseCoordinateTransformation.WGS84ToBD09(point.Y, point.X);
 
                 default:
                     throw new Exception("未知坐标系");

@@ -10,6 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MapBoard.Main.UI.Model;
+using System.Data;
+using CsvHelper;
+using System.Globalization;
 
 namespace MapBoard.Main.IO
 {
@@ -168,6 +171,20 @@ namespace MapBoard.Main.IO
             }
             await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
             return features.AsReadOnly();
+        }
+
+        public async static Task<DataTable> ImportToDataTableAsync(string path)
+        {
+            DataTable dt = null;
+            await Task.Run(() =>
+            {
+                using var reader = new StreamReader(path);
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                using var dr = new CsvDataReader(csv);
+                 dt = new DataTable();
+                dt.Load(dr);
+            });
+            return dt;
         }
     }
 }

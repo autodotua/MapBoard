@@ -63,6 +63,10 @@ namespace MapBoard.Main.Util
                     name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFileName()));
                 }
             }
+            else
+            {
+                name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp")));
+            }
             if (fields == null)
             {
                 fields = new List<FieldInfo>();

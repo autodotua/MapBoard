@@ -275,6 +275,9 @@
                                     <MenuItem
                                         Click="ImportMenu_Click"
                                         Header="Shapefile" Tag="5" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="CSV表格" Tag="6" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>

@@ -232,8 +232,7 @@ namespace MapBoard.Main.UI
         private async Task CoordinateTransformateAsync(MapLayerInfo layer)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-            await dialog.ShowAsync();
-            if (dialog.OK)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
             {
                 await MainWindow.DoAsync(async () =>
                 {
@@ -245,8 +244,7 @@ namespace MapBoard.Main.UI
         private async Task CoordinateTransformateAsync(IList<MapLayerInfo> layers)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-            await dialog.ShowAsync();
-            if (dialog.OK)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
             {
                 await MainWindow.DoAsync(async p =>
                 {
