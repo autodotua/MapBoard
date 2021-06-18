@@ -107,7 +107,7 @@ namespace MapBoard.Main.UI.Dialog
 
             //将属性加入DataGrid中
             var fields = Layer.Fields.IncludeDefaultFields().ToList();
-            int column = 1;
+            int column = 0;
             foreach (var field in Attributes[0].All)
             {
                 string path = null;
