@@ -6,7 +6,7 @@
 ** All rights reserved.
 **
 ** This file is part of the EGIS.ShapeFileLib class library of Easy GIS .NET.
-** 
+**
 ** Easy GIS .NET is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License version 3 as
 ** published by the Free Software Foundation and appearing in the file
@@ -23,8 +23,7 @@
 **
 ****************************************************************************/
 
-#endregion
-
+#endregion Copyright and License
 
 using System;
 using System.Collections.Generic;
@@ -38,19 +37,23 @@ namespace EGIS.ShapeFileLib
     /// <summary>
     /// Enumeration defining a LineType when rendering PolyLine ShapeFiles
     /// </summary>
-    public enum LineType { 
+    public enum LineType
+    {
         /// <summary>
         /// Solid line
         /// </summary>
-        Solid, 
+        Solid,
+
         /// <summary>
         /// A line with an outlined color
         /// </summary>
-        Outline, 
+        Outline,
+
         /// <summary>
         /// A line representing a railway
         /// </summary>
-        Railway };
+        Railway
+    };
 
     /// <summary>
     /// Encapsulates settings used when rendering a ShapeFile
@@ -59,12 +62,14 @@ namespace EGIS.ShapeFileLib
     {
         private string fieldName;
         private int fieldIndex;
+
         //private float minExtentDimension;
         private float _minRenderLabelZoom = -1;
+
         private bool renderDuplicateFields = true;
 
         private DbfReader dbfReader;
-		private bool dbfReaderIsOwned = false;
+        private bool dbfReaderIsOwned = false;
 
         private Font renderFont;
         private Color fontColor = Color.Black;
@@ -76,7 +81,7 @@ namespace EGIS.ShapeFileLib
 
         private Color _selectFillColor = Color.SlateBlue;
         private Color _selectOutlineColor = Color.Yellow;
-        
+
         private float _penWidthScale = 0.00025f;
 
         private int maxPixelPenWidth = -1;
@@ -109,13 +114,12 @@ namespace EGIS.ShapeFileLib
         internal RenderSettings(string shapeFileName)
         {
             dbfReader = new DbfReader(shapeFileName);
-			dbfReaderIsOwned = true;
-
-		}
+            dbfReaderIsOwned = true;
+        }
 
         internal RenderSettings(DbfReader dbfReader)
         {
-			this.dbfReader = dbfReader;
+            this.dbfReader = dbfReader;
         }
 
         /// <summary>
@@ -126,7 +130,7 @@ namespace EGIS.ShapeFileLib
             if (dbfReader != null && dbfReaderIsOwned)
             {
                 dbfReader.Close();
-				dbfReader = null;
+                dbfReader = null;
             }
         }
 
@@ -136,7 +140,7 @@ namespace EGIS.ShapeFileLib
         /// <param name="shapeFilePath">The path to the shape file without the .shp file extension</param>
         /// <param name="fieldName">The name of the DBF field to use when labelling shapes</param>
         /// <param name="renderFont">The Font to use when labelling shapes in the shape file</param>
-        public RenderSettings(string shapeFilePath, string fieldName,  Font renderFont)
+        public RenderSettings(string shapeFilePath, string fieldName, Font renderFont)
         {
             if (shapeFilePath == null)
             {
@@ -146,43 +150,41 @@ namespace EGIS.ShapeFileLib
             {
                 throw new ArgumentException("fieldName can not be null");
             }
-            
+
             dbfReader = new DbfReader(shapeFilePath);
-			dbfReaderIsOwned = true;
-
-			fieldIndex = FindFieldIndex(fieldName);
-            FieldName = fieldName;
-            this.renderFont = renderFont;
-
-        }
-
-		/// <summary>
-		/// Constructs a new RenderSettings
-		/// </summary>
-		/// <param name="dbfReader">shapefile DbfReader</param>
-		/// <param name="fieldName">The name of the DBF field to use when labelling shapes</param>
-		/// <param name="renderFont">The Font to use when labelling shapes in the shape file</param>
-		public RenderSettings(DbfReader dbfReader, string fieldName, Font renderFont)
-        {            
-            if (fieldName == null)
-            {
-                throw new ArgumentException("fieldName can not be null");
-            }
-
-			this.dbfReader = dbfReader;
+            dbfReaderIsOwned = true;
 
             fieldIndex = FindFieldIndex(fieldName);
             FieldName = fieldName;
             this.renderFont = renderFont;
         }
 
+        /// <summary>
+        /// Constructs a new RenderSettings
+        /// </summary>
+        /// <param name="dbfReader">shapefile DbfReader</param>
+        /// <param name="fieldName">The name of the DBF field to use when labelling shapes</param>
+        /// <param name="renderFont">The Font to use when labelling shapes in the shape file</param>
+        public RenderSettings(DbfReader dbfReader, string fieldName, Font renderFont)
+        {
+            if (fieldName == null)
+            {
+                throw new ArgumentException("fieldName can not be null");
+            }
+
+            this.dbfReader = dbfReader;
+
+            fieldIndex = FindFieldIndex(fieldName);
+            FieldName = fieldName;
+            this.renderFont = renderFont;
+        }
 
         private int FindFieldIndex(string fieldName)
         {
             if (fieldName == null) return -1;
             for (int n = dbfReader.DbfRecordHeader.FieldCount - 1; n >= 0; n--)
             {
-                if (string.Compare(dbfReader.DbfRecordHeader.GetFieldDescriptions()[n].FieldName, fieldName, StringComparison.OrdinalIgnoreCase)== 0)
+                if (string.Compare(dbfReader.DbfRecordHeader.GetFieldDescriptions()[n].FieldName, fieldName, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     return n;
                 }
@@ -193,7 +195,7 @@ namespace EGIS.ShapeFileLib
         /// <summary>
         /// Gets the DbfReader of this RenderSettings ShapeFile
         /// </summary>
-        [BrowsableAttribute(false)]        
+        [BrowsableAttribute(false)]
         public DbfReader DbfReader
         {
             get
@@ -201,6 +203,7 @@ namespace EGIS.ShapeFileLib
                 return dbfReader;
             }
         }
+
         /// <summary>
         /// Gets/Sets the text encoding used when reading string attribbutes from the shapefile's DBF file
         /// </summary>
@@ -220,7 +223,7 @@ namespace EGIS.ShapeFileLib
         }
 
         /// <summary>
-        /// Gets / Sets the Minimum Zoom Level before labels will be rendered. 
+        /// Gets / Sets the Minimum Zoom Level before labels will be rendered.
         /// </summary>
         /// <remarks>If MinRenderLabelZoom is less than zero then
         /// this setting is ignored and shape labels will be rendered regardless
@@ -254,16 +257,16 @@ namespace EGIS.ShapeFileLib
             }
         }
 
-		/// <summary>
-		/// Gets / Sets the Min Zoom level before the layer is rendered.        
-		/// </summary>
-		/// <remarks>Use this property in conjunction with MaxZoomLevel to control whether
-		/// a layer is rendered as a map is zoomed in and out.
-		/// <para>
-		/// This property will be ignored MinZoomLevelif it is set to a number less than 0</para>
-		/// </remarks>
-		/// <seealso cref="RenderSettings.MaxZoomLevel"/>
-		[Category("Layer Render Settings"), Description("Min zoom level before the layer is rendered. (This property is ignored if less than zero.)")]
+        /// <summary>
+        /// Gets / Sets the Min Zoom level before the layer is rendered.
+        /// </summary>
+        /// <remarks>Use this property in conjunction with MaxZoomLevel to control whether
+        /// a layer is rendered as a map is zoomed in and out.
+        /// <para>
+        /// This property will be ignored MinZoomLevelif it is set to a number less than 0</para>
+        /// </remarks>
+        /// <seealso cref="RenderSettings.MaxZoomLevel"/>
+        [Category("Layer Render Settings"), Description("Min zoom level before the layer is rendered. (This property is ignored if less than zero.)")]
         public float MinZoomLevel
         {
             get
@@ -272,7 +275,7 @@ namespace EGIS.ShapeFileLib
             }
             set
             {
-                _minRenderZoomLevel = value;                
+                _minRenderZoomLevel = value;
             }
         }
 
@@ -283,7 +286,7 @@ namespace EGIS.ShapeFileLib
         /// a layer is rendered as a map is zoomed in and out
         /// <para>
         /// This property will be ignored if it is set to a number less than 0</para>
-        /// </remarks>        
+        /// </remarks>
         /// <seealso cref="RenderSettings.MinZoomLevel"/>
         [Category("Layer Render Settings"), Description("Max zoom level before the layer is no longer rendered. (This property is ignored if less than zero.)")]
         public float MaxZoomLevel
@@ -298,10 +301,9 @@ namespace EGIS.ShapeFileLib
             }
         }
 
-
         /// <summary>
         /// Gets / Sets the name of the Field in the DBF file that will be used when labeling shapes
-        /// </summary>        
+        /// </summary>
         [TypeConverter(typeof(FieldNameConverter)),
         Category("Data Settings"), Description("The name of the field in the DBF file used to label each record")]
         public string FieldName
@@ -433,7 +435,7 @@ namespace EGIS.ShapeFileLib
         /// <remarks>
         /// This settings is only used when rendering PolyLine or PolyLineM ShapeFiles
         /// <para>
-        /// If a ShapeFile is using UTM coords this is the width of the lines in metres. 
+        /// If a ShapeFile is using UTM coords this is the width of the lines in metres.
         /// </para>
         /// <para>If a ShapeFile is using Lat Long coordinates this is the width of the line in decimal degrees</para>
         /// <para>
@@ -447,7 +449,6 @@ namespace EGIS.ShapeFileLib
             get
             {
                 return _penWidthScale;
-
             }
             set
             {
@@ -477,17 +478,17 @@ namespace EGIS.ShapeFileLib
             }
         }
 
-		/// <summary>
-		/// Gets / Sets the Minimum width of the pen in Pixels.
-		/// </summary>
-		/// <remarks>
-		/// This settings is only used when rendering PolyLine or PolyLineM ShapeFiles
-		/// <para>
-		/// This property is ignored if its value is set to zero or less.
-		/// </para>
-		/// </remarks>
-		[Category("Layer Render Settings"), Description("Minimum width of lines in pixels (PolyLines only).")]
-		public int MinPixelPenWidth
+        /// <summary>
+        /// Gets / Sets the Minimum width of the pen in Pixels.
+        /// </summary>
+        /// <remarks>
+        /// This settings is only used when rendering PolyLine or PolyLineM ShapeFiles
+        /// <para>
+        /// This property is ignored if its value is set to zero or less.
+        /// </para>
+        /// </remarks>
+        [Category("Layer Render Settings"), Description("Minimum width of lines in pixels (PolyLines only).")]
+        public int MinPixelPenWidth
         {
             get
             {
@@ -498,7 +499,6 @@ namespace EGIS.ShapeFileLib
                 this.minPixelPenWidth = value;
             }
         }
-
 
         /// <summary>
         /// Gets / Sets the LineType to use when rending lines (PolyLine and PolyLineM only)
@@ -522,7 +522,7 @@ namespace EGIS.ShapeFileLib
         /// <remarks>
         /// <para>
         /// The Line DashStyle is ignored if LineType is not LineType.Solid when rendering PolyLine, polyLineM or PolyLineZ shapefiles<br/>
-        /// When rendering Polygon or PolygonZ shapefiles the DashStyle is used when rendering the outline of polygons        
+        /// When rendering Polygon or PolygonZ shapefiles the DashStyle is used when rendering the outline of polygons
         /// </para>
         /// <para>
         /// The DasyStyle Custom is not supported
@@ -633,7 +633,7 @@ namespace EGIS.ShapeFileLib
 
         /// <summary>
         /// Gets / Sets the name of the Field in the DBF file that will be used for the ToolTip text
-        /// </summary>        
+        /// </summary>
         [TypeConverter(typeof(FieldNameConverter)),
         Category("Tool Tip Settings"), Description("The name of the field in the DBF file used for the ToolTip text")]
         public string ToolTipFieldName
@@ -651,7 +651,7 @@ namespace EGIS.ShapeFileLib
 
         /// <summary>
         /// Gets / Sets whether to use a ToolTip for the layer
-        /// </summary>        
+        /// </summary>
         [Category("Tool Tip Settings"), Description("Whether a ToolTip should be used for the layer")]
         public bool UseToolTip
         {
@@ -661,11 +661,9 @@ namespace EGIS.ShapeFileLib
             }
             set
             {
-                useToolTip = value;                
+                useToolTip = value;
             }
         }
-
-
 
         /// <summary>
         /// Gets the zero based field column index of the ToolTipFieldName
@@ -684,9 +682,10 @@ namespace EGIS.ShapeFileLib
         /// <summary>
         /// Gets/Sets the Image Symbol to use for Point records
         /// </summary>
-        [Editor(typeof(ImageFileNameEditor), typeof(System.Drawing.Design.UITypeEditor)),
-        Category("Point Render Settings"), Description("The symbol image used to label points (If not specified points will be drawn with a circle)." +
-           "This settings is only used for Point type shapefiles")]
+        ///
+        //[Editor(typeof(ImageFileNameEditor), typeof(System.Drawing.Design.UITypeEditor)),
+        //Category("Point Render Settings"), Description("The symbol image used to label points (If not specified points will be drawn with a circle)." +
+        //"This settings is only used for Point type shapefiles")]
         public string PointImageSymbol
         {
             get
@@ -712,7 +711,7 @@ namespace EGIS.ShapeFileLib
                     }
                     symbolImage = null;
                 }
-                symbolImagePath = value;                                
+                symbolImagePath = value;
             }
         }
 
@@ -728,7 +727,7 @@ namespace EGIS.ShapeFileLib
         /// <summary>
         /// Gets/Sets the size (in pixels) to use when rendering each point in a Point ShapeFile
         /// </summary>
-        [Category("Point Render Settings"), Description("The pixel size of points when rendering Point type shapefiles. This settings is ignored if " + 
+        [Category("Point Render Settings"), Description("The pixel size of points when rendering Point type shapefiles. This settings is ignored if " +
             "a PointImageSymbol has been set.")]
         public int PointSize
         {
@@ -748,8 +747,8 @@ namespace EGIS.ShapeFileLib
         /// Gets / Sets the RenderQuality of the layer.
         /// </summary>
         /// <remarks>
-        /// If the RenderQuality is the default value of RenderQuality.Auto the quality of the rendering is determined by 
-        /// the ShapeFile.RenderQuality static member        
+        /// If the RenderQuality is the default value of RenderQuality.Auto the quality of the rendering is determined by
+        /// the ShapeFile.RenderQuality static member
         /// </remarks>
         // Thanks to M Gerginski for suggestion
         [Category("Layer Render Settings"), Description("The RenderQuality of the layer."), DefaultValue(RenderQuality.Auto)]
@@ -765,94 +764,93 @@ namespace EGIS.ShapeFileLib
             }
         }
 
-		private bool _drawDirectionArrows = false;
-		private int _directionArrowWidth=2;
-		private int _directionArrowLength = 50;
-		private float _directionArrowMinZoomLevel = -1;
-		private Color _directionArrowColor = Color.LightGray;
+        private bool _drawDirectionArrows = false;
+        private int _directionArrowWidth = 2;
+        private int _directionArrowLength = 50;
+        private float _directionArrowMinZoomLevel = -1;
+        private Color _directionArrowColor = Color.LightGray;
 
-		/// <summary>
-		/// Whether to draw direction arrows on polylines. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles. Default value is false
-		/// </summary>
-		[Category("Direction Arrows"), Description("Whether to draw direction arrows to indicate order of points (PolyLines only).")]
-		public bool DrawDirectionArrows
-		{
-			get
-			{
-				return _drawDirectionArrows;
-			}
-			set
-			{
-				_drawDirectionArrows = value;
-			}
-		}
+        /// <summary>
+        /// Whether to draw direction arrows on polylines. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles. Default value is false
+        /// </summary>
+        [Category("Direction Arrows"), Description("Whether to draw direction arrows to indicate order of points (PolyLines only).")]
+        public bool DrawDirectionArrows
+        {
+            get
+            {
+                return _drawDirectionArrows;
+            }
+            set
+            {
+                _drawDirectionArrows = value;
+            }
+        }
 
-		/// <summary>
-		/// The width of direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
-		/// </summary>
-		[Category("Direction Arrows"), Description("Width of direction arrows in pixels (PolyLines only).")]
-		public int DirectionArrowWidth
-		{
-			get
-			{
-				return _directionArrowWidth;
-			}
-			set
-			{
-				_directionArrowWidth = Math.Max(1, value);
-			}
-		}
+        /// <summary>
+        /// The width of direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
+        /// </summary>
+        [Category("Direction Arrows"), Description("Width of direction arrows in pixels (PolyLines only).")]
+        public int DirectionArrowWidth
+        {
+            get
+            {
+                return _directionArrowWidth;
+            }
+            set
+            {
+                _directionArrowWidth = Math.Max(1, value);
+            }
+        }
 
-		/// <summary>
-		/// The length of direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
-		/// </summary>
-		[Category("Direction Arrows"), Description("Length of direction arrows in pixels (PolyLines only).")]
-		public int DirectionArrowLength
-		{
-			get
-			{
-				return _directionArrowLength;
-			}
-			set
-			{
-				_directionArrowLength = Math.Max(1, value);
-			}
-		}
+        /// <summary>
+        /// The length of direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
+        /// </summary>
+        [Category("Direction Arrows"), Description("Length of direction arrows in pixels (PolyLines only).")]
+        public int DirectionArrowLength
+        {
+            get
+            {
+                return _directionArrowLength;
+            }
+            set
+            {
+                _directionArrowLength = Math.Max(1, value);
+            }
+        }
 
-		/// <summary>
-		/// The minimum zoom level before drawing direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
-		/// </summary>
-		[Category("Direction Arrows"), Description("Minimum zoom level before drawing direction arrows (PolyLines only).")]
-		public float DirectionArrowMinZoomLevel
-		{
-			get
-			{
-				return _directionArrowMinZoomLevel;
-			}
-			set
-			{
-				_directionArrowMinZoomLevel = value;
-			}
-		}
+        /// <summary>
+        /// The minimum zoom level before drawing direction arrows if DrawDirectionArrows is true. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
+        /// </summary>
+        [Category("Direction Arrows"), Description("Minimum zoom level before drawing direction arrows (PolyLines only).")]
+        public float DirectionArrowMinZoomLevel
+        {
+            get
+            {
+                return _directionArrowMinZoomLevel;
+            }
+            set
+            {
+                _directionArrowMinZoomLevel = value;
+            }
+        }
 
-		/// <summary>
-		/// The pen color to use when drawing direction arrows. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
-		/// </summary>
-		[Category("Direction Arrows"), Description("Direction arrow pen color (PolyLines only).")]
-		public Color DirectionArrowColor
-		{
-			get
-			{
-				return _directionArrowColor;
-			}
-			set
-			{
-				_directionArrowColor = value;
-			}
-		}
-		
+        /// <summary>
+        /// The pen color to use when drawing direction arrows. Only applies to PolyLine, PolyLineM and PolylineZ shapefiles
+        /// </summary>
+        [Category("Direction Arrows"), Description("Direction arrow pen color (PolyLines only).")]
+        public Color DirectionArrowColor
+        {
+            get
+            {
+                return _directionArrowColor;
+            }
+            set
+            {
+                _directionArrowColor = value;
+            }
+        }
 
-		private ICustomRenderSettings _customRenderSettings;
+        private ICustomRenderSettings _customRenderSettings;
 
         /// <summary>
         /// Gets or sets a ICustomRenderSettings object that should be applied when rendering the shapefile
@@ -862,12 +860,12 @@ namespace EGIS.ShapeFileLib
         {
             get
             {
-                return _customRenderSettings;       
+                return _customRenderSettings;
                 //return new TestCustomRenderSettings(this, "NAME", 100);
             }
             set
             {
-                _customRenderSettings = value;               
+                _customRenderSettings = value;
             }
         }
 
@@ -893,12 +891,10 @@ namespace EGIS.ShapeFileLib
             //writer.WriteString(MinLabelExtentDim.ToString());
             //writer.WriteEndElement();
 
-
             writer.WriteStartElement("MinRenderLabelZoom");
             writer.WriteString(MinRenderLabelZoom.ToString(System.Globalization.CultureInfo.InvariantCulture));
             writer.WriteEndElement();
 
-            
             writer.WriteStartElement("FieldName");
             writer.WriteString(FieldName);
             writer.WriteEndElement();
@@ -906,7 +902,7 @@ namespace EGIS.ShapeFileLib
             writer.WriteStartElement("Font");
             writer.WriteAttributeString("Size", this.Font.Size.ToString(System.Globalization.CultureInfo.InvariantCulture));
             writer.WriteAttributeString("Name", this.Font.Name);
-            writer.WriteAttributeString("Style", this.Font.Style.ToString());            
+            writer.WriteAttributeString("Style", this.Font.Style.ToString());
             writer.WriteFullEndElement();
 
             writer.WriteStartElement("FontColor");
@@ -924,7 +920,7 @@ namespace EGIS.ShapeFileLib
             }
             writer.WriteString(ColorTranslator.ToHtml(FillColor));
             writer.WriteEndElement();
-            
+
             writer.WriteStartElement("OutlineColor");
             if (OutlineColor.A < 255)
             {
@@ -1004,7 +1000,6 @@ namespace EGIS.ShapeFileLib
             writer.WriteString(this.PointSize.ToString(System.Globalization.CultureInfo.InvariantCulture));
             writer.WriteEndElement();
 
-
             writer.WriteStartElement("UseToolTip");
             writer.WriteString(this.UseToolTip.ToString());
             writer.WriteEndElement();
@@ -1024,38 +1019,37 @@ namespace EGIS.ShapeFileLib
             writer.WriteString(this.RenderQuality.ToString());
             writer.WriteEndElement();
 
-			writer.WriteStartElement("DrawDirectionArrows");
-			writer.WriteString(this.DrawDirectionArrows.ToString());
-			writer.WriteEndElement();
+            writer.WriteStartElement("DrawDirectionArrows");
+            writer.WriteString(this.DrawDirectionArrows.ToString());
+            writer.WriteEndElement();
 
-			writer.WriteStartElement("DirectionArrowWidth");
-			writer.WriteString(this.DirectionArrowWidth.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			writer.WriteEndElement();
+            writer.WriteStartElement("DirectionArrowWidth");
+            writer.WriteString(this.DirectionArrowWidth.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            writer.WriteEndElement();
 
-			writer.WriteStartElement("DirectionArrowLength");
-			writer.WriteString(this.DirectionArrowLength.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			writer.WriteEndElement();
+            writer.WriteStartElement("DirectionArrowLength");
+            writer.WriteString(this.DirectionArrowLength.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            writer.WriteEndElement();
 
-			writer.WriteStartElement("DirectionArrowMinZoomLevel");
-			writer.WriteString(this.DirectionArrowMinZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			writer.WriteEndElement();
-			
-			writer.WriteStartElement("DirectionArrowColor");
-			if (DirectionArrowColor.A < 255)
-			{
-				writer.WriteAttributeString("alpha", DirectionArrowColor.A.ToString(System.Globalization.CultureInfo.InvariantCulture));
-			}
-			writer.WriteString(ColorTranslator.ToHtml(DirectionArrowColor));
-			writer.WriteEndElement();
+            writer.WriteStartElement("DirectionArrowMinZoomLevel");
+            writer.WriteString(this.DirectionArrowMinZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            writer.WriteEndElement();
 
-			writer.WriteEndElement();
+            writer.WriteStartElement("DirectionArrowColor");
+            if (DirectionArrowColor.A < 255)
+            {
+                writer.WriteAttributeString("alpha", DirectionArrowColor.A.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+            writer.WriteString(ColorTranslator.ToHtml(DirectionArrowColor));
+            writer.WriteEndElement();
 
+            writer.WriteEndElement();
         }
 
         /// <summary>
         /// Reads the RenderSettings properties from an Xml representation
         /// </summary>
-        /// <param name="element"></param>        
+        /// <param name="element"></param>
         public void ReadXml(XmlElement element)
         {
             FieldName = element.GetElementsByTagName("FieldName")[0].InnerText;
@@ -1065,10 +1059,10 @@ namespace EGIS.ShapeFileLib
             if (element.GetElementsByTagName("FillColor")[0].Attributes["alpha"] != null)
             {
                 int alpha;
-                if(int.TryParse( ((XmlElement)element.GetElementsByTagName("FillColor")[0]).GetAttribute("alpha"),out alpha))
+                if (int.TryParse(((XmlElement)element.GetElementsByTagName("FillColor")[0]).GetAttribute("alpha"), out alpha))
                 {
                     FillColor = Color.FromArgb(alpha, FillColor);
-                }                
+                }
             }
             OutlineColor = ColorTranslator.FromHtml(element.GetElementsByTagName("OutlineColor")[0].InnerText);
             if (element.GetElementsByTagName("OutlineColor")[0].Attributes["alpha"] != null)
@@ -1083,7 +1077,7 @@ namespace EGIS.ShapeFileLib
             PenWidthScale = float.Parse(element.GetElementsByTagName("PenWidthScale")[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
             FillInterior = bool.Parse(element.GetElementsByTagName("FillInterior")[0].InnerText);
             LineType = (LineType)Enum.Parse(typeof(LineType), element.GetElementsByTagName("LineType")[0].InnerText, true);
-            
+
             XmlNodeList nl = element.GetElementsByTagName("MinZoomLevel");
             if (nl != null && nl.Count > 0)
             {
@@ -1100,16 +1094,15 @@ namespace EGIS.ShapeFileLib
             {
                 float med = float.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
                 //convert to MinRenderLabelZoom, assuming 512x512 image
-                _minRenderLabelZoom = 512 / med;                
+                _minRenderLabelZoom = 512 / med;
             }
 
             nl = element.GetElementsByTagName("MinRenderLabelZoom");
             if (nl != null && nl.Count > 0)
             {
-                _minRenderLabelZoom = float.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);                
+                _minRenderLabelZoom = float.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
             }
 
-            
             nl = element.GetElementsByTagName("Selectable");
             if (nl != null && nl.Count > 0)
             {
@@ -1156,14 +1149,12 @@ namespace EGIS.ShapeFileLib
                 else
                 {
                     PointImageSymbol = null;
-                }                
+                }
             }
             else
             {
                 PointImageSymbol = null;
             }
-
-
 
             nl = element.GetElementsByTagName("ShadowText");
             if (nl != null && nl.Count > 0)
@@ -1198,7 +1189,7 @@ namespace EGIS.ShapeFileLib
             nl = element.GetElementsByTagName("UseToolTip");
             if (nl != null && nl.Count > 0)
             {
-                UseToolTip = bool.Parse(nl[0].InnerText);                
+                UseToolTip = bool.Parse(nl[0].InnerText);
             }
 
             nl = element.GetElementsByTagName("ToolTipFieldName");
@@ -1235,12 +1226,11 @@ namespace EGIS.ShapeFileLib
             if (nl != null && nl.Count > 0)
             {
                 int codePage = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
-                    System.Text.Encoding enc = System.Text.Encoding.GetEncoding(codePage);
-                    if (enc != null)
-                    {
-                        this.StringEncoding = enc;
-                    }
-                
+                System.Text.Encoding enc = System.Text.Encoding.GetEncoding(codePage);
+                if (enc != null)
+                {
+                    this.StringEncoding = enc;
+                }
             }
 
             nl = element.GetElementsByTagName("SelectFillColor");
@@ -1254,7 +1244,7 @@ namespace EGIS.ShapeFileLib
                     {
                         SelectFillColor = Color.FromArgb(alpha, SelectFillColor);
                     }
-                }                
+                }
             }
 
             nl = element.GetElementsByTagName("SelectOutlineColor");
@@ -1274,7 +1264,7 @@ namespace EGIS.ShapeFileLib
             nl = element.GetElementsByTagName("RenderQuality");
             if (nl != null && nl.Count > 0)
             {
-                this.RenderQuality = (RenderQuality)Enum.Parse(typeof(RenderQuality), nl[0].InnerText, true);                                       
+                this.RenderQuality = (RenderQuality)Enum.Parse(typeof(RenderQuality), nl[0].InnerText, true);
             }
             else
             {
@@ -1293,72 +1283,68 @@ namespace EGIS.ShapeFileLib
                 LineEndCap = (System.Drawing.Drawing2D.LineCap)Enum.Parse(typeof(System.Drawing.Drawing2D.LineCap), nl[0].InnerText, true);
             }
 
-			nl = element.GetElementsByTagName("DrawDirectionArrows");
-			if (nl != null && nl.Count > 0)
-			{
-				DrawDirectionArrows = bool.Parse(nl[0].InnerText);
-			}
+            nl = element.GetElementsByTagName("DrawDirectionArrows");
+            if (nl != null && nl.Count > 0)
+            {
+                DrawDirectionArrows = bool.Parse(nl[0].InnerText);
+            }
 
+            nl = element.GetElementsByTagName("DirectionArrowWidth");
+            if (nl != null && nl.Count > 0)
+            {
+                this.DirectionArrowWidth = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                this.DirectionArrowWidth = 2;
+            }
 
-			nl = element.GetElementsByTagName("DirectionArrowWidth");
-			if (nl != null && nl.Count > 0)
-			{
-				this.DirectionArrowWidth = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
-			}
-			else
-			{
-				this.DirectionArrowWidth = 2;
-			}
+            nl = element.GetElementsByTagName("DirectionArrowLength");
+            if (nl != null && nl.Count > 0)
+            {
+                this.DirectionArrowLength = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                this.DirectionArrowLength = 50;
+            }
 
-			nl = element.GetElementsByTagName("DirectionArrowLength");
-			if (nl != null && nl.Count > 0)
-			{
-				this.DirectionArrowLength = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
-			}
-			else
-			{
-				this.DirectionArrowLength = 50;
-			}
+            nl = element.GetElementsByTagName("DirectionArrowMinZoomLevel");
+            if (nl != null && nl.Count > 0)
+            {
+                this.DirectionArrowMinZoomLevel = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                this.DirectionArrowMinZoomLevel = -1;
+            }
 
-			nl = element.GetElementsByTagName("DirectionArrowMinZoomLevel");
-			if (nl != null && nl.Count > 0)
-			{
-				this.DirectionArrowMinZoomLevel = int.Parse(nl[0].InnerText, System.Globalization.CultureInfo.InvariantCulture);
-			}
-			else
-			{
-				this.DirectionArrowMinZoomLevel = -1;
-			}
+            nl = element.GetElementsByTagName("DirectionArrowColor");
+            if (nl != null && nl.Count > 0)
+            {
+                DirectionArrowColor = ColorTranslator.FromHtml(nl[0].InnerText);
+                if (nl[0].Attributes["alpha"] != null)
+                {
+                    int alpha;
+                    if (int.TryParse(((XmlElement)nl[0]).GetAttribute("alpha"), out alpha))
+                    {
+                        DirectionArrowColor = Color.FromArgb(alpha, DirectionArrowColor);
+                    }
+                }
+            }
+        }
 
-			nl = element.GetElementsByTagName("DirectionArrowColor");
-			if (nl != null && nl.Count > 0)
-			{
-				DirectionArrowColor = ColorTranslator.FromHtml(nl[0].InnerText);
-				if (nl[0].Attributes["alpha"] != null)
-				{
-					int alpha;
-					if (int.TryParse(((XmlElement)nl[0]).GetAttribute("alpha"), out alpha))
-					{
-						DirectionArrowColor = Color.FromArgb(alpha, DirectionArrowColor);
-					}
-				}
-			}
+        #endregion Xml Methods
 
+        #region IDisposable Members
 
-		}
-
-		#endregion
-
-		#region IDisposable Members
-
-		/// <summary>
-		/// Dispose of the RenderSettings
-		/// </summary>
-		public void Dispose()
+        /// <summary>
+        /// Dispose of the RenderSettings
+        /// </summary>
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-            
         }
 
         /// <summary>
@@ -1371,22 +1357,21 @@ namespace EGIS.ShapeFileLib
             if (disposing) //dispose unmanaged resources
             {
                 if (this.dbfReader != null && this.dbfReaderIsOwned) dbfReader.Dispose();
-				this.dbfReader = null;
+                this.dbfReader = null;
             }
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 
-
-    class FieldNameConverter : StringConverter
+    internal class FieldNameConverter : StringConverter
     {
-        private string[] fieldNames = new string[]{"NAME", "FIELD2", "FIELD3"};
-        
+        private string[] fieldNames = new string[] { "NAME", "FIELD2", "FIELD3" };
+
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
             if (context != null)
-            {                                
+            {
                 RenderSettings renderer = context.Instance as RenderSettings;
                 if (renderer != null && renderer.DbfReader != null)
                 {
@@ -1400,72 +1385,62 @@ namespace EGIS.ShapeFileLib
             }
             return true;
         }
-        
+
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            
             return new StandardValuesCollection(fieldNames);
         }
-
-        
 
         public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues)
         {
             return base.CreateInstance(context, propertyValues);
         }
-
-
     }
 
-    
-    
     //class ImageFileNameEditor : System.Windows.Forms.Design.FileNameEditor
     //{
     //    public ImageFileNameEditor()
     //    {
-            
     //    }
 
     //    protected override void InitializeDialog(System.Windows.Forms.OpenFileDialog openFileDialog)
     //    {
-
     //        base.InitializeDialog(openFileDialog);
     //        openFileDialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG)|*.BMP;*.JPG;*.GIF;*.PNG|All files (*.*)|*.*";
     //        openFileDialog.Title = "Select Symbol Image to Label Points.";
-            
+
     //    }
     //}
-
 
     /// <summary>
     /// implementing our own editor instead of deriving FileNameEditor due to Client Profile compilation issues
     /// </summary>
-    class ImageFileNameEditor : System.Drawing.Design.UITypeEditor
-    {
-        public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-        {
-            return System.Drawing.Design.UITypeEditorEditStyle.Modal;
-        }
+    //class ImageFileNameEditor : System.Drawing.Design.UITypeEditor
+    //{
+    //    public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+    //    {
+    //        return System.Drawing.Design.UITypeEditorEditStyle.Modal;
+    //    }
 
-        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-        {
-            using (System.Windows.Forms.OpenFileDialog f = new System.Windows.Forms.OpenFileDialog())
-            {
-                f.AddExtension = true;
-                f.CheckFileExists = true;
-                f.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG)|*.BMP;*.JPG;*.GIF;*.PNG|All files (*.*)|*.*";
-                f.Title = "Select Symbol Image to Label Points.";
-                f.DefaultExt = "bmp";
-                f.FileName = value as string;
+    //    public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+    //    {
+    //        using (System.Windows.Forms.OpenFileDialog f = new System.Windows.Forms.OpenFileDialog())
+    //        {
+    //            f.AddExtension = true;
+    //            f.CheckFileExists = true;
+    //            f.Filter = "Image Files(*.BMP;*.JPG;*.GIF;*.PNG)|*.BMP;*.JPG;*.GIF;*.PNG|All files (*.*)|*.*";
+    //            f.Title = "Select Symbol Image to Label Points.";
+    //            f.DefaultExt = "bmp";
+    //            f.FileName = value as string;
 
-                if (f.ShowDialog() == System.Windows.Forms.DialogResult.OK) return f.FileName;
-                return value;
-            }
-        }
+    //            if (f.ShowDialog() == System.Windows.Forms.DialogResult.OK) return f.FileName;
+    //            return value;
+    //        }
+    //    }
 
-    } 
+    //}
 
-    class EncodingConverter : StringConverter
+    internal class EncodingConverter : StringConverter
     {
         //private string[] fieldNames = new string[] { "NAME", "FIELD2", "FIELD3" };
 
@@ -1503,7 +1478,7 @@ namespace EGIS.ShapeFileLib
                 for (int n = 0; n < eInfo.Length; ++n)
                 {
                     standardValues[n] = String.Format("{0},{1},{2},{3}", new object[] { eInfo[n].CodePage, eInfo[n].DisplayName, eInfo[n].Name, System.Text.Encoding.GetEncoding(eInfo[n].CodePage).WebName });
-                }                
+                }
             }
             return new StandardValuesCollection(standardValues);
         }
@@ -1511,14 +1486,13 @@ namespace EGIS.ShapeFileLib
         public override bool CanConvertFrom(ITypeDescriptorContext context,
            Type sourceType)
         {
-
             if (sourceType == typeof(string))
             {
                 return true;
             }
             return base.CanConvertFrom(context, sourceType);
         }
-        
+
         // Overrides the ConvertFrom method of TypeConverter.
         public override object ConvertFrom(ITypeDescriptorContext context,
            System.Globalization.CultureInfo culture, object value)
@@ -1530,6 +1504,7 @@ namespace EGIS.ShapeFileLib
             }
             return base.ConvertFrom(context, culture, value);
         }
+
         // Overrides the ConvertTo method of TypeConverter.
         public override object ConvertTo(ITypeDescriptorContext context,
            System.Globalization.CultureInfo culture, object value, Type destinationType)
@@ -1541,20 +1516,13 @@ namespace EGIS.ShapeFileLib
                 {
                     return String.Format("{0},{1},{2},{3}", enc.CodePage, enc.EncodingName, enc.WebName, enc.WindowsCodePage);
                 }
-                
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }
-
-         
 
         public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues)
         {
             return base.CreateInstance(context, propertyValues);
         }
-
-
     }
-
-    
 }

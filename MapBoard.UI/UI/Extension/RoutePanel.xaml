@@ -1,0 +1,172 @@
+﻿<u:UserControlBase
+    x:Class="MapBoard.UI.Extension.RoutePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:MapBoard.UI.Extension"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+    xmlns:u="clr-namespace:MapBoard.UI"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:util="clr-namespace:MapBoard.Util"
+    d:DesignHeight="450" d:DesignWidth="800"
+    Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
+    mc:Ignorable="d">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="96" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox
+                HorizontalAlignment="Stretch"
+                ui:ControlHelper.Header="搜索引擎"
+                DisplayMemberPath="Name"
+                ItemsSource="{Binding Source={x:Static util:ExtensionUtility.RouteEngines}}"
+                SelectedItem="{Binding SelectedRouteEngine}" />
+            <ComboBox
+                x:Name="cbbType" Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                ui:ControlHelper.Header="类型"
+                SelectedIndex="0">
+                <ComboBoxItem Content="步行" />
+                <ComboBoxItem Content="骑行" />
+                <ComboBoxItem Content="汽车" />
+            </ComboBox>
+            <Button
+                x:Name="btnSearch" Grid.Column="4"
+                VerticalAlignment="Stretch"
+                Click="SearchButton_Click">
+                <ui:FontIcon Glyph="&#xE721;" />
+            </Button>
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center" Text="起点" />
+            <TextBlock
+                Grid.Row="2" VerticalAlignment="Center"
+                Text="终点" />
+            <TextBox
+                Grid.Row="0" Grid.Column="2"
+                ui:ControlHelper.PlaceholderText="经度"
+                GotFocus="LocationTextBox_GotFocus"
+                Text="{Binding Origin.Longitude}" />
+            <TextBox
+                Grid.Row="0" Grid.Column="4"
+                ui:ControlHelper.PlaceholderText="纬度"
+                GotFocus="LocationTextBox_GotFocus"
+                Text="{Binding Origin.Latitude}" />
+            <TextBox
+                Grid.Row="2" Grid.Column="2"
+                ui:ControlHelper.PlaceholderText="经度"
+                GotFocus="LocationTextBox_GotFocus"
+                Text="{Binding Destination.Longitude}" />
+            <TextBox
+                Grid.Row="2" Grid.Column="4"
+                ui:ControlHelper.PlaceholderText="纬度"
+                GotFocus="LocationTextBox_GotFocus"
+                Text="{Binding Destination.Latitude}" />
+            <Button
+                Grid.Column="6" Padding="8,2"
+                Click="ChoosePointButton_Click" Tag="1"
+                ToolTip="地图选点">
+                <ui:FontIcon Glyph="&#xE707;" />
+            </Button>
+            <Button
+                Grid.Row="2" Grid.Column="6"
+                Padding="8,2"
+                Click="ChoosePointButton_Click" Tag="2"
+                ToolTip="地图选点">
+                <ui:FontIcon Glyph="&#xE707;" />
+            </Button>
+        </Grid>
+        <ListView
+            Grid.Row="4" Grid.ColumnSpan="99"
+            ItemsSource="{Binding SearchResult}"
+            SelectedItem="{Binding SelectedRoute}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ic}}" Header="序号" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Strategy}" Header="策略" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="用时" />
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Grid Grid.Row="99">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.Row="6" HorizontalAlignment="Left"
+                VerticalAlignment="Center">
+                <Run>共</Run>
+                <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />
+                <Run>个方案</Run>
+            </TextBlock>
+            <Button
+                Grid.Column="2"
+                Click="ImportButton_Click" Content="导入"
+                IsEnabled="{Binding SelectedRoute, Converter={StaticResource nn2bc}}" />
+            <Button
+                Grid.Column="4" Content="详情"
+                IsEnabled="{Binding SelectedRoute, Converter={StaticResource nn2bc}}">
+                <ui:FlyoutService.Flyout>
+                    <ui:Flyout Closed="Flyout_Closed">
+                        <ListView
+                            MaxHeight="480" Padding="0,0,16,0"
+                            ItemsSource="{Binding SelectedRoute.Steps}"
+                            SelectedItem="{Binding SelectedStep}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn DisplayMemberBinding="{Binding Road}" Header="路名" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Distance}" Header="长度" />
+                                    <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="耗时" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </ui:Flyout>
+                </ui:FlyoutService.Flyout>
+            </Button>
+            <Button
+                Grid.Column="6"
+                Click="ClearSearchButton_Click"
+                Content="清除" />
+        </Grid>
+    </Grid>
+</u:UserControlBase>

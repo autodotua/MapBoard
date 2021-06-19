@@ -1,0 +1,108 @@
+﻿<local:BarBase
+    x:Class="MapBoard.UI.Bar.SelectionBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:MapBoard.UI.Bar"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Margin="4,0">
+        <Grid.Resources>
+            <ResourceDictionary Source="BarStyles.xaml" />
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24" />
+            <RowDefinition Height="4" />
+        </Grid.RowDefinitions>
+        <Button
+            x:Name="btnExport" Grid.Column="2"
+            Click="BtnExportClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="14" Content="{StaticResource ExportIcon}" />
+
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">导出</TextBlock>
+            </StackPanel>
+        </Button>
+        <Button
+            x:Name="btnMenu" Grid.Column="4"
+            Click="BtnMenuClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="16" Content="{StaticResource ListIcon}" />
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">其他操作</TextBlock>
+            </StackPanel>
+        </Button>
+        <Button
+            x:Name="btnRedraw" Grid.Column="6"
+            Click="EditButtonClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="16" Content="{StaticResource DrawIcon}" />
+
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">编辑</TextBlock>
+            </StackPanel>
+        </Button>
+        <Button
+            x:Name="btnCut" Grid.Column="8"
+            Click="CutButtonClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="16" Content="{StaticResource CutIcon}" />
+
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">分割</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button
+            Grid.Column="10" Click="CopyButtonClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="16" Content="{StaticResource CopyIcon}" />
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">复制/移动</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button
+            Grid.Column="12"
+            Click="DeleteButtonClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="13" Content="{StaticResource DeleteIcon}" />
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">删除</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button
+            Grid.Column="14"
+            Click="CancelButtonClick"
+            Style="{StaticResource barButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl Width="14" Content="{StaticResource CancelIcon}" />
+                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">取消</TextBlock>
+            </StackPanel>
+        </Button>
+
+        <TextBlock
+            VerticalAlignment="Center" FontSize="16"
+            FontWeight="Bold"
+            Text="{Binding Message}" />
+    </Grid>
+</local:BarBase>

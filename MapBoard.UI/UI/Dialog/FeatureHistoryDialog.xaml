@@ -1,0 +1,92 @@
+﻿<dialog:LayerDialogBase
+    xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
+    x:Class="MapBoard.UI.Dialog.FeatureHistoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="clr-namespace:MapBoard.UI.Converter"
+    xmlns:cvt2="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="设置" Width="220"
+    Height="400"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    Closing="Dialog_Closing"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    ResizeMode="CanResize"
+    ShowInTaskbar="True" mc:Ignorable="d">
+    <dialog:LayerDialogBase.Resources>
+        <cvt:FeaturesHistoryDescriptionConverter x:Key="fhdc" />
+        <cvt2:Enum2DescriptionConverter x:Key="e2dc" />
+    </dialog:LayerDialogBase.Resources>
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer
+            x:Name="scr"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Layer.Histories}">
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+
+                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseHighBrush}" BorderThickness="0,0,0,1">
+                            <Grid Margin="0,8" IsEnabled="{Binding CanUndo}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="4" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Time, StringFormat=HH:mm:ss}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Source, Converter={StaticResource e2dc}}" />
+                                <TextBlock
+                                    Grid.Row="2" Grid.ColumnSpan="3"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding ., Converter={StaticResource fhdc}}" />
+                                <Button
+                                    Grid.RowSpan="3" Grid.Column="4"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    Click="UndoButton_Click"
+                                    MouseEnter="UndoButton_MouseEnter"
+                                    Tag="{Binding .}"
+                                    ToolTipService.InitialShowDelay="0">
+                                    <ui:SymbolIcon Symbol="Undo" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <Grid Grid.Row="2" Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.Row="2" HorizontalAlignment="Left"
+                VerticalAlignment="Bottom">
+                <Run>共</Run>
+                <Run Text="{Binding Layer.Histories.Count, Mode=OneWay}" />
+                <Run>项</Run>
+            </TextBlock>
+        </Grid>
+    </Grid>
+</dialog:LayerDialogBase>
