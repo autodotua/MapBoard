@@ -59,7 +59,10 @@ namespace MapBoard.Mapping.Model
             {
                 return new MapLayerCollection(esriLayers);
             }
-            MapLayerCollection instance = FromFile<MapLayerCollection, MapLayerInfo>(path, () => new MapLayerCollection(esriLayers));
+            MapLayerCollection instance = null;
+            await Task.Run(() =>
+            instance = FromFile<MapLayerCollection, MapLayerInfo>(path,
+            () => new MapLayerCollection(esriLayers)));
             List<string> errorMsgs = new List<string>();
             foreach (var layer in instance.layers.Cast<MapLayerInfo>().ToList())
             {
@@ -169,7 +172,7 @@ namespace MapBoard.Mapping.Model
                 {
                     EsriLayers.Insert(index, fl);
                 }
-                layer.ApplyStyle();
+                await Task.Run(layer.ApplyStyle);
                 await layer.LayerCompleteAsync();
             }
             catch (Exception ex)
@@ -241,6 +244,5 @@ namespace MapBoard.Mapping.Model
             {
             }
         }
-
     }
 }

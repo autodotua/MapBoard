@@ -67,10 +67,6 @@ namespace MapBoard.Mapping
 
         public bool Select(Feature feature, bool clearAll = false)
         {
-            if (selectedFeatures.ContainsKey(feature.GetFID()))
-            {
-                return false;
-            }
             return Select(new[] { feature }, clearAll) == 1;
         }
 
@@ -168,7 +164,7 @@ namespace MapBoard.Mapping
             if (envelope != null)
             {
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                 {
                     await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New);
                 }
@@ -231,7 +227,6 @@ namespace MapBoard.Mapping
             }
             await (Window.GetWindow(MapView) as MainWindow).DoAsync(async () =>
              {
-                 await Task.Delay(100);
                  if (envelope == null)
                  {
                      return;

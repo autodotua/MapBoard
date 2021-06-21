@@ -34,6 +34,7 @@ using MapBoard.Util;
 using MapBoard.Mapping;
 using static MapBoard.IO.Gpx.GpxSpeedAnalysis;
 using MapBoard.Mapping.Model;
+using FzLib.Basic;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -668,16 +669,10 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
         {
-            double? num = await CommonDialog.ShowDoubleInputDialogAsync("请选择单边采样率");
+            double? num = await CommonDialog.ShowDoubleInputDialogAsync("请选择整体移动高度，向上为正（m）");
             if (num.HasValue)
             {
-                foreach (var point in GpxTrack.Points)
-                {
-                    point.Z += num.Value;
-                }
-                var temp = GpxTrack;
-                GpxTrack = null;
-                GpxTrack = temp;
+                GpxTrack.Points.ForEach(p => p.Z += num.Value);
             }
         }
 

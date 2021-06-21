@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using Windows.UI.Composition;
 
 namespace ModernWpf.FzExtension
 {
@@ -18,25 +19,61 @@ namespace ModernWpf.FzExtension
             InitializeComponent();
         }
 
-        public void Show()
+        private bool showing = false;
+        private object lockObj = new object();
+
+        public void Show(int delay = 0)
         {
-            DoubleAnimation ani = new DoubleAnimation(1, TimeSpan.FromMilliseconds(500));
-            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
-            grd.BeginAnimation(OpacityProperty, ani);
             grd.Visibility = Visibility.Visible;
             grd.IsHitTestVisible = true;
+
+            showing = true;
+            if (delay > 0)
+            {
+                Task.Delay(delay).ContinueWith(t =>
+                {
+                    lock (lockObj)
+                    {
+                        if (showing)
+                        {
+                            Dispatcher.Invoke(ShowIt);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                ShowIt();
+            }
+            void ShowIt()
+            {
+                DoubleAnimation ani = new DoubleAnimation(1, TimeSpan.FromMilliseconds(500));
+                ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+                grd.BeginAnimation(OpacityProperty, ani);
+            }
         }
 
         public void Hide()
         {
-            DoubleAnimation ani = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
-            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
-            grd.IsHitTestVisible = false;
-            ani.Completed += (p1, p2) =>
+            lock (lockObj)
             {
-                grd.Visibility = Visibility.Collapsed;
-            };
-            grd.BeginAnimation(OpacityProperty, ani);
+                if (!showing)
+                {
+                    grd.Visibility = Visibility.Collapsed;
+                    grd.IsHitTestVisible = false;
+
+                    return;
+                }
+                showing = false;
+                DoubleAnimation ani = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
+                ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+                grd.IsHitTestVisible = false;
+                ani.Completed += (p1, p2) =>
+                {
+                    grd.Visibility = Visibility.Collapsed;
+                };
+                grd.BeginAnimation(OpacityProperty, ani);
+            }
         }
 
         public static readonly DependencyProperty MessageProperty = DependencyProperty.Register(

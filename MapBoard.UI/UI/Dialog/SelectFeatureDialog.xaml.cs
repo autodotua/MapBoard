@@ -11,6 +11,7 @@ using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
 using MapBoard.Mapping.Model;
+using FzLib.Extension;
 
 namespace MapBoard.UI.Dialog
 {
@@ -19,7 +20,14 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class SelectFeatureDialog : DialogWindowBase
     {
-        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; } = new ObservableCollection<FeatureSelectionInfo>();
+        public const int MaxCount = 100;
+        private ObservableCollection<FeatureSelectionInfo> selectedFeatures;
+
+        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures
+        {
+            get => selectedFeatures;
+            set => this.SetValueAndNotify(ref selectedFeatures, value, nameof(SelectedFeatures));
+        }
 
         private FeatureSelectionInfo selected;
 
@@ -51,22 +59,39 @@ namespace MapBoard.UI.Dialog
             SelectedFeaturesChanged(null, null);
         }
 
+        private string message;
+
+        public string Message
+        {
+            get => message;
+            set => this.SetValueAndNotify(ref message, value, nameof(Message));
+        }
+
         private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {
-            if (Selection.SelectedFeatures.Count < 2)
+            int count = Selection.SelectedFeatures.Count;
+            if (count < 2)
             {
                 return;
             }
-            SelectedFeatures.Clear();
+            if (count > MaxCount)
+            {
+                Message = $"共{count}条，显示{MaxCount}条";
+            }
+            else
+            {
+                Message = $"共{count}条";
+            }
             int index = 0;
             List<FeatureSelectionInfo> featureSelections = null;
             await Task.Run(() =>
             {
                 featureSelections = Selection.SelectedFeatures
-                .Select(p => new FeatureSelectionInfo(Layers.Selected, p, ++index))
-                .ToList();
+                    .Take(MaxCount)
+                    .Select(p => new FeatureSelectionInfo(Layers.Selected, p, ++index))
+                    .ToList();
+                SelectedFeatures = new ObservableCollection<FeatureSelectionInfo>(featureSelections);
             });
-            featureSelections.ForEach(p => SelectedFeatures.Add(p));
         }
 
         public void ResetLocation()

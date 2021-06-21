@@ -1,4 +1,5 @@
 ﻿using ModernWpf.Controls.Primitives;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -17,6 +18,13 @@ namespace MapBoard.UI
             WindowStyle = WindowStyle.ToolWindow;
             ShowInTaskbar = false;
             KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
+            Owner.Closing += (s, e) => Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            (Owner as Window)?.Activate();
         }
     }
 }

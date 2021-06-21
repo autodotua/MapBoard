@@ -88,13 +88,11 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <StackPanel x:Name="stk" Orientation="Vertical">
-                                                                <DatePicker BorderThickness="0" SelectedDate="{Binding TimeValue}" />
-                                                                <TextBox BorderThickness="0" Text="{Binding TimeValue, StringFormat={}{0: HH:mm:ss}}" />
-                                                            </StackPanel>
+                                                            <TextBox x:Name="txtDateTime" BorderThickness="0" ui:TextBoxHelper.IsDeleteButtonVisible="False" Text="{Binding TimeValue, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+
                                                             <DataTemplate.Triggers>
                                                                 <DataTrigger Binding="{Binding Name}" Value="CrtTime">
-                                                                    <Setter TargetName="stk" Property="IsEnabled" Value="False" />
+                                                                    <Setter TargetName="txtDateTime" Property="IsEnabled" Value="False" />
                                                                 </DataTrigger>
                                                             </DataTemplate.Triggers>
                                                         </DataTemplate>

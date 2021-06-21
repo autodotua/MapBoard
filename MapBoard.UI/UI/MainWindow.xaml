@@ -110,7 +110,7 @@
                         ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
                 <local:MapViewSidePanel
-                    x:Name="mapInfo" Margin="0,12,8,12"
+                    x:Name="mapInfo" Margin="0,36,8,12"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Stretch" />
                 <bar:EditionBar

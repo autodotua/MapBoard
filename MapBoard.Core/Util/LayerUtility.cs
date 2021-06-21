@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
+using FzLib.Basic;
 
 namespace MapBoard.Util
 {
@@ -107,6 +108,11 @@ namespace MapBoard.Util
             return array;
         }
 
+        public static FeatureQueryResult GetAllFeatures(this MapLayerInfo layer)
+        {
+            return layer.QueryFeaturesAsync(new QueryParameters()).Result;
+        }
+
         public async static Task CopyAllFeaturesAsync(MapLayerInfo source, MapLayerInfo target)
         {
             var features = await source.GetAllFeaturesAsync();
@@ -137,13 +143,16 @@ namespace MapBoard.Util
             }
             var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name + "_缓冲区");
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in await layer.GetAllFeaturesAsync())
+            await Task.Run(() =>
             {
-                Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
-                var geometry = GeometryEngine.Buffer(oldGeometry, meters);
-                Feature newFeature = newLayer.CreateFeature(feature.Attributes, geometry);
-                newFeatures.Add(newFeature);
-            }
+                foreach (var feature in layer.GetAllFeatures())
+                {
+                    Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
+                    var geometry = GeometryEngine.Buffer(oldGeometry, meters);
+                    Feature newFeature = newLayer.CreateFeature(feature.Attributes, geometry);
+                    newFeatures.Add(newFeature);
+                }
+            });
             await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
@@ -225,15 +234,19 @@ namespace MapBoard.Util
                 throw new Exception("图层的类型并非统一");
             }
             MapLayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
-
-            foreach (var oldLayer in layers)
+            List<Feature> newFeatures = new List<Feature>();
+            await Task.Run(() =>
             {
-                var oldFeatures = await oldLayer.GetAllFeaturesAsync();
+                foreach (var oldLayer in layers)
+                {
+                    var oldFeatures =  oldLayer.GetAllFeatures();
+                    var features = oldFeatures.Select(p => layer.CreateFeature(p.Attributes, p.Geometry));
+                    newFeatures.AddRange(features);
+                }
+            });
+            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
+            layers.ForEach(p => p.LayerVisible = false);
 
-                var features = oldFeatures.Select(p => layer.CreateFeature(p.Attributes, p.Geometry));
-                await layer.AddFeaturesAsync(features, FeaturesChangedSource.FeatureOperation);
-                oldLayer.LayerVisible = false;
-            }
             return layer;
         }
     }

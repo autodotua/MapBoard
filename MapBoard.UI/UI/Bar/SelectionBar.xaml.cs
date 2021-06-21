@@ -51,7 +51,7 @@ namespace MapBoard.UI.Bar
 
         private SelectFeatureDialog selectFeatureDialog;
 
-        private void SelectedFeaturesChanged(object sender, EventArgs e)
+        private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {
             if (MapView.CurrentTask != BoardTask.Select)
             {
@@ -63,36 +63,35 @@ namespace MapBoard.UI.Bar
             MapLayerInfo layer = Layers.Selected;
             btnCut.IsEnabled = layer.GeometryType == GeometryType.Polygon
                 || layer.GeometryType == GeometryType.Polyline;
-            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
-            if (layer.GeometryType == GeometryType.Polyline)//线
-            {
-                double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                sb.Append("，长度：" + Number.MeterToFitString(length));
-            }
-            else if (layer.GeometryType == GeometryType.Polygon)//面
-            {
-                double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
-                sb.Append("，周长：" + Number.MeterToFitString(length));
-                sb.Append("，面积：" + Number.SquareMeterToFitString(area));
-            }
-            Message = sb.ToString();
+
+            attributes = count != 1 ?
+                null : FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
 
             if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
             {
-                var mainWindow = Application.Current.MainWindow;
                 selectFeatureDialog = new SelectFeatureDialog(Window.GetWindow(this), MapView.Selection, MapView.Layers);
-                selectFeatureDialog.Show();
+                selectFeatureDialog.Show(); ;
             }
 
-            if (count == 1)
+            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
+            Message = sb.ToString();
+            await Task.Run(() =>
             {
-                attributes = FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
-            }
-            else
-            {
-                attributes = null;
-            }
+                if (layer.GeometryType == GeometryType.Polyline)//线
+                {
+                    double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                    sb.Append("，长度：" + Number.MeterToFitString(length));
+                }
+                else if (layer.GeometryType == GeometryType.Polygon)//面
+                {
+                    double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                    double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
+                    sb.Append("，周长：" + Number.MeterToFitString(length));
+                    sb.Append("，面积：" + Number.SquareMeterToFitString(area));
+                }
+            });
+            Message = sb.ToString();
+
             this.Notify(nameof(Attributes));
         }
 

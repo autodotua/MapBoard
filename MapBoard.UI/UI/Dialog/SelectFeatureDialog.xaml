@@ -1,35 +1,43 @@
 ﻿<u:DialogWindowBase
-    xmlns:u="clr-namespace:MapBoard.UI"
     x:Class="MapBoard.UI.Dialog.SelectFeatureDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="选择图形" Width="254"
+    Title="选择图形"
+    Width="254"
     Height="240"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="Window_Loaded" mc:Ignorable="d">
-
-    <ListView
-        Margin="4"
-        ItemsSource="{Binding SelectedFeatures}"
-        SelectedItem="{Binding Selected}"
-        SelectionMode="Single">
-        <ListView.View>
-            <GridView>
-                <GridViewColumn DisplayMemberBinding="{Binding Index}" Header="序号" />
-                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Label}" Header="标签" />
-                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Date, StringFormat={}{0:yyyy-MM-dd}}" Header="日期" />
-                <GridViewColumn DisplayMemberBinding="{Binding Attributes.Key}" Header="分类" />
-            </GridView>
-        </ListView.View>
-        <ListView.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel Margin="0,0,0,24" />
-            </ItemsPanelTemplate>
-        </ListView.ItemsPanel>
-    </ListView>
+    Loaded="Window_Loaded"
+    mc:Ignorable="d">
+    <DockPanel LastChildFill="True">
+        <TextBlock
+            Margin="8"
+            HorizontalAlignment="Left"
+            DockPanel.Dock="Top"
+            Text="{Binding Message}" />
+        <ListView
+            Margin="4"
+            DockPanel.Dock="Left"
+            ItemsSource="{Binding SelectedFeatures}"
+            SelectedItem="{Binding Selected}"
+            SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Index}" Header="序号" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Attributes.Label}" Header="标签" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Attributes.Date, StringFormat={}{0:yyyy-MM-dd}}" Header="日期" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Attributes.Key}" Header="分类" />
+                </GridView>
+            </ListView.View>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Margin="0,0,0,24" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+    </DockPanel>
 </u:DialogWindowBase>

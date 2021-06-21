@@ -53,8 +53,12 @@ namespace MapBoard.IO
                 JObject jF = new JObject();
                 jFeatures.Add(jF);
                 jF.Add("type", "Feature");
-
-                jF.Add("geometry", GetGeometryJson(f));
+                var g = GetGeometryJson(f);
+                if (g == null)
+                {
+                    continue;
+                }
+                jF.Add("geometry", g);
                 jF.Add("properties", GetPropertiesJson(f));
             }
             return jRoot;
@@ -112,6 +116,10 @@ namespace MapBoard.IO
         {
             JObject jGeo = new JObject();
             Geometry g = f.Geometry;
+            if (g.IsEmpty)
+            {
+                return null;
+            }
             if (f.Geometry.SpatialReference != null && f.Geometry.SpatialReference.Wkid != 4326)
             {
                 g = GeometryEngine.Project(g, SpatialReferences.Wgs84);
@@ -132,6 +140,9 @@ namespace MapBoard.IO
                     jGeo.Add("type", "MultiLineString");
                     jGeo.Add("coordinates", GetPolygonOrMultiLineStringJson(g as Polyline));
                     break;
+
+                case GeometryType.Polyline when (f.Geometry as Polyline).Parts.Count == 0:
+                    return null;
 
                 case GeometryType.Point:
                     jGeo.Add("type", "Point");

@@ -104,7 +104,7 @@ namespace MapBoard.UI
         public async Task DoAsync(Func<ProgressRingOverlayArgs, Task> action, string message, bool catchException = false)
         {
             loading.Message = message;
-            loading.Show();
+            loading.Show(500);
             try
             {
                 await action(loading.TaskArgs);

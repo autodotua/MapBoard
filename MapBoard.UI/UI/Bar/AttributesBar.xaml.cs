@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using static MapBoard.Mapping.EditorHelper;
@@ -132,14 +133,17 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        private  void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 //让编辑控件失去焦点以更新绑定数据源
                 (sender as FrameworkElement).Focus();
-                //等待一段时间让数据更新
-                await Task.Delay(100);
+                var bindings = BindingOperations.GetSourceUpdatingBindingGroups(sender as DataGrid);
+                foreach (var binding in bindings)
+                {
+                    binding.UpdateSources();
+                }
                 MapView.Editor.StopAndSave();
             }
         }

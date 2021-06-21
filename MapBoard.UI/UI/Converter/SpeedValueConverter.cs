@@ -13,6 +13,10 @@ namespace MapBoard.UI.Converter
                 return "";
             }
             double speed = (double)value;
+            if(speed==0)
+            {
+                return "";
+            }
             return speed.ToString("0.00") + "m/s    " + (3.6 * speed).ToString("0.00") + "km/h";
         }
 
