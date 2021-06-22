@@ -77,17 +77,46 @@ namespace MapBoard.UI.Bar
             Message = sb.ToString();
             await Task.Run(() =>
             {
-                if (layer.GeometryType == GeometryType.Polyline)//线
+                try
                 {
-                    double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                    sb.Append("，长度：" + Number.MeterToFitString(length));
+                    switch (layer.GeometryType)
+                    {
+                        case GeometryType.Point when count == 1:
+                            var point = MapView.Selection.SelectedFeatures.First().Geometry as MapPoint;
+                            sb.Append($"，经度={point.X:0.0000000}，纬度={point.Y:0.0000000}");
+                            break;
+
+                        case GeometryType.Envelope:
+                            return;
+
+                        case GeometryType.Polyline:
+                            double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                            sb.Append("，长度：" + Number.MeterToFitString(length));
+
+                            break;
+
+                        case GeometryType.Polygon:
+                            double length2 = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                            double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
+                            sb.Append("，周长：" + Number.MeterToFitString(length2));
+                            sb.Append("，面积：" + Number.SquareMeterToFitString(area));
+
+                            break;
+
+                        case GeometryType.Multipoint:
+                            int pointCount = MapView.Selection.SelectedFeatures
+                            .Select(p => (p.Geometry as Multipoint).Points.Count).Sum();
+                            sb.Append($"，{pointCount}个点");
+                            break;
+
+                        default:
+                            return;
+                    }
                 }
-                else if (layer.GeometryType == GeometryType.Polygon)//面
+                catch (InvalidOperationException)
                 {
-                    double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                    double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
-                    sb.Append("，周长：" + Number.MeterToFitString(length));
-                    sb.Append("，面积：" + Number.SquareMeterToFitString(area));
+                    //当MapView.Selection.SelectedFeatures集合发生改变时会抛出错误，此时不需要继续进行计算
+                    return;
                 }
             });
             Message = sb.ToString();
@@ -225,19 +254,19 @@ namespace MapBoard.UI.Bar
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
                 ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
-                (layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)
+                layer.GeometryType is GeometryType.Polygon or GeometryType.Polyline or GeometryType.Multipoint
                 && features.Length>1),
                 ("分离","将拥有多个部分的图形分离为单独的图形",
-                SeparateAsync,(layer.GeometryType==GeometryType.Polygon || layer.GeometryType==GeometryType.Polyline)),
+                SeparateAsync,layer.GeometryType is GeometryType.Polygon or GeometryType.Polyline),
                 ("连接","将折线的端点互相连接",LinkAsync,layer.GeometryType==GeometryType.Polyline
                 && features.Length>1
                 && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
                 ("反转","交换点的顺序",ReverseAsync,
-                layer.GeometryType==GeometryType.Polyline||layer.GeometryType==GeometryType.Polygon),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("加密","在每两个折点之间添加更多的点",DensifyAsync,
-                (layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon)),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
-                layer.GeometryType==GeometryType.Polyline|| layer.GeometryType==GeometryType.Polygon),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
             };
             OpenMenus(menus, sender as UIElement, header => $"正在进行{header}操作");

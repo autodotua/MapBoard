@@ -20,7 +20,6 @@ namespace ModernWpf.FzExtension
         }
 
         private bool showing = false;
-        private object lockObj = new object();
 
         public void Show(int delay = 0)
         {
@@ -32,12 +31,9 @@ namespace ModernWpf.FzExtension
             {
                 Task.Delay(delay).ContinueWith(t =>
                 {
-                    lock (lockObj)
+                    if (showing)
                     {
-                        if (showing)
-                        {
-                            Dispatcher.Invoke(ShowIt);
-                        }
+                        Dispatcher.Invoke(ShowIt);
                     }
                 });
             }
@@ -55,25 +51,21 @@ namespace ModernWpf.FzExtension
 
         public void Hide()
         {
-            lock (lockObj)
+            if (!showing)
             {
-                if (!showing)
-                {
-                    grd.Visibility = Visibility.Collapsed;
-                    grd.IsHitTestVisible = false;
-
-                    return;
-                }
-                showing = false;
-                DoubleAnimation ani = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
-                ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+                grd.Visibility = Visibility.Collapsed;
                 grd.IsHitTestVisible = false;
-                ani.Completed += (p1, p2) =>
-                {
-                    grd.Visibility = Visibility.Collapsed;
-                };
-                grd.BeginAnimation(OpacityProperty, ani);
+                return;
             }
+            showing = false;
+            DoubleAnimation ani = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
+            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+            grd.IsHitTestVisible = false;
+            ani.Completed += (p1, p2) =>
+            {
+                grd.Visibility = Visibility.Collapsed;
+            };
+            grd.BeginAnimation(OpacityProperty, ani);
         }
 
         public static readonly DependencyProperty MessageProperty = DependencyProperty.Register(

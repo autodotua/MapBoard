@@ -16,9 +16,19 @@ namespace MapBoard.Util
 {
     public static class FeatureUtility
     {
+        /// <summary>
+        /// 将多个线、面或多点合并为一个图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task<Feature> UnionAsync(MapLayerInfo layer, Feature[] features)
         {
-            Geometry geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
+            Geometry geometry = null;
+            await Task.Run(() =>
+            {
+                geometry = GeometryEngine.Union(features.Select(p => p.Geometry));
+            });
             var firstFeature = features.First();
             var newFeature = layer.CreateFeature(firstFeature.Attributes, geometry);
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
@@ -26,26 +36,35 @@ namespace MapBoard.Util
             return newFeature;
         }
 
+        /// <summary>
+        /// 将多部份的图形分解为单个部分的图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task<IReadOnlyList<Feature>> SeparateAsync(MapLayerInfo layer, Feature[] features)
         {
             List<Feature> deleted = new List<Feature>();
             List<Feature> added = new List<Feature>();
-            foreach (var feature in features)
+            await Task.Run(() =>
             {
-                Debug.Assert(feature.Geometry is Multipart);
-                var m = feature.Geometry as Multipart;
-                if (m.Parts.Count <= 1)
+                foreach (var feature in features)
                 {
-                    continue;
+                    Debug.Assert(feature.Geometry is Multipart);
+                    var m = feature.Geometry as Multipart;
+                    if (m.Parts.Count <= 1)
+                    {
+                        continue;
+                    }
+                    foreach (var part in m.Parts)
+                    {
+                        Geometry g = m is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part);
+                        var newFeature = layer.CreateFeature(feature.Attributes, g);
+                        added.Add(newFeature);
+                    }
+                    deleted.Add(feature);
                 }
-                foreach (var part in m.Parts)
-                {
-                    Geometry g = m is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part);
-                    var newFeature = layer.CreateFeature(feature.Attributes, g);
-                    added.Add(newFeature);
-                }
-                deleted.Add(feature);
-            }
+            });
             if (added.Count > 0)
             {
                 await layer.DeleteFeaturesAsync(deleted, FeatureOperation);
@@ -54,6 +73,12 @@ namespace MapBoard.Util
             return added.AsReadOnly();
         }
 
+        /// <summary>
+        /// 根据端点之间的距离，自动计算应该连接的端点
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task<Feature> AutoLinkAsync(MapLayerInfo layer, Feature[] features)
         {
             List<MapPoint> points = new List<MapPoint>();
@@ -66,65 +91,75 @@ namespace MapBoard.Util
             {
                 throw new ArgumentException("不是折线类型");
             }
-
-            List<ReadOnlyPart> parts = new List<ReadOnlyPart>();
-            foreach (var f in features)
+            Feature newFeature = null;
+            await Task.Run(() =>
             {
-                parts.AddRange((f.Geometry as Polyline).Parts);
-            }
-            var line1 = parts[0];
-            var line2 = parts[1];
-
-            double min = Math.Min(
-                GeometryUtility.GetDistance(line1.StartPoint, line2.StartPoint),
-                GeometryUtility.GetDistance(line1.StartPoint, line2.EndPoint));
-            //首先假设，最近点是起点，那么连接后的线起点就是line1的终点
-            int start = 1;//0代表起点，1代表终点
-
-            //如果发现终点到line2起点或终点的距离更小，那么最近点就是line1的终点
-            if (Math.Min(
-                GeometryUtility.GetDistance(line1.EndPoint, line2.StartPoint),
-                GeometryUtility.GetDistance(line1.EndPoint, line2.EndPoint)) < min)
-            {
-                start = 0;
-            }
-
-            for (int i = 0; i < parts.Count; i++)
-            {
-                ReadOnlyPart part1 = parts[i];
-                ReadOnlyPart part2 = null;
-                if (i < parts.Count - 1)
+                List<ReadOnlyPart> parts = new List<ReadOnlyPart>();
+                foreach (var f in features)
                 {
-                    part2 = parts[i + 1];
+                    parts.AddRange((f.Geometry as Polyline).Parts);
                 }
-                if (start == 0)//顺序不变
-                {
-                    points.AddRange(part1.Points);
-                }
-                else//逆序
-                {
-                    points.AddRange(part1.Points.Reverse());
-                }
-                if (i < parts.Count - 1)
-                {
-                    //part2需要连接的点
-                    MapPoint p = start == 0 ? part1.EndPoint : part1.StartPoint;
-                    //寻找part2中离p最近的点
+                var line1 = parts[0];
+                var line2 = parts[1];
 
-                    start = GeometryUtility.GetDistance(p, part2.StartPoint)
-                        < GeometryUtility.GetDistance(p, part2.EndPoint) ?
-                        0 : 1;
+                double min = Math.Min(
+                    GeometryUtility.GetDistance(line1.StartPoint, line2.StartPoint),
+                    GeometryUtility.GetDistance(line1.StartPoint, line2.EndPoint));
+                //首先假设，最近点是起点，那么连接后的线起点就是line1的终点
+                int start = 1;//0代表起点，1代表终点
+
+                //如果发现终点到line2起点或终点的距离更小，那么最近点就是line1的终点
+                if (Math.Min(
+                    GeometryUtility.GetDistance(line1.EndPoint, line2.StartPoint),
+                    GeometryUtility.GetDistance(line1.EndPoint, line2.EndPoint)) < min)
+                {
+                    start = 0;
                 }
-            }
 
-            var newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    ReadOnlyPart part1 = parts[i];
+                    ReadOnlyPart part2 = null;
+                    if (i < parts.Count - 1)
+                    {
+                        part2 = parts[i + 1];
+                    }
+                    if (start == 0)//顺序不变
+                    {
+                        points.AddRange(part1.Points);
+                    }
+                    else//逆序
+                    {
+                        points.AddRange(part1.Points.Reverse());
+                    }
+                    if (i < parts.Count - 1)
+                    {
+                        //part2需要连接的点
+                        MapPoint p = start == 0 ? part1.EndPoint : part1.StartPoint;
+                        //寻找part2中离p最近的点
 
+                        start = GeometryUtility.GetDistance(p, part2.StartPoint)
+                            < GeometryUtility.GetDistance(p, part2.EndPoint) ?
+                            0 : 1;
+                    }
+                }
+
+                newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
+            });
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
             await layer.AddFeatureAsync(newFeature, FeatureOperation);
 
             return newFeature;
         }
 
+        /// <summary>
+        /// 根据参数，连接折线的端点
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="headToHead">是否头和头相连</param>
+        /// <param name="reverse">是否反转（尾连头/尾连尾）</param>
+        /// <returns></returns>
         public static async Task<Feature> LinkAsync(MapLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
@@ -137,88 +172,118 @@ namespace MapBoard.Util
             {
                 throw new ArgumentException("不是折线类型");
             }
-            if (features.Length == 2)
+            Feature newFeature = null;
+            await Task.Run(() =>
             {
-                List<MapPoint> points1 = GetPoints(features[0]);
-                List<MapPoint> points2 = GetPoints(features[1]);
-                if (headToHead && !reverse)
+                if (features.Length == 2)
                 {
-                    points1.Reverse();
-                    points1.AddRange(points2);
+                    List<MapPoint> points1 = GetPoints(features[0]);
+                    List<MapPoint> points2 = GetPoints(features[1]);
+                    if (headToHead && !reverse)
+                    {
+                        points1.Reverse();
+                        points1.AddRange(points2);
+                    }
+                    else if (headToHead && reverse)
+                    {
+                        points2.Reverse();
+                        points1.AddRange(points2);
+                    }
+                    else if (!headToHead && !reverse)
+                    {
+                        points1.AddRange(points2);
+                    }
+                    else if (!headToHead && reverse)
+                    {
+                        points1.InsertRange(0, points2);
+                    }
+
+                    points = points1;
                 }
-                else if (headToHead && reverse)
+                else
                 {
-                    points2.Reverse();
-                    points1.AddRange(points2);
-                }
-                else if (!headToHead && !reverse)
-                {
-                    points1.AddRange(points2);
-                }
-                else if (!headToHead && reverse)
-                {
-                    points1.InsertRange(0, points2);
+                    IEnumerable<List<MapPoint>> pointsGroup = features.Select(p => GetPoints(p));
+                    if (reverse)
+                    {
+                        pointsGroup = pointsGroup.Reverse();
+                    }
+                    points = new List<MapPoint>();
+                    foreach (var part in pointsGroup)
+                    {
+                        points.AddRange(part);
+                    }
                 }
 
-                points = points1;
-            }
-            else
-            {
-                IEnumerable<List<MapPoint>> pointsGroup = features.Select(p => GetPoints(p));
-                if (reverse)
-                {
-                    pointsGroup = pointsGroup.Reverse();
-                }
-                points = new List<MapPoint>();
-                foreach (var part in pointsGroup)
-                {
-                    points.AddRange(part);
-                }
-            }
-            var newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
-
+                newFeature = layer.CreateFeature(features[0].Attributes, new Polyline(points));
+            });
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
             await layer.AddFeatureAsync(newFeature, FeatureOperation);
 
             return newFeature;
         }
 
+        /// <summary>
+        /// 反转
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task<IReadOnlyList<Feature>> ReverseAsync(MapLayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in features.ToList())
+            await Task.Run(() =>
             {
-                List<MapPoint> points = GetPoints(feature);
-                points.Reverse();
-                Geometry newGeo = null;
-                if (layer.GeometryType == GeometryType.Polygon)
+                foreach (var feature in features.ToList())
                 {
-                    newGeo = new Polygon(points.ToList());
+                    List<MapPoint> points = GetPoints(feature);
+                    points.Reverse();
+                    Geometry newGeo = null;
+                    if (layer.GeometryType == GeometryType.Polygon)
+                    {
+                        newGeo = new Polygon(points.ToList());
+                    }
+                    else if (layer.GeometryType == GeometryType.Polyline)
+                    {
+                        newGeo = new Polyline(points.ToList());
+                    }
+                    var newFeature = layer.CreateFeature(feature.Attributes, newGeo);
+                    newFeatures.Add(newFeature);
                 }
-                else if (layer.GeometryType == GeometryType.Polyline)
-                {
-                    newGeo = new Polyline(points.ToList());
-                }
-                var newFeature = layer.CreateFeature(feature.Attributes, newGeo);
-                newFeatures.Add(newFeature);
-            }
+            });
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
             await layer.AddFeaturesAsync(newFeatures, FeatureOperation);
             return newFeatures.AsReadOnly();
         }
 
+        /// <summary>
+        /// 加密
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static async Task DensifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
-            foreach (var feature in features.ToList())
+            await Task.Run(() =>
             {
-                var newGeo = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
-                newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, feature.Attributes));
-                feature.Geometry = newGeo;
-            }
+                foreach (var feature in features.ToList())
+                {
+                    var newGeo = GeometryEngine.DensifyGeodetic(feature.Geometry, max, LinearUnits.Meters);
+                    newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, feature.Attributes));
+                    feature.Geometry = newGeo;
+                }
+            });
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
+        /// <summary>
+        /// 垂距法简化图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public async static Task VerticalDistanceSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
@@ -227,7 +292,7 @@ namespace MapBoard.Util
             foreach (var feature in features)
             {
                 oldGeometries.Add(feature, feature.Geometry);
-                newFeatures.Add(SimplyBase(layer, feature, part =>
+                newFeatures.Add(await SimplyBaseAsync(layer, feature, part =>
                {
                    HashSet<MapPoint> deletedPoints = new HashSet<MapPoint>();
                    for (int i = 2; i < part.PointCount; i += 2)
@@ -244,6 +309,13 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
+        /// <summary>
+        /// ArcGIS自带的简化方法（最大偏离法）
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public async static Task GeneralizeSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -260,35 +332,44 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
-        private static UpdatedFeature SimplyBase(MapLayerInfo layer, Feature feature,
+        /// <summary>
+        /// 大多数简化方法的抽象
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="feature"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        private static Task<UpdatedFeature> SimplyBaseAsync(MapLayerInfo layer, Feature feature,
             Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.GeometryType == GeometryType.Polygon || layer.GeometryType == GeometryType.Polyline); ;
-
-            IReadOnlyList<ReadOnlyPart> parts = null;
-            if (layer.GeometryType == GeometryType.Polygon)
+            return Task.Run(() =>
             {
-                parts = (feature.Geometry as Polygon).Parts;
-            }
-            else if (layer.GeometryType == GeometryType.Polyline)
-            {
-                parts = (feature.Geometry as Polyline).Parts;
-            }
-            List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
-            foreach (var part in parts)
-            {
-                newParts.Add(func(part));
-            }
-            UpdatedFeature uf = new UpdatedFeature(feature);
-            if (layer.GeometryType == GeometryType.Polygon)
-            {
-                feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
-            }
-            else if (layer.GeometryType == GeometryType.Polyline)
-            {
-                feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
-            }
-            return uf;
+                IReadOnlyList<ReadOnlyPart> parts = null;
+                if (layer.GeometryType == GeometryType.Polygon)
+                {
+                    parts = (feature.Geometry as Polygon).Parts;
+                }
+                else if (layer.GeometryType == GeometryType.Polyline)
+                {
+                    parts = (feature.Geometry as Polyline).Parts;
+                }
+                List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+                foreach (var part in parts)
+                {
+                    newParts.Add(func(part));
+                }
+                UpdatedFeature uf = new UpdatedFeature(feature);
+                if (layer.GeometryType == GeometryType.Polygon)
+                {
+                    feature.Geometry = new Polygon(newParts, feature.Geometry.SpatialReference);
+                }
+                else if (layer.GeometryType == GeometryType.Polyline)
+                {
+                    feature.Geometry = new Polyline(newParts, feature.Geometry.SpatialReference);
+                }
+                return uf;
+            });
         }
 
         /// <summary>
@@ -304,6 +385,12 @@ namespace MapBoard.Util
             return GetVerticleDistance(p1P2Line, pc);
         }
 
+        /// <summary>
+        /// 获取点到线的垂距
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="pc"></param>
+        /// <returns></returns>
         private static double GetVerticleDistance(Polyline line, MapPoint pc)
         {
             var nearestPoint = GeometryEngine.NearestCoordinate(line, pc);
@@ -311,6 +398,13 @@ namespace MapBoard.Util
             return dist.Distance;
         }
 
+        /// <summary>
+        /// 分裂法法简化图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static async Task DouglasPeuckerSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -321,7 +415,7 @@ namespace MapBoard.Util
             {
                 oldGeometries.Add(feature, feature.Geometry);
 
-                newFeatures.Add(SimplyBase(layer, feature, part =>
+                newFeatures.Add(await SimplyBaseAsync(layer, feature, part =>
                 {
                     var ps = part.Points;
                     IList<MapPoint> Recurse(int from, int to)
@@ -357,6 +451,13 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
+        /// <summary>
+        /// 间隔取点法简化图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="interval"></param>
+        /// <returns></returns>
         public static async Task IntervalTakePointsSimplifyAsync(MapLayerInfo layer, Feature[] features, double interval)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
@@ -370,7 +471,7 @@ namespace MapBoard.Util
             {
                 oldGeometries.Add(feature, feature.Geometry);
 
-                newFeatures.Add(SimplyBase(layer, feature, part =>
+                newFeatures.Add(await SimplyBaseAsync(layer, feature, part =>
                {
                    List<MapPoint> points = new List<MapPoint>();
                    for (int i = 0; i < part.PointCount; i++)
@@ -390,6 +491,12 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
+        /// <summary>
+        /// 创建副本
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(MapLayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
@@ -402,35 +509,189 @@ namespace MapBoard.Util
             return newFeatures.AsReadOnly();
         }
 
+        /// <summary>
+        /// 删除图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task DeleteAsync(MapLayerInfo layer, Feature[] features)
         {
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
         }
 
+        /// <summary>
+        /// 切割图形
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="clipLine"></param>
+        /// <returns></returns>
         public static async Task<IReadOnlyList<Feature>> CutAsync(MapLayerInfo layer, Feature[] features, Polyline clipLine)
         {
             List<Feature> added = new List<Feature>();
-            foreach (var feature in features)
+            await Task.Run(() =>
             {
-                var newGeos = GeometryEngine.Cut(feature.Geometry,
-                    GeometryEngine.Project(clipLine, SpatialReferences.Wgs84) as Polyline);
-                int partsCount = 0;
-                foreach (var newGeo in newGeos)
+                foreach (var feature in features)
                 {
-                    foreach (var part in (newGeo as Multipart).Parts)
+                    var newGeos = GeometryEngine.Cut(feature.Geometry,
+                        GeometryEngine.Project(clipLine, SpatialReferences.Wgs84) as Polyline);
+                    int count = 0;
+                    foreach (var newGeo in newGeos)
                     {
-                        partsCount++;
-                        Feature newFeature = layer.CreateFeature(
-                            feature.Attributes, newGeo is Polyline ? (Geometry)new Polyline(part) : (Geometry)new Polygon(part));
-                        added.Add(newFeature);
+                        //对于面，由于有“洞”的存在，不能把不同部分拆分
+                        if (layer.GeometryType == GeometryType.Polygon)
+                        {
+                            count++;
+                            Feature newFeature = layer.CreateFeature(feature.Attributes, newGeo);
+                            added.Add(newFeature);
+                        }
+                        //对于线，可以每个部分单独成为一个图形
+                        else if (layer.GeometryType == GeometryType.Polyline)
+                        {
+                            foreach (var part in (newGeo as Multipart).Parts)
+                            {
+                                count++;
+                                Feature newFeature = layer.CreateFeature(feature.Attributes, new Polyline(part));
+                                added.Add(newFeature);
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
+                        }
                     }
                 }
-            }
+            });
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
             await layer.AddFeaturesAsync(added, FeatureOperation);
             return added;
         }
 
+        /// <summary>
+        /// 复制或移动图形到另一个图层
+        /// </summary>
+        /// <param name="layerFrom"></param>
+        /// <param name="layerTo"></param>
+        /// <param name="features"></param>
+        /// <param name="copy"></param>
+        /// <returns></returns>
+        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(MapLayerInfo layerFrom, MapLayerInfo layerTo, Feature[] features, bool copy)
+        {
+            var newFeatures = new List<Feature>();
+            var fields = layerTo.Fields.Select(p => p.Name).ToHashSet();
+            await Task.Run(() =>
+            {
+                foreach (var feature in features)
+                {
+                    Dictionary<string, object> attributes = new Dictionary<string, object>();
+                    foreach (var attr in feature.Attributes)
+                    {
+                        if (fields.Contains(attr.Key))
+                        {
+                            attributes.Add(attr.Key, attr.Value);
+                        }
+                    }
+                    newFeatures.Add(layerTo.CreateFeature(attributes, feature.Geometry));
+                }
+            });
+            await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
+            if (!copy)
+            {
+                await DeleteAsync(layerFrom, features);
+            }
+            layerFrom.LayerVisible = false;
+            layerTo.LayerVisible = true;
+            return newFeatures.AsReadOnly();
+        }
+
+        /// <summary>
+        /// 将一个字段的属性赋值给另一个字段
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="fieldSource"></param>
+        /// <param name="fieldTarget"></param>
+        /// <param name="dateFormat"></param>
+        /// <returns></returns>
+        public static async Task CopyAttributesAsync(MapLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
+        {
+            if (fieldTarget.Name.Equals(FieldExtension.CreateTimeField.Name))
+            {
+                throw new Exception("不可为“创建时间”字段赋值");
+            }
+            var features = await layer.GetAllFeaturesAsync();
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+            await Task.Run(() =>
+            {
+                foreach (var feature in features)
+                {
+                    newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes)));
+                    object value = feature.Attributes[fieldSource.Name];
+                    if (value is DateTimeOffset dto)
+                    {
+                        value = dto.UtcDateTime;
+                    }
+                    if (fieldTarget.Type == fieldSource.Type)
+                    {
+                        feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
+                    }
+                    else
+                    {
+                        object result = null;
+                        try
+                        {
+                            switch (fieldTarget.Type)
+                            {
+                                //小数转整数
+                                case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
+                                    result = Convert.ToInt32(value);
+                                    break;
+                                //文本转整数
+                                case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
+                                    result = int.Parse(value as string);
+                                    break;
+                                //整数转小数
+                                case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
+                                    result = Convert.ToDouble(value);
+                                    break;
+                                //文本转小数
+                                case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
+                                    result = double.Parse(value as string);
+                                    break;
+                                //文本转日期
+                                case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
+                                    result = DateTime.ParseExact(value as string, dateFormat, CultureInfo.CurrentCulture);
+                                    break;
+                                //文本转时间
+                                case FieldInfoType.Time when fieldSource.Type == FieldInfoType.Text:
+                                    result = value;
+                                    break;
+                                //日期转文本
+                                case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
+                                    result = ((DateTime)value).Date.ToString(dateFormat);
+                                    break;
+                                //任意转文本
+                                case FieldInfoType.Text:
+                                    result = value.ToString();
+                                    break;
+
+                                default:
+                                    throw new Exception();
+                            }
+                        }
+                        catch { }
+                        feature.SetAttributeValue(fieldTarget.Name, result);
+                    }
+                }
+            });
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
+        }
+
+        /// <summary>
+        /// 将一个要素的图形转换成点
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         private static List<MapPoint> GetPoints(Feature feature)
         {
             IReadOnlyList<ReadOnlyPart> parts = null;
@@ -452,100 +713,6 @@ namespace MapBoard.Util
                 points.AddRange(part.Points);
             }
             return points;
-        }
-
-        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(MapLayerInfo layerFrom, MapLayerInfo layerTo, Feature[] features, bool copy)
-        {
-            var newFeatures = new List<Feature>();
-            var fields = layerTo.Fields.Select(p => p.Name).ToHashSet();
-            foreach (var feature in features)
-            {
-                Dictionary<string, object> attributes = new Dictionary<string, object>();
-                foreach (var attr in feature.Attributes)
-                {
-                    if (fields.Contains(attr.Key))
-                    {
-                        attributes.Add(attr.Key, attr.Value);
-                    }
-                }
-                newFeatures.Add(layerTo.CreateFeature(attributes, feature.Geometry));
-            }
-            await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
-            if (!copy)
-            {
-                await DeleteAsync(layerFrom, features);
-            }
-            layerFrom.LayerVisible = false;
-            layerTo.LayerVisible = true;
-            return newFeatures.AsReadOnly();
-        }
-
-        public static async Task CopyAttributesAsync(MapLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
-        {
-            var features = await layer.GetAllFeaturesAsync();
-            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
-
-            foreach (var feature in features)
-            {
-                newFeatures.Add(new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes)));
-                object value = feature.Attributes[fieldSource.Name];
-                if (value is DateTimeOffset dto)
-                {
-                    value = dto.UtcDateTime;
-                }
-                if (fieldTarget.Type == fieldSource.Type)
-                {
-                    feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
-                }
-                else
-                {
-                    object result = null;
-                    try
-                    {
-                        switch (fieldTarget.Type)
-                        {
-                            //小数转整数
-                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
-                                result = Convert.ToInt32(value);
-                                break;
-                            //文本转整数
-                            case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
-                                result = int.Parse(value as string);
-                                break;
-                            //整数转小数
-                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
-                                result = Convert.ToDouble(value);
-                                break;
-                            //文本转小数
-                            case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
-                                result = double.Parse(value as string);
-                                break;
-                            //文本转日期
-                            case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
-                                result = DateTime.ParseExact(value as string, dateFormat, CultureInfo.CurrentCulture);
-                                break;
-                            //文本转时间
-                            case FieldInfoType.Time when fieldSource.Type == FieldInfoType.Text:
-                                result = value;
-                                break;
-                            //日期转文本
-                            case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
-                                result = ((DateTime)value).Date.ToString(dateFormat);
-                                break;
-                            //任意转文本
-                            case FieldInfoType.Text:
-                                result = value.ToString();
-                                break;
-
-                            default:
-                                throw new Exception();
-                        }
-                    }
-                    catch { }
-                    feature.SetAttributeValue(fieldTarget.Name, result);
-                }
-            }
-            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
     }
 }
