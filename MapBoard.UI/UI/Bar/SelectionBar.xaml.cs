@@ -44,8 +44,8 @@ namespace MapBoard.UI.Bar
         public override void Initialize()
         {
             MapView.BoardTaskChanged += BoardTaskChanged;
-            Application.Current.MainWindow.SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
-            Application.Current.MainWindow.LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            Window.GetWindow(this).SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            Window.GetWindow(this).LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
         }
 

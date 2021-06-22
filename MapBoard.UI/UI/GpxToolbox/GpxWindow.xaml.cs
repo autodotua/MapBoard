@@ -691,9 +691,8 @@ namespace MapBoard.UI.GpxToolbox
                 var bitmap = FzLib.Media.Converter.BitmapSourceToBitmap(export.GetBitmap());
 
                 Graphics g = Graphics.FromImage(bitmap);
-                var map = await arcMap.ExportImageAsync();
-                WriteableBitmap mapImage = await map.ToImageSourceAsync() as WriteableBitmap;
-                Bitmap image = FzLib.Media.Converter.BitmapSourceToBitmap(mapImage);
+                Bitmap image = await arcMap.GetImageAsync(GeoViewHelper.GetWatermarkThickness());
+
                 g.DrawImage(image, 0, 0, image.Width, image.Height);
                 g.Flush();
                 bitmap.Save(path);

@@ -54,8 +54,8 @@ namespace MapBoard
                 string arg = e.Args[0];
                 StartupUri = arg switch
                 {
-                    "tile" => new Uri("pack://application:,,,/MapBoard.TileDownloader;component/UI/MainWindow.xaml", UriKind.Absolute),
-                    "gpx" => new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute),
+                    "tile" => new Uri("UI/TileDownloader/TileDownloaderWindow.xaml", UriKind.Relative),
+                    "gpx" => new Uri("UI/GpxToolbox/GpxWindow.xaml", UriKind.Relative),
                     _ => new Uri("UI/MainWindow.xaml", UriKind.Relative),
                 };
             }

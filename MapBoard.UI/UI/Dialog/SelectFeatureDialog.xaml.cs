@@ -49,8 +49,6 @@ namespace MapBoard.UI.Dialog
 
         public SelectFeatureDialog(Window owner, SelectionHelper selection, MapLayerCollection layers) : base(owner)
         {
-            var mainWindow = Application.Current.MainWindow;
-            Owner = mainWindow;
             Selection = selection;
             Layers = layers;
             WindowStartupLocation = WindowStartupLocation.Manual;

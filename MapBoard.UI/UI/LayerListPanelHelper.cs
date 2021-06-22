@@ -83,13 +83,13 @@ namespace MapBoard.UI
                 {
                     AddToMenu(menuImport, "GPX轨迹文件",
                         () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
-                        p => IOUtility.ImportFeatureAsync(p, layer, MapView, ImportLayerType.Gpx),
+                        p => IOUtility.ImportFeatureAsync(MainWindow, p, layer, MapView, ImportLayerType.Gpx),
                         "正在导入GPX轨迹文件");
                 }
 
                 AddToMenu(menuImport, "CSV文件",
                     () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
-                    p => IOUtility.ImportFeatureAsync(p, layer, MapView, ImportLayerType.Csv),
+                    p => IOUtility.ImportFeatureAsync(MainWindow, p, layer, MapView, ImportLayerType.Csv),
                     "正在导入CSV文件");
 
                 var menuExport = new MenuItem() { Header = "导出" };
@@ -97,19 +97,19 @@ namespace MapBoard.UI
 
                 AddToMenu(menuExport, "图层包",
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
-                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.LayerPackge),
+                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                     "正在导出图层包");
                 AddToMenu(menuExport, "GPS工具箱图层包",
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
-                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
+                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
                     "正在导出GPS工具箱图层包");
                 AddToMenu(menuExport, "KML打包文件",
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML),
-                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.KML),
+                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),
                     "正在导出KML打包文件");
                 AddToMenu(menuExport, "GeoJSON文件",
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON),
-                    p => IOUtility.ExportLayerAsync(p, layer, MapView.Layers, ExportLayerType.GeoJSON),
+                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
                     "正在导出GeoJSON文件");
             }
             else

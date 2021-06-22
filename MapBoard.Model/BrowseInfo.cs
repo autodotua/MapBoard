@@ -78,6 +78,26 @@ namespace MapBoard.Model
                 this.Notify(nameof(RecordInterval));
             }
         }
+        
+        private int extraRecordDelay = 100;
+
+        public int ExtraRecordDelay
+        {
+            get => extraRecordDelay;
+            set
+            {
+                if (value < 1000)
+                {
+                    value = value / 10 * 10;
+                }
+                else if (value < 10000)
+                {
+                    value = value / 100 * 100;
+                }
+                extraRecordDelay = value;
+                this.Notify(nameof(ExtraRecordDelay));
+            }
+        }
 
         private int angle = 60;
 

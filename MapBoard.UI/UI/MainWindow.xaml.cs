@@ -501,7 +501,7 @@ namespace MapBoard.UI
             {
                 await DoAsync(async () =>
              {
-                 await IOUtility.ExportMapAsync(path, arcMap, arcMap.Layers, type);
+                 await IOUtility.ExportMapAsync(this, path, arcMap, arcMap.Layers, type);
              }, "正在导出");
             }
             canClosing = true;
@@ -530,7 +530,7 @@ namespace MapBoard.UI
             {
                 await DoAsync(async p =>
                  {
-                     await IOUtility.ImportMapAsync(path, arcMap.Layers, type, p);
+                     await IOUtility.ImportMapAsync(this, path, arcMap.Layers, type, p);
                  }, "正在导入");
             };
         }

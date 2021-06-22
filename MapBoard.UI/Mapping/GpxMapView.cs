@@ -306,12 +306,6 @@ namespace MapBoard.Mapping
             {
                 browseOverlay.Graphics[0].Geometry = point;
             }
-            //EventHandler<DrawStatusChangedEventArgs> handler = null;
-            //handler= new EventHandler<DrawStatusChangedEventArgs>((s, e) => {
-            //    DrawStatusChanged -= handler;
-
-            //});
-            //DrawStatusChanged += handler;
         }
 
         public async Task<List<TrackInfo>> ReloadGpxAsync(TrackInfo track, bool raiseEvent)
@@ -474,7 +468,6 @@ namespace MapBoard.Mapping
             public bool Update { get; private set; }
             public TrackInfo[] Track { get; private set; }
         }
-
 
         public event EventHandler<GpxLoadedEventArgs> GpxLoaded;
 

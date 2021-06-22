@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.UI.GpxToolbox"
+    xmlns:mapping="clr-namespace:MapBoard.Mapping"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:u="clr-namespace:MapBoard.UI"
-    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:mapping="clr-namespace:MapBoard.Mapping"
-    Title="GPX工具箱" Width="1000"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="GPX工具箱"
+    Width="1000"
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
@@ -42,23 +44,32 @@
                 VerticalAlignment="Center"
                 Text="{Binding ElementName=sldAngle, Path=Value, StringFormat={}俯角：{0:#}°}" />
             <Slider
-                x:Name="sldAngle" Grid.Column="2"
-                Width="180" VerticalAlignment="Center"
-                Interval="1" IsSnapToTickEnabled="True"
-                Maximum="85" Minimum="0"
+                x:Name="sldAngle"
+                Grid.Column="2"
+                Width="180"
+                VerticalAlignment="Center"
+                Interval="1"
+                IsSnapToTickEnabled="True"
+                Maximum="85"
+                Minimum="0"
                 Value="{Binding BrowseInfo.Angle}" />
             <TextBlock
                 Grid.Column="6"
                 VerticalAlignment="Center"
                 Text="{Binding ElementName=sldZoom, Path=Value, StringFormat={}视角高度：{0:#}米}" />
             <Slider
-                x:Name="sldZoom" Grid.Column="8"
-                Width="180" VerticalAlignment="Center"
-                Interval="1" IsSnapToTickEnabled="True"
-                Maximum="2500" Minimum="1"
+                x:Name="sldZoom"
+                Grid.Column="8"
+                Width="180"
+                VerticalAlignment="Center"
+                Interval="1"
+                IsSnapToTickEnabled="True"
+                Maximum="2500"
+                Minimum="1"
                 Value="{Binding BrowseInfo.Zoom}" />
             <ProgressBar
-                Grid.Column="99" Maximum="1"
+                Grid.Column="99"
+                Maximum="1"
                 Minimum="0"
                 Value="{Binding Progress, Mode=OneWay}" />
         </Grid>
@@ -68,7 +79,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
@@ -76,57 +87,98 @@
                     VerticalAlignment="Center"
                     Text="{Binding ElementName=sldSpeed, Path=Value, StringFormat={}速度：{0:#}倍}" />
                 <Slider
-                    x:Name="sldSpeed" Grid.Column="2"
-                    Width="100" VerticalAlignment="Center"
-                    Interval="1" IsSnapToTickEnabled="True"
-                    Maximum="100" Minimum="1"
+                    x:Name="sldSpeed"
+                    Grid.Column="2"
+                    Width="100"
+                    VerticalAlignment="Center"
+                    Interval="1"
+                    IsSnapToTickEnabled="True"
+                    Maximum="100"
+                    Minimum="1"
                     Value="{Binding BrowseInfo.Speed}" />
                 <Button
-                    x:Name="btnPlay" Grid.Column="99"
+                    x:Name="btnPlay"
+                    Grid.Column="99"
                     Click="Button_Click">
                     播放
                 </Button>
             </Grid>
             <Grid
-                x:Name="grdRecord" Grid.Column="2"
+                x:Name="grdRecord"
+                Grid.Column="2"
                 Margin="8">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
+                    Width="120"
                     VerticalAlignment="Center"
                     Text="{Binding ElementName=sldInterval, Path=Value, StringFormat={}间隔：{0:#}毫秒}" />
                 <Slider
-                    x:Name="sldInterval" Grid.Column="2"
-                    Width="100" VerticalAlignment="Center"
-                    Interval="5" IsSnapToTickEnabled="False"
-                    LargeChange="1000" Maximum="10000"
-                    Minimum="10" SmallChange="100"
+                    x:Name="sldInterval"
+                    Grid.Column="2"
+                    Width="100"
+                    VerticalAlignment="Center"
+                    Interval="5"
+                    IsSnapToTickEnabled="False"
+                    LargeChange="1000"
+                    Maximum="10000"
+                    Minimum="10"
+                    SmallChange="100"
                     Value="{Binding BrowseInfo.RecordInterval}" />
                 <TextBlock
                     Grid.Column="4"
-                    VerticalAlignment="Center" Text="文件名格式：" />
+                    VerticalAlignment="Center"
+                    Text="{Binding ElementName=sldExtraDelay, Path=Value, StringFormat={}录制延迟：{0:#}毫秒}" />
+                <Slider
+                    x:Name="sldExtraDelay"
+                    Grid.Column="6"
+                    Width="100"
+                    VerticalAlignment="Center"
+                    Interval="5"
+                    IsSnapToTickEnabled="False"
+                    LargeChange="1000"
+                    Maximum="2000"
+                    Minimum="0"
+                    SmallChange="100"
+                    Value="{Binding BrowseInfo.ExtraRecordDelay}" />
+                <TextBlock
+                    Grid.Column="8"
+                    VerticalAlignment="Center"
+                    Text="文件名格式：" />
                 <RadioButton
-                    x:Name="rbtnFormatTime" Grid.Column="6"
-                    VerticalAlignment="Center" Content="时间"
+                    x:Name="rbtnFormatTime"
+                    Grid.Column="10"
+                    Margin="0,0,-48,0"
+                    VerticalAlignment="Center"
+                    Content="时间"
                     IsChecked="True" />
                 <RadioButton
-                    x:Name="rbtnFormatSeq" Grid.Column="8"
-                    VerticalAlignment="Center" Content="序列" />
+                    x:Name="rbtnFormatSeq"
+                    Grid.Column="12"
+                    Margin="0,0,-48,0"
+                    VerticalAlignment="Center"
+                    Content="序列" />
                 <Button
-                    x:Name="btnRecord" Grid.Column="99"
-                    Click="Button_Click_1" Content="录制" />
+                    x:Name="btnRecord"
+                    Grid.Column="99"
+                    Click="RecordButton_Click"
+                    Content="录制" />
             </Grid>
         </WrapPanel>
         <Border Grid.Row="99" ClipToBounds="True">

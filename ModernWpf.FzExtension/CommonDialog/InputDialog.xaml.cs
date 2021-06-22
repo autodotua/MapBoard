@@ -65,10 +65,10 @@ namespace ModernWpf.FzExtension.CommonDialog
 
         private async void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            await Task.Delay(100);
+            //先把后续的事情处理完，才能够设置焦点
+            await Task.Yield();
             txt.Focus();
             Keyboard.Focus(txt);
-            //MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
         }
     }
 }

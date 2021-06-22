@@ -40,9 +40,9 @@ namespace MapBoard.UI.Compoment
             CurrentColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(e.Parameter.ToString()));
         }
 
-        private static void ShowModal(Window advancedColorWindow)
+        private static void ShowModal(Window advancedColorWindow, DependencyObject picker)
         {
-            advancedColorWindow.Owner = Application.Current.MainWindow;
+            advancedColorWindow.Owner = Window.GetWindow(picker);
             advancedColorWindow.ShowDialog();
         }
 
@@ -81,7 +81,7 @@ namespace MapBoard.UI.Compoment
             _advancedPickerWindow.KeyDown += AdvancedPickerPopUpKeyDown;
             advancedColorPickerDialog.DialogResultEvent += AdvancedColorPickerDialogDialogResultEvent;
             advancedColorPickerDialog.Drag += AdvancedColorPickerDialogDrag;
-            ShowModal(_advancedPickerWindow);
+            ShowModal(_advancedPickerWindow, this);
         }
 
         private void AdvancedColorPickerDialogDrag(object sender, DragDeltaEventArgs e)

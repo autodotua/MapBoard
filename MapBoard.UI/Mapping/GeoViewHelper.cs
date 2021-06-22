@@ -1,13 +1,18 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using MapBoard.Model;
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using Map = Esri.ArcGISRuntime.Mapping.Map;
 
 namespace MapBoard.Mapping
@@ -78,7 +83,25 @@ namespace MapBoard.Mapping
 
         public static void SetHideWatermark(this GeoView map)
         {
-            map.Margin = new Thickness(Config.Instance.HideWatermark ? -Config.WatermarkHeight : 0);
+            map.Margin = GetMinusWatermarkThickness();
+        }
+
+        public static Thickness GetWatermarkThickness()
+        {
+            if (!Config.Instance.HideWatermark)
+            {
+                return new Thickness();
+            }
+            return new Thickness(0, Config.WatermarkHeight, 0, Config.WatermarkHeight); ;
+        }
+
+        public static Thickness GetMinusWatermarkThickness()
+        {
+            if (!Config.Instance.HideWatermark)
+            {
+                return new Thickness();
+            }
+            return new Thickness(0, -Config.WatermarkHeight, 0, -Config.WatermarkHeight); ;
         }
 
         public const string WebTiledLayer = nameof(WebTiledLayer);
@@ -130,6 +153,66 @@ namespace MapBoard.Mapping
             FeatureLayer layer = new FeatureLayer(table);
             map.BaseLayers.Add(layer);
             return layer;
+        }
+
+        public static Task WaitForRenderCompletedAsync(this GeoView view)
+        {
+            TaskCompletionSource tcs = new TaskCompletionSource();
+
+            if (view.DrawStatus == Esri.ArcGISRuntime.UI.DrawStatus.Completed)
+            {
+                tcs.SetResult();
+                return tcs.Task;
+            }
+            view.DrawStatusChanged += View_DrawStatusChanged;
+            return tcs.Task;
+
+            void View_DrawStatusChanged(object sender, DrawStatusChangedEventArgs e)
+            {
+                if (e.Status == DrawStatus.Completed)
+                {
+                    view.DrawStatusChanged -= View_DrawStatusChanged;
+                    tcs.SetResult();
+                }
+            }
+        }
+
+        public async static Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
+        {
+            var result = await view.GetImageAsync(cut);
+            result.Save(path, format);
+        }
+
+        public async static Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
+        {
+            RuntimeImage image = await view.ExportImageAsync();
+            var bitmapSource = await image.ToImageSourceAsync() as BitmapSource;
+            int width = bitmapSource.PixelWidth;
+            int height = bitmapSource.PixelHeight;
+            int stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
+            var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
+            bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
+            Bitmap result = null;
+            PresentationSource source = PresentationSource.FromVisual(view);
+            int cutLeft = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Left);
+            int cutRight = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Right);
+            int cutTop = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Top);
+            int cutBottom = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Bottom);
+            await Task.Run(() =>
+            {
+                Bitmap bitmap = new Bitmap(width, height, stride, PixelFormat.Format32bppPArgb, memoryBlockPointer);
+                if (cut.Equals(new Thickness(0)))
+                {
+                    result = bitmap;
+                }
+                Bitmap newBitmap = new Bitmap(width - cutLeft - cutRight, height - cutTop - cutBottom, PixelFormat.Format32bppPArgb);
+                Graphics graphics = Graphics.FromImage(newBitmap);
+                var rect = new Rectangle(0, 0, newBitmap.Width, newBitmap.Height);
+                graphics.DrawImage(bitmap, rect, cutLeft, cutTop, newBitmap.Width, newBitmap.Height, GraphicsUnit.Pixel);
+                graphics.Save();
+                result = newBitmap;
+            });
+            return result;
         }
     }
 }

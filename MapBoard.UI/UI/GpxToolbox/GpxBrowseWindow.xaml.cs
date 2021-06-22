@@ -20,6 +20,7 @@ using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Util;
 using MapBoard.Mapping.Model;
+using System.Drawing.Imaging;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -155,6 +156,7 @@ namespace MapBoard.UI.GpxToolbox
                 }
                 MapPoint interPoint = null;
                 Camera camera = null;
+                //计算点位置
                 await Task.Run(() =>
                 {
                     GpxPoint point = points[i];
@@ -166,26 +168,25 @@ namespace MapBoard.UI.GpxToolbox
                     var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
                     camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
                 });
+                //设置点的位置
                 arcMap.SetLocation(interPoint);
+                //设置摄像机位置
                 await arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
-                await Task.Delay(100);
-                await Task.Run(() =>
+                //等待渲染完成
+                await arcMap.WaitForRenderCompletedAsync();
+                //即使已经渲染完成，有时仍然不会立刻显示，需要再等待一段时间
+                await Task.Delay(BrowseInfo.ExtraRecordDelay);
+                //导出图像
+                string filePath = null;
+                if (useTimeFileName)
                 {
-                    var image = arcMap.ExportImageAsync().Result.ToImageSourceAsync().Result as BitmapSource;
-                    string filePath = null;
-                    if (useTimeFileName)
-                    {
-                        filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
-                    }
-                    else
-                    {
-                        filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, ++count + ".png");
-                    }
-                    using var fileStream = new FileStream(filePath, FileMode.Create);
-                    BitmapEncoder encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(image));
-                    encoder.Save(fileStream);
-                });
+                    filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
+                }
+                else
+                {
+                    filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, ++count + ".png");
+                }
+                await arcMap.ExportImageAsync(filePath, ImageFormat.Png, GeoViewHelper.GetWatermarkThickness());
             }
         }
 
@@ -295,7 +296,7 @@ namespace MapBoard.UI.GpxToolbox
             grdCommon.IsEnabled = !working && !stopping;
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void RecordButton_Click(object sender, RoutedEventArgs e)
         {
             if (working)
             {

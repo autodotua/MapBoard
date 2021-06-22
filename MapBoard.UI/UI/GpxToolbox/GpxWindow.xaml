@@ -310,7 +310,7 @@
             ClipToBounds="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*" />
-                <RowDefinition Height="8" />
+                <RowDefinition Height="0" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Border ClipToBounds="True">

@@ -24,6 +24,7 @@ using System.Windows.Media.Imaging;
 using ModernWpf.FzExtension;
 using MapBoard.Mapping.Model;
 using MapBoard.UI.Dialog;
+using System.Drawing.Imaging;
 
 namespace MapBoard.UI
 {
@@ -41,7 +42,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetOpenFile(filter);
         }
 
-        public async static Task ImportFeatureAsync(string path, MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
+        public async static Task ImportFeatureAsync(Window owner, string path, MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -61,7 +62,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner);
+                SnakeBar snake = new SnakeBar(owner);
                 snake.ShowButton = true;
                 snake.ButtonContent = "查看";
                 snake.ButtonClick += async (p1, p2) =>
@@ -91,7 +92,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetSaveFile(filter, true, layer.Name);
         }
 
-        public async static Task ExportLayerAsync(string path, MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
+        public async static Task ExportLayerAsync(Window owner, string path, MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
         {
             Debug.Assert(path != null);
             try
@@ -117,7 +118,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                SnakeBar.Show(App.Current.MainWindow, "导出成功");
+                SnakeBar.Show(owner, "导出成功");
             }
             catch (Exception ex)
             {
@@ -141,7 +142,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetOpenFile(filter);
         }
 
-        public async static Task ImportMapAsync(string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
+        public async static Task ImportMapAsync(Window owner, string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
         {
             Debug.Assert(path != null);
             try
@@ -183,7 +184,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                SnakeBar.Show(App.Current.MainWindow, "导入成功");
+                SnakeBar.Show(owner, "导入成功");
             }
             catch (Exception ex)
             {
@@ -206,7 +207,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
         }
 
-        public static async Task ExportMapAsync(string path, MapView mapView, MapLayerCollection layers, ExportMapType type)
+        public static async Task ExportMapAsync(Window owner, string path, MapView mapView, MapLayerCollection layers, ExportMapType type)
         {
             Debug.Assert(path != null);
             try
@@ -226,38 +227,18 @@ namespace MapBoard.UI
                         break;
 
                     case ExportMapType.Screenshot:
-                        await SaveImageAsync(path, mapView);
+                        await mapView.ExportImageAsync(path, ImageFormat.Png, GeoViewHelper.GetWatermarkThickness());
+
                         break;
 
                     default:
                         break;
                 }
-                SnakeBar.Show(App.Current.MainWindow, "导出成功");
+                SnakeBar.Show(owner, "导出成功");
             }
             catch (Exception ex)
             {
                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
-            }
-        }
-
-        /// <summary>
-        /// 保存截图
-        /// </summary>
-        /// <param name="path">保存地址</param>
-        /// <returns></returns>
-        private static async Task SaveImageAsync(string path, MapView mapView)
-        {
-            RuntimeImage image = await mapView.ExportImageAsync();
-            Bitmap bitmap = ConvertToBitmap(await image.ToImageSourceAsync() as BitmapSource);
-            bitmap.Save(path);
-            Bitmap ConvertToBitmap(BitmapSource bitmapSource)
-            {
-                var width = bitmapSource.PixelWidth;
-                var height = bitmapSource.PixelHeight;
-                var stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
-                var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
-                bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
-                return new Bitmap(width, height, stride, System.Drawing.Imaging.PixelFormat.Format32bppPArgb, memoryBlockPointer);
             }
         }
 

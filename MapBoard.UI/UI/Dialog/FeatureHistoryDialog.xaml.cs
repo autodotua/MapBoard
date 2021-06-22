@@ -73,7 +73,7 @@ namespace MapBoard.UI.Dialog
         private async void UndoButton_Click(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
-            App.Current.MainWindow.IsEnabled = false;
+            Owner.IsEnabled = false;
             FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
 
             Debug.Assert(current != null);
@@ -129,7 +129,7 @@ namespace MapBoard.UI.Dialog
                     Layer.Histories[i].CanUndo = false;
                 }
                 IsEnabled = true;
-                App.Current.MainWindow.IsEnabled = true;
+                Owner.IsEnabled = true;
             }
         }
 
