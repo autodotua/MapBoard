@@ -39,6 +39,7 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
             if (layer != null)
             {
+                Title = "编辑字段别名";
                 editMode = true;
                 editLayer = layer;
                 LayerName = layer.Name;

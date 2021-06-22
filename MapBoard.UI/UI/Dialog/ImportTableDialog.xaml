@@ -76,7 +76,7 @@
                 <DataGridTextColumn
                     Width="128"
                     Binding="{Binding Field.DisplayName, UpdateSourceTrigger=PropertyChanged}"
-                    Header="显示名称" />
+                    Header="别名" />
                 <DataGridTemplateColumn Header="类型">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

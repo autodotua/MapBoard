@@ -92,7 +92,6 @@ namespace MapBoard.Util
 
         private static MapPoint Transform(MapPoint MapPoint)
         {
-            MapPoint latLng = new MapPoint(0.0, 0.0);
             double num = TransformLat(MapPoint.X - 105.0, MapPoint.Y - 35.0);
             double num2 = TransformLon(MapPoint.X - 105.0, MapPoint.Y - 35.0);
             double d = MapPoint.Y / 180.0 * 3.1415926535897931;

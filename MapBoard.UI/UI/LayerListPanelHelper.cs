@@ -56,10 +56,10 @@ namespace MapBoard.UI
                     AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
                 }
                 AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
-                AddToMenu(menu, "复制", () => CopyFeaturesAsync(layer));
+                AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
                 AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
-                AddToMenu(menu, "编辑字段显示名", () => EditFieldDisplayAsync(layer));
+                AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(layer));
                 menu.Items.Add(new Separator());
                 AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
@@ -129,12 +129,14 @@ namespace MapBoard.UI
 
         private async Task QueryAsync(MapLayerInfo layer)
         {
+            await Task.Yield();
             var dialog = new QueryFeaturesDialog(MainWindow, MapView, layer);
             dialog.BringToFront();
         }
 
         private async Task OpenHistoryDialog(MapLayerInfo layer)
         {
+            await Task.Yield();
             var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
             dialog.BringToFront();
         }
@@ -188,6 +190,11 @@ namespace MapBoard.UI
 
         private async Task EditFieldDisplayAsync(MapLayerInfo layer)
         {
+            if (layer.Fields.Length == 0)
+            {
+                await CommonDialog.ShowErrorDialogAsync("该图层没有自定义字段");
+                return;
+            }
             MapView.Selection.ClearSelection();
             CreateLayerDialog dialog = new CreateLayerDialog(MapView.Layers, layer);
             await dialog.ShowAsync();
@@ -440,8 +447,14 @@ namespace MapBoard.UI
                 if (e.LeftButton == MouseButtonState.Pressed && IsMouseOverTarget(GetItem(listview.SelectedIndex), new GetPositionDelegate(e.GetPosition)))
                 {
                     DataObject data = new DataObject(typeof(MapLayerInfo), select);
-
-                    DragDrop.DoDragDrop(listview, data, DragDropEffects.Move);
+                    try
+                    {
+                        DragDrop.DoDragDrop(listview, data, DragDropEffects.Move);
+                    }
+                    catch (System.Runtime.InteropServices.COMException)
+                    {
+                        //Windows抽风，拖动操作已在进行中
+                    }
                 }
             }
 

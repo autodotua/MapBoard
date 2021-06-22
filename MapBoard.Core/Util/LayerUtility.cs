@@ -210,14 +210,13 @@ namespace MapBoard.Util
             {
                 return;
             }
-
             var features = await layer.GetAllFeaturesAsync();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
             foreach (var feature in features)
             {
                 newFeatures.Add(new UpdatedFeature(feature));
-                feature.Geometry = CoordinateTransformation.Transformate(feature.Geometry, source, target);
+                feature.Geometry = Transformate(feature.Geometry, source, target);
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
@@ -239,7 +238,7 @@ namespace MapBoard.Util
             {
                 foreach (var oldLayer in layers)
                 {
-                    var oldFeatures =  oldLayer.GetAllFeatures();
+                    var oldFeatures = oldLayer.GetAllFeatures();
                     var features = oldFeatures.Select(p => layer.CreateFeature(p.Attributes, p.Geometry));
                     newFeatures.AddRange(features);
                 }
