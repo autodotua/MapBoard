@@ -74,9 +74,9 @@ namespace MapBoard.IO.Gpx
             return maxSpeed;
         }
 
-        public double GetMaxSpeed(int sampleCount = 8, int jump = 1)
+        public async Task<double> GetMaxSpeedAsync(int sampleCount = 8, int jump = 1)
         {
-            return GpxSpeedAnalysis.GetMeanFilteredSpeeds(Points, sampleCount, jump).Max(p => p.Speed);
+            return (await GpxSpeedAnalysis.GetMeanFilteredSpeedsAsync(Points, sampleCount, jump)).Max(p => p.Speed);
         }
 
         public TimeSpan GetMovingTime(double speedDevaluation = 0.3)

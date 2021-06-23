@@ -263,7 +263,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                CommonDialog.ShowErrorDialogAsync(ex, "初始化失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "初始化失败");
             }
         }
 

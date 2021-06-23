@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
 namespace MapBoard.UI.GpxToolbox
@@ -34,8 +35,9 @@ namespace MapBoard.UI.GpxToolbox
 
         public Canvas Sketchpad { get; set; }
 
-        private void AddSketchpadChildren(UIElement element)
+        private void AddSketchpadChildren(UIElement element, int zIndex)
         {
+            Panel.SetZIndex(element, zIndex);
             element.IsHitTestVisible = false;
             Sketchpad.Children.Add(element);
         }
@@ -44,45 +46,36 @@ namespace MapBoard.UI.GpxToolbox
 
         private ToolTip tip;
         private Line mouseLine;
-        private TwoWayDictionary<Ellipse, TPoint> PointItems = new TwoWayDictionary<Ellipse, TPoint>();
+        private Dictionary<EllipseGeometry, TPoint> UiPoint2Point = new Dictionary<EllipseGeometry, TPoint>();
+        private Dictionary<TPoint, EllipseGeometry> Point2UiPoint = new Dictionary<TPoint, EllipseGeometry>();
 
         #endregion 指示性元素
 
         #region 刷新重绘
 
-        private int sizeChangedEventCount = 0;
+        private int sizeChangeCount = 0;
 
         private async void SketchpadSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            isBusy = true;
-            if (sizeChangedEventCount == 0)
-            {
-                mouseLine = null;
-                Canvas overlay = new Canvas()
-                {
-                    Width = Sketchpad.ActualWidth,
-                    Height = Sketchpad.ActualHeight,
-                    Background = Brushes.White,
-                    Opacity = 0,
-                };
-                AddSketchpadChildren(overlay);
-                DoubleAnimation ani = new DoubleAnimation(1, SizeChangeDelay);
-                Storyboard.SetTarget(ani, overlay);
-                Storyboard.SetTargetProperty(ani, new PropertyPath(Canvas.OpacityProperty));
-                new Storyboard() { Children = { ani } }.Begin();
-            }
-            sizeChangedEventCount++;
-            await Task.Delay(SizeChangeDelay);
-            sizeChangedEventCount--;
-            if (sizeChangedEventCount == 0)
+            try
             {
                 Sketchpad.Children.Clear();
+                sizeChangeCount++;
+                await Task.Delay(SizeChangeDelay);
+                sizeChangeCount--;
+                if (sizeChangeCount != 0)
+                {
+                    return;
+                }
                 if (DrawActionAsync != null)
                 {
-                    await DrawActionAsync.Invoke();
+                    await DrawAsync();
                 }
-
-                isBusy = false;
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("绘制图表失败", ex);
+                throw;
             }
         }
 
@@ -91,8 +84,8 @@ namespace MapBoard.UI.GpxToolbox
         {
             if (lastSelectedPoint != null)
             {
-                lastSelectedPoint.Fill = PointBrush;
-                lastSelectedPoint.Width = lastSelectedPoint.Height = PointSize;
+                //lastSelectedPoint.Fill = PointBrush;
+                //lastSelectedPoint.Width = lastSelectedPoint.Height = PointSize;
                 lastSelectedPoint = null;
             }
             if (tip != null)
@@ -103,25 +96,29 @@ namespace MapBoard.UI.GpxToolbox
             ClearLine();
         }
 
-        private Ellipse lastSelectedPoint = null;
+        private EllipseGeometry lastSelectedPoint = null;
 
-        private void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
+        private bool canMouseMoveUpdate = true;
+
+        private async void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (isBusy || displayedPointsX.Count == 0)
+            if (!canMouseMoveUpdate || isBusy || displayedPointsX.Count == 0)
             {
                 return;
             }
-            double x = e.GetPosition(Sketchpad).X;
-            Ellipse point = GetPoint(x);
-            SelectPoint(point);
+            var pos = e.GetPosition(Sketchpad);
+            EllipseGeometry point = GetPoint(pos.X);
             RefreshMouseLine(point);
-            RefreshToolTip(point);
-            MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, PointItems[point]));
+            RefreshToolTip(point, pos.X, pos.Y);
+            MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
+            canMouseMoveUpdate = false;
+            await Task.Delay(100);
+            canMouseMoveUpdate = true;
         }
 
-        private Ellipse GetPoint(double x)
+        private EllipseGeometry GetPoint(double x)
         {
-            Ellipse point = displayedPointsX.First().Key;
+            EllipseGeometry point = displayedPointsX.First().Key;
             double min = double.MaxValue;
             foreach (var p in displayedPointsX)
             {
@@ -134,34 +131,13 @@ namespace MapBoard.UI.GpxToolbox
             return point;
         }
 
-        public void SelectPoint(TPoint point)
-        {
-            SelectPoint(PointItems.GetKey(point));
-        }
-
-        private void SelectPoint(Ellipse point)
-        {
-            if (lastSelectedPoint == point)
-            {
-                return;
-            }
-            if (lastSelectedPoint != null)
-            {
-                lastSelectedPoint.Fill = PointBrush;
-                lastSelectedPoint.Width = lastSelectedPoint.Height = PointSize;
-            }
-            point.Fill = SelectedPointBrush;
-            point.Width = point.Height = PointSize * 2;
-            lastSelectedPoint = point;
-        }
-
         public void SetLine(DateTime time)
         {
             double percent = 1.0 * (time - BorderInfo.minBorderTime).Ticks / (BorderInfo.maxBorderTime - BorderInfo.minBorderTime).Ticks;
 
             double width = percent * Sketchpad.ActualWidth;
             RefreshMouseLine(width);
-            RefreshToolTip(GetPoint(width));
+            //RefreshToolTip(GetPoint(width));
         }
 
         public void ClearLine()
@@ -186,20 +162,20 @@ namespace MapBoard.UI.GpxToolbox
                         StrokeThickness = 2,
                         Stroke = Brushes.Gray,
                     };
-                    Sketchpad.Children.Insert(0, mouseLine);
+                    AddSketchpadChildren(mouseLine, 100);
                 }
                 mouseLine.X1 = mouseLine.X2 = x;
             }
         }
 
-        private void RefreshMouseLine(Ellipse point)
+        private void RefreshMouseLine(EllipseGeometry point)
         {
             double x = displayedPointsX[point];
 
             RefreshMouseLine(x);
         }
 
-        private void RefreshToolTip(Ellipse point)
+        private void RefreshToolTip(EllipseGeometry point, double x, double y)
         {
             if (ToolTipEnable)
             {
@@ -207,13 +183,22 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     tip = new ToolTip
                     {
+                        PlacementTarget = Sketchpad,
                         Placement = PlacementMode.Left,
                         HorizontalOffset = 20,
                     };
                 }
-                tip.PlacementTarget = point;
-                tip.Content = ToolTipConverter(PointItems[point]);
-                tip.IsOpen = true;
+                if (!UiPoint2Point.TryGetValue(point, out TPoint position))
+                {
+                    return;
+                }
+                tip.VerticalOffset = y;
+                tip.HorizontalOffset = x;
+                tip.Content = ToolTipConverter(position);
+                if (!tip.IsOpen)
+                {
+                    tip.IsOpen = true;
+                }
             }
         }
 
@@ -221,83 +206,127 @@ namespace MapBoard.UI.GpxToolbox
 
         #region 暴露的方法
 
-        public Func<Task> DrawActionAsync { get; set; }
+        public Func<Task> DrawActionAsync { private get; set; }
 
-        public void DrawPoints(IEnumerable<TPoint> items, int borderIndex)
+        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex)
         {
             BorderInfo border = borders[borderIndex];
-            foreach (var item in items)
+            await Task.Run(() =>
             {
-                DateTime time = XAxisPointValueConverter(item);
-                double value = YAxisPointValueConverter(item);
+                foreach (var item in items)
+                {
+                    DateTime time = XAxisPointValueConverter(item);
+                    double value = YAxisPointValueConverter(item);
 
-                TimeSpan currentSpan = time - border.minTime;
+                    TimeSpan currentSpan = time - border.minTime;
 
-                double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                double y = Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
-                PointItems.Add(DrawPoint(x, y), item);
-            }
+                    double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
+                    double y = Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
+                    AddPoint(x, y, item);
+                }
+            });
+            Path path = new Path()
+            {
+                Data = new GeometryGroup() { Children = new GeometryCollection(UiPoint2Point.Keys) },
+                StrokeThickness = PointSize,
+                Stroke = PointBrush,
+            };
+
+            AddSketchpadChildren(path, 3);
             // lastAction = nameof(DrawPoints);
             // lastPointPoints = items;
         }
 
-        public void DrawLines(IEnumerable<TLine> items, int borderIndex)
+        public async Task DrawLinesAsync(IEnumerable<TLine> items, int borderIndex)
         {
             BorderInfo border = borders[borderIndex];
             TLine last = default;
-            foreach (var item in items)
+            List<LineGeometry> lines = new List<LineGeometry>();
+            await Task.Run(() =>
             {
-                if (last != default && LinePointEnbale(last, item))
+                foreach (var item in items)
                 {
-                    DateTime time1 = XAxisLineValueConverter(last);
-                    double value1 = YAxisLineValueConverter(last);
+                    if (last != default && LinePointEnbale(last, item))
+                    {
+                        DateTime time1 = XAxisLineValueConverter(last);
+                        double value1 = YAxisLineValueConverter(last);
 
-                    TimeSpan currentSpan1 = time1 - border.minTime;
+                        TimeSpan currentSpan1 = time1 - border.minTime;
 
-                    double x1 = Sketchpad.ActualWidth * (time1 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                    double y1 = Sketchpad.ActualHeight * (value1 - border.minBorderValue) / border.borderValueSpan;
-                    DateTime time2 = XAxisLineValueConverter(item);
-                    double value2 = YAxisLineValueConverter(item);
+                        double x1 = Sketchpad.ActualWidth * (time1 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
+                        double y1 = Sketchpad.ActualHeight * (value1 - border.minBorderValue) / border.borderValueSpan;
+                        DateTime time2 = XAxisLineValueConverter(item);
+                        double value2 = YAxisLineValueConverter(item);
 
-                    TimeSpan currentSpan2 = time2 - border.minTime;
+                        TimeSpan currentSpan2 = time2 - border.minTime;
 
-                    double x2 = Sketchpad.ActualWidth * (time2 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                    double y2 = Sketchpad.ActualHeight * (value2 - border.minBorderValue) / border.borderValueSpan;
-                    DrawLine(x1, y1, x2, y2);
+                        double x2 = Sketchpad.ActualWidth * (time2 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
+                        double y2 = Sketchpad.ActualHeight * (value2 - border.minBorderValue) / border.borderValueSpan;
+                        Sketchpad.Dispatcher.Invoke(() =>
+                        lines.Add(GetLine(x1, y1, x2, y2)));
+                    }
+
+                    last = item;
                 }
-                last = item;
-            }
-            //lastAction = nameof(DrawLines);
-            //lastLinePoints = items;
+            });
+            Path path = new Path()
+            {
+                Data = new GeometryGroup() { Children = new GeometryCollection(lines) },
+                StrokeThickness = 1,
+                Stroke = LineBrush,
+            };
+
+            AddSketchpadChildren(path, 4);
         }
 
-        public void DrawPolygon(IEnumerable<TPolygon> items, int borderIndex)
+        public async Task DrawAsync()
+        {
+            isBusy = true;
+            await DrawActionAsync();
+            isBusy = false;
+        }
+
+        public async Task DrawPolygonAsync(IEnumerable<TPolygon> items, int borderIndex)
         {
             BorderInfo border = borders[borderIndex];
-            Polygon p = new Polygon()
-            {
-                Fill = PolygonBrush,
-            };
             double yZero = Sketchpad.ActualHeight
                 - (-border.minBorderValue) / (border.maxBorderValue - border.minBorderValue)
                 * Sketchpad.ActualHeight;
+            List<Point> points = new List<Point>();
 
-            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
-            p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
-            foreach (var item in items)
+            await Task.Run(() =>
             {
-                DateTime time = XAxisPolygonValueConverter(item);
-                double value = YAxisPolygonValueConverter(item);
-                if (double.IsNaN(value))
+                points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
+                points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
+                foreach (var item in items)
                 {
-                    continue;
+                    DateTime time = XAxisPolygonValueConverter(item);
+                    double value = YAxisPolygonValueConverter(item);
+                    if (double.IsNaN(value))
+                    {
+                        continue;
+                    }
+                    TimeSpan currentSpan = time - border.minTime;
+                    double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
+                    double y = Sketchpad.ActualHeight - Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
+                    points.Add(new Point(x, y));
                 }
-                TimeSpan currentSpan = time - border.minTime;
-                double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                double y = Sketchpad.ActualHeight - Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
-                p.Points.Add(new Point(x, y));
+            });
+            var g = new StreamGeometry();
+            using (StreamGeometryContext context = g.Open())
+            {
+                context.BeginFigure(points[0], true, true);
+                for (int i = 1; i < points.Count; i++)
+                {
+                    context.LineTo(points[i], true, false);
+                }
             }
-            Sketchpad.Children.Add(p);
+            Path path = new Path()
+            {
+                Data = g,
+                Fill = PolygonBrush
+            };
+            AddSketchpadChildren(path, 1);
         }
 
         public void Initialize()
@@ -305,7 +334,8 @@ namespace MapBoard.UI.GpxToolbox
             borders.Clear();
             displayedPointsX.Clear();
             Sketchpad.Children.Clear();
-            PointItems.Clear();
+            UiPoint2Point.Clear();
+            Point2UiPoint.Clear();
             BorderInfo.Initialize();
             Sketchpad.RenderTransform = null;
         }
@@ -394,19 +424,25 @@ namespace MapBoard.UI.GpxToolbox
             return borders.Count - 1;
         }
 
-        public void StretchToFit()
+        public async Task StretchToFitAsync()
         {
-            var minTime = borders.Min(p => p.minTime);
-            var maxTime = borders.Max(p => p.maxTime);
-            var minTimeToLeft = 1.0
-                * (minTime - BorderInfo.minBorderTime).Ticks
-                / BorderInfo.borderTimeSpan.Ticks
-                * Sketchpad.ActualWidth;
-
+            DateTime minTime = default;
+            DateTime maxTime = default;
+            double minTimeToLeft = 0;
+            double scaleValue = 0;
+            await Task.Run(() =>
+            {
+                minTime = borders.Min(p => p.minTime);
+                maxTime = borders.Max(p => p.maxTime);
+                minTimeToLeft = 1.0
+                   * (minTime - BorderInfo.minBorderTime).Ticks
+                   / BorderInfo.borderTimeSpan.Ticks
+                   * Sketchpad.ActualWidth;
+                scaleValue = 1.0 * BorderInfo.borderTimeSpan.Ticks
+                        / (maxTime.Ticks - minTime.Ticks);
+            });
             TranslateTransform translate = new TranslateTransform(-minTimeToLeft, 0);
 
-            double scaleValue = 1.0 * BorderInfo.borderTimeSpan.Ticks
-                / (maxTime.Ticks - minTime.Ticks);
             ScaleTransform scale = new ScaleTransform(scaleValue, 1);
 
             //重置左侧标签的X坐标
@@ -416,7 +452,7 @@ namespace MapBoard.UI.GpxToolbox
             }
             ScaleTransform scaleTextBlock = new ScaleTransform(1 / scaleValue, 1);
 
-            //防止标签吧被拉伸变形
+            //防止标签被拉伸变形
             foreach (var tbk in Sketchpad.Children.OfType<TextBlock>())
             {
                 tbk.RenderTransform = scaleTextBlock;
@@ -462,19 +498,22 @@ namespace MapBoard.UI.GpxToolbox
 
         #region 基础绘制
 
-        private Ellipse DrawPoint(double x, double y)
+        private EllipseGeometry AddPoint(double x, double y, TPoint point)
         {
             double r = PointSize / 2;
-            Ellipse e = new Ellipse()
+            EllipseGeometry e = null;
+            Sketchpad.Dispatcher.Invoke(() =>
             {
-                Width = 2 * r,
-                Height = 2 * r,
-                Fill = PointBrush,
-            };
+                e = new EllipseGeometry()
+                {
+                    Center = new Point(x - r, Sketchpad.ActualHeight - (y - r)),
+                    RadiusX = r,
+                    RadiusY = r
+                };
+            });
             displayedPointsX.Add(e, x);
-            Canvas.SetLeft(e, x - r);
-            Canvas.SetTop(e, Sketchpad.ActualHeight - (y - r));
-            AddSketchpadChildren(e);
+            UiPoint2Point.Add(e, point);
+            Point2UiPoint.Add(point, e);
             return e;
         }
 
@@ -489,25 +528,29 @@ namespace MapBoard.UI.GpxToolbox
                 Stroke = VerticleGridlinesBrush,
                 StrokeThickness = thickness,
             };
-            AddSketchpadChildren(line);
+            AddSketchpadChildren(line, 1);
         }
 
-        private void DrawLine(double x1, double y1, double x2, double y2)
+        private LineGeometry GetLine(double x1, double y1, double x2, double y2)
         {
-            Line line = new Line()
+            //Line line = new Line()
+            //{
+            //    X1 = x1,
+            //    X2 = x2,
+            //    Y1 = Sketchpad.ActualHeight - y1,
+            //    Y2 = Sketchpad.ActualHeight - y2,
+            //    StrokeThickness = 1,
+            //    Stroke = LineBrush,
+            //};
+            LineGeometry lg = new LineGeometry()
             {
-                X1 = x1,
-                X2 = x2,
-                Y1 = Sketchpad.ActualHeight - y1,
-                Y2 = Sketchpad.ActualHeight - y2,
-                StrokeThickness = 1,
-                Stroke = LineBrush,
+                StartPoint = new Point(x1, Sketchpad.ActualHeight - y1),
+                EndPoint = new Point(x2, Sketchpad.ActualHeight - y2),
             };
-
-            AddSketchpadChildren(line);
+            return lg;
         }
 
-        public Dictionary<Ellipse, double> displayedPointsX { get; private set; } = new Dictionary<Ellipse, double>();
+        public Dictionary<EllipseGeometry, double> displayedPointsX { get; private set; } = new Dictionary<EllipseGeometry, double>();
 
         private void DrawHorizentalLine(double y)
         {
@@ -520,7 +563,7 @@ namespace MapBoard.UI.GpxToolbox
                 Stroke = HorizentalGridlinesBrush,
                 StrokeThickness = 1,
             };
-            AddSketchpadChildren(line);
+            AddSketchpadChildren(line, 1);
         }
 
         private void DrawText(double x, double y, string text, Brush brush, bool centerX, object tag)
@@ -548,7 +591,7 @@ namespace MapBoard.UI.GpxToolbox
                 Canvas.SetLeft(tbk, x);
                 Canvas.SetTop(tbk, Sketchpad.ActualHeight - y);
             }
-            AddSketchpadChildren(tbk);
+            AddSketchpadChildren(tbk, 5);
         }
 
         #endregion 基础绘制

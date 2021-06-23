@@ -82,45 +82,49 @@ namespace MapBoard.IO.Gpx
         /// <param name="sampleCount">每一组采样点的个数</param>
         /// <param name="jump">每一次循环跳跃的个数。比如设置5，采样10，那么第一轮1-10，第二轮6-15</param>
         /// <returns></returns>
-        public static IEnumerable<SpeedInfo> GetMeanFilteredSpeeds(GpxPointCollection points, int sampleCount, int jump, double min = double.MinValue, double max = double.MaxValue)
+        public static async Task<IReadOnlyList<SpeedInfo>> GetMeanFilteredSpeedsAsync(GpxPointCollection points, int sampleCount, int jump, double min = double.MinValue, double max = double.MaxValue)
         {
-            var sortedPoints = points.TimeOrderedPoints;
-            if (sampleCount > sortedPoints.Count)
-            {
-                return new SpeedInfo[] { new SpeedInfo(sortedPoints) };
-            }
-            GpxPoint last = null;
-            List<double> distances = new List<double>();
-            foreach (var point in points)
-            {
-                if (last != null)
-                {
-                    distances.Add(GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint()));
-                }
-                last = point;
-            }
             List<SpeedInfo> speedList = new List<SpeedInfo>();
-            for (int i = sampleCount - 1; i < sortedPoints.Count; i += jump)
+            await Task.Run(() =>
             {
-                DateTime minTime = sortedPoints[i - sampleCount + 1].Time;
-                DateTime maxTime = sortedPoints[i].Time;
-                double totalDistance = 0;
-                for (int j = i - sampleCount + 1; j < i; j++)
+                var sortedPoints = points.TimeOrderedPoints;
+                if (sampleCount > sortedPoints.Count)
                 {
-                    totalDistance += distances[j];
+                    speedList.Add(new SpeedInfo(sortedPoints));
+                    return;
                 }
-                double speed = totalDistance / (maxTime - minTime).TotalSeconds;
-                if (speed < min)
+                GpxPoint last = null;
+                List<double> distances = new List<double>();
+                foreach (var point in points)
                 {
-                    continue;
+                    if (last != null)
+                    {
+                        distances.Add(GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint()));
+                    }
+                    last = point;
                 }
-                if (speed > max)
+                for (int i = sampleCount - 1; i < sortedPoints.Count; i += jump)
                 {
-                    continue;
+                    DateTime minTime = sortedPoints[i - sampleCount + 1].Time;
+                    DateTime maxTime = sortedPoints[i].Time;
+                    double totalDistance = 0;
+                    for (int j = i - sampleCount + 1; j < i; j++)
+                    {
+                        totalDistance += distances[j];
+                    }
+                    double speed = totalDistance / (maxTime - minTime).TotalSeconds;
+                    if (speed < min)
+                    {
+                        continue;
+                    }
+                    if (speed > max)
+                    {
+                        continue;
+                    }
+                    speedList.Add(new SpeedInfo(minTime, maxTime, speed));
                 }
-                speedList.Add(new SpeedInfo(minTime, maxTime, speed));
-            }
-            return speedList;
+            });
+            return speedList.AsReadOnly();
         }
 
         public async static Task<IReadOnlyList<SpeedInfo>> GetMedianFilteredSpeedsAsync(GpxPointCollection points,

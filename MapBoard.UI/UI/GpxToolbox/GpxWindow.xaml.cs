@@ -157,61 +157,106 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                var points = await GetUsableSpeedsAsync(GpxTrack.Points);
-                //var lines = GetMedianFilteredSpeeds(GpxTrack.Points, 20, 5,TimeSpan.FromSeconds(200));
-                var lines = GetMeanFilteredSpeeds(GpxTrack.Points, 20, 5);
-                //var lines = Filter.MedianValueFilter(points, p => p.Speed, 15, 1).Select(p=>p.SelectedItem);
-                //var test = Filter.MedianValueFilter(points, p => p.Speed, 5, 1).Where(p => p.SelectedItem.Speed > 100);
-                chartHelper.DrawActionAsync = async () =>
-                 {
-                     try
-                     {
-                         chartHelper.Initialize();
-                         await chartHelper.DrawBorderAsync(lines, true,
-                                new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                                {
-                                    XAxisBorderValueConverter = p => p.CenterTime,
-                                    YAxisBorderValueConverter = p => p.Speed,
-                                });
-                         await chartHelper.DrawBorderAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
-                             false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
-                             {
-                                 XAxisBorderValueConverter = p => p.Time,
-                                 YAxisBorderValueConverter = p => p.Z,
-                             });
-                         await chartHelper.DrawBorderAsync(points, false,
-                                 new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                                 {
-                                     XAxisBorderValueConverter = p => p.CenterTime,
-                                     YAxisBorderValueConverter = p => p.Speed,
-                                 });
-                         chartHelper.DrawPolygon(GpxTrack.Points, 1);
-                         chartHelper.DrawPoints(points, 0);
-                         chartHelper.DrawLines(lines, 0);
-                         chartHelper.StretchToFit();
-                     }
-                     catch (Exception ex)
-                     {
-                         //Log.ErrorLogs.Add("绘制图形失败：" + ex.Message);
-                     }
-                 };
-                await chartHelper.DrawActionAsync();
+                var pointsTask = GetUsableSpeedsAsync(GpxTrack.Points);
+                var linesTask = GetMeanFilteredSpeedsAsync(GpxTrack.Points, 20, 5);
+                await Task.WhenAll(pointsTask, linesTask);
+                chartHelper.DrawActionAsync = () =>
+                    DrawChartAsync(pointsTask.Result, linesTask.Result);
 
-                var speed = arcMap.SelectedTrack.Track.AverageSpeed;
+                await Task.Run(() =>
+                {
+                    var speed = arcMap.SelectedTrack.Track.AverageSpeed;
 
-                txtSpeed.Text = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
-                txtDistance.Text = (arcMap.SelectedTrack.Track.Distance / 1000).ToString("0.00") + "km";
+                    SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
+                    DistanceText = (arcMap.SelectedTrack.Track.Distance / 1000).ToString("0.00") + "km";
 
-                var movingSpeed = arcMap.SelectedTrack.Track.GetMovingAverageSpeed();
-                txtMovingSpeed.Text = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
-                txtMovingTime.Text = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
-                txtMovingTime.Text = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
+                    var movingSpeed = arcMap.SelectedTrack.Track.GetMovingAverageSpeed();
+                    MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
+                    MovingTimeText = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
 
-                var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeed();
-                txtMaxSpeed.Text = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
+                    var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeedAsync().Result;
+                    MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
+                });
+                await chartHelper.DrawAsync();
             }
             catch (Exception ex)
             {
+            }
+        }
+
+        private string speedText;
+
+        public string SpeedText
+        {
+            get => speedText;
+            set => this.SetValueAndNotify(ref speedText, value, nameof(SpeedText));
+        }
+
+        private string distanceText;
+
+        public string DistanceText
+        {
+            get => distanceText;
+            set => this.SetValueAndNotify(ref distanceText, value, nameof(DistanceText));
+        }
+
+        private string movingSpeedText;
+
+        public string MovingSpeedText
+        {
+            get => movingSpeedText;
+            set => this.SetValueAndNotify(ref movingSpeedText, value, nameof(MovingSpeedText));
+        }
+
+        private string movingTimeText;
+
+        public string MovingTimeText
+        {
+            get => movingTimeText;
+            set => this.SetValueAndNotify(ref movingTimeText, value, nameof(MovingTimeText));
+        }
+
+        private string maxSpeedText;
+
+        public string MaxSpeedText
+        {
+            get => maxSpeedText;
+            set => this.SetValueAndNotify(ref maxSpeedText, value, nameof(MaxSpeedText));
+        }
+
+        private async Task DrawChartAsync(IEnumerable<SpeedInfo> points, IReadOnlyList<SpeedInfo> lines)
+        {
+            try
+            {
+                chartHelper.Initialize();
+                await Task.WhenAll(
+                 chartHelper.DrawBorderAsync(lines, true,
+                       new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                       {
+                           XAxisBorderValueConverter = p => p.CenterTime,
+                           YAxisBorderValueConverter = p => p.Speed,
+                       }),
+                 chartHelper.DrawBorderAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
+                    false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
+                    {
+                        XAxisBorderValueConverter = p => p.Time,
+                        YAxisBorderValueConverter = p => p.Z,
+                    }),
+                 chartHelper.DrawBorderAsync(points, false,
+                        new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                        {
+                            XAxisBorderValueConverter = p => p.CenterTime,
+                            YAxisBorderValueConverter = p => p.Speed,
+                        }));
+                await Task.WhenAll(
+                 chartHelper.DrawPolygonAsync(GpxTrack.Points, 1),
+                 chartHelper.DrawPointsAsync(points, 0),
+                 chartHelper.DrawLinesAsync(lines, 0));
+                await chartHelper.StretchToFitAsync();
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("绘制图形失败：" + ex.Message);
             }
         }
 
