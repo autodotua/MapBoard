@@ -28,22 +28,26 @@
         </Grid.RowDefinitions>
         <TextBlock
             Grid.Column="0"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding LengthTitle}" />
         <TextBlock
             Grid.Column="2"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding Length}" />
         <TextBlock
             Grid.Column="4"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding AreaTitle}" />
         <TextBlock
             Grid.Column="6"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding Area}" />
         <Button

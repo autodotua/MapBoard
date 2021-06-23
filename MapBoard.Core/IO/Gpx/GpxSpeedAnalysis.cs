@@ -4,6 +4,7 @@ using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MapBoard.IO.Gpx
 {
@@ -45,55 +46,33 @@ namespace MapBoard.IO.Gpx
             return distance / time.TotalSeconds;
         }
 
-        public static IEnumerable<SpeedInfo> GetUsableSpeeds(GpxPointCollection points, int sampleCount = 2)
+        public async static Task<IEnumerable<SpeedInfo>> GetUsableSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
         {
-            //Queue<GpxPoint> previousPoints = new Queue<GpxPoint>();
-            //foreach (var point in points.TimeOrderedPoints)
-            //{
-            //    if (previousPoints.Count < sampleCount - 1)
-            //    {
-            //        previousPoints.Enqueue(point);
-            //    }
-            //    else
-            //    {
-            //        previousPoints.Enqueue(point);
-            //        yield return new SpeedInfo(previousPoints);
-            //        previousPoints.Dequeue();
-            //    }
-            //}
-            //GpxPoint last = null;
-            //foreach (var point in points)
-            //{
-            //    if (last != null)
-            //    {
-            //        SpeedInfo info = new SpeedInfo(last, point);
-            //        if (!(double.IsNaN(info.Speed) || double.IsInfinity(info.Speed)))
-            //        {
-            //            yield return info;
-            //        }
-            //    }
-            //    last = point;
-            //}
-
-            return GetSpeeds(points, sampleCount).Where(p => !(double.IsNaN(p.Speed) || double.IsInfinity(p.Speed)));
+            return (await GetSpeedsAsync(points, sampleCount))
+                .Where(p => !(double.IsNaN(p.Speed) || double.IsInfinity(p.Speed)));
         }
 
-        public static IEnumerable<SpeedInfo> GetSpeeds(GpxPointCollection points, int sampleCount = 2)
+        public async static Task<IReadOnlyList<SpeedInfo>> GetSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
         {
-            Queue<GpxPoint> previousPoints = new Queue<GpxPoint>();
-            foreach (var point in points.TimeOrderedPoints)
+            var speeds = new List<SpeedInfo>();
+            await Task.Run(() =>
             {
-                if (previousPoints.Count < sampleCount - 1)
+                Queue<GpxPoint> previousPoints = new Queue<GpxPoint>();
+                foreach (var point in points.TimeOrderedPoints)
                 {
-                    previousPoints.Enqueue(point);
+                    if (previousPoints.Count < sampleCount - 1)
+                    {
+                        previousPoints.Enqueue(point);
+                    }
+                    else
+                    {
+                        previousPoints.Enqueue(point);
+                        speeds.Add(new SpeedInfo(previousPoints));
+                        previousPoints.Dequeue();
+                    }
                 }
-                else
-                {
-                    previousPoints.Enqueue(point);
-                    yield return new SpeedInfo(previousPoints);
-                    previousPoints.Dequeue();
-                }
-            }
+            });
+            return speeds.AsReadOnly();
         }
 
         /// <summary>
@@ -144,68 +123,34 @@ namespace MapBoard.IO.Gpx
             return speedList;
         }
 
-        public static IEnumerable<SpeedInfo> GetMedianFilteredSpeeds(GpxPointCollection points,
+        public async static Task<IReadOnlyList<SpeedInfo>> GetMedianFilteredSpeedsAsync(GpxPointCollection points,
             int sampleCount, int jump, TimeSpan? maxTimeSpan = null,
             double min = double.MinValue, double max = double.MaxValue
            )
         {
-            var filterResult = Filter.MedianValueFilter(GetSpeeds(points), p => p.Speed, sampleCount, jump);
-
-            //List<SpeedInfo> speeds = new List<SpeedInfo>();
-            foreach (var item in filterResult)
+            List<SpeedInfo> result = new List<SpeedInfo>();
+            await Task.Run(() =>
             {
-                if (item.SelectedItem.Speed > max || item.SelectedItem.Speed < min)
-                {
-                    continue;
-                }
-                var maxTime = item.ReferenceItems.First().CenterTime;
-                var minTime = item.ReferenceItems.Last().CenterTime;
-                if (maxTimeSpan.HasValue && maxTime - minTime > maxTimeSpan)
-                {
-                    continue;
-                }
-                SpeedInfo speed = new SpeedInfo(minTime, maxTime, item.SelectedItem.Speed);
-                yield return speed;
-            }
+                var filterResult = Filter.MedianValueFilter(GetSpeedsAsync(points).Result, p => p.Speed, sampleCount, jump);
 
-            //var sortedPoints = points.TimeOrderedPoints;
-            //if (sampleCount > sortedPoints.Count)
-            //{
-            //    return new SpeedInfo[] { new SpeedInfo(sortedPoints) };
-            //}
-            //GpxPoint last = null;
-            //List<double> distances = new List<double>();
-            //foreach (var point in points)
-            //{
-            //    if (last != null)
-            //    {
-            //        distances.Add(Calculate.Distance(last, point));
-            //    }
-            //    last = point;
-            //}
-            //List<SpeedInfo> speedList = new List<SpeedInfo>();
-            //for (int i = sampleCount - 1; i < sortedPoints.Count; i+=jump)
-            //{
-            //    DateTime minTime = sortedPoints[i - sampleCount + 1].Time;
-            //    DateTime maxTime = sortedPoints[i].Time;
-            //    double totalDistance = 0;
-            //    for (int j = i - sampleCount + 1; j < i; j++)
-            //    {
-            //        totalDistance += distances[j];
-            //    }
-            //    double speed = totalDistance / (maxTime - minTime).TotalSeconds;
-            //    if(speed<min)
-            //    {
-            //        continue;
-            //    }
-            //    if(speed>max)
-            //    {
-            //        continue;
-            //    }
-            //    speedList.Add(new SpeedInfo(minTime, maxTime, speed));
-
-            //}
-            //return speedList;
+                //List<SpeedInfo> speeds = new List<SpeedInfo>();
+                foreach (var item in filterResult)
+                {
+                    if (item.SelectedItem.Speed > max || item.SelectedItem.Speed < min)
+                    {
+                        continue;
+                    }
+                    var maxTime = item.ReferenceItems.First().CenterTime;
+                    var minTime = item.ReferenceItems.Last().CenterTime;
+                    if (maxTimeSpan.HasValue && maxTime - minTime > maxTimeSpan)
+                    {
+                        continue;
+                    }
+                    SpeedInfo speed = new SpeedInfo(minTime, maxTime, item.SelectedItem.Speed);
+                    result.Add(speed);
+                }
+            });
+            return result.AsReadOnly();
         }
 
         public class SpeedInfo

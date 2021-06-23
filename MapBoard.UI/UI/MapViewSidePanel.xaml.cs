@@ -108,6 +108,10 @@ namespace MapBoard.UI
 
         public void UpdateScaleAndPosition(Point? position = null)
         {
+            if(!IsLoaded|| MapView==null || MapView.Map==null)
+            {
+                return;
+            }
             updateScaleAndPositionAction = () =>
             {
                 if (position.HasValue)

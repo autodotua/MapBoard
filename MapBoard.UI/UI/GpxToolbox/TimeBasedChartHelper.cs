@@ -77,23 +77,11 @@ namespace MapBoard.UI.GpxToolbox
             if (sizeChangedEventCount == 0)
             {
                 Sketchpad.Children.Clear();
-                DrawAction?.Invoke();
-                //if (lastAction != "")
-                //{
-                //    SetBorder(lastBorderPoints);
-                //    switch (lastAction)
-                //    {
-                //        case nameof(Draw):
-                //            DrawPointsAndLines(lastPointPoints, lastLinePoints);
-                //            break;
-                //        case nameof(DrawPoints):
-                //            DrawPoints(lastPointPoints);
-                //            break;
-                //        case nameof(DrawLine):
-                //            DrawLines(lastLinePoints);
-                //            break;
-                //    }
-                //}
+                if (DrawActionAsync != null)
+                {
+                    await DrawActionAsync.Invoke();
+                }
+
                 isBusy = false;
             }
         }
@@ -229,45 +217,11 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        // private IEnumerable<T> lastBorderPoints;
-        // private IEnumerable<T> lastLinePoints;
-        // private IEnumerable<T> lastPointPoints;
-        // private IEnumerable<T> lastPolygonPoints;
-
         #endregion 刷新重绘
 
         #region 暴露的方法
 
-        public Action DrawAction { get; set; }
-
-        public void SetDrawAction(Action action)
-        {
-            //if (pointItems != null)
-            //{
-            //    DrawPoints(pointItems);
-            //}
-            //else
-            //{
-            //    lastPointPoints = null;
-            //}
-            //if (lineItems != null)
-            //{
-            //    DrawLines(lineItems);
-            //}
-            //else
-            //{
-            //    lastLinePoints = null;
-            //}
-            //if (polygonItems != null)
-            //{
-            //    DrawPolygon(polygonItems);
-            //}
-            //else
-            //{
-            //    lastLinePoints = null;
-            //}
-            // lastAction = nameof(Draw);
-        }
+        public Func<Task> DrawActionAsync { get; set; }
 
         public void DrawPoints(IEnumerable<TPoint> items, int borderIndex)
         {
@@ -324,15 +278,10 @@ namespace MapBoard.UI.GpxToolbox
             {
                 Fill = PolygonBrush,
             };
-            double yZero = Sketchpad.ActualHeight - (-border.minBorderValue) / (border.maxBorderValue - border.minBorderValue) * Sketchpad.ActualHeight;
-            //if (yZero < 0)
-            //{
-            //    return;
-            //}
-            //if (yZero > Sketchpad.ActualHeight)
-            //{
-            //    yZero = Sketchpad.ActualHeight;
-            //}
+            double yZero = Sketchpad.ActualHeight
+                - (-border.minBorderValue) / (border.maxBorderValue - border.minBorderValue)
+                * Sketchpad.ActualHeight;
+
             p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
             p.Points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
             foreach (var item in items)
@@ -361,43 +310,46 @@ namespace MapBoard.UI.GpxToolbox
             Sketchpad.RenderTransform = null;
         }
 
-        public int DrawBorder<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
+        public async Task<int> DrawBorderAsync<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
         {
             BorderInfo border = new BorderInfo();
             borders.Add(border);
-            border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
-            border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));
-            border.minValue = items.Min(p => setting.YAxisBorderValueConverter(p));
-            border.maxValue = items.Max(p => setting.YAxisBorderValueConverter(p));
-            border.valueSpan = border.maxValue - border.minValue;
-            border.timeSpan = border.maxTime - border.minTime;
             TimeSpan lineTimeSpan = TimeSpan.Zero;
-            foreach (var item in setting.TimeSpanMapping)
+            await Task.Run(() =>
             {
-                if (border.timeSpan < item.Key)
+                border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
+                border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));
+                border.minValue = items.Min(p => setting.YAxisBorderValueConverter(p));
+                border.maxValue = items.Max(p => setting.YAxisBorderValueConverter(p));
+                border.valueSpan = border.maxValue - border.minValue;
+                border.timeSpan = border.maxTime - border.minTime;
+
+                foreach (var item in setting.TimeSpanMapping)
                 {
-                    lineTimeSpan = item.Value;
-                    break;
+                    if (border.timeSpan < item.Key)
+                    {
+                        lineTimeSpan = item.Value;
+                        break;
+                    }
                 }
-            }
-            if (lineTimeSpan == TimeSpan.Zero)
-            {
-                lineTimeSpan = TimeSpan.FromTicks(border.timeSpan.Ticks / 10);
-            }
+                if (lineTimeSpan == TimeSpan.Zero)
+                {
+                    lineTimeSpan = TimeSpan.FromTicks(border.timeSpan.Ticks / 10);
+                }
 
-            var minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
-            var maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
+                var minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
+                var maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
 
-            if (minBorderTime < BorderInfo.minBorderTime)
-            {
-                BorderInfo.minBorderTime = minBorderTime;
-            }
-            if (maxBorderTime > BorderInfo.maxBorderTime)
-            {
-                BorderInfo.maxBorderTime = maxBorderTime;
-            }
-            BorderInfo.borderTimeSpan = BorderInfo.maxBorderTime - BorderInfo.minBorderTime;
-
+                if (minBorderTime < BorderInfo.minBorderTime)
+                {
+                    BorderInfo.minBorderTime = minBorderTime;
+                }
+                if (maxBorderTime > BorderInfo.maxBorderTime)
+                {
+                    BorderInfo.maxBorderTime = maxBorderTime;
+                }
+                BorderInfo.borderTimeSpan = BorderInfo.maxBorderTime - BorderInfo.minBorderTime;
+            });
             //border.borderTimeSpan = border.maxBorderTime - border.minBorderTime;
             if (draw)
             {

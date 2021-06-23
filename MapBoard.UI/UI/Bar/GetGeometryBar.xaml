@@ -24,8 +24,10 @@
         </Grid.RowDefinitions>
         <TextBlock
             Grid.Column="0"
-            VerticalAlignment="Center" FontSize="16"
-            FontWeight="Bold" Text="正在选取" />
+            VerticalAlignment="Center"
+            FontSize="16"
+            FontWeight="Bold"
+            Text="正在选取" />
         <Button
             Grid.Column="2"
             Click="OkButtonClick"

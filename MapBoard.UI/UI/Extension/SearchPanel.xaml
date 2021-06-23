@@ -9,7 +9,8 @@
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.Util"
-    d:DesignHeight="450" d:DesignWidth="800"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
     <Grid Margin="8">
@@ -44,21 +45,26 @@
                 PreviewKeyDown="TextBox_PreviewKeyDown"
                 Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
             <Button
-                x:Name="btnSearch" Grid.Column="4"
+                x:Name="btnSearch"
+                Grid.Column="4"
                 VerticalAlignment="Stretch"
                 Click="SearchButton_Click">
                 <ui:FontIcon Glyph="&#xE721;" />
             </Button>
         </Grid>
         <ui:SimpleStackPanel
-            Grid.Row="2" Orientation="Horizontal"
+            Grid.Row="2"
+            Orientation="Horizontal"
             Spacing="12">
 
             <RadioButton
-                x:Name="rbtnAround" Margin="0,0,-72,0"
-                VerticalAlignment="Center" Content="周边" />
+                x:Name="rbtnAround"
+                Margin="0,0,-72,0"
+                VerticalAlignment="Center"
+                Content="周边" />
             <ComboBox
-                Width="88" Padding="0"
+                Width="88"
+                Padding="0"
                 VerticalAlignment="Center"
                 IsEditable="True"
                 Text="{Binding Radius}">
@@ -74,7 +80,8 @@
             <RadioButton x:Name="rbtnRange" IsChecked="True">视图范围</RadioButton>
         </ui:SimpleStackPanel>
         <ListView
-            Grid.Row="4" Grid.ColumnSpan="99"
+            Grid.Row="4"
+            Grid.ColumnSpan="99"
             ItemsSource="{Binding SearchResult}"
             SelectedItem="{Binding SelectedPoi}">
             <ListView.View>
@@ -91,11 +98,13 @@
             </ListView.View>
         </ListView>
         <Button
-            Grid.Row="6" HorizontalAlignment="Right"
+            Grid.Row="6"
+            HorizontalAlignment="Right"
             Click="ClearSearchButton_Click"
             Content="清除" />
         <TextBlock
-            Grid.Row="6" HorizontalAlignment="Left"
+            Grid.Row="6"
+            HorizontalAlignment="Left"
             VerticalAlignment="Center">
             <Run>共</Run>
             <Run Text="{Binding SearchResult.Count, Mode=OneWay}" />

@@ -115,7 +115,7 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (arcMap.SelectedTrack != null)
             {
@@ -149,53 +149,53 @@ namespace MapBoard.UI.GpxToolbox
                 Gpx = arcMap.SelectedTrack.Gpx;
                 GpxTrack = arcMap.SelectedTrack.Track;
 
-                UpdateChart();
+                await UpdateChartAsync();
             }
         }
 
-        private void UpdateChart()
+        private async Task UpdateChartAsync()
         {
             try
             {
-                var points = GetUsableSpeeds(GpxTrack.Points);
+                var points = await GetUsableSpeedsAsync(GpxTrack.Points);
                 //var lines = GetMedianFilteredSpeeds(GpxTrack.Points, 20, 5,TimeSpan.FromSeconds(200));
                 var lines = GetMeanFilteredSpeeds(GpxTrack.Points, 20, 5);
                 //var lines = Filter.MedianValueFilter(points, p => p.Speed, 15, 1).Select(p=>p.SelectedItem);
                 //var test = Filter.MedianValueFilter(points, p => p.Speed, 5, 1).Where(p => p.SelectedItem.Speed > 100);
-                chartHelper.DrawAction = () =>
-                {
-                    try
-                    {
-                        chartHelper.Initialize();
-                        chartHelper.DrawBorder(lines, true,
-                            new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                            {
-                                XAxisBorderValueConverter = p => p.CenterTime,
-                                YAxisBorderValueConverter = p => p.Speed,
-                            });
-                        chartHelper.DrawBorder(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
-                            false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
-                            {
-                                XAxisBorderValueConverter = p => p.Time,
-                                YAxisBorderValueConverter = p => p.Z,
-                            });
-                        chartHelper.DrawBorder(points, false,
-                            new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
-                            {
-                                XAxisBorderValueConverter = p => p.CenterTime,
-                                YAxisBorderValueConverter = p => p.Speed,
-                            });
-                        chartHelper.DrawPolygon(GpxTrack.Points, 1);
-                        chartHelper.DrawPoints(points, 0);
-                        chartHelper.DrawLines(lines, 0);
-                        chartHelper.StretchToFit();
-                    }
-                    catch (Exception ex)
-                    {
-                        //Log.ErrorLogs.Add("绘制图形失败：" + ex.Message);
-                    }
-                };
-                chartHelper.DrawAction();
+                chartHelper.DrawActionAsync = async () =>
+                 {
+                     try
+                     {
+                         chartHelper.Initialize();
+                         await chartHelper.DrawBorderAsync(lines, true,
+                                new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                                {
+                                    XAxisBorderValueConverter = p => p.CenterTime,
+                                    YAxisBorderValueConverter = p => p.Speed,
+                                });
+                         await chartHelper.DrawBorderAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
+                             false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
+                             {
+                                 XAxisBorderValueConverter = p => p.Time,
+                                 YAxisBorderValueConverter = p => p.Z,
+                             });
+                         await chartHelper.DrawBorderAsync(points, false,
+                                 new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                                 {
+                                     XAxisBorderValueConverter = p => p.CenterTime,
+                                     YAxisBorderValueConverter = p => p.Speed,
+                                 });
+                         chartHelper.DrawPolygon(GpxTrack.Points, 1);
+                         chartHelper.DrawPoints(points, 0);
+                         chartHelper.DrawLines(lines, 0);
+                         chartHelper.StretchToFit();
+                     }
+                     catch (Exception ex)
+                     {
+                         //Log.ErrorLogs.Add("绘制图形失败：" + ex.Message);
+                     }
+                 };
+                await chartHelper.DrawActionAsync();
 
                 var speed = arcMap.SelectedTrack.Track.AverageSpeed;
 
@@ -215,23 +215,25 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            if (loadNeeded != null)
-            {
-                arcMap.LoadFiles(loadNeeded);
-            }
-            else if (File.Exists(Parameters.TrackHistoryPath))
-            {
-                string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
-                arcMap.LoadFiles(files);
-            }
+            await DoAsync(async () =>
+             {
+                 if (loadNeeded != null)
+                 {
+                     await arcMap.LoadFilesAsync(loadNeeded);
+                 }
+                 else if (File.Exists(Parameters.TrackHistoryPath))
+                 {
+                     string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
+                     await arcMap.LoadFilesAsync(files);
+                 }
+             }, "正在加载轨迹文件", delay: 0);
         }
 
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
             arcMap.ClearSelection();
-            //Debug.WriteLine("Leave");
         }
 
         private void MapPointSelected(object sender, GpxMapView.PointSelectedEventArgs e)
@@ -254,14 +256,14 @@ namespace MapBoard.UI.GpxToolbox
             Cursor = Cursors.Arrow;
         }
 
-        private void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
+        private async void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
         {
             if (e.Track.Length > 0)
             {
                 lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
                 if (!e.Update)
                 {
-                    ZoomToTrackButtonClick(null, null);
+                    await ZoomToTrackAsync(0);
                 }
             }
         }
@@ -355,7 +357,7 @@ namespace MapBoard.UI.GpxToolbox
             string[] files = FileSystemDialog.GetOpenFiles(new FileFilterCollection().Add("GPX轨迹文件", "gpx"));
             if (files != null)
             {
-                arcMap.LoadFiles(files);
+                arcMap.LoadFilesAsync(files);
             }
         }
 
@@ -396,10 +398,10 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private void UpdateTrackButtonClick(object sender, RoutedEventArgs e)
+        private async void UpdateTrackButtonClick(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(arcMap.SelectedTrack, true);
-            UpdateChart();
+            await UpdateChartAsync();
         }
 
         private void InsertPointButtonClick(object sender, RoutedEventArgs e)
@@ -699,9 +701,18 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
+        private async void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
         {
-            arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent));
+            await ZoomToTrackAsync();
+        }
+
+        private Task ZoomToTrackAsync(int time = 500)
+        {
+            if (time <= 0)
+            {
+                time = 0;
+            }
+            return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent), TimeSpan.FromMilliseconds(time)); ;
         }
 
         private void BrowseButtonClick(object sender, RoutedEventArgs e)

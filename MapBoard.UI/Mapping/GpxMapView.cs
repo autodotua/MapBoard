@@ -85,7 +85,7 @@ namespace MapBoard.Mapping
             }
             if (yes)
             {
-                LoadFiles(files);
+                LoadFilesAsync(files);
             }
         }
 
@@ -135,7 +135,11 @@ namespace MapBoard.Mapping
             SnakeBar.Show("没有识别到任何" + (MapTapMode == MapTapModes.SelectedLayer ? "点" : "轨迹"));
         }
 
-        public async void LoadFiles(IEnumerable<string> files)
+        /// <summary>
+        /// 加载指定文件的GPX文件
+        /// </summary>
+        /// <param name="files"></param>
+        public async Task LoadFilesAsync(IEnumerable<string> files)
         {
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             foreach (var file in files)
@@ -145,29 +149,26 @@ namespace MapBoard.Mapping
                 {
                     if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
                     {
-                        //Log.ErrorLogs.Add(file + "是目录不是文件");
+                        App.Log.Warn(file + "是目录不是文件");
                     }
                     else if (!fileInfo.Exists)
                     {
-                        //Log.ErrorLogs.Add(file + "不存在");
+                        App.Log.Warn(file + "不存在");
                     }
                     else if (fileInfo.Length > 10 * 1024 * 1024)
                     {
-                        //Log.ErrorLogs.Add("gpx文件" + file + "大于1MB，跳过");
+                        App.Log.Warn("gpx文件" + file + "大于1MB，跳过");
                     }
                     else if (fileInfo.Extension != ".gpx")
                     {
-                        //Log.ErrorLogs.Add("文件" + file + "不是gpx");
+                        App.Log.Warn("文件" + file + "不是gpx");
                         continue;
                     }
                     else
                     {
                         var exist = Tracks.FirstOrDefault(p => p.FilePath == file);
-                        if (exist != null)
-                        {
-                            Tracks.Remove(exist);
-                        }
-                        else
+                        if (exist == null)
+
                         {
                             loadedTrack.AddRange(await LoadGpxAsync(file, false));
                         }
@@ -175,7 +176,7 @@ namespace MapBoard.Mapping
                 }
                 catch (Exception ex)
                 {
-                    //Log.ErrorLogs.Add(ex.Message);
+                    App.Log.Error("加载GPX失败", ex);
                 }
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
@@ -345,7 +346,7 @@ namespace MapBoard.Mapping
                 }
                 catch (Exception ex)
                 {
-                    //Log.ErrorLogs.Add("加载gpx文件" + filePath + "的Track(" + i.ToString() + ")错误：" + ex.Message);
+                    App.Log.Error("加载gpx文件" + filePath + "的Track(" + i.ToString() + ")错误", ex);
                 }
             }
             if (raiseEvent)

@@ -57,7 +57,8 @@
                         <DataTemplate>
                             <TextBlock
                                 Margin="8,3,3,3"
-                                VerticalAlignment="Center" Cursor="Hand"
+                                VerticalAlignment="Center"
+                                Cursor="Hand"
                                 PreviewMouseLeftButtonDown="TextBlock_PreviewMouseLeftButtonDown"
                                 Text="{Binding .}"
                                 TextWrapping="Wrap" />
@@ -88,7 +89,11 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <TextBox x:Name="txtDateTime" BorderThickness="0" ui:TextBoxHelper.IsDeleteButtonVisible="False" Text="{Binding TimeValue, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+                                                            <TextBox
+                                                                x:Name="txtDateTime"
+                                                                ui:TextBoxHelper.IsDeleteButtonVisible="False"
+                                                                BorderThickness="0"
+                                                                Text="{Binding TimeValue, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
 
                                                             <DataTemplate.Triggers>
                                                                 <DataTrigger Binding="{Binding Name}" Value="CrtTime">

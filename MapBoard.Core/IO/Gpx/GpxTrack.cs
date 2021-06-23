@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MapBoard.IO.Gpx
@@ -64,16 +65,13 @@ namespace MapBoard.IO.Gpx
 
         private double maxSpeed = -1;
 
-        public double MaxSpeed
+        public async Task<double> GetMaxSpeedAsync()
         {
-            get
+            if (maxSpeed == -1)
             {
-                if (maxSpeed == -1)
-                {
-                    maxSpeed = GpxSpeedAnalysis.GetSpeeds(Points).Max(p => p.Speed);
-                }
-                return maxSpeed;
+                maxSpeed = (await GpxSpeedAnalysis.GetSpeedsAsync(Points)).Max(p => p.Speed);
             }
+            return maxSpeed;
         }
 
         public double GetMaxSpeed(int sampleCount = 8, int jump = 1)

@@ -8,7 +8,7 @@
     xmlns:mapping="clr-namespace:MapBoard.Mapping"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:u="clr-namespace:MapBoard.UI"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:async="clr-namespace:MapBoard.UI.Async"
     Title="GPX工具箱" Width="1000"
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -373,14 +373,5 @@
                 </ListView>
             </Grid>
         </Expander>
-        <!--<Expander
-            Grid.Column="2" Padding="0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            ExpandDirection="Up" Header="日志">
-            <ListBox
-                Height="96" BorderThickness="0"
-                ItemsSource="{Binding Source={x:Static model:Log.ErrorLogs}}" />
-        </Expander>-->
     </Grid>
 </u:WindowBase>

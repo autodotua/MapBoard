@@ -6,12 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    d:DesignHeight="450" d:DesignWidth="800"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
-    <Grid
-        x:Name="grd" Opacity="0"
-        Visibility="Collapsed">
+    <Grid x:Name="grd">
         <Grid.Resources>
             <cvt:Bool2VisibilityConverter x:Key="b2vc" />
         </Grid.Resources>
@@ -20,7 +19,8 @@
             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
             Opacity="0.5" />
         <Grid
-            Width="240" HorizontalAlignment="Center"
+            Width="240"
+            HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
             IsHitTestVisible="False">
@@ -34,8 +34,10 @@
             </Grid.RowDefinitions>
             <TextBlock Margin="16,12" Style="{StaticResource TitleTextBlockStyle}">请稍等</TextBlock>
             <ui:ProgressRing
-                x:Name="loading" Grid.Row="2"
-                Width="48" Height="48"
+                x:Name="loading"
+                Grid.Row="2"
+                Width="48"
+                Height="48"
                 Foreground="{DynamicResource SystemControlHighlightChromeAltLowBrush}"
                 IsActive="True" />
             <TextBlock
@@ -45,7 +47,8 @@
                 Text="{Binding Message}" />
             <Grid.Effect>
                 <DropShadowEffect
-                    BlurRadius="16" ShadowDepth="0"
+                    BlurRadius="16"
+                    ShadowDepth="0"
                     Color="Gray" />
             </Grid.Effect>
         </Grid>

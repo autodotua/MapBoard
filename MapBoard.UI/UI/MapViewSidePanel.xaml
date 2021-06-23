@@ -2,19 +2,21 @@
     x:Class="MapBoard.UI.MapViewSidePanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:extension="clr-namespace:MapBoard.UI.Extension"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    d:DesignHeight="600" d:DesignWidth="120"
+    d:DesignHeight="600"
+    d:DesignWidth="120"
     mc:Ignorable="d">
     <UserControl.Resources>
         <DropShadowEffect
-            x:Key="shadow" BlurRadius="8"
-            Direction="0" Opacity="1"
+            x:Key="shadow"
+            BlurRadius="8"
+            Direction="0"
+            Opacity="1"
             ShadowDepth="0"
             Color="{DynamicResource SystemAltHighColor}" />
 
@@ -37,10 +39,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Border
-            Width="36" Height="36"
+            Width="36"
+            Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="4" Cursor="Hand"
+            CornerRadius="4"
+            Cursor="Hand"
             ToolTip="点击返回正北朝上">
             <ContentControl
                 x:Name="vbxRotate"
@@ -54,20 +58,25 @@
             </ContentControl>
         </Border>
         <Border
-            x:Name="bdLayers" Grid.Row="2"
-            Width="36" Height="36"
+            x:Name="bdLayers"
+            Grid.Row="2"
+            Width="36"
+            Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="4" Cursor="Hand"
+            CornerRadius="4"
+            Cursor="Hand"
             PreviewMouseDown="LayersPanel_PreviewMouseDown">
             <Grid>
                 <ContentControl
-                    x:Name="iconLayers" Width="24"
+                    x:Name="iconLayers"
+                    Width="24"
                     Margin="0,0,4,4"
                     Content="{StaticResource LayersIcon}"
                     ToolTip="点击打开图层列表" />
                 <Grid
-                    x:Name="grdLayers" Opacity="0"
+                    x:Name="grdLayers"
+                    Opacity="0"
                     Visibility="Collapsed">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40" />
@@ -79,19 +88,22 @@
                         Style="{DynamicResource SubtitleTextBlockStyle}"
                         Text="底图图层" />
                     <Button
-                        Margin="0,0,72,0" Background="Transparent"
+                        Margin="0,0,72,0"
                         HorizontalAlignment="Right"
+                        Background="Transparent"
                         Click="OpenSettingDialogButton_Click"
                         Content="设置" />
                     <Button
-                        Height="40" HorizontalAlignment="Right"
+                        Height="40"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Background="Transparent"
                         Click="CloseLayerPanelButton_Click">
                         <ui:SymbolIcon Symbol="Back" />
                     </Button>
                     <DataGrid
-                        x:Name="dgLayers" Grid.Row="2"
+                        x:Name="dgLayers"
+                        Grid.Row="2"
                         AutoGenerateColumns="False"
                         Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
                         CanUserAddRows="False"
@@ -109,7 +121,8 @@
                             <DataGridTextColumn
                                 Width="8"
                                 Binding="{Binding Index}"
-                                CanUserSort="False" Header="序号"
+                                CanUserSort="False"
+                                Header="序号"
                                 IsReadOnly="True"
                                 SortDirection="Ascending" />
                             <DataGridTemplateColumn Width="56" Header="启用">
@@ -117,7 +130,8 @@
                                     <DataTemplate>
                                         <CheckBox
                                             Margin="16,-2,0,-2"
-                                            Click="CheckBox_Click" Focusable="False"
+                                            Click="CheckBox_Click"
+                                            Focusable="False"
                                             IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}"
                                             Tag="{Binding .}" />
                                     </DataTemplate>
@@ -126,7 +140,8 @@
                             <DataGridTextColumn
                                 Width="180"
                                 Binding="{Binding Name}"
-                                Header="名称" IsReadOnly="True" />
+                                Header="名称"
+                                IsReadOnly="True" />
 
                             <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -141,8 +156,10 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <Slider
-                                            Width="120" LargeChange="0.1"
-                                            Maximum="1" Minimum="0"
+                                            Width="120"
+                                            LargeChange="0.1"
+                                            Maximum="1"
+                                            Minimum="0"
                                             SmallChange="0.01"
                                             Tag="{Binding .}"
                                             ValueChanged="Slider_ValueChanged"
@@ -157,8 +174,10 @@
         </Border>
 
         <Border
-            x:Name="bdScale" Grid.Row="4"
-            Width="36" Height="36"
+            x:Name="bdScale"
+            Grid.Row="4"
+            Width="36"
+            Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
             CornerRadius="4"
@@ -176,8 +195,10 @@
                     </TextBlock.RenderTransform>
                 </TextBlock>
                 <Grid
-                    x:Name="grdScale" Margin="0,8"
-                    Background="Transparent" Opacity="0">
+                    x:Name="grdScale"
+                    Margin="0,8"
+                    Background="Transparent"
+                    Opacity="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
@@ -189,9 +210,11 @@
                         RenderTransformOrigin="0.5,0.5"
                         Text="{Binding ScaleLevel}" />
                     <Slider
-                        x:Name="sldScale" Grid.Row="2"
+                        x:Name="sldScale"
+                        Grid.Row="2"
                         FocusVisualStyle="{x:Null}"
-                        Maximum="100" Minimum="0"
+                        Maximum="100"
+                        Minimum="0"
                         Orientation="Vertical"
                         Value="{Binding MapScalePercent}" />
                 </Grid>
@@ -199,20 +222,25 @@
         </Border>
 
         <Border
-            x:Name="bdSearch" Grid.Row="6"
-            Width="36" Height="36"
+            x:Name="bdSearch"
+            Grid.Row="6"
+            Width="36"
+            Height="36"
             HorizontalAlignment="Right"
             Background="{DynamicResource backgroundBrush}"
-            CornerRadius="4" Cursor="Hand"
+            CornerRadius="4"
+            Cursor="Hand"
             PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown">
             <Grid>
                 <ContentControl
-                    x:Name="vwSearchIcon" Width="24"
+                    x:Name="vwSearchIcon"
+                    Width="24"
                     Height="24"
                     Content="{StaticResource SearchIcon}" />
                 <Grid
                     x:Name="grdSearchPanel"
-                    IsHitTestVisible="False" Opacity="0">
+                    IsHitTestVisible="False"
+                    Opacity="0">
                     <TabControl>
                         <TabControl.Background>
                             <SolidColorBrush Color="{DynamicResource SystemChromeMediumHighColor}" />
@@ -228,7 +256,8 @@
                         </TabItem>
                     </TabControl>
                     <Button
-                        Height="40" HorizontalAlignment="Right"
+                        Height="40"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Background="Transparent"
                         Click="CloseSearchPanelButton_Click">
@@ -239,16 +268,21 @@
         </Border>
 
         <Border
-            x:Name="bdRoutePanel" Grid.Row="10"
-            Width="320" Height="0"
-            Padding="8" HorizontalAlignment="Right"
-            CornerRadius="4" Opacity="0" />
+            x:Name="bdRoutePanel"
+            Grid.Row="10"
+            Width="320"
+            Height="0"
+            Padding="8"
+            HorizontalAlignment="Right"
+            CornerRadius="4"
+            Opacity="0" />
 
         <ui:SimpleStackPanel
             Grid.Row="99"
             HorizontalAlignment="Right"
             IsHitTestVisible="False"
-            Orientation="Vertical" Spacing="4">
+            Orientation="Vertical"
+            Spacing="4">
             <TextBlock Effect="{StaticResource shadow}">
                 <Run Text="经度：" />
                 <Run Text="{Binding Longitude, Mode=OneWay}" />

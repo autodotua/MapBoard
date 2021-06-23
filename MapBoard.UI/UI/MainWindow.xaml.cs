@@ -26,6 +26,7 @@ using ModernWpf.FzExtension;
 using MapBoard.Mapping.Model;
 using MapBoard.Util;
 using MapBoard.UI.TileDownloader;
+using System.Threading;
 
 namespace MapBoard.UI
 {
@@ -81,48 +82,6 @@ namespace MapBoard.UI
             if (extensionEx != null)
             {
                 CommonDialog.ShowErrorDialogAsync(extensionEx, "加载扩展插件失败");
-            }
-        }
-
-        /// <summary>
-        /// 显示处理中遮罩并处理需要长时间运行的方法
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="catchException"></param>
-        /// <returns></returns>
-        public Task DoAsync(Func<Task> action, string message, bool catchException = false)
-        {
-            return DoAsync(async p => await action(), message, catchException);
-        }
-
-        /// <summary>
-        /// 显示处理中遮罩并处理需要长时间运行的方法
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="catchException"></param>
-        /// <returns></returns>
-        public async Task DoAsync(Func<ProgressRingOverlayArgs, Task> action, string message, bool catchException = false)
-        {
-            loading.Message = message;
-            loading.Show(500);
-            try
-            {
-                await action(loading.TaskArgs);
-            }
-            catch (Exception ex)
-            {
-                if (catchException)
-                {
-                    await CommonDialog.ShowErrorDialogAsync(ex);
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            finally
-            {
-                loading.Hide();
             }
         }
 
@@ -285,8 +244,7 @@ namespace MapBoard.UI
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            loading.Message = "正在初始化";
-            loading.Show();
+            ShowLoading(0, "正在初始化");
         }
 
         private bool initialized = false;
