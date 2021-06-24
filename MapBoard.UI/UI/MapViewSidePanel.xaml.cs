@@ -17,6 +17,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Esri.ArcGISRuntime.UI.Controls;
+using System.Diagnostics;
 
 namespace MapBoard.UI
 {
@@ -59,9 +61,9 @@ namespace MapBoard.UI
              }), null, 100, 100);
         }
 
-        public ArcMapView MapView { get; private set; }
+        public GeoView MapView { get; private set; }
 
-        public void Initialize(ArcMapView mapView)
+        public void Initialize(GeoView mapView)
         {
             MapView = mapView;
             mapView.ViewpointChanged += MapView_ViewpointChanged;
@@ -69,6 +71,11 @@ namespace MapBoard.UI
             searchPanel.Initialize(mapView);
             routePanel.Initialize(mapView);
             reGeoCodePanel.Initialize(mapView);
+            if (mapView is SceneView)
+            {
+                bdViewPointInfo.Visibility = Visibility.Collapsed;
+                bdScale.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -108,24 +115,28 @@ namespace MapBoard.UI
 
         public void UpdateScaleAndPosition(Point? position = null)
         {
-            if(!IsLoaded|| MapView==null || MapView.Map==null)
+            if (!IsLoaded
+                || MapView == null
+                || MapView is not Esri.ArcGISRuntime.UI.Controls.MapView
+                || (MapView as MapView).Map == null)
             {
                 return;
             }
+            var view = MapView as MapView;
             updateScaleAndPositionAction = () =>
             {
                 if (position.HasValue)
                 {
-                    location = MapView.ScreenToLocation(position.Value);
+                    location = view.ScreenToLocation(position.Value);
                 }
                 if (location != null)
                 {
                     location = GeometryEngine.Project(location, SpatialReferences.Wgs84) as MapPoint;
                     Latitude = location.Y.ToString("0.000000");
                     Longitude = location.X.ToString("0.000000");
-                    Scale = (MapView.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
+                    Scale = (view.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
                 }
-                var level = 5 * (20 + Math.Log(MapView.Map.MaxScale / MapView.MapScale, 2));
+                var level = 5 * (20 + Math.Log(view.Map.MaxScale / view.MapScale, 2));
                 if (level < 0)
                 {
                     level = 0;
@@ -150,10 +161,17 @@ namespace MapBoard.UI
 
         private void MapView_ViewpointChanged(object sender, EventArgs e)
         {
-            (vbxRotate.RenderTransform as RotateTransform).Angle = -MapView.MapRotation;
-            if (IsLoaded && MapView.IsLoaded)
+            if (MapView is SceneView s)
             {
-                UpdateScaleAndPosition();
+                (vbxRotate.RenderTransform as RotateTransform).Angle = -s.Camera.Heading;
+            }
+            else if (MapView is MapView m)
+            {
+                (vbxRotate.RenderTransform as RotateTransform).Angle = -m.MapRotation;
+                if (IsLoaded && MapView.IsLoaded)
+                {
+                    UpdateScaleAndPosition();
+                }
             }
         }
 
@@ -175,7 +193,16 @@ namespace MapBoard.UI
                     throw new ArgumentOutOfRangeException();
                 }
                 mapScalePercent = value;
-                setScaleAction = () => MapView.SetViewpointScaleAsync(MapView.Map.MaxScale / Math.Pow(2, value / 5 - 20));
+                double target = Config.Instance.MaxScale / Math.Pow(2, value / 5 - 20);
+                if (MapView is MapView m)
+                {
+                    setScaleAction = () => m.SetViewpointScaleAsync(target);
+                }
+                else if (MapView is SceneView s)
+                {
+                    throw new NotSupportedException();
+                    //setScaleAction = () => m.SetViewpointScaleAsync(MapView.Map.MaxScale / Math.Pow(2, value / 5 - 20));
+                }
             }
         }
 
@@ -254,7 +281,16 @@ namespace MapBoard.UI
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
             var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            var arcBaseLayer = MapView.Map.Basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
+            Basemap basemap = null;
+            if (MapView is MapView m)
+            {
+                basemap = m.Map.Basemap;
+            }
+            else if (MapView is SceneView s)
+            {
+                basemap = s.Scene.Basemap;
+            }
+            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
             if (arcBaseLayer != null)
             {
                 arcBaseLayer.IsVisible = baseLayer.Enable;
@@ -321,13 +357,22 @@ namespace MapBoard.UI
         private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
             CloseLayersPanel();
-            new SettingDialog(Window.GetWindow(this), MapView).ShowDialog();
+            new SettingDialog(Window.GetWindow(this)).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            var arcBaseLayer = MapView.Map.Basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
+            Basemap basemap = null;
+            if (MapView is MapView m)
+            {
+                basemap = m.Map.Basemap;
+            }
+            else if (MapView is SceneView s)
+            {
+                basemap = s.Scene.Basemap;
+            }
+            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
             if (arcBaseLayer != null)
             {
                 arcBaseLayer.Opacity = baseLayer.Opacity;
@@ -338,9 +383,17 @@ namespace MapBoard.UI
 
         #region 指北针
 
-        private void RotatePanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private async void RotatePanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            MapView.SetViewpointRotationAsync(0);
+            if (MapView is MapView m)
+            {
+                m.SetViewpointRotationAsync(0);
+            }
+            else if (MapView is SceneView s)
+            {
+                Camera camera = new Camera(s.Camera.Location, 0, 0, 0);
+                await s.SetViewpointCameraAsync(camera);
+            }
         }
 
         #endregion 指北针

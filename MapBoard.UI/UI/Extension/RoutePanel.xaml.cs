@@ -21,13 +21,14 @@ using System.Collections.Generic;
 using System.Linq;
 using MapBoard.Mapping.Model;
 using MapBoard.Util;
+using Esri.ArcGISRuntime.UI.Controls;
 
 namespace MapBoard.UI.Extension
 {
     /// <summary>
     /// SearchPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class RoutePanel : UserControlBase
+    public partial class RoutePanel : ExtensionPanelBase
     {
         public RoutePanel()
         {
@@ -37,13 +38,6 @@ namespace MapBoard.UI.Extension
             }
             InitializeComponent();
         }
-
-        public void Initialize(ArcMapView mapView)
-        {
-            MapView = mapView;
-        }
-
-        public ArcMapView MapView { get; private set; }
 
         private RouteInfo[] searchResult = Array.Empty<RouteInfo>();
 
@@ -89,7 +83,7 @@ namespace MapBoard.UI.Extension
             set
             {
                 this.SetValueAndNotify(ref selectedRoute, value, nameof(SelectedRoute));
-                MapView.Overlay.SelectRoute(value);
+                Overlay.SelectRoute(value);
             }
         }
 
@@ -104,7 +98,7 @@ namespace MapBoard.UI.Extension
             set
             {
                 this.SetValueAndNotify(ref selectedStep, value, nameof(SelectedStep));
-                MapView.Overlay.SelectStep(value);
+                Overlay.SelectStep(value);
             }
         }
 
@@ -121,7 +115,7 @@ namespace MapBoard.UI.Extension
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
             SearchResult = Array.Empty<RouteInfo>();
-            MapView.Overlay.ClearRoutes();
+            Overlay.ClearRoutes();
         }
 
         /// <summary>
@@ -154,7 +148,7 @@ namespace MapBoard.UI.Extension
 
                 //将搜索结果从GCJ02转为WGS84
 
-                MapView.Overlay.ShowRoutes(SearchResult);
+                Overlay.ShowRoutes(SearchResult);
             }
             catch (Exception ex)
             {
@@ -173,19 +167,31 @@ namespace MapBoard.UI.Extension
         /// <param name="e"></param>
         private async void ChoosePointButton_Click(object sender, RoutedEventArgs e)
         {
-            var point = await MapView.Editor.GetPointAsync();
+            MapPoint point = null;
+            if (MapView is MainMapView m)
+            {
+                point = await m.Editor.GetPointAsync();
+            }
+            else if (MapView is BrowseSceneView s)
+            {
+                point = await s.GetPointAsync();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
             if (point != null)
             {
                 point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
                 if ((sender as FrameworkElement).Tag.Equals("1"))
                 {
                     Origin = point.ToLocation();
-                    MapView.Overlay.SetRouteOrigin(point);
+                    Overlay.SetRouteOrigin(point);
                 }
                 else
                 {
                     Destination = point.ToLocation();
-                    MapView.Overlay.SetRouteDestination(point);
+                    Overlay.SetRouteDestination(point);
                 }
             }
         }
@@ -197,7 +203,7 @@ namespace MapBoard.UI.Extension
         /// <param name="e"></param>
         private void Flyout_Closed(object sender, object e)
         {
-            MapView.Overlay.SelectStep(null);
+            Overlay.SelectStep(null);
         }
 
         /// <summary>
@@ -207,7 +213,7 @@ namespace MapBoard.UI.Extension
         /// <param name="e"></param>
         private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SelectLayerDialog(MapView.Layers, new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, false);
+            var dialog = new SelectLayerDialog((MapView as IMapBoardGeoView).Layers, new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, false);
             if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary && dialog.SelectedLayer != null)
             {
                 var layer = dialog.SelectedLayer;
@@ -275,7 +281,7 @@ namespace MapBoard.UI.Extension
                 {
                     await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
                 }
-                MapView.Layers.Selected = layer;
+                (MapView as IMapBoardGeoView).Layers.Selected = layer;
                 if (!layer.LayerVisible)
                 {
                     layer.LayerVisible = true;

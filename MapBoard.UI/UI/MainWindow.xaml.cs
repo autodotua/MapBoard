@@ -335,7 +335,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            new SettingDialog(this, arcMap).ShowDialog();
+            new SettingDialog(this).ShowDialog();
         }
 
         /// <summary>
@@ -399,6 +399,18 @@ namespace MapBoard.UI
         private void TileMenu_Click(object sender, RoutedEventArgs e)
         {
             new TileDownloaderWindow().Show();
+        }
+
+        /// <summary>
+        /// 打开场景浏览窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void BrowseSceneMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new BrowseSceneWindow();
+            await DoAsync(win.LoadAsync, "正在加载地图");
+            win.Show();
         }
 
         #endregion 菜单栏操作

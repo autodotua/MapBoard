@@ -1,4 +1,4 @@
-﻿<u:UserControlBase
+﻿<local:ExtensionPanelBase
     x:Class="MapBoard.UI.Extension.ReGeoCodePanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -211,4 +211,4 @@
             Click="ClearSearchButton_Click"
             Content="清除" />
     </Grid>
-</u:UserControlBase>
+</local:ExtensionPanelBase>

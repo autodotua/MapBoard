@@ -20,7 +20,7 @@ namespace MapBoard.Mapping
     {
         private bool isClearing = false;
 
-        public SelectionHelper(ArcMapView map)
+        public SelectionHelper(MainMapView map)
         {
             map.GeoViewTapped += MapviewTapped;
             CollectionChanged += SelectedFeatures_CollectionChanged;
@@ -32,7 +32,7 @@ namespace MapBoard.Mapping
 
         public MapLayerCollection Layers => MapView.Layers;
 
-        public ArcMapView MapView { get; }
+        public MainMapView MapView { get; }
 
         public Dictionary<long, Feature>.KeyCollection SelectedFeatureIDs => selectedFeatures.Keys;
         public Dictionary<long, Feature>.ValueCollection SelectedFeatures => selectedFeatures.Values;

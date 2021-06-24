@@ -15,18 +15,73 @@ using System.Windows.Input;
 
 namespace MapBoard.Mapping
 {
-    public class ArcMapView : MapView, INotifyPropertyChanged
+    public class BrowseSceneView : SceneView, INotifyPropertyChanged, IMapBoardGeoView
     {
-        private static List<ArcMapView> instances = new List<ArcMapView>();
-        public static IReadOnlyList<ArcMapView> Instances => instances.AsReadOnly();
+        private static List<BrowseSceneView> instances = new List<BrowseSceneView>();
 
-        public ArcMapView()
+        public BrowseSceneView()
+        {
+            instances.Add(this);
+            IsAttributionTextVisible = false;
+            AllowDrop = false;
+            this.SetHideWatermark();
+        }
+
+        public async Task LoadAsync()
+        {
+            await GeoViewHelper.LoadBaseGeoViewAsync(this);
+            Layers = await MapLayerCollection.GetInstanceAsync(Scene.OperationalLayers);
+            ZoomToLastExtent().ConfigureAwait(false);
+            Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
+        }
+
+        public async Task ZoomToLastExtent()
+        {
+            if (Layers.MapViewExtentJson != null)
+            {
+                try
+                {
+                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        public Task<MapPoint> GetPointAsync()
+        {
+            return SceneEditHelper.CreatePointAsync(this);
+        }
+
+        public Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
+        {
+            if (geometry is MapPoint)
+            {
+                if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
+                {
+                    geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
+                }
+                geometry = GeometryEngine.Buffer(geometry, 100);
+            }
+            return SetViewpointAsync(new Viewpoint(geometry));
+        }
+
+        public OverlayHelper Overlay { get; private set; }
+        public MapLayerCollection Layers { get; private set; }
+    }
+
+    public class MainMapView : MapView, INotifyPropertyChanged, IMapBoardGeoView
+    {
+        private static List<MainMapView> instances = new List<MainMapView>();
+        public static IReadOnlyList<MainMapView> Instances => instances.AsReadOnly();
+
+        public MainMapView()
         {
             instances.Add(this);
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
-            ViewInsets = new Thickness(8);
             this.SetHideWatermark();
 
             InteractionOptions = new MapViewInteractionOptions()
@@ -123,7 +178,7 @@ namespace MapBoard.Mapping
         public async Task LoadAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
-            Map.MaxScale = 100;
+            Map.MaxScale =Config.Instance. MaxScale;
             Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);

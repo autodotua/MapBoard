@@ -30,9 +30,9 @@ namespace MapBoard.UI
         private readonly ListView list;
 
         public MainWindow MainWindow { get; }
-        public ArcMapView MapView { get; }
+        public MainMapView MapView { get; }
 
-        public LayerListPanelHelper(ListView list, MainWindow win, ArcMapView mapView)
+        public LayerListPanelHelper(ListView list, MainWindow win, MainMapView mapView)
         {
             this.list = list;
             MainWindow = win;

@@ -16,7 +16,7 @@ namespace MapBoard.UI.Bar
     {
         public static double DefaultBarHeight { get; } = 56;
         public virtual double ExpandDistance { get; } = DefaultBarHeight;
-        public ArcMapView MapView { get; set; }
+        public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
 
         protected abstract ExpandDirection ExpandDirection { get; }

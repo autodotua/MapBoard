@@ -1,0 +1,31 @@
+﻿<local:WindowBase
+    x:Class="MapBoard.UI.BrowseSceneWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:async="clr-namespace:MapBoard.UI.Async"
+    xmlns:bar="clr-namespace:MapBoard.UI.Bar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzextension="clr-namespace:ModernWpf.FzExtension;assembly=ModernWpf.FzExtension"
+    xmlns:local="clr-namespace:MapBoard.UI"
+    xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="地图画板 - 浏览"
+    Width="1000"
+    Height="700"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    mc:Ignorable="d">
+    <Grid>
+        <Border ClipToBounds="True">
+            <map:BrowseSceneView x:Name="arcMap" />
+        </Border>
+        <local:MapViewSidePanel
+            x:Name="mapInfo"
+            Margin="0,12,8,12"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch" />
+    </Grid>
+</local:WindowBase>

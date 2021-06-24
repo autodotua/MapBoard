@@ -15,7 +15,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{416B6C02-20D7-406F-AB79-7701722B4848}"
 	ProjectSection(SolutionItems) = preProject
 		libs\FzCoreLib.Windows.dll = libs\FzCoreLib.Windows.dll
-		libs\FzGeographyLib.dll = libs\FzGeographyLib.dll
 		libs\FzStandardLib.dll = libs\FzStandardLib.dll
 	EndProjectSection
 EndProject
@@ -37,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapBoard.Extension", "MapBo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapBoard.Core", "MapBoard.Core\MapBoard.Core.csproj", "{44CA88E5-E6C1-4106-BCA0-57DC0DEA9795}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.Model", "MapBoard.Model\MapBoard.Model.csproj", "{055A507D-9167-41AE-A0DA-C7EBC2093EF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapBoard.Model", "MapBoard.Model\MapBoard.Model.csproj", "{055A507D-9167-41AE-A0DA-C7EBC2093EF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

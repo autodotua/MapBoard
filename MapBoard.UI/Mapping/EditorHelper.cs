@@ -15,7 +15,7 @@ namespace MapBoard.Mapping
 {
     public class EditorHelper : INotifyPropertyChanged
     {
-        public EditorHelper(ArcMapView mapView)
+        public EditorHelper(MainMapView mapView)
         {
             MapView = mapView;
             SketchEditor.GeometryChanged += Sketch_GeometryChanged;
@@ -61,7 +61,7 @@ namespace MapBoard.Mapping
 
         public SketchEditor SketchEditor => MapView.SketchEditor;
         public MapLayerCollection Layers => MapView.Layers;
-        public ArcMapView MapView { get; }
+        public MainMapView MapView { get; }
 
         /// <summary>
         /// 停止并不保存

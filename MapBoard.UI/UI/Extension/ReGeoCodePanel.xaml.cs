@@ -13,13 +13,14 @@ using ModernWpf.FzExtension.CommonDialog;
 using System.Windows.Controls;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Util;
+using Esri.ArcGISRuntime.UI.Controls;
 
 namespace MapBoard.UI.Extension
 {
     /// <summary>
     /// SearchPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class ReGeoCodePanel : UserControlBase
+    public partial class ReGeoCodePanel : ExtensionPanelBase
     {
         public ReGeoCodePanel()
         {
@@ -29,13 +30,6 @@ namespace MapBoard.UI.Extension
             }
             InitializeComponent();
         }
-
-        public void Initialize(ArcMapView mapView)
-        {
-            MapView = mapView;
-        }
-
-        public ArcMapView MapView { get; private set; }
 
         private int radius = 1000;
 
@@ -90,7 +84,7 @@ namespace MapBoard.UI.Extension
             set
             {
                 this.SetValueAndNotify(ref selectedPoi, value, nameof(SelectedPoi));
-                MapView.Overlay.SelectPoi(value);
+                Overlay.SelectPoi(value);
             }
         }
 
@@ -120,7 +114,7 @@ namespace MapBoard.UI.Extension
                 (sender as Button).IsEnabled = false;
 
                 SearchResult = await SelectedReGeoCodeEngine.SearchAsync(Point.ToMapPoint(), Radius);
-                MapView.Overlay.ShowPois(SearchResult.Pois);
+                Overlay.ShowPois(SearchResult.Pois);
             }
             catch (Exception ex)
             {
@@ -142,12 +136,12 @@ namespace MapBoard.UI.Extension
 
         private async void ChoosePointButton_Click(object sender, RoutedEventArgs e)
         {
-            var point = await MapView.Editor.GetPointAsync();
+            MapPoint point = await GetPointAsync();
             if (point != null)
             {
                 point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
                 Point = point.ToLocation();
-                MapView.Overlay.ShowLocation(point);
+                Overlay.ShowLocation(point);
             }
         }
 
@@ -161,8 +155,8 @@ namespace MapBoard.UI.Extension
 
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
-            MapView.Overlay.ClearLocation();
-            MapView.Overlay.ClearPois();
+            Overlay.ClearLocation();
+            Overlay.ClearPois();
             SearchResult = null;
         }
     }

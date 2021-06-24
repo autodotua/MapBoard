@@ -26,9 +26,8 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class SettingDialog : DialogWindowBase
     {
-        public SettingDialog(Window owner, ArcMapView mapView) : base(owner)
+        public SettingDialog(Window owner) : base(owner)
         {
-            MapView = mapView;
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
               Config.Instance.BaseLayers.Select(p => p.Clone()));
             ResetIndex();
@@ -77,7 +76,7 @@ namespace MapBoard.UI.Dialog
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var map in ArcMapView.Instances)
+            foreach (var map in MainMapView.Instances)
             {
                 map.SetHideWatermark();
             }
@@ -98,7 +97,6 @@ namespace MapBoard.UI.Dialog
 
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
         public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
-        public ArcMapView MapView { get; }
 
         private void ResetIndex()
         {

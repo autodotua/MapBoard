@@ -1,0 +1,749 @@
+﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.UI;
+using Esri.ArcGISRuntime.UI.Controls;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Esri.ArcGISRuntime.Symbology;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace MapBoard.Mapping
+{
+    public class SceneDrawHelper
+    {
+        #region 符号
+
+        //Symbol used by DrawPointAsync while moving the mouse
+        private static MarkerSymbol DefaultMarkerSymbol = new SimpleMarkerSymbol() { Color = System.Drawing.Color.Blue };
+
+        //Symbol used by DrawPolylineAsync
+        private static LineSymbol DefaultLineSymbol = new SimpleLineSymbol()
+        {
+            Width = 2,
+            Color = System.Drawing.Color.FromArgb(150, 0, 0, 255)
+        };
+
+        //Symbol used by DrawPolygonAsync
+        private static FillSymbol DefaultFillSymbol = new SimpleFillSymbol()
+        {
+            Outline = new SimpleLineSymbol() { Width = 2, Color = System.Drawing.Color.Black },
+            Color = System.Drawing.Color.FromArgb(100, 0, 0, 255)
+        };
+
+        //Line Symbol used to show line between last added vertex and current mouse location
+        private static LineSymbol DefaultLineMoveSymbol = new SimpleLineSymbol()
+        {
+            Width = 5,
+            Color = System.Drawing.Color.FromArgb(100, 127, 127, 127),
+            Style = SimpleLineSymbolStyle.Dot
+        };
+
+        #endregion Default draw symbols
+
+        #region 绘制
+
+        public static async Task<MapPoint> DrawPointAsync(SceneView sceneView, System.Threading.CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<MapPoint>();
+            var sketchlayer = CreateSketchLayer(sceneView);
+            sketchlayer.Opacity = .5;
+            Graphic pointGraphic = null;
+            Action cleanupEvents = SetUpHandlers(sceneView,
+                (p) => //On mouse move move graphic around
+                {
+                    if (p != null)
+                    {
+                        if (pointGraphic == null)
+                        {
+                            pointGraphic = new Graphic(p, DefaultMarkerSymbol);
+                            sketchlayer.Graphics.Add(pointGraphic);
+                        }
+                        else pointGraphic.Geometry = p;
+                    }
+                },
+                (p) => //View tapped - completes task and returns point
+                {
+                    tcs.SetResult(p);
+                }
+                , null);
+            Action cleanup = () =>
+            {
+                cleanupEvents();
+                sceneView.GraphicsOverlays.Remove(sketchlayer);
+            };
+            cancellationToken.Register(() => tcs.SetCanceled());
+
+            MapPoint result = null;
+            try
+            {
+                result = await tcs.Task;
+            }
+            finally
+            {
+                cleanup();
+            }
+            return result;
+        }
+
+        public static async Task<Polyline> DrawPolylineAsync(SceneView sceneView, System.Threading.CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<Polyline>();
+            PolylineBuilder polylineBuilder = new PolylineBuilder(sceneView.SpatialReference);
+            polylineBuilder.AddPart(new MapPoint[] { });
+            var sketchlayer = CreateSketchLayer(sceneView);
+            Graphic lineGraphic = new Graphic() { Symbol = DefaultLineSymbol };
+            Graphic lineMoveGraphic = new Graphic() { Symbol = DefaultLineMoveSymbol };
+            sketchlayer.Graphics.AddRange(new Graphic[] { lineGraphic, lineMoveGraphic });
+            Action cleanupEvents = SetUpHandlers(sceneView,
+                (p) => //On mouse move, move completion line around
+                {
+                    if (p != null && polylineBuilder.Parts.Count > 0 && polylineBuilder.Parts[0].Count > 0)
+                    {
+                        lineMoveGraphic.Geometry = new Polyline(new MapPoint[] { polylineBuilder.Parts[0].Last().EndPoint, p });
+                    }
+                },
+                (p) => //On tap add a vertex
+                {
+                    if (p != null)
+                    {
+                        polylineBuilder.AddPoint(p);
+                        if (polylineBuilder.Parts.Count > 0 && polylineBuilder.Parts[0].Count >= 1)
+                            lineGraphic.Geometry = polylineBuilder.ToGeometry();
+                    }
+                },
+                (p) => //View tapped - completes task and returns point
+                {
+                    tcs.SetResult(polylineBuilder.ToGeometry());
+                });
+            Action cleanup = () =>
+            {
+                cleanupEvents();
+                sceneView.GraphicsOverlays.Remove(sketchlayer);
+            };
+            cancellationToken.Register(() => tcs.SetCanceled());
+
+            Polyline result = null;
+            try
+            {
+                result = await tcs.Task;
+            }
+            finally
+            {
+                cleanup();
+            }
+            return result;
+        }
+
+        public static async Task<Polygon> DrawPolygonAsync(SceneView sceneView, System.Threading.CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<Polygon>();
+            PolygonBuilder polygonBuilder = new PolygonBuilder(sceneView.SpatialReference);
+            polygonBuilder.AddPart(new MapPoint[] { });
+            var sketchlayer = CreateSketchLayer(sceneView);
+            Graphic polygonGraphic = new Graphic() { Symbol = DefaultFillSymbol };
+            Graphic lineMoveGraphic = new Graphic() { Symbol = DefaultLineMoveSymbol };
+            sketchlayer.Graphics.AddRange(new Graphic[] { polygonGraphic, lineMoveGraphic });
+            Action cleanupEvents = SetUpHandlers(sceneView,
+                (p) => //On mouse move move completion line around
+                {
+                    if (p != null && polygonBuilder.Parts.Count > 0 && polygonBuilder.Parts[0].Count > 0)
+                    {
+                        lineMoveGraphic.Geometry = new Polyline(new MapPoint[]
+                            {
+                                 polygonBuilder.Parts[0].Last().EndPoint,
+                                 p,
+                                 polygonBuilder.Parts[0].First().StartPoint
+                            });
+                    }
+                },
+                (p) => //On tap add a vertex
+                {
+                    if (p != null)
+                    {
+                        polygonBuilder.AddPoint(p);
+                        if (polygonBuilder.Parts.Count > 0 && polygonBuilder.Parts[0].Count > 0)
+                        {
+                            polygonGraphic.Geometry = polygonBuilder.ToGeometry();
+                            lineMoveGraphic.Geometry = null;
+                        }
+                    }
+                },
+                (p) => //View tapped - completes task and returns point
+                {
+                    tcs.SetResult(polygonBuilder.ToGeometry());
+                });
+            Action cleanup = () =>
+            {
+                cleanupEvents();
+                sceneView.GraphicsOverlays.Remove(sketchlayer);
+            };
+            cancellationToken.Register(() => tcs.SetCanceled());
+
+            Polygon result = null;
+            try
+            {
+                result = await tcs.Task;
+            }
+            finally
+            {
+                cleanup();
+            }
+
+            return result;
+        }
+
+        #endregion public draw operations
+
+        #region 私有方法
+
+        /// <summary>
+        /// Helper for adding mouse events
+        /// </summary>
+        /// <param name="view">The view to listen for events on.</param>
+        /// <param name="onMove">Action when the mouse moves.</param>
+        /// <param name="onTapped">Action when the view is tapped.</param>
+        /// <param name="onDoubleTapped">Action when the view is double tapped.</param>
+        /// <returns>An Action that cleans up all the event handlers.</returns>
+        private static Action SetUpHandlers(SceneView view, Action<MapPoint> onMove, Action<MapPoint> onTapped, Action<MapPoint> onDoubleTapped)
+        {
+#if NETFX_CORE
+			Windows.UI.Xaml.Input.PointerEventHandler movehandler = null;
+#else
+            System.Windows.Input.MouseEventHandler movehandler = null;
+#endif
+
+            if (onMove != null)
+            {
+#if NETFX_CORE
+				movehandler = (s, e) => onMove(view.ScreenToBaseSurface(e.GetCurrentPoint(view).Position));
+				view.PointerMoved += movehandler;
+#else
+                movehandler = (s, e) => onMove(view.ScreenToBaseSurface(e.GetPosition(view)));
+                view.MouseMove += movehandler;
+#endif
+            }
+            EventHandler<GeoViewInputEventArgs> tappedHandler = null;
+            if (onTapped != null)
+            {
+                tappedHandler = (s, e) => onTapped(e.Location);
+                view.GeoViewTapped += tappedHandler;
+            }
+            EventHandler<GeoViewInputEventArgs> doubletappedHandler = null;
+            if (onDoubleTapped != null)
+            {
+                doubletappedHandler = (s, e) => { e.Handled = true; onDoubleTapped(e.Location); };
+                view.GeoViewDoubleTapped += doubletappedHandler;
+            }
+            Action cleanup = () =>
+            {
+                if (movehandler != null)
+#if NETFX_CORE
+					view.PointerMoved -= movehandler;
+#else
+                    view.MouseMove -= movehandler;
+#endif
+                if (tappedHandler != null) view.GeoViewTapped -= tappedHandler;
+                if (doubletappedHandler != null) view.GeoViewDoubleTapped -= doubletappedHandler;
+            };
+            return cleanup;
+        }
+
+        private static GraphicsOverlay CreateSketchLayer(GeoView scene)
+        {
+            GraphicsOverlay go = new GraphicsOverlay();
+            scene.GraphicsOverlays.Add(go);
+            return go;
+        }
+
+        #endregion Private utility methods
+    }
+
+    public class SceneEditHelper
+    {
+        private static CancellationTokenSource _drawTaskTokenSource;
+
+        #region Default draw symbols
+
+        //Symbol used by DrawPointAsync while moving the mouse
+        private static MarkerSymbol DefaultMarkerSymbol = new SimpleMarkerSymbol() { Color = System.Drawing.Color.Blue };
+
+        //Symbol used by Vertices on editing
+        private static MarkerSymbol DefaultVertexSymbol = new SimpleMarkerSymbol() { Color = System.Drawing.Color.Blue };
+
+        //Symbol used by DrawPolylineAsync
+        private static LineSymbol DefaultLineSymbol = new SimpleLineSymbol()
+        {
+            Width = 2,
+            Color = System.Drawing.Color.FromArgb(150, 0, 0, 255)
+        };
+
+        //Symbol used by DrawPolygonAsync
+        private static FillSymbol DefaultFillSymbol = new SimpleFillSymbol()
+        {
+            Outline = new SimpleLineSymbol() { Width = 2, Color = System.Drawing.Color.Black },
+            Color = System.Drawing.Color.FromArgb(100, 0, 0, 255)
+        };
+
+        //Line Symbol used to show line between vertices when drawing
+        private static LineSymbol DefaultLineMoveSymbol = new SimpleLineSymbol()
+        {
+            Width = 5,
+            Color = System.Drawing.Color.FromArgb(100, 127, 127, 127),
+            Style = SimpleLineSymbolStyle.Dot
+        };
+
+        #endregion // Default draw symbols
+
+        /// <summary>
+        /// Gets the value indicating whether there is a draw or edit session ongoing.
+        /// </summary>
+        public static bool IsActive { get; private set; }
+
+        #region Create geometries
+
+        /// <summary>
+        /// Create a new point. This will activate drawing experience on the map. To complete it, select location from the map.
+        /// </summary>
+        /// <param name="sceneView">The <see cref="SceneView"/> that is used for drawing.</param>
+        /// <exception cref="TaskCanceledException">If previous task wasn't completed, <see cref="TaskCanceledException"/>
+        /// will be thrown. The task is cancelled if <see cref="Cancel"/> method or if any other draw or edit method is called.
+        /// </exception>
+        /// <returns>Return new <see cref="MapPoint"/> based on the user interactions.</returns>
+        public static async Task<MapPoint> CreatePointAsync(SceneView sceneView)
+        {
+            Initialize();
+            var geometry = await SceneDrawHelper.DrawPointAsync(sceneView, _drawTaskTokenSource.Token);
+            Cleanup();
+            return geometry;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="Polyline"/>. This will activate drawing experience on the map. Draw is completed on double click.
+        /// </summary>
+        /// <param name="sceneView">The <see cref="SceneView"/> that is used for drawing.</param>
+        /// <exception cref="TaskCanceledException">If previous task wasn't completed, <see cref="TaskCanceledException"/>
+        /// will be thrown. The task is cancelled if <see cref="Cancel"/> method or if any other draw or edit method is called.
+        /// </exception>
+        /// <returns>Return new <see cref="Polyline"/> based on the user interactions.</returns>
+        public static async Task<Polyline> CreatePolylineAsync(SceneView sceneView)
+        {
+            Initialize();
+            var geometry = await SceneDrawHelper.DrawPolylineAsync(sceneView, _drawTaskTokenSource.Token);
+            Cleanup();
+            return geometry;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="Polygon"/>. This will activate drawing experience on the map. Draw is completed on double click.
+        /// </summary>
+        /// <param name="sceneView">The <see cref="SceneView"/> that is used for drawing.</param>
+        /// <exception cref="TaskCanceledException">If previous task wasn't completed, <see cref="TaskCanceledException"/>
+        /// will be thrown. The task is cancelled if <see cref="Cancel"/> method or if any other draw or edit method is called.
+        /// </exception>
+        /// <returns>Return new <see cref="Polygon"/> based on the user interactions.</returns>
+        public static async Task<Polygon> CreatePolygonAsync(SceneView sceneView)
+        {
+            Initialize();
+            var geometry = await SceneDrawHelper.DrawPolygonAsync(sceneView, _drawTaskTokenSource.Token);
+            Cleanup();
+            return geometry;
+        }
+
+        #endregion // Create geometries
+
+        #region Edit geometries
+
+        /// <summary>
+        /// Edit existing <see cref="Polygon"/>. This will activate editing experience on the map. Edit is completed on double click.
+        /// </summary>
+        /// <param name="sceneView">The <see cref="SceneView"/> that is used for editing.</param>
+        /// <exception cref="TaskCanceledException">If previous task wasn't completed, <see cref="TaskCanceledException"/>
+        /// will be thrown. The task is cancelled if <see cref="Cancel"/> method or if any other draw or edit method is called.
+        /// </exception>
+        /// <returns>Return edited <see cref="Polygon"/> based on the user interactions.</returns>
+        public static async Task<Polygon> EditPolygonAsync(SceneView sceneView, Polygon polygon)
+        {
+            Initialize();
+
+            var tcs = new TaskCompletionSource<Polygon>();
+            PolygonBuilder polylineBuilder = new PolygonBuilder(sceneView.SpatialReference);
+            var sketchlayer = CreateSketchLayer(sceneView);
+            var vertexlayer = CreateSketchLayer(sceneView);
+
+            // Create vertices from the original polyline
+            var vertices = new List<Graphic>();
+            foreach (var vertex in (polygon.Parts[0].Points))
+                vertices.Add(new Graphic(vertex, DefaultVertexSymbol));
+
+            //vertices.RemoveAt(vertices.Count - 1); // don't add closing point
+
+            // Default to original polyline
+            var newPolygon = new Polygon(polygon.Parts);
+
+            Graphic fillGraphic = new Graphic(newPolygon) { Symbol = DefaultFillSymbol };
+            Graphic lineMoveGraphic = new Graphic() { Symbol = DefaultLineMoveSymbol };
+
+            sketchlayer.Graphics.AddRange(new Graphic[] { fillGraphic, lineMoveGraphic });
+            vertexlayer.Graphics.AddRange(vertices);
+
+            CancellationTokenSource tokenSource = null;
+            Graphic selectedVertex = null;
+            bool isEditingVertex = false;
+
+            Action cleanupEvents = SetUpHandlers(sceneView,
+                (p) => //On mouse move, move completion line around
+                {
+                    if (p != null && isEditingVertex)
+                    {
+                        // Update visual indicator polyline
+                        var vertexPoints = newPolygon.Parts[0].Points.ToList();
+                        if (vertexPoints.Count > 2 && GeometryEngine.Equals(vertexPoints.First(), vertexPoints.Last()))
+                            vertexPoints.RemoveAt(vertexPoints.Count - 1); // don't add closing point
+                        var index = vertexPoints
+                            .IndexOf(vertexPoints.Where
+                                (point => GeometryEngine.Equals(point, selectedVertex.Geometry)).First());
+                        var temporaryVertices = new List<MapPoint>();
+
+                        if (index > 0)
+                            temporaryVertices.Add(vertexPoints[index - 1]); // Add previous segment
+                        else
+                            temporaryVertices.Add(vertexPoints.Last()); // Add start segment from end
+                        temporaryVertices.Add(p);
+                        if (index != vertexPoints.Count() - 1)
+                            temporaryVertices.Add(vertexPoints[index + 1]); // Add next segment
+                        else
+                            temporaryVertices.Add(vertexPoints.First()); // Add end segment from start
+
+                        var builder = new PolylineBuilder(temporaryVertices);
+                        lineMoveGraphic.Geometry = builder.ToGeometry();
+                        lineMoveGraphic.IsVisible = true;
+                    }
+                    else
+                    {
+                        lineMoveGraphic.IsVisible = false;
+                    }
+                },
+                async (p) => //On tap add a vertex
+                {
+                    if (p == null) return;
+                    if (isEditingVertex) return;
+                    if (selectedVertex != null) selectedVertex.IsSelected = false;
+
+                    selectedVertex = (await sceneView.IdentifyGraphicsOverlayAsync(vertexlayer, sceneView.LocationToScreen(p), 2, false, 1)).Graphics.FirstOrDefault();
+
+                    // No vertex found so return
+                    if (selectedVertex == null)
+                        return;
+
+                    isEditingVertex = true;
+                    selectedVertex.IsSelected = true;
+                    tokenSource = new CancellationTokenSource();
+                    try
+                    {
+                        var newPoint = await SceneDrawHelper.DrawPointAsync(sceneView, tokenSource.Token);
+                        if (newPoint == null) return;
+
+                        var vertexPoints = newPolygon.Parts[0].Points.ToList();
+                        if (vertexPoints.Count > 2 && GeometryEngine.Equals(vertexPoints.First(), vertexPoints.Last()))
+                            vertexPoints.RemoveAt(vertexPoints.Count - 1); // don't add closing point
+                        var index = vertexPoints
+                            .IndexOf(vertexPoints.Where
+                                (point => GeometryEngine.Equals(point, selectedVertex.Geometry)).First());
+                        var builder = new PolygonBuilder(vertexPoints);
+                        builder.Parts[0].SetPoint(index, newPoint);
+
+                        // Update polyline
+                        newPolygon = builder.ToGeometry();
+                        fillGraphic.Geometry = newPolygon;
+                        // Update vertex
+                        selectedVertex.Geometry = newPoint;
+                        tokenSource = null;
+                    }
+                    catch (TaskCanceledException)
+                    {
+                    }
+                    finally
+                    {
+                        lineMoveGraphic.IsVisible = false;
+                        selectedVertex.IsSelected = false;
+                        selectedVertex = null;
+                        isEditingVertex = false;
+                    }
+                },
+                (p) => // Double tapped - completes task and returns new polygon
+                {
+                    fillGraphic.IsVisible = false;
+                    lineMoveGraphic.IsVisible = false;
+                    tcs.SetResult(newPolygon);
+                });
+            Action cleanup = () =>
+            {
+                cleanupEvents();
+                sceneView.GraphicsOverlays.Remove(sketchlayer);
+                sceneView.GraphicsOverlays.Remove(vertexlayer);
+                if (tokenSource != null) tokenSource.Cancel(); // Cancel vertex draw if it isn't finished
+                Cleanup();
+            };
+            _drawTaskTokenSource.Token.Register(() => tcs.SetCanceled());
+
+            Polygon result = null;
+            try
+            {
+                result = await tcs.Task;
+            }
+            finally
+            {
+                cleanup();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Edit existing <see cref="Polyline"/>. This will activate editing experience on the map. Edit is completed on double click.
+        /// </summary>
+        /// <param name="sceneView">The <see cref="SceneView"/> that is used for editing.</param>
+        /// <exception cref="TaskCanceledException">If previous task wasn't completed, <see cref="TaskCanceledException"/>
+        /// will be thrown. The task is cancelled if <see cref="Cancel"/> method or if any other draw or edit method is called.
+        /// </exception>
+        /// <returns>Return edited <see cref="Polygon"/> based on the user interactions.</returns>
+        public static async Task<Polyline> EditPolylineAsync(SceneView sceneView, Polyline polyline)
+        {
+            Initialize();
+
+            var tcs = new TaskCompletionSource<Polyline>();
+            PolylineBuilder polylineBuilder = new PolylineBuilder(sceneView.SpatialReference);
+            var sketchlayer = CreateSketchLayer(sceneView);
+            var vertexlayer = CreateSketchLayer(sceneView);
+
+            // Create vertices from the original polyline
+            var vertices = new List<Graphic>();
+            foreach (var vertex in (polyline.Parts[0].Points))
+                vertices.Add(new Graphic(vertex, DefaultVertexSymbol));
+
+            // Default to original polyline
+            var newPolyline = new Polyline(polyline.Parts);
+
+            Graphic lineGraphic = new Graphic(newPolyline) { Symbol = DefaultLineSymbol };
+            Graphic lineMoveGraphic = new Graphic() { Symbol = DefaultLineMoveSymbol };
+
+            sketchlayer.Graphics.AddRange(new Graphic[] { lineGraphic, lineMoveGraphic });
+            vertexlayer.Graphics.AddRange(vertices);
+
+            CancellationTokenSource tokenSource = null;
+            Graphic selectedVertex = null;
+            bool isEditingVertex = false;
+
+            Action cleanupEvents = SetUpHandlers(sceneView,
+                (p) => //On mouse move, move completion line around
+                {
+                    if (p != null && isEditingVertex)
+                    {
+                        // Update visual indicator polyline
+                        var vertexPoints = newPolyline.Parts[0].Points.ToList();
+                        var index = vertexPoints
+                            .IndexOf(vertexPoints.Where
+                                (point => GeometryEngine.Equals(point, selectedVertex.Geometry)).First());
+                        var temporaryVertices = new List<MapPoint>();
+
+                        if (index > 0)
+                            temporaryVertices.Add(vertexPoints[index - 1]); // Add previous segment
+                        temporaryVertices.Add(p);
+                        if (index != vertexPoints.Count() - 1)
+                            temporaryVertices.Add(vertexPoints[index + 1]); // Add next segment
+
+                        var builder = new PolylineBuilder(temporaryVertices);
+                        lineMoveGraphic.Geometry = builder.ToGeometry();
+                        lineMoveGraphic.IsVisible = true;
+                    }
+                },
+                async (p) => //On tap add a vertex
+                {
+                    if (p == null) return;
+                    if (isEditingVertex) return;
+                    if (selectedVertex != null) selectedVertex.IsSelected = false;
+
+                    selectedVertex = (await sceneView.IdentifyGraphicsOverlayAsync(vertexlayer, sceneView.LocationToScreen(p), 2, false, 1)).Graphics.FirstOrDefault();
+
+                    // No vertex found so return
+                    if (selectedVertex == null)
+                        return;
+
+                    isEditingVertex = true;
+                    selectedVertex.IsSelected = true;
+                    tokenSource = new CancellationTokenSource();
+                    try
+                    {
+                        var newPoint = await SceneDrawHelper.DrawPointAsync(sceneView, tokenSource.Token);
+
+                        if (newPoint == null) return;
+
+                        var vertexPoints = newPolyline.Parts[0].Points;
+                        var index = vertexPoints.ToList()
+                            .IndexOf(vertexPoints.Where
+                                (point => GeometryEngine.Equals(point, selectedVertex.Geometry)).First());
+                        var builder = new PolylineBuilder(vertexPoints);
+                        builder.Parts[0].SetPoint(index, newPoint);
+
+                        lineGraphic.Geometry = null;
+
+                        // Update polyline
+                        newPolyline = builder.ToGeometry();
+                        lineGraphic.Geometry = newPolyline;
+
+                        // Update vertex
+                        selectedVertex.Geometry = newPoint;
+                        tokenSource = null;
+                    }
+                    catch (TaskCanceledException)
+                    {
+                    }
+                    finally
+                    {
+                        lineMoveGraphic.IsVisible = false;
+                        selectedVertex.IsSelected = false;
+                        selectedVertex = null;
+                        isEditingVertex = false;
+                    }
+                },
+                (p) => // Double tapped - completes task and returns new polyline
+                {
+                    tcs.SetResult(newPolyline);
+                });
+            Action cleanup = () =>
+            {
+                cleanupEvents();
+                sceneView.GraphicsOverlays.Remove(sketchlayer);
+                sceneView.GraphicsOverlays.Remove(vertexlayer);
+                if (tokenSource != null) tokenSource.Cancel();
+                Cleanup();
+            };
+            _drawTaskTokenSource.Token.Register(() => tcs.SetCanceled());
+
+            Polyline result = null;
+            try
+            {
+                result = await tcs.Task;
+            }
+            finally
+            {
+                cleanup();
+            }
+            return result;
+        }
+
+        #endregion // Edit geometries
+
+        #region Cancel
+
+        /// <summary>
+        /// Cancels current draw or edit session. Only one session can be active at the time.
+        /// </summary>
+        public static void Cancel()
+        {
+            if (!IsActive) return;
+
+            // Cancel previous source and create new
+            if (_drawTaskTokenSource != null)
+                _drawTaskTokenSource.Cancel();
+            Cleanup();
+        }
+
+        #endregion // Cancel
+
+        #region Private utility methods
+
+        /// <summary>
+        /// Call to start new drawing / editing session.
+        /// </summary>
+        private static void Initialize()
+        {
+            SetActivity(); // set to active
+
+            // Cancel previous source and create new
+            if (_drawTaskTokenSource != null)
+                _drawTaskTokenSource.Cancel();
+            _drawTaskTokenSource = new CancellationTokenSource();
+        }
+
+        /// <summary>
+        /// Call to close existing drawing / editing session.
+        /// </summary>
+        private static void Cleanup()
+        {
+            _drawTaskTokenSource = null;
+            SetActivity(false);
+        }
+
+        /// <summary>
+        /// Call to change activity. This will cancel previous task if it exists and current status is `true`.
+        /// </summary>
+        private static void SetActivity(bool isActive = true)
+        {
+            if (IsActive && isActive)
+                _drawTaskTokenSource.Cancel();
+            IsActive = isActive;
+        }
+
+        /// <summary>
+        /// Helper for adding mouse events
+        /// </summary>
+        /// <param name="view">The view to listen for events on.</param>
+        /// <param name="onMove">Action when the mouse moves.</param>
+        /// <param name="onTapped">Action when the view is tapped.</param>
+        /// <param name="onDoubleTapped">Action when the view is double tapped.</param>
+        /// <returns>An Action that cleans up all the event handlers.</returns>
+        private static Action SetUpHandlers(SceneView view, Action<MapPoint> onMove, Action<MapPoint> onTapped, Action<MapPoint> onDoubleTapped)
+        {
+#if NETFX_CORE
+			Windows.UI.Xaml.Input.PointerEventHandler movehandler = null;
+#else
+            System.Windows.Input.MouseEventHandler movehandler = null;
+#endif
+
+            if (onMove != null)
+            {
+#if NETFX_CORE
+				movehandler = (s, e) => onMove(view.ScreenToLocation(e.GetCurrentPoint(view).Position));
+				view.PointerMoved += movehandler;
+#else
+                movehandler = (s, e) => onMove(view.ScreenToBaseSurface(e.GetPosition(view)));
+                view.MouseMove += movehandler;
+#endif
+            }
+            EventHandler<GeoViewInputEventArgs> tappedHandler = null;
+            if (onTapped != null)
+            {
+                tappedHandler = (s, e) => onTapped(e.Location);
+                view.GeoViewTapped += tappedHandler;
+            }
+            EventHandler<GeoViewInputEventArgs> doubletappedHandler = null;
+            if (onDoubleTapped != null)
+            {
+                doubletappedHandler = (s, e) => { e.Handled = true; onDoubleTapped(e.Location); };
+                view.GeoViewDoubleTapped += doubletappedHandler;
+            }
+            Action cleanup = () =>
+            {
+                if (movehandler != null)
+#if NETFX_CORE
+						view.PointerMoved -= movehandler;
+#else
+                    view.MouseMove -= movehandler;
+#endif
+                if (tappedHandler != null) view.GeoViewTapped -= tappedHandler;
+                if (doubletappedHandler != null) view.GeoViewDoubleTapped -= doubletappedHandler;
+            };
+            return cleanup;
+        }
+
+        private static GraphicsOverlay CreateSketchLayer(GeoView scene)
+        {
+            GraphicsOverlay go = new GraphicsOverlay();
+            scene.GraphicsOverlays.Add(go);
+            return go;
+        }
+
+        #endregion Private utility methods
+    }
+}

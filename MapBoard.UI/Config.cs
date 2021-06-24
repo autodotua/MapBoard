@@ -47,7 +47,7 @@ namespace MapBoard
         public bool BackupWhenExit { get; set; } = true;
         public bool BackupWhenReplace { get; set; } = true;
         public int MaxBackupCount { get; set; } = 100;
-
+        public double MaxScale { get; set; } = 100;
         public bool Gpx_AutoSmooth { get; set; } = true;
         public bool Gpx_AutoSmoothOnlyZ { get; set; } = false;
         public bool Gpx_Height { get; set; } = false;

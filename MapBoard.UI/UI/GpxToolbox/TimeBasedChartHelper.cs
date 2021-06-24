@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,16 +20,39 @@ namespace MapBoard.UI.GpxToolbox
         where TLine : class
         where TPolygon : class
     {
-        private bool isBusy = false;
+        private bool isDrawing = false;
+
+        /// <summary>
+        /// 在SizeChanged时设置为True，在下一轮的Timer中重绘
+        /// </summary>
+        private bool needToDraw = false;
+        private Timer timer;
+        private object lockObj = new object();
 
         public TimeBasedChartHelper(Canvas canvas)
         {
             Sketchpad = canvas;
-            canvas.SizeChanged += SketchpadSizeChanged;
+            canvas.Loaded += (p1, p2) => canvas.SizeChanged += SketchpadSizeChanged;
             canvas.PreviewMouseMove += SketchpadPreviewMouseMove;
             canvas.MouseLeave += SketchpadMouseLeave;
             canvas.Background = Brushes.White;
             canvas.ClipToBounds = true;
+            timer = new Timer(new TimerCallback(p =>
+            {
+                bool draw = false;
+                lock (lockObj)
+                {
+                    if (needToDraw && !isDrawing)
+                    {
+                        needToDraw = false;
+                        draw = true;
+                    }
+                }
+                if (draw)
+                {
+                    BeginDraw();
+                }
+            }), null, 1000, 1000);
         }
 
         private List<BorderInfo> borders = new List<BorderInfo>();
@@ -57,9 +81,12 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void SketchpadSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (Window.GetWindow(Sketchpad).WindowState == WindowState.Minimized)
+            {
+                return;
+            }
             try
             {
-                Sketchpad.Children.Clear();
                 sizeChangeCount++;
                 await Task.Delay(SizeChangeDelay);
                 sizeChangeCount--;
@@ -67,9 +94,9 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     return;
                 }
-                if (DrawActionAsync != null)
+                lock (lockObj)
                 {
-                    await DrawAsync();
+                    needToDraw = true;
                 }
             }
             catch (Exception ex)
@@ -102,7 +129,9 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (!canMouseMoveUpdate || isBusy || displayedPointsX.Count == 0)
+            if (!canMouseMoveUpdate
+                || isDrawing
+                || displayedPointsX.Count == 0)
             {
                 return;
             }
@@ -279,11 +308,32 @@ namespace MapBoard.UI.GpxToolbox
             AddSketchpadChildren(path, 4);
         }
 
-        public async Task DrawAsync()
+        public  void BeginDraw()
         {
-            isBusy = true;
-            await DrawActionAsync();
-            isBusy = false;
+            if (isDrawing)
+            {
+                return;
+            }
+            isDrawing = true;
+
+            needToDraw = false;
+
+            //有可能从Timer线程中调用，因此要保证UI线程
+            Sketchpad.Dispatcher.Invoke(async () =>
+            {
+                try
+                {
+                    Sketchpad.Children.Clear();
+                    await DrawActionAsync();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    isDrawing = false;
+                }
+            });
         }
 
         public async Task DrawPolygonAsync(IEnumerable<TPolygon> items, int borderIndex)

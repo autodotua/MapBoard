@@ -25,7 +25,7 @@ namespace MapBoard.UI.Dialog
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, ArcMapView arcMap) : base(owner, layer)
+        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, MainMapView arcMap) : base(owner, layer)
         {
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
@@ -45,7 +45,7 @@ namespace MapBoard.UI.Dialog
 
         private static Dictionary<MapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<MapLayerInfo, FeatureHistoryDialog>();
 
-        public static FeatureHistoryDialog Get(Window owner, MapLayerInfo layer, ArcMapView arcMap)
+        public static FeatureHistoryDialog Get(Window owner, MapLayerInfo layer, MainMapView arcMap)
         {
             if (dialogs.ContainsKey(layer))
             {

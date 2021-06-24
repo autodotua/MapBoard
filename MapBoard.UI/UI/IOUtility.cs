@@ -42,7 +42,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetOpenFile(filter);
         }
 
-        public async static Task ImportFeatureAsync(Window owner, string path, MapLayerInfo layer, ArcMapView mapView, ImportLayerType type)
+        public async static Task ImportFeatureAsync(Window owner, string path, MapLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 

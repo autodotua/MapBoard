@@ -28,7 +28,7 @@ namespace MapBoard.UI.Dialog
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private AttributeTableDialog(Window owner, MapLayerInfo layer, ArcMapView mapView) : base(owner, layer)
+        private AttributeTableDialog(Window owner, MapLayerInfo layer, MainMapView mapView) : base(owner, layer)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
@@ -52,7 +52,7 @@ namespace MapBoard.UI.Dialog
 
         private static Dictionary<MapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<MapLayerInfo, AttributeTableDialog>();
 
-        public static AttributeTableDialog Get(Window owner, MapLayerInfo layer, ArcMapView mapView)
+        public static AttributeTableDialog Get(Window owner, MapLayerInfo layer, MainMapView mapView)
         {
             if (dialogs.ContainsKey(layer))
             {
@@ -65,7 +65,7 @@ namespace MapBoard.UI.Dialog
 
         public int EditedFeaturesCount => editedAttributes.Count;
 
-        public ArcMapView MapView { get; }
+        public MainMapView MapView { get; }
 
         public bool isLoaded = false;
 

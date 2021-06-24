@@ -149,11 +149,15 @@ namespace MapBoard.UI.GpxToolbox
                 Gpx = arcMap.SelectedTrack.Gpx;
                 GpxTrack = arcMap.SelectedTrack.Track;
 
-                await UpdateChartAsync();
+                await UpdateUI();
             }
         }
 
-        private async Task UpdateChartAsync()
+        /// <summary>
+        /// 刷新轨迹的信息、表格和图表
+        /// </summary>
+        /// <returns></returns>
+        private async Task UpdateUI()
         {
             try
             {
@@ -164,20 +168,21 @@ namespace MapBoard.UI.GpxToolbox
                     DrawChartAsync(pointsTask.Result, linesTask.Result);
 
                 await Task.Run(() =>
-                {
-                    var speed = arcMap.SelectedTrack.Track.AverageSpeed;
+             {
+                 var speed = arcMap.SelectedTrack.Track.AverageSpeed;
 
-                    SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
-                    DistanceText = (arcMap.SelectedTrack.Track.Distance / 1000).ToString("0.00") + "km";
+                 SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
+                 DistanceText = (arcMap.SelectedTrack.Track.Distance / 1000).ToString("0.00") + "km";
 
-                    var movingSpeed = arcMap.SelectedTrack.Track.GetMovingAverageSpeed();
-                    MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
-                    MovingTimeText = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
+                 var movingSpeed = arcMap.SelectedTrack.Track.GetMovingAverageSpeed();
+                 MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
+                 MovingTimeText = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
 
-                    var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeedAsync().Result;
-                    MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
-                });
-                await chartHelper.DrawAsync();
+                 var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeedAsync().Result;
+                 MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
+             });
+
+                chartHelper.BeginDraw();
             }
             catch (Exception ex)
             {
@@ -446,7 +451,7 @@ namespace MapBoard.UI.GpxToolbox
         private async void UpdateTrackButtonClick(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(arcMap.SelectedTrack, true);
-            await UpdateChartAsync();
+            await UpdateUI();
         }
 
         private void InsertPointButtonClick(object sender, RoutedEventArgs e)

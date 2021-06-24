@@ -19,7 +19,7 @@ namespace MapBoard.UI.Extension
     /// <summary>
     /// SearchPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class SearchPanel : UserControlBase
+    public partial class SearchPanel : ExtensionPanelBase
     {
         public SearchPanel()
         {
@@ -29,13 +29,6 @@ namespace MapBoard.UI.Extension
             }
             InitializeComponent();
         }
-
-        public void Initialize(ArcMapView mapView)
-        {
-            MapView = mapView;
-        }
-
-        public ArcMapView MapView { get; private set; }
 
         private int radius = 1000;
 
@@ -87,7 +80,7 @@ namespace MapBoard.UI.Extension
             set
             {
                 this.SetValueAndNotify(ref selectedPoi, value, nameof(SelectedPoi));
-                MapView.Overlay.SelectPoi(value);
+                Overlay.SelectPoi(value);
             }
         }
 
@@ -99,7 +92,7 @@ namespace MapBoard.UI.Extension
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
             SearchResult = Array.Empty<PoiInfo>();
-            MapView.Overlay.ClearPois();
+            Overlay.ClearPois();
         }
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
@@ -138,7 +131,7 @@ namespace MapBoard.UI.Extension
 
                 //将搜索结果从GCJ02转为WGS84
 
-                MapView.Overlay.ShowPois(SearchResult);
+                Overlay.ShowPois(SearchResult);
             }
             catch (Exception ex)
             {

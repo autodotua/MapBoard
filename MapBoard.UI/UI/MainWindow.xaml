@@ -39,16 +39,16 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="13"
-                        Text="地图画板" />
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Text="地图画板" />
                 <ui:TitleBarButton
-                        x:Name="btnTitleBarMore"
-                        Grid.Column="2"
-                        Width="NaN"
-                        Padding="16,0"
-                        FontSize="13"
-                        Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
+                    x:Name="btnTitleBarMore"
+                    Grid.Column="2"
+                    Width="NaN"
+                    Padding="16,0"
+                    FontSize="13"
+                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
                     </ui:TitleBarButton.Content>
@@ -65,6 +65,11 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
+                            <MenuItem Click="BrowseSceneMenu_Click" Header="场景浏览">
+                                <MenuItem.Icon>
+                                    <ui:FontIcon Glyph="&#xE909;" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <MenuItem Click="GpxMenu_Click" Header="GPX工具箱">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xE707;" />
@@ -98,9 +103,9 @@
             </Grid>
         </Border>
         <Grid
-                x:Name="grdMain"
-                Grid.Row="2"
-                ClipToBounds="True">
+            x:Name="grdMain"
+            Grid.Row="2"
+            ClipToBounds="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="0" />
@@ -110,37 +115,37 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="grdCenter" Grid.Column="2">
                 <Border ClipToBounds="True">
-                    <map:ArcMapView
-                            x:Name="arcMap"
-                            PreviewDrop="ArcMap_PreviewDrop"
-                            ViewpointChanged="ArcMap_ViewpointChanged" />
+                    <map:MainMapView
+                        x:Name="arcMap"
+                        PreviewDrop="ArcMap_PreviewDrop"
+                        ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
                 <local:MapViewSidePanel
-                        x:Name="mapInfo"
-                        Margin="0,36,8,12"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Stretch" />
+                    x:Name="mapInfo"
+                    Margin="0,36,8,12"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch" />
                 <bar:EditionBar
-                        x:Name="editBar"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top" />
+                    x:Name="editBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top" />
                 <bar:SelectionBar
-                        x:Name="selectBar"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top" />
+                    x:Name="selectBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top" />
                 <bar:MeasureBar
-                        x:Name="measureBar"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top" />
+                    x:Name="measureBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top" />
                 <bar:GetGeometryBar
-                        x:Name="getGeometryBar"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top" />
+                    x:Name="getGeometryBar"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top" />
                 <bar:AttributesBar
-                        x:Name="attributesBar"
-                        Margin="0,28,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Stretch" />
+                    x:Name="attributesBar"
+                    Margin="0,28,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch" />
             </Grid>
 
             <Grid x:Name="grdLeftArea">
@@ -150,16 +155,16 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                        Grid.Column="2"
-                        Width="10"
-                        Height="80"
-                        Margin="4,0,8,0"
-                        VerticalAlignment="Center"
-                        Click="LayerSettingOpenCloseButton_Click" />
+                    Grid.Column="2"
+                    Width="10"
+                    Height="80"
+                    Margin="4,0,8,0"
+                    VerticalAlignment="Center"
+                    Click="LayerSettingOpenCloseButton_Click" />
                 <Grid
-                        x:Name="grdLeft"
-                        Width="300"
-                        Margin="4">
+                    x:Name="grdLeft"
+                    Width="300"
+                    Margin="4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="16" />
@@ -175,25 +180,25 @@
 
                         <local:LayerSettingPanel x:Name="layerSettings" />
                         <StackPanel
-                                Grid.Row="100"
-                                Grid.ColumnSpan="100"
-                                Margin="0,0,12,0"
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                            Grid.Row="100"
+                            Grid.ColumnSpan="100"
+                            Margin="0,0,12,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
                             <Button
-                                    x:Name="btnBrowseMode"
-                                    Click="BrowseModeButtonClick"
-                                    Content="浏览模式" />
+                                x:Name="btnBrowseMode"
+                                Click="BrowseModeButtonClick"
+                                Content="浏览模式" />
                             <TextBlock Text="  " />
                             <Button
-                                    x:Name="btnApplyStyle"
-                                    Click="ApplyStyleButtonClick"
-                                    Content="应用样式" />
+                                x:Name="btnApplyStyle"
+                                Click="ApplyStyleButtonClick"
+                                Content="应用样式" />
                             <TextBlock Text="  " />
                             <Button
-                                    x:Name="btnCreateStyle"
-                                    Click="CreateLayerButtonClick"
-                                    Content="新建图层" />
+                                x:Name="btnCreateStyle"
+                                Click="CreateLayerButtonClick"
+                                Content="新建图层" />
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">
@@ -203,11 +208,11 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <ListView
-                                x:Name="dataGrid"
-                                PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
-                                PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
-                                SelectionChanged="SelectedLayerChanged"
-                                SelectionMode="Extended">
+                            x:Name="dataGrid"
+                            PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
+                            PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
+                            SelectionChanged="SelectedLayerChanged"
+                            SelectionMode="Extended">
                             <ListBox.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource {x:Type ListBoxItem}}" TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="DockPanel.Dock" Value="Bottom" />
@@ -234,26 +239,26 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <CheckBox
-                                                Grid.RowSpan="99"
-                                                VerticalAlignment="Center"
-                                                FocusVisualStyle="{x:Null}"
-                                                IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
+                                            Grid.RowSpan="99"
+                                            VerticalAlignment="Center"
+                                            FocusVisualStyle="{x:Null}"
+                                            IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
                                         <TextBlock
-                                                Grid.Column="2"
-                                                Grid.ColumnSpan="99"
-                                                FontWeight="Bold"
-                                                Text="{Binding Name}"
-                                                TextTrimming="CharacterEllipsis" />
+                                            Grid.Column="2"
+                                            Grid.ColumnSpan="99"
+                                            FontWeight="Bold"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis" />
                                         <TextBlock
-                                                Grid.Row="2"
-                                                Grid.Column="2"
-                                                Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
+                                            Grid.Row="2"
+                                            Grid.Column="2"
+                                            Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
                                         <TextBlock
-                                                Grid.Row="2"
-                                                Grid.Column="4"
-                                                HorizontalAlignment="Left">
-                                                <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
-                                                <Run>个图形</Run>
+                                            Grid.Row="2"
+                                            Grid.Column="4"
+                                            HorizontalAlignment="Left">
+                                            <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
+                                            <Run>个图形</Run>
                                         </TextBlock>
                                     </Grid>
                                 </DataTemplate>
@@ -272,65 +277,65 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <ui:SplitButton
-                                Grid.Column="0"
-                                HorizontalAlignment="Stretch"
-                                Click="ImportButton_Click"
-                                Content="导入"
-                                Tag="1">
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            Click="ImportButton_Click"
+                            Content="导入"
+                            Tag="1">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem
-                                            Click="ImportMenu_Click"
-                                            Header="地图包（追加）"
-                                            Tag="2" />
+                                        Click="ImportMenu_Click"
+                                        Header="地图包（追加）"
+                                        Tag="2" />
                                     <MenuItem
-                                            Click="ImportMenu_Click"
-                                            Header="图层包"
-                                            Tag="3" />
+                                        Click="ImportMenu_Click"
+                                        Header="图层包"
+                                        Tag="3" />
                                     <MenuItem
-                                            Click="ImportMenu_Click"
-                                            Header="GPX轨迹文件"
-                                            Tag="4" />
+                                        Click="ImportMenu_Click"
+                                        Header="GPX轨迹文件"
+                                        Tag="4" />
                                     <MenuItem
-                                            Click="ImportMenu_Click"
-                                            Header="Shapefile"
-                                            Tag="5" />
+                                        Click="ImportMenu_Click"
+                                        Header="Shapefile"
+                                        Tag="5" />
                                     <MenuItem
-                                            Click="ImportMenu_Click"
-                                            Header="CSV表格"
-                                            Tag="6" />
+                                        Click="ImportMenu_Click"
+                                        Header="CSV表格"
+                                        Tag="6" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
                         <ui:SplitButton
-                                Grid.Column="2"
-                                HorizontalAlignment="Stretch"
-                                Click="ExportButton_Click"
-                                Content="导出"
-                                Tag="1">
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="ExportButton_Click"
+                            Content="导出"
+                            Tag="1">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem
-                                            Click="ExportMenu_Click"
-                                            Header="移动GIS工具箱图层包"
-                                            Tag="2" />
+                                        Click="ExportMenu_Click"
+                                        Header="移动GIS工具箱图层包"
+                                        Tag="2" />
                                     <MenuItem
-                                            Click="ExportMenu_Click"
-                                            Header="KML打包文件"
-                                            Tag="3" />
+                                        Click="ExportMenu_Click"
+                                        Header="KML打包文件"
+                                        Tag="3" />
                                     <MenuItem
-                                            Click="ExportMenu_Click"
-                                            Header="截图"
-                                            Tag="4" />
+                                        Click="ExportMenu_Click"
+                                        Header="截图"
+                                        Tag="4" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
                         <Button
-                                Grid.Row="0"
-                                Grid.Column="6"
-                                HorizontalAlignment="Stretch"
-                                Click="OpenFolderButtonClick"
-                                Content="目录" />
+                            Grid.Row="0"
+                            Grid.Column="6"
+                            HorizontalAlignment="Stretch"
+                            Click="OpenFolderButtonClick"
+                            Content="目录" />
                     </Grid>
                     <Grid x:Name="grdButtons" Grid.Row="100">
                         <Grid.ColumnDefinitions>
@@ -340,17 +345,17 @@
                         </Grid.ColumnDefinitions>
 
                         <ui:SplitButton
-                                HorizontalAlignment="Stretch"
-                                Content="绘制"
-                                IsEnabled="False"
-                                Tag="always" />
+                            HorizontalAlignment="Stretch"
+                            Content="绘制"
+                            IsEnabled="False"
+                            Tag="always" />
 
                         <ui:SplitButton
-                                x:Name="splBtnPolyline"
-                                HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
-                                Content="多段线"
-                                Visibility="Collapsed">
+                            x:Name="splBtnPolyline"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick"
+                            Content="多段线"
+                            Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由线" />
@@ -358,11 +363,11 @@
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
                         <ui:SplitButton
-                                x:Name="splBtnPolygon"
-                                HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
-                                Content="多边形"
-                                Visibility="Collapsed">
+                            x:Name="splBtnPolygon"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick"
+                            Content="多边形"
+                            Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem Click="DrawButtonsClick" Header="自由面" />
@@ -376,23 +381,23 @@
                         </ui:SplitButton>
 
                         <ui:SplitButton
-                                x:Name="splBtnPoint"
-                                HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
-                                Content="点"
-                                Visibility="Collapsed" />
+                            x:Name="splBtnPoint"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick"
+                            Content="点"
+                            Visibility="Collapsed" />
                         <ui:SplitButton
-                                x:Name="splBtnMultiPoint"
-                                HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
-                                Content="多点"
-                                Visibility="Collapsed" />
+                            x:Name="splBtnMultiPoint"
+                            HorizontalAlignment="Stretch"
+                            Click="DrawButtonsClick"
+                            Content="多点"
+                            Visibility="Collapsed" />
 
                         <Button
-                                x:Name="btnSelect"
-                                Grid.Column="2"
-                                Click="SelectToggleButtonClick"
-                                FocusVisualStyle="{x:Null}">
+                            x:Name="btnSelect"
+                            Grid.Column="2"
+                            Click="SelectToggleButtonClick"
+                            FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
                             <Button.ToolTip>
                                 <ui:SimpleStackPanel Width="200" Spacing="4">

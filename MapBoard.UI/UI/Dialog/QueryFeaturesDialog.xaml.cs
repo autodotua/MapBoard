@@ -25,7 +25,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class QueryFeaturesDialog : DialogWindowBase
     {
-        public QueryFeaturesDialog(Window owner, ArcMapView mapView, MapLayerInfo layer) : base(owner)
+        public QueryFeaturesDialog(Window owner, MainMapView mapView, MapLayerInfo layer) : base(owner)
         {
             MapView = mapView;
             InitializeComponent();
@@ -67,7 +67,7 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        public ArcMapView MapView { get; }
+        public MainMapView MapView { get; }
 
         /// <summary>
         /// 查询参数

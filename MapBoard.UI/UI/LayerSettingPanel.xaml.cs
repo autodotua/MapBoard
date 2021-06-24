@@ -36,7 +36,7 @@ namespace MapBoard.UI
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
 
-        public ArcMapView MapView { get; set; }
+        public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
 
         public string[] Fonts { get; }
