@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using log4net;
 using MapBoard.UI;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using ModernWpf.Controls.Primitives;
+using System.Windows.Media;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -40,8 +44,10 @@ namespace MapBoard
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
 
 #endif
-            MapBoard.Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
-            MapBoard.Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;
+            SplashWindow.CreateAndShow();
+
+            Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
+            Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;
 
             Config.Instance.ThemeChanged += (p1, p2) =>
                 Theme.SetTheme(Config.Instance.Theme);

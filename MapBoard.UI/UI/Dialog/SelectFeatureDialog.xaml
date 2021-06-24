@@ -9,6 +9,7 @@
     Title="选择图形"
     Width="254"
     Height="240"
+    ShowActivated="False"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"

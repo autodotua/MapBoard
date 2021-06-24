@@ -125,7 +125,7 @@ namespace MapBoard.UI.Dialog
         {
             ResetLocation();
             base.OnContentRendered(e);
-            Owner.Focus();
+            //Owner.Focus();
         }
 
         public class FeatureSelectionInfo

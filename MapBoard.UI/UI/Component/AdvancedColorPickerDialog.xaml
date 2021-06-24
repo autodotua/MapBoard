@@ -2,7 +2,8 @@
     x:Class="MapBoard.UI.Compoment.AdvancedColorPickerDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Width="232" Height="284">
+    Width="232"
+    Height="284">
     <UserControl.Resources>
         <!--  Picker Resources  -->
         <LinearGradientBrush x:Key="BrightnessGradient" ColorInterpolationMode="ScRgbLinearInterpolation" StartPoint="0,1" EndPoint="0,0">
@@ -336,15 +337,20 @@
                                 </TransformGroup>
                             </Canvas.RenderTransform>
                             <Path
-                                Canvas.Left="-4.25" Canvas.Top="-10.209"
-                                Width="8.75" Height="8.792"
+                                Canvas.Left="-4.25"
+                                Canvas.Top="-10.209"
+                                Width="8.75"
+                                Height="8.792"
                                 Data="M9.5,-1.625 L5.4166667,-9.4157592 1.75,-1.625 z"
-                                Fill="#FFA5452A" Stretch="Fill"
+                                Fill="#FFA5452A"
+                                Stretch="Fill"
                                 Stroke="#FFA5452A" />
                             <Path
                                 x:Name="OuterBorder"
-                                Canvas.Left="-4.625" Canvas.Top="-10.75"
-                                Width="9.5" Height="9.625"
+                                Canvas.Left="-4.625"
+                                Canvas.Top="-10.75"
+                                Width="9.5"
+                                Height="9.625"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
                                 Panel.ZIndex="-1"
@@ -542,22 +548,28 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <TickBar
-                                    x:Name="TopTick" Grid.Row="0"
+                                    x:Name="TopTick"
+                                    Grid.Row="0"
                                     Height="4"
                                     Fill="{TemplateBinding Foreground}"
-                                    Placement="Top" Visibility="Collapsed" />
+                                    Placement="Top"
+                                    Visibility="Collapsed" />
                                 <TickBar
-                                    x:Name="BottomTick" Grid.Row="2"
+                                    x:Name="BottomTick"
+                                    Grid.Row="2"
                                     Height="4"
                                     Fill="{TemplateBinding Foreground}"
                                     Placement="Bottom"
                                     Visibility="Collapsed" />
                                 <Border
-                                    Grid.Row="1" Height="4.0"
-                                    Margin="5,0" VerticalAlignment="Center"
+                                    Grid.Row="1"
+                                    Height="4.0"
+                                    Margin="5,0"
+                                    VerticalAlignment="Center"
                                     Background="{StaticResource HorizontalSliderTrackNormalBackground}"
                                     BorderBrush="{StaticResource HorizontalSliderTrackNormalBorder}"
-                                    BorderThickness="1" CornerRadius="1">
+                                    BorderThickness="1"
+                                    CornerRadius="1">
                                     <Canvas Margin="-6,-1">
                                         <Rectangle
                                             x:Name="PART_SelectionRange"
@@ -622,22 +634,29 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <TickBar
-                                            x:Name="LeftTick" Grid.Column="0"
+                                            x:Name="LeftTick"
+                                            Grid.Column="0"
                                             Width="4"
                                             Fill="{TemplateBinding Foreground}"
-                                            Placement="Left" Visibility="Collapsed" />
+                                            Placement="Left"
+                                            Visibility="Collapsed" />
                                         <TickBar
-                                            x:Name="RightTick" Grid.Column="2"
+                                            x:Name="RightTick"
+                                            Grid.Column="2"
                                             Width="4"
                                             Fill="{TemplateBinding Foreground}"
-                                            Placement="Right" Visibility="Collapsed" />
+                                            Placement="Right"
+                                            Visibility="Collapsed" />
                                         <Border
-                                            Grid.Column="1" Grid.ColumnSpan="1"
-                                            Width="3" Margin="0,0,10,0"
+                                            Grid.Column="1"
+                                            Grid.ColumnSpan="1"
+                                            Width="3"
+                                            Margin="0,0,10,0"
                                             HorizontalAlignment="Right"
                                             Background="{StaticResource VerticalSliderTrackNormalBackground}"
                                             BorderBrush="{StaticResource VerticalSliderTrackNormalBorder}"
-                                            BorderThickness="1" CornerRadius="1"
+                                            BorderThickness="1"
+                                            CornerRadius="1"
                                             RenderTransformOrigin="0.5,0.5">
                                             <Border.RenderTransform>
                                                 <TransformGroup>
@@ -649,7 +668,8 @@
                                             </Border.RenderTransform>
                                             <Canvas Margin="-1,-6">
                                                 <Rectangle
-                                                    x:Name="PART_SelectionRange" Width="4.0"
+                                                    x:Name="PART_SelectionRange"
+                                                    Width="4.0"
                                                     Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"
                                                     Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"
                                                     StrokeThickness="1.0"
@@ -705,11 +725,14 @@
                             Background="Transparent"
                             CornerRadius="2">
                             <TextBlock
-                                Width="Auto" Margin="1,0,0,0"
+                                Width="Auto"
+                                Margin="1,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                FontFamily="Arial" FontSize="12"
-                                FontWeight="Bold" Foreground="Black"
+                                FontFamily="Arial"
+                                FontSize="12"
+                                FontWeight="Bold"
+                                Foreground="Black"
                                 Text="{TemplateBinding Tag}"
                                 TextAlignment="Left" />
                         </Border>
@@ -719,14 +742,17 @@
         </Style>
     </UserControl.Resources>
     <StackPanel
-        Width="224" Height="332"
+        Width="224"
+        Height="332"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
         Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
             <Border
-                x:Name="borderColorChart" Width="174"
-                Height="138" Margin="10,10,0,0"
+                x:Name="borderColorChart"
+                Width="174"
+                Height="138"
+                Margin="10,10,0,0"
                 VerticalAlignment="Top">
                 <Grid>
                     <Image
@@ -738,8 +764,10 @@
                         </Image.Source>
                     </Image>
                     <Ellipse
-                        x:Name="colorMarker" Width="12"
-                        Height="12" Stroke="Brown"
+                        x:Name="colorMarker"
+                        Width="12"
+                        Height="12"
+                        Stroke="Brown"
                         StrokeThickness="2" />
                 </Grid>
             </Border>
@@ -747,18 +775,22 @@
                 <StackPanel Orientation="Horizontal">
                     <Border
                         x:Name="brightnessSliderBorder"
-                        Width="15" Height="138"
+                        Width="15"
+                        Height="138"
                         Margin="8,10,0,0"
                         VerticalAlignment="Top"
                         Background="{DynamicResource BrightnessGradient}" />
                     <Slider
-                        x:Name="brightnessSlider" Width="9.5"
-                        Height="148" Margin="0,5,0,0"
+                        x:Name="brightnessSlider"
+                        Width="9.5"
+                        Height="148"
+                        Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Focusable="False"
                         IsMoveToPointEnabled="True"
-                        Maximum="1.0" Minimum="0.0"
+                        Maximum="1.0"
+                        Minimum="0.0"
                         Orientation="Vertical"
                         Style="{DynamicResource SliderStyle}" />
                 </StackPanel>
@@ -773,14 +805,18 @@
             <TextBlock VerticalAlignment="Center" Text="不透明度：" />
             <Slider
                 x:Name="tranparentSlider"
-                Grid.Column="2" LargeChange="16"
-                Maximum="255" Minimum="0"
-                SmallChange="4" TickFrequency="1"
+                Grid.Column="2"
+                LargeChange="16"
+                Maximum="255"
+                Minimum="0"
+                SmallChange="4"
+                TickFrequency="1"
                 Value="255" />
         </Grid>
         <StackPanel Height="76" Orientation="Horizontal">
             <Grid
-                Width="82" Height="74"
+                Width="82"
+                Height="74"
                 Margin="10,0,25,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom">
@@ -792,21 +828,26 @@
                 <Border
                     x:Name="currentColorBorder"
                     Background="#FF808080"
-                    BorderBrush="Black" BorderThickness="0" />
+                    BorderBrush="Black"
+                    BorderThickness="0" />
             </Grid>
             <StackPanel Width="90" Orientation="Vertical">
                 <Button
-                    x:Name="OK" Width="70"
+                    x:Name="OK"
+                    Width="70"
                     Margin="20,10,0,0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    Click="Ok_Click" Content="确定" />
+                    Click="Ok_Click"
+                    Content="确定" />
                 <Button
-                    x:Name="Cancel" Width="70"
+                    x:Name="Cancel"
+                    Width="70"
                     Margin="20,5,0,0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    Click="Cancel_Click" Content="取消" />
+                    Click="Cancel_Click"
+                    Content="取消" />
             </StackPanel>
         </StackPanel>
     </StackPanel>

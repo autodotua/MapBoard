@@ -3,10 +3,8 @@
     <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>MapBoard</AssemblyName>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-  
+
+
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>2.0.0.0</ApplicationVersion>
@@ -18,25 +16,25 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\Generation\Debug\</OutputPath>
     <LangVersion>latest</LangVersion>
     <NoWarn>CS0067;CS4014;CS0168;CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\Generation\Release\</OutputPath>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <ManifestCertificateThumbprint>945C3C5CCD53FE3EBF451DD8AD3AAAEC964E9F05</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>MapBoard_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
@@ -78,6 +76,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="icon.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="CsvHelper">
       <Version>27.1.0</Version>
     </PackageReference>
@@ -105,9 +108,7 @@
     <Resource Include="UI\Component\transparent.PNG" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Update="App.xaml">
-      <CopyToOutputDirectory></CopyToOutputDirectory>
-    </ApplicationDefinition>
+    <ApplicationDefinition Update="App.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="UI\Extension\RoutePanel.xaml.cs">
@@ -140,7 +141,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
- 
+
   <ItemGroup>
     <Page Update="UI\Bar\GetGeometryBar.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

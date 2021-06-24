@@ -17,7 +17,12 @@ namespace MapBoard.UI
         public WindowBase()
         {
             DataContext = this;
-            WindowCreated?.Invoke(this, new EventArgs());
+            WindowCreated?.Invoke(this, EventArgs.Empty);
+            Loaded += (s, e) =>
+            {
+                SplashWindow.EnsureInvisiable();
+                this.BringToFront();
+            };
         }
 
         public static event EventHandler WindowCreated;
