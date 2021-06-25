@@ -335,7 +335,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            new SettingDialog(this).ShowDialog();
+            new SettingDialog(this, arcMap.Layers).ShowDialog();
         }
 
         /// <summary>

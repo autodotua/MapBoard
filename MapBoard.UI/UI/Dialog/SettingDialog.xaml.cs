@@ -18,6 +18,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using MapBoard.IO;
+using MapBoard.Mapping.Model;
 
 namespace MapBoard.UI.Dialog
 {
@@ -26,7 +28,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class SettingDialog : DialogWindowBase
     {
-        public SettingDialog(Window owner) : base(owner)
+        public SettingDialog(Window owner, MapLayerCollection layers) : base(owner)
         {
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
               Config.Instance.BaseLayers.Select(p => p.Clone()));
@@ -35,6 +37,7 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
             new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
+            Layers = layers;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -90,13 +93,21 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        private bool canClose = true;
+
         private void DialogWindowBase_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (!canClose)
+            {
+                e.Cancel = true;
+                return;
+            }
             Config.Instance.Save();
         }
 
         public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
         public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
+        public MapLayerCollection Layers { get; }
 
         private void ResetIndex()
         {
@@ -190,5 +201,24 @@ namespace MapBoard.UI.Dialog
                 await CommonDialog.ShowErrorDialogAsync(ex, "修改数据位置失败");
             }
         }
+
+        private async void BackupButton_Click(object sender, RoutedEventArgs e)
+        {
+            canClose = false;
+            (sender as Button).IsEnabled = false;
+
+            await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount);
+            this.Notify(nameof(CurrentBackupCount));
+
+            (sender as Button).IsEnabled = true;
+            canClose = true;
+        }
+
+        private void OpenBackupFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            IOUtility.OpenFileOrFolder(Parameters.BackupPath);
+        }
+
+        public int CurrentBackupCount => Directory.EnumerateFiles(Parameters.BackupPath, "*.mbmpkg").Count();
     }
 }
