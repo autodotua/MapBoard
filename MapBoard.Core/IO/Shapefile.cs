@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
+using System.Text.RegularExpressions;
 
 namespace MapBoard.IO
 {
@@ -69,10 +70,10 @@ namespace MapBoard.IO
             bool date = table.Fields.Any(p => p.Name == Parameters.DateFieldName && p.FieldType == FieldType.Date);
             bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
-
+            var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
             MapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
                 null, Path.GetFileNameWithoutExtension(path),
-                table.Fields.FromEsriFields().ToList());
+                fieldMap.Values.ToList());
             layer.LayerVisible = false;
             var fields = layer.Fields.Select(p => p.Name).ToHashSet();
             List<Feature> newFeatures = new List<Feature>();
@@ -85,10 +86,24 @@ namespace MapBoard.IO
                     {
                         continue;
                     }
-                    if (fields.Contains(attr.Key))
+                    string name = attr.Key;//现在是源文件的字段名
+
+                    if (!fieldMap.ContainsKey(name))
                     {
-                        newAttributes.Add(attr.Key, attr.Value);
+                        continue;
                     }
+                    name = fieldMap[name].Name;//切换到目标表的字段名
+
+                    object value = attr.Value;
+                    if (value is short)
+                    {
+                        value = Convert.ToInt32(value);
+                    }
+                    else if (value is float)
+                    {
+                        value = Convert.ToDouble(value);
+                    }
+                    newAttributes.Add(name, value);
                 }
                 Feature newFeature = layer.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
                 newFeatures.Add(newFeature);
@@ -118,7 +133,14 @@ namespace MapBoard.IO
                 fields = fields
                     .Where(p => p.Name.ToLower() != "fid")
                     .Where(p => p.Name.ToLower() != "id")
+                    .Where(p => p.Name.ToLower() != "shape_leng")
+                    .Where(p => p.Name.ToLower() != "shape_area")
                     .IncludeDefaultFields();
+                if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
+                      || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
+                {
+                    throw new Exception($"字段名存在不合法");
+                }
             }
 
             CreateEgisShapefile(type, name, folder, fields);

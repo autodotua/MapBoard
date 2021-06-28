@@ -18,11 +18,14 @@ namespace MapBoard.UI
         {
             DataContext = this;
             WindowCreated?.Invoke(this, EventArgs.Empty);
-            Loaded += (s, e) =>
+            if (AutoCloseSplashWindow)
             {
-                SplashWindow.EnsureInvisiable();
-                this.BringToFront();
-            };
+                Loaded += (s, e) =>
+               {
+                   SplashWindow.EnsureInvisiable();
+                   this.BringToFront();
+               };
+            }
         }
 
         public static event EventHandler WindowCreated;
@@ -30,6 +33,8 @@ namespace MapBoard.UI
         public event PropertyChangedEventHandler PropertyChanged;
 
         public bool IsClosed { get; private set; }
+
+        protected virtual bool AutoCloseSplashWindow { get; } = true;
 
         protected override void OnClosed(EventArgs e)
         {

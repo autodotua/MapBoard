@@ -57,6 +57,7 @@ namespace MapBoard.UI
         private bool closing = false;
         private LayerListPanelHelper layerListHelper;
         public Config Config => Config.Instance;
+        protected override bool AutoCloseSplashWindow => false;
 
         #endregion 属性和字段
 
@@ -244,7 +245,14 @@ namespace MapBoard.UI
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            ShowLoading(0, "正在初始化");
+            if (SplashWindow.IsVisiable)
+            {
+                Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ShowLoading(0, "正在初始化");
+            }
         }
 
         private bool initialized = false;
@@ -259,12 +267,23 @@ namespace MapBoard.UI
             initialized = true;
             try
             {
-                await DoAsync(InitializeAsync, "正在初始化");
+                //如果存在启动页面，那么就不用显示窗体的转圈圈了
+                if (SplashWindow.IsVisiable)
+                {
+                    await InitializeAsync();
+                }
+                else
+                {
+                    await DoAsync(InitializeAsync, "正在初始化");
+                }
             }
             catch (Exception ex)
             {
-                await CommonDialog.ShowErrorDialogAsync(ex, "初始化失败");
+                CommonDialog.ShowErrorDialogAsync(ex, "初始化失败").ConfigureAwait(false);
             }
+            Visibility = Visibility.Visible;
+
+            SplashWindow.EnsureInvisiable();
         }
 
         /// <summary>

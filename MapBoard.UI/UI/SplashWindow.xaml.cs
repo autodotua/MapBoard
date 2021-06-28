@@ -25,10 +25,17 @@ namespace MapBoard.UI
             InitializeComponent();
         }
 
+        public static bool IsVisiable => instance != null;
+
         private static SplashWindow instance;
 
         public static void CreateAndShow()
         {
+#if DEBUG
+            instance = new SplashWindow();
+            instance.Show();
+            //DEBUG下，如果运行下面的代码，暂停程序时，执行行就会变成下面的newWindowThread.Start();
+#else
             Thread newWindowThread = new Thread(new ThreadStart(() =>
             {
                 if (instance == null)
@@ -41,6 +48,7 @@ namespace MapBoard.UI
             newWindowThread.SetApartmentState(ApartmentState.STA);
             newWindowThread.IsBackground = true;
             newWindowThread.Start();
+#endif
         }
 
         public static void EnsureInvisiable()

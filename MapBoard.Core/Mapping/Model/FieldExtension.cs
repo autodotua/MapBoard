@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
@@ -79,9 +80,14 @@ namespace MapBoard.Mapping.Model
                 yield return field.ToEsriField();
             }
         }
-
-        public static IEnumerable<FieldInfo> FromEsriFields(this IEnumerable<Field> fields)
+        /// <summary>
+        /// 从ArcGISRuntime到FiledInfo
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns>从原表字段名到新字段的映射</returns>
+        public static Dictionary<string, FieldInfo> FromEsriFields(this IEnumerable<Field> fields)
         {
+            Dictionary<string, FieldInfo> result = new Dictionary<string, FieldInfo>();
             foreach (var field in fields)
             {
                 string name = field.Name.ToLower();
@@ -89,8 +95,9 @@ namespace MapBoard.Mapping.Model
                 {
                     continue;
                 }
-                yield return field.ToFieldInfo();
+                result.Add(field.Name, field.ToFieldInfo());
             }
+            return result;
         }
 
         public static FieldInfo ToFieldInfo(this Field field)
@@ -121,7 +128,13 @@ namespace MapBoard.Mapping.Model
                     throw new NotSupportedException();
             }
             string name = field.Name;
-            return new FieldInfo(name, name, type);
+            //对不符合要求的字段名进行转换
+            if (!Regex.IsMatch(name[0].ToString(), "[a-zA-Z]")
+                  || !Regex.IsMatch(name, "^[a-zA-Z0-9_]+$"))
+            {
+                name = $"f_{Math.Abs(field.Name.GetHashCode())}".Substring(0, 10);
+            }
+            return new FieldInfo(name, field.Name, type);
         }
 
         public static int GetLength(this FieldInfoType type)
