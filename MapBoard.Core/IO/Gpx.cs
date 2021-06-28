@@ -39,7 +39,7 @@ namespace MapBoard.IO
                 {
                     foreach (var point in track.Points)
                     {
-                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToMapPoint(), WGS84, baseCs);
+                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
                         Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         newFeatures.Add(feature);
@@ -50,7 +50,7 @@ namespace MapBoard.IO
                     List<MapPoint> points = new List<MapPoint>();
                     foreach (var point in track.Points)
                     {
-                        points.Add(CoordinateTransformation.Transformate(point.ToMapPoint(), WGS84, baseCs));
+                        points.Add(CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs));
                     }
                     Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points);
@@ -94,7 +94,7 @@ namespace MapBoard.IO
                     List<Feature> features = new List<Feature>();
                     foreach (var point in track.Points)
                     {
-                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToMapPoint(), WGS84, baseCS);
+                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCS);
                         Feature feature = layer.CreateFeature();
                         feature.Geometry = TransformateToMapPoint;
                         features.Add(feature);
@@ -108,7 +108,8 @@ namespace MapBoard.IO
                 }
                 else if (layer.GeometryType == GeometryType.Polyline)
                 {
-                    var points = track.Points.Select(p => CoordinateTransformation.Transformate(p.ToMapPoint(), WGS84, baseCS));
+                    var points = track.Points.Select(p =>
+                    CoordinateTransformation.Transformate(p.ToXYMapPoint(), WGS84, baseCS));
                     Feature feature = layer.CreateFeature();
                     feature.Geometry = new Polyline(points, SpatialReferences.Wgs84);
                     importedFeatures.Add(feature);

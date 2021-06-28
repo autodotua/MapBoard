@@ -24,6 +24,17 @@ namespace MapBoard
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            try
+            {
+                SplashWindow.CreateAndShow();
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
         public static ILog Log { get; private set; }
 
         private void Application_Startup(object sender, StartupEventArgs e)
@@ -44,7 +55,6 @@ namespace MapBoard
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
 
 #endif
-            SplashWindow.CreateAndShow();
 
             Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
             Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;

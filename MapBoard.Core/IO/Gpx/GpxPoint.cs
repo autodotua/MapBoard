@@ -136,6 +136,10 @@ namespace MapBoard.IO.Gpx
         {
             return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
         }
+        public MapPoint ToXYMapPoint()
+        {
+            return new MapPoint(X, Y,  SpatialReferences.Wgs84);
+        }
 
         public object Clone()
         {
