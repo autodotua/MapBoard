@@ -19,7 +19,7 @@ namespace MapBoard.Util
 {
     public static class LayerUtility
     {
-        public static string GetFileName(this MapLayerInfo layer)
+        public static string GetFilePath(this MapLayerInfo layer)
         {
             return Path.Combine(Parameters.DataPath, layer.Name + ".shp");
         }
@@ -60,7 +60,7 @@ namespace MapBoard.Util
                 }
                 else
                 {
-                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFileName()));
+                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFilePath()));
                 }
             }
             else

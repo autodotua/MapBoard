@@ -70,6 +70,7 @@ namespace MapBoard.UI
                     var geom = GeometryEngine.CombineExtents(features.Select(p => p.Geometry));
                     await mapView.ZoomToGeometryAsync(geom);
                 };
+                mapView.Layers.Save();
                 snake.ShowMessage("导入成功");
             }
             catch (Exception ex)
@@ -100,7 +101,7 @@ namespace MapBoard.UI
                 switch (type)
                 {
                     case ExportLayerType.LayerPackge:
-                        await Package.ExportLayer2Async(path, layer, layers);
+                        await Package.ExportLayerAsync(path, layer, Config.Instance.CopyShpFileWhenExport);
                         break;
 
                     case ExportLayerType.GISToolBoxZip:
@@ -153,7 +154,7 @@ namespace MapBoard.UI
                         args.SetMessage("正在备份当前地图");
                         if (Config.Instance.BackupWhenReplace)
                         {
-                            await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
+                            await Package.BackupAsync(layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
                         }
                         args.SetMessage("正在导入新的地图");
                         await Package.ImportMapAsync(path, layers, true);
@@ -184,6 +185,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
+                layers.Save();
                 SnakeBar.Show(owner, "导入成功");
             }
             catch (Exception ex)
@@ -215,7 +217,7 @@ namespace MapBoard.UI
                 switch (type)
                 {
                     case ExportMapType.MapPackage:
-                        await Package.ExportMap2Async(path, layers);
+                        await Package.ExportMapAsync(path, layers, Config.Instance.CopyShpFileWhenExport);
                         break;
 
                     case ExportMapType.GISToolBoxZip:

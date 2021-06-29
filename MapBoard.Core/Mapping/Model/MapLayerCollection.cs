@@ -161,7 +161,7 @@ namespace MapBoard.Mapping.Model
             {
                 if (!layer.HasTable)
                 {
-                    await layer.SetTableAsync(new ShapefileFeatureTable(layer.GetFileName()));
+                    await layer.SetTableAsync(new ShapefileFeatureTable(layer.GetFilePath()));
                 }
                 FeatureLayer fl = layer.Layer;
                 if (index == -1)

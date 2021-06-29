@@ -237,7 +237,7 @@ namespace MapBoard.UI
             Hide();
             if (Config.BackupWhenExit)
             {
-                await Package.BackupAsync(arcMap.Layers, Config.MaxBackupCount);
+                await Package.BackupAsync(arcMap.Layers, Config.MaxBackupCount, Config.CopyShpFileWhenExport);
             }
             closing = true;
             Close();

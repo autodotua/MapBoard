@@ -229,19 +229,29 @@ namespace MapBoard.IO
             File.WriteAllText(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
-        public static async Task<string> CloneFeatureToNewShpAsync(string directory, MapLayerInfo layer)
+        public static async Task CloneFeatureToNewShpAsync(string directory, MapLayerInfo layer)
         {
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in await layer.GetAllFeaturesAsync())
+            Feature[] features = await layer.GetAllFeaturesAsync();
+            foreach (var feature in features)
             {
                 newFeatures.Add(
                     table.CreateFeature(
-                        feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"), feature.Geometry));
+                        feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
+                        feature.Geometry));
             }
             await table.AddFeaturesAsync(newFeatures);
             table.Close();
-            return table.Path;
+        }
+
+        public static void CopyShpToNewPath(string directory, MapLayerInfo layer)
+        {
+            var files = GetExistShapefiles(Parameters.DataPath, layer.Name);
+            foreach (var file in files)
+            {
+                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)));
+            }
         }
     }
 }

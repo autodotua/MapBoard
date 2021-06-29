@@ -43,7 +43,7 @@ namespace MapBoard.UI
             Config.Instance.PropertyChanged += Config_PropertyChanged;
 
             //用于限制最多100毫秒更新一次
-            timer = new Timer(new TimerCallback(async p =>
+            timer = new Timer(new TimerCallback( p =>
              {
                  lock (lockObj)
                  {

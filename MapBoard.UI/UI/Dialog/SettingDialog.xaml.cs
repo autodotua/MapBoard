@@ -207,7 +207,7 @@ namespace MapBoard.UI.Dialog
             canClose = false;
             (sender as Button).IsEnabled = false;
 
-            await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount);
+            await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
             this.Notify(nameof(CurrentBackupCount));
 
             (sender as Button).IsEnabled = true;

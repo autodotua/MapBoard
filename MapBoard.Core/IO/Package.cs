@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
+using System.Threading;
 
 namespace MapBoard.IO
 {
@@ -87,34 +88,94 @@ namespace MapBoard.IO
             await layers.AddAsync(style);
         }
 
-        public async static Task ExportMap2Async(string path, MapLayerCollection layers)
+        /// <summary>
+        /// 导出所有图层到地图包
+        /// </summary>
+        /// <param name="path">目标路径</param>
+        /// <param name="layers">图层集合</param>
+        /// <param name="copyOnly">是否仅简单复制而非重建</param>
+        /// <returns></returns>
+        public async static Task ExportMapAsync(string path, MapLayerCollection layers, bool copyOnly)
         {
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
             DirectoryInfo directory = PathUtility.GetTempDir();
-            foreach (MapLayerInfo layer in layers)
+            if (copyOnly)
+            {
+                await Task.Run(() =>
+                 {
+                     foreach (MapLayerInfo layer in layers)
+                     {
+                         Shapefile.CopyShpToNewPath(directory.FullName, layer);
+                     }
+                 });
+            }
+            else
+            {
+                foreach (MapLayerInfo layer in layers)
+                {
+                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
+                }
+            }
+            layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
+
+            await ZipDirAsync(directory.FullName, path);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <param name="layers">图层集合</param>
+        /// <param name="copyOnly">是否仅简单复制而非重建</param>
+        /// <returns></returns>
+        public async static Task ExportLayerAsync(string path, MapLayerInfo layer, bool copyOnly)
+        {
+            DirectoryInfo directory = PathUtility.GetTempDir();
+            if (copyOnly)
+            {
+                await Task.Run(() =>
+                {
+                    Shapefile.CopyShpToNewPath(directory.FullName, layer);
+                });
+            }
+            else
             {
                 await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
             }
-            layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
-            ZipFile.CreateFromDirectory(directory.FullName, path);
-        }
 
-        public async static Task ExportLayer2Async(string path, MapLayerInfo layer, MapLayerCollection layers)
-        {
-            DirectoryInfo directory = PathUtility.GetTempDir();
-            await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
             File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
 
-            layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
-            ZipFile.CreateFromDirectory(directory.FullName, path);
+            await ZipDirAsync(directory.FullName, path);
         }
 
-        public async static Task BackupAsync(MapLayerCollection layers, int maxCount)
+        private static async Task ZipDirAsync(string dir, string path)
         {
-            await ExportMap2Async(Path.Combine(Parameters.BackupPath, DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"), layers);
+            if (File.Exists(path))
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (IOException ex)
+                {
+                    throw new Exception("无法删除已存在的文件", ex);
+                }
+            }
+            await Task.Run(() =>
+            {
+                ZipFile.CreateFromDirectory(dir, path);
+            });
+        }
+
+        public async static Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
+        {
+            await ExportMapAsync(Path.Combine(Parameters.BackupPath,
+                DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"),
+                layers, copyOnly);
 
             var files = Directory.EnumerateFiles(Parameters.BackupPath).ToList();
             if (files.Count > maxCount)

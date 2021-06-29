@@ -8,14 +8,12 @@
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="设置"
-    Width="600"
+    Title="设置" Width="600"
     Height="540"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="DialogWindowBase_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="Window_Loaded"
-    mc:Ignorable="d">
+    Loaded="Window_Loaded" mc:Ignorable="d">
     <u:DialogWindowBase.Resources>
         <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
     </u:DialogWindowBase.Resources>
@@ -62,8 +60,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <DataGrid
-                            x:Name="grd"
-                            Height="160"
+                            x:Name="grd" Height="160"
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="True"
@@ -73,8 +70,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn
                                     Binding="{Binding Index}"
-                                    CanUserSort="False"
-                                    Header="序号"
+                                    CanUserSort="False" Header="序号"
                                     IsReadOnly="True"
                                     SortDirection="Ascending" />
                                 <DataGridCheckBoxColumn Binding="{Binding Enable}" Header="启用" />
@@ -115,12 +111,9 @@
                                     <DataGridTemplateColumn.CellEditingTemplate>
                                         <DataTemplate>
                                             <Slider
-                                                Width="120"
-                                                Margin="12,0"
-                                                LargeChange="0.1"
-                                                Maximum="1"
-                                                Minimum="0"
-                                                SmallChange="0.01"
+                                                Width="120" Margin="12,0"
+                                                LargeChange="0.1" Maximum="1"
+                                                Minimum="0" SmallChange="0.01"
                                                 Value="{Binding Opacity}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellEditingTemplate>
@@ -129,17 +122,13 @@
                                 <DataGridTextColumn
                                     Width="320"
                                     Binding="{Binding Path=Path}"
-                                    CanUserSort="False"
-                                    Header="地址" />
+                                    CanUserSort="False" Header="地址" />
                             </DataGrid.Columns>
                         </DataGrid>
                         <ui:SimpleStackPanel
-                            Grid.Row="2"
-                            Grid.ColumnSpan="5"
-                            Margin="8"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal"
-                            Spacing="8">
+                            Grid.Row="2" Grid.ColumnSpan="5"
+                            Margin="8" HorizontalAlignment="Right"
+                            Orientation="Horizontal" Spacing="8">
                             <Button Click="BrowseButtonClick" Content="浏览.." />
                             <Button Click="AddButtonClick" Content="新增" />
                             <Button Click="DeleteButtonClick" Content="删除" />
@@ -164,16 +153,13 @@
 
                         <TextBlock VerticalAlignment="Center" Text="在绘制下一个图形时，保留：" />
                         <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="标签"
+                            Margin="0,0,-56,0" Content="标签"
                             IsChecked="{Binding Config.RemainLabel}" />
                         <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="日期"
+                            Margin="0,0,-56,0" Content="日期"
                             IsChecked="{Binding Config.RemainDate}" />
                         <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="分类"
+                            Margin="0,0,-56,0" Content="分类"
                             IsChecked="{Binding Config.RemainKey}" />
                     </ui:SimpleStackPanel>
 
@@ -193,14 +179,17 @@
                         <Button Click="BackupButton_Click" Content="立即备份" />
                         <Button Click="OpenBackupFolderButton_Click" Content="打开备份目录" />
                     </ui:SimpleStackPanel>
+                    <CheckBox
+                        Content="快速导出地图/图层包"
+                        IsChecked="{Binding Config.CopyShpFileWhenExport}"
+                        ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
                 </ui:SimpleStackPanel>
             </TabItem>
 
             <TabItem Padding="8" Header="GPX工具箱">
                 <ui:SimpleStackPanel Spacing="16">
                     <CheckBox
-                        x:Name="chkGpxHeight"
-                        Content="展示高度"
+                        x:Name="chkGpxHeight" Content="展示高度"
                         IsChecked="{Binding Config.Gpx_Height}" />
                     <ui:SimpleStackPanel
                         x:Name="stkGpxHeight"
