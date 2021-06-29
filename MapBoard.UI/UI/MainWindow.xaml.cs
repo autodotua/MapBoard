@@ -539,16 +539,29 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
-            if (Directory.Exists(Parameters.DataPath))
+            string path = ((sender as FrameworkElement).Tag as string) switch
             {
-                IOUtility.OpenFileOrFolder(Parameters.DataPath);
+                "1" => Parameters.DataPath,
+                "2" => FzLib.Program.App.ProgramDirectoryPath,
+                "3" => Path.GetDirectoryName(Parameters.ConfigPath),
+                "4" => Parameters.BackupPath,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            if (Directory.Exists(path))
+            {
+                IOUtility.OpenFileOrFolder(path);
             }
             else
             {
-                IOUtility.OpenFileOrFolder(FzLib.Program.App.ProgramDirectoryPath);
+                await CommonDialog.ShowErrorDialogAsync("目录不存在");
             }
+        }
+
+        private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
+        {
+            OpenFolderButtonClick(sender, (RoutedEventArgs)null);
         }
 
         #endregion 导入导出区事件

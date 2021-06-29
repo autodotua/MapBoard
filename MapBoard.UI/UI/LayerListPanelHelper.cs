@@ -99,6 +99,13 @@ namespace MapBoard.UI
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
                     p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                     "正在导出图层包");
+                if (Config.Instance.CopyShpFileWhenExport)
+                {
+                    AddToMenu(menuExport, "图层包（重建）",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
+                        "正在导出图层包");
+                }
                 AddToMenu(menuExport, "GPS工具箱图层包",
                     () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
                     p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),

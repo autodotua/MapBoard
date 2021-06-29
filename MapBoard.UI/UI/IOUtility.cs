@@ -85,6 +85,7 @@ namespace MapBoard.UI
             filter = type switch
             {
                 ExportLayerType.LayerPackge => filter.Add("mblpkg地图画板包", "mblpkg"),
+                ExportLayerType.LayerPackgeRebuild => filter.Add("mblpkg地图画板包", "mblpkg"),
                 ExportLayerType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
                 ExportLayerType.KML => filter.Add("KML打包文件", "kmz"),
                 ExportLayerType.GeoJSON => filter.Add("GeoJSON文件", "geojson"),
@@ -102,6 +103,10 @@ namespace MapBoard.UI
                 {
                     case ExportLayerType.LayerPackge:
                         await Package.ExportLayerAsync(path, layer, Config.Instance.CopyShpFileWhenExport);
+                        break;
+                        
+                    case ExportLayerType.LayerPackgeRebuild:
+                        await Package.ExportLayerAsync(path, layer,false);
                         break;
 
                     case ExportLayerType.GISToolBoxZip:
@@ -199,7 +204,7 @@ namespace MapBoard.UI
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
             {
-                ExportMapType.MapPackage
+                ExportMapType.MapPackage  or ExportMapType.MapPackageRebuild
                 => filter.Add("mbmpkg地图画板包", "mbmpkg"),
                 ExportMapType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
                 ExportMapType.KML => filter.Add("KML打包文件", "kmz"),
@@ -218,6 +223,10 @@ namespace MapBoard.UI
                 {
                     case ExportMapType.MapPackage:
                         await Package.ExportMapAsync(path, layers, Config.Instance.CopyShpFileWhenExport);
+                        break;
+
+                    case ExportMapType.MapPackageRebuild:
+                        await Package.ExportMapAsync(path, layers, false);
                         break;
 
                     case ExportMapType.GISToolBoxZip:
@@ -357,9 +366,10 @@ namespace MapBoard.UI
     public enum ExportMapType
     {
         MapPackage = 1,
-        GISToolBoxZip = 2,
-        KML = 3,
-        Screenshot = 4
+        MapPackageRebuild = 2,
+        GISToolBoxZip = 3,
+        KML = 4,
+        Screenshot = 5
     }
 
     public enum ImportLayerType
@@ -371,8 +381,9 @@ namespace MapBoard.UI
     public enum ExportLayerType
     {
         LayerPackge = 1,
-        GISToolBoxZip = 2,
-        KML = 3,
-        GeoJSON = 4
+        LayerPackgeRebuild = 2,
+        GISToolBoxZip = 3,
+        KML = 4,
+        GeoJSON = 5
     }
 }

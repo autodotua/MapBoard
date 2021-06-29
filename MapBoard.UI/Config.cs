@@ -54,7 +54,13 @@ namespace MapBoard
         public bool Gpx_RelativeHeight { get; set; } = false;
         public int Gpx_AutoSmoothLevel { get; set; } = 5;
         public int Gpx_HeightExaggeratedMagnification { get; set; } = 5;
-        public bool CopyShpFileWhenExport { get; set; } = true;
+        private bool copyShpFileWhenExport = true;
+        public bool CopyShpFileWhenExport
+        {
+            get => copyShpFileWhenExport;
+            set => this.SetValueAndNotify(ref copyShpFileWhenExport, value, nameof(CopyShpFileWhenExport));
+        }
+
         private int theme = 0;
 
         public int Theme
