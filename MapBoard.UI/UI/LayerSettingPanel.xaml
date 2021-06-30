@@ -12,8 +12,12 @@
         <local:ColorBrushConverter x:Key="cc" />
     </UserControl.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <TextBox
-            Margin="4,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"
@@ -21,7 +25,7 @@
             BorderThickness="0" FontSize="20"
             Text="{Binding LayerName}" />
         <ScrollViewer
-            Height="240" Margin="0,48,0,0"
+            Grid.Row="2"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ui:SimpleStackPanel
@@ -298,6 +302,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="8" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.Resources>
                                 <Style TargetType="{x:Type TextBlock}">
@@ -399,7 +405,7 @@
                                 <ComboBoxItem>跟随图形</ComboBoxItem>
                             </ComboBox>
 
-                            <Grid Grid.Row="12" Grid.ColumnSpan="99">
+                            <Grid Grid.Row="16" Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="8" />
@@ -409,9 +415,9 @@
                                 <CheckBox Grid.Column="2" IsChecked="{Binding AllowOverlap}">允许重叠显示</CheckBox>
                             </Grid>
                             <TextBlock
-                                Grid.Row="14" VerticalAlignment="Center"
+                                Grid.Row="12" VerticalAlignment="Center"
                                 Text="显示内容" />
-                            <Grid Grid.Row="14" Grid.Column="2">
+                            <Grid Grid.Row="12" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -430,9 +436,17 @@
                                     Grid.Column="2" Width="0"
                                     Margin="0,0,-48,0"
                                     VerticalAlignment="Center" Content="换行"
-                                    Foreground="Red"
                                     IsChecked="{Binding NewLine}" />
                             </Grid>
+                            <TextBlock
+                                Grid.Row="14" VerticalAlignment="Center"
+                                Text="自定义&#10;Arcade&#10;表达式" />
+                            <TextBox
+                                Grid.Row="14" Grid.Column="2"
+                                ui:ControlHelper.PlaceholderText="使用Arcade表达式&#10;不填写时，使用上方的模板"
+                                AcceptsReturn="True" AcceptsTab="True"
+                                MinLines="3"
+                                Text="{Binding CustomLabelExpression}" />
                         </Grid>
                     </StackPanel>
                 </Border>

@@ -11,12 +11,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
-    Height="700"
+    Height="700" MinWidth="500"
+    MinHeight="500"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="WindowLoaded"
+    SizeChanged="WindowBase_SizeChanged"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized" mc:Ignorable="d">
     <Grid>
@@ -167,7 +169,7 @@
                     </Grid.RowDefinitions>
                     <ui:SimpleStackPanel Spacing="12">
 
-                        <local:LayerSettingPanel x:Name="layerSettings" />
+                        <local:LayerSettingPanel x:Name="layerSettings" Height="480" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
                             Margin="0,0,12,0"

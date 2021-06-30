@@ -35,10 +35,17 @@ namespace MapBoard.Model
             get => backgroundColor;
             set => this.SetValueAndNotify(ref backgroundColor, value, nameof(BackgroundColor));
         }
-
+        public bool Info { get; set; } = true;
         public bool Class { get; set; }
         public bool Date { get; set; }
-        public bool Enable => Info || Date || Class;
+
+        private string customLabelExpression;
+        public string CustomLabelExpression
+        {
+            get => customLabelExpression;
+            set => this.SetValueAndNotify(ref customLabelExpression, value, nameof(CustomLabelExpression));
+        }
+
 
         public Color FontColor
         {
@@ -64,7 +71,6 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref haloWidth, value, nameof(HaloWidth));
         }
 
-        public bool Info { get; set; } = true;
 
         /// <summary>
         /// 标签布局

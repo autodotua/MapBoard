@@ -114,6 +114,10 @@ namespace MapBoard.Util
 
         private static string GetExpression(this LabelInfo label)
         {
+            if (!string.IsNullOrEmpty(label.CustomLabelExpression))
+            {
+                return label.CustomLabelExpression;
+            }
             string l = Parameters.LabelFieldName;
             string d = Parameters.DateFieldName;
             string c = Parameters.ClassFieldName;

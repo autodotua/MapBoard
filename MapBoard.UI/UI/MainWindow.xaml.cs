@@ -704,5 +704,21 @@ namespace MapBoard.UI
         }
 
         #endregion 图层列表事件
+
+        private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.NewSize.Height < 800)
+            {
+                layerSettings.Height = 240;
+            }
+            else if(e.NewSize.Height<1050)
+            {
+                layerSettings.Height = 360;
+            }
+            else
+            {
+                layerSettings.Height = 480;
+            }
+        }
     }
 }
