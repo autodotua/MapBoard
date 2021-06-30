@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="复制属性" CloseButtonText="取消"
+    Title="为属性赋值" CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="False"
     Loaded="Window_Loaded"
@@ -25,6 +25,32 @@
                     <Run>）</Run>
                 </TextBlock>
             </DataTemplate>
+
+            <Grid
+                x:Key="grdText" Margin="0,8"
+                x:Shared="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    ItemTemplate="{StaticResource comboboxTemplate}"
+                    ItemsSource="{Binding Fields}"
+                    SelectedItem="{Binding TargetField}" />
+                <TextBlock
+                    Grid.Column="2"
+                    VerticalAlignment="Center" Text="=" />
+                <TextBox
+                    Grid.Column="4"
+                    HorizontalAlignment="Stretch"
+                    MinLines="3"
+                    Text="{Binding Text}" />
+            </Grid>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -39,21 +65,45 @@
             <Run>图层名：</Run>
             <Run Text="{Binding Layer.Name, Mode=OneWay}" />
         </TextBlock>
-        <ui:SimpleStackPanel
-            Grid.Row="2" HorizontalAlignment="Right"
-            Orientation="Horizontal" Spacing="8">
-            <ComboBox
-                Width="180"
-                ItemTemplate="{StaticResource comboboxTemplate}"
-                ItemsSource="{Binding Fields}"
-                SelectedItem="{Binding FieldTarget}" />
-            <TextBlock VerticalAlignment="Center" Text="=" />
-            <ComboBox
-                Width="180"
-                ItemTemplate="{StaticResource comboboxTemplate}"
-                ItemsSource="{Binding Fields}"
-                SelectedItem="{Binding FieldSource}" />
-        </ui:SimpleStackPanel>
+        <TabControl
+            x:Name="tab" Grid.Row="2"
+            Width="300"
+            SelectionChanged="tab_SelectionChanged">
+            <TabItem Header="字段赋值">
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        ItemTemplate="{StaticResource comboboxTemplate}"
+                        ItemsSource="{Binding Fields}"
+                        SelectedItem="{Binding TargetField}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        VerticalAlignment="Center" Text="=" />
+                    <ComboBox
+                        Grid.Column="4"
+                        HorizontalAlignment="Stretch"
+                        ItemTemplate="{StaticResource comboboxTemplate}"
+                        ItemsSource="{Binding Fields}"
+                        SelectedItem="{Binding SourceField}" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="常量赋值">
+                <ContentControl Content="{StaticResource grdText}" />
+            </TabItem>
+            <TabItem Header="高级">
+                <ui:SimpleStackPanel Orientation="Vertical" Spacing="8">
+                    <ContentControl Content="{StaticResource grdText}" />
+                    <TextBlock Opacity="0.8">使用[]包裹字段名以引用其属性值</TextBlock>
+                </ui:SimpleStackPanel>
+            </TabItem>
+        </TabControl>
         <TextBlock
             Grid.Row="4"
             Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"

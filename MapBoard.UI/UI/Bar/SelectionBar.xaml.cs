@@ -28,6 +28,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 using MapBoard.Mapping.Model;
+using MapBoard.Model;
 
 namespace MapBoard.UI.Bar
 {
@@ -268,6 +269,7 @@ namespace MapBoard.UI.Bar
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
                 layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
+                ("字段赋值","批量为选中的图形赋予新的属性",CopyAttributeAsync, true),
             };
             OpenMenus(menus, sender as UIElement, header => $"正在进行{header}操作");
 
@@ -406,6 +408,34 @@ namespace MapBoard.UI.Bar
                 MapView.Selection.ClearSelection();
                 var newFeatures = await FeatureUtility.CreateCopyAsync(layer, features);
                 MapView.Selection.Select(newFeatures);
+            }
+            async Task CopyAttributeAsync()
+            {
+                var dialog = new CopyAttributesDialog(layer);
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    ItemsOperationErrorCollection errors = null;
+
+                    switch (dialog.Type)
+                    {
+                        case CopyAttributesType.Field:
+                            errors = await AttributeUtility.CopyAttributesAsync(layer, features, dialog.SourceField, dialog.TargetField, dialog.DateFormat);
+                            break;
+
+                        case CopyAttributesType.Const:
+                            errors = await AttributeUtility.SetAttributesAsync(layer, features, dialog.TargetField, dialog.Text, false, dialog.DateFormat);
+
+                            break;
+
+                        case CopyAttributesType.Custom:
+                            errors = await AttributeUtility.SetAttributesAsync(layer, features, dialog.TargetField, dialog.Text, true, dialog.DateFormat);
+                            break;
+
+                        default:
+                            break;
+                    }
+                    await ItemsOperaionErrorsDialog.TryShowErrorsAsync(errors);
+                }
             }
         }
 

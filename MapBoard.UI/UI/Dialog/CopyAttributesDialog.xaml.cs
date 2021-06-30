@@ -1,25 +1,20 @@
 ﻿using FzLib.Extension;
-using FzLib.WPF.Dialog;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using MapBoard.Util;
 using ModernWpf.FzExtension.CommonDialog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MapBoard.UI.Dialog
 {
+    public enum CopyAttributesType
+    {
+        Field = 0,
+        Const = 1,
+        Custom = 2
+    }
+
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
@@ -37,26 +32,34 @@ namespace MapBoard.UI.Dialog
         public FieldInfo[] Fields { get; }
         private FieldInfo fieldSource;
 
-        public FieldInfo FieldSource
+        public FieldInfo SourceField
         {
             get => fieldSource;
             set
             {
-                this.SetValueAndNotify(ref fieldSource, value, nameof(FieldSource));
+                this.SetValueAndNotify(ref fieldSource, value, nameof(SourceField));
                 UpdateMessage();
             }
         }
 
         private FieldInfo fieldTarget;
 
-        public FieldInfo FieldTarget
+        public FieldInfo TargetField
         {
             get => fieldTarget;
             set
             {
-                this.SetValueAndNotify(ref fieldTarget, value, nameof(FieldTarget));
+                this.SetValueAndNotify(ref fieldTarget, value, nameof(TargetField));
                 UpdateMessage();
             }
+        }
+
+        private string text;
+
+        public string Text
+        {
+            get => text;
+            set => this.SetValueAndNotify(ref text, value, nameof(Text));
         }
 
         private string message;
@@ -79,29 +82,39 @@ namespace MapBoard.UI.Dialog
         {
             try
             {
-                if (FieldSource == null || FieldTarget == null)
+                if (tab.SelectedIndex == 0)
                 {
-                    throw new Exception("");
-                }
-                if (FieldSource == FieldTarget)
-                {
-                    throw new Exception("");
-                }
-                if (FieldSource.Type != FieldTarget.Type)
-                {
-                    if (FieldSource.Type is FieldInfoType.Date or FieldInfoType.Time)
+                    if (SourceField == null || TargetField == null)
                     {
-                        if (FieldTarget.Type == FieldInfoType.Integer || FieldTarget.Type == FieldInfoType.Float)
+                        throw new Exception("");
+                    }
+                    if (SourceField == TargetField)
+                    {
+                        throw new Exception("");
+                    }
+                    if (SourceField.Type != TargetField.Type)
+                    {
+                        if (SourceField.Type is FieldInfoType.Date or FieldInfoType.Time)
                         {
-                            throw new Exception("数值与日期之间不可互转");
+                            if (TargetField.Type == FieldInfoType.Integer || TargetField.Type == FieldInfoType.Float)
+                            {
+                                throw new Exception("数值与日期之间不可互转");
+                            }
+                        }
+                        if (TargetField.Type is FieldInfoType.Date or FieldInfoType.Time)
+                        {
+                            if (SourceField.Type == FieldInfoType.Integer || SourceField.Type == FieldInfoType.Float)
+                            {
+                                throw new Exception("数值与日期之间不可互转");
+                            }
                         }
                     }
-                    if (FieldTarget.Type is FieldInfoType.Date or FieldInfoType.Time)
+                }
+                else
+                {
+                    if (TargetField == null)
                     {
-                        if (FieldSource.Type == FieldInfoType.Integer || FieldSource.Type == FieldInfoType.Float)
-                        {
-                            throw new Exception("数值与日期之间不可互转");
-                        }
+                        throw new Exception("");
                     }
                 }
                 IsPrimaryButtonEnabled = true;
@@ -113,12 +126,20 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        public CopyAttributesType Type { get; set; }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
         }
 
         private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
+            Type = (CopyAttributesType)tab.SelectedIndex;
+        }
+
+        private void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            UpdateMessage();
         }
     }
 }

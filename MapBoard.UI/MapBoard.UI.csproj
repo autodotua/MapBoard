@@ -146,6 +146,9 @@
     <Page Update="UI\Bar\GetGeometryBar.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
+    <Page Update="UI\Dialog\ItemsOperaionErrorsDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="UI\Dialog\ImportTableDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>

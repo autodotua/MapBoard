@@ -22,6 +22,7 @@ using System.Windows.Controls.Primitives;
 
 using System.Windows.Media;
 using MapBoard.Mapping.Model;
+using MapBoard.Model;
 
 namespace MapBoard.UI
 {
@@ -239,7 +240,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                await CommonDialog.ShowErrorDialogAsync(ex, "操作失败，可能是不构成有面积的图形");
+                await CommonDialog.ShowErrorDialogAsync(ex, "缩放失败，可能是不构成有面积的图形");
             }
         }
 
@@ -299,7 +300,27 @@ namespace MapBoard.UI
             var dialog = new CopyAttributesDialog(layer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await FeatureUtility.CopyAttributesAsync(layer, dialog.FieldSource, dialog.FieldTarget, dialog.DateFormat);
+                ItemsOperationErrorCollection errors = null;
+
+                switch (dialog.Type)
+                {
+                    case CopyAttributesType.Field:
+                        errors = await AttributeUtility.CopyAttributesAsync(layer, dialog.SourceField, dialog.TargetField, dialog.DateFormat);
+                        break;
+
+                    case CopyAttributesType.Const:
+                        errors = await AttributeUtility.SetAttributesAsync(layer, dialog.TargetField, dialog.Text, false, dialog.DateFormat);
+
+                        break;
+
+                    case CopyAttributesType.Custom:
+                        errors = await AttributeUtility.SetAttributesAsync(layer, dialog.TargetField, dialog.Text, true, dialog.DateFormat);
+                        break;
+
+                    default:
+                        break;
+                }
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync(errors);
             }
         }
 
