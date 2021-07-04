@@ -126,7 +126,13 @@ namespace MapBoard.UI
             };
             arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            arcMap.Layers.LayerVisibilityChanged += (s, e) => JudgeControlsEnable();
+            arcMap.Layers.LayerPropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(LayerInfo.LayerVisible) && e.Layer == arcMap.Layers.Selected)
+                {
+                    JudgeControlsEnable();
+                }
+            };
 
             arcMap.Layers.PropertyChanged += (p1, p2) =>
             {
@@ -711,7 +717,7 @@ namespace MapBoard.UI
             {
                 layerSettings.Height = 240;
             }
-            else if(e.NewSize.Height<1050)
+            else if (e.NewSize.Height < 1050)
             {
                 layerSettings.Height = 360;
             }

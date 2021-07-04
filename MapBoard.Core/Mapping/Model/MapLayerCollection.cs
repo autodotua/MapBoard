@@ -27,12 +27,12 @@ namespace MapBoard.Mapping.Model
         private MapLayerCollection(ELayerCollection esriLayers)
         {
             EsriLayers = esriLayers;
-            layers = new ObservableCollection<LayerInfo>();
+            SetLayers(new ObservableCollection<LayerInfo>());
         }
 
         public MapLayerInfo Find(FeatureLayer layer)
         {
-            return layers.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
+            return LayerList.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
         }
 
         public MapLayerInfo Selected
@@ -64,7 +64,7 @@ namespace MapBoard.Mapping.Model
             instance = FromFile<MapLayerCollection, MapLayerInfo>(path,
             () => new MapLayerCollection(esriLayers)));
             List<string> errorMsgs = new List<string>();
-            foreach (var layer in instance.layers.Cast<MapLayerInfo>().ToList())
+            foreach (var layer in instance.LayerList.Cast<MapLayerInfo>().ToList())
             {
                 try
                 {
@@ -73,7 +73,7 @@ namespace MapBoard.Mapping.Model
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"图层{layer.Name}加载失败：{ex.Message}");
-                    instance.layers.Remove(layer);
+                    instance.LayerList.Remove(layer);
                 }
             }
 
@@ -96,24 +96,24 @@ namespace MapBoard.Mapping.Model
             {
                 EsriLayers.Remove(layer);
             }
-            foreach (MapLayerInfo layer in layers)
+            foreach (MapLayerInfo layer in LayerList)
             {
                 layer.Dispose();
             }
-            layers.Clear();
+            LayerList.Clear();
         }
 
         public async Task InsertAsync(int index, MapLayerInfo layer)
         {
             await AddLayerAsync(layer, index);
-            layer.PropertyChanged += LayerPropertyChanged;
-            layers.Insert(index, layer);
+            layer.PropertyChanged += OnLayerPropertyChanged;
+            LayerList.Insert(index, layer);
         }
 
         public void Move(int fromIndex, int toIndex)
         {
             EsriLayers.Move(fromIndex, toIndex);
-            layers.Move(fromIndex, toIndex);
+            LayerList.Move(fromIndex, toIndex);
         }
 
         public void Remove(MapLayerInfo layer)
@@ -126,18 +126,23 @@ namespace MapBoard.Mapping.Model
             catch
             {
             }
-            layer.PropertyChanged -= LayerPropertyChanged;
-            layers.Remove(layer);
+            layer.PropertyChanged -= OnLayerPropertyChanged;
+            LayerList.Remove(layer);
         }
 
         private async Task AddAsync(MapLayerInfo layer, bool addToCollection)
         {
             await AddLayerAsync(layer);
-            layer.PropertyChanged += LayerPropertyChanged;
+            layer.PropertyChanged += OnLayerPropertyChanged;
             if (addToCollection)
             {
-                layers.Add(layer);
+                LayerList.Add(layer);
             }
+        }
+
+        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Save();
         }
 
         public void Save()
@@ -145,15 +150,7 @@ namespace MapBoard.Mapping.Model
             Save(Path.Combine(Parameters.DataPath, LayersFileName));
         }
 
-        protected override void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            base.LayerPropertyChanged(sender, e);
-            Save();
-        }
-
         public ELayerCollection EsriLayers { get; }
-
-        //MapLayerInfo IReadOnlyList<MapLayerInfo>.this[int index] =>layers[index] as MapLayerInfo;
 
         private async Task AddLayerAsync(MapLayerInfo layer, int index = -1)
         {
@@ -200,7 +197,7 @@ namespace MapBoard.Mapping.Model
                 return;
             }
 
-            foreach (var layer in layers.Cast<MapLayerInfo>().ToList())
+            foreach (var layer in LayerList.Cast<MapLayerInfo>().ToList())
             {
                 if (File.Exists(Path.Combine(Parameters.DataPath, layer.Name + ".shp")))
                 {
@@ -227,7 +224,7 @@ namespace MapBoard.Mapping.Model
 
             foreach (var name in files)
             {
-                if (!layers.Any(p => p.Name == name))
+                if (!LayerList.Any(p => p.Name == name))
                 {
                     MapLayerInfo style = new MapLayerInfo();
                     style.Name = name;

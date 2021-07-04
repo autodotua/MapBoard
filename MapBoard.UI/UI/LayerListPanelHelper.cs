@@ -462,7 +462,7 @@ namespace MapBoard.UI
 
             private void SingleMouseMove(object sender, MouseEventArgs e)
             {
-                if (!CanDragDrop)
+                if (!CanDragDrop || e.OriginalSource is TextBox)
                 {
                     return;
                 }
@@ -472,7 +472,8 @@ namespace MapBoard.UI
                 {
                     return;
                 }
-                if (e.LeftButton == MouseButtonState.Pressed && IsMouseOverTarget(GetItem(listview.SelectedIndex), new GetPositionDelegate(e.GetPosition)))
+                if (e.LeftButton == MouseButtonState.Pressed
+                    && IsMouseOverTarget(GetItem(listview.SelectedIndex), new GetPositionDelegate(e.GetPosition)))
                 {
                     DataObject data = new DataObject(typeof(MapLayerInfo), select);
                     try
@@ -482,6 +483,10 @@ namespace MapBoard.UI
                     catch (System.Runtime.InteropServices.COMException)
                     {
                         //Windows抽风，拖动操作已在进行中
+                    }
+                    catch (System.InvalidOperationException)
+                    {
+                        //调度程序处理已暂停，但仍在处理消息
                     }
                 }
             }

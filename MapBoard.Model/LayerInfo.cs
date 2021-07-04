@@ -44,6 +44,14 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref fields, value, nameof(Fields));
         }
 
+        private string group;
+
+        public string Group
+        {
+            get => group;
+            set => this.SetValueAndNotify(ref group, value, nameof(Group));
+        }
+
         private TimeExtentInfo timeExtent;
 
         public event PropertyChangedEventHandler PropertyChanged;

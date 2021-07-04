@@ -219,13 +219,13 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="32" />
                                             <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="72" />
-                                            <ColumnDefinition Width="16" />
                                             <ColumnDefinition Width="128" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="70" />
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="4" />
+                                            <RowDefinition Height="0" />
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <CheckBox
@@ -234,16 +234,38 @@
                                             FocusVisualStyle="{x:Null}"
                                             IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
                                         <TextBlock
-                                            Grid.Column="2" Grid.ColumnSpan="99"
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
                                             FontWeight="Bold"
-                                            Text="{Binding Name}"
+                                            Text="{Binding Name, Mode=OneWay}"
                                             TextTrimming="CharacterEllipsis" />
+                                        <Button
+                                            Grid.Column="4" Height="24"
+                                            MinWidth="48" MaxWidth="96"
+                                            Margin="0,0,-8,0" Padding="8,0"
+                                            HorizontalAlignment="Right"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Content="{Binding Group}"
+                                            ToolTip="组名">
+                                            <ui:FlyoutService.Flyout>
+                                                <ui:Flyout>
+                                                    <TextBox
+                                                        Width="128"
+                                                        ui:ControlHelper.PlaceholderText="请输入组名"
+                                                        Text="{Binding Group}" />
+                                                </ui:Flyout>
+                                            </ui:FlyoutService.Flyout>
+                                        </Button>
                                         <TextBlock
                                             Grid.Row="2" Grid.Column="2"
+                                            Opacity="0.75"
                                             Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
                                         <TextBlock
                                             Grid.Row="2" Grid.Column="4"
-                                            HorizontalAlignment="Left">
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Opacity="0.75">
                                             <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
                                             <Run>个图形</Run>
                                         </TextBlock>

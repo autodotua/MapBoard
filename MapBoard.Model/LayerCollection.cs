@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using FzLib.Basic;
+using FzLib.Extension;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -6,37 +8,112 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace MapBoard.Model
 {
     public class LayerCollection : IReadOnlyList<LayerInfo>, INotifyPropertyChanged, INotifyCollectionChanged
     {
-        protected ObservableCollection<LayerInfo> layers;
+        public class LayerPropertyChangedEventArgs : PropertyChangedEventArgs
+        {
+            public LayerPropertyChangedEventArgs(LayerInfo layer, string propertyName) : base(propertyName)
+            {
+                Layer = layer;
+            }
+
+            public LayerInfo Layer { get; set; }
+        }
+
+        protected ObservableCollection<LayerInfo> LayerList { get; private set; }
+
+        protected void SetLayers(ObservableCollection<LayerInfo> layers)
+        {
+            Debug.Assert(layers != null);
+            if (LayerList != null)
+            {
+                LayerList.CollectionChanged -= LayerList_CollectionChanged;
+            }
+            LayerList = layers;
+
+            LayerList.CollectionChanged += LayerList_CollectionChanged;
+        }
+
+        private void LayerList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            IEnumerable<LayerInfo> newLayers = null;
+            IEnumerable<LayerInfo> oldLayers = null;
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    newLayers = e.NewItems.Cast<LayerInfo>();
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    oldLayers = e.OldItems.Cast<LayerInfo>();
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    oldLayers = e.OldItems.Cast<LayerInfo>();
+                    newLayers = e.NewItems.Cast<LayerInfo>();
+                    break;
+            }
+            if (newLayers != null)
+            {
+                newLayers.ForEach(p => p.PropertyChanged += Layer_PropertyChanged);
+            }
+            if (oldLayers != null)
+            {
+                oldLayers.ForEach(p => p.PropertyChanged -= Layer_PropertyChanged);
+            }
+        }
+
+        private void Layer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            LayerPropertyChanged?.Invoke(this, new LayerPropertyChangedEventArgs(sender as LayerInfo, e.PropertyName));
+        }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged
         {
             add
             {
-                ((INotifyCollectionChanged)layers).CollectionChanged += value;
+                ((INotifyCollectionChanged)LayerList).CollectionChanged += value;
             }
 
             remove
             {
-                ((INotifyCollectionChanged)layers).CollectionChanged -= value;
+                ((INotifyCollectionChanged)LayerList).CollectionChanged -= value;
             }
         }
 
-        public event EventHandler LayerVisibilityChanged;
+        public event EventHandler<LayerPropertyChangedEventArgs> LayerPropertyChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int Count => layers.Count;
+        public int Count => LayerList.Count;
 
-        public string MapViewExtentJson { get; set; }
+        private string mapViewExtentJson;
 
-        public int SelectedIndex { get; set; }
-        public LayerInfo this[int index] => layers[index];
+        public string MapViewExtentJson
+        {
+            get => mapViewExtentJson;
+            set => this.SetValueAndNotify(ref mapViewExtentJson, value, nameof(MapViewExtentJson));
+        }
+
+        private int selectedIndex;
+
+        public LayerCollection()
+        {
+        }
+
+        public int SelectedIndex
+        {
+            get => selectedIndex;
+            set => this.SetValueAndNotify(ref selectedIndex, value, nameof(SelectedIndex));
+        }
+
+        public LayerInfo this[int index] => LayerList[index];
 
         public static LayerCollection FromFile(string path)
         {
@@ -53,12 +130,12 @@ namespace MapBoard.Model
             instance.MapViewExtentJson = json[nameof(MapViewExtentJson)]?.Value<string>();
             instance.SelectedIndex = json[nameof(SelectedIndex)]?.Value<int>() ?? 0;
             var layersJson = json["Layers"];
-            instance.layers = new ObservableCollection<LayerInfo>();
+            instance.SetLayers(new ObservableCollection<LayerInfo>());
             if (layersJson is JArray layerJsonArray)
             {
                 foreach (var layerJson in layerJsonArray)
                 {
-                    instance.layers.Add(layerJson.ToObject<TLayer>());
+                    instance.LayerList.Add(layerJson.ToObject<TLayer>());
                 }
             }
             return instance;
@@ -66,22 +143,22 @@ namespace MapBoard.Model
 
         public IEnumerator<LayerInfo> GetEnumerator()
         {
-            return layers.GetEnumerator();
+            return LayerList.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return layers.GetEnumerator();
+            return LayerList.GetEnumerator();
         }
 
         public int IndexOf(LayerInfo layer)
         {
-            return layers.IndexOf(layer);
+            return LayerList.IndexOf(layer);
         }
 
         public bool Contains(LayerInfo layer)
         {
-            return layers.Contains(layer);
+            return LayerList.Contains(layer);
         }
 
         public void Save(string path)
@@ -89,7 +166,7 @@ namespace MapBoard.Model
             JObject json = new JObject();
             json.Add(nameof(MapViewExtentJson), MapViewExtentJson);
             json.Add(nameof(SelectedIndex), SelectedIndex);
-            json.Add("Layers", JArray.FromObject(layers));
+            json.Add("Layers", JArray.FromObject(LayerList));
             string jsonStr = json.ToString(Formatting.Indented);
             string dir = Path.GetDirectoryName(path);
             if (!Directory.Exists(dir))
@@ -98,109 +175,5 @@ namespace MapBoard.Model
             }
             File.WriteAllText(path, jsonStr);
         }
-
-        protected virtual void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(LayerInfo.LayerVisible))
-            {
-                LayerVisibilityChanged?.Invoke(this, new EventArgs());
-            }
-        }
     }
-
-    //public class LayerCollection<T> : IReadOnlyList<T>, INotifyPropertyChanged, INotifyCollectionChanged where T : LayerInfo
-    // {
-    //     protected ObservableCollection<T> layers;
-
-    //     public event NotifyCollectionChangedEventHandler CollectionChanged
-    //     {
-    //         add
-    //         {
-    //             ((INotifyCollectionChanged)layers).CollectionChanged += value;
-    //         }
-
-    //         remove
-    //         {
-    //             ((INotifyCollectionChanged)layers).CollectionChanged -= value;
-    //         }
-    //     }
-
-    //     public event EventHandler LayerVisibilityChanged;
-
-    //     public event PropertyChangedEventHandler PropertyChanged;
-
-    //     public int Count => layers.Count;
-
-    //     public string MapViewExtentJson { get; set; }
-
-    //     public int SelectedIndex { get; set; }
-    //     public T this[int index] => layers[index];
-
-    //     public static LayerCollection<T> FromFile(string path)
-    //     {
-    //         return FromFile(path, () => new LayerCollection<T>());
-    //     }
-
-    //     public static TC FromFile<TC>(string path, Func<TC> getInstance) where TC : LayerCollection<T>
-    //     {
-    //         var instance = getInstance();
-
-    //         JObject json = JObject.Parse(File.ReadAllText(path));
-    //         instance.MapViewExtentJson = json[nameof(MapViewExtentJson)]?.Value<string>();
-    //         instance.SelectedIndex = json[nameof(SelectedIndex)]?.Value<int>() ?? 0;
-    //         var layersJson = json["Layers"];
-    //         instance.layers = new ObservableCollection<T>();
-    //         if (layersJson is JArray layerJsonArray)
-    //         {
-    //             foreach (var layerJson in layerJsonArray)
-    //             {
-    //                 instance.layers.Add(layerJson.ToObject<T>());
-    //             }
-    //         }
-    //         return instance;
-    //     }
-
-    //     public IEnumerator<T> GetEnumerator()
-    //     {
-    //         return layers.GetEnumerator();
-    //     }
-
-    //     IEnumerator IEnumerable.GetEnumerator()
-    //     {
-    //         return layers.GetEnumerator();
-    //     }
-
-    //     public int IndexOf(T layer)
-    //     {
-    //         return layers.IndexOf(layer);
-    //     }
-
-    //     public bool Contains(T layer)
-    //     {
-    //         return layers.Contains(layer);
-    //     }
-
-    //     public void Save(string path)
-    //     {
-    //         JObject json = new JObject();
-    //         json.Add(nameof(MapViewExtentJson), MapViewExtentJson);
-    //         json.Add(nameof(SelectedIndex), SelectedIndex);
-    //         json.Add("Layers", JArray.FromObject(layers));
-    //         string jsonStr = json.ToString(Formatting.Indented);
-    //         string dir = Path.GetDirectoryName(path);
-    //         if (!Directory.Exists(dir))
-    //         {
-    //             Directory.CreateDirectory(dir);
-    //         }
-    //         File.WriteAllText(path, jsonStr);
-    //     }
-
-    //     protected virtual void LayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-    //     {
-    //         if (e.PropertyName == nameof(LayerInfo.LayerVisible))
-    //         {
-    //             LayerVisibilityChanged?.Invoke(this, new EventArgs());
-    //         }
-    //     }
-    // }
 }
