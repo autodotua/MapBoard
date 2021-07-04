@@ -8,9 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <local:ColorBrushConverter x:Key="cc" />
-    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -104,11 +102,11 @@
                                     <TextBlock Grid.Row="4" Text="填充颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="4 " Grid.Column="2"
-                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="6" Text="边框颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="6 " Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
 
                                     <TextBlock Grid.Row="8" Text="填充样式" />
                                     <ComboBox
@@ -166,7 +164,7 @@
                                     <TextBlock Grid.Row="2" Text="颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="2 " Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="4" Text="边框样式" />
                                     <ComboBox
                                         Grid.Row="4" Grid.Column="2"
@@ -224,12 +222,12 @@
                                     <TextBlock Grid.Row="2" Text="填充颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="2 " Grid.Column="2"
-                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
 
                                     <TextBlock Grid.Row="4" Text="边框颜色" />
                                     <compoment:ColorPickerTextBox
                                         Grid.Row="4 " Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="6" Text="填充样式" />
                                     <ComboBox
                                         Grid.Row="6" Grid.Column="2"
@@ -331,7 +329,7 @@
                                     <RowDefinition Height="4" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                <compoment:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox Grid.Column="2" Text="{Binding FontSize}" />
                                 <ComboBox
                                     Grid.Row="2" Grid.ColumnSpan="3"
@@ -353,7 +351,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                <compoment:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
@@ -366,7 +364,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                <compoment:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
@@ -376,7 +374,7 @@
                             <compoment:ColorPickerTextBox
                                 x:Name="labelBackgroundColor"
                                 Grid.Row="6" Grid.Column="2"
-                                ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource cc}}" />
+                                ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
 
                             <TextBlock Grid.Row="8" Text="最小比例" />
                             <Grid Grid.Row="8" Grid.Column="2">

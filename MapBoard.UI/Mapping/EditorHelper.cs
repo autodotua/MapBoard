@@ -170,7 +170,6 @@ namespace MapBoard.Mapping
 
         private void Stop()
         {
-            Debug.WriteLine("停止绘制");
             Mode = EditMode.None;
             SketchEditor.Stop();
             EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(false));

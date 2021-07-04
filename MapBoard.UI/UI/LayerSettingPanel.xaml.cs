@@ -269,49 +269,4 @@ namespace MapBoard.UI
             (sender as ComboBox).SelectedItem = null;
         }
     }
-
-    public class KeySymbolPair
-    {
-        public KeySymbolPair()
-        {
-        }
-
-        public KeySymbolPair(string key, SymbolInfo symbol)
-        {
-            Key = key;
-            Symbol = symbol;
-        }
-
-        public string Key { get; set; }
-        public SymbolInfo Symbol { get; set; }
-    }
-
-    public class ColorBrushConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-            if (value is Color c)
-            {
-                return new SolidColorBrush(DrawingColorToMeidaColor(c));
-            }
-            throw new Exception();
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-            if (value is SolidColorBrush b)
-            {
-                return MediaColorToDrawingColor(b.Color);
-            }
-            throw new Exception();
-        }
-    }
 }
