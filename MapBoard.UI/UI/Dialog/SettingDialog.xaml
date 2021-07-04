@@ -8,6 +8,7 @@
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     Title="设置" Width="600"
     Height="540"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -61,11 +62,13 @@
                         </Grid.RowDefinitions>
                         <DataGrid
                             x:Name="grd" Height="160"
+                            util:SmoothScrollViewerHelper.SmoothScroll="True"
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="True"
                             CanUserSortColumns="False"
                             ItemsSource="{Binding BaseLayers}"
+                            ScrollViewer.CanContentScroll="False"
                             SelectionMode="Single">
                             <DataGrid.Columns>
                                 <DataGridTextColumn

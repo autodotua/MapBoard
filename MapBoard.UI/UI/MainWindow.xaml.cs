@@ -27,6 +27,7 @@ using MapBoard.Mapping.Model;
 using MapBoard.Util;
 using MapBoard.UI.TileDownloader;
 using System.Threading;
+using MapBoard.UI.Component;
 
 namespace MapBoard.UI
 {

@@ -9,6 +9,7 @@
     Title="选择图形"
     Width="254"
     Height="240"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     ShowActivated="False"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -22,7 +23,7 @@
             Text="{Binding Message}" />
         <ListView
             Margin="4"
-            DockPanel.Dock="Left"
+            DockPanel.Dock="Left" util:SmoothScrollViewerHelper.SmoothScroll="True"
             ItemsSource="{Binding SelectedFeatures}"
             SelectedItem="{Binding Selected}"
             SelectionMode="Single">

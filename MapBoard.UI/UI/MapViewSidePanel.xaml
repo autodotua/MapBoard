@@ -9,6 +9,7 @@
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="600" d:DesignWidth="120"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     mc:Ignorable="d">
     <UserControl.Resources>
         <DropShadowEffect
@@ -85,7 +86,7 @@
                             Click="CloseLayerPanelButton_Click">
                             <ui:SymbolIcon Symbol="Back" />
                         </Button>
-                        <DataGrid
+                        <DataGrid util:SmoothScrollViewerHelper.SmoothScroll="True"
                             x:Name="dgLayers" Grid.Row="2"
                             AutoGenerateColumns="False"
                             Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"

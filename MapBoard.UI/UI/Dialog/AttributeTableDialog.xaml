@@ -10,6 +10,7 @@
     Title="设置"
     Width="800"
     Height="400"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="AttributeTableDialog_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -23,7 +24,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <DataGrid
-            x:Name="dg"
+            x:Name="dg" util:SmoothScrollViewerHelper.SmoothScroll="True"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"

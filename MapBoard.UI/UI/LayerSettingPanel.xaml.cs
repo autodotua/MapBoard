@@ -20,6 +20,7 @@ using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 using MapBoard.Mapping.Model;
+using MapBoard.UI.Component;
 
 namespace MapBoard.UI
 {
@@ -35,11 +36,13 @@ namespace MapBoard.UI
             InitializeComponent();
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
+
         public void Initialize(MainMapView mapView)
         {
             MapView = mapView;
         }
-        public MainMapView MapView { get;private set; }
+
+        public MainMapView MapView { get; private set; }
         public MapLayerCollection Layers => MapView.Layers;
 
         public string[] Fonts { get; }

@@ -10,6 +10,7 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="导入表格" CloseButtonText="取消"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
@@ -50,7 +51,7 @@
         </Grid>
         <DataGrid
             x:Name="dg" Grid.Row="2"
-            MaxHeight="200"
+            MaxHeight="200" util:SmoothScrollViewerHelper.SmoothScroll="True"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"

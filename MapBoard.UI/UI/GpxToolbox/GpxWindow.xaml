@@ -2,7 +2,6 @@
     x:Class="MapBoard.UI.GpxToolbox.GpxWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:async="clr-namespace:MapBoard.UI.Async"
     xmlns:converter="clr-namespace:MapBoard.UI.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.UI.GpxToolbox"

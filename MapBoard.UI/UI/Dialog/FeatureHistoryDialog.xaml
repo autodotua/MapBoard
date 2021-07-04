@@ -14,6 +14,7 @@
     Height="400"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="Dialog_Closing"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     ResizeMode="CanResize"
     ShowInTaskbar="True" mc:Ignorable="d">
@@ -28,7 +29,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ScrollViewer
-            x:Name="scr"
+            x:Name="scr" util:SmoothScrollViewerHelper.SmoothScroll="True"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Layer.Histories}">

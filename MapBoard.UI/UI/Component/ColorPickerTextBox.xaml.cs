@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MapBoard.UI.Compoment
+namespace MapBoard.UI.Component
 {
     /// <summary>
     /// ColorChooserTextBox.xaml 的交互逻辑

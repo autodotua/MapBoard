@@ -9,6 +9,7 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="新建图层" CloseButtonText="取消"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     xmlns:c="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
@@ -57,7 +58,7 @@
         </DataGrid>
         <TextBlock>自定义字段：</TextBlock>
 
-        <DataGrid
+        <DataGrid MaxHeight="200" util:SmoothScrollViewerHelper.SmoothScroll="True"
             x:Name="dg" Grid.Row="2"
             AutoGenerateColumns="False"
             CellEditEnding="dg_CellEditEnding"

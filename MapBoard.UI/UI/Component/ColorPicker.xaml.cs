@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MapBoard.UI.Compoment
+namespace MapBoard.UI.Component
 {
     public partial class ColorPicker : UserControl
     {

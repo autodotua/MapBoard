@@ -2,11 +2,13 @@
     x:Class="MapBoard.UI.LayerSettingPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:compoment="clr-namespace:MapBoard.UI.Compoment"
+    xmlns:component="clr-namespace:MapBoard.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:util="clr-namespace:MapBoard.UI.Util"
+
     mc:Ignorable="d">
 
     <Grid>
@@ -22,8 +24,8 @@
             Background="Transparent"
             BorderThickness="0" FontSize="20"
             Text="{Binding LayerName}" />
-        <ScrollViewer
-            Grid.Row="2"
+        <ScrollViewer util:SmoothScrollViewerHelper.SmoothScroll="True"
+            x:Name="scrMain" Grid.Row="2"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ui:SimpleStackPanel
@@ -100,11 +102,11 @@
                                         Grid.Row="2" Grid.Column="2"
                                         Text="{Binding OutlineWidth}" />
                                     <TextBlock Grid.Row="4" Text="填充颜色" />
-                                    <compoment:ColorPickerTextBox
+                                    <component:ColorPickerTextBox
                                         Grid.Row="4 " Grid.Column="2"
                                         ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="6" Text="边框颜色" />
-                                    <compoment:ColorPickerTextBox
+                                    <component:ColorPickerTextBox
                                         Grid.Row="6 " Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
 
@@ -162,7 +164,7 @@
                                         Grid.Row="0" Grid.Column="2"
                                         Text="{Binding OutlineWidth, Mode=TwoWay}" />
                                     <TextBlock Grid.Row="2" Text="颜色" />
-                                    <compoment:ColorPickerTextBox
+                                    <component:ColorPickerTextBox
                                         Grid.Row="2 " Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="4" Text="边框样式" />
@@ -220,12 +222,12 @@
                                         Text="{Binding OutlineWidth}" />
 
                                     <TextBlock Grid.Row="2" Text="填充颜色" />
-                                    <compoment:ColorPickerTextBox
+                                    <component:ColorPickerTextBox
                                         Grid.Row="2 " Grid.Column="2"
                                         ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
 
                                     <TextBlock Grid.Row="4" Text="边框颜色" />
-                                    <compoment:ColorPickerTextBox
+                                    <component:ColorPickerTextBox
                                         Grid.Row="4 " Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                     <TextBlock Grid.Row="6" Text="填充样式" />
@@ -310,7 +312,7 @@
                                 <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="{x:Type CheckBox}">
                                     <Setter Property="Margin" Value="0,0,-64,0" />
                                 </Style>
-                                <Style TargetType="{x:Type compoment:ColorPickerTextBox}">
+                                <Style TargetType="{x:Type component:ColorPickerTextBox}">
                                     <!--<Setter Property="Width" Value="120" />-->
                                     <Setter Property="HorizontalAlignment" Value="Stretch" />
                                 </Style>
@@ -329,7 +331,7 @@
                                     <RowDefinition Height="4" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox Grid.Column="2" Text="{Binding FontSize}" />
                                 <ComboBox
                                     Grid.Row="2" Grid.ColumnSpan="3"
@@ -351,7 +353,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
@@ -364,14 +366,14 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <compoment:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
                                     Text="{Binding OutlineWidth}" />
                             </Grid>
                             <TextBlock Grid.Row="6" Text="背景" />
-                            <compoment:ColorPickerTextBox
+                            <component:ColorPickerTextBox
                                 x:Name="labelBackgroundColor"
                                 Grid.Row="6" Grid.Column="2"
                                 ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />

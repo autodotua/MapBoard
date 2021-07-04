@@ -25,6 +25,7 @@ using System.Collections;
 using System.Collections.Generic;
 using FzLib.Basic;
 using ModernWpf.Controls;
+using MapBoard.UI.Component;
 
 namespace MapBoard.UI
 {
@@ -41,10 +42,12 @@ namespace MapBoard.UI
         }
 
         private bool changingSelection = false;
+
         /// <summary>
         /// 分组
         /// </summary>
         public ObservableCollection<GroupInfo> Groups { get; } = new ObservableCollection<GroupInfo>();
+
         public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
 
@@ -250,7 +253,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private  void TextBlock_MouseUp(object sender, MouseButtonEventArgs e)
+        private void TextBlock_MouseUp(object sender, MouseButtonEventArgs e)
         {
             TextBox txt = FindResource("flyoutContent") as TextBox;
             var parent = txt.Parent;
