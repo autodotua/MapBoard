@@ -8,10 +8,53 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
-
+    <UserControl.Resources>
+        <TextBox
+            x:Key="flyoutContent" Width="120"
+            HorizontalContentAlignment="Left"
+            MaxLength="10"
+            Text="{Binding Group}" />
+    </UserControl.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="4" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer
+            Height="84" Margin="0,0,12,0"
+            HorizontalScrollBarVisibility="Auto"
+            VerticalScrollBarVisibility="Disabled">
+            <Border
+                Padding="8"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                CornerRadius="4">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                Margin="0,0,-20,0"
+                                Click="CheckBox_Click"
+                                IsChecked="{Binding Visiable}">
+                                <TextBlock
+                                    Height="24" MaxWidth="64"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap" />
+                            </CheckBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </ScrollViewer>
         <ListView
-            x:Name="dataGrid"
+            x:Name="dataGrid" Grid.Row="2"
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             SelectionChanged="SelectedLayerChanged"
@@ -32,9 +75,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="128" />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="200" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -52,28 +93,16 @@
                             FontWeight="Bold"
                             Text="{Binding Name, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
-                        <ui:SimpleStackPanel
-                            Grid.Column="4" Height="24"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding Group}" />
-                            <Button
-                                Margin="0,0,-8,0" Padding="8,0"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderThickness="0" Content="…"
-                                ToolTip="组名">
-                                <ui:FlyoutService.Flyout>
-                                    <ui:Flyout>
-                                        <TextBox
-                                            Width="128"
-                                            ui:ControlHelper.PlaceholderText="请输入组名"
-                                            Text="{Binding Group}" />
-                                    </ui:Flyout>
-                                </ui:FlyoutService.Flyout>
-                            </Button>
 
-                        </ui:SimpleStackPanel>
+                        <TextBlock
+                            Grid.Column="4" Height="24"
+                            MinWidth="48"
+                            HorizontalAlignment="Right"
+                            Cursor="Hand"
+                            MouseUp="TextBlock_MouseUp"
+                            Text="{Binding Group}"
+                            TextAlignment="Right" />
+
                         <TextBlock
                             Grid.Row="2" Grid.Column="2"
                             Opacity="0.75"

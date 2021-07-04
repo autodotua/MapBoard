@@ -462,7 +462,9 @@ namespace MapBoard.UI
 
             private void SingleMouseMove(object sender, MouseEventArgs e)
             {
-                if (!CanDragDrop || e.OriginalSource is TextBox)
+                if (!CanDragDrop 
+                    || e.OriginalSource is TextBox
+                    || e.OriginalSource is Thumb)
                 {
                     return;
                 }

@@ -21,6 +21,10 @@ using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 using MapBoard.Mapping.Model;
 using System.Windows.Input;
+using System.Collections;
+using System.Collections.Generic;
+using FzLib.Basic;
+using ModernWpf.Controls;
 
 namespace MapBoard.UI
 {
@@ -30,32 +34,77 @@ namespace MapBoard.UI
     public partial class LayerListPanel : UserControlBase
     {
         private LayerListPanelHelper layerListHelper;
+
         public LayerListPanel()
         {
             InitializeComponent();
         }
-        private bool changingSelection = false;
 
+        private bool changingSelection = false;
+        /// <summary>
+        /// 分组
+        /// </summary>
+        public ObservableCollection<GroupInfo> Groups { get; } = new ObservableCollection<GroupInfo>();
         public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="mapView"></param>
         public void Initialize(MainMapView mapView)
         {
             MapView = mapView;
             //设置图层列表的数据源并初始化选中的图层
             dataGrid.ItemsSource = mapView.Layers;
             dataGrid.SelectedItem = mapView.Layers.Selected;
+            GenerateGroups();
             Layers.PropertyChanged += (p1, p2) =>
             {
-                if (p2.PropertyName == nameof(mapView.Layers.Selected) && !changingSelection)
+                if (p2.PropertyName == nameof(MapLayerCollection.Selected) && !changingSelection)
                 {
                     dataGrid.SelectedItem = mapView.Layers.Selected;
                 }
             };
+            Layers.CollectionChanged += Layers_CollectionChanged;
+            Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
             //初始化图层列表相关操作
             layerListHelper = new LayerListPanelHelper(dataGrid, Window.GetWindow(this) as MainWindow, mapView);
         }
 
+        /// <summary>
+        /// 图层集合变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Layers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            GenerateGroups();
+        }
+
+        /// <summary>
+        /// 图层集合中某一图层属性变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LayerInfo.Group))
+            {
+                GenerateGroups();
+            }
+            if (e.PropertyName == nameof(LayerInfo.LayerVisible) && !isChangingGroupVisiable)
+            {
+                foreach (var group in Groups)
+                {
+                    group.Visiable = GetGroupVisiable(GetLayersByGroup(group));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 判断本区域内的控件可用性
+        /// </summary>
         public void JudgeControlsEnable()
         {
             if (MapView.Selection.SelectedFeatures.Count > 0)
@@ -66,11 +115,13 @@ namespace MapBoard.UI
             {
                 dataGrid.IsEnabled = true;
             }
-        }   /// <summary>
-            /// 图层项右键，用于显示菜单
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+        }
+
+        /// <summary>
+        /// 图层项右键，用于显示菜单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             layerListHelper.ShowContextMenu();
@@ -104,6 +155,10 @@ namespace MapBoard.UI
             }
             changingSelection = false;
         }
+
+        /// <summary>
+        /// 传递SelectionChanged事件
+        /// </summary>
         public event SelectionChangedEventHandler SelectionChanged
         {
             add
@@ -114,6 +169,114 @@ namespace MapBoard.UI
             {
                 dataGrid.SelectionChanged -= value;
             }
+        }
+
+        /// <summary>
+        /// 根据分组获取该分组的所有图层
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private IEnumerable<LayerInfo> GetLayersByGroup(GroupInfo group)
+        {
+            if (group.IsNull)
+            {
+                return Layers.Where(p => string.IsNullOrEmpty(p.Group));
+            }
+            else
+            {
+                return Layers.Where(p => p.Group == group.Name);
+            }
+        }
+
+        /// <summary>
+        /// 获取分组可见情况
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns>true为可见，false为不可见，null为部分可见</returns>
+        private bool? GetGroupVisiable(IEnumerable<LayerInfo> layers)
+        {
+            int count = layers.Count();
+            int visiableCount = layers.Where(p => p.LayerVisible).Count();
+            if (visiableCount == 0)
+            {
+                return false;
+            }
+            if (count == visiableCount)
+            {
+                return true;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 生成分组多选框
+        /// </summary>
+        public void GenerateGroups()
+        {
+            Groups.Clear();
+            if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
+            {
+                Groups.Add(new GroupInfo("（无）",
+                    GetGroupVisiable(Layers.Where(p => string.IsNullOrEmpty(p.Group))), true));
+            }
+            foreach (var layers in Layers
+                .Where(p => !string.IsNullOrEmpty(p.Group))
+               .GroupBy(p => p.Group))
+            {
+                Groups.Add(new GroupInfo(layers.Key, GetGroupVisiable(layers)));
+            }
+        }
+
+        /// <summary>
+        /// 是否正在修改分组可见
+        /// </summary>
+        private bool isChangingGroupVisiable = false;
+
+        /// <summary>
+        /// 单击分组可见多选框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            GroupInfo group = (sender as FrameworkElement).DataContext as GroupInfo;
+            isChangingGroupVisiable = true;
+            GetLayersByGroup(group).ForEach(p => p.LayerVisible = group.Visiable.Value);
+            isChangingGroupVisiable = false;
+        }
+
+        /// <summary>
+        /// 单击分组标签
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private  void TextBlock_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextBox txt = FindResource("flyoutContent") as TextBox;
+            var parent = txt.Parent;
+            //断开父级连接
+            if (parent is Grid p)
+            {
+                p.Children.Clear();
+            }
+            txt.DataContext = (sender as FrameworkElement).DataContext;
+            //Flyout没有焦点，所以增加一个Grid来获取失去焦点的事件
+            Grid g = new Grid();
+            g.Children.Add(txt);
+            Flyout f = new Flyout()
+            {
+                Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Bottom,
+                Content = g,
+            };
+            //失去焦点就关闭Flyout
+            g.LostFocus += (p1, p2) =>
+            {
+                f.Hide();
+            };
+            f.ShowAt(sender as FrameworkElement);
+
+            txt.Focus();
+            txt.SelectAll();
         }
     }
 }
