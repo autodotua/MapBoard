@@ -53,9 +53,7 @@ namespace MapBoard.UI
         };
 
         private bool canClosing = true;
-        private bool changingSelection = false;
         private bool closing = false;
-        private LayerListPanelHelper layerListHelper;
         public Config Config => Config.Instance;
         protected override bool AutoCloseSplashWindow => false;
 
@@ -94,20 +92,17 @@ namespace MapBoard.UI
         {
             //加载地图
             await arcMap.LoadAsync();
-            layerSettings.MapView = arcMap;
+            layerSettings.Initialize(arcMap);
+            layersPanel.Initialize(arcMap);
             //初始化各操作工具条
             foreach (var bar in grdCenter.Children.OfType<BarBase>())
             {
                 bar.MapView = arcMap;
                 bar.Initialize();
             }
-            //设置图层列表的数据源并初始化选中的图层
-            dataGrid.ItemsSource = arcMap.Layers;
-            dataGrid.SelectedItem = arcMap.Layers.Selected;
+
             //注册事件
             RegistEvents();
-            //初始化图层列表相关操作
-            layerListHelper = new LayerListPanelHelper(dataGrid, this, arcMap);
             //初始化控件可用性
             JudgeControlsEnable();
         }
@@ -117,13 +112,6 @@ namespace MapBoard.UI
         /// </summary>
         private void RegistEvents()
         {
-            arcMap.Layers.PropertyChanged += (p1, p2) =>
-            {
-                if (p2.PropertyName == nameof(arcMap.Layers.Selected) && !changingSelection)
-                {
-                    dataGrid.SelectedItem = arcMap.Layers.Selected;
-                }
-            };
             arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
             arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
             arcMap.Layers.LayerPropertyChanged += (s, e) =>
@@ -131,14 +119,6 @@ namespace MapBoard.UI
                 if (e.PropertyName == nameof(LayerInfo.LayerVisible) && e.Layer == arcMap.Layers.Selected)
                 {
                     JudgeControlsEnable();
-                }
-            };
-
-            arcMap.Layers.PropertyChanged += (p1, p2) =>
-            {
-                if (p2.PropertyName == nameof(arcMap.Layers.Selected) && !changingSelection)
-                {
-                    dataGrid.SelectedItem = arcMap.Layers.Selected;
                 }
             };
         }
@@ -159,14 +139,7 @@ namespace MapBoard.UI
             {
                 mapInfo.IsEnabled = true;
                 btnTitleBarMore.IsEnabled = true;
-                if (arcMap.Selection.SelectedFeatures.Count > 0)
-                {
-                    dataGrid.IsEnabled = false;
-                }
-                else
-                {
-                    dataGrid.IsEnabled = true;
-                }
+                layersPanel.JudgeControlsEnable();
                 grdLeft.IsEnabled = true;
             }
             btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = layerSettings.IsEnabled = arcMap.Layers.Selected != null;
@@ -471,7 +444,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
         {
-            dataGrid.SelectedItem = null;
+            arcMap.Layers.Selected = null;
         }
 
         #endregion 样式设置区事件
@@ -668,47 +641,6 @@ namespace MapBoard.UI
             grdLeft.BeginAnimation(WidthProperty, ani);
         }
 
-        /// <summary>
-        /// 图层项右键，用于显示菜单
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            layerListHelper.ShowContextMenu();
-        }
-
-        /// <summary>
-        /// 图层列表右键按下时，就使列表项被选中
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            layerListHelper.RightButtonClickToSelect(e);
-        }
-
-        /// <summary>
-        /// 选中的图层变化事件。图层列表选中项不使用绑定。
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
-        {
-            changingSelection = true;
-            if (dataGrid.SelectedItems.Count == 1)
-            {
-                arcMap.Layers.Selected = dataGrid.SelectedItem as MapLayerInfo;
-            }
-            else
-            {
-                arcMap.Layers.Selected = null;
-            }
-            changingSelection = false;
-            JudgeControlsEnable();
-            layerSettings.ResetLayerSettingUI();
-        }
-
         #endregion 图层列表事件
 
         private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -725,6 +657,12 @@ namespace MapBoard.UI
             {
                 layerSettings.Height = 480;
             }
+        }
+
+        private void layersPanel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            JudgeControlsEnable();
+            layerSettings.ResetLayerSettingUI();
         }
     }
 }

@@ -35,8 +35,11 @@ namespace MapBoard.UI
             InitializeComponent();
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
-
-        public MainMapView MapView { get; set; }
+        public void Initialize(MainMapView mapView)
+        {
+            MapView = mapView;
+        }
+        public MainMapView MapView { get;private set; }
         public MapLayerCollection Layers => MapView.Layers;
 
         public string[] Fonts { get; }
