@@ -14,6 +14,8 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using ModernWpf.Controls.Primitives;
 using System.Windows.Media;
+using MapBoard.UI.GpxToolbox;
+using MapBoard.UI.TileDownloader;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -37,19 +39,13 @@ namespace MapBoard
 
         public static ILog Log { get; private set; }
 
-        private void Application_Startup(object sender, StartupEventArgs e)
+        private async void Application_Startup(object sender, StartupEventArgs e)
         {
             Log = LogManager.GetLogger(GetType());
             Log.Info("程序启动");
 
 #if (DEBUG)
-            //StartupUri = new Uri("pack://application:,,,/MapBoard.GpxToolbox;component/UI/MainWindow.xaml", UriKind.Absolute);
-            //var win = new GpxToolbox.MainWindow();
-            //win.Show();
-            //win.Loaded += (p1, p2) =>
-            //{
-            //};
-            //return;
+
 #else
             UnhandledException.RegistAll();
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
@@ -68,16 +64,16 @@ namespace MapBoard
             if (e.Args.Length > 0)
             {
                 string arg = e.Args[0];
-                StartupUri = arg switch
+                MainWindow = arg switch
                 {
-                    "tile" => new Uri("UI/TileDownloader/TileDownloaderWindow.xaml", UriKind.Relative),
-                    "gpx" => new Uri("UI/GpxToolbox/GpxWindow.xaml", UriKind.Relative),
-                    _ => new Uri("UI/MainWindow.xaml", UriKind.Relative),
+                    "tile" => await MainWindowBase.CreateAndShowAsync<TileDownloaderWindow>(),
+                    "gpx" => await MainWindowBase.CreateAndShowAsync<GpxWindow>(),
+                    _ => await MainWindowBase.CreateAndShowAsync<MainWindow>(),
                 };
             }
             else
             {
-                StartupUri = new Uri("UI/MainWindow.xaml", UriKind.Relative);
+                MainWindow = await MainWindowBase.CreateAndShowAsync<MainWindow>();
             }
 
             var xcr = Resources.MergedDictionaries.OfType<XamlControlsResources>().FirstOrDefault();

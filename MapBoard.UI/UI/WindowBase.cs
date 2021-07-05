@@ -12,20 +12,70 @@ using System.Windows.Media;
 
 namespace MapBoard.UI
 {
+    public abstract class MainWindowBase : WindowBase
+    {
+        public static async Task<T> CreateAndShowAsync<T>() where T : MainWindowBase, new()
+        {
+            T win = new T();
+            if (SplashWindow.IsVisiable)
+            {
+                win.initialized = true;
+                try
+                {
+                    await win.InitializeAsync();
+                }
+                catch (Exception ex)
+                {
+                    win.Loaded += (s, e) =>
+                    {
+                        CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行").ConfigureAwait(false);
+                    };
+                }
+                win.Show();
+                SplashWindow.EnsureInvisiable();
+            }
+            else
+            {
+                win.Show();
+            }
+            return win;
+        }
+
+        protected async override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+            if (initialized)
+            {
+                return;
+            }
+            await DoAsync(async () =>
+            {
+                try
+                {
+                    await InitializeAsync();
+                }
+                catch (Exception ex)
+                {
+                    CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行");
+                }
+            }, "正在初始化", delay: 0);
+        }
+
+        protected bool initialized = false;
+
+        /// <summary>
+        /// 用于处理一些窗口在初始化后需要加载的耗时异步操作
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task InitializeAsync();
+    }
+
     public abstract class WindowBase : Window, INotifyPropertyChanged
     {
         public WindowBase()
         {
             DataContext = this;
             WindowCreated?.Invoke(this, EventArgs.Empty);
-            if (AutoCloseSplashWindow)
-            {
-                Loaded += (s, e) =>
-               {
-                   SplashWindow.EnsureInvisiable();
-                   this.BringToFront();
-               };
-            }
         }
 
         public static event EventHandler WindowCreated;
@@ -33,8 +83,6 @@ namespace MapBoard.UI
         public event PropertyChangedEventHandler PropertyChanged;
 
         public bool IsClosed { get; private set; }
-
-        protected virtual bool AutoCloseSplashWindow { get; } = true;
 
         protected override void OnClosed(EventArgs e)
         {

@@ -41,7 +41,7 @@ namespace MapBoard.UI.GpxToolbox
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class GpxWindow : WindowBase
+    public partial class GpxWindow : MainWindowBase
     {
         public ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
 
@@ -60,6 +60,19 @@ namespace MapBoard.UI.GpxToolbox
             InitializeChart();
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
+        }
+
+        protected async override Task InitializeAsync()
+        {
+            if (loadNeeded != null)
+            {
+                await arcMap.LoadFilesAsync(loadNeeded);
+            }
+            else if (File.Exists(Parameters.TrackHistoryPath))
+            {
+                string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
+                await arcMap.LoadFilesAsync(files);
+            }
         }
 
         private void InitializeChart()
@@ -264,23 +277,6 @@ namespace MapBoard.UI.GpxToolbox
                 App.Log.Error("绘制图形失败：" + ex.Message);
             }
         }
-
-        private async void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            await DoAsync(async () =>
-             {
-                 if (loadNeeded != null)
-                 {
-                     await arcMap.LoadFilesAsync(loadNeeded);
-                 }
-                 else if (File.Exists(Parameters.TrackHistoryPath))
-                 {
-                     string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
-                     await arcMap.LoadFilesAsync(files);
-                 }
-             }, "正在加载轨迹文件", delay: 0);
-        }
-
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
             arcMap.ClearSelection();

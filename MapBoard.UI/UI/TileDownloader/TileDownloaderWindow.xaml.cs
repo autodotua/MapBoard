@@ -26,7 +26,7 @@ namespace MapBoard.UI.TileDownloader
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class TileDownloaderWindow : WindowBase
+    public partial class TileDownloaderWindow : MainWindowBase
     {
         public Config Config => Config.Instance;
 
@@ -157,6 +157,11 @@ namespace MapBoard.UI.TileDownloader
             }
             cbbLevel.SelectedIndex = 10;
             arcMap.ViewpointChanged += ArcMapViewpointChanged;
+        }
+
+        protected async override Task InitializeAsync()
+        {
+            await Task.Yield();
         }
 
         protected override void OnActivated(EventArgs e)
@@ -323,23 +328,21 @@ namespace MapBoard.UI.TileDownloader
 
             if (await CommonDialog.ShowYesNoDialogAsync("下载完成，是否删除临时文件夹？") == true)
             {
-                loading.Show();
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        foreach (var directory in Directory.EnumerateDirectories(Config.Tile_DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
-                        {
-                            FzLib.IO.WindowsFileSystem.DeleteFileOrFolder(directory, true, false);
-                            //Directory.Delete(directory, true);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Dispatcher.Invoke(async () => await CommonDialog.ShowErrorDialogAsync(ex, "无法删除临时文件夹"));
-                    }
-                });
-                loading.Hide();
+                DoAsync(() => Task.Run(() =>
+                     {
+                         try
+                         {
+                             foreach (var directory in Directory.EnumerateDirectories(Config.Tile_DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
+                             {
+                                 FzLib.IO.WindowsFileSystem.DeleteFileOrFolder(directory, true, false);
+                             }
+                         }
+                         catch (Exception ex)
+                         {
+                             Dispatcher.Invoke(async () => await CommonDialog.ShowErrorDialogAsync(ex, "无法删除临时文件夹"));
+                         }
+                     })
+                , "正在删除临时文件夹");
             }
 
             if (closing)
@@ -667,43 +670,36 @@ namespace MapBoard.UI.TileDownloader
             Config.Tile_Urls.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
         }
 
-        public void SetLoading(bool isLoading)
-        {
-            loading.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         private async void DeleteEmptyFilesButtonClick(object sender, RoutedEventArgs e)
         {
-            loading.Show();
-            try
+            await DoAsync(async () =>
             {
-                string[] files = null;
-                await Task.Run(() => files = Directory.EnumerateFiles(Config.Instance.Tile_DownloadFolder, "*", SearchOption.AllDirectories)
-                .Where(p => new FileInfo(p).Length == 0).ToArray());
-                if (files.Length == 0)
+                try
                 {
-                    await CommonDialog.ShowErrorDialogAsync("没有空文件");
-                }
-                else
-                {
-                    if (await CommonDialog.ShowYesNoDialogAsync($"共找到{files.Length}个空文件，是否删除？") == true)
+                    string[] files = null;
+                    await Task.Run(() => files = Directory.EnumerateFiles(Config.Instance.Tile_DownloadFolder, "*", SearchOption.AllDirectories)
+                    .Where(p => new FileInfo(p).Length == 0).ToArray());
+                    if (files.Length == 0)
                     {
-                        foreach (var file in files)
-                        {
-                            File.Delete(file);
-                        }
-                        await CommonDialog.ShowOkDialogAsync("删除空文件", "删除成功");
+                        await CommonDialog.ShowErrorDialogAsync("没有空文件");
                     }
-                };
-            }
-            catch (Exception ex)
-            {
-                await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
-            }
-            finally
-            {
-                loading.Hide();
-            }
+                    else
+                    {
+                        if (await CommonDialog.ShowYesNoDialogAsync($"共找到{files.Length}个空文件，是否删除？") == true)
+                        {
+                            foreach (var file in files)
+                            {
+                                File.Delete(file);
+                            }
+                            await CommonDialog.ShowOkDialogAsync("删除空文件", "删除成功");
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
+                }
+            }, "正在删除");
         }
     }
 

@@ -1,4 +1,4 @@
-﻿<u:WindowBase
+﻿<u:MainWindowBase
     x:Class="MapBoard.UI.TileDownloader.TileDownloaderWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -487,6 +487,5 @@
                     Content="{Binding ServerOn, Converter={StaticResource b2s}, ConverterParameter=关闭服务器:开启服务器}" />
             </Grid>
         </Grid>
-        <mext:ProgressRingOverlay x:Name="loading" Grid.ColumnSpan="100" />
     </Grid>
-</u:WindowBase>
+</u:MainWindowBase>

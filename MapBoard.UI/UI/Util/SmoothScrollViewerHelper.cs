@@ -93,26 +93,31 @@ namespace MapBoard.UI.Util
                 HandleMouseWheel(p1 as ScrollViewer, p2.Delta);
             };
             ScrollViewer = scrollViewer;
-            timer = new System.Threading.Timer(
-               new System.Threading.TimerCallback(Timer_Elapsed), null, 0, 10);//随便写的数字，反正不会低于15ms
+            CompositionTarget.Rendering += CompositionTarget_Rendering;
+        }
+
+        private void CompositionTarget_Rendering(object sender, EventArgs e)
+        {
+            Timer_Elapsed(null);
         }
 
         public void Stop()
         {
-            timer.Dispose();
+            CompositionTarget.Rendering -= CompositionTarget_Rendering;
         }
 
-        private System.Threading.Timer timer;
+        private int i = 0;
 
         private void Timer_Elapsed(object obj)
         {
             if (remainsDelta != 0)
             {
+                Debug.WriteLine("go" + i++);
                 var target = ScrollViewer.VerticalOffset
                     - (remainsDelta > 0 ? 1 : -1) * Math.Sqrt(Math.Abs(remainsDelta)) / 1.5d //这个控制滑动的距离，值越大距离越短
                     * System.Windows.Forms.SystemInformation.MouseWheelScrollLines;
 
-                ScrollViewer.Dispatcher.InvokeAsync(() => ScrollViewer.ScrollToVerticalOffset(target), System.Windows.Threading.DispatcherPriority.Render);
+                ScrollViewer.Dispatcher.Invoke(() => ScrollViewer.ScrollToVerticalOffset(target));
                 remainsDelta /= 1.5;//这个控制每一次滑动的时间，值越大时间越短
 
                 //如果到目标距离不到1了，就直接停止滚动，因为不然的话会永远滚下去

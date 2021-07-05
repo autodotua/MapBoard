@@ -117,7 +117,7 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private async void OkButtonClick(object sender, RoutedEventArgs e)
+        private  void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
             Config.Instance.Save();

@@ -34,7 +34,7 @@ namespace MapBoard.UI
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class MainWindow : WindowBase
+    public partial class MainWindow : MainWindowBase
     {
         #region 属性和字段
 
@@ -56,7 +56,6 @@ namespace MapBoard.UI
         private bool canClosing = true;
         private bool closing = false;
         public Config Config => Config.Instance;
-        protected override bool AutoCloseSplashWindow => false;
 
         #endregion 属性和字段
 
@@ -89,7 +88,7 @@ namespace MapBoard.UI
         /// 初始化各组件
         /// </summary>
         /// <returns></returns>
-        public async Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
             //加载地图
             await arcMap.LoadAsync();
@@ -221,49 +220,6 @@ namespace MapBoard.UI
             }
             closing = true;
             Close();
-        }
-
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            if (SplashWindow.IsVisiable)
-            {
-                Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ShowLoading(0, "正在初始化");
-            }
-        }
-
-        private bool initialized = false;
-
-        protected async override void OnContentRendered(EventArgs e)
-        {
-            base.OnContentRendered(e);
-            if (initialized)
-            {
-                return;
-            }
-            initialized = true;
-            try
-            {
-                //如果存在启动页面，那么就不用显示窗体的转圈圈了
-                if (SplashWindow.IsVisiable)
-                {
-                    await InitializeAsync();
-                }
-                else
-                {
-                    await DoAsync(InitializeAsync, "正在初始化");
-                }
-            }
-            catch (Exception ex)
-            {
-                CommonDialog.ShowErrorDialogAsync(ex, "初始化失败").ConfigureAwait(false);
-            }
-            Visibility = Visibility.Visible;
-
-            SplashWindow.EnsureInvisiable();
         }
 
         /// <summary>
