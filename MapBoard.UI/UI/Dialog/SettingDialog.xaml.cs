@@ -36,7 +36,6 @@ namespace MapBoard.UI.Dialog
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
-            new DataGridHelper<BaseLayerInfo>(grd).EnableDragAndDropItem();
             Layers = layers;
         }
 
@@ -117,7 +116,7 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private  void OkButtonClick(object sender, RoutedEventArgs e)
+        private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
             Config.Instance.Save();

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:component="clr-namespace:MapBoard.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -51,7 +52,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ContentControl x:Name="groupContent" />
-        <Button x:Name="btnGroups" Background="Transparent" HorizontalAlignment="Right">
+        <Button
+            x:Name="btnGroups"
+            HorizontalAlignment="Right"
+            Background="Transparent">
             <ui:FontIcon Glyph="&#xF168;" />
             <ui:FlyoutService.Flyout>
                 <ui:Flyout x:Name="flyoutGroups" />
@@ -59,24 +63,18 @@
         </Button>
         <ListView
             x:Name="dataGrid" Grid.Row="2"
+            dd:DragDrop.DropHandler="{Binding}"
+            dd:DragDrop.IsDragSource="True"
+            dd:DragDrop.IsDropTarget="True"
             util:SmoothScrollViewerHelper.SmoothScroll="True"
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
+            ScrollViewer.CanContentScroll="False"
             SelectionChanged="SelectedLayerChanged"
             SelectionMode="Extended">
-            <ListBox.ItemContainerStyle>
-                <Style BasedOn="{StaticResource {x:Type ListBoxItem}}" TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="DockPanel.Dock" Value="Bottom" />
-                </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <DockPanel LastChildFill="False" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="8,-4" HorizontalAlignment="Stretch">
+                    <Grid Margin="8,6" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition Width="8" />

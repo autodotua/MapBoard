@@ -112,7 +112,7 @@ namespace MapBoard.UI.Util
         {
             if (remainsDelta != 0)
             {
-                Debug.WriteLine("go" + i++);
+                Debug.WriteLine(ScrollViewer.VerticalOffset);
                 var target = ScrollViewer.VerticalOffset
                     - (remainsDelta > 0 ? 1 : -1) * Math.Sqrt(Math.Abs(remainsDelta)) / 1.5d //这个控制滑动的距离，值越大距离越短
                     * System.Windows.Forms.SystemInformation.MouseWheelScrollLines;

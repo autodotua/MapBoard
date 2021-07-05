@@ -105,14 +105,14 @@ namespace MapBoard.Mapping.Model
 
         public async Task InsertAsync(int index, MapLayerInfo layer)
         {
-            await AddLayerAsync(layer, index);
+            await AddLayerAsync(layer, Count - index);
             layer.PropertyChanged += OnLayerPropertyChanged;
             LayerList.Insert(index, layer);
         }
 
         public void Move(int fromIndex, int toIndex)
         {
-            EsriLayers.Move(fromIndex, toIndex);
+            EsriLayers.Move(Count - fromIndex - 1, Count - toIndex - 1);
             LayerList.Move(fromIndex, toIndex);
         }
 
@@ -132,7 +132,7 @@ namespace MapBoard.Mapping.Model
 
         private async Task AddAsync(MapLayerInfo layer, bool addToCollection)
         {
-            await AddLayerAsync(layer);
+            await AddLayerAsync(layer, 0);
             layer.PropertyChanged += OnLayerPropertyChanged;
             if (addToCollection)
             {
@@ -152,7 +152,7 @@ namespace MapBoard.Mapping.Model
 
         public ELayerCollection EsriLayers { get; }
 
-        private async Task AddLayerAsync(MapLayerInfo layer, int index = -1)
+        private async Task AddLayerAsync(MapLayerInfo layer, int index)
         {
             try
             {

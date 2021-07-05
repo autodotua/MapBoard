@@ -26,13 +26,15 @@ using System.Collections.Generic;
 using FzLib.Basic;
 using ModernWpf.Controls;
 using MapBoard.UI.Component;
+using GongSolutions.Wpf.DragDrop;
+using System.Diagnostics;
 
 namespace MapBoard.UI
 {
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class LayerListPanel : UserControlBase
+    public partial class LayerListPanel : UserControlBase, IDropTarget
     {
         private LayerListPanelHelper layerListHelper;
 
@@ -305,6 +307,33 @@ namespace MapBoard.UI
         {
             Window.GetWindow(this).SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
             UpdateLayout(Window.GetWindow(this).ActualHeight);
+        }
+
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo.TargetItem == dropInfo.Data)
+            {
+                return;
+            }
+            int oldIndex = Layers.IndexOf(dropInfo.Data as MapLayerInfo);
+            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            {
+                return;
+            }
+            dropInfo.Effects = DragDropEffects.Move;
+            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+        }
+
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            int oldIndex = Layers.IndexOf(dropInfo.Data as MapLayerInfo);
+            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            {
+                return;
+            }
+            int targetIndex = dropInfo.InsertIndex > oldIndex ? dropInfo.InsertIndex - 1 : dropInfo.InsertIndex;
+
+            Layers.Move(oldIndex, targetIndex);
         }
     }
 }
