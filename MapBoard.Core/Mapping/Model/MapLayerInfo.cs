@@ -49,6 +49,7 @@ namespace MapBoard.Mapping.Model
             Fields = layer.Fields;
             Label = layer.Label;
             LayerVisible = layer.LayerVisible;
+            Group = layer.Group;
         }
 
         public override object Clone()

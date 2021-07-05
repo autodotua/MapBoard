@@ -40,6 +40,7 @@ namespace MapBoard.UI
         public void Initialize(MainMapView mapView)
         {
             MapView = mapView;
+            ResetLayerSettingUI();
         }
 
         public MainMapView MapView { get; private set; }
@@ -132,7 +133,7 @@ namespace MapBoard.UI
         public void ResetLayerSettingUI()
         {
             MapLayerInfo layer = Layers.Selected;
-            if (!IsLoaded || layer == null)
+            if (layer == null)
             {
                 return;
             }
