@@ -11,7 +11,7 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
     Height="700" MinWidth="500"
-    MinHeight="500"
+    MinHeight="600"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
@@ -147,13 +147,42 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                    Grid.Column="2" Width="10"
-                    Height="80" Margin="4,0,8,0"
+                    x:Name="btnShrink" Grid.Column="2"
+                    Margin="0,0,-20,0" Padding="0"
                     VerticalAlignment="Center"
-                    Click="LayerSettingOpenCloseButton_Click" />
+                    Background="Transparent"
+                    Click="LayerSettingOpenCloseButton_Click">
+                    <Button.LayoutTransform>
+                        <ScaleTransform ScaleX="0.5" />
+                    </Button.LayoutTransform>
+                    <ContentControl>
+                        <ContentControl.Style>
+                            <Style TargetType="{x:Type ContentControl}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <Border
+                                                x:Name="icon" Padding="4,8"
+                                                Background="Transparent">
+                                                <ui:FontIcon
+                                                    FontSize="24" FontWeight="Bold"
+                                                    Glyph="&#xEDD9;" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="False">
+                                                    <Setter TargetName="icon" Property="Opacity" Value="0" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                </Button>
                 <Grid
                     x:Name="grdLeft" Width="300"
-                    Margin="4">
+                    Margin="0,4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="16" />

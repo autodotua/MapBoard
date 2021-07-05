@@ -41,6 +41,25 @@ namespace MapBoard.UI
             InitializeComponent();
         }
 
+        private void UpdateLayout(double height)
+        {
+            var r = FindResource("bdGroups") as Border;
+            if (height < 800)
+            {
+                btnGroups.Visibility = Visibility.Visible;
+                groupContent.Visibility = Visibility.Collapsed;
+                flyoutGroups.Content = r;
+                r.Background = Brushes.Transparent;
+            }
+            else
+            {
+                btnGroups.Visibility = Visibility.Collapsed;
+                groupContent.Visibility = Visibility.Visible;
+                groupContent.Content = r;
+                r.SetResourceReference(BackgroundProperty, "SystemControlBackgroundChromeMediumBrush");
+            }
+        }
+
         private bool changingSelection = false;
 
         /// <summary>
@@ -280,6 +299,12 @@ namespace MapBoard.UI
 
             txt.Focus();
             txt.SelectAll();
+        }
+
+        private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            Window.GetWindow(this).SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
+            UpdateLayout(Window.GetWindow(this).ActualHeight);
         }
     }
 }

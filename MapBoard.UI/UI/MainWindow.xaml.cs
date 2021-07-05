@@ -28,6 +28,7 @@ using MapBoard.Util;
 using MapBoard.UI.TileDownloader;
 using System.Threading;
 using MapBoard.UI.Component;
+using System.Windows.Media;
 
 namespace MapBoard.UI
 {
@@ -579,10 +580,13 @@ namespace MapBoard.UI
                 ani = new DoubleAnimation(0, 300, TimeSpan.FromSeconds(0.5));
                 grdLeftArea.SetResourceReference(BackgroundProperty, "SystemControlPageBackgroundAltHighBrush");
                 grdCenter.Margin = new Thickness(0);
+                (btnShrink.LayoutTransform as ScaleTransform).ScaleX = 0.5;
             }
             else
             {
                 ani = new DoubleAnimation(grdLeft.ActualWidth, 0, TimeSpan.FromSeconds(0.5)); // { EasingFunction = EasingMode.EaseInOut };
+
+                (btnShrink.LayoutTransform as ScaleTransform).ScaleX = -0.5;
             }
             ani.Completed += (p1, p2) =>
             {

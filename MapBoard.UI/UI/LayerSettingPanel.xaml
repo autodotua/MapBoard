@@ -7,8 +7,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-        xmlns:util="clr-namespace:MapBoard.UI.Util"
-
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     mc:Ignorable="d">
 
     <Grid>
@@ -24,12 +23,13 @@
             Background="Transparent"
             BorderThickness="0" FontSize="20"
             Text="{Binding LayerName}" />
-        <ScrollViewer util:SmoothScrollViewerHelper.SmoothScroll="True"
+        <ScrollViewer
             x:Name="scrMain" Grid.Row="2"
+            util:SmoothScrollViewerHelper.SmoothScroll="True"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ui:SimpleStackPanel
-                Margin="0,0,12,0" Orientation="Vertical"
+                Margin="8,0,12,0" Orientation="Vertical"
                 Spacing="12">
 
                 <Border

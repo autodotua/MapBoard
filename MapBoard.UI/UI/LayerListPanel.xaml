@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.UI.Util"
+    Loaded="LayerListPanel_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
         <TextBox
@@ -15,17 +16,10 @@
             HorizontalContentAlignment="Left"
             MaxLength="10"
             Text="{Binding Group}" />
-    </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
         <Border
+            x:Key="bdGroups" MaxWidth="300"
             Margin="0,0,12,0" Padding="8"
-            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
             CornerRadius="4">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemsPanel>
@@ -49,8 +43,23 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Border>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ContentControl x:Name="groupContent" />
+        <Button x:Name="btnGroups" Background="Transparent" HorizontalAlignment="Right">
+            <ui:FontIcon Glyph="&#xF168;" />
+            <ui:FlyoutService.Flyout>
+                <ui:Flyout x:Name="flyoutGroups" />
+            </ui:FlyoutService.Flyout>
+        </Button>
         <ListView
-            x:Name="dataGrid" Grid.Row="2" util:SmoothScrollViewerHelper.SmoothScroll="True"
+            x:Name="dataGrid" Grid.Row="2"
+            util:SmoothScrollViewerHelper.SmoothScroll="True"
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             SelectionChanged="SelectedLayerChanged"
