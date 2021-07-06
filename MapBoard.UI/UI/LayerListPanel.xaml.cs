@@ -311,7 +311,8 @@ namespace MapBoard.UI
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            if (dropInfo.TargetItem == dropInfo.Data)
+            if (dropInfo.TargetItem == dropInfo.Data
+                || dropInfo.Data is IList)
             {
                 return;
             }

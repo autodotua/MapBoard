@@ -65,10 +65,5 @@ namespace MapBoard.UI
             instance = null;
         }
 
-        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
-        {
-            base.OnPreviewMouseDown(e);
-            DragMove();
-        }
     }
 }

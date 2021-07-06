@@ -104,7 +104,7 @@ namespace MapBoard.IO
                 }
                 else if (layer.GeometryType == GeometryType.Multipoint)
                 {
-                    throw new Exception("多点暂不支持导入GPX");
+                    throw new NotSupportedException("多点暂不支持导入GPX");
                 }
                 else if (layer.GeometryType == GeometryType.Polyline)
                 {
@@ -116,7 +116,7 @@ namespace MapBoard.IO
                 }
                 else
                 {
-                    throw new Exception("不支持的格式图形类型");
+                    throw new NotSupportedException("不支持的格式图形类型");
                 }
             }
             await layer.AddFeaturesAsync(importedFeatures, FeaturesChangedSource.Import);

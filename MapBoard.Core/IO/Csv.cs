@@ -122,7 +122,7 @@ namespace MapBoard.IO
                 string[] xy = line.Split(',');
                 if (xy.Length != 2)
                 {
-                    throw new Exception("CSV格式不正确");
+                    throw new FormatException("CSV格式不正确");
                 }
 
                 if (!double.TryParse(xy[0], out double x) || !double.TryParse(xy[1], out double y))
@@ -154,7 +154,7 @@ namespace MapBoard.IO
                     case GeometryType.Point:
                         if (part.Count != 1)
                         {
-                            throw new Exception("若要导入为点，每一部分必须只有一个坐标");
+                            throw new FormatException("若要导入为点，每一部分必须只有一个坐标");
                         }
                         feature.Geometry = part[0];
 

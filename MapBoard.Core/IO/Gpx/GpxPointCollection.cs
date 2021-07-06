@@ -104,11 +104,11 @@ namespace MapBoard.IO.Gpx
         {
             if (!IsOrdered)
             {
-                throw new Exception("点集合不符合时间顺序");
+                throw new GpxException("点集合不符合时间顺序");
             }
             if (Count <= 1)
             {
-                throw new Exception("集合拥有的点过少");
+                throw new GpxException("集合拥有的点过少");
             }
 
             int min = index - unilateralSampleCount;
@@ -166,6 +166,21 @@ namespace MapBoard.IO.Gpx
                 points[i] = this[i].Clone() as GpxPoint;
             }
             return new GpxPointCollection(points);
+        }
+    }
+
+    public class GpxException : Exception
+    {
+        public GpxException()
+        {
+        }
+
+        public GpxException(string message) : base(message)
+        {
+        }
+
+        public GpxException(string message, Exception innerException) : base(message, innerException)
+        {
         }
     }
 }

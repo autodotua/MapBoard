@@ -40,7 +40,7 @@ namespace MapBoard.IO
             {
                 if (layers.Any(p => p.Name == layer.Name))
                 {
-                    throw new Exception("存在重复的图层名：" + layer.Name);
+                    throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
             }
             foreach (var layer in newLayers)
@@ -156,14 +156,7 @@ namespace MapBoard.IO
         {
             if (File.Exists(path))
             {
-                try
-                {
-                    File.Delete(path);
-                }
-                catch (IOException ex)
-                {
-                    throw new Exception("无法删除已存在的文件", ex);
-                }
+                File.Delete(path);
             }
             await Task.Run(() =>
             {

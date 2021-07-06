@@ -31,7 +31,7 @@ namespace MapBoard.Util
         {
             if (fieldTarget.Name.Equals(FieldExtension.CreateTimeField.Name))
             {
-                throw new Exception("不可为“创建时间”字段赋值");
+                throw new ArgumentException("不可为“创建时间”字段赋值");
             }
 
             Debug.Assert(features.All(p => p.FeatureTable.Layer == layer.Layer));
@@ -150,7 +150,7 @@ namespace MapBoard.Util
         {
             if (field.Name.Equals(FieldExtension.CreateTimeField.Name))
             {
-                throw new Exception("不可为“创建时间”字段赋值");
+                throw new ArgumentException("不可为“创建时间”字段赋值");
             }
 
             Debug.Assert(features.All(p => p.FeatureTable.Layer == layer.Layer));

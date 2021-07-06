@@ -134,7 +134,7 @@ namespace MapBoard.IO.Gpx
             }
             catch (Exception ex)
             {
-                throw new Exception("解析轨迹失败", ex);
+                throw new XmlException("解析轨迹失败", ex);
             }
         }
 

@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using MapBoard.Model;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace MapBoard.Util
@@ -57,7 +58,7 @@ namespace MapBoard.Util
                     return new Envelope(newLeftTop, newRightBottom);
 
                 default:
-                    throw new Exception("未知类型");
+                    throw new InvalidEnumArgumentException("未知类型");
             }
         }
 
@@ -97,7 +98,7 @@ namespace MapBoard.Util
                         return ChineseCoordinateTransformation.BD09ToWgs84(point);
                     }
                 default:
-                    throw new Exception("未知坐标系");
+                    throw new InvalidEnumArgumentException("未知坐标系");
             }
         }
 
@@ -122,7 +123,7 @@ namespace MapBoard.Util
                         return ChineseCoordinateTransformation.WGS84ToBD09(point);
                     }
                 default:
-                    throw new Exception("未知坐标系");
+                    throw new InvalidEnumArgumentException("未知坐标系");
             }
         }
     }

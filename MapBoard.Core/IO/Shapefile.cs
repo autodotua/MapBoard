@@ -139,7 +139,7 @@ namespace MapBoard.IO
                 if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
                       || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
                 {
-                    throw new Exception($"字段名存在不合法");
+                    throw new ArgumentException($"字段名存在不合法");
                 }
             }
 

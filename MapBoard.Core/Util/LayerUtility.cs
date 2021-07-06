@@ -225,12 +225,12 @@ namespace MapBoard.Util
         {
             if (layers == null || !layers.Any())
             {
-                throw new Exception("图层为空");
+                throw new ArgumentException("图层为空");
             }
             var type = layers.Select(p => p.GeometryType).Distinct();
             if (type.Count() != 1)
             {
-                throw new Exception("图层的类型并非统一");
+                throw new ArgumentException("图层的类型并非统一");
             }
             MapLayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
             List<Feature> newFeatures = new List<Feature>();

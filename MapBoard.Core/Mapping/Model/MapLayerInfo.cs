@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Data;
+﻿using AutoMapper;
+using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
@@ -43,13 +44,11 @@ namespace MapBoard.Mapping.Model
 
         public MapLayerInfo(LayerInfo layer)
         {
-            Name = layer.Name;
-            TimeExtent = layer.TimeExtent;
-            Symbols = layer.Symbols;
-            Fields = layer.Fields;
-            Label = layer.Label;
-            LayerVisible = layer.LayerVisible;
-            Group = layer.Group;
+             new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<LayerInfo, MapLayerInfo>();
+            }).CreateMapper().Map(layer, this);
+
         }
 
         public override object Clone()

@@ -55,7 +55,7 @@ namespace MapBoard.Util
                 {
                     if (++tryTimes >= 10)
                     {
-                        throw new Exception("尝试删除已存在的文件失败");
+                        throw new IOException("尝试删除已存在的文件失败");
                     }
                     Thread.Sleep(100);
                 }

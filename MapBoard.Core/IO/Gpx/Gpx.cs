@@ -23,7 +23,7 @@ namespace MapBoard.IO.Gpx
             XmlElement xmlGpx = xmlDoc["gpx"];
             if (xmlGpx == null)
             {
-                throw new Exception("没有找到gpx元素");
+                throw new XmlException("没有找到gpx元素");
             }
             Gpx info = new Gpx(xmlGpx);
 

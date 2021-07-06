@@ -14,7 +14,7 @@ namespace MapBoard.IO.Gpx
         {
             if (points.Any(p => p.Time == null))
             {
-                throw new Exception("其中一个点的时间为空");
+                throw new GpxException("其中一个点的时间为空");
             }
             var sortedPoints = points.OrderBy(p => p.Time);
             TimeSpan totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
@@ -35,7 +35,7 @@ namespace MapBoard.IO.Gpx
         {
             if (point1.Time == null || point2.Time == null)
             {
-                throw new Exception("其中一个点的时间为空");
+                throw new GpxException("其中一个点的时间为空");
             }
             return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(), TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time).TotalMilliseconds)));
         }
@@ -195,7 +195,7 @@ namespace MapBoard.IO.Gpx
                 }
                 if (relatedPointList.Count < 2)
                 {
-                    throw new Exception("点数量过少");
+                    throw new GpxException("点数量过少");
                 }
                 RelatedPoints = relatedPointList.ToArray();
                 TimeSpan = maxTime - minTime;

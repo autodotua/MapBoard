@@ -2,6 +2,7 @@
 
 using FzLib.Extension;
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace MapBoard.Model
@@ -54,7 +55,7 @@ namespace MapBoard.Model
                                     attrValue = intValue;
                                     break;
                                 }
-                                throw new ApplicationException("输入的值超过了范围");
+                                throw new ArgumentOutOfRangeException("输入的值超过了范围");
                             }
                             if (value is double d)
                             {
@@ -64,7 +65,7 @@ namespace MapBoard.Model
                                     attrValue = intValue;
                                     break;
                                 }
-                                throw new ApplicationException("输入的值超过了范围");
+                                throw new ArgumentOutOfRangeException("输入的值超过了范围");
                             }
                             if (value is string str1)
                             {
@@ -75,7 +76,7 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ApplicationException("输入的值无法转换为整数");
+                            throw new ArgumentException("输入的值无法转换为整数");
                         case FieldInfoType.Float:
                             if (value == null)
                             {
@@ -98,7 +99,7 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ApplicationException("输入的值无法转换为小数");
+                            throw new ArgumentException("输入的值无法转换为小数");
                         case FieldInfoType.Date:
                             if (value == null)
                             {
@@ -134,7 +135,7 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ApplicationException("输入的值无法转换为日期");
+                            throw new ArgumentException("输入的值无法转换为日期");
                         case FieldInfoType.Time:
                             if (value == null)
                             {
@@ -163,13 +164,13 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ApplicationException("输入的值无法转换为日期");
+                            throw new ArgumentException("输入的值无法转换为日期");
                         case FieldInfoType.Text:
                             if (value is string str4)
                             {
                                 if (str4.Length > 254)
                                 {
-                                    throw new ApplicationException("输入的字符串过长");
+                                    throw new ArgumentException("输入的字符串过长");
                                 }
                                 textValue = str4;
                                 attrValue = value;
@@ -186,10 +187,10 @@ namespace MapBoard.Model
                             break;
 
                         default:
-                            throw new NotSupportedException();
+                            throw new InvalidEnumArgumentException();
                     }
                 }
-                catch (Exception ex)
+                catch (ArgumentException ex)
                 {
 #if !DEBUG||ERROR
                     throw;

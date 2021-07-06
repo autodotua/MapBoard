@@ -463,7 +463,7 @@ namespace MapBoard.Util
 
             if (interval < 2)
             {
-                throw new Exception("间隔不应小于2");
+                throw new ArgumentOutOfRangeException("间隔不应小于2");
             }
             foreach (var feature in features)
             {
@@ -621,7 +621,7 @@ namespace MapBoard.Util
             }
             if (parts.Count > 1)
             {
-                throw new Exception("不支持操作拥有多个部分的要素");
+                throw new NotSupportedException("不支持操作拥有多个部分的要素");
             }
             List<MapPoint> points = new List<MapPoint>();
             foreach (var part in parts)
