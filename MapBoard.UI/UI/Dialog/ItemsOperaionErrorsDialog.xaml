@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="操作结果"
+    xmlns:util="clr-namespace:MapBoard.UI.Util"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     PrimaryButtonText="关闭" mc:Ignorable="d">
     <Grid
@@ -23,15 +23,32 @@
             <Run Text="{Binding Errors.Count, Mode=OneWay}" />
             <Run>项发生错误</Run>
         </TextBlock>
-        <ListView
-            Grid.Row="2" MaxHeight="160"
-            ItemsSource="{Binding Errors}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="描述" />
-                    <GridViewColumn DisplayMemberBinding="{Binding ErrorMessage}" Header="错误详情" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <DataGrid
+            Grid.Row="2" MaxHeight="240"
+            util:SmoothScrollViewerHelper.SmoothScroll="True"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            ItemsSource="{Binding Errors}"
+            SelectionMode="Single"
+            SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding Name}"
+                    Header="描述" IsReadOnly="True" />
+                <DataGridTextColumn
+                    Binding="{Binding ErrorMessage}"
+                    Header="错误详情" IsReadOnly="True" />
+            </DataGrid.Columns>
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <TextBlock
+                        Margin="12,4"
+                        Text="{Binding Exception}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding Exception, Converter={StaticResource n2ic}}" />
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
     </Grid>
 </commondialog:CommonDialog>

@@ -38,6 +38,7 @@ namespace MapBoard.UI.Util
 
         public static SmoothScrollViewerHelper RegistScrollViewer(ScrollViewer scr)
         {
+            scr.CanContentScroll = false;
             SmoothScrollViewerHelper helper = new SmoothScrollViewerHelper(scr);
             return helper;
         }

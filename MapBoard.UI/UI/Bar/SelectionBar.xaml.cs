@@ -434,7 +434,7 @@ namespace MapBoard.UI.Bar
                         default:
                             break;
                     }
-                    await ItemsOperaionErrorsDialog.TryShowErrorsAsync(errors);
+                    await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分属性复制失败", errors);
                 }
             }
         }

@@ -106,6 +106,10 @@ namespace MapBoard.UI
             RegistEvents();
             //初始化控件可用性
             JudgeControlsEnable();
+            if (arcMap.Layers.LoadErrors != null)
+            {
+                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", arcMap.Layers.LoadErrors);
+            }
         }
 
         /// <summary>

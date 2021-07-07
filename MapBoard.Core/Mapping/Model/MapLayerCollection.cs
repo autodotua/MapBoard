@@ -52,6 +52,8 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        public ItemsOperationErrorCollection LoadErrors { get; private set; }
+
         public static async Task<MapLayerCollection> GetInstanceAsync(ELayerCollection esriLayers)
         {
             string path = Path.Combine(Parameters.DataPath, LayersFileName);
@@ -74,6 +76,12 @@ namespace MapBoard.Mapping.Model
                 {
                     Debug.WriteLine($"图层{layer.Name}加载失败：{ex.Message}");
                     instance.LayerList.Remove(layer);
+
+                    if (instance.LoadErrors == null)
+                    {
+                        instance.LoadErrors = new ItemsOperationErrorCollection();
+                    }
+                    instance.LoadErrors.Add(new ItemsOperationError(layer.Name, ex));
                 }
             }
 
@@ -158,7 +166,7 @@ namespace MapBoard.Mapping.Model
             {
                 if (!layer.HasTable)
                 {
-                    await layer.SetTableAsync(new ShapefileFeatureTable(layer.GetFilePath()));
+                    await layer.LoadAsync();
                 }
                 FeatureLayer fl = layer.Layer;
                 if (index == -1)
@@ -169,8 +177,6 @@ namespace MapBoard.Mapping.Model
                 {
                     EsriLayers.Insert(index, fl);
                 }
-                await Task.Run(layer.ApplyStyle);
-                await layer.LayerCompleteAsync();
             }
             catch (Exception ex)
             {
@@ -186,59 +192,6 @@ namespace MapBoard.Mapping.Model
                 {
                 }
                 throw;
-            }
-        }
-
-        public async Task LoadLayersAsync()
-        {
-            if (!Directory.Exists(Parameters.DataPath))
-            {
-                Directory.CreateDirectory(Parameters.DataPath);
-                return;
-            }
-
-            foreach (var layer in LayerList.Cast<MapLayerInfo>().ToList())
-            {
-                if (File.Exists(Path.Combine(Parameters.DataPath, layer.Name + ".shp")))
-                {
-                    await LoadLayerAsync(layer);
-                }
-                else
-                {
-                    Remove(layer);
-                }
-            }
-            return;
-            //下面的啥东西？
-            HashSet<string> files = Directory.EnumerateFiles(Parameters.DataPath)
-                .Where(p => Path.GetExtension(p) == ".shp")
-                .Select(p =>
-                {
-                    int index = p.LastIndexOf('.');
-                    if (index == -1)
-                    {
-                        return p;
-                    }
-                    return p.Remove(index, p.Length - index).RemoveStart(Parameters.DataPath + "\\");
-                }).ToHashSet();
-
-            foreach (var name in files)
-            {
-                if (!LayerList.Any(p => p.Name == name))
-                {
-                    MapLayerInfo style = new MapLayerInfo();
-                    style.Name = name;
-                    await LoadLayerAsync(style);
-                }
-            }
-        }
-
-        public async Task LoadLayerAsync(MapLayerInfo layer)
-        {
-            ShapefileFeatureTable featureTable = new ShapefileFeatureTable(Parameters.DataPath + "\\" + layer.Name + ".shp");
-            await featureTable.LoadAsync();
-            if (featureTable.LoadStatus == LoadStatus.Loaded)
-            {
             }
         }
     }

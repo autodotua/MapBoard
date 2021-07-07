@@ -92,7 +92,8 @@ namespace MapBoard.UI
             {
                 int index = Layers.IndexOf(Layers.Selected);
 
-                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Length > 240 || newName.Length < 1)
+                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+                    || newName.Length > 240 || newName.Length < 1)
                 {
                     await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
                 }
@@ -104,18 +105,12 @@ namespace MapBoard.UI
                 {
                     try
                     {
-                        await LayerUtility.DeleteLayerAsync(Layers.Selected, Layers, false);
-                        foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
-                        {
-                            File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
-                        }
-                        layer.Name = newName;
+                        await Layers.Selected.ChangeNameAsync(newName, Layers.EsriLayers);
                     }
                     catch (Exception ex)
                     {
                         await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
                     }
-                    await Layers.InsertAsync(index, layer);
                     Layers.Selected = layer;
                 }
             }

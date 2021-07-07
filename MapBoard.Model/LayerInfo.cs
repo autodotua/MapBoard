@@ -13,7 +13,13 @@ namespace MapBoard.Model
     [DebuggerDisplay("{Name}")]
     public class LayerInfo : INotifyPropertyChanged, ICloneable
     {
-        public string Name { get; set; }
+        private string name;
+
+        public string Name
+        {
+            get => name;
+             set => this.SetValueAndNotify(ref name, value, nameof(Name));
+        }
 
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
 

@@ -43,7 +43,6 @@ namespace MapBoard.UI
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
-            List<(string header, Func<MapLayerInfo, Task> action, bool visiable)?> menus = null;
             MapLayerInfo layer = MapView.Layers.Selected;
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
@@ -316,7 +315,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                await ItemsOperaionErrorsDialog.TryShowErrorsAsync(errors);
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分属性复制失败", errors);
             }
         }
 
@@ -353,6 +352,5 @@ namespace MapBoard.UI
                 list.SelectedItem = layer;
             }
         }
-
     }
 }

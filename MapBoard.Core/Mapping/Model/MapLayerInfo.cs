@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Extension;
+using MapBoard.IO;
 using MapBoard.Model;
 using MapBoard.Util;
 using Newtonsoft.Json;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,13 +44,22 @@ namespace MapBoard.Mapping.Model
         {
         }
 
+        public MapLayerInfo(string name)
+        {
+            Name = name;
+        }
+
+        public static MapLayerInfo CreateTemplate()
+        {
+            return new MapLayerInfo();
+        }
+
         public MapLayerInfo(LayerInfo layer)
         {
-             new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<LayerInfo, MapLayerInfo>();
-            }).CreateMapper().Map(layer, this);
-
+            new MapperConfiguration(cfg =>
+           {
+               cfg.CreateMap<LayerInfo, MapLayerInfo>();
+           }).CreateMapper().Map(layer, this);
         }
 
         public override object Clone()
@@ -64,6 +75,50 @@ namespace MapBoard.Mapping.Model
             return layer;
         }
 
+        /// <summary>
+        /// 修改图层名，并同步修改物理文件的名称
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <param name="layers">Esri图层集合</param>
+        /// <returns></returns>
+        public async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(newName));
+            if (newName == Name)
+            {
+                return;
+            }
+            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+                   || newName.Length > 240 || newName.Length < 1)
+            {
+                throw new IOException("新文件名不合法");
+            }
+            //检查文件存在
+            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
+            {
+                if (File.Exists(Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file))))
+                {
+                    throw new IOException("该名称的文件已存在");
+                }
+            }
+            //检查图层是否在集合中
+            if (!layers.Contains(Layer))
+            {
+                throw new ArgumentException("本图层不在给定的图层集合中");
+            }
+            int index = layers.IndexOf(Layer);
+
+            table.Close();
+            //重命名
+            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
+            {
+                File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
+            }
+            Name = newName;
+            await LoadAsync();
+            layers[index] = Layer;
+        }
+
         private FeatureLayer layer;
 
         [JsonIgnore]
@@ -71,11 +126,14 @@ namespace MapBoard.Mapping.Model
 
         private ShapefileFeatureTable table;
 
-        public async Task SetTableAsync(ShapefileFeatureTable table)
+        public async Task LoadAsync()
         {
-            this.table = table;
+            table = new ShapefileFeatureTable(this.GetFilePath());
             await table.LoadAsync();
             layer = new FeatureLayer(table);
+
+            await Task.Run(this.ApplyStyle);
+            await this.LayerCompleteAsync();
         }
 
         public bool HasTable => table != null;
@@ -115,7 +173,7 @@ namespace MapBoard.Mapping.Model
                 GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
                 GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
                 GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
-                _ => throw new ArgumentOutOfRangeException(),
+                _ => throw new InvalidEnumArgumentException(),
             };
         }
 

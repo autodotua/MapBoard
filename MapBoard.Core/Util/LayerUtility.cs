@@ -72,9 +72,8 @@ namespace MapBoard.Util
                 fields = new List<FieldInfo>();
             }
             await Shapefile.CreateShapefileAsync(type, name, null, fields);
-            MapLayerInfo layer = template == null ? new MapLayerInfo() : template.Clone() as MapLayerInfo;
+            MapLayerInfo layer = template == null ? new MapLayerInfo(name) : template.Clone() as MapLayerInfo;
             layer.Fields = fields.ToArray();
-            layer.Name = name;
             await layers.AddAsync(layer);
             layers.Selected = layer;
             return layer;
@@ -132,7 +131,7 @@ namespace MapBoard.Util
 
         public async static Task BufferAsync(this MapLayerInfo layer, MapLayerCollection layers, double meters)
         {
-            var template = new MapLayerInfo();
+            var template = MapLayerInfo.CreateTemplate();
             foreach (var symbol in layer.Symbols)
             {
                 template.Symbols.Add(symbol.Key, new SymbolInfo()
