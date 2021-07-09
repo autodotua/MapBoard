@@ -52,6 +52,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FzStandardLib.dll</HintPath>
     </Reference>
+    <Reference Include="ModernWpf.FzExtension">
+      <HintPath>..\libs\ModernWpf.FzExtension.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsAPICodePack.FzExtension">
+      <HintPath>..\libs\WindowsAPICodePack.FzExtension.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon.ico" />
@@ -61,7 +67,6 @@
     <ProjectReference Include="..\MapBoard.Core\MapBoard.Core.csproj" />
     <ProjectReference Include="..\MapBoard.Extension\MapBoard.Extension.csproj" />
     <ProjectReference Include="..\MapBoard.Model\MapBoard.Model.csproj" />
-    <ProjectReference Include="..\ModernWpf.FzExtension\ModernWpf.FzExtension.csproj" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

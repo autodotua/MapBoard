@@ -1,4 +1,5 @@
 ﻿using FzLib.Extension;
+using FzLib.WPF;
 using FzLib.WPF.Dialog;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
@@ -123,7 +124,7 @@ namespace MapBoard.UI.Bar
                 DataGrid grd = (DataGrid)sender;
                 grd.BeginEdit(e);
                 //找到DataGridCell中第一个（唯一一个）TextBox
-                var txt = FzLib.WPF.Common.GetFirstChildOfType<TextBox>(e.OriginalSource as FrameworkElement);
+                var txt = (e.OriginalSource as FrameworkElement).GetChild<TextBox>();
                 if (txt != null)
                 {
                     //让TextBox获取焦点和键盘焦点
@@ -133,7 +134,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private  void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.Control)
             {

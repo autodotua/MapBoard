@@ -9,7 +9,7 @@
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.Util"
-    xmlns:uiutil="clr-namespace:MapBoard.UI.Util"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
@@ -121,7 +121,7 @@
             </Button>
         </Grid>
         <ListView
-            Grid.Row="4" uiutil:SmoothScrollViewerHelper.SmoothScroll="True" 
+            Grid.Row="4" fzc:SmoothScrollViewerHelper.SmoothScroll="True"
             Grid.ColumnSpan="99" ScrollViewer.CanContentScroll="False"
             ItemsSource="{Binding SearchResult}"
             SelectedItem="{Binding SelectedRoute}">

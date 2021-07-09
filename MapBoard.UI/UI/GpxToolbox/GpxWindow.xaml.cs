@@ -28,13 +28,15 @@ using FzLib.Program;
 using System.Collections.ObjectModel;
 using ModernWpf.FzExtension.CommonDialog;
 using System.Threading.Tasks;
-using FzLib.WPF.Extension;
 using FzLib.WPF.Dialog;
 using MapBoard.Util;
 using MapBoard.Mapping;
 using static MapBoard.IO.Gpx.GpxSpeedAnalysis;
 using MapBoard.Mapping.Model;
 using FzLib.Basic;
+using Microsoft.WindowsAPICodePack.FzExtension;
+using FzLib.WPF.Controls;
+using FzLib.WPF;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -277,6 +279,7 @@ namespace MapBoard.UI.GpxToolbox
                 App.Log.Error("绘制图形失败：" + ex.Message);
             }
         }
+
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
             arcMap.ClearSelection();
@@ -736,7 +739,7 @@ namespace MapBoard.UI.GpxToolbox
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);
-                var bitmap = FzLib.Media.Converter.BitmapSourceToBitmap(export.GetBitmap());
+                var bitmap = export.GetBitmap().ToBitmap();
 
                 Graphics g = Graphics.FromImage(bitmap);
                 Bitmap image = await arcMap.GetImageAsync(GeoViewHelper.GetWatermarkThickness());

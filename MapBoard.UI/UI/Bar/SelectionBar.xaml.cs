@@ -29,6 +29,7 @@ using System.Windows.Navigation;
 using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using Microsoft.WindowsAPICodePack.FzExtension;
 
 namespace MapBoard.UI.Bar
 {

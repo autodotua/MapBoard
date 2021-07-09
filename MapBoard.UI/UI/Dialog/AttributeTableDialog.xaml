@@ -10,7 +10,7 @@
     Title="设置"
     Width="800"
     Height="400"
-    xmlns:util="clr-namespace:MapBoard.UI.Util"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="AttributeTableDialog_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -24,7 +24,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <DataGrid
-            x:Name="dg" util:SmoothScrollViewerHelper.SmoothScroll="True"
+            x:Name="dg" fzc:SmoothScrollViewerHelper.SmoothScroll="True"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"

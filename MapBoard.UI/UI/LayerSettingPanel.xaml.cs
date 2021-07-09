@@ -16,7 +16,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using static FzLib.Media.Converter;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 using MapBoard.Mapping.Model;

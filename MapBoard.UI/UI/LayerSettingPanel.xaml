@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:util="clr-namespace:MapBoard.UI.Util"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     mc:Ignorable="d">
 
     <Grid>
@@ -25,7 +25,7 @@
             Text="{Binding LayerName}" />
         <ScrollViewer
             x:Name="scrMain" Grid.Row="2"
-            util:SmoothScrollViewerHelper.SmoothScroll="True"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ui:SimpleStackPanel

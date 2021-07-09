@@ -20,6 +20,7 @@ using MapBoard.Util;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
+using Microsoft.WindowsAPICodePack.FzExtension;
 
 namespace MapBoard.UI.TileDownloader
 {

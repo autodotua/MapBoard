@@ -8,7 +8,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:util="clr-namespace:MapBoard.UI.Util"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     Loaded="LayerListPanel_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -66,7 +66,7 @@
             dd:DragDrop.DropHandler="{Binding}"
             dd:DragDrop.IsDragSource="True"
             dd:DragDrop.IsDropTarget="True"
-            util:SmoothScrollViewerHelper.SmoothScroll="True"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             ScrollViewer.CanContentScroll="False"

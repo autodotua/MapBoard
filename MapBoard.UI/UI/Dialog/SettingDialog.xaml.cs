@@ -1,6 +1,5 @@
 ﻿using FzLib.Extension;
 using FzLib.WPF.Dialog;
-using FzLib.WPF.Extension;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using ModernWpf.FzExtension.CommonDialog;
@@ -20,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using MapBoard.IO;
 using MapBoard.Mapping.Model;
+using Microsoft.WindowsAPICodePack.FzExtension;
 
 namespace MapBoard.UI.Dialog
 {
@@ -209,11 +209,11 @@ namespace MapBoard.UI.Dialog
             {
                 await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 CommonDialog.ShowErrorDialogAsync(ex, "备份失败");
             }
-                this.Notify(nameof(CurrentBackupCount));
+            this.Notify(nameof(CurrentBackupCount));
 
             (sender as Button).IsEnabled = true;
             canClose = true;

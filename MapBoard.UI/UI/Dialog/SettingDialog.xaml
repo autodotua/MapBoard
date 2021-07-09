@@ -8,7 +8,7 @@
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:util="clr-namespace:MapBoard.UI.Util"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:dd="urn:gong-wpf-dragdrop"
     Title="设置" Width="600"
     Height="540"
@@ -63,7 +63,7 @@
                         </Grid.RowDefinitions>
                         <DataGrid
                             x:Name="grd" Height="160"
-                            util:SmoothScrollViewerHelper.SmoothScroll="True"
+                            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"    dd:DragDrop.IsDragSource="True"
             dd:DragDrop.IsDropTarget="True"

@@ -25,6 +25,7 @@ using ModernWpf.FzExtension;
 using MapBoard.Mapping.Model;
 using MapBoard.UI.Dialog;
 using System.Drawing.Imaging;
+using Microsoft.WindowsAPICodePack.FzExtension;
 
 namespace MapBoard.UI
 {

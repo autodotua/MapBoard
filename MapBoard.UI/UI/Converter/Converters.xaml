@@ -8,7 +8,7 @@
     <converter:IndexConverter x:Key="ic" />
     <converters:Enum2DescriptionConverter x:Key="e2dc" />
     <converters:NotNull2BoolConverter x:Key="nn2bc" />
-    <converters:Null2InvisiableConverter x:Key="n2ic" />
+    <converters:NotNull2VisiableConverter x:Key="n2ic" />
     <converters:Bool2VisibilityConverter x:Key="b2vc" />
-    <converter:ColorBrushConverter x:Key="c2bc" />
+    <converters:Color2SolidColorBrushConverter x:Key="c2bc" />
 </ResourceDictionary>
