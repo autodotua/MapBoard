@@ -64,14 +64,23 @@ namespace MapBoard.Mapping.Model
 
         public override object Clone()
         {
-            MapLayerInfo layer = MemberwiseClone() as MapLayerInfo;
-            layer.table = null;
-            foreach (var key in Symbols.Keys.ToList())
+            var layer = new MapperConfiguration(cfg =>
+              {
+                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
+              }).CreateMapper().Map<MapLayerInfo>(this);
+
+            return layer;
+        }
+
+        public MapLayerInfo Clone(string newName, bool includeFields)
+        {
+            MapLayerInfo layer = Clone() as MapLayerInfo;
+            layer.Name = newName;
+
+            if (!includeFields)
             {
-                layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
+                layer.Fields = Array.Empty<FieldInfo>();
             }
-            layer.Fields = Fields == null ? null : Fields.Select(p => p.Clone() as FieldInfo).ToArray();
-            layer.Label = Label.Clone() as LabelInfo;
             return layer;
         }
 
@@ -269,7 +278,8 @@ namespace MapBoard.Mapping.Model
         }
 
         [JsonIgnore]
-        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; } = new ObservableCollection<FeaturesChangedEventArgs>();
+        [IgnoreMap]
+        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
         public event EventHandler Unattached;
     }

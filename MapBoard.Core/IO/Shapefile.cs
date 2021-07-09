@@ -72,7 +72,7 @@ namespace MapBoard.IO
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
             var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
             MapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
-                null, Path.GetFileNameWithoutExtension(path),
+                 Path.GetFileNameWithoutExtension(path),
                 fieldMap.Values.ToList());
             layer.LayerVisible = false;
             var fields = layer.Fields.Select(p => p.Name).ToHashSet();

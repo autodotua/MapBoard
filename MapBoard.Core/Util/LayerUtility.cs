@@ -48,20 +48,12 @@ namespace MapBoard.Util
 
         public async static Task<MapLayerInfo> CreateLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
-                                                             MapLayerInfo template = null,
                                                              string name = null,
                                                              IList<FieldInfo> fields = null)
         {
             if (name == null)
             {
-                if (template == null)
-                {
-                    name = "新图层-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                }
-                else
-                {
-                    name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFilePath()));
-                }
+                name = "新图层-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
             }
             else
             {
@@ -72,27 +64,52 @@ namespace MapBoard.Util
                 fields = new List<FieldInfo>();
             }
             await Shapefile.CreateShapefileAsync(type, name, null, fields);
-            MapLayerInfo layer = template == null ? new MapLayerInfo(name) : template.Clone() as MapLayerInfo;
+            MapLayerInfo layer = new MapLayerInfo(name);
             layer.Fields = fields.ToArray();
             await layers.AddAsync(layer);
             layers.Selected = layer;
             return layer;
         }
 
-        public async static Task CreatCopyAsync(this MapLayerInfo layer, MapLayerCollection layers, bool includeFeatures)
+        public async static Task<MapLayerInfo> CreateLayerAsync(GeometryType type,
+                                                             MapLayerCollection layers,
+                                                             MapLayerInfo template,
+                                                             bool includeFields,
+                                                             string name = null)
+        {
+            if (template == null)
+            {
+                throw new ArgumentNullException(nameof(template));
+            }
+            if (name == null)
+            {
+                name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFilePath()));
+            }
+            else
+            {
+                name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp")));
+            }
+            await Shapefile.CreateShapefileAsync(type, name, null, template.Fields);
+            MapLayerInfo layer = template == null ? new MapLayerInfo(name) : template.Clone(name, includeFields);
+            await layers.AddAsync(layer);
+            layers.Selected = layer;
+            return layer;
+        }
+
+        public async static Task CreatCopyAsync(this MapLayerInfo layer, MapLayerCollection layers, bool includeFeatures, bool includeFields)
         {
             if (includeFeatures)
             {
                 var features = await layer.GetAllFeaturesAsync();
 
-                var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer);
+                var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer, includeFields);
 
                 await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
                 layer.LayerVisible = false;
             }
             else
             {
-                await CreateLayerAsync(layer.GeometryType, layers, layer);
+                await CreateLayerAsync(layer.GeometryType, layers, layer, includeFields);
             }
         }
 
@@ -140,7 +157,7 @@ namespace MapBoard.Util
                     FillColor = symbol.Value.LineColor
                 });
             }
-            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, layer.Name + "_缓冲区");
+            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
             {

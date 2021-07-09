@@ -25,9 +25,9 @@ namespace ModernWpf.FzExtension.CommonDialog
             InitializeComponent();
         }
 
-        private ObservableCollection<DialogItem> items;
+        private IList<SelectDialogItem> items;
 
-        public ObservableCollection<DialogItem> Items
+        public IList<SelectDialogItem> Items
         {
             get => items;
             set => this.SetValueAndNotify(ref items, value, nameof(Items));
@@ -38,50 +38,10 @@ namespace ModernWpf.FzExtension.CommonDialog
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedIndex = (sender as ListView).SelectedIndex;
-            var item = (sender as ListView).SelectedItem as DialogItem;
+            var item = (sender as ListView).SelectedItem as SelectDialogItem;
 
             Hide();
             item.SelectAction?.Invoke();
-        }
-    }
-
-    public class DialogItem : INotifyPropertyChanged
-    {
-        private string title;
-
-        public string Title
-        {
-            get => title;
-            set => this.SetValueAndNotify(ref title, value, nameof(Title));
-        }
-
-        private string detail;
-
-        public string Detail
-        {
-            get => detail;
-            set => this.SetValueAndNotify(ref detail, value, nameof(Detail));
-        }
-
-        private Action selectAction;
-
-        public DialogItem(string title, string detail = null, Action selectAction = null)
-        {
-            Title = title;
-            Detail = detail;
-            SelectAction = selectAction;
-        }
-
-        public DialogItem()
-        {
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public Action SelectAction
-        {
-            get => selectAction;
-            set => this.SetValueAndNotify(ref selectAction, value, nameof(SelectAction));
         }
     }
 }

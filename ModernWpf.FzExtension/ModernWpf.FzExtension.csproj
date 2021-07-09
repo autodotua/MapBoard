@@ -29,4 +29,9 @@
       <Version>0.9.4</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="CommonDialog\CheckBoxDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
 </Project>

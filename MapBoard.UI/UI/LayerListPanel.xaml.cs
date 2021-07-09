@@ -177,6 +177,10 @@ namespace MapBoard.UI
             {
                 Layers.Selected = null;
             }
+            if (Layers.Selected != null)
+            {
+                (sender as System.Windows.Controls.ListView).ScrollIntoView(Layers.Selected);
+            }
             changingSelection = false;
         }
 

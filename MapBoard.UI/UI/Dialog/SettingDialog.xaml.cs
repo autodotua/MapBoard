@@ -205,9 +205,15 @@ namespace MapBoard.UI.Dialog
         {
             canClose = false;
             (sender as Button).IsEnabled = false;
-
-            await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
-            this.Notify(nameof(CurrentBackupCount));
+            try
+            {
+                await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+            }
+            catch(Exception ex)
+            {
+                CommonDialog.ShowErrorDialogAsync(ex, "备份失败");
+            }
+                this.Notify(nameof(CurrentBackupCount));
 
             (sender as Button).IsEnabled = true;
             canClose = true;

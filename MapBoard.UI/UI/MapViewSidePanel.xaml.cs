@@ -43,22 +43,22 @@ namespace MapBoard.UI
             Config.Instance.PropertyChanged += Config_PropertyChanged;
 
             //用于限制最多100毫秒更新一次
-            timer = new Timer(new TimerCallback( p =>
-             {
-                 lock (lockObj)
-                 {
-                     if (updateScaleAndPositionAction != null)
-                     {
-                         Dispatcher.InvokeAsync(updateScaleAndPositionAction);
-                         updateScaleAndPositionAction = null;
-                     }
-                     if (setScaleAction != null)
-                     {
-                         Dispatcher.InvokeAsync(setScaleAction);
-                         setScaleAction = null;
-                     }
-                 }
-             }), null, 100, 100);
+            timer = new Timer(new TimerCallback(p =>
+            {
+                lock (lockObj)
+                {
+                    if (updateScaleAndPositionAction != null)
+                    {
+                        Dispatcher.InvokeAsync(updateScaleAndPositionAction);
+                        updateScaleAndPositionAction = null;
+                    }
+                    if (setScaleAction != null)
+                    {
+                        Dispatcher.InvokeAsync(setScaleAction);
+                        setScaleAction = null;
+                    }
+                }
+            }), null, 100, 100);
         }
 
         public GeoView MapView { get; private set; }
@@ -278,6 +278,11 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 单击底图的可见单选框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
             var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;

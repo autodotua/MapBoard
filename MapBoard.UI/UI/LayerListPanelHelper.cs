@@ -23,6 +23,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using WinRT;
 
 namespace MapBoard.UI
 {
@@ -54,7 +55,7 @@ namespace MapBoard.UI
                 AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                 AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                AddToMenu(menu, "新建副本", () => CreateCopyAsync(layer));
+                AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
                 AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(layer));
                 menu.Items.Add(new Separator());
                 AddToMenu(menu, "查询要素", () => QueryAsync(layer));
@@ -205,16 +206,18 @@ namespace MapBoard.UI
 
         private async Task CreateCopyAsync(MapLayerInfo layer)
         {
-            int mode = 0;
-            await CommonDialog.ShowSelectItemDialogAsync("请选择副本类型",
-                new DialogItem[]
+            var check = await CommonDialog.ShowCheckBoxDialogAsync("请选择副本类型",
+                    new CheckDialogItem[]
+                {
+              new  CheckDialogItem("样式",null,false,true),
+               new CheckDialogItem("字段",null){Tag=1 },
+               new CheckDialogItem("所有图形",null){Tag=2}
+                }, true);
+            if (check != null)
             {
-              new  DialogItem("仅样式",null,()=>mode=1),
-               new DialogItem("样式和所有图形",null,()=>mode=2)
-            });
-            if (mode > 0)
-            {
-                await LayerUtility.CreatCopyAsync(layer, MapView.Layers, mode == 2);
+                bool includeFields = check.Any(p => 1.Equals(p.Tag));
+                bool includeFeatures = check.Any(p => 2.Equals(p.Tag));
+                await LayerUtility.CreatCopyAsync(layer, MapView.Layers, includeFeatures, includeFields);
             }
         }
 

@@ -286,22 +286,22 @@ namespace MapBoard.UI.Bar
 
             async Task LinkAsync()
             {
-                List<DialogItem> typeList = new List<DialogItem>();
+                List<SelectDialogItem> typeList = new List<SelectDialogItem>();
                 bool headToHead = false;
                 bool reverse = false;
                 bool auto = false;
-                typeList.Add(new DialogItem("自动", "根据选择的顺序自动判断需要连接的点", () => auto = true));
+                typeList.Add(new SelectDialogItem("自动", "根据选择的顺序自动判断需要连接的点", () => auto = true));
                 if (MapView.Selection.SelectedFeatures.Count == 2)
                 {
-                    typeList.Add(new DialogItem("起点相连", "起始点与起始点相连接", () => headToHead = true));
-                    typeList.Add(new DialogItem("终点相连", "终结点与终结点相连接", () => headToHead = reverse = true));
-                    typeList.Add(new DialogItem("头尾相连", "第一个要素的终结点与第二个要素的起始点相连接", null));
-                    typeList.Add(new DialogItem("头尾相连（反转）", "第一个要素的起始点与第二个要素的终结点相连接", () => reverse = true));
+                    typeList.Add(new SelectDialogItem("起点相连", "起始点与起始点相连接", () => headToHead = true));
+                    typeList.Add(new SelectDialogItem("终点相连", "终结点与终结点相连接", () => headToHead = reverse = true));
+                    typeList.Add(new SelectDialogItem("头尾相连", "第一个要素的终结点与第二个要素的起始点相连接", null));
+                    typeList.Add(new SelectDialogItem("头尾相连（反转）", "第一个要素的起始点与第二个要素的终结点相连接", () => reverse = true));
                 }
                 else
                 {
-                    typeList.Add(new DialogItem("头尾相连", "每一个要素的终结点与前一个要素的起始点相连接", null));
-                    typeList.Add(new DialogItem("头尾相连（反转）", "每一个要素的起始点与前一个要素的终结点相连接", () => reverse = true));
+                    typeList.Add(new SelectDialogItem("头尾相连", "每一个要素的终结点与前一个要素的起始点相连接", null));
+                    typeList.Add(new SelectDialogItem("头尾相连（反转）", "每一个要素的起始点与前一个要素的终结点相连接", () => reverse = true));
                 }
 
                 int result = await CommonDialog.ShowSelectItemDialogAsync(
@@ -356,12 +356,12 @@ namespace MapBoard.UI.Bar
             }
             async Task SimplifyAsync()
             {
-                int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new DialogItem[]
+                int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new SelectDialogItem[]
                    {
-                new DialogItem("间隔取点法","或每几个点保留一点"),
-                new DialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
-                new DialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作"),
-                new DialogItem("最大偏离法","保证新的图形与旧图形之间的距离不超过一个值")
+                new SelectDialogItem("间隔取点法","或每几个点保留一点"),
+                new SelectDialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
+                new SelectDialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作"),
+                new SelectDialogItem("最大偏离法","保证新的图形与旧图形之间的距离不超过一个值")
                    });
                 double? num = null;
                 switch (i)

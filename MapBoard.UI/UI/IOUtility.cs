@@ -104,9 +104,9 @@ namespace MapBoard.UI
                     case ExportLayerType.LayerPackge:
                         await Package.ExportLayerAsync(path, layer, Config.Instance.CopyShpFileWhenExport);
                         break;
-                        
+
                     case ExportLayerType.LayerPackgeRebuild:
-                        await Package.ExportLayerAsync(path, layer,false);
+                        await Package.ExportLayerAsync(path, layer, false);
                         break;
 
                     case ExportLayerType.GISToolBoxZip:
@@ -159,7 +159,14 @@ namespace MapBoard.UI
                         args.SetMessage("正在备份当前地图");
                         if (Config.Instance.BackupWhenReplace)
                         {
-                            await Package.BackupAsync(layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+                            try
+                            {
+                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+                            }
+                            catch (Exception ex)
+                            {
+                                SnakeBar.ShowError("备份失败");
+                            }
                         }
                         args.SetMessage("正在导入新的地图");
                         await Package.ImportMapAsync(path, layers, true);
@@ -204,7 +211,7 @@ namespace MapBoard.UI
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
             {
-                ExportMapType.MapPackage  or ExportMapType.MapPackageRebuild
+                ExportMapType.MapPackage or ExportMapType.MapPackageRebuild
                 => filter.Add("mbmpkg地图画板包", "mbmpkg"),
                 ExportMapType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
                 ExportMapType.KML => filter.Add("KML打包文件", "kmz"),
@@ -255,17 +262,17 @@ namespace MapBoard.UI
 
         private static async Task ImportGpxAsync(string[] files, MapLayerInfo layer, MapLayerCollection layers)
         {
-            List<DialogItem> items = new List<DialogItem>()
+            List<SelectDialogItem> items = new List<SelectDialogItem>()
                 {
-                       new DialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.GpxWindow(files).Show()),
-                        new DialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
-                        new DialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
+                       new SelectDialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.GpxWindow(files).Show()),
+                        new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
+                        new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
                 };
             if (layer != null)
             {
                 if (layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
                 {
-                    items.Add(new DialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, layer, Config.Instance.BasemapCoordinateSystem)));
+                    items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, layer, Config.Instance.BasemapCoordinateSystem)));
                 }
             }
             await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
@@ -273,9 +280,9 @@ namespace MapBoard.UI
 
         public async static Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
         {
-            int index = await CommonDialog.ShowSelectItemDialogAsync("请选择需要导入的内容", new DialogItem[]
+            int index = await CommonDialog.ShowSelectItemDialogAsync("请选择需要导入的内容", new SelectDialogItem[]
             {
-                new DialogItem("照片位置","根据照片EXIF信息的经纬度，生成点图层"),
+                new SelectDialogItem("照片位置","根据照片EXIF信息的经纬度，生成点图层"),
             });
             switch (index)
             {

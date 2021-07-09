@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ModernWpf.FzExtension.CommonDialog
 {
@@ -123,12 +125,12 @@ namespace ModernWpf.FzExtension.CommonDialog
             return ShowErrorDialogAsync(null, message);
         }
 
-        public async static Task<int> ShowSelectItemDialogAsync(string title, IEnumerable<DialogItem> items, string extraButtonText = null, Action extraButtonAction = null)
+        public async static Task<int> ShowSelectItemDialogAsync(string title, IEnumerable<SelectDialogItem> items, string extraButtonText = null, Action extraButtonAction = null)
         {
             SelectItemDialog dialog = new SelectItemDialog()
             {
                 Title = title,
-                Items = new ObservableCollection<DialogItem>(items),
+                Items = new List<SelectDialogItem>(items),
             };
             if (extraButtonText != null)
             {
@@ -138,6 +140,31 @@ namespace ModernWpf.FzExtension.CommonDialog
             }
             await dialog.ShowAsync();
             return dialog.SelectedIndex;
+        }
+
+        public async static Task<IReadOnlyList<CheckDialogItem>> ShowCheckBoxDialogAsync(string title,
+            IEnumerable<CheckDialogItem> items,
+            bool needAtLeastOneCheck,
+            string extraButtonText = null,
+            Action extraButtonAction = null)
+        {
+            CheckBoxDialog dialog = new CheckBoxDialog()
+            {
+                Title = title,
+                Items = new List<CheckDialogItem>(items),
+                NeedAtLeastOneCheck = needAtLeastOneCheck
+            };
+            if (extraButtonText != null)
+            {
+                dialog.IsShadowEnabled = true;
+                dialog.SecondaryButtonText = extraButtonText;
+                dialog.SecondaryButtonClick += (p1, p2) => extraButtonAction();
+            }
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                return dialog.Items.Where(p => p.IsChecked).ToList().AsReadOnly();
+            }
+            return null;
         }
 
         public static CommonDialog CurrentDialog { get; private set; }
