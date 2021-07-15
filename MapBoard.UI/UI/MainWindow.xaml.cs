@@ -29,6 +29,7 @@ using MapBoard.UI.TileDownloader;
 using System.Threading;
 using MapBoard.UI.Component;
 using System.Windows.Media;
+using Esri.ArcGISRuntime.Ogc;
 
 namespace MapBoard.UI
 {
@@ -322,7 +323,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void ClearHistoriesButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (MapLayerInfo layer in arcMap.Layers)
+            foreach (var layer in arcMap.Layers.OfType<IWriteableLayerInfo>())
             {
                 layer.Histories.Clear();
             }

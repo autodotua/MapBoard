@@ -15,13 +15,13 @@ namespace MapBoard.Util
 {
     public static class StyleUtility
     {
-        public static void ApplyStyle(this MapLayerInfo layer)
+        public static void ApplyStyle(this IMapLayerInfo layer)
         {
             layer.ApplyRenderer();
             layer.ApplyLabel();
         }
 
-        private static void ApplyRenderer(this MapLayerInfo layer)
+        private static void ApplyRenderer(this IMapLayerInfo layer)
         {
             UniqueValueRenderer renderer = new UniqueValueRenderer();
             renderer.FieldNames.Add(Parameters.ClassFieldName);
@@ -75,7 +75,7 @@ namespace MapBoard.Util
             layer.Layer.Renderer = renderer;
         }
 
-        private static void ApplyLabel(this MapLayerInfo layer)
+        private static void ApplyLabel(this IMapLayerInfo layer)
         {
             LabelInfo label = layer.Label;
 

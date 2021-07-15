@@ -11,7 +11,7 @@ namespace MapBoard.IO
 {
     public class MobileGISToolBox
     {
-        public static async Task ExportLayerAsync(string path, MapLayerInfo layer)
+        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "BaseShapeFile");

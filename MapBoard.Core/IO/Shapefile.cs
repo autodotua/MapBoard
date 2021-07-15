@@ -71,7 +71,7 @@ namespace MapBoard.IO
             bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
             var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
-            MapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
+            ShapefileMapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
                  Path.GetFileNameWithoutExtension(path),
                 fieldMap.Values.ToList());
             layer.LayerVisible = false;
@@ -229,7 +229,7 @@ namespace MapBoard.IO
             File.WriteAllText(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
-        public static async Task CloneFeatureToNewShpAsync(string directory, MapLayerInfo layer)
+        public static async Task CloneFeatureToNewShpAsync(string directory, IMapLayerInfo layer)
         {
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
@@ -245,7 +245,7 @@ namespace MapBoard.IO
             table.Close();
         }
 
-        public static void CopyShpToNewPath(string directory, MapLayerInfo layer)
+        public static void CopyShpToNewPath(string directory, IMapLayerInfo layer)
         {
             var files = GetExistShapefiles(Parameters.DataPath, layer.Name);
             foreach (var file in files)

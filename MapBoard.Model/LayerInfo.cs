@@ -11,14 +11,14 @@ using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 namespace MapBoard.Model
 {
     [DebuggerDisplay("{Name}")]
-    public class LayerInfo : INotifyPropertyChanged, ICloneable
+    public class LayerInfo : ICloneable, ILayerInfo
     {
         private string name;
 
         public string Name
         {
             get => name;
-             set => this.SetValueAndNotify(ref name, value, nameof(Name));
+            set => this.SetValueAndNotify(ref name, value, nameof(Name));
         }
 
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
@@ -69,6 +69,12 @@ namespace MapBoard.Model
         }
 
         public LabelInfo Label { get; set; } = new LabelInfo();
+        public virtual string Type { get; }
+
+        [JsonIgnore]
+        public virtual bool IsWriteable { get; }
+
+        protected List<string> ServiceParameters { get; } = new List<string>();
 
         public virtual object Clone()
         {

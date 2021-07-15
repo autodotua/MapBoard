@@ -27,13 +27,13 @@ namespace MapBoard.IO
             return result;
         }
 
-        public async static Task ExportAsync(string path, MapLayerInfo layer)
+        public async static Task ExportAsync(string path, IMapLayerInfo layer)
         {
             var features = await layer.GetAllFeaturesAsync();
             await ExportAsync(path, features);
         }
 
-        public async static Task<JObject> ConvertAsync(MapLayerInfo layer)
+        public async static Task<JObject> ConvertAsync(IMapLayerInfo layer)
         {
             var features = await layer.GetAllFeaturesAsync();
             JObject result = null;

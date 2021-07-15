@@ -25,11 +25,11 @@ namespace MapBoard.UI.Dialog
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private FeatureHistoryDialog(Window owner, MapLayerInfo layer, MainMapView arcMap) : base(owner, layer)
+        private FeatureHistoryDialog(Window owner, IWriteableLayerInfo layer, MainMapView arcMap) : base(owner, layer)
         {
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
-            Layer.Histories.CollectionChanged += Histories_CollectionChanged;
+            layer.Histories.CollectionChanged += Histories_CollectionChanged;
             arcMap.BoardTaskChanged += ArcMap_BoardTaskChanged;
         }
 
@@ -43,9 +43,9 @@ namespace MapBoard.UI.Dialog
             scr.ScrollToEnd();
         }
 
-        private static Dictionary<MapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<MapLayerInfo, FeatureHistoryDialog>();
+        private static Dictionary<IMapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<IMapLayerInfo, FeatureHistoryDialog>();
 
-        public static FeatureHistoryDialog Get(Window owner, MapLayerInfo layer, MainMapView arcMap)
+        public static FeatureHistoryDialog Get(Window owner, IWriteableLayerInfo layer, MainMapView arcMap)
         {
             if (dialogs.ContainsKey(layer))
             {
@@ -75,26 +75,27 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             Owner.IsEnabled = false;
             FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
-
+            var layer = Layer as IWriteableLayerInfo;
             Debug.Assert(current != null);
-            int index = Layer.Histories.IndexOf(current);
-            int count = Layer.Histories.Count;
+            Debug.Assert(layer != null);
+            int index = layer.Histories.IndexOf(current);
+            int count = layer.Histories.Count;
             try
             {
                 List<FeaturesChangedEventArgs> changes = new List<FeaturesChangedEventArgs>();
                 for (int i = count - 1; i >= index; i--)
                 {
-                    changes.Add(Layer.Histories[i]);
+                    changes.Add(layer.Histories[i]);
                 }
                 foreach (var change in changes)
                 {
                     if (change.AddedFeatures != null)
                     {
-                        await Layer.DeleteFeaturesAsync(change.AddedFeatures, FeaturesChangedSource.Undo);
+                        await layer.DeleteFeaturesAsync(change.AddedFeatures, FeaturesChangedSource.Undo);
                     }
                     else if (change.DeletedFeatures != null)
                     {
-                        await Layer.AddFeaturesAsync(change.DeletedFeatures, FeaturesChangedSource.Undo);
+                        await layer.AddFeaturesAsync(change.DeletedFeatures, FeaturesChangedSource.Undo);
                     }
                     else if (change.UpdatedFeatures != null)
                     {
@@ -114,7 +115,7 @@ namespace MapBoard.UI.Dialog
                                 }
                             }
                         }
-                        await Layer.UpdateFeaturesAsync(newFeature, FeaturesChangedSource.Undo);
+                        await layer.UpdateFeaturesAsync(newFeature, FeaturesChangedSource.Undo);
                     }
                 }
             }
@@ -126,7 +127,7 @@ namespace MapBoard.UI.Dialog
             {
                 for (int i = 0; i < count; i++)
                 {
-                    Layer.Histories[i].CanUndo = false;
+                    layer.Histories[i].CanUndo = false;
                 }
                 IsEnabled = true;
                 Owner.IsEnabled = true;
@@ -137,9 +138,11 @@ namespace MapBoard.UI.Dialog
         {
             FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
 
+            var layer = Layer as IWriteableLayerInfo;
             Debug.Assert(current != null);
-            int index = Layer.Histories.IndexOf(current);
-            int count = Layer.Histories.Count;
+            Debug.Assert(layer != null);
+            int index = layer.Histories.IndexOf(current);
+            int count = layer.Histories.Count;
             (sender as Button).ToolTip = $"撤销{count - index}条操作";
         }
     }

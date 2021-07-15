@@ -42,14 +42,26 @@ namespace MapBoard.IO
                 {
                     throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
+                if (!MapLayerInfo.SupportedLayerTypes.Contains(layer.Type))
+                {
+                    throw new NotSupportedException("不支持的图层类型：" + layer.Type);
+                }
             }
             foreach (var layer in newLayers)
             {
-                foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                switch (layer.Type)
                 {
-                    File.Copy(file, Path.Combine(Parameters.DataPath, Path.GetFileName(file)));
+                    case null:
+                    case "":
+                    case MapLayerInfo.Types.Shapefile:
+                        foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                        {
+                            File.Copy(file, Path.Combine(Parameters.DataPath, Path.GetFileName(file)));
+                        }
+                        break;
                 }
-                await layers.AddAsync(new MapLayerInfo(layer));
+
+                await layers.AddAsync(layer);
             }
             layers.Save();
         }
@@ -69,23 +81,21 @@ namespace MapBoard.IO
 
             ZipFile.ExtractToDirectory(path, tempDirectoryPath);
 
-            MapLayerInfo style = Newtonsoft.Json.JsonConvert.DeserializeObject<MapLayerInfo>(File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
-            var files = Shapefile.GetExistShapefiles(tempDirectoryPath, style.Name);
+            LayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(
+                   File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
 
-            List<string> copyedFiles = new List<string>();
-            foreach (var file in files)
+            switch (layer.Type)
             {
-                string target = Path.Combine(Parameters.DataPath, Path.GetFileName(file));
-                if (File.Exists(target))
-                {
-                    copyedFiles.ForEach(p => File.Delete(p));
-                    throw new IOException($"文件{target}已存在");
-                }
-                File.Move(file, target);
-                copyedFiles.Add(target);
+                case null:
+                case "":
+                case MapLayerInfo.Types.Shapefile:
+                    foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
+                    {
+                        File.Copy(file, Path.Combine(Parameters.DataPath, Path.GetFileName(file)));
+                    }
+                    break;
             }
-
-            await layers.AddAsync(style);
+            await layers.AddAsync(layer);
         }
 
         /// <summary>
@@ -132,7 +142,7 @@ namespace MapBoard.IO
         /// <param name="layers">图层集合</param>
         /// <param name="copyOnly">是否仅简单复制而非重建</param>
         /// <returns></returns>
-        public async static Task ExportLayerAsync(string path, MapLayerInfo layer, bool copyOnly)
+        public async static Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
         {
             DirectoryInfo directory = PathUtility.GetTempDir();
             if (copyOnly)

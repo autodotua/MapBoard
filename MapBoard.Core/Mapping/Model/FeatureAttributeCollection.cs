@@ -87,7 +87,7 @@ namespace MapBoard.Mapping.Model
         public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
         public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
 
-        public static FeatureAttributeCollection Empty(LayerInfo layer)
+        public static FeatureAttributeCollection Empty(ILayerInfo layer)
         {
             var attributes = new FeatureAttributeCollection();
             attributes.all.Add(new FeatureAttribute(FieldExtension.LabelField, null));
@@ -103,7 +103,7 @@ namespace MapBoard.Mapping.Model
             return attributes;
         }
 
-        public static FeatureAttributeCollection FromFeature(LayerInfo layer, Feature feature)
+        public static FeatureAttributeCollection FromFeature(ILayerInfo layer, Feature feature)
         {
             FeatureAttributeCollection attributes = new FeatureAttributeCollection
             {

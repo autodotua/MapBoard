@@ -107,7 +107,7 @@ namespace MapBoard.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, MapLayerInfo layer)
+        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, IWriteableLayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();

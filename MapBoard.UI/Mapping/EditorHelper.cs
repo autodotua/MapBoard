@@ -83,6 +83,11 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
+            if (!Layers.Selected.IsWriteable)
+            {
+                throw new NotSupportedException("选中的图层不支持编辑");
+            }
+            var layer = Layers.Selected as IWriteableLayerInfo;
             if (Attributes != null)
             {
                 var label = Attributes.Label;
@@ -111,10 +116,10 @@ namespace MapBoard.Mapping
             await SketchEditor.StartAsync(mode);
             if (geometry != null)
             {
-                Feature feature = Layers.Selected.CreateFeature();
+                Feature feature = layer.CreateFeature();
                 feature.Geometry = geometry;
                 Attributes.SaveToFeature(feature);
-                await Layers.Selected.AddFeatureAsync(feature, FeaturesChangedSource.Draw);
+                await layer.AddFeatureAsync(feature, FeaturesChangedSource.Draw);
             }
         }
 
@@ -122,7 +127,7 @@ namespace MapBoard.Mapping
         /// 编辑
         /// </summary>
         /// <returns></returns>
-        public async Task EditAsync(MapLayerInfo layer, Feature feature)
+        public async Task EditAsync(IWriteableLayerInfo layer, Feature feature)
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);

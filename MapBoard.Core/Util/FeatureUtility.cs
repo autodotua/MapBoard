@@ -20,7 +20,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<Feature> UnionAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task<Feature> UnionAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             Geometry geometry = null;
             await Task.Run(() =>
@@ -40,7 +40,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> SeparateAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> SeparateAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             List<Feature> deleted = new List<Feature>();
             List<Feature> added = new List<Feature>();
@@ -77,7 +77,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<Feature> AutoLinkAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task<Feature> AutoLinkAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             List<MapPoint> points = new List<MapPoint>();
             if (features.Length <= 1)
@@ -158,7 +158,7 @@ namespace MapBoard.Util
         /// <param name="headToHead">是否头和头相连</param>
         /// <param name="reverse">是否反转（尾连头/尾连尾）</param>
         /// <returns></returns>
-        public static async Task<Feature> LinkAsync(MapLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
+        public static async Task<Feature> LinkAsync(IWriteableLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
             if (features.Length <= 1)
@@ -226,7 +226,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> ReverseAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> ReverseAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
@@ -260,7 +260,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task DensifyAsync(MapLayerInfo layer, Feature[] features, double max)
+        public static async Task DensifyAsync(IWriteableLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
             await Task.Run(() =>
@@ -282,7 +282,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public async static Task VerticalDistanceSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
+        public async static Task VerticalDistanceSimplifyAsync(IWriteableLayerInfo layer, Feature[] features, double max)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -314,7 +314,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public async static Task GeneralizeSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
+        public async static Task GeneralizeSimplifyAsync(IWriteableLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
@@ -337,7 +337,7 @@ namespace MapBoard.Util
         /// <param name="feature"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        private static Task<UpdatedFeature> SimplyBaseAsync(MapLayerInfo layer, Feature feature,
+        private static Task<UpdatedFeature> SimplyBaseAsync(IWriteableLayerInfo layer, Feature feature,
             Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.GeometryType == GeometryType.Polygon || layer.GeometryType == GeometryType.Polyline); ;
@@ -403,7 +403,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task DouglasPeuckerSimplifyAsync(MapLayerInfo layer, Feature[] features, double max)
+        public static async Task DouglasPeuckerSimplifyAsync(IWriteableLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
@@ -456,7 +456,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static async Task IntervalTakePointsSimplifyAsync(MapLayerInfo layer, Feature[] features, double interval)
+        public static async Task IntervalTakePointsSimplifyAsync(IWriteableLayerInfo layer, Feature[] features, double interval)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -495,7 +495,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features)
@@ -513,7 +513,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task DeleteAsync(MapLayerInfo layer, Feature[] features)
+        public static async Task DeleteAsync(IWriteableLayerInfo layer, Feature[] features)
         {
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
         }
@@ -525,7 +525,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="clipLine"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CutAsync(MapLayerInfo layer, Feature[] features, Polyline clipLine)
+        public static async Task<IReadOnlyList<Feature>> CutAsync(IWriteableLayerInfo layer, Feature[] features, Polyline clipLine)
         {
             List<Feature> added = new List<Feature>();
             await Task.Run(() =>
@@ -574,7 +574,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="copy"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(MapLayerInfo layerFrom, MapLayerInfo layerTo, Feature[] features, bool copy)
+        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(IMapLayerInfo layerFrom, IWriteableLayerInfo layerTo, Feature[] features, bool copy)
         {
             var newFeatures = new List<Feature>();
             var fields = layerTo.Fields.Select(p => p.Name).ToHashSet();
@@ -594,9 +594,9 @@ namespace MapBoard.Util
                 }
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
-            if (!copy)
+            if (!copy && layerFrom is IWriteableLayerInfo w)
             {
-                await DeleteAsync(layerFrom, features);
+                await DeleteAsync(w, features);
             }
             layerFrom.LayerVisible = false;
             layerTo.LayerVisible = true;

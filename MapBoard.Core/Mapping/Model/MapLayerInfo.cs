@@ -19,148 +19,110 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public class MapLayerInfo : LayerInfo, IDisposable
+    public interface IWriteableLayerInfo : IMapLayerInfo
     {
-        [JsonIgnore]
-        public bool TimeExtentEnable
-        {
-            get => TimeExtent == null ? false : TimeExtent.IsEnable;
-            set
-            {
-                if (TimeExtent != null)
-                {
-                    if (value != TimeExtent.IsEnable)
-                    {
-                        TimeExtent.IsEnable = value;
-                        this.SetTimeExtentAsync();
-                    }
-                }
+        ObservableCollection<FeaturesChangedEventArgs> Histories { get; }
 
-                this.Notify(nameof(TimeExtentEnable));
+        event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
+
+        Task AddFeatureAsync(Feature feature, FeaturesChangedSource source);
+
+        Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source);
+
+        Feature CreateFeature();
+
+        Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry);
+
+        Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source);
+
+        Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source);
+
+        Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source);
+
+        Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source);
+    }
+
+    public interface IMapLayerInfo : ILayerInfo
+    {
+        GeometryType GeometryType { get; }
+        bool HasTable { get; }
+        FeatureLayer Layer { get; }
+        long NumberOfFeatures { get; }
+        Func<QueryParameters, Task<Envelope>> QueryExtentAsync { get; }
+        Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync { get; }
+        bool TimeExtentEnable { get; set; }
+
+        event EventHandler Unattached;
+
+        Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers);
+
+        SymbolInfo GetDefaultSymbol();
+
+        Task LoadAsync();
+
+        Task LoadTableAsync();
+    }
+
+    //http://192.168.1.18:8080/geoserver/topp/ows?service=WFS&request=GetCapabilities
+
+    public class ShapefileMapLayerInfo : MapLayerInfo, IWriteableLayerInfo
+    {
+        public ShapefileMapLayerInfo() : base()
+        {
+        }
+
+        public ShapefileMapLayerInfo(ILayerInfo layer) : base(layer)
+        {
+        }
+
+        public ShapefileMapLayerInfo(string name) : base(name)
+        {
+        }
+
+        public ShapefileMapLayerInfo(MapLayerInfo template, string newName, bool includeFields)
+        {
+            new MapperConfiguration(cfg =>
+               {
+                   cfg.CreateMap<LayerInfo, ShapefileMapLayerInfo>();
+               }).CreateMapper().Map<LayerInfo, ShapefileMapLayerInfo>(template, this);
+            Name = newName;
+
+            if (!includeFields)
+            {
+                Fields = Array.Empty<FieldInfo>();
             }
         }
 
-        public MapLayerInfo()
-        {
-        }
-
-        public MapLayerInfo(string name)
-        {
-            Name = name;
-        }
-
-        public static MapLayerInfo CreateTemplate()
-        {
-            return new MapLayerInfo();
-        }
-
-        public MapLayerInfo(LayerInfo layer)
-        {
-            new MapperConfiguration(cfg =>
-           {
-               cfg.CreateMap<LayerInfo, MapLayerInfo>();
-           }).CreateMapper().Map(layer, this);
-        }
+        public string FilePath => Path.Combine(Parameters.DataPath, Name + ".shp");
 
         public override object Clone()
         {
             var layer = new MapperConfiguration(cfg =>
-              {
-                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
-              }).CreateMapper().Map<MapLayerInfo>(this);
-
+            {
+                cfg.CreateMap<LayerInfo, ShapefileMapLayerInfo>();
+            }).CreateMapper().Map<ShapefileMapLayerInfo>(this);
             return layer;
         }
 
-        public MapLayerInfo Clone(string newName, bool includeFields)
+        public override string Type => Types.Shapefile;
+        public override bool IsWriteable => true;
+
+        public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
+
+        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
+            IEnumerable<Feature> deleted,
+            IEnumerable<UpdatedFeature> updated,
+            FeaturesChangedSource source)
         {
-            MapLayerInfo layer = Clone() as MapLayerInfo;
-            layer.Name = newName;
-
-            if (!includeFields)
-            {
-                layer.Fields = Array.Empty<FieldInfo>();
-            }
-            return layer;
+            this.Notify(nameof(NumberOfFeatures));
+            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
+            FeaturesChanged?.Invoke(this, h);
+            Histories.Add(h);
         }
-
-        /// <summary>
-        /// 修改图层名，并同步修改物理文件的名称
-        /// </summary>
-        /// <param name="newName"></param>
-        /// <param name="layers">Esri图层集合</param>
-        /// <returns></returns>
-        public async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
-        {
-            Debug.Assert(!string.IsNullOrEmpty(newName));
-            if (newName == Name)
-            {
-                return;
-            }
-            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
-                   || newName.Length > 240 || newName.Length < 1)
-            {
-                throw new IOException("新文件名不合法");
-            }
-            //检查文件存在
-            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
-            {
-                if (File.Exists(Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file))))
-                {
-                    throw new IOException("该名称的文件已存在");
-                }
-            }
-            //检查图层是否在集合中
-            if (!layers.Contains(Layer))
-            {
-                throw new ArgumentException("本图层不在给定的图层集合中");
-            }
-            int index = layers.IndexOf(Layer);
-
-            table.Close();
-            //重命名
-            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
-            {
-                File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
-            }
-            Name = newName;
-            await LoadAsync();
-            layers[index] = Layer;
-        }
-
-        private FeatureLayer layer;
 
         [JsonIgnore]
-        public FeatureLayer Layer => layer;
-
-        private ShapefileFeatureTable table;
-
-        public async Task LoadAsync()
-        {
-            table = new ShapefileFeatureTable(this.GetFilePath());
-            await table.LoadAsync();
-            layer = new FeatureLayer(table);
-
-            await Task.Run(this.ApplyStyle);
-            await this.LayerCompleteAsync();
-        }
-
-        public bool HasTable => table != null;
-        public GeometryType GeometryType => table.GeometryType;
-
-        public override bool LayerVisible
-        {
-            get => base.LayerVisible;
-            set
-            {
-                base.LayerVisible = value;
-                if (Layer != null)
-                {
-                    Layer.IsVisible = value;
-                }
-                this.Notify(nameof(LayerVisible));
-            }
-        }
+        [IgnoreMap]
+        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
         public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
@@ -172,18 +134,6 @@ namespace MapBoard.Mapping.Model
             await table.AddFeatureAsync(feature);
 
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
-        }
-
-        public SymbolInfo GetDefaultSymbol()
-        {
-            return GeometryType switch
-            {
-                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
-                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
-                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
-                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
-                _ => throw new InvalidEnumArgumentException(),
-            };
         }
 
         public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
@@ -224,6 +174,207 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(null, null, features, source);
         }
 
+        public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
+        {
+            return table.CreateFeature(attributes, geometry);
+        }
+
+        public Feature CreateFeature()
+        {
+            return table.CreateFeature();
+        }
+
+        public async override Task LoadTableAsync()
+        {
+            table = new ShapefileFeatureTable(FilePath);
+            await table.LoadAsync();
+        }
+
+        public override void Dispose()
+        {
+            (table as ShapefileFeatureTable)?.Close();
+            table = null;
+            base.Dispose();
+        }
+
+        public async override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(newName));
+            if (newName == Name)
+            {
+                return;
+            }
+            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+                   || newName.Length > 240 || newName.Length < 1)
+            {
+                throw new IOException("新文件名不合法");
+            }
+            //检查文件存在
+            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, Layer.Name))
+            {
+                if (File.Exists(Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file))))
+                {
+                    throw new IOException("该名称的文件已存在");
+                }
+            }
+            //检查图层是否在集合中
+            if (!layers.Contains(Layer))
+            {
+                throw new ArgumentException("本图层不在给定的图层集合中");
+            }
+            int index = layers.IndexOf(Layer);
+
+            (table as ShapefileFeatureTable).Close();
+            //重命名
+            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, Layer.Name))
+            {
+                File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
+            }
+            Name = newName;
+            await LoadAsync();
+            layers[index] = Layer;
+        }
+    }
+
+    public class EmptyMapLayerInfo : MapLayerInfo
+    {
+        public override string Type => "Empty";
+        public override bool IsWriteable => false;
+
+        public async override Task LoadTableAsync()
+        {
+        }
+
+        private EmptyMapLayerInfo()
+        {
+        }
+
+        public static MapLayerInfo CreateTemplate()
+        {
+            return new EmptyMapLayerInfo();
+        }
+
+        public async override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+        }
+    }
+
+    public abstract class MapLayerInfo : LayerInfo, IDisposable, IMapLayerInfo
+    {
+        public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
+        {
+           Types.Shapefile,null
+        };
+
+        public class Types
+        {
+            public const string Shapefile = "Shapefile";
+        }
+
+        [JsonIgnore]
+        public bool TimeExtentEnable
+        {
+            get => TimeExtent == null ? false : TimeExtent.IsEnable;
+            set
+            {
+                if (TimeExtent != null)
+                {
+                    if (value != TimeExtent.IsEnable)
+                    {
+                        TimeExtent.IsEnable = value;
+                        this.SetTimeExtentAsync();
+                    }
+                }
+
+                this.Notify(nameof(TimeExtentEnable));
+            }
+        }
+
+        public MapLayerInfo()
+        {
+        }
+
+        public MapLayerInfo(string name)
+        {
+            Name = name;
+        }
+
+        public MapLayerInfo(ILayerInfo layer)
+        {
+            new MapperConfiguration(cfg =>
+           {
+               cfg.CreateMap<LayerInfo, MapLayerInfo>();
+           }).CreateMapper().Map(layer, this);
+        }
+
+        public override object Clone()
+        {
+            var layer = new MapperConfiguration(cfg =>
+              {
+                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
+              }).CreateMapper().Map<MapLayerInfo>(this);
+
+            return layer;
+        }
+
+        /// <summary>
+        /// 修改图层名，并同步修改物理文件的名称
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <param name="layers">Esri图层集合</param>
+        /// <returns></returns>
+        public abstract Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers);
+
+        private FeatureLayer layer;
+
+        [JsonIgnore]
+        public FeatureLayer Layer => layer;
+
+        protected FeatureTable table;
+
+        public abstract Task LoadTableAsync();
+
+        public async Task LoadAsync()
+        {
+            await LoadTableAsync();
+            layer = new FeatureLayer(table);
+
+            await Task.Run(this.ApplyStyle);
+            await this.LayerCompleteAsync();
+        }
+
+        [JsonIgnore]
+        public bool HasTable => table != null;
+
+        [JsonIgnore]
+        public GeometryType GeometryType => table.GeometryType;
+
+        public override bool LayerVisible
+        {
+            get => base.LayerVisible;
+            set
+            {
+                base.LayerVisible = value;
+                if (Layer != null)
+                {
+                    Layer.IsVisible = value;
+                }
+                this.Notify(nameof(LayerVisible));
+            }
+        }
+
+        public SymbolInfo GetDefaultSymbol()
+        {
+            return GeometryType switch
+            {
+                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
+                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
+                _ => throw new InvalidEnumArgumentException(),
+            };
+        }
+
         [JsonIgnore]
         public long NumberOfFeatures
         {
@@ -240,21 +391,8 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
+        public virtual void Dispose()
         {
-            return table.CreateFeature(attributes, geometry);
-        }
-
-        public Feature CreateFeature()
-        {
-            return table.CreateFeature();
-        }
-
-        public void Dispose()
-        {
-            table?.Close();
-            table = null;
-
             Unattached?.Invoke(this, new EventArgs());
         }
 
@@ -263,23 +401,6 @@ namespace MapBoard.Mapping.Model
 
         [JsonIgnore]
         public Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync => table.QueryFeaturesAsync;
-
-        public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
-
-        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
-            IEnumerable<Feature> deleted,
-            IEnumerable<UpdatedFeature> updated,
-            FeaturesChangedSource source)
-        {
-            this.Notify(nameof(NumberOfFeatures));
-            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
-            FeaturesChanged?.Invoke(this, h);
-            Histories.Add(h);
-        }
-
-        [JsonIgnore]
-        [IgnoreMap]
-        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
         public event EventHandler Unattached;
     }

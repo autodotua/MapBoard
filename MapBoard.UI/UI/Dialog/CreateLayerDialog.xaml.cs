@@ -31,9 +31,9 @@ namespace MapBoard.UI.Dialog
     public partial class CreateLayerDialog : CommonDialog
     {
         public bool editMode = false;
-        public MapLayerInfo editLayer = null;
+        public ShapefileMapLayerInfo editLayer = null;
 
-        public CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer = null)
+        public CreateLayerDialog(MapLayerCollection layers, ShapefileMapLayerInfo layer = null)
         {
             StaticFields = FieldExtension.DefaultFields;
             InitializeComponent();

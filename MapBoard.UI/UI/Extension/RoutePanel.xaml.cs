@@ -213,10 +213,12 @@ namespace MapBoard.UI.Extension
         /// <param name="e"></param>
         private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SelectLayerDialog((MapView as IMapBoardGeoView).Layers, new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, false);
+            var dialog = new SelectLayerDialog((MapView as IMapBoardGeoView).Layers,
+                new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, new[] { MapLayerInfo.Types.Shapefile }, false);
             if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary && dialog.SelectedLayer != null)
             {
-                var layer = dialog.SelectedLayer;
+                Debug.Assert(dialog.SelectedLayer is IWriteableLayerInfo);
+                var layer = dialog.SelectedLayer as IWriteableLayerInfo;
                 var route = SelectedRoute;
                 List<Feature> newFeatures = new List<Feature>();
                 Debug.Assert(SelectedRoute != null);

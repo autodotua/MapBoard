@@ -28,7 +28,7 @@ namespace MapBoard.UI.Dialog
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private AttributeTableDialog(Window owner, MapLayerInfo layer, MainMapView mapView) : base(owner, layer)
+        private AttributeTableDialog(Window owner, IMapLayerInfo layer, MainMapView mapView) : base(owner, layer)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
@@ -50,9 +50,9 @@ namespace MapBoard.UI.Dialog
             private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
         }
 
-        private static Dictionary<MapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<MapLayerInfo, AttributeTableDialog>();
+        private static Dictionary<IMapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<IMapLayerInfo, AttributeTableDialog>();
 
-        public static AttributeTableDialog Get(Window owner, MapLayerInfo layer, MainMapView mapView)
+        public static AttributeTableDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
         {
             if (dialogs.ContainsKey(layer))
             {
@@ -101,8 +101,10 @@ namespace MapBoard.UI.Dialog
             {
                 throw new Exception("没有任何要素");
             }
-            Layer.FeaturesChanged += Layer_FeaturesChanged;
-
+            if (Layer is ShapefileMapLayerInfo s)
+            {
+                s.FeaturesChanged += Layer_FeaturesChanged;
+            }
             //将属性加入DataGrid中
             var fields = Layer.Fields.IncludeDefaultFields().ToList();
             int column = 0;
@@ -306,6 +308,8 @@ namespace MapBoard.UI.Dialog
 
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
+            Debug.Assert(Layer is ShapefileMapLayerInfo);
+
             btnSave.IsEnabled = false;
             List<UpdatedFeature> features = new List<UpdatedFeature>();
             foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetFID())))
@@ -314,7 +318,7 @@ namespace MapBoard.UI.Dialog
                 attr.SaveToFeature();
                 features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
             }
-            await Layer.UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
+            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
 
             editedAttributes.Clear();
             this.Notify(nameof(EditedFeaturesCount));

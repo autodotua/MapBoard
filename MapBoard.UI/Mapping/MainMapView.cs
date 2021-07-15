@@ -178,7 +178,7 @@ namespace MapBoard.Mapping
         public async Task LoadAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
-            Map.MaxScale =Config.Instance. MaxScale;
+            Map.MaxScale = Config.Instance.MaxScale;
             Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);
@@ -225,10 +225,10 @@ namespace MapBoard.Mapping
                     SketchEditor.RemoveSelectedVertex();
                     break;
 
-                case Key.Delete when CurrentTask == BoardTask.Select:
+                case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IWriteableLayerInfo w:
                     await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                    {
-                       await FeatureUtility.DeleteAsync(Layers.Selected, Selection.SelectedFeatures.ToArray());
+                       await FeatureUtility.DeleteAsync(w, Selection.SelectedFeatures.ToArray());
                        Selection.ClearSelection();
                    }, "正在删除", true);
                     break;

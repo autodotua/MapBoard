@@ -47,22 +47,28 @@
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <ContentControl Width="16" Content="{StaticResource ListIcon}" />
-                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">其他操作</TextBlock>
+                <TextBlock
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding IsLayerWriteable}">
+                    其他操作
+                </TextBlock>
             </StackPanel>
         </Button>
         <Button
             x:Name="btnRedraw" Grid.Column="6"
             Click="EditButtonClick"
+            IsEnabled="{Binding IsLayerWriteable}"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <ContentControl Width="16" Content="{StaticResource DrawIcon}" />
-
                 <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">编辑</TextBlock>
             </StackPanel>
         </Button>
         <Button
             x:Name="btnCut" Grid.Column="8"
             Click="CutButtonClick"
+            IsEnabled="{Binding IsLayerWriteable}"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <ContentControl Width="16" Content="{StaticResource CutIcon}" />
@@ -83,6 +89,7 @@
         <Button
             Grid.Column="12"
             Click="DeleteButtonClick"
+            IsEnabled="{Binding IsLayerWriteable}"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <ContentControl Width="13" Content="{StaticResource DeleteIcon}" />

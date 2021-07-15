@@ -12,9 +12,9 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class DateRangeDialog : CommonDialog
     {
-        private LayerInfo Layer { get; }
+        private ILayerInfo Layer { get; }
 
-        public DateRangeDialog(LayerInfo layer)
+        public DateRangeDialog(ILayerInfo layer)
         {
             Layer = layer;
             InitializeComponent();

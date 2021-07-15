@@ -14,16 +14,12 @@ using System.Threading.Tasks;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
 using FzLib.Basic;
+using System.Diagnostics;
 
 namespace MapBoard.Util
 {
     public static class LayerUtility
     {
-        public static string GetFilePath(this MapLayerInfo layer)
-        {
-            return Path.Combine(Parameters.DataPath, layer.Name + ".shp");
-        }
-
         public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
         {
             if (layers.Contains(layer))
@@ -46,7 +42,7 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task<MapLayerInfo> CreateLayerAsync(GeometryType type,
+        public async static Task<ShapefileMapLayerInfo> CreateLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
                                                              string name = null,
                                                              IList<FieldInfo> fields = null)
@@ -64,16 +60,16 @@ namespace MapBoard.Util
                 fields = new List<FieldInfo>();
             }
             await Shapefile.CreateShapefileAsync(type, name, null, fields);
-            MapLayerInfo layer = new MapLayerInfo(name);
+            ShapefileMapLayerInfo layer = new ShapefileMapLayerInfo(name);
             layer.Fields = fields.ToArray();
             await layers.AddAsync(layer);
             layers.Selected = layer;
             return layer;
         }
 
-        public async static Task<MapLayerInfo> CreateLayerAsync(GeometryType type,
+        public async static Task<ShapefileMapLayerInfo> CreateLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
-                                                             MapLayerInfo template,
+                                                             IMapLayerInfo template,
                                                              bool includeFields,
                                                              string name = null)
         {
@@ -83,20 +79,19 @@ namespace MapBoard.Util
             }
             if (name == null)
             {
-                name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(template.GetFilePath()));
+                name = template.Name;
             }
-            else
-            {
-                name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp")));
-            }
+            name = Path.GetFileNameWithoutExtension(FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp")));
+
             await Shapefile.CreateShapefileAsync(type, name, null, template.Fields);
-            MapLayerInfo layer = template == null ? new MapLayerInfo(name) : template.Clone(name, includeFields);
+            Debug.Assert(template is MapLayerInfo);
+            ShapefileMapLayerInfo layer = template == null ? new ShapefileMapLayerInfo(name) : new ShapefileMapLayerInfo(template as MapLayerInfo, name, includeFields);
             await layers.AddAsync(layer);
             layers.Selected = layer;
             return layer;
         }
 
-        public async static Task CreatCopyAsync(this MapLayerInfo layer, MapLayerCollection layers, bool includeFeatures, bool includeFields)
+        public async static Task CreatCopyAsync(this IMapLayerInfo layer, MapLayerCollection layers, bool includeFeatures, bool includeFields)
         {
             if (includeFeatures)
             {
@@ -113,7 +108,7 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task<Feature[]> GetAllFeaturesAsync(this MapLayerInfo layer)
+        public async static Task<Feature[]> GetAllFeaturesAsync(this IMapLayerInfo layer)
         {
             FeatureQueryResult result = await layer.QueryFeaturesAsync(new QueryParameters());
             Feature[] array = null;
@@ -124,19 +119,19 @@ namespace MapBoard.Util
             return array;
         }
 
-        public static FeatureQueryResult GetAllFeatures(this MapLayerInfo layer)
+        public static FeatureQueryResult GetAllFeatures(this IMapLayerInfo layer)
         {
             return layer.QueryFeaturesAsync(new QueryParameters()).Result;
         }
 
-        public async static Task CopyAllFeaturesAsync(MapLayerInfo source, MapLayerInfo target)
+        public async static Task CopyAllFeaturesAsync(IMapLayerInfo source, ShapefileMapLayerInfo target)
         {
             var features = await source.GetAllFeaturesAsync();
 
             await target.AddFeaturesAsync(features, FeaturesChangedSource.FeatureOperation);
         }
 
-        public static async Task LayerCompleteAsync(this MapLayerInfo layer)
+        public static async Task LayerCompleteAsync(this IMapLayerInfo layer)
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
@@ -146,9 +141,9 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task BufferAsync(this MapLayerInfo layer, MapLayerCollection layers, double meters)
+        public async static Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, double meters)
         {
-            var template = MapLayerInfo.CreateTemplate();
+            var template = EmptyMapLayerInfo.CreateTemplate();
             foreach (var symbol in layer.Symbols)
             {
                 template.Symbols.Add(symbol.Key, new SymbolInfo()
@@ -177,7 +172,7 @@ namespace MapBoard.Util
         /// </summary>
         /// <param name="layer"></param>
         /// <returns></returns>
-        public async static Task SetTimeExtentAsync(this MapLayerInfo layer)
+        public async static Task SetTimeExtentAsync(this IMapLayerInfo layer)
         {
             if (layer.TimeExtent == null)
             {
@@ -220,7 +215,7 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task CoordinateTransformateAsync(this MapLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
+        public async static Task CoordinateTransformateAsync(this IWriteableLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
         {
             if (source == target)
             {
@@ -237,7 +232,7 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
-        public async static Task<MapLayerInfo> UnionAsync(IEnumerable<MapLayerInfo> layers, MapLayerCollection layerCollection)
+        public async static Task<ShapefileMapLayerInfo> UnionAsync(IEnumerable<MapLayerInfo> layers, MapLayerCollection layerCollection)
         {
             if (layers == null || !layers.Any())
             {
@@ -248,7 +243,7 @@ namespace MapBoard.Util
             {
                 throw new ArgumentException("图层的类型并非统一");
             }
-            MapLayerInfo layer = await CreateLayerAsync(type.First(), layerCollection);
+            var layer = await CreateLayerAsync(type.First(), layerCollection);
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
             {

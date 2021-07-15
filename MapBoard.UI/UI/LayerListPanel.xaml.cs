@@ -203,7 +203,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="group"></param>
         /// <returns></returns>
-        private IEnumerable<LayerInfo> GetLayersByGroup(GroupInfo group)
+        private IEnumerable<ILayerInfo> GetLayersByGroup(GroupInfo group)
         {
             if (group.IsNull)
             {
@@ -220,7 +220,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="layers"></param>
         /// <returns>true为可见，false为不可见，null为部分可见</returns>
-        private bool? GetGroupVisiable(IEnumerable<LayerInfo> layers)
+        private bool? GetGroupVisiable(IEnumerable<ILayerInfo> layers)
         {
             int count = layers.Count();
             int visiableCount = layers.Where(p => p.LayerVisible).Count();

@@ -14,21 +14,21 @@ using System.Linq;
 
 namespace MapBoard.Model
 {
-    public class LayerCollection : IReadOnlyList<LayerInfo>, INotifyPropertyChanged, INotifyCollectionChanged
+    public class LayerCollection : IReadOnlyList<ILayerInfo>, INotifyPropertyChanged, INotifyCollectionChanged
     {
         public class LayerPropertyChangedEventArgs : PropertyChangedEventArgs
         {
-            public LayerPropertyChangedEventArgs(LayerInfo layer, string propertyName) : base(propertyName)
+            public LayerPropertyChangedEventArgs(ILayerInfo layer, string propertyName) : base(propertyName)
             {
                 Layer = layer;
             }
 
-            public LayerInfo Layer { get; set; }
+            public ILayerInfo Layer { get; set; }
         }
 
-        protected ObservableCollection<LayerInfo> LayerList { get; private set; }
+        protected ObservableCollection<ILayerInfo> LayerList { get; private set; }
 
-        protected void SetLayers(ObservableCollection<LayerInfo> layers)
+        protected void SetLayers(ObservableCollection<ILayerInfo> layers)
         {
             Debug.Assert(layers != null);
             if (LayerList != null)
@@ -113,35 +113,28 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref selectedIndex, value, nameof(SelectedIndex));
         }
 
-        public LayerInfo this[int index] => LayerList[index];
+        public ILayerInfo this[int index] => LayerList[index];
 
         public static LayerCollection FromFile(string path)
         {
-            return FromFile<LayerCollection, LayerInfo>(path, () => new LayerCollection());
-        }
-
-        public static TCollection FromFile<TCollection, TLayer>(string path, Func<TCollection> getInstance)
-            where TCollection : LayerCollection
-            where TLayer : LayerInfo
-        {
-            var instance = getInstance();
+            var instance = new LayerCollection();
 
             JObject json = JObject.Parse(File.ReadAllText(path));
             instance.MapViewExtentJson = json[nameof(MapViewExtentJson)]?.Value<string>();
             instance.SelectedIndex = json[nameof(SelectedIndex)]?.Value<int>() ?? 0;
             var layersJson = json["Layers"];
-            instance.SetLayers(new ObservableCollection<LayerInfo>());
+            instance.SetLayers(new ObservableCollection<ILayerInfo>());
             if (layersJson is JArray layerJsonArray)
             {
                 foreach (var layerJson in layerJsonArray)
                 {
-                    instance.LayerList.Add(layerJson.ToObject<TLayer>());
+                    instance.LayerList.Add(layerJson.ToObject<LayerInfo>());
                 }
             }
             return instance;
         }
 
-        public IEnumerator<LayerInfo> GetEnumerator()
+        public IEnumerator<ILayerInfo> GetEnumerator()
         {
             return LayerList.GetEnumerator();
         }
@@ -151,12 +144,12 @@ namespace MapBoard.Model
             return LayerList.GetEnumerator();
         }
 
-        public int IndexOf(LayerInfo layer)
+        public int IndexOf(ILayerInfo layer)
         {
             return LayerList.IndexOf(layer);
         }
 
-        public bool Contains(LayerInfo layer)
+        public bool Contains(ILayerInfo layer)
         {
             return LayerList.Contains(layer);
         }

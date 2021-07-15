@@ -239,7 +239,7 @@ namespace MapBoard.Mapping
                  };
                  bool first = SelectedFeatures.Count == 0;
                  List<Feature> features = null;
-                 MapLayerInfo layer = null;
+                 IMapLayerInfo layer = null;
                  if (allLayers)
                  {
                      IdentifyLayerResult result =
@@ -279,10 +279,10 @@ namespace MapBoard.Mapping
 
                  if (first)//首次选择
                  {
-                     if (startEdit)
+                     if (startEdit && layer is IWriteableLayerInfo w)
                      {
                          ClearSelection();
-                         MapView.Editor.EditAsync(MapView.Layers.Selected, features[0]).ConfigureAwait(false);
+                         MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);
                      }
                      else
                      {
@@ -353,7 +353,7 @@ namespace MapBoard.Mapping
 
     public class SelectedFeaturesChangedEventArgs : EventArgs
     {
-        public SelectedFeaturesChangedEventArgs(MapLayerInfo layer, IEnumerable<Feature> selected, IEnumerable<Feature> unSelected)
+        public SelectedFeaturesChangedEventArgs(IMapLayerInfo layer, IEnumerable<Feature> selected, IEnumerable<Feature> unSelected)
         {
             if (selected != null)
             {
@@ -376,6 +376,6 @@ namespace MapBoard.Mapping
 
         public Feature[] Selected { get; }
         public Feature[] UnSelected { get; }
-        public MapLayerInfo Layer { get; }
+        public IMapLayerInfo Layer { get; }
     }
 }

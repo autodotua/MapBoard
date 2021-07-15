@@ -43,7 +43,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetOpenFile(filter);
         }
 
-        public async static Task ImportFeatureAsync(Window owner, string path, MapLayerInfo layer, MainMapView mapView, ImportLayerType type)
+        public async static Task ImportFeatureAsync(Window owner, string path, IWriteableLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -80,7 +80,7 @@ namespace MapBoard.UI
             }
         }
 
-        public static string GetExportLayerPath(LayerInfo layer, ExportLayerType type)
+        public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type)
         {
             FileFilterCollection filter = new FileFilterCollection();
             filter = type switch
@@ -95,7 +95,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetSaveFile(filter, true, layer.Name);
         }
 
-        public async static Task ExportLayerAsync(Window owner, string path, MapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
+        public async static Task ExportLayerAsync(Window owner, string path, IMapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
         {
             Debug.Assert(path != null);
             try
@@ -261,7 +261,7 @@ namespace MapBoard.UI
             }
         }
 
-        private static async Task ImportGpxAsync(string[] files, MapLayerInfo layer, MapLayerCollection layers)
+        private static async Task ImportGpxAsync(string[] files, IMapLayerInfo layer, MapLayerCollection layers)
         {
             List<SelectDialogItem> items = new List<SelectDialogItem>()
                 {
@@ -269,11 +269,11 @@ namespace MapBoard.UI
                         new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
                         new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
                 };
-            if (layer != null)
+            if (layer != null && layer is IWriteableLayerInfo w)
             {
                 if (layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
                 {
-                    items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, layer, Config.Instance.BasemapCoordinateSystem)));
+                    items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, w, Config.Instance.BasemapCoordinateSystem)));
                 }
             }
             await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
@@ -316,11 +316,11 @@ namespace MapBoard.UI
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
                 {
-                    Package.ImportMapAsync(files[0], layers, true);
+                    await Package.ImportMapAsync(files[0], layers, true);
                 }
                 else
                 {
-                    Package.ImportMapAsync(files[0], layers, false);
+                    await Package.ImportMapAsync(files[0], layers, false);
                 }
             }
             else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
@@ -333,13 +333,13 @@ namespace MapBoard.UI
                     }
                 }
             }
-            else if (files.Count(p => p.EndsWith(".csv")) == files.Length)
+            else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IWriteableLayerInfo w2)
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
                 {
                     foreach (var file in files)
                     {
-                        await Csv.ImportAsync(file, layers.Selected);
+                        await Csv.ImportAsync(file, w2);
                     }
                 }
             }

@@ -13,7 +13,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public class LayerDialogBase : DialogWindowBase
     {
-        public LayerDialogBase(Window owner, MapLayerInfo layer) : base(owner)
+        public LayerDialogBase(Window owner, IMapLayerInfo layer) : base(owner)
         {
             Layer = layer;
             //图层被移除或删除后，需要关闭本窗口
@@ -24,7 +24,7 @@ namespace MapBoard.UI.Dialog
             };
         }
 
-        public MapLayerInfo Layer { get; }
+        public IMapLayerInfo Layer { get; }
         protected bool closing = false;
     }
 }

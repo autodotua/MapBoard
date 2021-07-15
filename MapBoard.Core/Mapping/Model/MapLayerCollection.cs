@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MLayerCollection = MapBoard.Model.LayerCollection;
 using ELayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
+using AutoMapper;
 
 namespace MapBoard.Mapping.Model
 {
@@ -22,12 +23,12 @@ namespace MapBoard.Mapping.Model
     {
         public const string LayersFileName = "layers.json";
 
-        private MapLayerInfo selected;
+        private IMapLayerInfo selected;
 
         private MapLayerCollection(ELayerCollection esriLayers)
         {
             EsriLayers = esriLayers;
-            SetLayers(new ObservableCollection<LayerInfo>());
+            SetLayers(new ObservableCollection<ILayerInfo>());
         }
 
         public MapLayerInfo Find(FeatureLayer layer)
@@ -35,7 +36,7 @@ namespace MapBoard.Mapping.Model
             return LayerList.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
         }
 
-        public MapLayerInfo Selected
+        public IMapLayerInfo Selected
         {
             get => selected;
             set
@@ -62,15 +63,18 @@ namespace MapBoard.Mapping.Model
                 return new MapLayerCollection(esriLayers);
             }
             MapLayerCollection instance = null;
-            await Task.Run(() =>
-            instance = FromFile<MapLayerCollection, MapLayerInfo>(path,
-            () => new MapLayerCollection(esriLayers)));
-            List<string> errorMsgs = new List<string>();
-            foreach (var layer in instance.LayerList.Cast<MapLayerInfo>().ToList())
+
+            var tempLayers = FromFile(path);
+            instance = new MapLayerCollection(esriLayers);
+            new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
+            }).CreateMapper().Map(tempLayers, instance);
+            foreach (var layer in tempLayers)
             {
                 try
                 {
-                    await instance.AddAsync(layer, false);
+                    await instance.AddAsync(layer);
                 }
                 catch (Exception ex)
                 {
@@ -84,6 +88,7 @@ namespace MapBoard.Mapping.Model
                     instance.LoadErrors.Add(new ItemsOperationError(layer.Name, ex));
                 }
             }
+            List<string> errorMsgs = new List<string>();
 
             if (instance.SelectedIndex >= 0
                 && instance.SelectedIndex < instance.Count)
@@ -93,9 +98,23 @@ namespace MapBoard.Mapping.Model
             return instance;
         }
 
-        public Task AddAsync(MapLayerInfo layer)
+        public async Task<ILayerInfo> AddAsync(ILayerInfo layer)
         {
-            return AddAsync(layer, true);
+            if (!(layer is MapLayerInfo))
+            {
+                switch (layer.Type)
+                {
+                    case null:
+                    case "":
+                    case MapLayerInfo.Types.Shapefile:
+                        layer = new ShapefileMapLayerInfo(layer);
+                        break;
+                }
+            }
+            await AddLayerAsync(layer as MapLayerInfo, 0);
+            (layer as MapLayerInfo).PropertyChanged += OnLayerPropertyChanged;
+            LayerList.Add(layer);
+            return layer;
         }
 
         public void Clear()
@@ -136,16 +155,6 @@ namespace MapBoard.Mapping.Model
             }
             layer.PropertyChanged -= OnLayerPropertyChanged;
             LayerList.Remove(layer);
-        }
-
-        private async Task AddAsync(MapLayerInfo layer, bool addToCollection)
-        {
-            await AddLayerAsync(layer, 0);
-            layer.PropertyChanged += OnLayerPropertyChanged;
-            if (addToCollection)
-            {
-                LayerList.Add(layer);
-            }
         }
 
         private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)

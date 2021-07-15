@@ -25,16 +25,16 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class QueryFeaturesDialog : DialogWindowBase
     {
-        public QueryFeaturesDialog(Window owner, MainMapView mapView, MapLayerInfo layer) : base(owner)
+        public QueryFeaturesDialog(Window owner, MainMapView mapView, IMapLayerInfo layer) : base(owner)
         {
             MapView = mapView;
             InitializeComponent();
             Layer = layer;
         }
 
-        private MapLayerInfo layer;
+        private IMapLayerInfo layer;
 
-        public MapLayerInfo Layer
+        public IMapLayerInfo Layer
         {
             get => layer;
             set

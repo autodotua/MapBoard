@@ -44,7 +44,7 @@ namespace MapBoard.UI
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
-            MapLayerInfo layer = MapView.Layers.Selected;
+            IMapLayerInfo layer = MapView.Layers.Selected;
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
             {
@@ -56,7 +56,10 @@ namespace MapBoard.UI
                 AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
                 AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
-                AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(layer));
+                if (layer is ShapefileMapLayerInfo s1)
+                {
+                    AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(s1));
+                }
                 menu.Items.Add(new Separator());
                 AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
@@ -66,29 +69,34 @@ namespace MapBoard.UI
                 {
                     AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                 }
-                AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layer));
+                if (layer is IWriteableLayerInfo w)
+                {
+                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(w));
+                    AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(w));
+                    AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(w));
+                }
                 AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
-                AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(layer));
-                AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(layer));
                 menu.Items.Add(new Separator());
 
-                var menuImport = new MenuItem() { Header = "导入" };
-                menu.Items.Add(menuImport);
-                if (layer.GeometryType == GeometryType.Polyline
-                    || layer.GeometryType == GeometryType.Point
-                    || layer.GeometryType == GeometryType.Multipoint)
+                if (layer is IWriteableLayerInfo w2)
                 {
-                    AddToMenu(menuImport, "GPX轨迹文件",
-                        () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
-                        p => IOUtility.ImportFeatureAsync(MainWindow, p, layer, MapView, ImportLayerType.Gpx),
-                        "正在导入GPX轨迹文件");
+                    var menuImport = new MenuItem() { Header = "导入" };
+                    menu.Items.Add(menuImport);
+                    if (layer.GeometryType == GeometryType.Polyline
+                        || layer.GeometryType == GeometryType.Point
+                        || layer.GeometryType == GeometryType.Multipoint)
+                    {
+                        AddToMenu(menuImport, "GPX轨迹文件",
+                            () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
+                            p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Gpx),
+                            "正在导入GPX轨迹文件");
+                    }
+
+                    AddToMenu(menuImport, "CSV文件",
+                        () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
+                        p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Csv),
+                        "正在导入CSV文件");
                 }
-
-                AddToMenu(menuImport, "CSV文件",
-                    () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
-                    p => IOUtility.ImportFeatureAsync(MainWindow, p, layer, MapView, ImportLayerType.Csv),
-                    "正在导入CSV文件");
-
                 var menuExport = new MenuItem() { Header = "导出" };
                 menu.Items.Add(menuExport);
 
@@ -123,7 +131,10 @@ namespace MapBoard.UI
                     AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layers));
+                if (layer is ShapefileMapLayerInfo s)
+                {
+                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(s));
+                }
             }
             if (menu.Items.Count > 0)
             {
@@ -131,14 +142,18 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task QueryAsync(MapLayerInfo layer)
+        private async Task QueryAsync(IMapLayerInfo layer)
         {
-            await Task.Yield();
+            if (layer.NumberOfFeatures == 0)
+            {
+                await CommonDialog.ShowErrorDialogAsync("该图层没有任何要素");
+                return;
+            }
             var dialog = new QueryFeaturesDialog(MainWindow, MapView, layer);
             dialog.BringToFront();
         }
 
-        private async Task OpenHistoryDialog(MapLayerInfo layer)
+        private async Task OpenHistoryDialog(IWriteableLayerInfo layer)
         {
             await Task.Yield();
             var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
@@ -183,16 +198,16 @@ namespace MapBoard.UI
             menu.Items.Add(item);
         }
 
-        private async Task CopyFeaturesAsync(MapLayerInfo layer)
+        private async Task CopyFeaturesAsync(IMapLayerInfo layer)
         {
-            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { layer.GeometryType }, true);
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { layer.GeometryType }, new string[] { MapLayerInfo.Types.Shapefile }, true);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer);
+                await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as ShapefileMapLayerInfo);
             }
         }
 
-        private async Task EditFieldDisplayAsync(MapLayerInfo layer)
+        private async Task EditFieldDisplayAsync(ShapefileMapLayerInfo layer)
         {
             if (layer.Fields.Length == 0)
             {
@@ -204,7 +219,7 @@ namespace MapBoard.UI
             await dialog.ShowAsync();
         }
 
-        private async Task CreateCopyAsync(MapLayerInfo layer)
+        private async Task CreateCopyAsync(IMapLayerInfo layer)
         {
             var check = await CommonDialog.ShowCheckBoxDialogAsync("请选择副本类型",
                     new CheckDialogItem[]
@@ -221,7 +236,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task BufferAsync(MapLayerInfo layer)
+        private async Task BufferAsync(IMapLayerInfo layer)
         {
             var num = await CommonDialog.ShowDoubleInputDialogAsync("请输入缓冲区距离（米）");
             if (num.HasValue)
@@ -230,7 +245,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task ZoomToLayerAsync(MapLayerInfo layer)
+        private async Task ZoomToLayerAsync(IMapLayerInfo layer)
         {
             try
             {
@@ -242,7 +257,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CoordinateTransformateAsync(MapLayerInfo layer)
+        private async Task CoordinateTransformateAsync(IWriteableLayerInfo layer)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
@@ -254,7 +269,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CoordinateTransformateAsync(IList<MapLayerInfo> layers)
+        private async Task CoordinateTransformateAsync(IList<ShapefileMapLayerInfo> layers)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
@@ -271,7 +286,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task SetTimeExtentAsync(MapLayerInfo layer)
+        private async Task SetTimeExtentAsync(IMapLayerInfo layer)
         {
             DateRangeDialog dialog = new DateRangeDialog(MapView.Layers.Selected);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -280,7 +295,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task DeleteLayersAsync(IList<MapLayerInfo> layers)
+        private async Task DeleteLayersAsync(IList<IMapLayerInfo> layers)
         {
             if (list.SelectedItems.Count == 0)
             {
@@ -293,7 +308,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CopyAttributesAsync(MapLayerInfo layer)
+        private async Task CopyAttributesAsync(IWriteableLayerInfo layer)
         {
             var dialog = new CopyAttributesDialog(layer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -322,7 +337,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task ShowAttributeTableAsync(MapLayerInfo layer)
+        private async Task ShowAttributeTableAsync(IMapLayerInfo layer)
         {
             var dialog = AttributeTableDialog.Get(MainWindow, layer, MapView);
             try

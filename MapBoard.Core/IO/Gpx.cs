@@ -22,7 +22,7 @@ namespace MapBoard.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<MapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCs)
+        public async static Task<ShapefileMapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCs)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
@@ -30,7 +30,7 @@ namespace MapBoard.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp"));
 
-            MapLayerInfo layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
+            var layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));
             List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
@@ -61,7 +61,7 @@ namespace MapBoard.IO
             return layer;
         }
 
-        public async static Task<MapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
+        public async static Task<ShapefileMapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
         {
             var layer = await ImportToNewLayerAsync(paths[0], type, layers, baseCS);
             for (int i = 1; i < paths.Length; i++)
@@ -71,7 +71,7 @@ namespace MapBoard.IO
             return layer;
         }
 
-        public async static Task ImportToLayersAsync(IEnumerable<string> paths, MapLayerInfo layer, CoordinateSystem baseCS)
+        public async static Task ImportToLayersAsync(IEnumerable<string> paths, IWriteableLayerInfo layer, CoordinateSystem baseCS)
         {
             foreach (var path in paths)
             {
@@ -79,7 +79,7 @@ namespace MapBoard.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, MapLayerInfo layer, CoordinateSystem baseCS)
+        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IWriteableLayerInfo layer, CoordinateSystem baseCS)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);

@@ -13,7 +13,7 @@ namespace MapBoard.IO
 {
     public static class Kml
     {
-        public async static Task ExportAsync(string path, MapLayerInfo layer)
+        public async static Task ExportAsync(string path, IMapLayerInfo layer)
         {
             KmlDocument kml = new KmlDocument() { Name = layer.Name };
             await Task.Run(async () =>
@@ -27,7 +27,7 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
-        public async static Task ExportAsync(string path, IEnumerable<MapLayerInfo> layers)
+        public async static Task ExportAsync(string path, IEnumerable<IMapLayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();
             await Task.Run(async () =>
@@ -46,7 +46,7 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
-        private static async Task AddToKmlAsync(MapLayerInfo layer, KmlNodeCollection nodes)
+        private static async Task AddToKmlAsync(IMapLayerInfo layer, KmlNodeCollection nodes)
         {
             foreach (var feature in await layer.GetAllFeaturesAsync())
             {

@@ -126,7 +126,7 @@ namespace MapBoard.UI
 
         public void ResetLayerSettingUI()
         {
-            MapLayerInfo layer = Layers.Selected;
+            IMapLayerInfo layer = Layers.Selected;
             if (layer == null)
             {
                 return;
