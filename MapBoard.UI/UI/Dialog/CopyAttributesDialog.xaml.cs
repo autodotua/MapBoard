@@ -20,9 +20,9 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class CopyAttributesDialog : CommonDialog
     {
-        public IWriteableLayerInfo Layer { get; }
+        public IEditableLayerInfo Layer { get; }
 
-        public CopyAttributesDialog(IWriteableLayerInfo layer)
+        public CopyAttributesDialog(IEditableLayerInfo layer)
         {
             Layer = layer;
             Fields = layer.Fields.IncludeDefaultFields().ToArray();

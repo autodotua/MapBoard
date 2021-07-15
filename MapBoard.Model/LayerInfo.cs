@@ -69,12 +69,14 @@ namespace MapBoard.Model
         }
 
         public LabelInfo Label { get; set; } = new LabelInfo();
-        public virtual string Type { get; }
+
+        [JsonProperty]
+        public virtual string Type { get; protected set; }
 
         [JsonIgnore]
-        public virtual bool IsWriteable { get; }
+        public virtual bool IsEditable { get; }
 
-        protected List<string> ServiceParameters { get; } = new List<string>();
+        public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
 
         public virtual object Clone()
         {

@@ -53,8 +53,6 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public ItemsOperationErrorCollection LoadErrors { get; private set; }
-
         public static async Task<MapLayerCollection> GetInstanceAsync(ELayerCollection esriLayers)
         {
             string path = Path.Combine(Parameters.DataPath, LayersFileName);
@@ -72,21 +70,7 @@ namespace MapBoard.Mapping.Model
             }).CreateMapper().Map(tempLayers, instance);
             foreach (var layer in tempLayers)
             {
-                try
-                {
-                    await instance.AddAsync(layer);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"图层{layer.Name}加载失败：{ex.Message}");
-                    instance.LayerList.Remove(layer);
-
-                    if (instance.LoadErrors == null)
-                    {
-                        instance.LoadErrors = new ItemsOperationErrorCollection();
-                    }
-                    instance.LoadErrors.Add(new ItemsOperationError(layer.Name, ex));
-                }
+                await instance.AddAsync(layer);
             }
             List<string> errorMsgs = new List<string>();
 
@@ -109,12 +93,26 @@ namespace MapBoard.Mapping.Model
                     case MapLayerInfo.Types.Shapefile:
                         layer = new ShapefileMapLayerInfo(layer);
                         break;
+
+                    case MapLayerInfo.Types.WFS:
+                        layer = new WfsMapLayerInfo(layer);
+                        break;
                 }
             }
             await AddLayerAsync(layer as MapLayerInfo, 0);
             (layer as MapLayerInfo).PropertyChanged += OnLayerPropertyChanged;
             LayerList.Add(layer);
             return layer;
+        }
+
+        public ItemsOperationErrorCollection GetLoadErrors()
+        {
+            var c = new ItemsOperationErrorCollection();
+            foreach (var layer in LayerList.Cast<MapLayerInfo>().Where(p => p.LoadError != null))
+            {
+                c.Add(new ItemsOperationError(layer.Name, layer.LoadError));
+            }
+            return c.Count == 0 ? null : c;
         }
 
         public void Clear()
@@ -175,9 +173,17 @@ namespace MapBoard.Mapping.Model
             {
                 if (!layer.HasTable)
                 {
-                    await layer.LoadAsync();
+                    try
+                    {
+                        await layer.LoadAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
+                    }
                 }
                 FeatureLayer fl = layer.Layer;
+                Debug.Assert(fl != null);
                 if (index == -1)
                 {
                     EsriLayers.Add(fl);

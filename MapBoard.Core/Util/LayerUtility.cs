@@ -42,7 +42,14 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task<ShapefileMapLayerInfo> CreateLayerAsync(GeometryType type,
+        public async static Task<WfsMapLayerInfo> AddWfsLayerAsync(MapLayerCollection layers, string name, string url, string layerName)
+        {
+            WfsMapLayerInfo layer = new WfsMapLayerInfo(name, url, layerName);
+            await layers.AddAsync(layer);
+            return layer;
+        }
+
+        public async static Task<ShapefileMapLayerInfo> CreateShapefileLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
                                                              string name = null,
                                                              IList<FieldInfo> fields = null)
@@ -67,7 +74,7 @@ namespace MapBoard.Util
             return layer;
         }
 
-        public async static Task<ShapefileMapLayerInfo> CreateLayerAsync(GeometryType type,
+        public async static Task<ShapefileMapLayerInfo> CreateShapefileLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
                                                              IMapLayerInfo template,
                                                              bool includeFields,
@@ -85,7 +92,7 @@ namespace MapBoard.Util
 
             await Shapefile.CreateShapefileAsync(type, name, null, template.Fields);
             Debug.Assert(template is MapLayerInfo);
-            ShapefileMapLayerInfo layer = template == null ? new ShapefileMapLayerInfo(name) : new ShapefileMapLayerInfo(template as MapLayerInfo, name, includeFields);
+            ShapefileMapLayerInfo layer = new ShapefileMapLayerInfo(template as MapLayerInfo, name, includeFields);
             await layers.AddAsync(layer);
             layers.Selected = layer;
             return layer;
@@ -97,14 +104,14 @@ namespace MapBoard.Util
             {
                 var features = await layer.GetAllFeaturesAsync();
 
-                var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer, includeFields);
+                var newLayer = await CreateShapefileLayerAsync(layer.GeometryType, layers, layer, includeFields);
 
-                await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
+                await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Import, true);
                 layer.LayerVisible = false;
             }
             else
             {
-                await CreateLayerAsync(layer.GeometryType, layers, layer, includeFields);
+                await CreateShapefileLayerAsync(layer.GeometryType, layers, layer, includeFields);
             }
         }
 
@@ -152,7 +159,7 @@ namespace MapBoard.Util
                     FillColor = symbol.Value.LineColor
                 });
             }
-            var newLayer = await CreateLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
+            var newLayer = await CreateShapefileLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
             {
@@ -215,7 +222,7 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task CoordinateTransformateAsync(this IWriteableLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
+        public async static Task CoordinateTransformateAsync(this IEditableLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
         {
             if (source == target)
             {
@@ -243,7 +250,7 @@ namespace MapBoard.Util
             {
                 throw new ArgumentException("图层的类型并非统一");
             }
-            var layer = await CreateLayerAsync(type.First(), layerCollection);
+            var layer = await CreateShapefileLayerAsync(type.First(), layerCollection);
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
             {

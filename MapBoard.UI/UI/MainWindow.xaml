@@ -212,10 +212,16 @@
                                 Click="ApplyStyleButtonClick"
                                 Content="应用样式" />
                             <TextBlock Text="  " />
-                            <Button
+                            <ui:SplitButton
                                 x:Name="btnCreateStyle"
                                 Click="CreateLayerButtonClick"
-                                Content="新建图层" />
+                                Content="新建图层" ToolTip="新建可编辑图层">
+                                <ui:SplitButton.Flyout>
+                                    <ui:MenuFlyout>
+                                        <MenuItem Click="AddWfsLayerButtonClick" Header="WFS图层" />
+                                    </ui:MenuFlyout>
+                                </ui:SplitButton.Flyout>
+                            </ui:SplitButton>
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">

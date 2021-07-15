@@ -110,19 +110,32 @@ namespace MapBoard.Mapping.Model
                 Feature = feature
             };
 
-            attributes.all.Add(new FeatureAttribute(FieldExtension.LabelField, feature.Attributes[Parameters.LabelFieldName] as string));
-            attributes.all.Add(new FeatureAttribute(FieldExtension.ClassField, feature.Attributes[Parameters.ClassFieldName] as string));
-            attributes.all.Add(new FeatureAttribute(FieldExtension.DateField, (feature.Attributes[Parameters.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
-            var createTimeString = feature.Attributes[Parameters.CreateTimeFieldName] as string;
-            DateTime? createTime = null;
-            try
+            if (feature.Attributes.ContainsKey(Parameters.LabelFieldName))
             {
-                createTime = string.IsNullOrEmpty(createTimeString) ? (DateTime?)null : DateTime.Parse(createTimeString);
+                attributes.all.Add(new FeatureAttribute(FieldExtension.LabelField, feature.Attributes[Parameters.LabelFieldName] as string));
             }
-            catch
+            if (feature.Attributes.ContainsKey(Parameters.ClassFieldName))
             {
+                attributes.all.Add(new FeatureAttribute(FieldExtension.ClassField, feature.Attributes[Parameters.ClassFieldName] as string));
             }
-            attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
+            if (feature.Attributes.ContainsKey(Parameters.DateFieldName))
+            {
+                attributes.all.Add(new FeatureAttribute(FieldExtension.DateField, (feature.Attributes[Parameters.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
+            }
+            if (feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName))
+            {
+                var createTimeString = feature.Attributes[Parameters.CreateTimeFieldName] as string;
+                DateTime? createTime = null;
+                try
+                {
+                    createTime = string.IsNullOrEmpty(createTimeString) ? (DateTime?)null : DateTime.Parse(createTimeString);
+                }
+                catch
+                {
+                }
+                attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
+            }
+
             foreach (var attr in feature.Attributes.GetCustomAttributes())
             {
                 FeatureAttribute newAttr = null;

@@ -71,7 +71,7 @@ namespace MapBoard.IO
             bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
             var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
-            ShapefileMapLayerInfo layer = await LayerUtility.CreateLayerAsync(table.GeometryType, layers,
+            ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,
                  Path.GetFileNameWithoutExtension(path),
                 fieldMap.Values.ToList());
             layer.LayerVisible = false;

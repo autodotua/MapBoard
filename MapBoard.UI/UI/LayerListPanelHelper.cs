@@ -15,15 +15,8 @@ using System.Windows.Input;
 using MapBoard.Mapping;
 using ModernWpf.Controls;
 using ListView = System.Windows.Controls.ListView;
-
-using System.Collections;
-
-using System.Windows.Controls.Primitives;
-
-using System.Windows.Media;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using WinRT;
 
 namespace MapBoard.UI
 {
@@ -48,92 +41,101 @@ namespace MapBoard.UI
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
             {
-                if (layer != null && layer.NumberOfFeatures > 0)
+                if (!layer.IsLoaded)
                 {
-                    AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
+                    AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
+                    AddToMenu(menu, "重新加载", () => ReloadLayerAsync(layer));
                 }
-                AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
-                AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
-                AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
-                if (layer is ShapefileMapLayerInfo s1)
+                else
                 {
-                    AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(s1));
-                }
-                menu.Items.Add(new Separator());
-                AddToMenu(menu, "查询要素", () => QueryAsync(layer));
+                    if (layer != null && layer.NumberOfFeatures > 0)
+                    {
+                        AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
+                    }
+                    AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
+                    AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
+                    AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
+                    AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
+                    if (layer is ShapefileMapLayerInfo s1)
+                    {
+                        AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(s1));
+                    }
+                    menu.Items.Add(new Separator());
+                    AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
-                if (layer.GeometryType == GeometryType.Polyline
-                    || layer.GeometryType == GeometryType.Point
-                    || layer.GeometryType == GeometryType.Multipoint)
-                {
-                    AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
-                }
-                if (layer is IWriteableLayerInfo w)
-                {
-                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(w));
-                    AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(w));
-                    AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(w));
-                }
-                AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
-                menu.Items.Add(new Separator());
-
-                if (layer is IWriteableLayerInfo w2)
-                {
-                    var menuImport = new MenuItem() { Header = "导入" };
-                    menu.Items.Add(menuImport);
                     if (layer.GeometryType == GeometryType.Polyline
                         || layer.GeometryType == GeometryType.Point
                         || layer.GeometryType == GeometryType.Multipoint)
                     {
-                        AddToMenu(menuImport, "GPX轨迹文件",
-                            () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
-                            p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Gpx),
-                            "正在导入GPX轨迹文件");
+                        AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                     }
+                    if (layer is IEditableLayerInfo w)
+                    {
+                        AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(w));
+                        AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(w));
+                        AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(w));
+                    }
+                    AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
+                    menu.Items.Add(new Separator());
 
-                    AddToMenu(menuImport, "CSV文件",
-                        () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
-                        p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Csv),
-                        "正在导入CSV文件");
-                }
-                var menuExport = new MenuItem() { Header = "导出" };
-                menu.Items.Add(menuExport);
+                    if (layer is IEditableLayerInfo w2)
+                    {
+                        var menuImport = new MenuItem() { Header = "导入" };
+                        menu.Items.Add(menuImport);
+                        if (layer.GeometryType == GeometryType.Polyline
+                            || layer.GeometryType == GeometryType.Point
+                            || layer.GeometryType == GeometryType.Multipoint)
+                        {
+                            AddToMenu(menuImport, "GPX轨迹文件",
+                                () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
+                                p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Gpx),
+                                "正在导入GPX轨迹文件");
+                        }
 
-                AddToMenu(menuExport, "图层包",
-                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
-                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
-                    "正在导出图层包");
-                if (Config.Instance.CopyShpFileWhenExport)
-                {
-                    AddToMenu(menuExport, "图层包（重建）",
-                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild),
-                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
+                        AddToMenu(menuImport, "CSV文件",
+                            () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
+                            p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Csv),
+                            "正在导入CSV文件");
+                    }
+                    var menuExport = new MenuItem() { Header = "导出" };
+                    menu.Items.Add(menuExport);
+
+                    AddToMenu(menuExport, "图层包",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                         "正在导出图层包");
+                    if (Config.Instance.CopyShpFileWhenExport)
+                    {
+                        AddToMenu(menuExport, "图层包（重建）",
+                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild),
+                            p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
+                            "正在导出图层包");
+                    }
+                    AddToMenu(menuExport, "GPS工具箱图层包",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
+                        "正在导出GPS工具箱图层包");
+                    AddToMenu(menuExport, "KML打包文件",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),
+                        "正在导出KML打包文件");
+                    AddToMenu(menuExport, "GeoJSON文件",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
+                        "正在导出GeoJSON文件");
                 }
-                AddToMenu(menuExport, "GPS工具箱图层包",
-                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
-                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
-                    "正在导出GPS工具箱图层包");
-                AddToMenu(menuExport, "KML打包文件",
-                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML),
-                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),
-                    "正在导出KML打包文件");
-                AddToMenu(menuExport, "GeoJSON文件",
-                    () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON),
-                    p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
-                    "正在导出GeoJSON文件");
             }
             else
             {
-                if (layers.Select(p => p.GeometryType).Distinct().Count() == 1)
+                if (layers.All(p => p.IsLoaded)
+                    && layers.Select(p => p.GeometryType).Distinct().Count() == 1)
                 {
                     AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                if (layer is ShapefileMapLayerInfo s)
+                if (layers.All(p => p.IsLoaded && p is ShapefileMapLayerInfo))
                 {
-                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(s));
+                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layers.Cast<IEditableLayerInfo>().ToList()));
                 }
             }
             if (menu.Items.Count > 0)
@@ -153,7 +155,7 @@ namespace MapBoard.UI
             dialog.BringToFront();
         }
 
-        private async Task OpenHistoryDialog(IWriteableLayerInfo layer)
+        private async Task OpenHistoryDialog(IEditableLayerInfo layer)
         {
             await Task.Yield();
             var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
@@ -257,7 +259,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CoordinateTransformateAsync(IWriteableLayerInfo layer)
+        private async Task CoordinateTransformateAsync(IEditableLayerInfo layer)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
@@ -269,7 +271,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CoordinateTransformateAsync(IList<ShapefileMapLayerInfo> layers)
+        private async Task CoordinateTransformateAsync(IList<IEditableLayerInfo> layers)
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
@@ -308,7 +310,22 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CopyAttributesAsync(IWriteableLayerInfo layer)
+        private async Task ReloadLayerAsync(IMapLayerInfo layer)
+        {
+            await MainWindow.DoAsync(async () =>
+            {
+                try
+                {
+                    await layer.ReloadAsync(MapView.Map.OperationalLayers);
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex, "加载失败");
+                }
+            }, "正在重新加载图层");
+        }
+
+        private async Task CopyAttributesAsync(IEditableLayerInfo layer)
         {
             var dialog = new CopyAttributesDialog(layer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)

@@ -107,9 +107,10 @@ namespace MapBoard.UI
             RegistEvents();
             //初始化控件可用性
             JudgeControlsEnable();
-            if (arcMap.Layers.LoadErrors != null)
+            ItemsOperationErrorCollection errors = null;
+            if ((errors = arcMap.Layers.GetLoadErrors()) != null)
             {
-                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", arcMap.Layers.LoadErrors);
+                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
             }
         }
 
@@ -323,7 +324,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void ClearHistoriesButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var layer in arcMap.Layers.OfType<IWriteableLayerInfo>())
+            foreach (var layer in arcMap.Layers.OfType<IEditableLayerInfo>())
             {
                 layer.Histories.Clear();
             }
@@ -390,7 +391,13 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void CreateLayerButtonClick(object sender, RoutedEventArgs e)
+        private async void AddWfsLayerButtonClick(object sender, RoutedEventArgs e)
+        {
+            await new AddWfsLayerDialog(arcMap.Layers).ShowAsync();
+            arcMap.Layers.Save();
+        }
+
+        private async void CreateLayerButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await new CreateLayerDialog(arcMap.Layers).ShowAsync();
             arcMap.Layers.Save();

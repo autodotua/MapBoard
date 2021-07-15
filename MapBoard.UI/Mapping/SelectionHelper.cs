@@ -279,7 +279,7 @@ namespace MapBoard.Mapping
 
                  if (first)//首次选择
                  {
-                     if (startEdit && layer is IWriteableLayerInfo w)
+                     if (startEdit && layer is IEditableLayerInfo w)
                      {
                          ClearSelection();
                          MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);

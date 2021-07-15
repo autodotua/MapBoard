@@ -30,7 +30,7 @@ namespace MapBoard.IO
             var gpx = LibGpx.FromString(content);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp"));
 
-            var layer = await LayerUtility.CreateLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
+            var layer = await LayerUtility.CreateShapefileLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));
             List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
@@ -71,7 +71,7 @@ namespace MapBoard.IO
             return layer;
         }
 
-        public async static Task ImportToLayersAsync(IEnumerable<string> paths, IWriteableLayerInfo layer, CoordinateSystem baseCS)
+        public async static Task ImportToLayersAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             foreach (var path in paths)
             {
@@ -79,7 +79,7 @@ namespace MapBoard.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IWriteableLayerInfo layer, CoordinateSystem baseCS)
+        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);

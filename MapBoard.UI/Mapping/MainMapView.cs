@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
@@ -9,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -88,6 +91,51 @@ namespace MapBoard.Mapping
             {
                 IsRotateEnabled = true
             };
+            NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        private CancellationTokenSource ctsWfs = null;
+
+        private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
+        {
+            //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。
+            if (Layers.Any(p => p.Type == MapLayerInfo.Types.WFS) && CurrentTask == BoardTask.Ready)
+            {
+                Envelope currentExtent = VisibleArea.Extent;
+
+                // Create a query based on the current visible extent.
+                QueryParameters visibleExtentQuery = new QueryParameters
+                {
+                    Geometry = currentExtent,
+                    SpatialRelationship = SpatialRelationship.Intersects
+                };
+                if (ctsWfs != null)
+                {
+                    ctsWfs.Cancel();
+                }
+                ctsWfs = new CancellationTokenSource();
+                try
+                {
+                    List<Task> tasks = new();
+                    foreach (WfsMapLayerInfo layer in Layers
+                        .OfType< WfsMapLayerInfo>()
+                        .Where(p=>p.IsLoaded))
+                    {
+                        tasks.Add(layer.PopulateFromServiceAsync(visibleExtentQuery, false, cancellationToken: ctsWfs.Token));
+                    }
+                    await Task.WhenAll(tasks);
+                    ctsWfs = null;
+                }
+                catch (TaskCanceledException ex)
+                {
+                }
+                catch (HttpRequestException ex)
+                {
+                }
+                catch (Exception ex)
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -225,7 +273,7 @@ namespace MapBoard.Mapping
                     SketchEditor.RemoveSelectedVertex();
                     break;
 
-                case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IWriteableLayerInfo w:
+                case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IEditableLayerInfo w:
                     await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                    {
                        await FeatureUtility.DeleteAsync(w, Selection.SelectedFeatures.ToArray());

@@ -11,7 +11,19 @@ namespace MapBoard.Mapping.Model
     {
         public static long GetFID(this Feature feature)
         {
-            return (long)feature.GetAttributeValue("FID");
+            if(feature.Attributes.ContainsKey("FID"))
+            {
+                return (long)feature.GetAttributeValue("FID");
+            }
+            if(feature.Attributes.ContainsKey("ID"))
+            {
+                return (long)feature.GetAttributeValue("ID");
+            }
+            if(feature.Attributes.ContainsKey("ObjectID"))
+            {
+                return (long)feature.GetAttributeValue("ObjectID");
+            }
+            return feature.Geometry.ToJson().GetHashCode();
         }
     }
 }

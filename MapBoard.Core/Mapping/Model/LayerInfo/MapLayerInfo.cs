@@ -1,0 +1,300 @@
+﻿using AutoMapper;
+using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Mapping;
+using FzLib.Extension;
+using MapBoard.Model;
+using MapBoard.Util;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
+
+namespace MapBoard.Mapping.Model
+{
+    public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
+    {
+        public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
+        {
+           Types.Shapefile,null,Types.WFS
+        };
+
+        public class Types
+        {
+            public const string Shapefile = "Shapefile";
+            public const string WFS = "WFS";
+        }
+
+        [JsonIgnore]
+        public bool TimeExtentEnable
+        {
+            get => TimeExtent == null ? false : TimeExtent.IsEnable;
+            set
+            {
+                if (TimeExtent != null)
+                {
+                    if (value != TimeExtent.IsEnable)
+                    {
+                        TimeExtent.IsEnable = value;
+                        this.SetTimeExtentAsync();
+                    }
+                }
+
+                this.Notify(nameof(TimeExtentEnable));
+            }
+        }
+
+        public MapLayerInfo()
+        {
+        }
+
+        public MapLayerInfo(string name)
+        {
+            Name = name;
+        }
+
+        public MapLayerInfo(ILayerInfo layer)
+        {
+            new MapperConfiguration(cfg =>
+           {
+               cfg.CreateMap<LayerInfo, MapLayerInfo>();
+           }).CreateMapper().Map(layer, this);
+        }
+
+        public override object Clone()
+        {
+            var layer = new MapperConfiguration(cfg =>
+              {
+                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
+              }).CreateMapper().Map<MapLayerInfo>(this);
+
+            return layer;
+        }
+
+        /// <summary>
+        /// 修改图层名，并同步修改物理文件的名称
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <param name="layers">Esri图层集合</param>
+        /// <returns></returns>
+        public abstract Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers);
+
+        private FeatureLayer layer;
+
+        [JsonIgnore]
+        public FeatureLayer Layer => layer;
+
+        protected FeatureTable table;
+
+        protected abstract FeatureTable GetTable();
+
+        private bool isLoaded;
+
+        [JsonIgnore]
+        public bool IsLoaded
+        {
+            get => isLoaded;
+            private set
+            {
+                this.SetValueAndNotify(ref isLoaded, value, nameof(IsLoaded));
+                this.Notify(nameof(GeometryType));
+            }
+        }
+
+        public async Task ReloadAsync(Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            await table.RetryLoadAsync();
+            //此时Layer应该是已经有的
+            Debug.Assert(layer != null);
+
+            if (layer.FeatureTable != table)
+            {
+                layer.FeatureTable = table;
+            }
+            await Task.Run(this.ApplyStyle);
+            await this.LayerCompleteAsync();
+
+            //也许是Esri的BUG，如果不重新插入，那么啥都不会显示
+            int index = layers.IndexOf(layer);
+            layers.Remove(layer);
+            layers.Insert(index, layer);
+
+            IsLoaded = true;
+        }
+
+        public async Task LoadAsync()
+        {
+            try
+            {
+                //确保即使Table没有成功加载，Layer也得先建起来
+
+                try
+                {
+                    table = GetTable();
+                }
+                catch (Exception ex)
+                {
+                    LoadError = new Exception("创建要素表失败", ex);
+                    IsLoaded = false;
+                    return;
+                }
+                finally
+                {
+                    Debug.Assert(layer == null);
+                    layer = new FeatureLayer(table);
+                }
+                try
+                {
+                    await table.LoadAsync().TimeoutAfter(TimeSpan.FromSeconds(1));
+                }
+                catch (TimeoutException)
+                {
+                    table.CancelLoad();
+                    throw new TimeoutException("加载超时，通常是无法连接WFS服务所致");
+                }
+                await Task.Run(this.ApplyStyle);
+                await this.LayerCompleteAsync();
+                IsLoaded = true;
+                this.Notify(nameof(GeometryType));
+            }
+            catch (Exception ex)
+            {
+                LoadError = ex;
+                IsLoaded = false;
+                throw;
+            }
+        }
+
+        [JsonIgnore]
+        public Exception LoadError { get; private set; }
+
+        [JsonIgnore]
+        public bool HasTable => table != null;
+
+        [JsonIgnore]
+        public GeometryType GeometryType => table.GeometryType;
+
+        public override bool LayerVisible
+        {
+            get => base.LayerVisible;
+            set
+            {
+                base.LayerVisible = value;
+                if (Layer != null)
+                {
+                    Layer.IsVisible = value;
+                }
+                this.Notify(nameof(LayerVisible));
+            }
+        }
+
+        public SymbolInfo GetDefaultSymbol()
+        {
+            return GeometryType switch
+            {
+                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
+                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
+                _ => null
+            };
+        }
+
+        [JsonIgnore]
+        public long NumberOfFeatures
+        {
+            get
+            {
+                try
+                {
+                    return table == null ? 0 : table.NumberOfFeatures;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            Unattached?.Invoke(this, new EventArgs());
+        }
+
+        [JsonIgnore]
+        public Func<QueryParameters, Task<Envelope>> QueryExtentAsync => table.QueryExtentAsync;
+
+        [JsonIgnore]
+        public Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync => table.QueryFeaturesAsync;
+
+        public event EventHandler Unattached;
+    }
+
+    public enum FeaturesChangedSource
+    {
+        [Description("绘制")]
+        Draw,
+
+        [Description("编辑")]
+        Edit,
+
+        [Description("要素操作")]
+        FeatureOperation,
+
+        [Description("撤销")]
+        Undo,
+
+        [Description("导入")]
+        Import
+    }
+
+    public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
+    {
+        public IReadOnlyList<Feature> DeletedFeatures { get; }
+        public IReadOnlyList<Feature> AddedFeatures { get; }
+        public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
+        public MapLayerInfo Layer { get; }
+        public DateTime Time { get; }
+        public FeaturesChangedSource Source { get; }
+        private bool canUndo = true;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool CanUndo
+        {
+            get => canUndo;
+            set => this.SetValueAndNotify(ref canUndo, value, nameof(CanUndo));
+        }
+
+        public FeaturesChangedEventArgs(MapLayerInfo layer,
+            IEnumerable<Feature> addedFeatures,
+            IEnumerable<Feature> deletedFeatures,
+            IEnumerable<UpdatedFeature> changedFeatures,
+            FeaturesChangedSource source)
+        {
+            Source = source;
+            Time = DateTime.Now;
+            int count = 0;
+            if (deletedFeatures != null)
+            {
+                count++;
+                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
+            }
+            if (addedFeatures != null)
+            {
+                count++;
+                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
+            }
+            if (changedFeatures != null)
+            {
+                count++;
+                UpdatedFeatures = new List<UpdatedFeature>(changedFeatures).AsReadOnly();
+            }
+            Debug.Assert(count == 1);
+            Layer = layer;
+        }
+    }
+}

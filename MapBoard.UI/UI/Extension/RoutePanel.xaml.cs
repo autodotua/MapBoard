@@ -217,8 +217,8 @@ namespace MapBoard.UI.Extension
                 new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, new[] { MapLayerInfo.Types.Shapefile }, false);
             if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary && dialog.SelectedLayer != null)
             {
-                Debug.Assert(dialog.SelectedLayer is IWriteableLayerInfo);
-                var layer = dialog.SelectedLayer as IWriteableLayerInfo;
+                Debug.Assert(dialog.SelectedLayer is IEditableLayerInfo);
+                var layer = dialog.SelectedLayer as IEditableLayerInfo;
                 var route = SelectedRoute;
                 List<Feature> newFeatures = new List<Feature>();
                 Debug.Assert(SelectedRoute != null);

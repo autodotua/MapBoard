@@ -13,7 +13,7 @@ namespace MapBoard.Util
 {
     public static class AttributeUtility
     {
-        public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IWriteableLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
+        public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IEditableLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();
             return await CopyAttributesAsync(layer, features, fieldSource, fieldTarget, dateFormat);
@@ -27,7 +27,7 @@ namespace MapBoard.Util
         /// <param name="fieldTarget">需要更改的字段</param>
         /// <param name="dateFormat">日期格式</param>
         /// <returns></returns>
-        public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IWriteableLayerInfo layer, IEnumerable<Feature> features, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
+        public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IEditableLayerInfo layer, IEnumerable<Feature> features, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
         {
             if (fieldTarget.Name.Equals(FieldExtension.CreateTimeField.Name))
             {
@@ -130,7 +130,7 @@ namespace MapBoard.Util
             return errors;
         }
 
-        public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IWriteableLayerInfo layer, FieldInfo field, string text, bool includeField, string dateFormat)
+        public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IEditableLayerInfo layer, FieldInfo field, string text, bool includeField, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();
             return await SetAttributesAsync(layer, features, field, text, includeField, dateFormat);
@@ -146,7 +146,7 @@ namespace MapBoard.Util
         /// <param name="includeField">是否包含其它字段，字段包含在[]中</param>
         /// <param name="dateFormat">日期格式</param>
         /// <returns></returns>
-        public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IWriteableLayerInfo layer, IEnumerable<Feature> features, FieldInfo field, string text, bool includeField, string dateFormat)
+        public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IEditableLayerInfo layer, IEnumerable<Feature> features, FieldInfo field, string text, bool includeField, string dateFormat)
         {
             if (field.Name.Equals(FieldExtension.CreateTimeField.Name))
             {

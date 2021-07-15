@@ -25,9 +25,6 @@ using MapBoard.Mapping.Model;
 
 namespace MapBoard.UI.Dialog
 {
-    /// <summary>
-    /// CoordinateTransformationDialog.xaml 的交互逻辑
-    /// </summary>
     public partial class CreateLayerDialog : CommonDialog
     {
         public bool editMode = false;
@@ -166,7 +163,7 @@ namespace MapBoard.UI.Dialog
                 }
                 try
                 {
-                    await LayerUtility.CreateLayerAsync(type, Layers, name: LayerName, fields: fields);
+                    await LayerUtility.CreateShapefileLayerAsync(type, Layers, name: LayerName, fields: fields);
                 }
                 catch (Exception ex)
                 {

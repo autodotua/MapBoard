@@ -83,11 +83,11 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
-            if (!Layers.Selected.IsWriteable)
+            if (!Layers.Selected.IsEditable)
             {
                 throw new NotSupportedException("选中的图层不支持编辑");
             }
-            var layer = Layers.Selected as IWriteableLayerInfo;
+            var layer = Layers.Selected as IEditableLayerInfo;
             if (Attributes != null)
             {
                 var label = Attributes.Label;
@@ -127,7 +127,7 @@ namespace MapBoard.Mapping
         /// 编辑
         /// </summary>
         /// <returns></returns>
-        public async Task EditAsync(IWriteableLayerInfo layer, Feature feature)
+        public async Task EditAsync(IEditableLayerInfo layer, Feature feature)
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);

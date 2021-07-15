@@ -82,7 +82,7 @@ namespace MapBoard.IO
                       new FieldInfo(addressField,"照片位置",FieldInfoType.Text),
                       new FieldInfo(addressField,"拍摄时间",FieldInfoType.Text),
             };
-            var layer = await LayerUtility.CreateLayerAsync(GeometryType.Point, layers, fields: fields);
+            var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
             await Task.Run(() =>
             {

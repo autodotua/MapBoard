@@ -20,6 +20,7 @@ using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 using MapBoard.Mapping.Model;
 using MapBoard.UI.Component;
+using System.ComponentModel;
 
 namespace MapBoard.UI
 {
@@ -40,6 +41,15 @@ namespace MapBoard.UI
         {
             MapView = mapView;
             ResetLayerSettingUI();
+            MapView.Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
+        }
+
+        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
+        {
+            if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
+            {
+                ResetLayerSettingUI();
+            }
         }
 
         public MainMapView MapView { get; private set; }
@@ -129,6 +139,7 @@ namespace MapBoard.UI
             IMapLayerInfo layer = Layers.Selected;
             if (layer == null)
             {
+                tab.IsEnabled = false;
                 return;
             }
             else
@@ -152,16 +163,24 @@ namespace MapBoard.UI
                     Keys.Add(new KeySymbolPair(defaultKeyName, MapView.Layers.Selected.GetDefaultSymbol()));
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
+                btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
             }
-
-            tab.SelectedIndex = layer.GeometryType switch
+            try
             {
-                Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
-                Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
-                _ => throw new Exception("未知的类型"),
-            };
+                tab.SelectedIndex = layer.GeometryType switch
+                {
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
+                    _ => throw new InvalidEnumArgumentException("未知的类型"),
+                };
+                tab.IsEnabled = true;
+            }
+            catch (InvalidEnumArgumentException)
+            {
+                tab.IsEnabled = false;
+            }
         }
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)

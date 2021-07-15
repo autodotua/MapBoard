@@ -25,7 +25,7 @@ namespace MapBoard.UI.Dialog
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
-        private FeatureHistoryDialog(Window owner, IWriteableLayerInfo layer, MainMapView arcMap) : base(owner, layer)
+        private FeatureHistoryDialog(Window owner, IEditableLayerInfo layer, MainMapView arcMap) : base(owner, layer)
         {
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
@@ -45,7 +45,7 @@ namespace MapBoard.UI.Dialog
 
         private static Dictionary<IMapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<IMapLayerInfo, FeatureHistoryDialog>();
 
-        public static FeatureHistoryDialog Get(Window owner, IWriteableLayerInfo layer, MainMapView arcMap)
+        public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView arcMap)
         {
             if (dialogs.ContainsKey(layer))
             {
@@ -75,7 +75,7 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             Owner.IsEnabled = false;
             FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
-            var layer = Layer as IWriteableLayerInfo;
+            var layer = Layer as IEditableLayerInfo;
             Debug.Assert(current != null);
             Debug.Assert(layer != null);
             int index = layer.Histories.IndexOf(current);
@@ -138,7 +138,7 @@ namespace MapBoard.UI.Dialog
         {
             FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
 
-            var layer = Layer as IWriteableLayerInfo;
+            var layer = Layer as IEditableLayerInfo;
             Debug.Assert(current != null);
             Debug.Assert(layer != null);
             int index = layer.Histories.IndexOf(current);

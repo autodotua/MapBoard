@@ -4,11 +4,9 @@ using Esri.ArcGISRuntime.Mapping.Labeling;
 using Esri.ArcGISRuntime.Symbology;
 using MapBoard.Model;
 using MapBoard.Mapping;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 
 namespace MapBoard.Util
@@ -23,56 +21,76 @@ namespace MapBoard.Util
 
         private static void ApplyRenderer(this IMapLayerInfo layer)
         {
-            UniqueValueRenderer renderer = new UniqueValueRenderer();
-            renderer.FieldNames.Add(Parameters.ClassFieldName);
-            if (layer.Symbols.Count == 0)
+            if (layer.Symbols.Count == 0 || !layer.Symbols.ContainsKey(""))
             {
                 layer.Symbols.Add("", layer.GetDefaultSymbol());
             }
-            foreach (var info in layer.Symbols)
+            switch (layer.Type)
             {
-                var key = info.Key;
-                var symbolInfo = info.Value;
+                case MapLayerInfo.Types.Shapefile:
+                case null:
+                    {
+                        UniqueValueRenderer renderer = new UniqueValueRenderer();
+                        renderer.FieldNames.Add(Parameters.ClassFieldName);
 
-                Symbol symbol = null;
-
-                switch (layer.Layer.FeatureTable.GeometryType)
-                {
-                    case GeometryType.Point:
-                    case GeometryType.Multipoint:
-                        var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                        symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
+                        foreach (var info in layer.Symbols)
                         {
-                            Outline = outline
-                        };
+                            var key = info.Key;
+                            var symbolInfo = info.Value;
 
-                        break;
-
-                    case GeometryType.Polyline:
-                        symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                        if (symbolInfo.Arrow > 0)
-                        {
-                            (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow - 1);
-                            (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
+                            if (key.Length == 0)
+                            {
+                                renderer.DefaultSymbol = symbolInfo.ToSymbol(layer.GeometryType);
+                            }
+                            else
+                            {
+                                renderer.UniqueValues.Add(new UniqueValue(key, key, symbolInfo.ToSymbol(layer.GeometryType), key));
+                            }
                         }
-                        break;
+                        layer.Layer.Renderer = renderer;
+                    }
+                    break;
 
-                    case GeometryType.Polygon:
-                        var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                        symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
-                        break;
-                }
+                case MapLayerInfo.Types.WFS:
+                    layer.Layer.Renderer = new SimpleRenderer(layer.Symbols[""].ToSymbol(layer.GeometryType));
+                    break;
 
-                if (key.Length == 0)
-                {
-                    renderer.DefaultSymbol = symbol;
-                }
-                else
-                {
-                    renderer.UniqueValues.Add(new UniqueValue(key, key, symbol, key));
-                }
+                default:
+                    break;
             }
-            layer.Layer.Renderer = renderer;
+        }
+
+        public static Symbol ToSymbol(this SymbolInfo symbolInfo, GeometryType geometryType)
+        {
+            Symbol symbol = null;
+
+            switch (geometryType)
+            {
+                case GeometryType.Point:
+                case GeometryType.Multipoint:
+                    var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
+                    {
+                        Outline = outline
+                    };
+
+                    break;
+
+                case GeometryType.Polyline:
+                    symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    if (symbolInfo.Arrow > 0)
+                    {
+                        (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow - 1);
+                        (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
+                    }
+                    break;
+
+                case GeometryType.Polygon:
+                    var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
+                    break;
+            }
+            return symbol;
         }
 
         private static void ApplyLabel(this IMapLayerInfo layer)

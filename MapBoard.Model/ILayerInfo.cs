@@ -7,13 +7,14 @@ namespace MapBoard.Model
     {
         FieldInfo[] Fields { get; set; }
         string Group { get; set; }
-        bool IsWriteable { get; }
+        bool IsEditable { get; }
         LabelInfo Label { get; set; }
         bool LayerVisible { get; set; }
         string Name { get; set; }
         Dictionary<string, SymbolInfo> Symbols { get; set; }
         TimeExtentInfo TimeExtent { get; set; }
         string Type { get; }
+        Dictionary<string, string> ServiceParameters { get; }
 
         object Clone();
     }

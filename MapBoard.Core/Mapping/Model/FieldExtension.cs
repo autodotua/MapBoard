@@ -103,24 +103,25 @@ namespace MapBoard.Mapping.Model
         public static FieldInfo ToFieldInfo(this Field field)
         {
             FieldInfoType type;
-            switch (field.FieldType)
+            switch ((int)field.FieldType)
             {
-                case FieldType.OID:
-                case FieldType.Int16:
-                case FieldType.Int32:
+                case (int)FieldType.OID:
+                case (int)FieldType.Int16:
+                case (int)FieldType.Int32:
+                case 2:
                     type = FieldInfoType.Integer;
                     break;
 
-                case FieldType.Float32:
-                case FieldType.Float64:
+                case (int)FieldType.Float32:
+                case (int)FieldType.Float64:
                     type = FieldInfoType.Float;
                     break;
 
-                case FieldType.Date:
+                case (int)FieldType.Date:
                     type = FieldInfoType.Date;
                     break;
 
-                case FieldType.Text:
+                case (int)FieldType.Text:
                     type = FieldInfoType.Text;
                     break;
 

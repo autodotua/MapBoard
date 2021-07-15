@@ -4,10 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:component="clr-namespace:MapBoard.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     mc:Ignorable="d">
 
     <Grid>
@@ -57,8 +57,8 @@
                                 Margin="4,0"
                                 Text="{Binding SelectedKey.Key}" />
                             <Button
-                                Grid.Column="4" Click="KeyButtonClick"
-                                Content="..." />
+                                x:Name="btnClasses" Grid.Column="4"
+                                Click="KeyButtonClick" Content="..." />
                         </Grid>
 
                         <TabControl

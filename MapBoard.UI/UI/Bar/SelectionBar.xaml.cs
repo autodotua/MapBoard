@@ -49,18 +49,17 @@ namespace MapBoard.UI.Bar
             Window.GetWindow(this).SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             Window.GetWindow(this).LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
             MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
-            MapView.Layers.PropertyChanged += Layers_PropertyChanged;
         }
 
         private void Layers_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MapLayerCollection.Selected))
             {
-                this.Notify(nameof(IsLayerWriteable));
+                this.Notify(nameof(IsLayerEditable));
             }
         }
 
-        public bool IsLayerWriteable => Layers?.Selected?.IsWriteable ?? false;
+        public bool IsLayerEditable => Layers?.Selected?.IsEditable ?? false;
 
         private SelectFeatureDialog selectFeatureDialog;
 
@@ -71,12 +70,14 @@ namespace MapBoard.UI.Bar
                 return;
             }
             int count = MapView.Selection.SelectedFeatures.Count;
-            btnRedraw.IsEnabled = count == 1;
+            btnRedraw.IsEnabled = count == 1 && IsLayerEditable;
             //btnMoreAttributes.IsEnabled = count == 1;
             var layer = Layers.Selected;
-            btnCut.IsEnabled = layer.GeometryType == GeometryType.Polygon
-                || layer.GeometryType == GeometryType.Polyline;
-
+            btnCut.IsEnabled = (layer.GeometryType == GeometryType.Polygon
+                || layer.GeometryType == GeometryType.Polyline)
+                && IsLayerEditable;
+            btnDelete.IsEnabled = IsLayerEditable;
+            btnMenu.IsEnabled = IsLayerEditable;
             attributes = count != 1 ?
                 null : FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
 
@@ -170,10 +171,10 @@ namespace MapBoard.UI.Bar
 
         private async void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layers.Selected is IWriteableLayerInfo);
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                await FeatureUtility.DeleteAsync(Layers.Selected as IWriteableLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
+                await FeatureUtility.DeleteAsync(Layers.Selected as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
                 MapView.Selection.ClearSelection();
             }, "正在删除", true);
         }
@@ -186,10 +187,10 @@ namespace MapBoard.UI.Bar
                     new string[] { MapLayerInfo.Types.Shapefile }, true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    bool copy = Layers.Selected.IsWriteable ?
+                    bool copy = Layers.Selected.IsEditable ?
                     await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") : true;
 
-                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IWriteableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
                     MapView.Selection.ClearSelection();
                     Layers.Selected = dialog.SelectedLayer;
                 }
@@ -198,14 +199,14 @@ namespace MapBoard.UI.Bar
 
         private async void CutButtonClick(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layers.Selected is IWriteableLayerInfo);
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
             var features = MapView.Selection.SelectedFeatures.ToArray();
             var line = await MapView.Editor.GetPolylineAsync();
             if (line != null)
             {
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
-                    await FeatureUtility.CutAsync(Layers.Selected as IWriteableLayerInfo, features, line);
+                    await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
                 }, "正在分割", true);
             }
         }
@@ -213,10 +214,10 @@ namespace MapBoard.UI.Bar
         private async void EditButtonClick(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            Debug.Assert(Layers.Selected is IWriteableLayerInfo);
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
             var feature = MapView.Selection.SelectedFeatures.First();
             MapView.Selection.ClearSelection();
-            await MapView.Editor.EditAsync(Layers.Selected as IWriteableLayerInfo, feature);
+            await MapView.Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -267,7 +268,7 @@ namespace MapBoard.UI.Bar
 
         private void BtnMenuClick(object sender, RoutedEventArgs e)
         {
-            var layer = Layers.Selected as IWriteableLayerInfo;
+            var layer = Layers.Selected as IEditableLayerInfo;
             if (layer == null)
             {
                 return;

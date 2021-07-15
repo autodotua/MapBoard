@@ -43,7 +43,7 @@ namespace MapBoard.UI
             return FileSystemDialog.GetOpenFile(filter);
         }
 
-        public async static Task ImportFeatureAsync(Window owner, string path, IWriteableLayerInfo layer, MainMapView mapView, ImportLayerType type)
+        public async static Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -269,7 +269,7 @@ namespace MapBoard.UI
                         new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
                         new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
                 };
-            if (layer != null && layer is IWriteableLayerInfo w)
+            if (layer != null && layer is IEditableLayerInfo w)
             {
                 if (layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
                 {
@@ -333,7 +333,7 @@ namespace MapBoard.UI
                     }
                 }
             }
-            else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IWriteableLayerInfo w2)
+            else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IEditableLayerInfo w2)
             {
                 if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
                 {
