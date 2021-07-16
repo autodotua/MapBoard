@@ -2,6 +2,7 @@
 using FzLib.Basic.Collection;
 using FzLib.Extension;
 using MapBoard.Model;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading;
@@ -33,7 +34,7 @@ namespace MapBoard.Mapping.Model
 
         public WfsMapLayerInfo(string name, string url, string layerName, bool autoPopulateAll) : base(name)
         {
-            SetService(url, layerName, AutoPopulateAll);
+            SetService(url, layerName, autoPopulateAll);
             Fields = null;
         }
 
@@ -54,9 +55,10 @@ namespace MapBoard.Mapping.Model
             Fields = table.Fields.FromEsriFields().Values.ToArray();
         }
 
+        [JsonIgnore]
         public bool HasPopulateAll { get; private set; }
         private bool isDownloading;
-
+        [JsonIgnore]
         public bool IsDownloading
         {
             get => isDownloading;
@@ -89,10 +91,14 @@ namespace MapBoard.Mapping.Model
         }
 
         public override string Type => Types.WFS;
+        [JsonIgnore]
         public override bool IsEditable => false;
 
+        [JsonIgnore]
         public string Url { get; private set; }
+        [JsonIgnore]
         public string LayerName { get; private set; }
+        [JsonIgnore]
         public bool AutoPopulateAll { get; private set; }
 
         public void SetService(string url, string layerName, bool autoPopulateAll)

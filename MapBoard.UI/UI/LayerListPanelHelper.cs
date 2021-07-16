@@ -66,7 +66,7 @@ namespace MapBoard.UI
                     }
                     if (layer is IServerMapLayerInfo s)
                     {
-                        AddToMenu(menu, "获取全部图形", () => PopulateAllAsync(s));
+                        AddToMenu(menu, "下载全部图形", () => PopulateAllAsync(s));
                     }
                     if (layer is WfsMapLayerInfo w)
                     {
@@ -87,7 +87,10 @@ namespace MapBoard.UI
                         AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(e));
                         AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(e));
                     }
-                    AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
+                    if (layer is IHasDefaultFields h)
+                    {
+                        AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
+                    }
                     menu.Items.Add(new Separator());
 
                     if (layer is IEditableLayerInfo w2)

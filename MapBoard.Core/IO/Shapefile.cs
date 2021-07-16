@@ -245,7 +245,7 @@ namespace MapBoard.IO
             table.Close();
         }
 
-        public static void CopyShpToNewPath(string directory, IMapLayerInfo layer)
+        public static void CopyShpToNewPath(string directory, ShapefileMapLayerInfo layer)
         {
             var files = GetExistShapefiles(Parameters.DataPath, layer.Name);
             foreach (var file in files)

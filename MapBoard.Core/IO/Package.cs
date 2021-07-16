@@ -116,7 +116,7 @@ namespace MapBoard.IO
             {
                 await Task.Run(() =>
                  {
-                     foreach (MapLayerInfo layer in layers)
+                     foreach (var layer in layers.OfType<ShapefileMapLayerInfo>())
                      {
                          Shapefile.CopyShpToNewPath(directory.FullName, layer);
                      }
@@ -145,16 +145,19 @@ namespace MapBoard.IO
         public async static Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
         {
             DirectoryInfo directory = PathUtility.GetTempDir();
-            if (copyOnly)
+            if (layer is ShapefileMapLayerInfo s)
             {
-                await Task.Run(() =>
+                if (copyOnly)
                 {
-                    Shapefile.CopyShpToNewPath(directory.FullName, layer);
-                });
-            }
-            else
-            {
-                await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
+                    await Task.Run(() =>
+                    {
+                        Shapefile.CopyShpToNewPath(directory.FullName, s);
+                    });
+                }
+                else
+                {
+                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
+                }
             }
 
             File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));

@@ -7,6 +7,7 @@
     xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Loaded="LayerListPanel_Loaded"
@@ -22,28 +23,131 @@
             x:Key="bdGroups" MaxWidth="300"
             Margin="0,0,12,0" Padding="8"
             CornerRadius="4">
-            <ItemsControl ItemsSource="{Binding Groups}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <CheckBox
-                            Margin="0,0,-30,0"
-                            Click="CheckBox_Click"
-                            IsChecked="{Binding Visiable}">
-                            <TextBlock
-                                Height="24" MaxWidth="60"
-                                Text="{Binding Name}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap" />
-                        </CheckBox>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <ui:SimpleStackPanel Orientation="Vertical">
+
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                Margin="0,0,-30,0"
+                                Click="CheckBox_Click"
+                                IsChecked="{Binding Visiable}">
+                                <TextBlock
+                                    Height="24" MaxWidth="60"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap" />
+                            </CheckBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ui:ToggleSwitch
+                    IsOn="{Binding Source={x:Static m:Config.Instance}, Path=UseCompactLayerList}"
+                    OffContent="使用普通图层列表视图"
+                    OnContent="使用简略图层列表视图" />
+            </ui:SimpleStackPanel>
         </Border>
+
+        <DataTemplate x:Key="dtCompact">
+            <Grid
+                Width="264" Margin="8,0,0,0"
+                HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="32" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="20" />
+                </Grid.ColumnDefinitions>
+                <CheckBox
+                    VerticalAlignment="Center"
+                    FocusVisualStyle="{x:Null}"
+                    IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding IsLoaded}" />
+                <TextBlock
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="{Binding Name, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <TextBlock
+                    Grid.Column="4" MinWidth="48"
+                    MaxWidth="72"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center" Cursor="Hand"
+                    MouseUp="TextBlock_MouseUp"
+                    Opacity="0.9"
+                    Text="{Binding Group}"
+                    TextAlignment="Right" />
+
+                <ui:ProgressRing
+                    Grid.Column="6"
+                    Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                    IsActive="{Binding IsDownloading}" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="dtNormal">
+            <Grid Margin="8,6,0,6" HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="32" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="0" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <CheckBox
+                    Grid.RowSpan="99"
+                    VerticalAlignment="Center"
+                    FocusVisualStyle="{x:Null}"
+                    IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding IsLoaded}" />
+                <TextBlock
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="{Binding Name, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <TextBlock
+                    Grid.Column="2" Height="24"
+                    MinWidth="48"
+                    HorizontalAlignment="Right"
+                    Cursor="Hand"
+                    MouseUp="TextBlock_MouseUp"
+                    Text="{Binding Group}"
+                    TextAlignment="Right" />
+
+                <TextBlock
+                    Grid.Row="2" Grid.Column="2"
+                    Opacity="0.75"
+                    Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
+                <TextBlock
+                    Grid.Row="2" Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Opacity="0.75">
+                    <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
+                    <Run>个图形</Run>
+                </TextBlock>
+                <ui:ProgressRing
+                    Grid.RowSpan="9" Grid.Column="4"
+                    Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                    IsActive="{Binding IsDownloading}" />
+            </Grid>
+        </DataTemplate>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -53,7 +157,7 @@
         </Grid.RowDefinitions>
         <ContentControl x:Name="groupContent" />
         <Button
-            x:Name="btnGroups"
+            x:Name="btnGroups" Margin="0,0,8,0"
             HorizontalAlignment="Right"
             Background="Transparent">
             <ui:FontIcon Glyph="&#xF168;" />
@@ -71,62 +175,6 @@
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             ScrollViewer.CanContentScroll="False"
             SelectionChanged="SelectedLayerChanged"
-            SelectionMode="Extended">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid Margin="8,6,0,6" HorizontalAlignment="Stretch">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition Width="4" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="0" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <CheckBox IsEnabled="{Binding IsLoaded}"
-                            Grid.RowSpan="99"
-                            VerticalAlignment="Center"
-                            FocusVisualStyle="{x:Null}"
-                            IsChecked="{Binding Path=LayerVisible, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock
-                            Grid.Column="2"
-                            VerticalAlignment="Center"
-                            FontWeight="Bold"
-                            Text="{Binding Name, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
-
-                        <TextBlock
-                            Grid.Column="2" Height="24"
-                            MinWidth="48"
-                            HorizontalAlignment="Right"
-                            Cursor="Hand"
-                            MouseUp="TextBlock_MouseUp"
-                            Text="{Binding Group}"
-                            TextAlignment="Right" />
-
-                        <TextBlock
-                            Grid.Row="2" Grid.Column="2"
-                            Opacity="0.75"
-                            Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
-                        <TextBlock
-                            Grid.Row="2" Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Opacity="0.75">
-                            <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
-                            <Run>个图形</Run>
-                        </TextBlock>
-                        <ui:ProgressRing
-                            Grid.RowSpan="9" Grid.Column="4"
-                            Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                            IsActive="{Binding IsDownloading}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            SelectionMode="Extended" />
     </Grid>
 </local:UserControlBase>

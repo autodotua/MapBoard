@@ -10,7 +10,76 @@ namespace MapBoard
 {
     public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
     {
+        public static int WatermarkHeight = 72;
         private static Config instance;
+
+        private bool backupWhenExit = true;
+
+        private bool backupWhenReplace = true;
+
+        private List<BaseLayerInfo> baseLayers = new List<BaseLayerInfo>();
+
+        private CoordinateSystem basemapCoordinateSystem = CoordinateSystem.WGS84;
+
+        private bool copyShpFileWhenExport = true;
+
+        private bool gpx_AutoSmooth = true;
+
+        private int gpx_AutoSmoothLevel = 5;
+
+        private bool gpx_AutoSmoothOnlyZ = false;
+
+        private bool gpx_Height = false;
+
+        private int gpx_HeightExaggeratedMagnification = 5;
+
+        private bool gpx_RelativeHeight = false;
+
+        private bool hideWatermark = true;
+
+        private int maxBackupCount = 100;
+
+        private double maxScale = 100;
+
+        private int readTimeOut = 1000;
+
+        private bool remainDate = false;
+
+        private bool remainKey = false;
+
+        private bool remainLabel = false;
+
+        private int requestTimeOut = 1000;
+
+        private int theme = 0;
+
+        private BrowseInfo tile_BrowseInfo = new BrowseInfo();
+
+        private bool tile_CoverFile = false;
+
+        private string tile_DownloadFolder = Parameters.TileDownloadPath;
+
+        private string tile_DownloadUserAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
+
+        private string tile_FormatExtension = "png";
+
+        private DownloadInfo tile_LastDownload;
+
+        private string tile_ServerFormat = @"..\Download\{z}/{x}-{y}.{ext}";
+
+        private int tile_ServerPort = 8080;
+
+        private TileSourceCollection tile_Urls = new TileSourceCollection();
+
+        private string tile_UserAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
+
+        private string url = "http://mt3.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}";
+
+        private bool useCompactLayerList;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler ThemeChanged;
 
         public static Config Instance
         {
@@ -25,12 +94,17 @@ namespace MapBoard
             }
         }
 
-        public override void Save()
+        public bool BackupWhenExit
         {
-            base.Save();
+            get => backupWhenExit;
+            set => this.SetValueAndNotify(ref backupWhenExit, value, nameof(BackupWhenExit));
         }
 
-        private List<BaseLayerInfo> baseLayers = new List<BaseLayerInfo>();
+        public bool BackupWhenReplace
+        {
+            get => backupWhenReplace;
+            set => this.SetValueAndNotify(ref backupWhenReplace, value, nameof(BackupWhenReplace));
+        }
 
         public List<BaseLayerInfo> BaseLayers
         {
@@ -38,30 +112,89 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref baseLayers, value, nameof(BaseLayers));
         }
 
-        public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;
-        public bool HideWatermark { get; set; } = true;
-        public static int WatermarkHeight = 72;
-        public bool RemainLabel { get; set; } = false;
-        public bool RemainKey { get; set; } = false;
-        public bool RemainDate { get; set; } = false;
-        public bool BackupWhenExit { get; set; } = true;
-        public bool BackupWhenReplace { get; set; } = true;
-        public int MaxBackupCount { get; set; } = 100;
-        public double MaxScale { get; set; } = 100;
-        public bool Gpx_AutoSmooth { get; set; } = true;
-        public bool Gpx_AutoSmoothOnlyZ { get; set; } = false;
-        public bool Gpx_Height { get; set; } = false;
-        public bool Gpx_RelativeHeight { get; set; } = false;
-        public int Gpx_AutoSmoothLevel { get; set; } = 5;
-        public int Gpx_HeightExaggeratedMagnification { get; set; } = 5;
-        private bool copyShpFileWhenExport = true;
+        public CoordinateSystem BasemapCoordinateSystem
+        {
+            get => basemapCoordinateSystem;
+            set => this.SetValueAndNotify(ref basemapCoordinateSystem, value, nameof(BasemapCoordinateSystem));
+        }
+
         public bool CopyShpFileWhenExport
         {
             get => copyShpFileWhenExport;
             set => this.SetValueAndNotify(ref copyShpFileWhenExport, value, nameof(CopyShpFileWhenExport));
         }
 
-        private int theme = 0;
+        public bool Gpx_AutoSmooth
+        {
+            get => gpx_AutoSmooth;
+            set => this.SetValueAndNotify(ref gpx_AutoSmooth, value, nameof(Gpx_AutoSmooth));
+        }
+
+        public int Gpx_AutoSmoothLevel
+        {
+            get => gpx_AutoSmoothLevel;
+            set => this.SetValueAndNotify(ref gpx_AutoSmoothLevel, value, nameof(Gpx_AutoSmoothLevel));
+        }
+
+        public bool Gpx_AutoSmoothOnlyZ
+        {
+            get => gpx_AutoSmoothOnlyZ;
+            set => this.SetValueAndNotify(ref gpx_AutoSmoothOnlyZ, value, nameof(Gpx_AutoSmoothOnlyZ));
+        }
+
+        public bool Gpx_Height
+        {
+            get => gpx_Height;
+            set => this.SetValueAndNotify(ref gpx_Height, value, nameof(Gpx_Height));
+        }
+
+        public int Gpx_HeightExaggeratedMagnification
+        {
+            get => gpx_HeightExaggeratedMagnification;
+            set => this.SetValueAndNotify(ref gpx_HeightExaggeratedMagnification, value, nameof(Gpx_HeightExaggeratedMagnification));
+        }
+
+        public bool Gpx_RelativeHeight
+        {
+            get => gpx_RelativeHeight;
+            set => this.SetValueAndNotify(ref gpx_RelativeHeight, value, nameof(Gpx_RelativeHeight));
+        }
+
+        public bool HideWatermark
+        {
+            get => hideWatermark;
+            set => this.SetValueAndNotify(ref hideWatermark, value, nameof(HideWatermark));
+        }
+
+        public int MaxBackupCount
+        {
+            get => maxBackupCount;
+            set => this.SetValueAndNotify(ref maxBackupCount, value, nameof(MaxBackupCount));
+        }
+
+        public double MaxScale
+        {
+            get => maxScale;
+            set => this.SetValueAndNotify(ref maxScale, value, nameof(MaxScale));
+        }
+
+        public bool RemainDate
+        {
+            get => remainDate;
+            set => this.SetValueAndNotify(ref remainDate, value, nameof(RemainDate));
+        }
+
+        public bool RemainKey
+        {
+            get => remainKey;
+            set => this.SetValueAndNotify(ref remainKey, value, nameof(RemainKey));
+        }
+
+        public bool RemainLabel
+        {
+            get => remainLabel;
+            set => this.SetValueAndNotify(ref remainLabel, value, nameof(RemainLabel));
+        }
 
         public int Theme
         {
@@ -73,30 +206,35 @@ namespace MapBoard
             }
         }
 
-        public string Tile_UserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
+        public BrowseInfo Tile_BrowseInfo
+        {
+            get => tile_BrowseInfo;
+            set => this.SetValueAndNotify(ref tile_BrowseInfo, value, nameof(Tile_BrowseInfo));
+        }
 
-        public event EventHandler ThemeChanged;
+        public bool Tile_CoverFile
+        {
+            get => tile_CoverFile;
+            set => this.SetValueAndNotify(ref tile_CoverFile, value, nameof(Tile_CoverFile));
+        }
 
-        public TileSourceCollection Tile_Urls { get; set; } = new TileSourceCollection();
-        /*    public string Url { get; set; } = "http://mt3.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}";
-         高德地图： "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}";
-         OneStreet:http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
+        public string Tile_DownloadFolder
+        {
+            get => tile_DownloadFolder;
+            set => this.SetValueAndNotify(ref tile_DownloadFolder, value, nameof(Tile_DownloadFolder));
+        }
 
-         h skeleton map light  http://mt2.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         m 全地图   http://mt2.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         p terrain+map  http://mt2.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         r skeleton map dark   http://mt2.google.cn/vt/lyrs=r&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         y hybrid satellite map   http://mt1.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         t 地形图   http://mt0.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         s 卫星地图   http://mt3.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         也可以进行组合，例如：s,r 或者 t,h   http://mt3.google.cn/vt/lyrs=t,h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}
-         */
+        public string Tile_DownloadUserAgent
+        {
+            get => tile_DownloadUserAgent;
+            set => this.SetValueAndNotify(ref tile_DownloadUserAgent, value, nameof(Tile_DownloadUserAgent));
+        }
 
-        public string Tile_DownloadUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-        public string Tile_DownloadFolder { get; set; } = Parameters.TileDownloadPath;
-        public bool Tile_CoverFile { get; set; } = false;
-        public string Tile_FormatExtension { get; set; } = "png";
-        public (int width, int height) Tile_TileSize { get; set; } = (256, 256);
+        public string Tile_FormatExtension
+        {
+            get => tile_FormatExtension;
+            set => this.SetValueAndNotify(ref tile_FormatExtension, value, nameof(Tile_FormatExtension));
+        }
 
         public ImageFormat Tile_ImageFormat
         {
@@ -122,26 +260,11 @@ namespace MapBoard
             }
         }
 
-        public DownloadInfo Tile_LastDownload { get; set; }
-
-        private int requestTimeOut = 1000;
-        public int Tile_ServerPort { get; set; } = 8080;
-        public string Tile_ServerFormat { get; set; } = @"..\Download\{z}/{x}-{y}.{ext}";
-
-        public int Tile_RequestTimeOut
+        public DownloadInfo Tile_LastDownload
         {
-            get => requestTimeOut;
-            set
-            {
-                if (value > 0)
-                {
-                    requestTimeOut = value;
-                }
-                this.Notify();
-            }
+            get => tile_LastDownload;
+            set => this.SetValueAndNotify(ref tile_LastDownload, value, nameof(Tile_LastDownload));
         }
-
-        private int readTimeOut = 1000;
 
         public int Tile_ReadTimeOut
         {
@@ -156,8 +279,60 @@ namespace MapBoard
             }
         }
 
-        public BrowseInfo Tile_BrowseInfo { get; set; } = new BrowseInfo();
+        public int Tile_RequestTimeOut
+        {
+            get => requestTimeOut;
+            set
+            {
+                if (value > 0)
+                {
+                    requestTimeOut = value;
+                }
+                this.Notify();
+            }
+        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public string Tile_ServerFormat
+        {
+            get => tile_ServerFormat;
+            set => this.SetValueAndNotify(ref tile_ServerFormat, value, nameof(Tile_ServerFormat));
+        }
+
+        public int Tile_ServerPort
+        {
+            get => tile_ServerPort;
+            set => this.SetValueAndNotify(ref tile_ServerPort, value, nameof(Tile_ServerPort));
+        }
+
+        public (int width, int height) Tile_TileSize { get; set; } = (256, 256);
+
+        public TileSourceCollection Tile_Urls
+        {
+            get => tile_Urls;
+            set => this.SetValueAndNotify(ref tile_Urls, value, nameof(Tile_Urls));
+        }
+
+        public string Tile_UserAgent
+        {
+            get => tile_UserAgent;
+            set => this.SetValueAndNotify(ref tile_UserAgent, value, nameof(Tile_UserAgent));
+        }
+
+        public string Url
+        {
+            get => url;
+            set => this.SetValueAndNotify(ref url, value, nameof(Url));
+        }
+
+        public bool UseCompactLayerList
+        {
+            get => useCompactLayerList;
+            set => this.SetValueAndNotify(ref useCompactLayerList, value, nameof(UseCompactLayerList));
+        }
+
+        public override void Save()
+        {
+            base.Save();
+        }
     }
 }

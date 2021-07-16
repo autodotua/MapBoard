@@ -40,6 +40,28 @@ namespace MapBoard.UI
         public LayerListPanel()
         {
             InitializeComponent();
+            SetListDataTemplate();
+            Config.Instance.PropertyChanged += Instance_PropertyChanged;
+        }
+
+        private void Instance_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.Instance.UseCompactLayerList))
+            {
+                SetListDataTemplate();
+            }
+        }
+
+        private void SetListDataTemplate()
+        {
+            if (Config.Instance.UseCompactLayerList)
+            {
+                dataGrid.ItemTemplate = FindResource("dtCompact") as DataTemplate;
+            }
+            else
+            {
+                dataGrid.ItemTemplate = FindResource("dtNormal") as DataTemplate;
+            }
         }
 
         private void UpdateLayout(double height)
@@ -319,7 +341,7 @@ namespace MapBoard.UI
             {
                 return;
             }
-            int oldIndex = Layers.IndexOf(dropInfo.Data as MapLayerInfo);
+            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
             if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
             {
                 return;
@@ -330,8 +352,8 @@ namespace MapBoard.UI
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            int oldIndex = Layers.IndexOf(dropInfo.Data as MapLayerInfo);
-            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
+            if (oldIndex < 0 || oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
             {
                 return;
             }

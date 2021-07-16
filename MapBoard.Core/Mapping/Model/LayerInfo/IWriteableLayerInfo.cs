@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    public interface IHasDefaultFields
+    {
+
+    }
     public interface IEditableLayerInfo : IMapLayerInfo
     {
         ObservableCollection<FeaturesChangedEventArgs> Histories { get; }
