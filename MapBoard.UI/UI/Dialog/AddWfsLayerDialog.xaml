@@ -41,6 +41,7 @@
             IsEditable="True"
             ItemsSource="{Binding WfsLayers}"
             Text="{Binding WfsLayerName}" />
+        <CheckBox Content="自动下载所有图形" IsChecked="{Binding AutoPopulateAll}" />
         <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>

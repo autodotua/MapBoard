@@ -36,7 +36,6 @@ namespace MapBoard.UI.Dialog
 
         public AddWfsLayerDialog(MapLayerCollection layers, WfsMapLayerInfo layer = null)
         {
-            StaticFields = FieldExtension.DefaultFields;
             InitializeComponent();
             if (layer != null)
             {
@@ -45,6 +44,7 @@ namespace MapBoard.UI.Dialog
                 editLayer = layer;
                 LayerName = layer.Name;
                 WfsLayerName = layer.LayerName;
+                AutoPopulateAll = layer.AutoPopulateAll;
                 Url = layer.Url;
             }
             else
@@ -70,14 +70,20 @@ namespace MapBoard.UI.Dialog
             set => this.SetValueAndNotify(ref message, value, nameof(Message));
         }
 
-        public ObservableCollection<FieldInfo> Fields { get; } = new ObservableCollection<FieldInfo>();
-        public FieldInfo[] StaticFields { get; }
         private string layerName;
 
         public string LayerName
         {
             get => layerName;
             set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
+        }
+
+        private bool autoPopulateAll;
+
+        public bool AutoPopulateAll
+        {
+            get => autoPopulateAll;
+            set => this.SetValueAndNotify(ref autoPopulateAll, value, nameof(AutoPopulateAll));
         }
 
         private string url;
@@ -105,28 +111,34 @@ namespace MapBoard.UI.Dialog
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
-            IsPrimaryButtonEnabled = false;
             IsEnabled = false;
-            CloseButtonText = null;
-
             if (editMode)
             {
-                editLayer.Fields = Fields.ToArray();
+                editLayer.SetService(Url, WfsLayerName, AutoPopulateAll);
+                try
+                {
+                    await editLayer.ReloadAsync(Layers);
+                    Hide();
+                }
+                catch (Exception ex)
+                {
+                    Message = "加载失败：" + ex.Message;
+                }
             }
             else
             {
                 try
                 {
-                    await LayerUtility.AddWfsLayerAsync(Layers, LayerName, Url, WfsLayerName);
+                    await LayerUtility.AddWfsLayerAsync(Layers, LayerName, Url, WfsLayerName, AutoPopulateAll);
+                    Hide();
                 }
                 catch (Exception ex)
                 {
-                    Hide();
-                    await ShowErrorDialogAsync(ex, "创建图层失败");
+                    Message = "创建图层失败：" + ex.Message;
                     return;
                 }
             }
-            Hide();
+            IsEnabled = true;
         }
 
         private async void QueryLayersButton_Click(object sender, RoutedEventArgs e)

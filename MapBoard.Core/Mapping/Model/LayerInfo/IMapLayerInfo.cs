@@ -25,7 +25,7 @@ namespace MapBoard.Mapping.Model
 
         Task LoadAsync();
 
-        Task ReloadAsync(Esri.ArcGISRuntime.Mapping.LayerCollection layers);
+        Task ReloadAsync(MapLayerCollection layers);
 
         bool IsLoaded { get; }
         Exception LoadError { get; }

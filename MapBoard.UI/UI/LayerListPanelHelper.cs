@@ -44,6 +44,10 @@ namespace MapBoard.UI
                 if (!layer.IsLoaded)
                 {
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
+                    if (layer is WfsMapLayerInfo w)
+                    {
+                        AddToMenu(menu, "设置属性", () => SetWfsLayerAsync(w));
+                    }
                     AddToMenu(menu, "重新加载", () => ReloadLayerAsync(layer));
                 }
                 else
@@ -60,6 +64,14 @@ namespace MapBoard.UI
                     {
                         AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(s1));
                     }
+                    if (layer is IServerMapLayerInfo s)
+                    {
+                        AddToMenu(menu, "获取全部图形", () => PopulateAllAsync(s));
+                    }
+                    if (layer is WfsMapLayerInfo w)
+                    {
+                        AddToMenu(menu, "设置属性", () => SetWfsLayerAsync(w));
+                    }
                     menu.Items.Add(new Separator());
                     AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
@@ -69,11 +81,11 @@ namespace MapBoard.UI
                     {
                         AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                     }
-                    if (layer is IEditableLayerInfo w)
+                    if (layer is IEditableLayerInfo e)
                     {
-                        AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(w));
-                        AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(w));
-                        AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(w));
+                        AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(e));
+                        AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(e));
+                        AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(e));
                     }
                     AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
                     menu.Items.Add(new Separator());
@@ -142,6 +154,17 @@ namespace MapBoard.UI
             {
                 menu.IsOpen = true;
             }
+        }
+
+        private Task PopulateAllAsync(IServerMapLayerInfo s)
+        {
+            return s.PopulateAllFromServiceAsync();
+        }
+
+        private async Task SetWfsLayerAsync(WfsMapLayerInfo layer)
+        {
+            AddWfsLayerDialog dialog = new AddWfsLayerDialog(MapView.Layers, layer);
+            await dialog.ShowAsync();
         }
 
         private async Task QueryAsync(IMapLayerInfo layer)
@@ -316,7 +339,7 @@ namespace MapBoard.UI
             {
                 try
                 {
-                    await layer.ReloadAsync(MapView.Map.OperationalLayers);
+                    await layer.ReloadAsync(MapView.Layers);
                 }
                 catch (Exception ex)
                 {

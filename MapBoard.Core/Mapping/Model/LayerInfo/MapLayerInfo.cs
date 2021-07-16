@@ -104,25 +104,30 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public async Task ReloadAsync(Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public async Task ReloadAsync(MapLayerCollection layers)
         {
-            await table.RetryLoadAsync();
-            //此时Layer应该是已经有的
-            Debug.Assert(layer != null);
-
-            if (layer.FeatureTable != table)
+            FeatureTable newTable = GetTable();
+            try
             {
-                layer.FeatureTable = table;
+                await newTable.LoadAsync();
             }
+            catch
+            {
+                IsLoaded = false;
+                throw;
+            }
+            //如果上面加载失败，那么不会执行下面的语句
+            table = newTable;
+            layer = new FeatureLayer(table);
             await Task.Run(this.ApplyStyle);
             await this.LayerCompleteAsync();
 
-            //也许是Esri的BUG，如果不重新插入，那么啥都不会显示
-            int index = layers.IndexOf(layer);
-            layers.Remove(layer);
-            layers.Insert(index, layer);
+            //也许是Esri的BUG，如果不重新插入，那么可能啥都不会显示
+            layers.RefreshEsriLayer(this);
 
             IsLoaded = true;
+            this.Notify(nameof(NumberOfFeatures));
+            LoadCompleted();
         }
 
         public async Task LoadAsync()
@@ -130,7 +135,6 @@ namespace MapBoard.Mapping.Model
             try
             {
                 //确保即使Table没有成功加载，Layer也得先建起来
-
                 try
                 {
                     table = GetTable();
@@ -159,6 +163,7 @@ namespace MapBoard.Mapping.Model
                 await this.LayerCompleteAsync();
                 IsLoaded = true;
                 this.Notify(nameof(GeometryType));
+                LoadCompleted();
             }
             catch (Exception ex)
             {
@@ -170,6 +175,10 @@ namespace MapBoard.Mapping.Model
 
         [JsonIgnore]
         public Exception LoadError { get; private set; }
+
+        protected virtual void LoadCompleted()
+        {
+        }
 
         [JsonIgnore]
         public bool HasTable => table != null;

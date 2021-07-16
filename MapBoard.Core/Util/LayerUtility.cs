@@ -42,9 +42,9 @@ namespace MapBoard.Util
             }
         }
 
-        public async static Task<WfsMapLayerInfo> AddWfsLayerAsync(MapLayerCollection layers, string name, string url, string layerName)
+        public async static Task<WfsMapLayerInfo> AddWfsLayerAsync(MapLayerCollection layers, string name, string url, string layerName, bool autoPopulateAll)
         {
-            WfsMapLayerInfo layer = new WfsMapLayerInfo(name, url, layerName);
+            WfsMapLayerInfo layer = new WfsMapLayerInfo(name, url, layerName, autoPopulateAll);
             await layers.AddAsync(layer);
             return layer;
         }

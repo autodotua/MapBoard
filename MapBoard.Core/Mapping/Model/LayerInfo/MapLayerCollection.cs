@@ -115,6 +115,21 @@ namespace MapBoard.Mapping.Model
             return c.Count == 0 ? null : c;
         }
 
+        /// <summary>
+        /// 在更新Esri图层后，进行重新插入动作以刷新画面
+        /// </summary>
+        /// <param name="layer"></param>
+        public void RefreshEsriLayer(IMapLayerInfo layer)
+        {
+            if (IndexOf(layer) < 0)
+            {
+                throw new ArgumentException("图层不在图层集合中");
+            }
+            int index = Count - 1 - IndexOf(layer);
+            EsriLayers.RemoveAt(index);
+            EsriLayers.Insert(index, layer.Layer);
+        }
+
         public void Clear()
         {
             foreach (var layer in EsriLayers.ToArray())

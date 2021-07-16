@@ -5,10 +5,10 @@
     xmlns:component="clr-namespace:MapBoard.UI.Component"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dd="urn:gong-wpf-dragdrop"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     Loaded="LayerListPanel_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -74,18 +74,20 @@
             SelectionMode="Extended">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="8,6" HorizontalAlignment="Stretch">
+                    <Grid Margin="8,6,0,6" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="0" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <CheckBox
+                        <CheckBox IsEnabled="{Binding IsLoaded}"
                             Grid.RowSpan="99"
                             VerticalAlignment="Center"
                             FocusVisualStyle="{x:Null}"
@@ -98,7 +100,7 @@
                             TextTrimming="CharacterEllipsis" />
 
                         <TextBlock
-                            Grid.Column="4" Height="24"
+                            Grid.Column="2" Height="24"
                             MinWidth="48"
                             HorizontalAlignment="Right"
                             Cursor="Hand"
@@ -111,13 +113,17 @@
                             Opacity="0.75"
                             Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
                         <TextBlock
-                            Grid.Row="2" Grid.Column="4"
+                            Grid.Row="2" Grid.Column="2"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Opacity="0.75">
                             <Run Text="{Binding NumberOfFeatures, Mode=OneWay}" />
                             <Run>个图形</Run>
                         </TextBlock>
+                        <ui:ProgressRing
+                            Grid.RowSpan="9" Grid.Column="4"
+                            Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                            IsActive="{Binding IsDownloading}" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

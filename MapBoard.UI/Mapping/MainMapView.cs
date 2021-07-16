@@ -99,7 +99,10 @@ namespace MapBoard.Mapping
         private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
         {
             //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。
-            if (Layers.Any(p => p.Type == MapLayerInfo.Types.WFS) && CurrentTask == BoardTask.Ready)
+            if (Layers.Any(p => p is IServerMapLayerInfo
+            && !(p as IServerMapLayerInfo).AutoPopulateAll
+            && !(p as IServerMapLayerInfo).HasPopulateAll)
+                && CurrentTask == BoardTask.Ready)
             {
                 Envelope currentExtent = VisibleArea.Extent;
 
@@ -117,9 +120,9 @@ namespace MapBoard.Mapping
                 try
                 {
                     List<Task> tasks = new();
-                    foreach (WfsMapLayerInfo layer in Layers
-                        .OfType< WfsMapLayerInfo>()
-                        .Where(p=>p.IsLoaded))
+                    foreach (IServerMapLayerInfo layer in Layers
+                        .OfType<IServerMapLayerInfo>()
+                        .Where(p => p.IsLoaded))
                     {
                         tasks.Add(layer.PopulateFromServiceAsync(visibleExtentQuery, false, cancellationToken: ctsWfs.Token));
                     }

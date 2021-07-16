@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace MapBoard.Mapping.Model
 {
     //http://192.168.1.18:8080/geoserver/topp/ows?service=WFS&request=GetCapabilities
-    public class WfsMapLayerInfo : MapLayerInfo
+    public class WfsMapLayerInfo : MapLayerInfo, IServerMapLayerInfo
     {
         public WfsMapLayerInfo(ILayerInfo layer) : base(layer)
         {
@@ -22,12 +22,18 @@ namespace MapBoard.Mapping.Model
             {
                 LayerName = layer.ServiceParameters[nameof(LayerName)];
             }
+            if (layer.ServiceParameters.ContainsKey(nameof(AutoPopulateAll))
+                && (layer.ServiceParameters[nameof(AutoPopulateAll)] == true.ToString()
+                || layer.ServiceParameters[nameof(AutoPopulateAll)] == false.ToString()))
+            {
+                AutoPopulateAll = bool.Parse(layer.ServiceParameters[nameof(AutoPopulateAll)]);
+            }
             Fields = null;
         }
 
-        public WfsMapLayerInfo(string name, string url, string layerName) : base(name)
+        public WfsMapLayerInfo(string name, string url, string layerName, bool autoPopulateAll) : base(name)
         {
-            SetService(url, layerName);
+            SetService(url, layerName, AutoPopulateAll);
             Fields = null;
         }
 
@@ -48,9 +54,27 @@ namespace MapBoard.Mapping.Model
             Fields = table.Fields.FromEsriFields().Values.ToArray();
         }
 
+        public bool HasPopulateAll { get; private set; }
+        private bool isDownloading;
+
+        public bool IsDownloading
+        {
+            get => isDownloading;
+            private set => this.SetValueAndNotify(ref isDownloading, value, nameof(IsDownloading));
+        }
+
+        public async Task PopulateAllFromServiceAsync(CancellationToken? cancellationToken = null)
+        {
+            HasPopulateAll = true;
+            IsDownloading = true;
+            await PopulateFromServiceAsync(new QueryParameters(), false, cancellationToken);
+            IsDownloading = false;
+        }
+
         public async Task<FeatureQueryResult> PopulateFromServiceAsync(QueryParameters parameters, bool clearCache = false, CancellationToken? cancellationToken = null)
         {
             FeatureQueryResult result = null;
+            IsDownloading = true;
             if (cancellationToken == null)
             {
                 result = await (table as WfsFeatureTable).PopulateFromServiceAsync(parameters, clearCache, null);
@@ -59,6 +83,7 @@ namespace MapBoard.Mapping.Model
             {
                 result = await (table as WfsFeatureTable).PopulateFromServiceAsync(parameters, clearCache, null, cancellationToken.Value);
             }
+            IsDownloading = false;
             this.Notify(nameof(NumberOfFeatures));
             return result;
         }
@@ -68,13 +93,24 @@ namespace MapBoard.Mapping.Model
 
         public string Url { get; private set; }
         public string LayerName { get; private set; }
+        public bool AutoPopulateAll { get; private set; }
 
-        public void SetService(string url, string layerName)
+        public void SetService(string url, string layerName, bool autoPopulateAll)
         {
             Url = url;
             LayerName = layerName;
+            AutoPopulateAll = autoPopulateAll;
             ServiceParameters.AddOrSetValue(nameof(Url), Url);
             ServiceParameters.AddOrSetValue(nameof(LayerName), LayerName);
+            ServiceParameters.AddOrSetValue(nameof(AutoPopulateAll), AutoPopulateAll.ToString());
+        }
+
+        protected async override void LoadCompleted()
+        {
+            if (AutoPopulateAll)
+            {
+                await PopulateAllFromServiceAsync();
+            }
         }
     }
 }
