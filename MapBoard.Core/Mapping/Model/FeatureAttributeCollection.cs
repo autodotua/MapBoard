@@ -1,5 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using FzLib.Extension;
+using FzLib;
 using MapBoard.Model;
 using MapBoard.Util;
 using Newtonsoft.Json;

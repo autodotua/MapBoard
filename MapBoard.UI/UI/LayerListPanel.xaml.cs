@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using FzLib.WPF.Dialog;
 
 using MapBoard.IO;
@@ -22,7 +22,6 @@ using MapBoard.Mapping.Model;
 using System.Windows.Input;
 using System.Collections;
 using System.Collections.Generic;
-using FzLib.Basic;
 using ModernWpf.Controls;
 using MapBoard.UI.Component;
 using GongSolutions.Wpf.DragDrop;

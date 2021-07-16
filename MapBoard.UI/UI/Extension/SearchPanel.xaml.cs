@@ -2,12 +2,11 @@
 using System.Windows;
 using System.Windows.Input;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Extension;
+using FzLib;
 using MapBoard.Extension;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using MapBoard.Mapping;
-using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 using System.ComponentModel;
 using ModernWpf.FzExtension.CommonDialog;
 using System.Windows.Controls;

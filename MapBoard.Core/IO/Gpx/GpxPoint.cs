@@ -1,5 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.Extension;
+using FzLib;
 using MapBoard;
 using System;
 using System.Collections.Generic;
@@ -136,9 +136,10 @@ namespace MapBoard.IO.Gpx
         {
             return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
         }
+
         public MapPoint ToXYMapPoint()
         {
-            return new MapPoint(X, Y,  SpatialReferences.Wgs84);
+            return new MapPoint(X, Y, SpatialReferences.Wgs84);
         }
 
         public object Clone()

@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using ModernWpf.FzExtension.CommonDialog;

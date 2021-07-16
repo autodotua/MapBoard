@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using System.ComponentModel;
 
 namespace MapBoard.Model
@@ -78,7 +78,7 @@ namespace MapBoard.Model
                 this.Notify(nameof(RecordInterval));
             }
         }
-        
+
         private int extraRecordDelay = 100;
 
         public int ExtraRecordDelay

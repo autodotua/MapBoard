@@ -4,7 +4,6 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping.Labeling;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
-using FzLib.Basic.Collection;
 using MapBoard.Extension;
 using MapBoard.Model;
 using MapBoard.Util;

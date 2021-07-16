@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 
 using Newtonsoft.Json;
 using System;
@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 
 namespace MapBoard.Model
 {

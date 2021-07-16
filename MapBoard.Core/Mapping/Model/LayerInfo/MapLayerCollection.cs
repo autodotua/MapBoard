@@ -1,8 +1,7 @@
 ﻿using Esri.ArcGISRuntime;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
-using FzLib.Basic;
-using FzLib.Extension;
+using FzLib;
 using MapBoard.Model;
 using MapBoard.Util;
 using System;

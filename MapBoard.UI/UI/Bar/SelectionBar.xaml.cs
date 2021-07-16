@@ -1,8 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Basic;
-using FzLib.Basic.Collection;
-using FzLib.Extension;
+using FzLib;
 using FzLib.WPF.Dialog;
 using MapBoard.IO;
 using MapBoard.UI.Dialog;
@@ -30,6 +28,7 @@ using Geometry = Esri.ArcGISRuntime.Geometry.Geometry;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace MapBoard.UI.Bar
 {
@@ -105,15 +104,15 @@ namespace MapBoard.UI.Bar
 
                         case GeometryType.Polyline:
                             double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                            sb.Append("，长度：" + Number.MeterToFitString(length));
+                            sb.Append("，长度：" + NumberConverter.MeterToFitString(length));
 
                             break;
 
                         case GeometryType.Polygon:
                             double length2 = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
                             double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
-                            sb.Append("，周长：" + Number.MeterToFitString(length2));
-                            sb.Append("，面积：" + Number.SquareMeterToFitString(area));
+                            sb.Append("，周长：" + NumberConverter.MeterToFitString(length2));
+                            sb.Append("，面积：" + NumberConverter.SquareMeterToFitString(area));
 
                             break;
 
@@ -463,7 +462,9 @@ namespace MapBoard.UI.Bar
 
         private async Task ExportBase(FileFilterCollection filter, Func<string, Task> task)
         {
-            string path = FileSystemDialog.GetSaveFile(filter, ensureExtension: true, defaultFileName: "图形");
+            string path = filter.CreateSaveFileDialog()
+                        .SetDefault(MapView.Selection.SelectedFeatures.Count + "个图形")
+                        .GetFilePath();
             if (path != null)
             {
                 await task(path);

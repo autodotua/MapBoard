@@ -3,7 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using FzLib.DataAnalysis;
-using FzLib.Extension;
+using FzLib;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -33,10 +33,10 @@ using MapBoard.Util;
 using MapBoard.Mapping;
 using static MapBoard.IO.Gpx.GpxSpeedAnalysis;
 using MapBoard.Mapping.Model;
-using FzLib.Basic;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using FzLib.WPF.Controls;
 using FzLib.WPF;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -386,7 +386,7 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx"), true, Gpx.Name + ".gpx");
+            string path = new FileFilterCollection().Add("GPX轨迹文件", "gpx").CreateSaveFileDialog().SetDefault(Gpx.Name + ".gpx").GetFilePath();
             if (path != null)
             {
                 try
@@ -403,7 +403,10 @@ namespace MapBoard.UI.GpxToolbox
 
         private void OpenFilesButtonClick(object sender, RoutedEventArgs e)
         {
-            string[] files = FileSystemDialog.GetOpenFiles(new FileFilterCollection().Add("GPX轨迹文件", "gpx"));
+            string[] files = new FileFilterCollection()
+                .Add("GPX轨迹文件", "gpx")
+                .CreateOpenFileDialog()
+                .GetFilePaths();
             if (files != null)
             {
                 arcMap.LoadFilesAsync(files);
@@ -590,7 +593,12 @@ namespace MapBoard.UI.GpxToolbox
                     gpx.Tracks[0].Points.Add(p);
                 }
             }
-            string filePath = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("GPX轨迹文件", "gpx"), true, tracks[0].FileName + " - 连接.gpx");
+            string filePath =
+                new FileFilterCollection().Add("GPX轨迹文件", "gpx")
+                .CreateSaveFileDialog()
+                .SetDefault(tracks[0].FileName + " - 连接.gpx")
+                .GetFilePath();
+
             if (filePath != null)
             {
                 gpx.Save(filePath);
@@ -735,7 +743,10 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add("PNG图片", "png"), ensureExtension: true, defaultFileName: Gpx.Name + ".png");
+            string path = new FileFilterCollection().Add("PNG图片", "png")
+                .CreateSaveFileDialog()
+                .SetDefault(Gpx.Name + ".png")
+                .GetFilePath();
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);

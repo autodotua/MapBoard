@@ -2,8 +2,6 @@
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Basic;
-using FzLib.Basic.Collection;
 using MapBoard.Mapping.Model;
 using System;
 using System.Collections.Generic;

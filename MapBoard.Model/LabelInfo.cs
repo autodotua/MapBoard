@@ -1,8 +1,7 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using static FzLib.Extension.ExtendedINotifyPropertyChanged;
 
 namespace MapBoard.Model
 {
@@ -35,17 +34,18 @@ namespace MapBoard.Model
             get => backgroundColor;
             set => this.SetValueAndNotify(ref backgroundColor, value, nameof(BackgroundColor));
         }
+
         public bool Info { get; set; } = true;
         public bool Class { get; set; }
         public bool Date { get; set; }
 
         private string customLabelExpression;
+
         public string CustomLabelExpression
         {
             get => customLabelExpression;
             set => this.SetValueAndNotify(ref customLabelExpression, value, nameof(CustomLabelExpression));
         }
-
 
         public Color FontColor
         {
@@ -70,7 +70,6 @@ namespace MapBoard.Model
             get => haloWidth;
             set => this.SetValueAndNotify(ref haloWidth, value, nameof(HaloWidth));
         }
-
 
         /// <summary>
         /// 标签布局

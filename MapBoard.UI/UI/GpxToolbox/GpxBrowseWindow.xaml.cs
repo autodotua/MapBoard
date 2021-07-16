@@ -15,7 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using static MapBoard.UI.GpxToolbox.SymbolResources;
-using FzLib.Extension;
+using FzLib;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Util;

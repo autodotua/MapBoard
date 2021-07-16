@@ -26,21 +26,28 @@ using MapBoard.Mapping.Model;
 using MapBoard.UI.Dialog;
 using System.Drawing.Imaging;
 using Microsoft.WindowsAPICodePack.FzExtension;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace MapBoard.UI
 {
     public static class IOUtility
     {
+        public static FileFilterCollection AddIf(this FileFilterCollection filter, bool b, string display, params string[] extensions)
+        {
+            if (b)
+            {
+                return filter.Add(display, extensions);
+            }
+            return filter;
+        }
+
         public static string GetImportFeaturePath(ImportLayerType type)
         {
-            FileFilterCollection filter = new FileFilterCollection();
-            filter = type switch
-            {
-                ImportLayerType.Gpx => filter.Add("GPS轨迹文件", "gpx"),
-                ImportLayerType.Csv => filter.Add("CSV表格", "csv"),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            return FileSystemDialog.GetOpenFile(filter);
+            return new FileFilterCollection()
+                .AddIf(type == ImportLayerType.Gpx, "GPS轨迹文件", "gpx")
+                .AddIf(type == ImportLayerType.Csv, "CSV表格", "csv")
+                .CreateOpenFileDialog()
+                .GetFilePath();
         }
 
         public async static Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
@@ -82,17 +89,15 @@ namespace MapBoard.UI
 
         public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type)
         {
-            FileFilterCollection filter = new FileFilterCollection();
-            filter = type switch
-            {
-                ExportLayerType.LayerPackge => filter.Add("mblpkg地图画板包", "mblpkg"),
-                ExportLayerType.LayerPackgeRebuild => filter.Add("mblpkg地图画板包", "mblpkg"),
-                ExportLayerType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
-                ExportLayerType.KML => filter.Add("KML打包文件", "kmz"),
-                ExportLayerType.GeoJSON => filter.Add("GeoJSON文件", "geojson"),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            return FileSystemDialog.GetSaveFile(filter, true, layer.Name);
+            return new FileFilterCollection()
+                .AddIf(type == ExportLayerType.LayerPackge, "mblpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportLayerType.LayerPackgeRebuild, "mblpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                .AddIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
+                .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
+                .CreateSaveFileDialog()
+                .SetDefault(layer.Name)
+                .GetFilePath();
         }
 
         public async static Task ExportLayerAsync(Window owner, string path, IMapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
@@ -135,18 +140,15 @@ namespace MapBoard.UI
 
         public static string GetImportMapPath(ImportMapType type)
         {
-            FileFilterCollection filter = new FileFilterCollection();
-            filter = type switch
-            {
-                ImportMapType.MapPackageOverwrite or ImportMapType.MapPackgeAppend
-                => filter.Add("mbmpkg地图画板包", "mbmpkg"),
-                ImportMapType.LayerPackge => filter.Add("mblpkg地图画板图层包", "mblpkg"),
-                ImportMapType.Gpx => filter.Add("GPS轨迹文件", "gpx"),
-                ImportMapType.Shapefile => filter.Add("Shapefile", "shp"),
-                ImportMapType.CSV => filter.Add("CSV表格", "csv"),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            return FileSystemDialog.GetOpenFile(filter);
+            return new FileFilterCollection()
+                .AddIf(type == ImportMapType.MapPackageOverwrite, "mbmpkg地图画板包", "mbmpkg")
+                .AddIf(type == ImportMapType.MapPackgeAppend, "mbmpkg地图画板包", "mbmpkg")
+                .AddIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
+                .AddIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
+                .AddIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
+                .AddIf(type == ImportMapType.CSV, "CSV表格", "csv")
+                .CreateOpenFileDialog()
+                .GetFilePath();
         }
 
         public async static Task ImportMapAsync(Window owner, string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
@@ -209,17 +211,15 @@ namespace MapBoard.UI
 
         public static string GetExportMapPath(ExportMapType type)
         {
-            FileFilterCollection filter = new FileFilterCollection();
-            filter = type switch
-            {
-                ExportMapType.MapPackage or ExportMapType.MapPackageRebuild
-                => filter.Add("mbmpkg地图画板包", "mbmpkg"),
-                ExportMapType.GISToolBoxZip => filter.Add("GIS工具箱图层包", "zip"),
-                ExportMapType.KML => filter.Add("KML打包文件", "kmz"),
-                ExportMapType.Screenshot => filter.Add("截图", "png"),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            return FileSystemDialog.GetSaveFile(filter, true, "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+            return new FileFilterCollection()
+                .AddIf(type == ExportMapType.MapPackage, "mbmpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportMapType.MapPackageRebuild, "mbmpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                .AddIf(type == ExportMapType.KML, "KML打包文件", "kmz")
+                .AddIf(type == ExportMapType.Screenshot, "截图", "png")
+                .CreateSaveFileDialog()
+                .SetDefault("地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"))
+                .GetFilePath();
         }
 
         public static async Task ExportMapAsync(Window owner, string path, MapView mapView, MapLayerCollection layers, ExportMapType type)

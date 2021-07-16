@@ -1,5 +1,4 @@
-﻿using FzLib.Basic;
-using FzLib.Extension;
+﻿using FzLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

@@ -1,6 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
-using FzLib.Basic.Collection;
-using FzLib.Extension;
+using FzLib;
+using FzLib.Collection;
 using MapBoard.Model;
 using Newtonsoft.Json;
 using System;
@@ -57,7 +57,9 @@ namespace MapBoard.Mapping.Model
 
         [JsonIgnore]
         public bool HasPopulateAll { get; private set; }
+
         private bool isDownloading;
+
         [JsonIgnore]
         public bool IsDownloading
         {
@@ -91,13 +93,16 @@ namespace MapBoard.Mapping.Model
         }
 
         public override string Type => Types.WFS;
+
         [JsonIgnore]
         public override bool IsEditable => false;
 
         [JsonIgnore]
         public string Url { get; private set; }
+
         [JsonIgnore]
         public string LayerName { get; private set; }
+
         [JsonIgnore]
         public bool AutoPopulateAll { get; private set; }
 

@@ -1,5 +1,4 @@
-﻿using FzLib.Basic.Collection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -26,6 +25,7 @@ namespace MapBoard.UI.GpxToolbox
         /// 在SizeChanged时设置为True，在下一轮的Timer中重绘
         /// </summary>
         private bool needToDraw = false;
+
         private Timer timer;
         private object lockObj = new object();
 
@@ -308,7 +308,7 @@ namespace MapBoard.UI.GpxToolbox
             AddSketchpadChildren(path, 4);
         }
 
-        public  void BeginDraw()
+        public void BeginDraw()
         {
             if (isDrawing)
             {

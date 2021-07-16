@@ -3,7 +3,6 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
-using FzLib.Basic.Collection;
 using MapBoard.IO.Gpx;
 using FzLib.WPF.Dialog;
 using MapBoard.Util;
@@ -22,6 +21,7 @@ using System.Windows.Input;
 using static MapBoard.UI.GpxToolbox.SymbolResources;
 using MapBoard.Model;
 using MapBoard.Mapping.Model;
+using FzLib.Collection;
 
 namespace MapBoard.Mapping
 {

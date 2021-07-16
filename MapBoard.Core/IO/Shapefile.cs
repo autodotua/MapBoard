@@ -1,8 +1,6 @@
 ﻿using EGIS.ShapeFileLib;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Basic;
-
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Util;
@@ -13,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using System.Text.RegularExpressions;
+using FzLib;
 
 namespace MapBoard.IO
 {

@@ -1,7 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
-using FzLib.Basic.Collection;
 using FzLib.WPF.Dialog;
 using MapBoard.IO;
 using MapBoard.Model;
@@ -21,7 +20,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using static FzLib.Basic.Loop;
 using ModernWpf.FzExtension;
 using MapBoard.Mapping.Model;
 using MapBoard.Util;
@@ -46,10 +44,12 @@ namespace MapBoard.UI
 
             mapInfo.Initialize(arcMap);
         }
+
         public async Task LoadAsync()
         {
-      await      arcMap.LoadAsync();
+            await arcMap.LoadAsync();
         }
+
         #endregion 基本方法
     }
 }

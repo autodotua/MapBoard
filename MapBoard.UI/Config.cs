@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using MapBoard.Model;
 using Newtonsoft.Json;
 using System;

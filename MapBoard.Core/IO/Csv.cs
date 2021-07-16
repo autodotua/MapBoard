@@ -1,6 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Basic;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using System;
@@ -13,6 +12,7 @@ using MapBoard.Mapping.Model;
 using System.Data;
 using CsvHelper;
 using System.Globalization;
+using FzLib;
 
 namespace MapBoard.IO
 {

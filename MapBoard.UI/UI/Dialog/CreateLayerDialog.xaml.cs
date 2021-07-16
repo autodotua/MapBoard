@@ -1,6 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using FzLib.Basic;
-using FzLib.Extension;
+using FzLib;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Util;

@@ -11,7 +11,7 @@ using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
 using MapBoard.Mapping.Model;
-using FzLib.Extension;
+using FzLib;
 
 namespace MapBoard.UI.Dialog
 {

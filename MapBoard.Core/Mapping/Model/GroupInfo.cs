@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using System.ComponentModel;
 
 namespace MapBoard.Mapping.Model

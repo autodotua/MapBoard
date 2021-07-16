@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
-using FzLib.Extension;
+using FzLib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

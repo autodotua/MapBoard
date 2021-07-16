@@ -10,7 +10,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using MapBoard.Util;
 using ModernWpf.FzExtension.CommonDialog;
-using FzLib.Extension;
+using FzLib;
 using Esri.ArcGISRuntime.Data;
 using System.Diagnostics;
 using System.Collections.ObjectModel;

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using FzLib.Basic.Collection;
-using FzLib.Extension;
+using FzLib;
+using FzLib.Collection;
 using MapBoard.IO;
 using MapBoard.Model;
 using Newtonsoft.Json;

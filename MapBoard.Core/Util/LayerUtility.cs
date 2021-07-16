@@ -13,8 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
-using FzLib.Basic;
 using System.Diagnostics;
+using FzLib;
 
 namespace MapBoard.Util
 {

@@ -1,4 +1,4 @@
-﻿using FzLib.Extension;
+﻿using FzLib;
 using FzLib.WPF.Dialog;
 using MapBoard.Model;
 using MapBoard.Mapping;
@@ -20,6 +20,7 @@ using System.Windows.Media.Imaging;
 using MapBoard.IO;
 using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace MapBoard.UI.Dialog
 {
@@ -141,14 +142,16 @@ namespace MapBoard.UI.Dialog
 
         private void BrowseButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = FileSystemDialog.GetOpenFile(new FileFilterCollection()
-                 .Add("JPEG图片", "jpg,jpeg")
-                 .Add("PNG图片", "png")
-                 .Add("BMP图片", "bmp")
-                 .Add("TIFF图片", "tif,tiff")
-                 .Add("Shapefile矢量图", "shp")
-                 .Add("TilePackage切片包", "tpk")
-                 .AddUnion());
+            string path = new FileFilterCollection()
+                    .Add("JPEG图片", "jpg,jpeg")
+                    .Add("PNG图片", "png")
+                    .Add("BMP图片", "bmp")
+                    .Add("TIFF图片", "tif,tiff")
+                    .Add("Shapefile矢量图", "shp")
+                    .Add("TilePackage切片包", "tpk")
+                    .AddUnion()
+                    .CreateOpenFileDialog()
+                    .GetFilePath();
             if (path == null)
             {
                 return;

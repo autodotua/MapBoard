@@ -14,7 +14,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using ModernWpf.FzExtension.CommonDialog;
-using FzLib.Extension;
+using FzLib;
 using FzLib.WPF.Dialog;
 using MapBoard.Util;
 using MapBoard.Model;
@@ -512,7 +512,11 @@ namespace MapBoard.UI.TileDownloader
             {
                 if (File.Exists(savedImgPath))
                 {
-                    var file = FileSystemDialog.GetSaveFile(new FileFilterCollection().Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension), true, "地图." + Config.Tile_FormatExtension);
+                    var file = new FileFilterCollection()
+                        .Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension)
+                        .CreateSaveFileDialog()
+                        .SetDefault("地图." + Config.Tile_FormatExtension)
+                        .GetFilePath();
                     if (file != null)
                     {
                         tbkStichStatus.Text = "正在保存地图";

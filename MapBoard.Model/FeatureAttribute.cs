@@ -1,6 +1,6 @@
 ﻿//#define ERROR
 
-using FzLib.Extension;
+using FzLib;
 using System;
 using System.ComponentModel;
 using System.Globalization;
