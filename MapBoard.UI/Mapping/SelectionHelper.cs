@@ -78,7 +78,7 @@ namespace MapBoard.Mapping
         {
             if (features == null || !features.Any())
             {
-                throw new ArgumentException("要选择的要素为空");
+                throw new ArgumentException("要选择的图形为空");
             }
             Debug.Assert(features.Select(p => p.FeatureTable.Layer).Distinct().Count() == 1);
             var layer = Layers.Find(features.First().FeatureTable.Layer as FeatureLayer);
@@ -129,7 +129,7 @@ namespace MapBoard.Mapping
         {
             if (features == null || !features.Any())
             {
-                throw new ArgumentException("要选择的要素为空");
+                throw new ArgumentException("要取消选择的图形为空");
             }
             Debug.Assert(features.Select(p => p.FeatureTable.Layer).Distinct().Count() == 1);
             var layer = Layers.Find(features.First().FeatureTable.Layer as FeatureLayer);

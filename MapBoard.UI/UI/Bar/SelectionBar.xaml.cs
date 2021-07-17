@@ -297,7 +297,14 @@ namespace MapBoard.UI.Bar
             async Task SeparateAsync()
             {
                 var result = await FeatureUtility.SeparateAsync(layer, features);
-                MapView.Selection.Select(result, true);
+                if (result == null || result.Count == 0)
+                {
+                    await CommonDialog.ShowErrorDialogAsync("选中的图形不需要分离");
+                }
+                else
+                {
+                    MapView.Selection.Select(result, true);
+                }
             }
             async Task UnionAsync()
             {
