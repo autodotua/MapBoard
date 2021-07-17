@@ -21,6 +21,7 @@ using Path = System.IO.Path;
 using MapBoard.Mapping.Model;
 using MapBoard.UI.Component;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace MapBoard.UI
 {
@@ -86,6 +87,14 @@ namespace MapBoard.UI
             set => this.SetValueAndNotify(ref label, value, nameof(Label));
         }
 
+        private ObservableCollection<LabelInfo> labels;
+
+        public ObservableCollection<LabelInfo> Labels
+        {
+            get => labels;
+            set => this.SetValueAndNotify(ref labels, value, nameof(Labels));
+        }
+
         public async Task SetStyleFromUI()
         {
             var layer = Layers.Selected;
@@ -95,7 +104,7 @@ namespace MapBoard.UI
             {
                 layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
             }
-
+            layer.Labels = Labels.ToArray();
             string newName = LayerName;
             if (newName != layer.Name)
             {
@@ -144,19 +153,16 @@ namespace MapBoard.UI
             }
             else
             {
-                LayerName = layer?.Name;
-                Label = layer.Label;
+                LayerName = layer.Name;
+
+                Labels = new ObservableCollection<LabelInfo>(layer.Labels);
+                Label = Labels.Count > 0 ? Labels[0] : null;
+
                 Keys.Clear();
                 foreach (var symbol in layer.Symbols)
                 {
-                    if (symbol.Key.Length == 0)
-                    {
-                        Keys.Add(new KeySymbolPair(defaultKeyName, symbol.Value));
-                    }
-                    else
-                    {
-                        Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
-                    }
+                    Keys.Add(new KeySymbolPair(
+                        symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
                 }
                 if (!Keys.Any(p => p.Key == defaultKeyName))
                 {
@@ -190,22 +196,8 @@ namespace MapBoard.UI
 
         private KeySymbolPair selectedKey;
 
-        private void KeyButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (ppp.IsOpen)
-            {
-                ppp.IsOpen = false;
-            }
-            else
-            {
-                ppp.PlacementTarget = sender as UIElement;
-                ppp.IsOpen = true;
-            }
-        }
-
         private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            ppp.IsOpen = false;
             var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
             if (key != null)
             {
@@ -218,14 +210,7 @@ namespace MapBoard.UI
                 var keySymbol = new KeySymbolPair(key, MapView.Layers.Selected.GetDefaultSymbol());
                 Keys.Add(keySymbol);
                 SelectedKey = keySymbol;
-
-                ppp.IsOpen = true;
             }
-        }
-
-        private void CloseButtonClick(object sender, RoutedEventArgs e)
-        {
-            ppp.IsOpen = false;
         }
 
         private async void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
@@ -287,6 +272,22 @@ namespace MapBoard.UI
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             (sender as ComboBox).SelectedItem = null;
+        }
+
+        private void AddLabelButton_Click(object sender, RoutedEventArgs e)
+        {
+            Labels.Add(new LabelInfo());
+            Label = Labels[^1];
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Label != null);
+            Labels.Remove(Label);
+            if (Labels.Count > 0)
+            {
+                Label = Labels[0];
+            }
         }
     }
 }

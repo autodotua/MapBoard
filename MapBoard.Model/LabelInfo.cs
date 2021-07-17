@@ -7,27 +7,55 @@ namespace MapBoard.Model
 {
     public class LabelInfo : INotifyPropertyChanged, ICloneable
     {
+        private bool @class;
+
+        /// <summary>
+        /// 是否允许重叠
+        /// </summary>
+        private bool allowOverlap;
+
+        /// <summary>
+        /// 是否允许重复
+        /// </summary>
+        private bool allowRepeat;
+
         private Color backgroundColor = Color.Transparent;
+        private bool bold;
+        private string customLabelExpression;
+        private bool date;
         private Color fontColor = Color.Black;
+        private string fontFamily;
         private double fontSize = 12;
         private Color haloColor = Color.FromArgb(255, 248, 220);
         private double haloWidth = 3;
+        private bool info = true;
+        private bool italic;
+
+        /// <summary>
+        /// 标签布局
+        /// </summary>
+        private int layout = 0;
+
         private double minScale = 0;
         private bool newLine;
         private Color outlineColor = Color.Transparent;
         private double outlineWidth = 0;
 
+        private string whereClause = "";
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        /// <summary>
-        /// 是否允许重叠
-        /// </summary>
-        public bool AllowOverlap { get; set; }
+        public bool AllowOverlap
+        {
+            get => allowOverlap;
+            set => this.SetValueAndNotify(ref allowOverlap, value, nameof(AllowOverlap));
+        }
 
-        /// <summary>
-        /// 是否允许重复
-        /// </summary>
-        public bool AllowRepeat { get; set; }
+        public bool AllowRepeat
+        {
+            get => allowRepeat;
+            set => this.SetValueAndNotify(ref allowRepeat, value, nameof(AllowRepeat));
+        }
 
         public Color BackgroundColor
         {
@@ -35,11 +63,17 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref backgroundColor, value, nameof(BackgroundColor));
         }
 
-        public bool Info { get; set; } = true;
-        public bool Class { get; set; }
-        public bool Date { get; set; }
+        public bool Bold
+        {
+            get => bold;
+            set => this.SetValueAndNotify(ref bold, value, nameof(Bold));
+        }
 
-        private string customLabelExpression;
+        public bool Class
+        {
+            get => @class;
+            set => this.SetValueAndNotify(ref @class, value, nameof(Class));
+        }
 
         public string CustomLabelExpression
         {
@@ -47,10 +81,22 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref customLabelExpression, value, nameof(CustomLabelExpression));
         }
 
+        public bool Date
+        {
+            get => date;
+            set => this.SetValueAndNotify(ref date, value, nameof(Date));
+        }
+
         public Color FontColor
         {
             get => fontColor;
             set => this.SetValueAndNotify(ref fontColor, value, nameof(FontColor));
+        }
+
+        public string FontFamily
+        {
+            get => fontFamily;
+            set => this.SetValueAndNotify(ref fontFamily, value, nameof(FontFamily));
         }
 
         public double FontSize
@@ -71,10 +117,23 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref haloWidth, value, nameof(HaloWidth));
         }
 
-        /// <summary>
-        /// 标签布局
-        /// </summary>
-        public int Layout { get; set; } = 0;
+        public bool Info
+        {
+            get => info;
+            set => this.SetValueAndNotify(ref info, value, nameof(Info));
+        }
+
+        public bool Italic
+        {
+            get => italic;
+            set => this.SetValueAndNotify(ref italic, value, nameof(Italic));
+        }
+
+        public int Layout
+        {
+            get => layout;
+            set => this.SetValueAndNotify(ref layout, value, nameof(Layout));
+        }
 
         public double MinScale
         {
@@ -111,9 +170,11 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref outlineWidth, value, nameof(OutlineWidth));
         }
 
-        public bool Bold { get; set; }
-        public bool Italic { get; set; }
-        public string FontFamily { get; set; }
+        public string WhereClause
+        {
+            get => whereClause;
+            set => this.SetValueAndNotify(ref whereClause, value, nameof(WhereClause));
+        }
 
         public object Clone()
         {

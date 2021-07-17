@@ -67,7 +67,7 @@ namespace MapBoard.Model
             set => this.SetValueAndNotify(ref timeExtent, value, nameof(TimeExtent));
         }
 
-        public LabelInfo Label { get; set; } = new LabelInfo();
+        public LabelInfo[] Labels { get; set; }
 
         [JsonProperty]
         public virtual string Type { get; protected set; }
@@ -84,8 +84,8 @@ namespace MapBoard.Model
             {
                 layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
             }
-            layer.fields = fields == null ? null : fields.Select(p => p.Clone() as FieldInfo).ToArray();
-            layer.Label = Label.Clone() as LabelInfo;
+            layer.fields = fields?.Select(p => p.Clone() as FieldInfo).ToArray();
+            layer.Labels = Labels?.Select(p => p.Clone() as LabelInfo).ToArray();
             return layer;
         }
     }

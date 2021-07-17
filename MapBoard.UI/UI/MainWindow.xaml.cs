@@ -105,13 +105,19 @@ namespace MapBoard.UI
 
             //注册事件
             RegistEvents();
-            //初始化控件可用性
-            JudgeControlsEnable();
             ItemsOperationErrorCollection errors = null;
             if ((errors = arcMap.Layers.GetLoadErrors()) != null)
             {
                 ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
             }
+        }
+
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+
+            //初始化控件可用性
+            JudgeControlsEnable();
         }
 
         /// <summary>

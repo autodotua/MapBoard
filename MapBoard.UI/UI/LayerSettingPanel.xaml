@@ -51,14 +51,79 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="当前分类" />
+                            <TextBlock VerticalAlignment="Center" Text="当前分类" />
                             <TextBlock
-                                x:Name="txtKey" Grid.Column="2"
-                                Margin="4,0"
+                                Grid.Column="2" Margin="4,0"
+                                VerticalAlignment="Center"
                                 Text="{Binding SelectedKey.Key}" />
-                            <Button
-                                x:Name="btnClasses" Grid.Column="4"
-                                Click="KeyButtonClick" Content="..." />
+                            <Button x:Name="btnClasses" Grid.Column="4">
+                                <Button.Content>
+                                    <TextBlock>
+                                        <Run Text="{Binding Keys.Count, Mode=OneWay}" />
+                                        <Run>类</Run>
+                                    </TextBlock>
+                                </Button.Content>
+                                <ui:FlyoutService.Flyout>
+                                    <ui:Flyout>
+                                        <Grid Margin="8" Background="{Binding Background}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <ListView
+                                                BorderThickness="0"
+                                                ItemsSource="{Binding Keys}"
+                                                SelectedItem="{Binding SelectedKey}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Key}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListView>
+
+                                            <Grid Grid.Row="2">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="4" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="4" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="4" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="4" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Button
+                                                    Grid.ColumnSpan="3"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="CreateKeyButtonClick"
+                                                    Content="新建" />
+                                                <Button
+                                                    x:Name="btnChangeKey" Grid.Column="4"
+                                                    Click="ChangeKeyButtonClick"
+                                                    Content="修改" />
+                                                <Button
+                                                    x:Name="btnDeleteKey" Grid.Column="6"
+                                                    Click="DeleteKeyButtonClick"
+                                                    Content="删除" />
+                                                <Button
+                                                    Grid.Row="2" Grid.ColumnSpan="3"
+                                                    Click="GenerateKeyButtonClick"
+                                                    Content="自动生成全部" />
+                                                <Button
+                                                    Grid.Row="2" Grid.Column="4"
+                                                    Grid.ColumnSpan="3"
+                                                    Click="GenerateRandomColorButtonClick"
+                                                    Content="随机生成颜色" />
+                                            </Grid>
+                                        </Grid>
+                                    </ui:Flyout>
+                                </ui:FlyoutService.Flyout>
+                            </Button>
                         </Grid>
 
                         <TabControl
@@ -278,7 +343,72 @@
                             HorizontalAlignment="Center"
                             Style="{DynamicResource SubtitleTextBlockStyle}"
                             Text="标签样式" />
-                        <Grid DataContext="{Binding Label}">
+
+                        <Grid Margin="0,0,0,18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="4" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock VerticalAlignment="Center" Text="当前标签" />
+                            <TextBox
+                                Grid.Column="2" Margin="4,0"
+                                VerticalAlignment="Center"
+                                ui:ControlHelper.PlaceholderText="SQL筛选语句"
+                                Text="{Binding Label.WhereClause}" />
+                            <Button Grid.Column="4">
+                                <Button.Content>
+                                    <TextBlock>
+                                        <Run Text="{Binding Labels.Count, Mode=OneWay}" />
+                                        <Run>条</Run>
+                                    </TextBlock>
+                                </Button.Content>
+                                <ui:FlyoutService.Flyout>
+                                    <ui:Flyout>
+
+                                        <Grid Margin="8" Background="{Binding Background}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <ListView
+                                                BorderThickness="0"
+                                                ItemsSource="{Binding Labels}"
+                                                SelectedItem="{Binding Label}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding WhereClause}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListView>
+
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="4" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Button
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="AddLabelButton_Click"
+                                                    Content="新建" />
+                                                <Button
+                                                    Grid.Column="2"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="Button_Click" Content="删除"
+                                                    IsEnabled="{Binding Label, Converter={StaticResource nn2bc}}" />
+                                            </Grid>
+                                        </Grid>
+                                    </ui:Flyout>
+                                </ui:FlyoutService.Flyout>
+                            </Button>
+                        </Grid>
+
+                        <Grid DataContext="{Binding Label}" IsEnabled="{Binding ., Converter={StaticResource nn2bc}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="8" />
@@ -452,64 +582,5 @@
                 </Border>
             </ui:SimpleStackPanel>
         </ScrollViewer>
-        <Popup
-            x:Name="ppp" Placement="Bottom"
-            StaysOpen="False">
-            <Grid Margin="8" Background="{Binding Background}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <ListView
-                    BorderThickness="0"
-                    ItemsSource="{Binding Keys}"
-                    SelectedItem="{Binding SelectedKey}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Key}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListView>
-
-                <Grid Grid.Row="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="4" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Button Click="CreateKeyButtonClick" Content="新建" />
-                    <Button
-                        x:Name="btnChangeKey" Grid.Column="2"
-                        Click="ChangeKeyButtonClick"
-                        Content="修改" />
-                    <Button
-                        x:Name="btnDeleteKey" Grid.Column="4"
-                        Click="DeleteKeyButtonClick"
-                        Content="删除" />
-                    <Button
-                        Grid.Column="6" Click="CloseButtonClick"
-                        Content="关闭" />
-                    <Button
-                        Grid.Row="2" Grid.ColumnSpan="3"
-                        Click="GenerateKeyButtonClick"
-                        Content="自动生成全部" />
-                    <Button
-                        Grid.Row="2" Grid.Column="4"
-                        Grid.ColumnSpan="3"
-                        Click="GenerateRandomColorButtonClick"
-                        Content="随机生成颜色" />
-                </Grid>
-            </Grid>
-        </Popup>
     </Grid>
 </local:UserControlBase>

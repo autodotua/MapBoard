@@ -95,11 +95,12 @@ namespace MapBoard.Util
 
         private static void ApplyLabel(this IMapLayerInfo layer)
         {
-            LabelInfo label = layer.Label;
-
             layer.Layer.LabelDefinitions.Clear();
-            layer.Layer.LabelDefinitions.Add(label.GetLabelDefinition());
-            layer.Layer.LabelsEnabled = true;
+            foreach (var label in layer.Labels)
+            {
+                layer.Layer.LabelDefinitions.Add(label.GetLabelDefinition());
+            }
+            layer.Layer.LabelsEnabled = layer.Labels.Length > 0;
         }
 
         public static LabelDefinition GetLabelDefinition(this LabelInfo label)
@@ -120,6 +121,7 @@ namespace MapBoard.Util
             };
             LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
             {
+                WhereClause = label.WhereClause,
                 MinScale = label.MinScale,
                 TextLayout = (LabelTextLayout)label.Layout,
                 RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,

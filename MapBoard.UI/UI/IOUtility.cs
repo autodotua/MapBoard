@@ -90,8 +90,8 @@ namespace MapBoard.UI
         public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type)
         {
             return new FileFilterCollection()
-                .AddIf(type == ExportLayerType.LayerPackge, "mblpkg地图画板包", "mblpkg")
-                .AddIf(type == ExportLayerType.LayerPackgeRebuild, "mblpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
+                .AddIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
                 .AddIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                 .AddIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
                 .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
@@ -141,8 +141,8 @@ namespace MapBoard.UI
         public static string GetImportMapPath(ImportMapType type)
         {
             return new FileFilterCollection()
-                .AddIf(type == ImportMapType.MapPackageOverwrite, "mbmpkg地图画板包", "mbmpkg")
-                .AddIf(type == ImportMapType.MapPackgeAppend, "mbmpkg地图画板包", "mbmpkg")
+                .AddIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
+                .AddIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
                 .AddIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
                 .AddIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
                 .AddIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
@@ -212,8 +212,8 @@ namespace MapBoard.UI
         public static string GetExportMapPath(ExportMapType type)
         {
             return new FileFilterCollection()
-                .AddIf(type == ExportMapType.MapPackage, "mbmpkg地图画板包", "mblpkg")
-                .AddIf(type == ExportMapType.MapPackageRebuild, "mbmpkg地图画板包", "mblpkg")
+                .AddIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
+                .AddIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
                 .AddIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                 .AddIf(type == ExportMapType.KML, "KML打包文件", "kmz")
                 .AddIf(type == ExportMapType.Screenshot, "截图", "png")
