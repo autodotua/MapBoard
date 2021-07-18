@@ -152,7 +152,7 @@ namespace MapBoard.Mapping.Model
                 }
                 try
                 {
-                    await table.LoadAsync().TimeoutAfter(TimeSpan.FromSeconds(1));
+                    await table.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                 }
                 catch (TimeoutException)
                 {

@@ -27,18 +27,21 @@ namespace MapBoard.Util
                 layers.Remove(layer);
             }
 
-            if (deleteFiles)
+            if (deleteFiles )
             {
-                await Task.Run(() =>
+                if (layer is ShapefileMapLayerInfo)
                 {
-                    foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
+                    await Task.Run(() =>
                     {
-                        if (Path.GetFileNameWithoutExtension(file) == layer.Name)
+                        foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, layer.Name))
                         {
-                            File.Delete(file);
+                            if (Path.GetFileNameWithoutExtension(file) == layer.Name)
+                            {
+                                File.Delete(file);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 

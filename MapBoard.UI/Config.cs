@@ -330,6 +330,8 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref useCompactLayerList, value, nameof(UseCompactLayerList));
         }
 
+        public double ServerLayerLoadTimeout { get; set; } = 5;
+
         public override void Save()
         {
             base.Save();

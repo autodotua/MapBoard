@@ -124,7 +124,7 @@ namespace MapBoard.IO
             }
             else
             {
-                foreach (MapLayerInfo layer in layers)
+                foreach (var layer in layers.OfType<ShapefileMapLayerInfo>())
                 {
                     await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
                 }

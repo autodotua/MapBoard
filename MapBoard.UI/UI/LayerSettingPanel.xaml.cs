@@ -155,7 +155,9 @@ namespace MapBoard.UI
             {
                 LayerName = layer.Name;
 
-                Labels = new ObservableCollection<LabelInfo>(layer.Labels);
+                Labels = layer.Labels == null ?
+                    new ObservableCollection<LabelInfo>() :
+                    new ObservableCollection<LabelInfo>(layer.Labels);
                 Label = Labels.Count > 0 ? Labels[0] : null;
 
                 Keys.Clear();

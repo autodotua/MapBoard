@@ -96,6 +96,10 @@ namespace MapBoard.Util
         private static void ApplyLabel(this IMapLayerInfo layer)
         {
             layer.Layer.LabelDefinitions.Clear();
+            if (layer.Labels == null)
+            {
+                return;
+            }
             foreach (var label in layer.Labels)
             {
                 layer.Layer.LabelDefinitions.Add(label.GetLabelDefinition());

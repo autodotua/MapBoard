@@ -41,6 +41,18 @@ namespace MapBoard.UI
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)
             {
+                menu.Items.Add(new MenuItem()
+                {
+                    IsEnabled = false,
+                    Header = new TextBlock()
+                    {
+                        Text = layer.Type,
+                        Style = MainWindow.FindResource("BaseTextBlockStyle") as Style,
+                        Foreground = MainWindow.Foreground,
+                        TextAlignment = TextAlignment.Center,
+                        Margin = new Thickness(0, 0, 0, 24)
+                    }
+                });
                 if (!layer.IsLoaded)
                 {
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
@@ -334,6 +346,7 @@ namespace MapBoard.UI
             {
                 await layer.DeleteLayerAsync(MapView.Layers, true);
             }
+            MapView.Layers.Save();
         }
 
         private async Task ReloadLayerAsync(IMapLayerInfo layer)

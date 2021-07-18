@@ -63,6 +63,7 @@ namespace MapBoard
         public static readonly string BackupPath;
         public static readonly string RecordsPath;
 
-        public static readonly TimeSpan AnimationDuration = TimeSpan.FromSeconds(0.5);
+        public static TimeSpan AnimationDuration { get; set; } = TimeSpan.FromSeconds(0.5);
+        public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);
     }
 }
