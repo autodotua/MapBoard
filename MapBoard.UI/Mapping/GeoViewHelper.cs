@@ -24,8 +24,9 @@ namespace MapBoard.Mapping
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public async static Task<bool> LoadBaseGeoViewAsync(this GeoView map)
+        public async static Task<ItemsOperationErrorCollection> LoadBaseGeoViewAsync(this GeoView map)
         {
+            ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             try
             {
                 Basemap basemap = new Basemap();
@@ -34,13 +35,17 @@ namespace MapBoard.Mapping
                 {
                     try
                     {
-                        var layer = AddLayer(basemap, item);
+                        var layer = GetLayer(item);
+                        await layer.LoadAsync();
+                        basemap.BaseLayers.Add(layer);
+
+                        layer.Opacity = item.Opacity;
                         layer.Id = item.TempID.ToString();
                         layer.IsVisible = item.Enable;
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"加载底图{item.Path}失败", ex);
+                        errors.Add($"加载底图{item.Name}失败", ex);
                     }
                 }
 
@@ -73,7 +78,7 @@ namespace MapBoard.Mapping
                     }
                     await m.Map.LoadAsync();
                 }
-                return true;
+                return errors.Count == 0 ? null : errors;
             }
             catch (Exception ex)
             {
@@ -109,49 +114,59 @@ namespace MapBoard.Mapping
         public const string ShapefileLayer = nameof(ShapefileLayer);
         public const string TpkLayer = nameof(TpkLayer);
 
-        public static Layer AddLayer(Basemap map, BaseLayerInfo baseLayer)
+        public static Layer GetLayer(BaseLayerInfo baseLayer)
         {
             var type = baseLayer.Type;
             var arg = baseLayer.Path;
-            Layer layer = type switch
+            return type switch
             {
-                BaseLayerType.WebTiledLayer => AddTiledLayer(map, arg),
-                BaseLayerType.RasterLayer => AddRasterLayer(map, arg),
-                BaseLayerType.ShapefileLayer => AddShapefileLayer(map, arg),
-                BaseLayerType.TpkLayer => AddTpkLayer(map, arg),
+                BaseLayerType.WebTiledLayer => AddTiledLayer(arg),
+                BaseLayerType.RasterLayer => AddRasterLayer(arg),
+                BaseLayerType.ShapefileLayer => AddShapefileLayer(arg),
+                BaseLayerType.TpkLayer => AddTpkLayer(arg),
+                BaseLayerType.WmsLayer => AddWmsLayer(arg),
                 _ => throw new Exception("未知类型"),
             };
-            layer.Opacity = baseLayer.Opacity;
-            return layer;
         }
 
-        private static WebTiledLayer AddTiledLayer(Basemap map, string url)
+        private static WebTiledLayer AddTiledLayer(string url)
         {
             WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-            map.BaseLayers.Add(layer);
             return layer;
         }
 
-        private static RasterLayer AddRasterLayer(Basemap map, string path)
+        private static WmsLayer AddWmsLayer(string url)
+        {
+            string[] items = url.Split('|');
+            if (items.Length < 2)
+            {
+                throw new ArgumentException("WMS的参数过少");
+            }
+            WmsLayer layer = new WmsLayer(new Uri(items[0]), items.Skip(1));
+            return layer;
+            //WmsLayer layer=new WmsLayer()
+            //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+            //map.BaseLayers.Add(layer);
+            //return layer;
+        }
+
+        private static RasterLayer AddRasterLayer(string path)
         {
             RasterLayer layer = new RasterLayer(path);
-            map.BaseLayers.Add(layer);
             return layer;
         }
 
-        private static ArcGISTiledLayer AddTpkLayer(Basemap map, string path)
+        private static ArcGISTiledLayer AddTpkLayer(string path)
         {
             TileCache cache = new TileCache(path);
             ArcGISTiledLayer layer = new ArcGISTiledLayer(cache);
-            map.BaseLayers.Add(layer);
             return layer;
         }
 
-        private static FeatureLayer AddShapefileLayer(Basemap map, string path)
+        private static FeatureLayer AddShapefileLayer(string path)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             FeatureLayer layer = new FeatureLayer(table);
-            map.BaseLayers.Add(layer);
             return layer;
         }
 

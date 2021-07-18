@@ -1,5 +1,6 @@
 ﻿using MapBoard.Model;
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -15,7 +16,8 @@ namespace MapBoard.UI.Converter
                 BaseLayerType.TpkLayer => "切片包",
                 BaseLayerType.ShapefileLayer => "Shapefile矢量图",
                 BaseLayerType.WebTiledLayer => "网络瓦片图",
-                _ => throw new NotSupportedException()
+                BaseLayerType.WmsLayer => "网络地图服务",
+                _ => throw new InvalidEnumArgumentException()
             };
         }
 

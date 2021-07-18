@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using MapBoard.Mapping.Model;
+using MapBoard.Model;
 using MapBoard.UI;
 using MapBoard.Util;
 using System;
@@ -228,7 +229,7 @@ namespace MapBoard.Mapping
 
         public async Task LoadAsync()
         {
-            await GeoViewHelper.LoadBaseGeoViewAsync(this);
+            BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this);
             Map.MaxScale = Config.Instance.MaxScale;
             Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
@@ -237,6 +238,8 @@ namespace MapBoard.Mapping
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
             Selection.CollectionChanged += Selection_CollectionChanged;
         }
+
+        public ItemsOperationErrorCollection BaseMapLoadErrors { get; private set; }
 
         private void Selection_CollectionChanged(object sender, EventArgs e)
         {

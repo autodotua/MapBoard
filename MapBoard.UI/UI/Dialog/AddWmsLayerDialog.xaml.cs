@@ -28,37 +28,13 @@ namespace MapBoard.UI.Dialog
     /// <summary>
     /// CoordinateTransformationDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class AddWfsLayerDialog : CommonDialog
+    public partial class AddWmsLayerDialog : CommonDialog
     {
-        public bool editMode = false;
-        public WfsMapLayerInfo editLayer = null;
-
-        public AddWfsLayerDialog(MapLayerCollection layers, WfsMapLayerInfo layer = null)
+        public AddWmsLayerDialog()
         {
             InitializeComponent();
-            if (layer != null)
-            {
-                Title = "编辑WFS图层";
-                editMode = true;
-                editLayer = layer;
-                LayerName = layer.Name;
-                WfsLayerName = layer.LayerName;
-                AutoPopulateAll = layer.AutoPopulateAll;
-                Url = layer.Url;
-            }
-            else
-            {
-                LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            }
-            Layers = layers;
-        }
 
-        private IReadOnlyList<WfsLayerInfo> wfsLayers;
-
-        public IReadOnlyList<WfsLayerInfo> WfsLayers
-        {
-            get => wfsLayers;
-            set => this.SetValueAndNotify(ref wfsLayers, value, nameof(WfsLayers));
+            LayerName = "WMS图层";
         }
 
         private string message;
@@ -93,12 +69,20 @@ namespace MapBoard.UI.Dialog
             set => this.SetValueAndNotify(ref url, value, nameof(Url));
         }
 
-        private string wfsLayerName;
+        private string wmsLayerName;
 
-        public string WfsLayerName
+        public string WmsLayerName
         {
-            get => wfsLayerName;
-            set => this.SetValueAndNotify(ref wfsLayerName, value, nameof(WfsLayerName));
+            get => wmsLayerName;
+            set => this.SetValueAndNotify(ref wmsLayerName, value, nameof(WmsLayerName));
+        }
+
+        private ObservableCollection<WmsLayerInfo> wmtsLayers;
+
+        public ObservableCollection<WmsLayerInfo> WmsLayers
+        {
+            get => wmtsLayers;
+            set => this.SetValueAndNotify(ref wmtsLayers, value, nameof(WmsLayers));
         }
 
         public MapLayerCollection Layers { get; }
@@ -107,37 +91,16 @@ namespace MapBoard.UI.Dialog
         {
         }
 
-        private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
+        private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
-            args.Cancel = true;
-            IsEnabled = false;
-            if (editMode)
+            if (Url != null && WmsLayerName != null)
             {
-                editLayer.SetService(Url, WfsLayerName, AutoPopulateAll);
-                try
-                {
-                    await editLayer.ReloadAsync(Layers);
-                    Hide();
-                }
-                catch (Exception ex)
-                {
-                    Message = "加载失败：" + ex.Message;
-                }
             }
             else
             {
-                try
-                {
-                    await LayerUtility.AddWfsLayerAsync(Layers, LayerName, Url, WfsLayerName, AutoPopulateAll);
-                    Hide();
-                }
-                catch (Exception ex)
-                {
-                    Message = "创建图层失败：" + ex.Message;
-                    return;
-                }
+                args.Cancel = true;
+                Message = "请填写图层的完整信息";
             }
-            IsEnabled = true;
         }
 
         private async void QueryLayersButton_Click(object sender, RoutedEventArgs e)
@@ -145,12 +108,29 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             try
             {
-                WfsService s = new WfsService(new Uri(url));
+                WmsService s = new WmsService(new Uri(url));
                 await s.LoadAsync();
-                WfsLayers = s.ServiceInfo.LayerInfos;
-                if (WfsLayers.Count > 0)
+                var layers = s.ServiceInfo.LayerInfos;
+                WmsLayers = new ObservableCollection<WmsLayerInfo>();
+                AddLayer(layers);
+                void AddLayer(IReadOnlyList<WmsLayerInfo> layers)
                 {
-                    cbbWfsLayers.SelectedIndex = 0;
+                    foreach (var layer in layers)
+                    {
+                        if (layer.LayerInfos.Count == 0)
+                        {
+                            WmsLayers.Add(layer);
+                        }
+                        else
+                        {
+                            AddLayer(layer.LayerInfos);
+                        }
+                    }
+                }
+
+                if (WmsLayers.Count > 0)
+                {
+                    cbbLayers.SelectedIndex = 0;
                 }
             }
             catch (Exception ex)

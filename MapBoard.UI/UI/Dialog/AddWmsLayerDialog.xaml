@@ -1,5 +1,5 @@
 ﻿<commondialog:CommonDialog
-    x:Class="MapBoard.UI.Dialog.AddWfsLayerDialog"
+    x:Class="MapBoard.UI.Dialog.AddWmsLayerDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
@@ -10,7 +10,7 @@
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="新建WFS图层" CloseButtonText="取消"
+    Title="新增WMS图层" CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
@@ -34,14 +34,15 @@
             Click="QueryLayersButton_Click"
             Content="查询图层" />
         <ComboBox
-            x:Name="cbbWfsLayers"
+            x:Name="cbbLayers"
             HorizontalAlignment="Stretch"
+            ui:ControlHelper.Description="支持一个或多个图层，多个图层使用“|”号隔开"
             ui:ControlHelper.Header="WFS图层名"
             DisplayMemberPath="Name"
             IsEditable="True"
-            ItemsSource="{Binding WfsLayers}"
-            Text="{Binding WfsLayerName}" />
-        <CheckBox Content="自动下载所有图形" IsChecked="{Binding AutoPopulateAll}" />
+            ItemsSource="{Binding WmsLayers}"
+            Text="{Binding WmsLayerName}" />
+
         <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>

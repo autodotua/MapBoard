@@ -7,6 +7,19 @@ namespace MapBoard.Model
 {
     public class ItemsOperationErrorCollection : List<ItemsOperationError>
     {
+        public ItemsOperationError Add(string name, string message)
+        {
+            var item = new ItemsOperationError(name, message);
+            Add(item);
+            return item;
+        }
+
+        public ItemsOperationError Add(string name, Exception ex)
+        {
+            var item = new ItemsOperationError(name, ex);
+            Add(item);
+            return item;
+        }
     }
 
     public class ItemsOperationError

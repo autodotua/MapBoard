@@ -99,6 +99,7 @@ namespace MapBoard.Model
         WebTiledLayer,
         RasterLayer,
         ShapefileLayer,
-        TpkLayer
+        TpkLayer,
+        WmsLayer
     }
 }

@@ -106,18 +106,20 @@ namespace MapBoard.UI
             //注册事件
             RegistEvents();
             ItemsOperationErrorCollection errors = null;
+            if ((errors = arcMap.BaseMapLoadErrors) != null)
+            {
+                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分底图加载失败", errors);
+            }
             if ((errors = arcMap.Layers.GetLoadErrors()) != null)
             {
                 ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
             }
+            JudgeControlsEnable();
         }
 
         protected override void OnContentRendered(EventArgs e)
         {
             base.OnContentRendered(e);
-
-            //初始化控件可用性
-            JudgeControlsEnable();
         }
 
         /// <summary>
@@ -157,7 +159,7 @@ namespace MapBoard.UI
             }
             btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = layerSettings.IsEnabled = arcMap.Layers.Selected != null;
 
-            if (IsLoaded)
+            if (true)
             {
                 btnSelect.IsEnabled = arcMap.Layers.Selected != null;
                 grdButtons.IsEnabled = arcMap.Layers.Selected == null || arcMap.Layers.Selected.LayerVisible;

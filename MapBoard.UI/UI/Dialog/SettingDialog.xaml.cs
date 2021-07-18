@@ -21,6 +21,7 @@ using MapBoard.IO;
 using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using ModernWpf.Controls;
 
 namespace MapBoard.UI.Dialog
 {
@@ -133,40 +134,6 @@ namespace MapBoard.UI.Dialog
             Close();
         }
 
-        private void AddButtonClick(object sender, RoutedEventArgs e)
-        {
-            BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WebTiledLayer, "");
-            BaseLayers.Add(layerInfo);
-            grd.SelectedItem = layerInfo;
-        }
-
-        private void BrowseButtonClick(object sender, RoutedEventArgs e)
-        {
-            string path = new FileFilterCollection()
-                    .Add("JPEG图片", "jpg,jpeg")
-                    .Add("PNG图片", "png")
-                    .Add("BMP图片", "bmp")
-                    .Add("TIFF图片", "tif,tiff")
-                    .Add("Shapefile矢量图", "shp")
-                    .Add("TilePackage切片包", "tpk")
-                    .AddUnion()
-                    .CreateOpenFileDialog()
-                    .GetFilePath();
-            if (path == null)
-            {
-                return;
-            }
-
-            var layerInfo = System.IO.Path.GetExtension(path) switch
-            {
-                ".shp" => new BaseLayerInfo(BaseLayerType.ShapefileLayer, path),
-                ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
-                _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
-            };
-            BaseLayers.Add(layerInfo);
-            grd.SelectedItem = layerInfo;
-        }
-
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
             if (grd.SelectedItem != null)
@@ -228,5 +195,56 @@ namespace MapBoard.UI.Dialog
         }
 
         public int CurrentBackupCount => Directory.EnumerateFiles(Parameters.BackupPath, "*.mbmpkg").Count();
+
+        private void AddButtonClick(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
+        {
+            BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WebTiledLayer, "");
+            BaseLayers.Add(layerInfo);
+            SelectAndScroll(layerInfo);
+        }
+
+        private async void AddWmsButtonClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AddWmsLayerDialog();
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WmsLayer, $"{dialog.Url}|{dialog.WmsLayerName}");
+                BaseLayers.Add(layerInfo);
+                SelectAndScroll(layerInfo);
+            }
+        }
+
+        private void AddFileButtonClick(object sender, RoutedEventArgs e)
+        {
+            string path = new FileFilterCollection()
+                           .Add("JPEG图片", "jpg,jpeg")
+                           .Add("PNG图片", "png")
+                           .Add("BMP图片", "bmp")
+                           .Add("TIFF图片", "tif,tiff")
+                           .Add("Shapefile矢量图", "shp")
+                           .Add("TilePackage切片包", "tpk")
+                           .AddUnion()
+                           .CreateOpenFileDialog()
+                           .GetFilePath();
+            if (path == null)
+            {
+                return;
+            }
+
+            var layerInfo = Path.GetExtension(path) switch
+            {
+                ".shp" => new BaseLayerInfo(BaseLayerType.ShapefileLayer, path),
+                ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
+                _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
+            };
+            BaseLayers.Add(layerInfo);
+            SelectAndScroll(layerInfo);
+        }
+
+        private void SelectAndScroll(object item)
+        {
+            grd.SelectedItem = item;
+            grd.ScrollIntoView(item);
+        }
     }
 }
