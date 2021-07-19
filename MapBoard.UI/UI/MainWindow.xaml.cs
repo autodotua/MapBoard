@@ -116,8 +116,11 @@ namespace MapBoard.UI
             };
             arcMap.Layers.PropertyChanged += (s, e) =>
             {
-                ResetDrawAndSelectButton();
-                layerSettings.ResetLayerSettingUI();
+                if (e.PropertyName == nameof(MapLayerCollection.Selected))
+                {
+                    ResetDrawAndSelectButton();
+                    layerSettings.ResetLayerSettingUI();
+                }
             };
 
             ItemsOperationErrorCollection errors = null;
@@ -139,6 +142,7 @@ namespace MapBoard.UI
         /// </summary>
         private void ResetDrawAndSelectButton()
         {
+            this.Notify(nameof(IsReady));
             grdButtons.Children.OfType<SplitButton>()
                    .ForEach(p => p.Visibility = Visibility.Collapsed);
             if (arcMap.Layers.Selected != null)
@@ -574,7 +578,7 @@ namespace MapBoard.UI
             }
             else
             {
-                ani = new DoubleAnimation(grdLeft.ActualWidth, 0, TimeSpan.FromSeconds(0.5)); // { EasingFunction = EasingMode.EaseInOut };
+                ani = new DoubleAnimation(grdLeft.ActualWidth, 0, TimeSpan.FromSeconds(0.5)).SetInOutCubicEase(); // { EasingFunction = EasingMode.EaseInOut };
 
                 (btnShrink.LayoutTransform as ScaleTransform).ScaleX = -0.5;
             }
@@ -583,11 +587,10 @@ namespace MapBoard.UI
                 btn.IsEnabled = true;
                 if (((p1 as AnimationClock).Timeline as DoubleAnimation).To == 0)
                 {
-                    grdLeftArea.Background = System.Windows.Media.Brushes.Transparent;
+                    grdLeftArea.Background = Brushes.Transparent;
                     grdCenter.Margin = new Thickness(-30, 0, 0, 0);
                 }
             };
-            ani.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
 
             grdLeft.BeginAnimation(WidthProperty, ani);
         }

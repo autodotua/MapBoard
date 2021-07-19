@@ -480,8 +480,24 @@ namespace MapBoard.UI
 
         public static T SetStoryboard<T>(this T animation, DependencyProperty property, DependencyObject control) where T : AnimationTimeline
         {
-            Storyboard.SetTargetProperty(animation, new PropertyPath(property.Name));
-            Storyboard.SetTarget(animation, control);
+            return animation.SetStoryboard(property == null ? (PropertyPath)null : new PropertyPath(property.Name), control);
+        }
+
+        public static T SetStoryboard<T>(this T animation, string propertyPath, DependencyObject control) where T : AnimationTimeline
+        {
+            return animation.SetStoryboard(propertyPath == null ? (PropertyPath)null : new PropertyPath(propertyPath), control);
+        }
+
+        public static T SetStoryboard<T>(this T animation, PropertyPath propertyPath, DependencyObject control) where T : AnimationTimeline
+        {
+            if (propertyPath != null)
+            {
+                Storyboard.SetTargetProperty(animation, propertyPath);
+            }
+            if (control != null)
+            {
+                Storyboard.SetTarget(animation, control);
+            }
             return animation;
         }
 
