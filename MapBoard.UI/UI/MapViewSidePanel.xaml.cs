@@ -19,6 +19,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Esri.ArcGISRuntime.UI.Controls;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace MapBoard.UI
 {
@@ -214,38 +216,30 @@ namespace MapBoard.UI
 
         private void PanelScale_MouseLeave(object sender, MouseEventArgs e)
         {
-            CloseScalePanel();
+            OpenOrCloseScalePanelAsync(false);
         }
 
-        private void CloseScalePanel()
+        private async Task OpenOrCloseScalePanelAsync(bool open)
         {
-            DoubleAnimation aniHeight = new DoubleAnimation(36, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniTbkOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniSliderOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            bdScale.BeginAnimation(HeightProperty, aniHeight);
-            tbkScale.BeginAnimation(OpacityProperty, aniTbkOpacity);
-            grdScale.BeginAnimation(OpacityProperty, aniSliderOpacity);
-        }
-
-        private void OpenScalePanel()
-        {
-            DoubleAnimation aniHeight = new DoubleAnimation(240, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniTbkOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniSliderOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            bdScale.BeginAnimation(HeightProperty, aniHeight);
-            tbkScale.BeginAnimation(OpacityProperty, aniTbkOpacity);
-            grdScale.BeginAnimation(OpacityProperty, aniSliderOpacity);
+            Storyboard storyboard = new Storyboard();
+            new DoubleAnimation(open ? 240 : 36, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(HeightProperty, bdScale)
+                .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(OpacityProperty, tbkScale)
+                .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(OpacityProperty, grdScale)
+                .AddToStoryboard(storyboard);
+            await storyboard.BeginAsync();
         }
 
         private void ScaleButton_MouseEnter(object sender, MouseEventArgs e)
         {
-            OpenScalePanel();
+            OpenOrCloseScalePanelAsync(true);
         }
 
         #endregion 缩放按钮和缩放条
@@ -266,7 +260,7 @@ namespace MapBoard.UI
         {
             if (isLayerPanelOpened && !IsMouseOver)
             {
-                CloseLayersPanel();
+                OpenOrCloseLayersPanelAsync(false);
             }
         }
 
@@ -274,7 +268,7 @@ namespace MapBoard.UI
         {
             if (!isLayerPanelOpened)
             {
-                OpenLayersPanel();
+                OpenOrCloseLayersPanelAsync(true);
             }
         }
 
@@ -304,64 +298,51 @@ namespace MapBoard.UI
 
         private void CloseLayerPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            CloseLayersPanel();
+            OpenOrCloseLayersPanelAsync(false);
         }
 
-        private void CloseLayersPanel()
+        private async Task OpenOrCloseLayersPanelAsync(bool open)
         {
-            isLayerPanelOpened = false;
-            DoubleAnimation aniWidth = new DoubleAnimation(36, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniHeight = new DoubleAnimation(36, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniIconOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniDgOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            aniDgOpacity.Completed += (p1, p2) =>
-            {
-                grdLayers.Visibility = Visibility.Collapsed;
-            };
-            bdLayers.BeginAnimation(WidthProperty, aniWidth);
-            bdLayers.BeginAnimation(HeightProperty, aniHeight);
-            iconLayers.BeginAnimation(OpacityProperty, aniIconOpacity);
-            grdLayers.BeginAnimation(OpacityProperty, aniDgOpacity);
-            bdLayers.Cursor = Cursors.Hand;
-        }
+            isLayerPanelOpened = open;
 
-        private void LayersDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
+            Storyboard storyboard = new Storyboard();
+            new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
+                   .SetInOutCubicEase()
+                   .SetStoryboard(WidthProperty, bdLayers)
+                   .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
+                 .SetInOutCubicEase()
+                 .SetStoryboard(HeightProperty, bdLayers)
+                 .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(OpacityProperty, iconLayers)
+                .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
+                    .SetInOutCubicEase()
+                    .SetStoryboard(OpacityProperty, grdLayers)
+                    .AddToStoryboard(storyboard);
+
+            bdLayers.IsHitTestVisible = false;
+            if (open)
             {
-                if (e.Column.DisplayIndex == 1)
-                {
-                }
+                grdLayers.Visibility = Visibility.Visible;
+                bdLayers.Cursor = Cursors.Arrow;
+                dgLayers.Focus();
+                await storyboard.BeginAsync();
             }
-        }
-
-        private void OpenLayersPanel()
-        {
-            isLayerPanelOpened = true;
-            DoubleAnimation aniWidth = new DoubleAnimation(360, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniHeight = new DoubleAnimation(360, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniIconOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniDgOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            bdLayers.BeginAnimation(WidthProperty, aniWidth);
-            bdLayers.BeginAnimation(HeightProperty, aniHeight);
-            iconLayers.BeginAnimation(OpacityProperty, aniIconOpacity);
-            grdLayers.Visibility = Visibility.Visible;
-            grdLayers.BeginAnimation(OpacityProperty, aniDgOpacity);
-            bdLayers.Cursor = Cursors.Arrow;
-            dgLayers.Focus();
+            else
+            {
+                bdLayers.Cursor = Cursors.Hand;
+                await storyboard.BeginAsync();
+                grdLayers.Visibility = Visibility.Collapsed;
+            }
+            bdLayers.IsHitTestVisible = true;
         }
 
         private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            CloseLayersPanel();
+            OpenOrCloseLayersPanelAsync(false);
             new SettingDialog(Window.GetWindow(this), (MapView as IMapBoardGeoView).Layers).ShowDialog();
         }
 
@@ -409,52 +390,126 @@ namespace MapBoard.UI
 
         private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (isSearchPanelOpened)
-            {
-                return;
-            }
-            isSearchPanelOpened = true;
-            vwSearchIcon.IsHitTestVisible = false;
-            grdSearchPanel.IsHitTestVisible = true;
-            DoubleAnimation aniHeight = new DoubleAnimation(400, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniWidth = new DoubleAnimation(360, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniIconOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            bdSearch.BeginAnimation(HeightProperty, aniHeight);
-            bdSearch.BeginAnimation(WidthProperty, aniWidth);
-            grdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
-            vwSearchIcon.BeginAnimation(OpacityProperty, aniIconOpacity);
-            bdSearch.Cursor = Cursors.Arrow;
+            OpenOrCloseSearchPanelAsync(true);
         }
-
-        #endregion 搜索
 
         private void CloseSearchPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!isSearchPanelOpened)
+            OpenOrCloseSearchPanelAsync(false);
+        }
+
+        private async Task OpenOrCloseSearchPanelAsync(bool open)
+        {
+            if (isSearchPanelOpened && open || !isSearchPanelOpened && !open)
             {
                 return;
             }
-            isSearchPanelOpened = false;
-            vwSearchIcon.IsHitTestVisible = true;
-            grdSearchPanel.IsHitTestVisible = false;
-            DoubleAnimation aniHeight = new DoubleAnimation(36, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniWidth = new DoubleAnimation(36, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniOpacity = new DoubleAnimation(0, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            DoubleAnimation aniIconOpacity = new DoubleAnimation(1, Parameters.AnimationDuration)
-            { EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut } };
-            bdSearch.BeginAnimation(HeightProperty, aniHeight);
-            bdSearch.BeginAnimation(WidthProperty, aniWidth);
-            grdSearchPanel.BeginAnimation(OpacityProperty, aniOpacity);
-            vwSearchIcon.BeginAnimation(OpacityProperty, aniIconOpacity);
-            bdSearch.Cursor = Cursors.Hand;
+            bdSearch.IsHitTestVisible = false;
+            isSearchPanelOpened = open;
+            vwSearchIcon.IsHitTestVisible = !open;
+            grdSearchPanel.IsHitTestVisible = open;
+
+            Storyboard storyboard = new Storyboard();
+            new DoubleAnimation(open ? 400 : 36, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(HeightProperty, bdSearch)
+                .AddToStoryboard(storyboard);
+
+            new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
+                           .SetInOutCubicEase()
+                            .SetStoryboard(WidthProperty, bdSearch)
+                            .AddToStoryboard(storyboard);
+
+            new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
+               .SetInOutCubicEase()
+                .SetStoryboard(OpacityProperty, grdSearchPanel)
+                .AddToStoryboard(storyboard);
+            new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
+                .SetInOutCubicEase()
+                .SetStoryboard(OpacityProperty, vwSearchIcon)
+                .AddToStoryboard(storyboard);
+            await storyboard.BeginAsync();
+            bdSearch.IsHitTestVisible = true;
+            bdSearch.Cursor = open ? Cursors.Arrow : Cursors.Hand;
+        }
+
+        #endregion 搜索
+    }
+
+    public static class Temp
+    {
+        public static DependencyProperty EasyRotateProperty = DependencyProperty.RegisterAttached(
+            "EasyRotate", typeof(double), typeof(Temp),
+            new PropertyMetadata(new PropertyChangedCallback((s, e) =>
+           {
+               UIElement element = s as UIElement;
+               if (element == null)
+               {
+                   return;
+               }
+               if (e.NewValue is double d)
+               {
+                   element.RenderTransformOrigin = new Point(0.5, 0.5);
+                   element.RenderTransform = new RotateTransform(d);
+               }
+           }))
+            );
+
+        public static void SetEasyRotate(UIElement element, double value)
+        {
+            element.SetValue(EasyRotateProperty, value);
+        }
+
+        public static double GetEasyRotate(UIElement element)
+        {
+            return (double)element.GetValue(EasyRotateProperty);
+        }
+
+        public static T SetInOutCubicEase<T>(this T animation) where T : DoubleAnimation
+        {
+            return animation.SetEasing<T, CubicEase>(EasingMode.EaseInOut);
+        }
+
+        public static T SetEasing<T, TE>(this T animation, EasingMode mode)
+            where T : DoubleAnimation
+            where TE : EasingFunctionBase, new()
+        {
+            animation.EasingFunction = new TE() { EasingMode = mode };
+            return animation;
+        }
+
+        public static T SetStoryboard<T>(this T animation, DependencyProperty property, DependencyObject control) where T : AnimationTimeline
+        {
+            Storyboard.SetTargetProperty(animation, new PropertyPath(property.Name));
+            Storyboard.SetTarget(animation, control);
+            return animation;
+        }
+
+        public static T AddToStoryboard<T>(this T animation, Storyboard storyboard) where T : Timeline
+        {
+            storyboard.Children.Add(animation);
+            return animation;
+        }
+
+        public static Task BeginAsync(this Storyboard storyboard)
+        {
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            if (storyboard == null)
+            {
+                tcs.SetException(new ArgumentNullException());
+            }
+            else
+            {
+                EventHandler onComplete = null;
+                onComplete = (s, e) =>
+                {
+                    storyboard.Completed -= onComplete;
+                    tcs.SetResult(true);
+                };
+                storyboard.Completed += onComplete;
+                storyboard.Begin();
+            }
+            return tcs.Task;
         }
     }
 }

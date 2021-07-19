@@ -156,7 +156,7 @@ namespace MapBoard.IO
                 }
                 else
                 {
-                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
+                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, s);
                 }
             }
 

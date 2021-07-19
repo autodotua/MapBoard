@@ -116,7 +116,14 @@ namespace MapBoard.UI
                         break;
 
                     case ExportLayerType.GISToolBoxZip:
-                        await MobileGISToolBox.ExportLayerAsync(path, layer);
+                        if (layer is ShapefileMapLayerInfo s)
+                        {
+                            await MobileGISToolBox.ExportLayerAsync(path, s);
+                        }
+                        else
+                        {
+                            throw new NotSupportedException("非Shapefile图层不支持导出为GIS工具箱压缩包");
+                        }
                         break;
 
                     case ExportLayerType.KML:

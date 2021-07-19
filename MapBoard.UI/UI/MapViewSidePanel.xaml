@@ -7,6 +7,7 @@
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mui="clr-namespace:MapBoard.UI"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="600" d:DesignWidth="120"
@@ -84,7 +85,7 @@
                             VerticalAlignment="Top"
                             Background="Transparent"
                             Click="CloseLayerPanelButton_Click">
-                            <ui:SymbolIcon Symbol="Back" />
+                            <ui:SymbolIcon mui:Temp.EasyRotate="180" Symbol="Back" />
                         </Button>
                         <DataGrid
                             x:Name="dgLayers" Grid.Row="2"
@@ -95,7 +96,6 @@
                             CanUserDeleteRows="True"
                             CanUserResizeColumns="False"
                             CanUserSortColumns="False"
-                            CellEditEnding="LayersDataGrid_CellEditEnding"
                             Focusable="True"
                             HeadersVisibility="Column"
                             ItemsSource="{Binding BaseLayers}"
@@ -229,7 +229,7 @@
                             VerticalAlignment="Top"
                             Background="Transparent"
                             Click="CloseSearchPanelButton_Click">
-                            <ui:SymbolIcon Symbol="Back" />
+                            <ui:SymbolIcon mui:Temp.EasyRotate="180" Symbol="Back" />
                         </Button>
                     </Grid>
                 </Grid>

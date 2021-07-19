@@ -228,7 +228,7 @@ namespace MapBoard.IO
             File.WriteAllText(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
-        public static async Task CloneFeatureToNewShpAsync(string directory, IMapLayerInfo layer)
+        public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)
         {
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
