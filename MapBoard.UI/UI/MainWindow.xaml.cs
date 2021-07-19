@@ -92,6 +92,8 @@ namespace MapBoard.UI
         /// <returns></returns>
         protected override async Task InitializeAsync()
         {
+            arcMap.BoardTaskChanged += (s, e) => this.Notify(nameof(IsReady));
+
             //加载地图
             await arcMap.LoadAsync();
             layerSettings.Initialize(arcMap);
@@ -104,7 +106,20 @@ namespace MapBoard.UI
             }
 
             //注册事件
-            RegistEvents();
+            arcMap.Selection.CollectionChanged += (p1, p2) => ResetDrawAndSelectButton();
+            arcMap.Layers.LayerPropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(LayerInfo.LayerVisible) && e.Layer == arcMap.Layers.Selected)
+                {
+                    ResetDrawAndSelectButton();
+                }
+            };
+            arcMap.Layers.PropertyChanged += (s, e) =>
+            {
+                ResetDrawAndSelectButton();
+                layerSettings.ResetLayerSettingUI();
+            };
+
             ItemsOperationErrorCollection errors = null;
             if ((errors = arcMap.BaseMapLoadErrors) != null)
             {
@@ -114,87 +129,36 @@ namespace MapBoard.UI
             {
                 ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
             }
-            JudgeControlsEnable();
+            ResetDrawAndSelectButton();
         }
 
-        protected override void OnContentRendered(EventArgs e)
-        {
-            base.OnContentRendered(e);
-        }
+        public bool IsReady => arcMap != null && arcMap.CurrentTask == BoardTask.Ready;
 
         /// <summary>
-        /// 为需要延迟初始化的事件进行注册
+        /// 重置绘制和选择按钮的可见性
         /// </summary>
-        private void RegistEvents()
+        private void ResetDrawAndSelectButton()
         {
-            arcMap.Selection.CollectionChanged += (p1, p2) => JudgeControlsEnable();
-            arcMap.BoardTaskChanged += (s, e) => JudgeControlsEnable();
-            arcMap.Layers.LayerPropertyChanged += (s, e) =>
+            grdButtons.Children.OfType<SplitButton>()
+                   .ForEach(p => p.Visibility = Visibility.Collapsed);
+            if (arcMap.Layers.Selected != null)
             {
-                if (e.PropertyName == nameof(LayerInfo.LayerVisible) && e.Layer == arcMap.Layers.Selected)
+                UIElement btn = arcMap.Layers.Selected.GeometryType switch
                 {
-                    JudgeControlsEnable();
+                    GeometryType.Multipoint => splBtnMultiPoint,
+                    GeometryType.Point => splBtnPoint,
+                    GeometryType.Polyline => splBtnPolyline,
+                    GeometryType.Polygon => splBtnPolygon,
+                    _ => null
+                };
+                if (btn != null)
+                {
+                    btn.Visibility = Visibility.Visible;
                 }
-            };
-        }
-
-        /// <summary>
-        /// 在某些状态发生变更之后，重新判断各控件是否可用
-        /// </summary>
-        private void JudgeControlsEnable()
-        {
-            if (arcMap.CurrentTask == BoardTask.Draw
-                || arcMap.CurrentTask == BoardTask.Select)
-            {
-                grdLeft.IsEnabled = false;
-                btnTitleBarMore.IsEnabled = false;
-                mapInfo.IsEnabled = false;
             }
             else
             {
-                mapInfo.IsEnabled = true;
-                btnTitleBarMore.IsEnabled = true;
-                layersPanel.JudgeControlsEnable();
-                grdLeft.IsEnabled = true;
-            }
-            btnApplyStyle.IsEnabled = btnBrowseMode.IsEnabled = layerSettings.IsEnabled = arcMap.Layers.Selected != null;
-
-            if (true)
-            {
-                btnSelect.IsEnabled = arcMap.Layers.Selected != null;
-                grdButtons.IsEnabled = arcMap.Layers.Selected == null || arcMap.Layers.Selected.LayerVisible;
-
-                var buttons = grdButtons.Children.OfType<SplitButton>();
-                buttons.ForEach(p => p.Visibility = Visibility.Collapsed);
-                if (arcMap.Layers.Selected != null)
-                {
-                    switch (arcMap.Layers.Selected.GeometryType)
-                    {
-                        case GeometryType.Multipoint:
-                            splBtnMultiPoint.Visibility = Visibility.Visible;
-                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Multipoint;
-                            break;
-
-                        case GeometryType.Point:
-                            splBtnPoint.Visibility = Visibility.Visible;
-                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Point;
-                            break;
-
-                        case GeometryType.Polyline:
-                            splBtnPolyline.Visibility = Visibility.Visible;
-                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Polyline;
-                            break;
-
-                        case GeometryType.Polygon:
-                            splBtnPolygon.Visibility = Visibility.Visible;
-                            arcMap.Editor.CurrentDrawMode = SketchCreationMode.Polygon;
-                            break;
-                    }
-                }
-                else
-                {
-                    arcMap.Editor.CurrentDrawMode = null;
-                }
+                btnDraw.Visibility = Visibility.Visible;
             }
         }
 
@@ -584,7 +548,6 @@ namespace MapBoard.UI
             }
 
             var mode = ButtonsMode[text];
-            arcMap.Editor.CurrentDrawMode = mode;
             await arcMap.Editor.DrawAsync(mode);
         }
 
@@ -649,8 +612,8 @@ namespace MapBoard.UI
 
         private void layersPanel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            JudgeControlsEnable();
-            layerSettings.ResetLayerSettingUI();
+            //ResetDrawAndSelectButton();
+            //layerSettings.ResetLayerSettingUI();
         }
     }
 }

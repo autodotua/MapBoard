@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using FzLib;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using MapBoard.UI;
@@ -75,7 +76,7 @@ namespace MapBoard.Mapping
         public MapLayerCollection Layers { get; private set; }
     }
 
-    public class MainMapView : MapView, INotifyPropertyChanged, IMapBoardGeoView
+    public class MainMapView : MapView, IMapBoardGeoView
     {
         private static List<MainMapView> instances = new List<MainMapView>();
         public static IReadOnlyList<MainMapView> Instances => instances.AsReadOnly();
@@ -83,6 +84,7 @@ namespace MapBoard.Mapping
         public MainMapView()
         {
             instances.Add(this);
+            Layers = new MapLayerCollection();
             AllowDrop = true;
             IsAttributionTextVisible = false;
             SketchEditor = new SketchEditor();
@@ -145,7 +147,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 画板当前任务
         /// </summary>
-        private static BoardTask currentTask = BoardTask.Ready;
+        private static BoardTask currentTask = BoardTask.NotReady;
 
         /// <summary>
         /// 画板当前任务
@@ -225,18 +227,19 @@ namespace MapBoard.Mapping
         public SelectionHelper Selection { get; private set; }
         public EditorHelper Editor { get; private set; }
         public OverlayHelper Overlay { get; private set; }
-        public MapLayerCollection Layers { get; private set; }
+        public MapLayerCollection Layers { get; }
 
         public async Task LoadAsync()
         {
             BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this);
             Map.MaxScale = Config.Instance.MaxScale;
-            Layers = await MapLayerCollection.GetInstanceAsync(Map.OperationalLayers);
+            await Layers.LoadAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);
             Selection = new SelectionHelper(this);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
             Selection.CollectionChanged += Selection_CollectionChanged;
+            CurrentTask = BoardTask.Ready;
         }
 
         public ItemsOperationErrorCollection BaseMapLoadErrors { get; private set; }
@@ -296,19 +299,31 @@ namespace MapBoard.Mapping
                             break;
 
                         case BoardTask.Ready
-                        when Editor.CurrentDrawMode.HasValue
-                        && Layers.Selected != null
-                        && Layers.Selected.LayerVisible:
-                            await Editor.DrawAsync(Editor.CurrentDrawMode.Value);
+                        when Layers.Selected?.LayerVisible == true:
+                            SketchCreationMode? type = Layers.Selected.GeometryType switch
+                            {
+                                GeometryType.Point => SketchCreationMode.Point,
+                                GeometryType.Multipoint => SketchCreationMode.Multipoint,
+                                GeometryType.Polyline => SketchCreationMode.Polyline,
+                                GeometryType.Polygon => SketchCreationMode.Polygon,
+
+                                _ => null
+                            };
+                            if (type.HasValue)
+                            {
+                                await Editor.DrawAsync(type.Value);
+                            }
                             break;
                     }
                     break;
 
-                case Key.Escape when CurrentTask == BoardTask.Draw:
+                case Key.Escape
+                when CurrentTask == BoardTask.Draw:
                     Editor.Cancel();
                     break;
 
-                case Key.Escape when Selection.SelectedFeatures.Count > 0:
+                case Key.Escape
+                when Selection.SelectedFeatures.Count > 0:
                     Selection.ClearSelection();
                     break;
 
@@ -345,6 +360,7 @@ namespace MapBoard.Mapping
     /// </summary>
     public enum BoardTask
     {
+        NotReady,
         Ready,
         Draw,
         Select,

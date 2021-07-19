@@ -146,20 +146,6 @@ namespace MapBoard.UI
             }
         }
 
-        /// <summary>
-        /// 判断本区域内的控件可用性
-        /// </summary>
-        public void JudgeControlsEnable()
-        {
-            if (MapView.Selection.SelectedFeatures.Count > 0)
-            {
-                dataGrid.IsEnabled = false;
-            }
-            else
-            {
-                dataGrid.IsEnabled = true;
-            }
-        }
 
         /// <summary>
         /// 图层项右键，用于显示菜单
@@ -168,6 +154,10 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void ListItemPreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (MapView.CurrentTask != BoardTask.Ready)
+            {
+                return;
+            }
             layerListHelper.ShowContextMenu();
         }
 
@@ -188,6 +178,15 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (MapView.CurrentTask != BoardTask.Ready)
+            {
+                dataGrid.SelectionChanged -= SelectedLayerChanged;
+
+                dataGrid.SelectedItem = e.RemovedItems[0];
+
+                dataGrid.SelectionChanged += SelectedLayerChanged;
+            }
+
             changingSelection = true;
             if (dataGrid.SelectedItems.Count == 1)
             {
@@ -335,6 +334,10 @@ namespace MapBoard.UI
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
+            if (MapView.CurrentTask != BoardTask.Ready)
+            {
+                return;
+            }
             if (dropInfo.TargetItem == dropInfo.Data
                 || dropInfo.Data is IList)
             {
@@ -351,6 +354,10 @@ namespace MapBoard.UI
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
+            if (MapView.CurrentTask != BoardTask.Ready)
+            {
+                return;
+            }
             int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
             if (oldIndex < 0 || oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
             {

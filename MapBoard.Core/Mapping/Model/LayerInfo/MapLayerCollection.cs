@@ -24,6 +24,10 @@ namespace MapBoard.Mapping.Model
 
         private IMapLayerInfo selected;
 
+        public MapLayerCollection()
+        {
+        }
+
         private MapLayerCollection(ELayerCollection esriLayers)
         {
             EsriLayers = esriLayers;
@@ -79,6 +83,33 @@ namespace MapBoard.Mapping.Model
                 instance.Selected = instance[instance.SelectedIndex] as MapLayerInfo;
             }
             return instance;
+        }
+
+        public async Task LoadAsync(ELayerCollection esriLayers)
+        {
+            EsriLayers = esriLayers;
+            SetLayers(new ObservableCollection<ILayerInfo>());
+            string path = Path.Combine(Parameters.DataPath, LayersFileName);
+            if (!File.Exists(path))
+            {
+                return;
+            }
+            var tempLayers = FromFile(path);
+            new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
+            }).CreateMapper().Map(tempLayers, this);
+            foreach (var layer in tempLayers)
+            {
+                await AddAsync(layer);
+            }
+            List<string> errorMsgs = new List<string>();
+
+            if (SelectedIndex >= 0
+                && SelectedIndex < Count)
+            {
+                Selected = this[SelectedIndex] as MapLayerInfo;
+            }
         }
 
         public async Task<ILayerInfo> AddAsync(ILayerInfo layer)
@@ -179,7 +210,7 @@ namespace MapBoard.Mapping.Model
             Save(Path.Combine(Parameters.DataPath, LayersFileName));
         }
 
-        public ELayerCollection EsriLayers { get; }
+        public ELayerCollection EsriLayers { get; private set; }
 
         private async Task AddLayerAsync(MapLayerInfo layer, int index)
         {

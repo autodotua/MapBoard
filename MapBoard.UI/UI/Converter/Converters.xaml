@@ -11,4 +11,5 @@
     <converters:NotNull2VisiableConverter x:Key="n2ic" />
     <converters:Bool2VisibilityConverter x:Key="b2vc" />
     <converters:Color2SolidColorBrushConverter x:Key="c2bc" />
+    <converter:DrawAndSelectButtonVisiableConverter x:Key="DrawAndSelectButtonVisiableConverter" />
 </ResourceDictionary>

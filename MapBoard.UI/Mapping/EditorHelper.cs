@@ -50,11 +50,6 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 当前草图编辑器的模式
-        /// </summary>
-        public SketchCreationMode? CurrentDrawMode { get; set; }
-
-        /// <summary>
         /// 当前正在进行的绘制操作的类型
         /// </summary>
         public EditMode Mode { get; private set; }

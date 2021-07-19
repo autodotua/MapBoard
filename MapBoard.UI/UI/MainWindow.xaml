@@ -8,6 +8,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板" Width="1000"
     Height="700" MinWidth="500"
@@ -43,7 +44,8 @@
                     x:Name="btnTitleBarMore" Grid.Column="2"
                     Width="NaN" Padding="16,0"
                     FontSize="13"
-                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
+                    Foreground="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}"
+                    IsEnabled="{Binding IsReady}">
                     <ui:TitleBarButton.Content>
                         <ui:SymbolIcon Symbol="More" />
                     </ui:TitleBarButton.Content>
@@ -114,10 +116,13 @@
                         PreviewDrop="ArcMap_PreviewDrop"
                         ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
-                <local:MapViewSidePanel
-                    x:Name="mapInfo" Margin="0,36,8,12"
+                <Border
+                    Margin="0,36,8,12"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Stretch" />
+                    VerticalAlignment="Stretch"
+                    IsEnabled="{Binding IsReady}">
+                    <local:MapViewSidePanel x:Name="mapInfo" />
+                </Border>
                 <bar:EditionBar
                     x:Name="editBar"
                     HorizontalAlignment="Stretch"
@@ -194,9 +199,10 @@
                         <RowDefinition Height="16" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ui:SimpleStackPanel Spacing="12">
-
-                        <local:LayerSettingPanel x:Name="layerSettings" Height="480" />
+                    <ui:SimpleStackPanel IsEnabled="{Binding IsReady}" Spacing="12">
+                        <local:LayerSettingPanel
+                            x:Name="layerSettings" Height="480"
+                            IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
                         <StackPanel
                             Grid.Row="100" Grid.ColumnSpan="100"
                             Margin="0,0,12,0"
@@ -205,12 +211,14 @@
                             <Button
                                 x:Name="btnBrowseMode"
                                 Click="BrowseModeButtonClick"
-                                Content="浏览模式" />
+                                Content="浏览模式"
+                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
                             <TextBlock Text="  " />
                             <Button
                                 x:Name="btnApplyStyle"
                                 Click="ApplyStyleButtonClick"
-                                Content="应用样式" />
+                                Content="应用样式"
+                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
                             <TextBlock Text="  " />
                             <ui:SplitButton
                                 x:Name="btnCreateStyle"
@@ -232,7 +240,9 @@
                         </Grid.RowDefinitions>
                         <local:LayerListPanel x:Name="layersPanel" SelectionChanged="layersPanel_SelectionChanged" />
                     </Grid>
-                    <Grid Grid.Row="4" Margin="8,0,12,0">
+                    <Grid
+                        Grid.Row="4" Margin="8,0,12,0"
+                        IsEnabled="{Binding IsReady}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
@@ -315,6 +325,12 @@
                     <Grid
                         x:Name="grdButtons" Grid.Row="100"
                         Margin="8,0,12,0">
+                        <Grid.IsEnabled>
+                            <MultiBinding Converter="{StaticResource DrawAndSelectButtonVisiableConverter}">
+                                <Binding Path="IsReady" />
+                                <Binding ElementName="arcMap" Path="Layers.Selected" />
+                            </MultiBinding>
+                        </Grid.IsEnabled>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
@@ -322,6 +338,7 @@
                         </Grid.ColumnDefinitions>
 
                         <ui:SplitButton
+                            x:Name="btnDraw"
                             HorizontalAlignment="Stretch"
                             Content="绘制" IsEnabled="False"
                             Tag="always" />
