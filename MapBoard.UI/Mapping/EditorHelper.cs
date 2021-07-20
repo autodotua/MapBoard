@@ -126,7 +126,8 @@ namespace MapBoard.Mapping
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);
-            await SketchEditor.StartAsync(GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator));
+            await SketchEditor.StartAsync(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
+                GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
             if (geometry != null)
             {
                 UpdatedFeature newFeature = new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes));
