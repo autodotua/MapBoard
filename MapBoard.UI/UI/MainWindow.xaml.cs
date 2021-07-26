@@ -30,6 +30,7 @@ using System.Windows.Media;
 using Esri.ArcGISRuntime.Ogc;
 using FzLib.Collection;
 using FzLib;
+using FzLib.WPF;
 
 namespace MapBoard.UI
 {

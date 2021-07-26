@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using FzLib;
 using MapBoard.Model;
 using System;
 using System.Drawing;
@@ -36,16 +37,20 @@ namespace MapBoard.Mapping
                     try
                     {
                         var layer = GetLayer(item);
-                        await layer.LoadAsync();
+                        await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                         basemap.BaseLayers.Add(layer);
 
                         layer.Opacity = item.Opacity;
                         layer.Id = item.TempID.ToString();
                         layer.IsVisible = item.Enable;
                     }
+                    catch (TimeoutException ex)
+                    {
+                        errors.Add($"加载底图{item.Name}({item.Path})超时", ex);
+                    }
                     catch (Exception ex)
                     {
-                        errors.Add($"加载底图{item.Name}失败", ex);
+                        errors.Add($"加载底图{item.Name}({item.Path})失败", ex);
                     }
                 }
 
@@ -144,10 +149,6 @@ namespace MapBoard.Mapping
             }
             WmsLayer layer = new WmsLayer(new Uri(items[0]), items.Skip(1));
             return layer;
-            //WmsLayer layer=new WmsLayer()
-            //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-            //map.BaseLayers.Add(layer);
-            //return layer;
         }
 
         private static RasterLayer AddRasterLayer(string path)

@@ -103,7 +103,8 @@ namespace MapBoard.UI.Bar
                 Title = MapView.Editor.Mode switch
                 {
                     EditMode.Creat => "正在绘制",
-                    EditMode.Edit => "正在编辑"
+                    EditMode.Edit => "正在编辑",
+                    _ => ""
                 };
                 Message = "";
                 this.Notify(nameof(MapView));
@@ -161,7 +162,7 @@ namespace MapBoard.UI.Bar
             var geometry = MapView.SketchEditor.Geometry;
             if (geometry is Multipart m)
             {
-                if(m.Parts[^1].PointCount == 0)
+                if (m.Parts[^1].PointCount == 0)
                 {
                     //如果最后一个部分已经建立但没有图形，那么就取消选中就可以了
                     MapView.SketchEditor.ClearVertexSelection();

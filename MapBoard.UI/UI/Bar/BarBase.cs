@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using MapBoard.Mapping.Model;
+using FzLib.WPF;
 
 namespace MapBoard.UI.Bar
 {
@@ -54,7 +55,7 @@ namespace MapBoard.UI.Bar
             animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5))
                 .SetInOutCubicEase()
                 .SetStoryboard(path, this)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
         }
 
         public virtual void Initialize()

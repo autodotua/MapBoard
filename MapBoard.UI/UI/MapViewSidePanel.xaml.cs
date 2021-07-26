@@ -21,6 +21,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using FzLib.WPF;
 
 namespace MapBoard.UI
 {
@@ -225,15 +226,15 @@ namespace MapBoard.UI
             new DoubleAnimation(open ? 240 : 36, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(HeightProperty, bdScale)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(OpacityProperty, tbkScale)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(OpacityProperty, grdScale)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             await storyboard.BeginAsync();
         }
 
@@ -309,19 +310,19 @@ namespace MapBoard.UI
             new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
                    .SetInOutCubicEase()
                    .SetStoryboard(WidthProperty, bdLayers)
-                   .AddToStoryboard(storyboard);
+                   .AddTo(storyboard);
             new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
                  .SetInOutCubicEase()
                  .SetStoryboard(HeightProperty, bdLayers)
-                 .AddToStoryboard(storyboard);
+                 .AddTo(storyboard);
             new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(OpacityProperty, iconLayers)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
                     .SetInOutCubicEase()
                     .SetStoryboard(OpacityProperty, grdLayers)
-                    .AddToStoryboard(storyboard);
+                    .AddTo(storyboard);
 
             bdLayers.IsHitTestVisible = false;
             if (open)
@@ -413,119 +414,26 @@ namespace MapBoard.UI
             new DoubleAnimation(open ? 400 : 36, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(HeightProperty, bdSearch)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
 
             new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
                            .SetInOutCubicEase()
                             .SetStoryboard(WidthProperty, bdSearch)
-                            .AddToStoryboard(storyboard);
+                            .AddTo(storyboard);
 
             new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
                .SetInOutCubicEase()
                 .SetStoryboard(OpacityProperty, grdSearchPanel)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
                 .SetInOutCubicEase()
                 .SetStoryboard(OpacityProperty, vwSearchIcon)
-                .AddToStoryboard(storyboard);
+                .AddTo(storyboard);
             await storyboard.BeginAsync();
             bdSearch.IsHitTestVisible = true;
             bdSearch.Cursor = open ? Cursors.Arrow : Cursors.Hand;
         }
 
         #endregion 搜索
-    }
-
-    public static class Temp
-    {
-        public static DependencyProperty EasyRotateProperty = DependencyProperty.RegisterAttached(
-            "EasyRotate", typeof(double), typeof(Temp),
-            new PropertyMetadata(new PropertyChangedCallback((s, e) =>
-           {
-               UIElement element = s as UIElement;
-               if (element == null)
-               {
-                   return;
-               }
-               if (e.NewValue is double d)
-               {
-                   element.RenderTransformOrigin = new Point(0.5, 0.5);
-                   element.RenderTransform = new RotateTransform(d);
-               }
-           }))
-            );
-
-        public static void SetEasyRotate(UIElement element, double value)
-        {
-            element.SetValue(EasyRotateProperty, value);
-        }
-
-        public static double GetEasyRotate(UIElement element)
-        {
-            return (double)element.GetValue(EasyRotateProperty);
-        }
-
-        public static T SetInOutCubicEase<T>(this T animation) where T : DoubleAnimation
-        {
-            return animation.SetEasing<T, CubicEase>(EasingMode.EaseInOut);
-        }
-
-        public static T SetEasing<T, TE>(this T animation, EasingMode mode)
-            where T : DoubleAnimation
-            where TE : EasingFunctionBase, new()
-        {
-            animation.EasingFunction = new TE() { EasingMode = mode };
-            return animation;
-        }
-
-        public static T SetStoryboard<T>(this T animation, DependencyProperty property, DependencyObject control) where T : AnimationTimeline
-        {
-            return animation.SetStoryboard(property == null ? (PropertyPath)null : new PropertyPath(property.Name), control);
-        }
-
-        public static T SetStoryboard<T>(this T animation, string propertyPath, DependencyObject control) where T : AnimationTimeline
-        {
-            return animation.SetStoryboard(propertyPath == null ? (PropertyPath)null : new PropertyPath(propertyPath), control);
-        }
-
-        public static T SetStoryboard<T>(this T animation, PropertyPath propertyPath, DependencyObject control) where T : AnimationTimeline
-        {
-            if (propertyPath != null)
-            {
-                Storyboard.SetTargetProperty(animation, propertyPath);
-            }
-            if (control != null)
-            {
-                Storyboard.SetTarget(animation, control);
-            }
-            return animation;
-        }
-
-        public static T AddToStoryboard<T>(this T animation, Storyboard storyboard) where T : Timeline
-        {
-            storyboard.Children.Add(animation);
-            return animation;
-        }
-
-        public static Task BeginAsync(this Storyboard storyboard)
-        {
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            if (storyboard == null)
-            {
-                tcs.SetException(new ArgumentNullException());
-            }
-            else
-            {
-                EventHandler onComplete = null;
-                onComplete = (s, e) =>
-                {
-                    storyboard.Completed -= onComplete;
-                    tcs.SetResult(true);
-                };
-                storyboard.Completed += onComplete;
-                storyboard.Begin();
-            }
-            return tcs.Task;
-        }
     }
 }

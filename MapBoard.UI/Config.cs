@@ -1,15 +1,18 @@
 ﻿using FzLib;
+using FzLib.DataStorage.Serialization;
 using MapBoard.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 
 namespace MapBoard
 {
-    public class Config : FzLib.DataStorage.Serialization.JsonSerializationBase, INotifyPropertyChanged
+    public class Config : IJsonSerializable, INotifyPropertyChanged
     {
+        private static string path = System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.ConfigPath);
         public static int WatermarkHeight = 72;
         private static Config instance;
 
@@ -51,6 +54,7 @@ namespace MapBoard
 
         private int requestTimeOut = 1000;
 
+        private int serverLayerLoadTimeout = 5000;
         private int theme = 0;
 
         private BrowseInfo tile_BrowseInfo = new BrowseInfo();
@@ -87,8 +91,9 @@ namespace MapBoard
             {
                 if (instance == null)
                 {
-                    instance = TryOpenOrCreate<Config>(System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.ConfigPath));
-                    instance.Settings = new JsonSerializerSettings() { Formatting = Formatting.Indented };
+                    instance = new Config();
+
+                    instance.TryLoadFromJsonFile(path);
                 }
                 return instance;
             }
@@ -194,6 +199,17 @@ namespace MapBoard
         {
             get => remainLabel;
             set => this.SetValueAndNotify(ref remainLabel, value, nameof(RemainLabel));
+        }
+
+        public int ServerLayerLoadTimeout
+        {
+            get => serverLayerLoadTimeout;
+            set
+            {
+                Debug.Assert(value >= 100);
+                this.SetValueAndNotify(ref serverLayerLoadTimeout, value, nameof(ServerLayerLoadTimeout));
+                Parameters.LoadTimeout = TimeSpan.FromMilliseconds(value);
+            }
         }
 
         public int Theme
@@ -330,11 +346,9 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref useCompactLayerList, value, nameof(UseCompactLayerList));
         }
 
-        public double ServerLayerLoadTimeout { get; set; } = 5;
-
-        public override void Save()
+        public void Save()
         {
-            base.Save();
+            this.Save(path, new JsonSerializerSettings().SetIndented());
         }
     }
 }
