@@ -1,4 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Mapping;
 using FzLib;
 using FzLib.Collection;
 using MapBoard.Model;
@@ -93,9 +94,6 @@ namespace MapBoard.Mapping.Model
         }
 
         public override string Type => Types.WFS;
-
-        [JsonIgnore]
-        public override bool IsEditable => false;
 
         [JsonIgnore]
         public string Url { get; private set; }

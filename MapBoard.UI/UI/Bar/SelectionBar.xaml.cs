@@ -58,7 +58,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        public bool IsLayerEditable => Layers?.Selected?.IsEditable ?? false;
+        public bool IsLayerEditable => (Layers?.Selected) != null && Layers?.Selected is IEditableLayerInfo;
 
         private SelectFeatureDialog selectFeatureDialog;
 
@@ -182,11 +182,12 @@ namespace MapBoard.UI.Bar
         {
             await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
             {
-                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { MapView.Layers.Selected.GeometryType },
-                    new string[] { MapLayerInfo.Types.Shapefile }, true);
+                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
+                    p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType,
+                    true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    bool copy = Layers.Selected.IsEditable ?
+                    bool copy = Layers.Selected is IEditableLayerInfo ?
                     await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") : true;
 
                     await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);

@@ -75,8 +75,6 @@ namespace MapBoard.Mapping.Model
             {
                 await instance.AddAsync(layer);
             }
-            List<string> errorMsgs = new List<string>();
-
             if (instance.SelectedIndex >= 0
                 && instance.SelectedIndex < instance.Count)
             {
@@ -103,8 +101,6 @@ namespace MapBoard.Mapping.Model
             {
                 await AddAsync(layer);
             }
-            List<string> errorMsgs = new List<string>();
-
             if (SelectedIndex >= 0
                 && SelectedIndex < Count)
             {
@@ -116,18 +112,14 @@ namespace MapBoard.Mapping.Model
         {
             if (!(layer is MapLayerInfo))
             {
-                switch (layer.Type)
+                layer = layer.Type switch
                 {
-                    case null:
-                    case "":
-                    case MapLayerInfo.Types.Shapefile:
-                        layer = new ShapefileMapLayerInfo(layer);
-                        break;
-
-                    case MapLayerInfo.Types.WFS:
-                        layer = new WfsMapLayerInfo(layer);
-                        break;
-                }
+                    MapLayerInfo.Types.Shapefile => new ShapefileMapLayerInfo(layer),
+                    MapLayerInfo.Types.WFS => new WfsMapLayerInfo(layer),
+                    MapLayerInfo.Types.Temp => new TempMapLayerInfo(layer),
+                    null => new ShapefileMapLayerInfo(layer),
+                    _ => throw new NotSupportedException("不支持的图层格式：" + layer.Type)
+                };
             }
             await AddLayerAsync(layer as MapLayerInfo, 0);
             (layer as MapLayerInfo).PropertyChanged += OnLayerPropertyChanged;
@@ -227,7 +219,7 @@ namespace MapBoard.Mapping.Model
                         Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
                     }
                 }
-                FeatureLayer fl = layer.Layer;
+                Layer fl = layer.GetAddedLayer();
                 Debug.Assert(fl != null);
                 if (index == -1)
                 {

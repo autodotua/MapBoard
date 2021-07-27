@@ -21,22 +21,55 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
+using Microsoft.WindowsAPICodePack.Dialogs.Controls;
 
 namespace MapBoard.UI.Dialog
 {
     public partial class CreateLayerDialog : CommonDialog
     {
-        public bool editMode = false;
-        public ShapefileMapLayerInfo editLayer = null;
+        public MapLayerInfo editLayer = null;
+        private string layerType;
 
-        public CreateLayerDialog(MapLayerCollection layers, ShapefileMapLayerInfo layer = null)
+        public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {
+            _ = layers ?? throw new ArgumentNullException(nameof(layers));
+            return new CreateLayerDialog(layers, null, GetLayerType<T>()).ShowAsync();
+        }
+
+        public static Task OpenEditDialog<T>(MapLayerCollection layers, T layer) where T : MapLayerInfo
+        {
+            _ = layers ?? throw new ArgumentNullException(nameof(layers));
+            _ = layer ?? throw new ArgumentNullException(nameof(layer));
+            return new CreateLayerDialog(layers, layer, GetLayerType<T>()).ShowAsync();
+        }
+
+        private static string GetLayerType<T>() where T : MapLayerInfo
+        {
+            if (typeof(T) == typeof(ShapefileMapLayerInfo))
+            {
+                return MapLayerInfo.Types.Shapefile;
+            }
+            else if (typeof(T) == typeof(TempMapLayerInfo))
+            {
+                return MapLayerInfo.Types.Temp;
+            }
+            throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
+        }
+
+        private CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer, string layerType)
+        {
+            this.layerType = layerType;
             StaticFields = FieldExtension.DefaultFields;
             InitializeComponent();
             if (layer != null)
             {
-                Title = "编辑字段别名";
-                editMode = true;
+                Title = layer switch
+                {
+                    ShapefileMapLayerInfo => "编辑字段别名",
+                    TempMapLayerInfo => "编辑图层属性",
+                    _ => throw new ArgumentException()
+                };
+
                 editLayer = layer;
                 LayerName = layer.Name;
                 grdType.Children.Cast<RadioButton>().ForEach(p => p.IsChecked = false);
@@ -61,12 +94,17 @@ namespace MapBoard.UI.Dialog
                     default:
                         throw new NotSupportedException();
                 }
-                grdType.IsEnabled = false;
-
-                dg.Columns[0].IsReadOnly = true;
-                dg.Columns[2].IsReadOnly = true;
-                dg.CanUserAddRows = false;
-                dg.CanUserDeleteRows = false;
+                if (layer is not ICanChangeGeometryType)
+                {
+                    grdType.IsEnabled = false;
+                }
+                if (layer is not ICanChangeField)
+                {
+                    dg.Columns[0].IsReadOnly = true;
+                    dg.Columns[2].IsReadOnly = true;
+                    dg.CanUserAddRows = false;
+                    dg.CanUserDeleteRows = false;
+                }
 
                 foreach (var field in layer.Fields)
                 {
@@ -91,6 +129,13 @@ namespace MapBoard.UI.Dialog
         }
 
         public MapLayerCollection Layers { get; }
+        private string message;
+
+        public string Message
+        {
+            get => message;
+            set => this.SetValueAndNotify(ref message, value, nameof(Message));
+        }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
@@ -131,47 +176,57 @@ namespace MapBoard.UI.Dialog
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
-            IsPrimaryButtonEnabled = false;
             IsEnabled = false;
-            CloseButtonText = null;
-
-            if (editMode)
+            GeometryType type = 0 switch
             {
+                0 when rbtnPoint.IsChecked == true => GeometryType.Point,
+                0 when rbtnMultiPoint.IsChecked == true => GeometryType.Multipoint,
+                0 when rbtnPolygon.IsChecked == true => GeometryType.Polygon,
+                _ => GeometryType.Polyline,
+            };
+            if (editLayer != null)
+            {
+                if (editLayer is ICanChangeGeometryType)
+                {
+                    (editLayer as ICanChangeGeometryType).SetGeometryType(type);
+                }
                 editLayer.Fields = Fields.ToArray();
+                if (editLayer is TempMapLayerInfo)
+                {
+                    throw new NotImplementedException("临时图层编辑未实现");
+                }
             }
             else
             {
                 var fields = Fields.Where(p => p.Name.Length > 0 && p.DisplayName.Length > 0)
                   .ToList();
-                GeometryType type;
-                if (rbtnPoint.IsChecked == true)
-                {
-                    type = GeometryType.Point;
-                }
-                else if (rbtnMultiPoint.IsChecked == true)
-                {
-                    type = GeometryType.Multipoint;
-                }
-                else if (rbtnPolygon.IsChecked == true)
-                {
-                    type = GeometryType.Polygon;
-                }
-                else
-                {
-                    type = GeometryType.Polyline;
-                }
+
                 try
                 {
-                    await LayerUtility.CreateShapefileLayerAsync(type, Layers, name: LayerName, fields: fields);
+                    switch (layerType)
+                    {
+                        case MapLayerInfo.Types.Shapefile:
+                            await LayerUtility.CreateShapefileLayerAsync(type, Layers, name: LayerName, fields: fields);
+                            break;
+
+                        case MapLayerInfo.Types.Temp:
+                            await LayerUtility.CreateTempLayerAsync(Layers, LayerName, type, fields);
+                            break;
+
+                        default:
+                            throw new NotSupportedException("不支持的图层类型：" + layerType);
+                    }
+
+                    Hide();
                 }
                 catch (Exception ex)
                 {
-                    Hide();
-                    await ShowErrorDialogAsync(ex, "创建图层失败");
-                    return;
+                    Message = "创建图层失败：" + ex.Message;
+
                 }
             }
-            Hide();
+
+            IsEnabled = true;
         }
     }
 }

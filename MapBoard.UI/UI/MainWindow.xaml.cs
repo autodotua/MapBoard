@@ -146,7 +146,7 @@ namespace MapBoard.UI
             this.Notify(nameof(IsReady));
             grdButtons.Children.OfType<SplitButton>()
                    .ForEach(p => p.Visibility = Visibility.Collapsed);
-            if (arcMap.Layers.Selected != null)
+            if (arcMap.Layers.Selected != null && arcMap.Layers.Selected is IEditableLayerInfo)
             {
                 UIElement btn = arcMap.Layers.Selected.GeometryType switch
                 {
@@ -374,9 +374,15 @@ namespace MapBoard.UI
             arcMap.Layers.Save();
         }
 
+        private async void CreateTempLayerButtonClick(object sender, RoutedEventArgs e)
+        {
+            await CreateLayerDialog.OpenCreateDialog<TempMapLayerInfo>(arcMap.Layers);
+            arcMap.Layers.Save();
+        }
+
         private async void CreateLayerButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
-            await new CreateLayerDialog(arcMap.Layers).ShowAsync();
+            await CreateLayerDialog.OpenCreateDialog<ShapefileMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
         }
 

@@ -34,9 +34,9 @@ namespace MapBoard.Mapping
 
                 foreach (var item in Config.Instance.BaseLayers.Reverse<BaseLayerInfo>())
                 {
+                    var layer = GetLayer(item);
                     try
                     {
-                        var layer = GetLayer(item);
                         await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                         basemap.BaseLayers.Add(layer);
 
@@ -46,6 +46,7 @@ namespace MapBoard.Mapping
                     }
                     catch (TimeoutException ex)
                     {
+                        layer.CancelLoad();
                         errors.Add($"加载底图{item.Name}({item.Path})超时", ex);
                     }
                     catch (Exception ex)

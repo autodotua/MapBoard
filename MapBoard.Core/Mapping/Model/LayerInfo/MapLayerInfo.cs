@@ -19,13 +19,14 @@ namespace MapBoard.Mapping.Model
     {
         public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
         {
-           Types.Shapefile,null,Types.WFS
+           Types.Shapefile,null,Types.WFS,Types.Temp
         };
 
         public class Types
         {
             public const string Shapefile = "Shapefile";
             public const string WFS = "WFS";
+            public const string Temp = "Temp";
         }
 
         [JsonIgnore]
@@ -89,7 +90,30 @@ namespace MapBoard.Mapping.Model
 
         protected FeatureTable table;
 
+        /// <summary>
+        /// 获取要素类
+        /// </summary>
+        /// <returns></returns>
         protected abstract FeatureTable GetTable();
+
+        /// <summary>
+        /// 获取用于进行操作的图层
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        protected virtual FeatureLayer GetLayer(FeatureTable table)
+        {
+            return new FeatureLayer(table);
+        }
+
+        /// <summary>
+        /// 获取添加到MapView的图层集合中的图层
+        /// </summary>
+        /// <returns></returns>
+        public virtual Layer GetAddedLayer()
+        {
+            return layer;
+        }
 
         private bool isLoaded;
 
@@ -104,6 +128,11 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        /// <summary>
+        /// 重新加载
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns></returns>
         public async Task ReloadAsync(MapLayerCollection layers)
         {
             FeatureTable newTable = GetTable();
@@ -130,6 +159,10 @@ namespace MapBoard.Mapping.Model
             LoadCompleted();
         }
 
+        /// <summary>
+        /// 加载图层
+        /// </summary>
+        /// <returns></returns>
         public async Task LoadAsync()
         {
             try
@@ -147,8 +180,7 @@ namespace MapBoard.Mapping.Model
                 }
                 finally
                 {
-                    Debug.Assert(layer == null);
-                    layer = new FeatureLayer(table);
+                    layer = GetLayer(table);
                 }
                 try
                 {
@@ -157,7 +189,7 @@ namespace MapBoard.Mapping.Model
                 catch (TimeoutException)
                 {
                     table.CancelLoad();
-                    throw new TimeoutException("加载超时，通常是无法连接WFS服务所致");
+                    throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
                 }
                 await Task.Run(this.ApplyStyle);
                 await this.LayerCompleteAsync();

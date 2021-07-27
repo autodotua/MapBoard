@@ -28,6 +28,7 @@ namespace MapBoard.Util
             switch (layer.Type)
             {
                 case MapLayerInfo.Types.Shapefile:
+                case MapLayerInfo.Types.Temp:
                 case null:
                     {
                         UniqueValueRenderer renderer = new UniqueValueRenderer();

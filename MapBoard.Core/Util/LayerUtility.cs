@@ -27,7 +27,7 @@ namespace MapBoard.Util
                 layers.Remove(layer);
             }
 
-            if (deleteFiles )
+            if (deleteFiles)
             {
                 if (layer is ShapefileMapLayerInfo)
                 {
@@ -48,6 +48,13 @@ namespace MapBoard.Util
         public async static Task<WfsMapLayerInfo> AddWfsLayerAsync(MapLayerCollection layers, string name, string url, string layerName, bool autoPopulateAll)
         {
             WfsMapLayerInfo layer = new WfsMapLayerInfo(name, url, layerName, autoPopulateAll);
+            await layers.AddAsync(layer);
+            return layer;
+        }
+
+        public async static Task<TempMapLayerInfo> CreateTempLayerAsync(MapLayerCollection layers, string name, GeometryType type, IList<FieldInfo> fields = null)
+        {
+            TempMapLayerInfo layer = new TempMapLayerInfo(name, type, fields);
             await layers.AddAsync(layer);
             return layer;
         }

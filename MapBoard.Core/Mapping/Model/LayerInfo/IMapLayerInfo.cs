@@ -27,6 +27,8 @@ namespace MapBoard.Mapping.Model
 
         Task ReloadAsync(MapLayerCollection layers);
 
+        Layer GetAddedLayer();
+
         bool IsLoaded { get; }
         Exception LoadError { get; }
     }

@@ -78,7 +78,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task DrawAsync(SketchCreationMode mode)
         {
-            if (!Layers.Selected.IsEditable)
+            if (Layers.Selected is not IEditableLayerInfo)
             {
                 throw new NotSupportedException("选中的图层不支持编辑");
             }

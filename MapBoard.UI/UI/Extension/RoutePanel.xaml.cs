@@ -213,7 +213,8 @@ namespace MapBoard.UI.Extension
         private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new SelectLayerDialog((MapView as IMapBoardGeoView).Layers,
-                new[] { GeometryType.Point, GeometryType.Multipoint, GeometryType.Polyline }, new[] { MapLayerInfo.Types.Shapefile }, false);
+                    p => p is IEditableLayerInfo && p.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline,
+                    false);
             if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary && dialog.SelectedLayer != null)
             {
                 Debug.Assert(dialog.SelectedLayer is IEditableLayerInfo);

@@ -1,5 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
+using MapBoard.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,10 +8,20 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    public interface ICanChangeGeometryType
+    {
+        void SetGeometryType(GeometryType type);
+    }
+
+    public interface ICanChangeField
+    {
+        void SetField(IEnumerable<FieldInfo> fields);
+    }
+
     public interface IHasDefaultFields
     {
-
     }
+
     public interface IEditableLayerInfo : IMapLayerInfo
     {
         ObservableCollection<FeaturesChangedEventArgs> Histories { get; }

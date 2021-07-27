@@ -72,9 +72,6 @@ namespace MapBoard.Model
         [JsonProperty]
         public virtual string Type { get; protected set; }
 
-        [JsonIgnore]
-        public virtual bool IsEditable { get; }
-
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
 
         public virtual object Clone()

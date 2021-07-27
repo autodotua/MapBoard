@@ -6,7 +6,6 @@ namespace MapBoard.Mapping.Model
     public class EmptyMapLayerInfo : MapLayerInfo
     {
         public override string Type => "Empty";
-        public override bool IsEditable => false;
 
         protected override FeatureTable GetTable()
         {

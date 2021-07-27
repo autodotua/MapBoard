@@ -89,5 +89,6 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>

@@ -7,7 +7,6 @@ namespace MapBoard.Model
     {
         FieldInfo[] Fields { get; set; }
         string Group { get; set; }
-        bool IsEditable { get; }
         LabelInfo[] Labels { get; set; }
         bool LayerVisible { get; set; }
         string Name { get; set; }

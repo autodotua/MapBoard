@@ -51,6 +51,7 @@ namespace MapBoard.UI.Bar
             {
                 ExpandDirection.Down or ExpandDirection.Up => "(Grid.RenderTransform).(TranslateTransform.Y)",
                 ExpandDirection.Left or ExpandDirection.Right => "(Grid.RenderTransform).(TranslateTransform.X)",
+                _ => throw new InvalidEnumArgumentException()
             };
             animation = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5))
                 .SetInOutCubicEase()
@@ -86,7 +87,8 @@ namespace MapBoard.UI.Bar
             animation.To = ExpandDirection switch
             {
                 ExpandDirection.Left or ExpandDirection.Up => ExpandDistance,
-                ExpandDirection.Right or ExpandDirection.Down => -ExpandDistance
+                ExpandDirection.Right or ExpandDirection.Down => -ExpandDistance,
+                _ => throw new InvalidEnumArgumentException()
             };
             storyboard.Begin();
         }

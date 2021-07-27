@@ -17,6 +17,7 @@ using ModernWpf.Controls;
 using ListView = System.Windows.Controls.ListView;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using System.Drawing;
 
 namespace MapBoard.UI
 {
@@ -47,8 +48,9 @@ namespace MapBoard.UI
                     Header = new TextBlock()
                     {
                         Text = layer.Type,
-                        Style = MainWindow.FindResource("BaseTextBlockStyle") as Style,
-                        Foreground = MainWindow.Foreground,
+                        FontSize = 14,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = App.Current.FindResource("SystemControlForegroundBaseHighBrush") as System.Windows.Media.Brush,
                         TextAlignment = TextAlignment.Center,
                         Margin = new Thickness(0, 0, 0, 24)
                     }
@@ -72,18 +74,25 @@ namespace MapBoard.UI
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
                     AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
-                    if (layer is ShapefileMapLayerInfo s1)
-                    {
-                        AddToMenu(menu, "编辑字段别名", () => EditFieldDisplayAsync(s1));
-                    }
+
                     if (layer is IServerMapLayerInfo s)
                     {
                         AddToMenu(menu, "下载全部图形", () => PopulateAllAsync(s));
                     }
+
+                    if (layer is ShapefileMapLayerInfo s1)
+                    {
+                        AddToMenu(menu, "设置图层", () => SetShapefileLayerAsync(s1));
+                    }
                     if (layer is WfsMapLayerInfo w)
                     {
-                        AddToMenu(menu, "设置属性", () => SetWfsLayerAsync(w));
+                        AddToMenu(menu, "设置图层", () => SetWfsLayerAsync(w));
                     }
+                    if (layer is TempMapLayerInfo t)
+                    {
+                        AddToMenu(menu, "设置图层", () => SetTempLayerAsync(t));
+                    }
+
                     menu.Items.Add(new Separator());
                     AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
@@ -243,14 +252,16 @@ namespace MapBoard.UI
 
         private async Task CopyFeaturesAsync(IMapLayerInfo layer)
         {
-            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, new[] { layer.GeometryType }, new string[] { MapLayerInfo.Types.Shapefile }, true);
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
+                p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType
+                , true);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as ShapefileMapLayerInfo);
             }
         }
 
-        private async Task EditFieldDisplayAsync(ShapefileMapLayerInfo layer)
+        private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
         {
             if (layer.Fields.Length == 0)
             {
@@ -258,8 +269,13 @@ namespace MapBoard.UI
                 return;
             }
             MapView.Selection.ClearSelection();
-            CreateLayerDialog dialog = new CreateLayerDialog(MapView.Layers, layer);
-            await dialog.ShowAsync();
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, layer);
+        }
+
+        private async Task SetTempLayerAsync(TempMapLayerInfo layer)
+        {
+            MapView.Selection.ClearSelection();
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, layer);
         }
 
         private async Task CreateCopyAsync(IMapLayerInfo layer)
