@@ -116,17 +116,17 @@ namespace MapBoard.IO
             {
                 await Task.Run(() =>
                  {
-                     foreach (var layer in layers.OfType<ShapefileMapLayerInfo>())
+                     foreach (var layer in layers.OfType<IFileBasedLayer>())
                      {
-                         Shapefile.CopyShpToNewPath(directory.FullName, layer);
+                         FileBasedLayerUtility.CopyLayerFiles(directory.FullName, layer);
                      }
                  });
             }
             else
             {
-                foreach (var layer in layers.OfType<ShapefileMapLayerInfo>())
+                foreach (var layer in layers.OfType<IFileBasedLayer>())
                 {
-                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, layer);
+                    await layer.SaveTo(directory.FullName);
                 }
             }
             layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
@@ -145,18 +145,18 @@ namespace MapBoard.IO
         public async static Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
         {
             DirectoryInfo directory = PathUtility.GetTempDir();
-            if (layer is ShapefileMapLayerInfo s)
+            if (layer is IFileBasedLayer f)
             {
                 if (copyOnly)
                 {
                     await Task.Run(() =>
                     {
-                        Shapefile.CopyShpToNewPath(directory.FullName, s);
+                        FileBasedLayerUtility.CopyLayerFiles(directory.FullName, f);
                     });
                 }
                 else
                 {
-                    await Shapefile.CloneFeatureToNewShpAsync(directory.FullName, s);
+                    await f.SaveTo(directory.FullName);
                 }
             }
 

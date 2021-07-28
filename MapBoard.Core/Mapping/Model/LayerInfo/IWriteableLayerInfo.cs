@@ -1,6 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using MapBoard.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,29 +7,6 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    /// <summary>
-    /// 表示能够改变几何类型的图层
-    /// </summary>
-    public interface ICanChangeGeometryType
-    {
-        void SetGeometryType(GeometryType type);
-    }
-
-    /// <summary>
-    /// 表示能够修改字段的图层
-    /// </summary>
-    public interface ICanChangeField
-    {
-        void SetField(IEnumerable<FieldInfo> fields);
-    }
-
-    /// <summary>
-    /// 表示包含默认字段的接口
-    /// </summary>
-    public interface IHasDefaultFields
-    {
-    }
-
     /// <summary>
     /// 表示可编辑的图层
     /// </summary>

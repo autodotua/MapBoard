@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public interface IServerMapLayerInfo : IMapLayerInfo
+    public interface IServerBasedLayer:IMapLayerInfo
     {
         bool AutoPopulateAll { get; }
         bool HasPopulateAll { get; }

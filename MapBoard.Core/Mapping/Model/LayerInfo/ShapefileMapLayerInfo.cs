@@ -6,11 +6,12 @@ using MapBoard.Model;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public class ShapefileMapLayerInfo : EditableLayerInfo, IHasDefaultFields
+    public class ShapefileMapLayerInfo : EditableLayerInfo, IHasDefaultFields, IFileBasedLayer
     {
         public ShapefileMapLayerInfo() : base()
         {
@@ -38,8 +39,6 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public string FilePath => Path.Combine(Parameters.DataPath, Name + ".shp");
-
         public override object Clone()
         {
             var layer = new MapperConfiguration(cfg =>
@@ -53,7 +52,7 @@ namespace MapBoard.Mapping.Model
 
         protected override FeatureTable GetTable()
         {
-            return new ShapefileFeatureTable(FilePath);
+            return new ShapefileFeatureTable(GetMainFilePath());
         }
 
         public override void Dispose()
@@ -99,6 +98,21 @@ namespace MapBoard.Mapping.Model
             Name = newName;
             await LoadAsync();
             layers[index] = Layer;
+        }
+
+        public string[] GetFilePaths()
+        {
+            return Shapefile.GetExistShapefiles(Parameters.DataPath, Name).ToArray();
+        }
+
+        public string GetMainFilePath()
+        {
+            return Path.Combine(Parameters.DataPath, Name + ".shp");
+        }
+
+        public Task SaveTo(string directory)
+        {
+            return Shapefile.CloneFeatureToNewShpAsync(directory, this);
         }
     }
 }

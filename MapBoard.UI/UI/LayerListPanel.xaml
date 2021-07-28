@@ -145,7 +145,7 @@
                 <ui:ProgressRing
                     Grid.RowSpan="9" Grid.Column="4"
                     Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                    IsActive="{Binding IsDownloading}" />
+                    IsActive="{Binding IsDownloading }" />
             </Grid>
         </DataTemplate>
     </UserControl.Resources>

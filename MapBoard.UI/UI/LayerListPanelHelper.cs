@@ -70,9 +70,9 @@ namespace MapBoard.UI
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    AddToMenu(menu, layer is ShapefileMapLayerInfo ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
 
-                    AddToMenu<IServerMapLayerInfo>(menu, "下载全部图形", layer, PopulateAllAsync);
+                    AddToMenu<IServerBasedLayer>(menu, "下载全部图形", layer, PopulateAllAsync);
                     AddToMenu<ShapefileMapLayerInfo>(menu, "设置图层", layer, SetShapefileLayerAsync);
                     AddToMenu<WfsMapLayerInfo>(menu, "设置图层", layer, SetWfsLayerAsync);
                     AddToMenu<TempMapLayerInfo>(menu, "设置图层", layer, SetTempLayerAsync);
@@ -162,7 +162,7 @@ namespace MapBoard.UI
             }
         }
 
-        private Task PopulateAllAsync(IServerMapLayerInfo s)
+        private Task PopulateAllAsync(IServerBasedLayer s)
         {
             return s.PopulateAllFromServiceAsync();
         }

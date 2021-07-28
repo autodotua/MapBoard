@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace MapBoard.Mapping.Model
 {
     //http://192.168.1.18:8080/geoserver/topp/ows?service=WFS&request=GetCapabilities
-    public class WfsMapLayerInfo : MapLayerInfo, IServerMapLayerInfo
+    public class WfsMapLayerInfo : MapLayerInfo, IServerBasedLayer
     {
         public WfsMapLayerInfo(ILayerInfo layer) : base(layer)
         {
