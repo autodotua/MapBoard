@@ -152,7 +152,7 @@ namespace MapBoard.Util
         {
             layer.Layer.IsVisible = layer.LayerVisible;
             //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
-            if (layer.TimeExtent != null && layer.TimeExtent.IsEnable)
+            if (layer is IHasDefaultFields && layer.TimeExtent?.IsEnable == true)
             {
                 await layer.SetTimeExtentAsync();
             }
@@ -191,7 +191,7 @@ namespace MapBoard.Util
         /// <returns></returns>
         public async static Task SetTimeExtentAsync(this IMapLayerInfo layer)
         {
-            if (layer.TimeExtent == null)
+            if (layer.TimeExtent == null || !(layer is IHasDefaultFields))
             {
                 return;
             }

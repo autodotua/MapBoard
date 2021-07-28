@@ -35,6 +35,10 @@ namespace MapBoard.UI.Dialog
                 lbx.SelectedIndex = 0;
                 canSelect = true;
             }
+            else
+            {
+                IsPrimaryButtonEnabled = false;
+            }
         }
 
         public MapLayerInfo SelectedLayer { get; set; }

@@ -58,10 +58,7 @@ namespace MapBoard.UI
                 if (!layer.IsLoaded)
                 {
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    if (layer is WfsMapLayerInfo w)
-                    {
-                        AddToMenu(menu, "设置属性", () => SetWfsLayerAsync(w));
-                    }
+                    AddToMenu<WfsMapLayerInfo>(menu, "设置图层", layer, SetWfsLayerAsync);
                     AddToMenu(menu, "重新加载", () => ReloadLayerAsync(layer));
                 }
                 else
@@ -73,25 +70,13 @@ namespace MapBoard.UI
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, layer is ShapefileMapLayerInfo?"建立副本":"建立持久副本", () => CreateCopyAsync(layer));
 
-                    if (layer is IServerMapLayerInfo s)
-                    {
-                        AddToMenu(menu, "下载全部图形", () => PopulateAllAsync(s));
-                    }
-
-                    if (layer is ShapefileMapLayerInfo s1)
-                    {
-                        AddToMenu(menu, "设置图层", () => SetShapefileLayerAsync(s1));
-                    }
-                    if (layer is WfsMapLayerInfo w)
-                    {
-                        AddToMenu(menu, "设置图层", () => SetWfsLayerAsync(w));
-                    }
-                    if (layer is TempMapLayerInfo t)
-                    {
-                        AddToMenu(menu, "设置图层", () => SetTempLayerAsync(t));
-                    }
+                    AddToMenu<IServerMapLayerInfo>(menu, "下载全部图形", layer, PopulateAllAsync);
+                    AddToMenu<ShapefileMapLayerInfo>(menu, "设置图层", layer, SetShapefileLayerAsync);
+                    AddToMenu<WfsMapLayerInfo>(menu, "设置图层", layer, SetWfsLayerAsync);
+                    AddToMenu<TempMapLayerInfo>(menu, "设置图层", layer, SetTempLayerAsync);
+                    AddToMenu<TempMapLayerInfo>(menu, "重置", layer, ResetTempLayerAsync);
 
                     menu.Items.Add(new Separator());
                     AddToMenu(menu, "查询要素", () => QueryAsync(layer));
@@ -102,19 +87,13 @@ namespace MapBoard.UI
                     {
                         AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                     }
-                    if (layer is IEditableLayerInfo e)
-                    {
-                        AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(e));
-                        AddToMenu(menu, "字段赋值", () => CopyAttributesAsync(e));
-                        AddToMenu(menu, "操作历史记录", () => OpenHistoryDialog(e));
-                    }
-                    if (layer is IHasDefaultFields h)
-                    {
-                        AddToMenu(menu, "设置时间范围", () => SetTimeExtentAsync(layer));
-                    }
+                    AddToMenu<IEditableLayerInfo>(menu, "坐标转换", layer, CoordinateTransformateAsync);
+                    AddToMenu<IEditableLayerInfo>(menu, "字段赋值", layer, CopyAttributesAsync);
+                    AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
+                    AddToMenu<IHasDefaultFields>(menu, "设置时间范围", layer, SetTimeExtentAsync);
                     menu.Items.Add(new Separator());
 
-                    if (layer is IEditableLayerInfo w2)
+                    if (layer is IEditableLayerInfo e)
                     {
                         var menuImport = new MenuItem() { Header = "导入" };
                         menu.Items.Add(menuImport);
@@ -124,13 +103,13 @@ namespace MapBoard.UI
                         {
                             AddToMenu(menuImport, "GPX轨迹文件",
                                 () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
-                                p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Gpx),
+                                p => IOUtility.ImportFeatureAsync(MainWindow, p, e, MapView, ImportLayerType.Gpx),
                                 "正在导入GPX轨迹文件");
                         }
 
                         AddToMenu(menuImport, "CSV文件",
                             () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
-                            p => IOUtility.ImportFeatureAsync(MainWindow, p, w2, MapView, ImportLayerType.Csv),
+                            p => IOUtility.ImportFeatureAsync(MainWindow, p, e, MapView, ImportLayerType.Csv),
                             "正在导入CSV文件");
                     }
                     var menuExport = new MenuItem() { Header = "导出" };
@@ -194,6 +173,14 @@ namespace MapBoard.UI
             await dialog.ShowAsync();
         }
 
+        private async Task ResetTempLayerAsync(TempMapLayerInfo layer)
+        {
+            if (await CommonDialog.ShowYesNoDialogAsync("确认重置？", "该操作将会删除所有图形"))
+            {
+                await layer.ReloadAsync(MapView.Layers);
+            }
+        }
+
         private async Task QueryAsync(IMapLayerInfo layer)
         {
             if (layer.NumberOfFeatures == 0)
@@ -210,6 +197,14 @@ namespace MapBoard.UI
             await Task.Yield();
             var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
             dialog.BringToFront();
+        }
+
+        private void AddToMenu<T>(ItemsControl menu, string header, IMapLayerInfo layer, Func<T, Task> func) where T : class
+        {
+            if (layer is T)
+            {
+                AddToMenu(menu, header, () => func(layer as T));
+            }
         }
 
         private void AddToMenu(ItemsControl menu, string header, Func<Task> func)
@@ -345,12 +340,12 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task SetTimeExtentAsync(IMapLayerInfo layer)
+        private async Task SetTimeExtentAsync(IHasDefaultFields layer)
         {
             DateRangeDialog dialog = new DateRangeDialog(MapView.Layers.Selected);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.SetTimeExtentAsync(layer);
+                await LayerUtility.SetTimeExtentAsync(layer as IMapLayerInfo);
             }
         }
 

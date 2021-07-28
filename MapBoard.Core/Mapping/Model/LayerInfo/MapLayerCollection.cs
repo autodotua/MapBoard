@@ -149,7 +149,7 @@ namespace MapBoard.Mapping.Model
             }
             int index = Count - 1 - IndexOf(layer);
             EsriLayers.RemoveAt(index);
-            EsriLayers.Insert(index, layer.Layer);
+            EsriLayers.Insert(index, layer.GetAddedLayer());
         }
 
         public void Clear()

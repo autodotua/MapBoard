@@ -110,10 +110,16 @@ namespace MapBoard.UI
             arcMap.Selection.CollectionChanged += (p1, p2) => ResetDrawAndSelectButton();
             arcMap.Layers.LayerPropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(LayerInfo.LayerVisible) && e.Layer == arcMap.Layers.Selected)
+                switch (e.PropertyName)
                 {
-                    ResetDrawAndSelectButton();
+                    case nameof(LayerInfo.LayerVisible) when e.Layer == arcMap.Layers.Selected:
+                    case nameof(MapLayerInfo.GeometryType) when e.Layer == arcMap.Layers.Selected:
+                        ResetDrawAndSelectButton();
+                        break;
+                    default:
+                        break;
                 }
+
             };
             arcMap.Layers.PropertyChanged += (s, e) =>
             {

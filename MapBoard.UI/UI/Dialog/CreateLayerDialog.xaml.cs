@@ -69,6 +69,10 @@ namespace MapBoard.UI.Dialog
                     TempMapLayerInfo => "编辑图层属性",
                     _ => throw new ArgumentException()
                 };
+                if (layer is TempMapLayerInfo)
+                {
+                    Message = "设置后，将删除所有图形";
+                }
 
                 editLayer = layer;
                 LayerName = layer.Name;
@@ -186,15 +190,24 @@ namespace MapBoard.UI.Dialog
             };
             if (editLayer != null)
             {
-                if (editLayer is ICanChangeGeometryType)
+                switch (layerType)
                 {
-                    (editLayer as ICanChangeGeometryType).SetGeometryType(type);
+                    case MapLayerInfo.Types.Shapefile:
+                        editLayer.Fields = Fields.ToArray();
+                        break;
+
+                    case MapLayerInfo.Types.Temp:
+
+                        (editLayer as TempMapLayerInfo).SetGeometryType(type);
+                        editLayer.Fields = Fields.ToArray();
+                        (editLayer as TempMapLayerInfo).ReloadAsync(Layers);
+                        break;
+
+                    default:
+                        throw new NotSupportedException("不支持的图层类型：" + layerType);
                 }
-                editLayer.Fields = Fields.ToArray();
-                if (editLayer is TempMapLayerInfo)
-                {
-                    throw new NotImplementedException("临时图层编辑未实现");
-                }
+
+                Hide();
             }
             else
             {
@@ -222,7 +235,6 @@ namespace MapBoard.UI.Dialog
                 catch (Exception ex)
                 {
                     Message = "创建图层失败：" + ex.Message;
-
                 }
             }
 

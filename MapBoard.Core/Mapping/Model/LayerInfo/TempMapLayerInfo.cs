@@ -71,7 +71,7 @@ namespace MapBoard.Mapping.Model
             return featureCollectionLayer;
         }
 
-        protected override FeatureLayer GetLayer(FeatureTable table)
+        protected override FeatureLayer GetNewLayer(FeatureTable table)
         {
             return featureCollectionLayer.Layers[0];
         }

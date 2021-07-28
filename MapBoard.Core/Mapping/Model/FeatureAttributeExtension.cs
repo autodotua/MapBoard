@@ -13,7 +13,8 @@ namespace MapBoard.Mapping.Model
                     && a.Key != Parameters.LabelFieldName
                     && a.Key != Parameters.DateFieldName
                     && a.Key != Parameters.CreateTimeFieldName
-                    && a.Key != "FID")
+                    && a.Key != "FID"
+                    && a.Key != "ObjectID")
                 {
                     result.Add(a.Key, a.Value);
                 }

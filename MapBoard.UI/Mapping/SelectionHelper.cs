@@ -240,14 +240,20 @@ namespace MapBoard.Mapping
                  IMapLayerInfo layer = null;
                  if (allLayers)
                  {
-                     IdentifyLayerResult result =
-                     (await MapView.IdentifyLayersAsync(point.Value, 8, false))
-                     .FirstOrDefault(p => p.LayerContent.IsVisible);
+                     var results = await MapView.IdentifyLayersAsync(point.Value, 8, false);
+                     IdentifyLayerResult result = results                     .FirstOrDefault(p => p.LayerContent.IsVisible);
                      if (result == null)
                      {
                          return;
                      }
-                     layer = Layers.Find(result.LayerContent as FeatureLayer);
+                     if (result.LayerContent is FeatureLayer l)
+                     {
+                         layer = Layers.Find(l);
+                     }
+                     else if (result.LayerContent is FeatureCollectionLayer cl)
+                     {
+                         layer = Layers.Find(cl.Layers[0]);
+                     }
                      Debug.Assert(layer != null);
                      MapView.Layers.Selected = layer;
                      features = result.GeoElements.Cast<Feature>().ToList();

@@ -101,7 +101,7 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        protected virtual FeatureLayer GetLayer(FeatureTable table)
+        protected virtual FeatureLayer GetNewLayer(FeatureTable table)
         {
             return new FeatureLayer(table);
         }
@@ -147,7 +147,7 @@ namespace MapBoard.Mapping.Model
             }
             //如果上面加载失败，那么不会执行下面的语句
             table = newTable;
-            layer = new FeatureLayer(table);
+            layer = GetNewLayer(table);
             await Task.Run(this.ApplyStyle);
             await this.LayerCompleteAsync();
 
@@ -156,6 +156,7 @@ namespace MapBoard.Mapping.Model
 
             IsLoaded = true;
             this.Notify(nameof(NumberOfFeatures));
+            this.Notify(nameof(GeometryType));
             LoadCompleted();
         }
 
@@ -180,7 +181,7 @@ namespace MapBoard.Mapping.Model
                 }
                 finally
                 {
-                    layer = GetLayer(table);
+                    layer = GetNewLayer(table);
                 }
                 try
                 {
