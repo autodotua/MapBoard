@@ -71,7 +71,7 @@ namespace MapBoard.Util
                                     }
                                     else
                                     {
-                                        errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{value}", "无法转为整数"));
+                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为整数"));
                                     }
                                     break;
                                 //整数转小数
@@ -87,7 +87,7 @@ namespace MapBoard.Util
                                     }
                                     else
                                     {
-                                        errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{value}", "无法转为小数"));
+                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为小数"));
                                     }
                                     break;
                                 //文本转日期
@@ -98,7 +98,7 @@ namespace MapBoard.Util
                                     }
                                     else
                                     {
-                                        errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{value}", "无法转为日期"));
+                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为日期"));
                                     }
                                     break;
                                 //文本转时间
@@ -121,7 +121,7 @@ namespace MapBoard.Util
                         }
                         catch (Exception ex)
                         {
-                            errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{value}", ex));
+                            errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", ex));
                         }
                     }
                 }
@@ -203,7 +203,7 @@ namespace MapBoard.Util
                                 }
                                 else
                                 {
-                                    errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{result}", "无法转为整数"));
+                                    errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为整数"));
                                 }
                                 break;
 
@@ -214,7 +214,7 @@ namespace MapBoard.Util
                                 }
                                 else
                                 {
-                                    errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{result}", "无法转为小数"));
+                                    errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为小数"));
                                 }
                                 break;
 
@@ -225,7 +225,7 @@ namespace MapBoard.Util
                                 }
                                 else
                                 {
-                                    errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{result}", "无法转为日期"));
+                                    errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为日期"));
                                 }
                                 break;
 
@@ -242,7 +242,7 @@ namespace MapBoard.Util
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ItemsOperationError($"{feature.GetFID()}: {oldValue}=>{result}", ex));
+                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", ex));
                     }
                 }
             });

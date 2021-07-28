@@ -11,22 +11,59 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
     public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
     {
-        public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
-        {
-           Types.Shapefile,null,Types.WFS,Types.Temp
-        };
-
         public class Types
         {
+            //public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
+            //{
+            //   Types.Shapefile,null,Types.WFS,Types.Temp
+            //};
+            [Description("Shapefile文件")]
             public const string Shapefile = "Shapefile";
+
+            [Description("网络矢量服务")]
             public const string WFS = "WFS";
+
+            [Description("临时矢量图层")]
             public const string Temp = "Temp";
+
+            private static IEnumerable<System.Reflection.FieldInfo> GetSupportedTypes()
+            {
+                return typeof(Types).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                    .Where(fi => fi.IsLiteral && !fi.IsInitOnly);
+            }
+
+            /// <summary>
+            /// 获取所有支持的图层类型名
+            /// </summary>
+            /// <returns></returns>
+            public static IEnumerable<string> GetSupportedTypeNames()
+            {
+                return GetSupportedTypes().Select(p => p.GetRawConstantValue() as string).Concat(new string[] { null });
+            }
+
+            /// <summary>
+            /// 获取给定类型代码的图层类型描述
+            /// </summary>
+            /// <param name="type"></param>
+            /// <returns></returns>
+            public static string GetDescription(string type)
+            {
+                var types = GetSupportedTypes();
+                var target = types.Where(p => p.GetRawConstantValue() as string == type).FirstOrDefault();
+                if (target == null)
+                {
+                    throw new ArgumentException("找不到类型：" + type);
+                }
+                return target.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault()?.Description ?? type;
+            }
         }
 
         [JsonIgnore]

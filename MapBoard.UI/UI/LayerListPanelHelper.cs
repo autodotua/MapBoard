@@ -47,7 +47,7 @@ namespace MapBoard.UI
                     IsEnabled = false,
                     Header = new TextBlock()
                     {
-                        Text = layer.Type,
+                        Text = MapLayerInfo.Types.GetDescription(layer.Type),
                         FontSize = 14,
                         FontWeight = FontWeights.Bold,
                         Foreground = App.Current.FindResource("SystemControlForegroundBaseHighBrush") as System.Windows.Media.Brush,
@@ -70,7 +70,7 @@ namespace MapBoard.UI
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    AddToMenu(menu, layer is ShapefileMapLayerInfo?"建立副本":"建立持久副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, layer is ShapefileMapLayerInfo ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
 
                     AddToMenu<IServerMapLayerInfo>(menu, "下载全部图形", layer, PopulateAllAsync);
                     AddToMenu<ShapefileMapLayerInfo>(menu, "设置图层", layer, SetShapefileLayerAsync);

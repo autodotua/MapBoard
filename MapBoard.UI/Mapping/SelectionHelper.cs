@@ -104,7 +104,7 @@ namespace MapBoard.Mapping
             layer.Layer.SelectFeatures(features);
             foreach (var feature in features)
             {
-                selectedFeatures.TryAdd(feature.GetFID(), feature);
+                selectedFeatures.TryAdd(feature.GetID(), feature);
             }
             CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
             return add.Count;
@@ -112,7 +112,7 @@ namespace MapBoard.Mapping
 
         public bool UnSelect(Feature feature)
         {
-            if (!selectedFeatures.ContainsKey(feature.GetFID()))
+            if (!selectedFeatures.ContainsKey(feature.GetID()))
             {
                 return false;
             }
@@ -146,7 +146,7 @@ namespace MapBoard.Mapping
             layer.Layer.UnselectFeatures(features);
             foreach (var feature in features)
             {
-                if (selectedFeatures.Remove(feature.GetFID()))
+                if (selectedFeatures.Remove(feature.GetID()))
                 {
                     remove.Add(feature);
                 }
@@ -292,7 +292,7 @@ namespace MapBoard.Mapping
                      {
                          foreach (var feature in features)
                          {
-                             selectedFeatures.Add(feature.GetFID(), feature);
+                             selectedFeatures.Add(feature.GetID(), feature);
                              add.Add(feature);
                          }
                      }
@@ -304,7 +304,7 @@ namespace MapBoard.Mapping
                          case SelectionMode.Add:
                              foreach (var feature in features)
                              {
-                                 long fid = feature.GetFID();
+                                 long fid = feature.GetID();
                                  if (!selectedFeatures.ContainsKey(fid))
                                  {
                                      selectedFeatures.Add(fid, feature);
@@ -318,14 +318,14 @@ namespace MapBoard.Mapping
                              selectedFeatures.Clear();
                              foreach (var feature in features)
                              {
-                                 selectedFeatures.Add(feature.GetFID(), feature);
+                                 selectedFeatures.Add(feature.GetID(), feature);
                              }
                              break;
 
                          case SelectionMode.Subtract:
                              foreach (var feature in features)
                              {
-                                 long fid = feature.GetFID();
+                                 long fid = feature.GetID();
                                  if (selectedFeatures.ContainsKey(fid))
                                  {
                                      selectedFeatures.Remove(fid);

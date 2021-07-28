@@ -42,7 +42,7 @@ namespace MapBoard.IO
                 {
                     throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
-                if (!MapLayerInfo.SupportedLayerTypes.Contains(layer.Type))
+                if (!MapLayerInfo.Types.GetSupportedTypeNames().Contains(layer.Type))
                 {
                     throw new NotSupportedException("不支持的图层类型：" + layer.Type);
                 }

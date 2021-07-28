@@ -44,16 +44,26 @@ namespace MapBoard.Mapping.Model
         [IgnoreMap]
         public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
-        public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
+        public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
-            if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
-                || feature.Attributes[Parameters.CreateTimeFieldName] == null)
-            {
-                feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
-            }
-            await table.AddFeatureAsync(feature);
+            return AddFeatureAsync(feature, source, feature.FeatureTable != table);
+        }
+
+        public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source, bool rebuildFeature)
+        {
+            Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
+            await table.AddFeatureAsync(newFeature);
 
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
+        }
+
+        public Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
+        {
+            if (features.Select(p => p.FeatureTable).Distinct().Count() != 1)
+            {
+                throw new ArgumentException("集合为空或要素来自不同的要素类");
+            }
+            return AddFeaturesAsync(features, source, features.First().FeatureTable != table);
         }
 
         /// <summary>
@@ -63,45 +73,18 @@ namespace MapBoard.Mapping.Model
         /// <param name="source"></param>
         /// <param name="rebuildFeature">是否需要根据属性和图形新建要素。若源要素属于另一个拥有不同字段的要素类，则该值应设为True</param>
         /// <returns></returns>
-        public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature = false)
+        public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
         {
-            //记录含有Int64的字段
-            List<string> Int64Fields = null;
-            if (rebuildFeature)
+            Dictionary<string, FieldInfo> key2Field = (this is IHasDefaultFields ? Fields.IncludeDefaultFields() : Fields)
+                .ToDictionary(p => p.Name);
+
+            //为了避免出现问题，改成了强制重建，经测试用不了多长时间
+            if (true || rebuildFeature)
             {
                 List<Feature> newFeatures = new List<Feature>();
                 foreach (var feature in features)
                 {
-                    //仅查询一次Int64字段
-                    if (Int64Fields == null)
-                    {
-                        Int64Fields = feature.Attributes.Where(p => p.Value is Int64).Select(p => p.Key).ToList();
-                    }
-
-                    var dic = new Dictionary<string, object>(feature.Attributes);
-                    //若存在Int64，那么需要转换为Int32。因为Shapefile不支持Int64
-                    if (Int64Fields.Count > 0)
-                    {
-                        foreach (var f in Int64Fields)
-                        {
-                            long value = (long)dic[f];
-                            //超过范围的，直接置0
-                            if (value > int.MaxValue || value < int.MinValue)
-                            {
-                                dic[f] = 0;
-                            }
-                            else
-                            {
-                                dic[f] = Convert.ToInt32(value);
-                            }
-                        }
-                    }
-                    if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
-                        || feature.Attributes[Parameters.CreateTimeFieldName] == null)
-                    {
-                        dic.AddOrSetValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
-                    }
-                    var newFeature = CreateFeature(dic, feature.Geometry);
+                    Feature newFeature = feature.Clone(this, key2Field);
                     newFeatures.Add(newFeature);
                 }
                 await table.AddFeaturesAsync(newFeatures);

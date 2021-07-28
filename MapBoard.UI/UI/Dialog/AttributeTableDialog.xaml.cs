@@ -87,12 +87,12 @@ namespace MapBoard.UI.Dialog
                 Attributes = new ObservableCollection<FeatureAttributeCollection>(
                     features.Select(p =>
                         FeatureAttributeCollection.FromFeature(Layer, p)));
-                feature2Attributes = attributes.ToDictionary(p => p.Feature.GetFID());
+                feature2Attributes = attributes.ToDictionary(p => p.Feature.GetID());
             });
             //对已经选择的要素应用到属性表中（理论上，不该存在的吧）
             foreach (var attr in Attributes)
             {
-                if (MapView.Selection.SelectedFeatureIDs.Contains(attr.Feature.GetFID()))
+                if (MapView.Selection.SelectedFeatureIDs.Contains(attr.Feature.GetID()))
                 {
                     attr.IsSelected = true;
                 }
@@ -169,7 +169,7 @@ namespace MapBoard.UI.Dialog
             }
             foreach (var feature in e.Selected)
             {
-                long id = feature.GetFID();
+                long id = feature.GetID();
                 if (feature2Attributes.ContainsKey(id))
                 {
                     feature2Attributes[id].IsSelected = true;
@@ -177,7 +177,7 @@ namespace MapBoard.UI.Dialog
             }
             foreach (var feature in e.UnSelected)
             {
-                long id = feature.GetFID();
+                long id = feature.GetID();
                 if (feature2Attributes.ContainsKey(id))
                 {
                     feature2Attributes[id].IsSelected = false;
@@ -214,7 +214,7 @@ namespace MapBoard.UI.Dialog
             {
                 foreach (var f in e.AddedFeatures)
                 {
-                    long fid = f.GetFID();
+                    long fid = f.GetID();
                     var attr = FeatureAttributeCollection.FromFeature(Layer, f);
                     Attributes.Add(attr);
                     feature2Attributes.Add(fid, attr);
@@ -224,7 +224,7 @@ namespace MapBoard.UI.Dialog
             {
                 foreach (var f in e.DeletedFeatures)
                 {
-                    long fid = f.GetFID();
+                    long fid = f.GetID();
                     if (feature2Attributes.ContainsKey(fid))
                     {
                         Attributes.Remove(feature2Attributes[fid]);
@@ -239,7 +239,7 @@ namespace MapBoard.UI.Dialog
             {
                 foreach (var f in e.UpdatedFeatures)
                 {
-                    long fid = f.Feature.GetFID();
+                    long fid = f.Feature.GetID();
                     if (feature2Attributes.ContainsKey(fid))
                     {
                         int index = Attributes.IndexOf(feature2Attributes[fid]);
@@ -312,7 +312,7 @@ namespace MapBoard.UI.Dialog
 
             btnSave.IsEnabled = false;
             List<UpdatedFeature> features = new List<UpdatedFeature>();
-            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetFID())))
+            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
             {
                 var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
                 attr.SaveToFeature();

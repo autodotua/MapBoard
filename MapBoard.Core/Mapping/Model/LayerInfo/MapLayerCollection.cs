@@ -204,11 +204,11 @@ namespace MapBoard.Mapping.Model
 
         public ELayerCollection EsriLayers { get; private set; }
 
-        private async Task AddLayerAsync(MapLayerInfo layer, int index)
+        private async Task AddLayerAsync(IMapLayerInfo layer, int index)
         {
             try
             {
-                if (!layer.HasTable)
+                if (!layer.IsLoaded)
                 {
                     try
                     {

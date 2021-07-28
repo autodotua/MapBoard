@@ -85,5 +85,29 @@ namespace MapBoard.Model
         {
             return MemberwiseClone();
         }
+
+        public bool IsCorrectType(object propertyValue)
+        {
+            switch (Type)
+            {
+                case FieldInfoType.Integer:
+                    return propertyValue is int;
+
+                case FieldInfoType.Float:
+                    return propertyValue is double;
+
+                case FieldInfoType.Date:
+                    return propertyValue is DateTime || propertyValue is DateTimeOffset;
+
+                case FieldInfoType.Text:
+                    return propertyValue is string;
+
+                case FieldInfoType.Time:
+                    return propertyValue is string;
+
+                default:
+                    throw new InvalidEnumArgumentException();
+            }
+        }
     }
 }
