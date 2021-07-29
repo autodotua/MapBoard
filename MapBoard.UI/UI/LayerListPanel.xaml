@@ -14,14 +14,17 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <TextBox
-            x:Key="flyoutContent" Width="120"
+            x:Key="flyoutContent"
+            Width="120"
             HorizontalContentAlignment="Left"
             MaxLength="10"
             Text="{Binding Group}" />
 
         <Border
-            x:Key="bdGroups" MaxWidth="300"
-            Margin="0,0,12,0" Padding="8"
+            x:Key="bdGroups"
+            MaxWidth="300"
+            Margin="0,0,12,0"
+            Padding="8"
             CornerRadius="4">
             <ui:SimpleStackPanel Orientation="Vertical">
 
@@ -38,7 +41,8 @@
                                 Click="CheckBox_Click"
                                 IsChecked="{Binding Visiable}">
                                 <TextBlock
-                                    Height="24" MaxWidth="60"
+                                    Height="24"
+                                    MaxWidth="60"
                                     Text="{Binding Name}"
                                     TextTrimming="CharacterEllipsis"
                                     TextWrapping="NoWrap" />
@@ -55,7 +59,8 @@
 
         <DataTemplate x:Key="dtCompact">
             <Grid
-                Width="264" Margin="8,0,0,0"
+                Width="264"
+                Margin="8,0,0,0"
                 HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="32" />
@@ -79,10 +84,12 @@
                     TextTrimming="CharacterEllipsis" />
 
                 <TextBlock
-                    Grid.Column="4" MinWidth="48"
+                    Grid.Column="4"
+                    MinWidth="48"
                     MaxWidth="72"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Center" Cursor="Hand"
+                    VerticalAlignment="Center"
+                    Cursor="Hand"
                     MouseUp="TextBlock_MouseUp"
                     Opacity="0.9"
                     Text="{Binding Group}"
@@ -95,7 +102,9 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="dtNormal">
-            <Grid Margin="8,6,0,6" HorizontalAlignment="Stretch">
+            <Grid
+                Margin="8,6,0,6"
+                HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="32" />
                     <ColumnDefinition Width="8" />
@@ -122,7 +131,8 @@
                     TextTrimming="CharacterEllipsis" />
 
                 <TextBlock
-                    Grid.Column="2" Height="24"
+                    Grid.Column="2"
+                    Height="24"
                     MinWidth="48"
                     HorizontalAlignment="Right"
                     Cursor="Hand"
@@ -131,11 +141,13 @@
                     TextAlignment="Right" />
 
                 <TextBlock
-                    Grid.Row="2" Grid.Column="2"
+                    Grid.Row="2"
+                    Grid.Column="2"
                     Opacity="0.75"
                     Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
                 <TextBlock
-                    Grid.Row="2" Grid.Column="2"
+                    Grid.Row="2"
+                    Grid.Column="2"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Opacity="0.75">
@@ -143,9 +155,10 @@
                     <Run>个图形</Run>
                 </TextBlock>
                 <ui:ProgressRing
-                    Grid.RowSpan="9" Grid.Column="4"
+                    Grid.RowSpan="9"
+                    Grid.Column="4"
                     Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                    IsActive="{Binding IsDownloading }" />
+                    IsActive="{Binding IsDownloading}" />
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
@@ -157,7 +170,8 @@
         </Grid.RowDefinitions>
         <ContentControl x:Name="groupContent" />
         <Button
-            x:Name="btnGroups" Margin="0,0,8,0"
+            x:Name="btnGroups"
+            Margin="0,0,8,0"
             HorizontalAlignment="Right"
             Background="Transparent">
             <ui:FontIcon Glyph="&#xF168;" />
@@ -166,7 +180,8 @@
             </ui:FlyoutService.Flyout>
         </Button>
         <ListView
-            x:Name="dataGrid" Grid.Row="2"
+            x:Name="dataGrid"
+            Grid.Row="2"
             dd:DragDrop.DropHandler="{Binding}"
             dd:DragDrop.IsDragSource="True"
             dd:DragDrop.IsDropTarget="True"

@@ -116,10 +116,10 @@ namespace MapBoard.UI
                     case nameof(MapLayerInfo.GeometryType) when e.Layer == arcMap.Layers.Selected:
                         ResetDrawAndSelectButton();
                         break;
+
                     default:
                         break;
                 }
-
             };
             arcMap.Layers.PropertyChanged += (s, e) =>
             {
@@ -129,17 +129,25 @@ namespace MapBoard.UI
                     layerSettings.ResetLayerSettingUI();
                 }
             };
+            ResetDrawAndSelectButton();
+            ShowLoadErrorsAsync();//不可await，因为要让主窗口显示出来
+        }
 
-            ItemsOperationErrorCollection errors = null;
+        private async Task ShowLoadErrorsAsync()
+        {
+            if (Config.LoadError != null)
+            {
+                await CommonDialog.ShowErrorDialogAsync(Config.LoadError, "配置文件加载错误，将使用默认配置");
+            }
+            ItemsOperationErrorCollection errors;
             if ((errors = arcMap.BaseMapLoadErrors) != null)
             {
-                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分底图加载失败", errors);
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分底图加载失败", errors);
             }
             if ((errors = arcMap.Layers.GetLoadErrors()) != null)
             {
-                ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分图层加载失败", errors);
             }
-            ResetDrawAndSelectButton();
         }
 
         public bool IsReady => arcMap != null && arcMap.CurrentTask == BoardTask.Ready;
@@ -274,6 +282,22 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void ArcMap_ViewpointChanged(object sender, EventArgs e)
         {
+        }
+
+        private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.NewSize.Height < 800)
+            {
+                layerSettings.Height = 240;
+            }
+            else if (e.NewSize.Height < 1050)
+            {
+                layerSettings.Height = 360;
+            }
+            else
+            {
+                layerSettings.Height = 480;
+            }
         }
 
         #endregion 基本方法
@@ -609,27 +633,5 @@ namespace MapBoard.UI
         }
 
         #endregion 图层列表事件
-
-        private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (e.NewSize.Height < 800)
-            {
-                layerSettings.Height = 240;
-            }
-            else if (e.NewSize.Height < 1050)
-            {
-                layerSettings.Height = 360;
-            }
-            else
-            {
-                layerSettings.Height = 480;
-            }
-        }
-
-        private void layersPanel_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //ResetDrawAndSelectButton();
-            //layerSettings.ResetLayerSettingUI();
-        }
     }
 }

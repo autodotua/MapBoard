@@ -21,7 +21,10 @@ namespace MapBoard.IO
             Directory.CreateDirectory(tempStyleDir);
             await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
             File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
-            File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+            if (layer.Layer.LabelDefinitions.Count > 0)
+            {
+                File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+            }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
         }
 
@@ -36,7 +39,10 @@ namespace MapBoard.IO
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
-                File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+                if (layer.Layer.LabelDefinitions.Count > 0)
+                {
+                    File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+                }
             }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
         }

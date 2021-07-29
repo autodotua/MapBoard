@@ -241,7 +241,7 @@ namespace MapBoard.Mapping
                  if (allLayers)
                  {
                      var results = await MapView.IdentifyLayersAsync(point.Value, 8, false);
-                     IdentifyLayerResult result = results                     .FirstOrDefault(p => p.LayerContent.IsVisible);
+                     IdentifyLayerResult result = results.FirstOrDefault(p => p.LayerContent.IsVisible);
                      if (result == null)
                      {
                          return;

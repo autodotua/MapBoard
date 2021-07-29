@@ -92,12 +92,20 @@ namespace MapBoard
                 if (instance == null)
                 {
                     instance = new Config();
-
-                    instance.TryLoadFromJsonFile(path);
+                    try
+                    {
+                        instance.TryLoadFromJsonFile(path);
+                    }
+                    catch (Exception ex)
+                    {
+                        instance.LoadError = ex;
+                    }
                 }
                 return instance;
             }
         }
+
+        public Exception LoadError { get; private set; }
 
         public bool BackupWhenExit
         {
