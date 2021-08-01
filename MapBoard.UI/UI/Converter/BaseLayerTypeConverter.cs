@@ -17,7 +17,7 @@ namespace MapBoard.UI.Converter
                 BaseLayerType.ShapefileLayer => "Shapefile矢量图",
                 BaseLayerType.WebTiledLayer => "网络瓦片图",
                 BaseLayerType.WmsLayer => "网络地图服务",
-                _ => throw new InvalidEnumArgumentException()
+                _ => value.ToString()
             };
         }
 

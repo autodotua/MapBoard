@@ -249,6 +249,10 @@ namespace MapBoard.UI
             }
             int fileCount = files.Count(p => File.Exists(p));
             int folderCount = files.Count(p => Directory.Exists(p));
+            if (fileCount + folderCount == 0)
+            {
+                return;
+            }
             if (fileCount * folderCount != 0)
             {
                 SnakeBar.ShowError(this, "不支持同时包含文件和文件夹");

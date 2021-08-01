@@ -9,6 +9,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Loaded="LayerListPanel_Loaded"
     mc:Ignorable="d">
@@ -161,9 +162,55 @@
                     IsActive="{Binding IsDownloading}" />
             </Grid>
         </DataTemplate>
+
+        <!--  分组项的样式  -->
+        <Style
+            x:Key="groupStyle"
+            TargetType="{x:Type GroupItem}">
+            <Setter Property="Margin" Value="0,8,0,4" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                        <Expander
+                            Margin="8,8,0,0"
+                            Padding="-8,0,0,0"
+                            IsExpanded="True">
+                            <Expander.Header>
+                                <DockPanel>
+                                    <TextBlock
+                                        Margin="8,4,0,0"
+                                        FontWeight="Bold"
+                                        Text="{Binding Path=Name, Converter={StaticResource gtdc}}" />
+                                    <TextBlock
+                                        Margin="16,4,0,8"
+                                        Opacity="0.8">
+                                        <Run Text="{Binding Path=ItemCount, Mode=OneWay}" />
+                                        <Run>个图层</Run>
+                                    </TextBlock>
+                                </DockPanel>
+                            </Expander.Header>
+                            <Expander.Content>
+                                <ItemsPresenter />
+                            </Expander.Content>
+                        </Expander>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  带分组的数据源  -->
+        <CollectionViewSource
+            x:Key="listGroupItemsSource"
+            Source="{Binding Layers}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="GroupName" />
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="8" />
             <RowDefinition Height="*" />
@@ -171,6 +218,7 @@
         <ContentControl x:Name="groupContent" />
         <Button
             x:Name="btnGroups"
+            Grid.Row="2"
             Margin="0,0,8,0"
             HorizontalAlignment="Right"
             Background="Transparent">
@@ -181,7 +229,7 @@
         </Button>
         <ListView
             x:Name="dataGrid"
-            Grid.Row="2"
+            Grid.Row="4"
             dd:DragDrop.DropHandler="{Binding}"
             dd:DragDrop.IsDragSource="True"
             dd:DragDrop.IsDropTarget="True"
@@ -191,5 +239,28 @@
             ScrollViewer.CanContentScroll="False"
             SelectionChanged="SelectedLayerChanged"
             SelectionMode="Extended" />
+        <ListView
+            x:Name="lvwViewTypes"
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            SelectedIndex="{Binding ViewType}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel
+                        VerticalAlignment="Top"
+                        Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style
+                    BasedOn="{StaticResource DefaultListViewItemStyle}"
+                    TargetType="{x:Type ListViewItem}">
+                    <Setter Property="MinWidth" Value="10" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <sys:String>顺序</sys:String>
+            <sys:String>组别</sys:String>
+            <sys:String>类型</sys:String>
+        </ListView>
     </Grid>
 </local:UserControlBase>

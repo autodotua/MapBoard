@@ -66,8 +66,9 @@ namespace MapBoard.UI
         private void UpdateLayout(double height)
         {
             var r = FindResource("bdGroups") as Border;
-            if (height < 800)
+            if (height < 1050)
             {
+                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Left;
                 btnGroups.Visibility = Visibility.Visible;
                 groupContent.Visibility = Visibility.Collapsed;
                 flyoutGroups.Content = r;
@@ -75,6 +76,7 @@ namespace MapBoard.UI
             }
             else
             {
+                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Center;
                 btnGroups.Visibility = Visibility.Collapsed;
                 groupContent.Visibility = Visibility.Visible;
                 groupContent.Content = r;
@@ -91,6 +93,42 @@ namespace MapBoard.UI
 
         public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
+        private int viewType = 0;
+
+        public int ViewType
+        {
+            get => viewType;
+            set
+            {
+                viewType = value;
+                this.Notify(nameof(ViewType));
+                dataGrid.GroupStyle.Clear();
+
+                CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+                view.GroupDescriptions.Clear();
+                switch (value)
+                {
+                    case 0:
+                        //dataGrid.ItemsSource = Layers;
+                        break;
+
+                    case 1:
+                        dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+
+                        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LayerInfo.Group)));
+                        break;
+
+                    case 2:
+                        dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+
+                        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MapLayerInfo.GeometryType)));
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
 
         /// <summary>
         /// 初始化
@@ -145,7 +183,6 @@ namespace MapBoard.UI
                 }
             }
         }
-
 
         /// <summary>
         /// 图层项右键，用于显示菜单
@@ -334,7 +371,7 @@ namespace MapBoard.UI
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            if (MapView.CurrentTask != BoardTask.Ready)
+            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
             {
                 return;
             }
@@ -354,7 +391,7 @@ namespace MapBoard.UI
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            if (MapView.CurrentTask != BoardTask.Ready)
+            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
             {
                 return;
             }

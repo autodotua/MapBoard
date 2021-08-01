@@ -32,7 +32,7 @@ namespace MapBoard.UI.Converter
                         return "未知";
                 }
             }
-            return null;
+            return value ;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
