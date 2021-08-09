@@ -48,23 +48,17 @@ namespace MapBoard.Mapping
                 case NotifyCollectionChangedAction.Remove:
                     foreach (TrackInfo item in e.OldItems)
                     {
-                        //GraphicsOverlays.Remove(item.LineOverlay);
                         foreach (var point in item.Track.Points)
                         {
                             gpxPointAndGraphics.Remove(point);
                         }
                         GraphicsOverlays.Remove(item.Overlay);
-                        //foreach (var point in item.Overlay.Graphics.Select(p=>gpxPointAndGraphics.GetKey(p)).ToArray())
-                        //{
-                        //    gpxPointAndGraphics.Remove(point);
-                        //}
                     }
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
                     GraphicsOverlays.Clear();
                     gpxPointAndGraphics.Clear();
-                    //pointToTrackInfo.Clear();
                     break;
             }
         }
@@ -223,6 +217,10 @@ namespace MapBoard.Mapping
             }
 
             int index = track.Track.Points.IndexOf(point);
+            if (index < 0)
+            {
+                return;
+            }
             for (int i = 1; i < index; i++)
             {
                 var p = track.Track.Points[i];

@@ -268,10 +268,12 @@ namespace MapBoard.UI.GpxToolbox
                             XAxisBorderValueConverter = p => p.CenterTime,
                             YAxisBorderValueConverter = p => p.Speed,
                         }));
+
                 await Task.WhenAll(
                  chartHelper.DrawPolygonAsync(GpxTrack.Points, 1),
-                 chartHelper.DrawPointsAsync(points, 0),
+          chartHelper.DrawPointsAsync(points, 0, Config.Instance.Gpx_DrawPoints),
                  chartHelper.DrawLinesAsync(lines, 0));
+
                 await chartHelper.StretchToFitAsync();
             }
             catch (Exception ex)

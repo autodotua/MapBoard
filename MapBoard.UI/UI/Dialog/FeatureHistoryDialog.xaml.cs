@@ -121,6 +121,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                IsEnabled = true;
                 await CommonDialog.ShowErrorDialogAsync(ex, "撤销失败");
             }
             finally

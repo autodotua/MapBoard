@@ -173,6 +173,20 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref gpx_RelativeHeight, value, nameof(Gpx_RelativeHeight));
         }
 
+        private bool gpx_DrawPoints;
+        public bool Gpx_DrawPoints
+        {
+            get => gpx_DrawPoints;
+            set => this.SetValueAndNotify(ref gpx_DrawPoints, value, nameof(Gpx_DrawPoints));
+        }
+
+        private int lastLayerListGroupType;
+        public int LastLayerListGroupType
+        {
+            get => lastLayerListGroupType;
+            set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
+        }
+
         public bool HideWatermark
         {
             get => hideWatermark;

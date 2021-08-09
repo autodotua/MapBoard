@@ -134,13 +134,14 @@ namespace MapBoard.UI.GpxToolbox
                 || displayedPointsX.Count == 0)
             {
                 return;
-            }
+            }  
+            canMouseMoveUpdate = false;
             var pos = e.GetPosition(Sketchpad);
             EllipseGeometry point = GetPoint(pos.X);
             RefreshMouseLine(point);
             RefreshToolTip(point, pos.X, pos.Y);
             MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
-            canMouseMoveUpdate = false;
+         
             await Task.Delay(100);
             canMouseMoveUpdate = true;
         }
@@ -237,7 +238,7 @@ namespace MapBoard.UI.GpxToolbox
 
         public Func<Task> DrawActionAsync { private get; set; }
 
-        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex)
+        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex,bool draw)
         {
             BorderInfo border = borders[borderIndex];
             await Task.Run(() =>
@@ -254,14 +255,17 @@ namespace MapBoard.UI.GpxToolbox
                     AddPoint(x, y, item);
                 }
             });
-            Path path = new Path()
+            if (draw)
             {
-                Data = new GeometryGroup() { Children = new GeometryCollection(UiPoint2Point.Keys) },
-                StrokeThickness = PointSize,
-                Stroke = PointBrush,
-            };
+                Path path = new Path()
+                {
+                    Data = new GeometryGroup() { Children = new GeometryCollection(UiPoint2Point.Keys) },
+                    StrokeThickness = PointSize,
+                    Stroke = PointBrush,
+                };
 
             AddSketchpadChildren(path, 3);
+            }
             // lastAction = nameof(DrawPoints);
             // lastPointPoints = items;
         }
@@ -536,7 +540,7 @@ namespace MapBoard.UI.GpxToolbox
         public Brush LineBrush { get; set; } = Brushes.Blue;
         public Brush PolygonBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0x33, 0x55, 0x55, 0x55));
         public double LineThickness { get; set; } = 1;
-        public double PointSize { get; set; } = 3;
+        public double PointSize { get; set; } = 1;
         public bool MouseLineEnable { get; set; } = true;
         public bool ToolTipEnable { get; set; } = true;
         public Func<TPoint, string> ToolTipConverter { get; set; } = p => p.ToString();

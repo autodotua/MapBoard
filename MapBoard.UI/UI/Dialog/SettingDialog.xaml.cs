@@ -30,7 +30,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class SettingDialog : DialogWindowBase
     {
-        public SettingDialog(Window owner, MapLayerCollection layers) : base(owner)
+        public SettingDialog(Window owner, MapLayerCollection layers, int tabIndex = 0) : base(owner)
         {
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
               Config.Instance.BaseLayers.Select(p => p.Clone()));
@@ -39,6 +39,7 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
             Layers = layers;
+            tab.SelectedIndex = tabIndex;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

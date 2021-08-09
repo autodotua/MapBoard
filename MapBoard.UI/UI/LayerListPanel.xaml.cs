@@ -102,6 +102,7 @@ namespace MapBoard.UI
             {
                 viewType = value;
                 this.Notify(nameof(ViewType));
+                Config.Instance.LastLayerListGroupType = value;
                 dataGrid.GroupStyle.Clear();
 
                 CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
@@ -365,6 +366,10 @@ namespace MapBoard.UI
 
         private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
         {
+            if (Config.Instance.LastLayerListGroupType is >= 0 and < 3)
+            {
+                ViewType = Config.Instance.LastLayerListGroupType;
+            }
             Window.GetWindow(this).SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
             UpdateLayout(Window.GetWindow(this).ActualHeight);
         }

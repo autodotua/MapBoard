@@ -29,7 +29,9 @@
             <RowDefinition Height="12" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TabControl Style="{StaticResource TabControlPivotStyle}">
+        <TabControl
+            x:Name="tab"
+            Style="{StaticResource TabControlPivotStyle}">
             <TabItem
                 Padding="8"
                 Header="通用">
@@ -41,7 +43,6 @@
                         <ComboBoxItem>亮色</ComboBoxItem>
                         <ComboBoxItem>暗色</ComboBoxItem>
                     </ComboBox>
-
                 </ui:SimpleStackPanel>
             </TabItem>
             <TabItem
@@ -326,6 +327,18 @@
                                 IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"
                                 Text="{Binding Config.Gpx_AutoSmoothLevel}" />
                         </ui:SimpleStackPanel>
+                    </ui:SimpleStackPanel>
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="12">
+                        <CheckBox
+                            Content="在图表中绘制速度点"
+                            IsChecked="{Binding Config.Gpx_DrawPoints}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Opacity="0.7">
+                            在数据量很大的情况下，绘制点将明显影响程序流畅度
+                        </TextBlock>
                     </ui:SimpleStackPanel>
                 </ui:SimpleStackPanel>
             </TabItem>
