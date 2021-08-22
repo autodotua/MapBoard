@@ -314,6 +314,10 @@ namespace MapBoard.UI.GpxToolbox
 
         public void BeginDraw()
         {
+            if (DrawActionAsync == null)
+            {
+                return;
+            }
             if (isDrawing)
             {
                 return;
@@ -325,6 +329,7 @@ namespace MapBoard.UI.GpxToolbox
             //有可能从Timer线程中调用，因此要保证UI线程
             Sketchpad.Dispatcher.Invoke(async () =>
             {
+             
                 try
                 {
                     Sketchpad.Children.Clear();

@@ -311,11 +311,11 @@ namespace MapBoard.UI.GpxToolbox
         {
             if (e.Track.Length > 0)
             {
-                lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
-                if (!e.Update)
-                {
-                    await ZoomToTrackAsync(0);
-                }
+                //lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
+                //if (!e.Update)
+                //{
+                //    await ZoomToTrackAsync(0);
+                //}
             }
         }
 

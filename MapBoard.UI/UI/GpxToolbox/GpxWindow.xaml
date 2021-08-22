@@ -318,11 +318,61 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Border ClipToBounds="True">
-                <mapping:GpxMapView
+                <Grid>
+                    <mapping:GpxMapView
                     x:Name="arcMap"
                     GeoViewTapped="ArcMapTapped"
                     GpxLoaded="GpxLoaded"
                     PointSelected="MapPointSelected" />
+
+                    <Expander
+            Grid.Column="2" Padding="8,0,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Header="文件" IsExpanded="True">
+                        <Grid Margin="0,8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                                <Button Click="OpenFilesButtonClick" Content="导入" />
+                                <FrameworkElement Width="8" />
+                                <Button Click="ClearFileListButtonClick" Content="清空" />
+                            </StackPanel>
+                            <ListView
+                    x:Name="lvwFiles" Grid.Row="2"
+                    ItemsSource="{Binding Tracks}"
+                    PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
+                    SelectionChanged="FileSelectionChanged"
+                    SelectionMode="Extended">
+
+                                <ListView.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Click="RemoveTrackFileMenuClick" Header="删除" />
+                                        <MenuItem Click="LinkTrackMenuClick" Header="连接" />
+                                        <MenuItem Click="ZoomToTrackButtonClick" Header="缩放到轨迹" />
+                                        <MenuItem Click="BrowseButtonClick" Header="浏览" />
+                                    </ContextMenu>
+                                </ListView.ContextMenu>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn
+                                Width="144"
+                                DisplayMemberBinding="{Binding FileName}"
+                                Header="文件名" />
+                                        <GridViewColumn DisplayMemberBinding="{Binding TrackIndex}" Header="轨迹索引" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </Expander>
+                </Grid>
             </Border>
             <Canvas
                 x:Name="speedChart" Grid.Row="2"
@@ -330,52 +380,5 @@
                 MouseLeave="SpeedChartMouseLeave" />
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2" />-->
         </Grid>
-        <Expander
-            Grid.Column="2" Padding="8,0,8,0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-            Header="文件" IsExpanded="True">
-            <Grid Margin="0,8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <StackPanel
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
-                    <Button Click="OpenFilesButtonClick" Content="导入" />
-                    <FrameworkElement Width="8" />
-                    <Button Click="ClearFileListButtonClick" Content="清空" />
-                </StackPanel>
-                <ListView
-                    x:Name="lvwFiles" Grid.Row="2"
-                    ItemsSource="{Binding Tracks}"
-                    PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
-                    SelectionChanged="FileSelectionChanged"
-                    SelectionMode="Extended">
-
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Click="RemoveTrackFileMenuClick" Header="删除" />
-                            <MenuItem Click="LinkTrackMenuClick" Header="连接" />
-                            <MenuItem Click="ZoomToTrackButtonClick" Header="缩放到轨迹" />
-                            <MenuItem Click="BrowseButtonClick" Header="浏览" />
-                        </ContextMenu>
-                    </ListView.ContextMenu>
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn
-                                Width="144"
-                                DisplayMemberBinding="{Binding FileName}"
-                                Header="文件名" />
-                            <GridViewColumn DisplayMemberBinding="{Binding TrackIndex}" Header="轨迹索引" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Grid>
-        </Expander>
     </Grid>
 </u:MainWindowBase>
