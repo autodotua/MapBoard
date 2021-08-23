@@ -145,14 +145,22 @@ namespace MapBoard
             get => tapToSelect;
             set => this.SetValueAndNotify(ref tapToSelect, value, nameof(TapToSelect));
         }
-        private bool tapToSelectAllLayers=true;
+
+        private bool tapToSelectAllLayers = true;
+
         public bool TapToSelectAllLayers
         {
             get => tapToSelectAllLayers;
             set => this.SetValueAndNotify(ref tapToSelectAllLayers, value, nameof(TapToSelectAllLayers));
         }
 
+        private bool showLocation;
 
+        public bool ShowLocation
+        {
+            get => showLocation;
+            set => this.SetValueAndNotify(ref showLocation, value, nameof(ShowLocation));
+        }
 
         public bool Gpx_AutoSmooth
         {

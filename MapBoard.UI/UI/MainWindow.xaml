@@ -8,6 +8,7 @@
     xmlns:local="clr-namespace:MapBoard.UI"
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="clr-namespace:MapBoard"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="地图画板"
@@ -28,7 +29,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border Padding="12,0,144,0" Panel.ZIndex="100">
+        <Border
+            Padding="12,0,144,0"
+            Panel.ZIndex="100">
             <Grid x:Name="AppTitleBar">
 
                 <Grid.ColumnDefinitions>
@@ -57,45 +60,69 @@
                     </ui:TitleBarButton.Content>
                     <ui:FlyoutService.Flyout>
                         <ui:MenuFlyout Placement="Bottom">
-                            <MenuItem Click="MeasureLengthMenuItem_Click" Header="测量长度">
+                            <MenuItem
+                                Click="MeasureLengthMenuItem_Click"
+                                Header="测量长度">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xED5E;" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Click="MeasureAreaMenuItem_Click" Header="测量面积和周长">
+                            <MenuItem
+                                Click="MeasureAreaMenuItem_Click"
+                                Header="测量面积和周长">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xED5E;" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
-                            <MenuItem Click="BrowseSceneMenu_Click" Header="场景浏览">
+                            <MenuItem
+                                Click="BrowseSceneMenu_Click"
+                                Header="场景浏览">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xE909;" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Click="GpxMenu_Click" Header="GPX工具箱">
+                            <MenuItem
+                                Click="GpxMenu_Click"
+                                Header="GPX工具箱">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xE707;" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Click="TileMenu_Click" Header="地图瓦片下载器">
+                            <MenuItem
+                                Click="TileMenu_Click"
+                                Header="地图瓦片下载器">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xE826;" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
-                            <MenuItem Click="ClearHistoriesButton_Click" Header="清除要素历史记录">
+                            <MenuItem
+                                Click="ClearHistoriesButton_Click"
+                                Header="清除要素历史记录">
                                 <MenuItem.Icon>
-                                    <ui:SymbolIcon Symbol="Clear" />
+                                    <ui:SymbolIcon Symbol="Delete" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem
+                                Header="显示设备位置"
+                                IsCheckable="True"
+                                IsChecked="{Binding Source={x:Static root:Config.Instance}, Path=ShowLocation}">
+                                <MenuItem.Icon>
+                                    <ui:FontIcon Glyph="&#xE81D;" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
-                            <MenuItem Click="SettingButton_Click" Header="设置">
+                            <MenuItem
+                                Click="SettingButton_Click"
+                                Header="设置">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Setting" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Click="AboutMenu_Click" Header="关于">
+                            <MenuItem
+                                Click="AboutMenu_Click"
+                                Header="关于">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xF142;" />
                                 </MenuItem.Icon>
@@ -116,7 +143,9 @@
                 <ColumnDefinition Width="0" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Grid x:Name="grdCenter" Grid.Column="2">
+            <Grid
+                x:Name="grdCenter"
+                Grid.Column="2">
                 <Border ClipToBounds="True">
                     <map:MainMapView
                         x:Name="arcMap"
@@ -212,7 +241,9 @@
                         <RowDefinition Height="16" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ui:SimpleStackPanel IsEnabled="{Binding IsReady}" Spacing="12">
+                    <ui:SimpleStackPanel
+                        IsEnabled="{Binding IsReady}"
+                        Spacing="12">
                         <local:LayerSettingPanel
                             x:Name="layerSettings"
                             Height="480"
@@ -242,8 +273,12 @@
                                 ToolTip="新建可编辑图层">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
-                                        <MenuItem Click="AddWfsLayerButtonClick" Header="WFS图层" />
-                                        <MenuItem Click="CreateTempLayerButtonClick" Header="临时图层" />
+                                        <MenuItem
+                                            Click="AddWfsLayerButtonClick"
+                                            Header="WFS图层" />
+                                        <MenuItem
+                                            Click="CreateTempLayerButtonClick"
+                                            Header="临时图层" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
                             </ui:SplitButton>
@@ -364,7 +399,9 @@
                         <Grid.IsEnabled>
                             <MultiBinding Converter="{StaticResource DrawAndSelectButtonVisiableConverter}">
                                 <Binding Path="IsReady" />
-                                <Binding ElementName="arcMap" Path="Layers.Selected" />
+                                <Binding
+                                    ElementName="arcMap"
+                                    Path="Layers.Selected" />
                             </MultiBinding>
                         </Grid.IsEnabled>
                         <Grid.ColumnDefinitions>
@@ -388,7 +425,9 @@
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
-                                    <MenuItem Click="DrawButtonsClick" Header="自由线" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="自由线" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
@@ -400,12 +439,24 @@
                             Visibility="Collapsed">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
-                                    <MenuItem Click="DrawButtonsClick" Header="自由面" />
-                                    <MenuItem Click="DrawButtonsClick" Header="圆" />
-                                    <MenuItem Click="DrawButtonsClick" Header="椭圆" />
-                                    <MenuItem Click="DrawButtonsClick" Header="矩形" />
-                                    <MenuItem Click="DrawButtonsClick" Header="三角形" />
-                                    <MenuItem Click="DrawButtonsClick" Header="箭头" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="自由面" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="圆" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="椭圆" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="矩形" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="三角形" />
+                                    <MenuItem
+                                        Click="DrawButtonsClick"
+                                        Header="箭头" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
@@ -430,15 +481,29 @@
                             FocusVisualStyle="{x:Null}">
                             <ui:SymbolIcon Symbol="SelectAll" />
                             <Button.ToolTip>
-                                <ui:SimpleStackPanel Width="200" Spacing="4">
-                                    <TextBlock HorizontalAlignment="Center" Style="{DynamicResource SubtitleTextBlockStyle}">选择</TextBlock>
-                                    <TextBlock Style="{DynamicResource BaseTextBlockStyle}" TextWrapping="Wrap">点选</TextBlock>
+                                <ui:SimpleStackPanel
+                                    Width="200"
+                                    Spacing="4">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Style="{DynamicResource SubtitleTextBlockStyle}">
+                                        选择
+                                    </TextBlock>
+                                    <TextBlock
+                                        Style="{DynamicResource BaseTextBlockStyle}"
+                                        TextWrapping="Wrap">
+                                        点选
+                                    </TextBlock>
                                     <TextBlock TextWrapping="Wrap">要选择当前图层的图形，按住Ctrl后点击图形，即可进行点选。</TextBlock>
                                     <TextBlock TextWrapping="Wrap">要选择所有可见图层的图形，按住Shift后点击图形，即可进行点选。</TextBlock>
                                     <TextBlock TextWrapping="Wrap">之后再进行点击时，不需要按住Ctrl，即可将新点击的图形增加到选中的集合中。同时按住下述键时：</TextBlock>
                                     <TextBlock TextWrapping="Wrap">Ctrl：将清空之前的选择，只保留最新点击的图形</TextBlock>
                                     <TextBlock TextWrapping="Wrap">Alt：从已选择的图形集合中，移除点击的图形</TextBlock>
-                                    <TextBlock Style="{DynamicResource BaseTextBlockStyle}" TextWrapping="Wrap">框选</TextBlock>
+                                    <TextBlock
+                                        Style="{DynamicResource BaseTextBlockStyle}"
+                                        TextWrapping="Wrap">
+                                        框选
+                                    </TextBlock>
                                     <TextBlock TextWrapping="Wrap">点击该按钮开始框选。鼠标按下后不松开，拖动形成矩形，松开结束选择。默认情况下，只选择完全处于矩形内部的图形。当松开时同时按住Shift时，将选择与矩形相交的图形。</TextBlock>
                                 </ui:SimpleStackPanel>
                             </Button.ToolTip>

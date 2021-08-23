@@ -95,6 +95,22 @@ namespace MapBoard.Mapping
                 IsRotateEnabled = true
             };
             NavigationCompleted += MainMapView_NavigationCompleted;
+            SetLocationDisplay();
+            Config.Instance.PropertyChanged += Config_PropertyChanged;
+        }
+
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.ShowLocation))
+            {
+                SetLocationDisplay();
+            }
+        }
+
+        public void SetLocationDisplay()
+        {
+            LocationDisplay.ShowLocation = Config.Instance.ShowLocation;
+            LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
         }
 
         private CancellationTokenSource ctsWfs = null;
