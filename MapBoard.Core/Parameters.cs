@@ -15,7 +15,6 @@ namespace MapBoard
             if (File.Exists(Path.Combine(appPath, ConfigHere)))
             {
                 ConfigPath = "config.json";
-                TileConfigPath = "config_tile.json";
                 TrackHistoryPath = "tracks.txt";
                 DataPath = "Data";
                 TileDownloadPath = "Download";
@@ -25,7 +24,6 @@ namespace MapBoard
             else if (File.Exists(Path.Combine(appPath, ConfigUp)))
             {
                 ConfigPath = "config.json";
-                TileConfigPath = "config_tile.json";
                 TrackHistoryPath = "tracks.txt";
                 DataPath = "../Data";
                 TileDownloadPath = "../Download";
@@ -36,7 +34,6 @@ namespace MapBoard
             {
                 string folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 ConfigPath = Path.Combine(folder, AppName, "config.json");
-                TileConfigPath = Path.Combine(folder, AppName, "config_tile.json");
                 TrackHistoryPath = Path.Combine(folder, AppName, "tracks.txt");
                 DataPath = Path.Combine(folder, AppName, "Data");
                 TileDownloadPath = Path.Combine(folder, AppName, "Download");
@@ -56,7 +53,6 @@ namespace MapBoard
         public const string DateFormat = "yyyy-MM-dd";
 
         public static readonly string ConfigPath;
-        public static readonly string TileConfigPath;
         public static readonly string TrackHistoryPath;
         public static readonly string DataPath;
         public static readonly string TileDownloadPath;

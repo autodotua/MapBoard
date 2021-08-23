@@ -106,6 +106,10 @@ namespace MapBoard.UI
                 dataGrid.GroupStyle.Clear();
 
                 CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+                if(view==null)
+                {
+                    return;
+                }
                 view.GroupDescriptions.Clear();
                 switch (value)
                 {

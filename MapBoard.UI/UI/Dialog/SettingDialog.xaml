@@ -281,6 +281,25 @@
                         Content="快速导出地图/图层包"
                         IsChecked="{Binding Config.CopyShpFileWhenExport}"
                         ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
+
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="16">
+                        <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Config.TapToSelect}"
+                            OffContent="按下Ctrl键单击以选择"
+                            OnContent="直接单击以选择" />
+                    </ui:SimpleStackPanel>
+                    <ui:SimpleStackPanel IsEnabled="{Binding Config.TapToSelect}"
+                        Orientation="Horizontal"
+                        Spacing="16">
+                        <TextBlock VerticalAlignment="Center">点按选择图形图层：</TextBlock>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Config.TapToSelectAllLayers}"
+                            OffContent="仅当前图层"
+                            OnContent="全部图层" />
+                    </ui:SimpleStackPanel>
                 </ui:SimpleStackPanel>
             </TabItem>
 

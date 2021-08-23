@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace MapBoard
 {
     public class Config : IJsonSerializable, INotifyPropertyChanged
     {
-        private static string path = System.IO.Path.Combine(FzLib.Program.App.ProgramDirectoryPath, Parameters.ConfigPath);
+        private static string path = Parameters.ConfigPath;
         public static int WatermarkHeight = 72;
         private static Config instance;
 
@@ -137,6 +138,22 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref copyShpFileWhenExport, value, nameof(CopyShpFileWhenExport));
         }
 
+        private bool tapToSelect;
+
+        public bool TapToSelect
+        {
+            get => tapToSelect;
+            set => this.SetValueAndNotify(ref tapToSelect, value, nameof(TapToSelect));
+        }
+        private bool tapToSelectAllLayers=true;
+        public bool TapToSelectAllLayers
+        {
+            get => tapToSelectAllLayers;
+            set => this.SetValueAndNotify(ref tapToSelectAllLayers, value, nameof(TapToSelectAllLayers));
+        }
+
+
+
         public bool Gpx_AutoSmooth
         {
             get => gpx_AutoSmooth;
@@ -174,6 +191,7 @@ namespace MapBoard
         }
 
         private bool gpx_DrawPoints;
+
         public bool Gpx_DrawPoints
         {
             get => gpx_DrawPoints;
@@ -181,6 +199,7 @@ namespace MapBoard
         }
 
         private int lastLayerListGroupType;
+
         public int LastLayerListGroupType
         {
             get => lastLayerListGroupType;
@@ -370,6 +389,10 @@ namespace MapBoard
 
         public void Save()
         {
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
             this.Save(path, new JsonSerializerSettings().SetIndented());
         }
     }

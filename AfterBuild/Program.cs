@@ -19,7 +19,6 @@ namespace MapBoard.AfterBuild
             if (File.Exists(Path.Combine(appPath, ConfigHere)))
             {
                 ConfigPath = "config.json";
-                TileConfigPath = "config_tile.json";
                 TrackHistoryPath = "tracks.txt";
                 DataPath = "Data";
                 TileDownloadPath = "Download";
@@ -29,7 +28,6 @@ namespace MapBoard.AfterBuild
             else if (File.Exists(Path.Combine(appPath, ConfigUp)))
             {
                 ConfigPath = "config.json";
-                TileConfigPath = "config_tile.json";
                 TrackHistoryPath = "tracks.txt";
                 DataPath = "../Data";
                 TileDownloadPath = "../Download";
@@ -40,7 +38,6 @@ namespace MapBoard.AfterBuild
             {
                 string folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 ConfigPath = Path.Combine(folder, AppName, "config.json");
-                TileConfigPath = Path.Combine(folder, AppName, "config_tile.json");
                 TrackHistoryPath = Path.Combine(folder, AppName, "tracks.txt");
                 DataPath = Path.Combine(folder, AppName, "Data");
                 TileDownloadPath = Path.Combine(folder, AppName, "Download");
@@ -60,14 +57,14 @@ namespace MapBoard.AfterBuild
         public const string DateFormat = "yyyy-MM-dd";
 
         public static readonly string ConfigPath;
-        public static readonly string TileConfigPath;
         public static readonly string TrackHistoryPath;
         public static readonly string DataPath;
         public static readonly string TileDownloadPath;
         public static readonly string BackupPath;
         public static readonly string RecordsPath;
 
-        public static readonly TimeSpan AnimationDuration = TimeSpan.FromSeconds(0.5);
+        public static TimeSpan AnimationDuration { get; set; } = TimeSpan.FromSeconds(0.5);
+        public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);
     }
 
     internal class Program
@@ -79,8 +76,8 @@ namespace MapBoard.AfterBuild
 #if !DEBUG || TEST
             DeleteUselessFolders();
             Console.WriteLine("无用目录删除完成");
-            CreateConfig();
-            Console.WriteLine("配置文件创建完成");
+            //CreateConfig();
+            //Console.WriteLine("配置文件创建完成");
             CreateShortcuts();
             Console.WriteLine("快捷方式创建完成");
             if (Path.GetFileName(App.ProgramDirectoryPath) != "App")
@@ -92,42 +89,42 @@ namespace MapBoard.AfterBuild
 #endif
         }
 
-        private static void CreateConfig()
-        {
-            File.WriteAllText(Parameters.TileConfigPath,
-                JsonConvert.SerializeObject(new
-                {
-                    UrlCollection = new
-                    {
-                        Sources = new dynamic[] {
-            new   {
-        Name= "高德地图",
-        Url= "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}"
-      },
-     new {
-        Name= "谷歌卫星",
-        Url= "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-      },
-     new {
-        Name= "谷歌卫星中国（GCJ02）",
-        Url= "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}"
-      },
-    new  {
-        Name= "谷歌卫星中国（WGS84）",
-        Url= "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}"
-      },
-  new    {
-        Name= "天地图",
-        Url= "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
-      },
-   new   {
-        Name= "天地图注记",
-        Url= "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
-      }
-                    }
-                    }
-                }));
-        }
+        //      private static void CreateConfig()
+        //      {
+        //          File.WriteAllText(Parameters.TileConfigPath,
+        //              JsonConvert.SerializeObject(new
+        //              {
+        //                  UrlCollection = new
+        //                  {
+        //                      Sources = new dynamic[] {
+        //          new   {
+        //      Name= "高德地图",
+        //      Url= "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}"
+        //    },
+        //   new {
+        //      Name= "谷歌卫星",
+        //      Url= "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+        //    },
+        //   new {
+        //      Name= "谷歌卫星中国（GCJ02）",
+        //      Url= "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}"
+        //    },
+        //  new  {
+        //      Name= "谷歌卫星中国（WGS84）",
+        //      Url= "http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}"
+        //    },
+        //new    {
+        //      Name= "天地图",
+        //      Url= "http://t0.tianditu.com/vec_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=vec&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
+        //    },
+        // new   {
+        //      Name= "天地图注记",
+        //      Url= "http://t0.tianditu.com/cva_w/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=cva&style=default&TILEMATRIXSET=w&format=tiles&height=256&width=256&tilematrix={z}&tilerow={y}&tilecol={x}&tk=4cb121d316f53f85357887949e827fd4"
+        //    }
+        //                  }
+        //                  }
+        //              }));
+        //      }
 
         private static void CreateShortcuts()
         {

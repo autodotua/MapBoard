@@ -184,10 +184,11 @@ namespace MapBoard.Mapping
         private async void MapviewTapped(object sender, GeoViewInputEventArgs e)
         {
             if (MapView.CurrentTask == BoardTask.Draw //正在绘制
-                || (MapView.CurrentTask != BoardTask.Select)//当前不在选择状态，
-                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                    && (!Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                || MapView.CurrentTask != BoardTask.Select//当前不在选择状态，
+                    && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)
+                    && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                    && !Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)
+                    && !Config.Instance.TapToSelect
                     )
             {
                 return;
@@ -207,7 +208,9 @@ namespace MapBoard.Mapping
             //按Ctrl表示从当前图层中点选
             //按Shift表示从所有图层中点选
             //按Alt表示从选择后立刻进入编辑模式
-            bool allLayers = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Shift;
+            bool allLayers =
+                MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Shift
+                || Config.Instance.TapToSelect && Config.Instance.TapToSelectAllLayers;
             bool edit = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Alt;
             await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, allLayers, edit);
         }
