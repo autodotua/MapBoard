@@ -48,7 +48,7 @@ namespace MapBoard.Model
         private bool enable = true;
 
         /// <summary>
-        /// 是否显示图层
+        /// 是否加载图层
         /// </summary>
         public bool Enable
         {
@@ -57,7 +57,22 @@ namespace MapBoard.Model
             {
                 enable = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enable)));
+                if (value == false)
+                {
+                    Visible = false;
+                }
             }
+        }
+
+        private bool visible = true;
+
+        /// <summary>
+        /// 是否显示图层
+        /// </summary>
+        public bool Visible
+        {
+            get => visible;
+            set => this.SetValueAndNotify(ref visible, value, nameof(Visible));
         }
 
         private double opacity = 1;

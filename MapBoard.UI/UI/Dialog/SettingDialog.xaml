@@ -100,9 +100,28 @@
                                     Header="序号"
                                     IsReadOnly="True"
                                     SortDirection="Ascending" />
-                                <DataGridCheckBoxColumn
-                                    Binding="{Binding Enable}"
-                                    Header="启用" />
+                                <DataGridTemplateColumn
+                                    Width="52"
+                                    Header="启用">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox
+                                                Margin="16,-2"
+                                                IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>  
+                                <DataGridTemplateColumn
+                                    Width="52"
+                                    Header="可见">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox
+                                                Margin="16,-2" IsEnabled="{Binding Enable}"
+                                                IsChecked="{Binding Visible , UpdateSourceTrigger=PropertyChanged}"/> 
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn
                                     Binding="{Binding Name}"
                                     Header="名称" />
@@ -291,7 +310,8 @@
                             OffContent="按下Ctrl键单击以选择"
                             OnContent="直接单击以选择" />
                     </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel IsEnabled="{Binding Config.TapToSelect}"
+                    <ui:SimpleStackPanel
+                        IsEnabled="{Binding Config.TapToSelect}"
                         Orientation="Horizontal"
                         Spacing="16">
                         <TextBlock VerticalAlignment="Center">点按选择图形图层：</TextBlock>

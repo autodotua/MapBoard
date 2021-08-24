@@ -37,7 +37,7 @@ namespace MapBoard.UI
 
         public MapViewSidePanel()
         {
-            BaseLayers = Config.Instance.BaseLayers;
+            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).ToList() ;
             for (int i = 0; i < BaseLayers.Count; i++)
             {
                 BaseLayers[i].Index = i + 1;
@@ -293,7 +293,7 @@ namespace MapBoard.UI
             var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
             if (arcBaseLayer != null)
             {
-                arcBaseLayer.IsVisible = baseLayer.Enable;
+                arcBaseLayer.IsVisible = baseLayer.Visible;
             }
         }
 

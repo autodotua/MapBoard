@@ -131,14 +131,14 @@
                                     SortDirection="Ascending" />
                                 <DataGridTemplateColumn
                                     Width="56"
-                                    Header="启用">
+                                    Header="可见">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox
                                                 Margin="16,-2,0,-2"
                                                 Click="CheckBox_Click"
                                                 Focusable="False"
-                                                IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}"
+                                                IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
                                                 Tag="{Binding .}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

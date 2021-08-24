@@ -32,7 +32,7 @@ namespace MapBoard.Mapping
             {
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers.Reverse<BaseLayerInfo>())
+                foreach (var item in Config.Instance.BaseLayers.Where(p=>p.Enable).Reverse<BaseLayerInfo>())
                 {
                     var layer = GetLayer(item);
                     try
@@ -42,7 +42,7 @@ namespace MapBoard.Mapping
 
                         layer.Opacity = item.Opacity;
                         layer.Id = item.TempID.ToString();
-                        layer.IsVisible = item.Enable;
+                        layer.IsVisible = item.Visible;
                     }
                     catch (TimeoutException ex)
                     {

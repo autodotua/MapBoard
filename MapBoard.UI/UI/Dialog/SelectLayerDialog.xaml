@@ -4,23 +4,28 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
-    Title="请选择目标" CloseButtonText="取消"
+    Title="请选择目标"
+    CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="True"
     Loaded="Window_Loaded"
-    PrimaryButtonText="确定" mc:Ignorable="d">
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
 
     <ListView
-        x:Name="lbx" MinWidth="240"
+        x:Name="lbx"
+        MinWidth="240"
         MaxHeight="480"
         fzc:SmoothScrollViewerHelper.SmoothScroll="True"
         SelectedItem="{Binding SelectedLayer}">
         <ListView.ItemTemplate>
             <DataTemplate>
-                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{Binding Name}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

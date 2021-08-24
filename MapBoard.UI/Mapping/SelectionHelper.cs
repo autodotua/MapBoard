@@ -209,8 +209,8 @@ namespace MapBoard.Mapping
             //按Shift表示从所有图层中点选
             //按Alt表示从选择后立刻进入编辑模式
             bool allLayers =
-                MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Shift
-                || Config.Instance.TapToSelect && Config.Instance.TapToSelectAllLayers;
+                MapView.CurrentTask != BoardTask.Select && (Keyboard.Modifiers == ModifierKeys.Shift
+                || Config.Instance.TapToSelect && Config.Instance.TapToSelectAllLayers);
             bool edit = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Alt;
             await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, allLayers, edit);
         }
@@ -226,123 +226,121 @@ namespace MapBoard.Mapping
             {
                 throw new ArgumentException("需要选取多图层，但是没有给鼠标位置");
             }
-            await (Window.GetWindow(MapView) as MainWindow).DoAsync(async () =>
-             {
-                 if (envelope == null)
-                 {
-                     return;
-                 }
 
-                 QueryParameters query = new QueryParameters
-                 {
-                     Geometry = envelope,
-                     SpatialRelationship = relationship
-                 };
-                 bool first = SelectedFeatures.Count == 0;
-                 List<Feature> features = null;
-                 IMapLayerInfo layer = null;
-                 if (allLayers)
-                 {
-                     var results = await MapView.IdentifyLayersAsync(point.Value, 8, false);
-                     IdentifyLayerResult result = results.FirstOrDefault(p => p.LayerContent.IsVisible);
-                     if (result == null)
-                     {
-                         return;
-                     }
-                     if (result.LayerContent is FeatureLayer l)
-                     {
-                         layer = Layers.Find(l);
-                     }
-                     else if (result.LayerContent is FeatureCollectionLayer cl)
-                     {
-                         layer = Layers.Find(cl.Layers[0]);
-                     }
-                     Debug.Assert(layer != null);
-                     MapView.Layers.Selected = layer;
-                     features = result.GeoElements.Cast<Feature>().ToList();
-                     layer.Layer.SelectFeatures(features);
-                 }
-                 else
-                 {
-                     layer = Layers.Selected;
-                     FeatureLayer fLayer = Layers.Selected?.Layer;
-                     if (Layers.Selected == null || !Layers.Selected.LayerVisible)
-                     {
-                         return;
-                     }
-                     FeatureQueryResult result = await fLayer.SelectFeaturesAsync(query, mode);
+            if (envelope == null)
+            {
+                return;
+            }
 
-                     await Task.Run(() =>
-                     {
-                         features = result.ToList();
-                     });
-                 }
-                 if (features.Count == 0)
-                 {
-                     return;
-                 }
-                 List<Feature> add = new List<Feature>();
-                 List<Feature> remove = new List<Feature>();
+            QueryParameters query = new QueryParameters
+            {
+                Geometry = envelope,
+                SpatialRelationship = relationship
+            };
+            bool first = SelectedFeatures.Count == 0;
+            List<Feature> features = null;
+            IMapLayerInfo layer = null;
+            if (allLayers)
+            {
+                var results = await MapView.IdentifyLayersAsync(point.Value, 8, false);
+                IdentifyLayerResult result = results.FirstOrDefault(p => p.LayerContent.IsVisible);
+                if (result == null)
+                {
+                    return;
+                }
+                if (result.LayerContent is FeatureLayer l)
+                {
+                    layer = Layers.Find(l);
+                }
+                else if (result.LayerContent is FeatureCollectionLayer cl)
+                {
+                    layer = Layers.Find(cl.Layers[0]);
+                }
+                Debug.Assert(layer != null);
+                MapView.Layers.Selected = layer;
+                features = result.GeoElements.Cast<Feature>().ToList();
+                layer.Layer.SelectFeatures(features);
+            }
+            else
+            {
+                layer = Layers.Selected;
+                FeatureLayer fLayer = Layers.Selected?.Layer;
+                if (Layers.Selected == null || !Layers.Selected.LayerVisible)
+                {
+                    return;
+                }
+                FeatureQueryResult result = await fLayer.SelectFeaturesAsync(query, mode);
 
-                 if (first)//首次选择
-                 {
-                     if (startEdit && layer is IEditableLayerInfo w)
-                     {
-                         ClearSelection();
-                         MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);
-                     }
-                     else
-                     {
-                         foreach (var feature in features)
-                         {
-                             selectedFeatures.Add(feature.GetID(), feature);
-                             add.Add(feature);
-                         }
-                     }
-                 }
-                 else//继续选择
-                 {
-                     switch (mode)
-                     {
-                         case SelectionMode.Add:
-                             foreach (var feature in features)
-                             {
-                                 long fid = feature.GetID();
-                                 if (!selectedFeatures.ContainsKey(fid))
-                                 {
-                                     selectedFeatures.Add(fid, feature);
-                                     add.Add(feature);
-                                 }
-                             }
-                             break;
+                await Task.Run(() =>
+                {
+                    features = result.ToList();
+                });
+            }
+            if (features.Count == 0)
+            {
+                return;
+            }
+            List<Feature> add = new List<Feature>();
+            List<Feature> remove = new List<Feature>();
 
-                         case SelectionMode.New:
-                             remove.AddRange(selectedFeatures.Values);
-                             selectedFeatures.Clear();
-                             foreach (var feature in features)
-                             {
-                                 selectedFeatures.Add(feature.GetID(), feature);
-                             }
-                             break;
+            if (first)//首次选择
+            {
+                if (startEdit && layer is IEditableLayerInfo w)
+                {
+                    ClearSelection();
+                    await MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);
+                }
+                else
+                {
+                    foreach (var feature in features)
+                    {
+                        selectedFeatures.Add(feature.GetID(), feature);
+                        add.Add(feature);
+                    }
+                }
+            }
+            else//继续选择
+            {
+                switch (mode)
+                {
+                    case SelectionMode.Add:
+                        foreach (var feature in features)
+                        {
+                            long fid = feature.GetID();
+                            if (!selectedFeatures.ContainsKey(fid))
+                            {
+                                selectedFeatures.Add(fid, feature);
+                                add.Add(feature);
+                            }
+                        }
+                        break;
 
-                         case SelectionMode.Subtract:
-                             foreach (var feature in features)
-                             {
-                                 long fid = feature.GetID();
-                                 if (selectedFeatures.ContainsKey(fid))
-                                 {
-                                     selectedFeatures.Remove(fid);
-                                     remove.Add(feature);
-                                 }
-                             }
-                             break;
+                    case SelectionMode.New:
+                        remove.AddRange(selectedFeatures.Values);
+                        selectedFeatures.Clear();
+                        foreach (var feature in features)
+                        {
+                            selectedFeatures.Add(feature.GetID(), feature);
+                        }
+                        break;
 
-                         default:
-                             throw new ArgumentOutOfRangeException();
-                     }
-                 }
-                 CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
-             }, "正在选取");
+                    case SelectionMode.Subtract:
+                        foreach (var feature in features)
+                        {
+                            long fid = feature.GetID();
+                            if (selectedFeatures.ContainsKey(fid))
+                            {
+                                selectedFeatures.Remove(fid);
+                                remove.Add(feature);
+                            }
+                        }
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
         }
 
         private void SelectedFeatures_CollectionChanged(object sender, SelectedFeaturesChangedEventArgs e)
