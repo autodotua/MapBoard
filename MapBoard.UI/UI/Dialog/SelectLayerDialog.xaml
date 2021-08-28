@@ -7,7 +7,7 @@
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="请选择目标"
+    Title="请选择目标" xmlns:m="clr-namespace:MapBoard"
     CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="True"
@@ -19,7 +19,7 @@
         x:Name="lbx"
         MinWidth="240"
         MaxHeight="480"
-        fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
         SelectedItem="{Binding SelectedLayer}">
         <ListView.ItemTemplate>
             <DataTemplate>

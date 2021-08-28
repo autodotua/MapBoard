@@ -233,7 +233,7 @@
             dd:DragDrop.DropHandler="{Binding}"
             dd:DragDrop.IsDragSource="True"
             dd:DragDrop.IsDropTarget="True"
-            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             ScrollViewer.CanContentScroll="False"

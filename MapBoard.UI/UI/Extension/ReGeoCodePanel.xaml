@@ -9,7 +9,7 @@
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
-    xmlns:util="clr-namespace:MapBoard.Util"
+    xmlns:util="clr-namespace:MapBoard.Util" xmlns:m="clr-namespace:MapBoard"
     d:DesignHeight="450" d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
@@ -98,7 +98,7 @@
                 TextWrapping="Wrap" />
             <ScrollViewer
                 Margin="0,16,0,0"
-                fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
                 DockPanel.Dock="Bottom"
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">

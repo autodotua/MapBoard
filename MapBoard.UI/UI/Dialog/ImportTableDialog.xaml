@@ -5,16 +5,18 @@
     xmlns:c="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
     xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="导入表格" CloseButtonText="取消"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    Title="导入表格" xmlns:m="clr-namespace:MapBoard"
+    CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
-    PrimaryButtonText="确定" mc:Ignorable="d">
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
     <commondialog:CommonDialog.Resources>
         <ObjectDataProvider
             x:Key="fieldTypeEnum"
@@ -26,7 +28,9 @@
         </ObjectDataProvider>
     </commondialog:CommonDialog.Resources>
     <ui:SimpleStackPanel Spacing="8">
-        <TextBox ui:ControlHelper.Header="图层名" Text="{Binding LayerName}" />
+        <TextBox
+            ui:ControlHelper.Header="图层名"
+            Text="{Binding LayerName}" />
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -50,8 +54,10 @@
                 SelectedValuePath="ColumnIndex" />
         </Grid>
         <DataGrid
-            x:Name="dg" Grid.Row="2"
-            MaxHeight="200" fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+            x:Name="dg"
+            Grid.Row="2"
+            MaxHeight="200"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
@@ -62,14 +68,17 @@
 
                 <DataGridCheckBoxColumn
                     Binding="{Binding Import}"
-                    CanUserResize="False" Header="导入" />
+                    CanUserResize="False"
+                    Header="导入" />
                 <DataGridTextColumn
                     Binding="{Binding ColumnIndex}"
-                    CanUserResize="False" Header="列"
+                    CanUserResize="False"
+                    Header="列"
                     IsReadOnly="True" />
                 <DataGridTextColumn
                     Binding="{Binding ColumnName}"
-                    Header="CSV列名" IsReadOnly="True" />
+                    Header="CSV列名"
+                    IsReadOnly="True" />
                 <DataGridTextColumn
                     Width="128"
                     Binding="{Binding Field. Name, UpdateSourceTrigger=PropertyChanged}"
@@ -89,7 +98,9 @@
                     </DataGridTemplateColumn.CellTemplate>
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <ComboBox ItemsSource="{Binding Source={StaticResource fieldTypeEnum}, Mode=OneWay}" SelectedItem="{Binding Field.Type}">
+                            <ComboBox
+                                ItemsSource="{Binding Source={StaticResource fieldTypeEnum}, Mode=OneWay}"
+                                SelectedItem="{Binding Field.Type}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Converter={StaticResource e2dc}}" />
@@ -107,7 +118,9 @@
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <TextBox ui:ControlHelper.Header="日期格式" Text="{Binding DateFormat}" />
+            <TextBox
+                ui:ControlHelper.Header="日期格式"
+                Text="{Binding DateFormat}" />
             <TextBox
                 Grid.Column="2"
                 ui:ControlHelper.Header="时间格式"

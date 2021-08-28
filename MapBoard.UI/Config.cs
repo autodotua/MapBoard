@@ -403,5 +403,13 @@ namespace MapBoard
             }
             this.Save(path, new JsonSerializerSettings().SetIndented());
         }
+
+        private bool smoothScroll;
+
+        public bool SmoothScroll
+        {
+            get => smoothScroll;
+            set => this.SetValueAndNotify(ref smoothScroll, value, nameof(SmoothScroll));
+        }
     }
 }

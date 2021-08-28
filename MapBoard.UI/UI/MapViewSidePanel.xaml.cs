@@ -92,11 +92,11 @@ namespace MapBoard.UI
                 m.LocationDisplay.AutoPanModeChanged += LocationDisplay_AutoPanModeChanged;
                 m.LocationDisplay.LocationChanged += (s, e) => UpdateLocation();
                 m.LocationDisplay.DataSource.StatusChanged += (s, e) => UpdateLocation();
-                m.LocationDisplay.PropertyChanged += (s, e) => UpdateLocation();
+                m.LocationDisplay.DataSource.HeadingChanged += (s, e) => UpdateLocation();
             }
         }
 
-        private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Config.BaseLayers))
             {
@@ -129,6 +129,29 @@ namespace MapBoard.UI
         {
             get => scale;
             private set => this.SetValueAndNotify(ref scale, value, nameof(Scale));
+        }
+
+        private bool dataSourceOn = true;
+
+        public bool DataSourceOn
+        {
+            get => dataSourceOn;
+            set
+            {
+                Debug.Assert(MapView is MapView);
+                if (value != dataSourceOn)
+                {
+                    if (value)
+                    {
+                        (MapView as MapView).LocationDisplay.DataSource.StartAsync();
+                    }
+                    else
+                    {
+                        (MapView as MapView).LocationDisplay.DataSource.StopAsync();
+                    }
+                    this.SetValueAndNotify(ref dataSourceOn, value, nameof(DataSourceOn));
+                }
+            }
         }
 
         public void UpdateScaleAndPosition(Point? position = null)
@@ -488,7 +511,7 @@ namespace MapBoard.UI
                    .SetInOutCubicEase()
                    .SetStoryboard(WidthProperty, bdLocation)
                    .AddTo(storyboard);
-            new DoubleAnimation(open ? 248 : 36, Parameters.AnimationDuration)
+            new DoubleAnimation(open ? 260 : 36, Parameters.AnimationDuration)
                  .SetInOutCubicEase()
                  .SetStoryboard(HeightProperty, bdLocation)
                  .AddTo(storyboard);
@@ -542,49 +565,57 @@ namespace MapBoard.UI
                 List<PropertyNameValue> newProperties = new List<PropertyNameValue>();
                 isUpdatingLocation = true;
                 var ld = (MapView as MapView).LocationDisplay;
-                Esri.ArcGISRuntime.Location.Location l = null;
-                await Task.Run(() => l = ld.Location);
-                LocationStatus = ld.DataSource.Status switch
+                await Task.Run(() =>
                 {
-                    LocationDataSourceStatus.Stopped => "已停止",
-                    LocationDataSourceStatus.Starting => "正在定位",
-                    LocationDataSourceStatus.Started => "已定位",
-                    LocationDataSourceStatus.Stopping => "正在停止",
-                    LocationDataSourceStatus.FailedToStart => "定位失败"
-                };
+                    Esri.ArcGISRuntime.Location.Location l = ld.Location;
+                    LocationStatus = ld.DataSource.Status switch
+                    {
+                        LocationDataSourceStatus.Stopped => "已停止",
+                        LocationDataSourceStatus.Starting => "正在定位",
+                        LocationDataSourceStatus.Started => "已定位",
+                        LocationDataSourceStatus.Stopping => "正在停止",
+                        LocationDataSourceStatus.FailedToStart => "定位失败",
+                        _ => throw new NotImplementedException()
+                    };
 
-                if (l != null)
-                {
-                    newProperties.Add(new PropertyNameValue("经度", l.Position.X.ToString("0.000000°")));
-                    newProperties.Add(new PropertyNameValue("纬度", l.Position.Y.ToString("0.000000°")));
-                    newProperties.Add(new PropertyNameValue("水平精度", l.HorizontalAccuracy.ToString("0m")));
-                    if (l.Position.Z != 0 && !double.IsNaN(l.VerticalAccuracy))
+                    if (l != null)
                     {
-                        newProperties.Add(new PropertyNameValue("海拔", l.Position.Z.ToString("0m")));
-                        newProperties.Add(new PropertyNameValue("垂直精度", l.VerticalAccuracy.ToString("0m")));
+                        newProperties.Add(new PropertyNameValue("经度", l.Position.X.ToString("0.000000°")));
+                        newProperties.Add(new PropertyNameValue("纬度", l.Position.Y.ToString("0.000000°")));
+                        newProperties.Add(new PropertyNameValue("水平精度", l.HorizontalAccuracy.ToString("0m")));
+                        if (l.Position.Z != 0 && !double.IsNaN(l.VerticalAccuracy))
+                        {
+                            newProperties.Add(new PropertyNameValue("海拔", l.Position.Z.ToString("0m")));
+                            newProperties.Add(new PropertyNameValue("垂直精度", l.VerticalAccuracy.ToString("0m")));
+                        }
                     }
-                }
-                if (!double.IsNaN(ld.Heading))
-                {
-                    newProperties.Add(new PropertyNameValue("指向", ld.Heading.ToString("0.0°")));
-                }
-                if (l != null)
-                {
-                    if (l.Timestamp.HasValue)
+                    if (!double.IsNaN(ld.Heading))
                     {
-                        newProperties.Add(new PropertyNameValue("定位时间", l.Timestamp.Value.LocalDateTime.ToString()));
+                        newProperties.Add(new PropertyNameValue("指向", ld.Heading.ToString("0.0°")));
                     }
-                    newProperties.Add(new PropertyNameValue("过时定位", l.IsLastKnown ? "是" : "否"));
+                    if (l != null)
+                    {
+                        if (l.Timestamp.HasValue)
+                        {
+                            newProperties.Add(new PropertyNameValue("定位时间", l.Timestamp.Value.LocalDateTime.ToString()));
+                        }
+                        newProperties.Add(new PropertyNameValue("过时定位", l.IsLastKnown ? "是" : "否"));
 
-                    if (l.AdditionalSourceProperties.ContainsKey("positionSource"))
-                    {
-                        newProperties.Add(new PropertyNameValue("来源", l.AdditionalSourceProperties["positionSource"].ToString()));
+                        if (l.AdditionalSourceProperties.ContainsKey("positionSource"))
+                        {
+                            newProperties.Add(new PropertyNameValue("来源", l.AdditionalSourceProperties["positionSource"].ToString()));
+                        }
+                        foreach (var key in l.AdditionalSourceProperties.Keys.Where(p => p != "positionSource"))
+                        {
+                            object value = l.AdditionalSourceProperties[key];
+                            if (value is double d)
+                            {
+                                value = d.ToString("0.00");
+                            }
+                            newProperties.Add(new PropertyNameValue(key, value.ToString()));
+                        }
                     }
-                    foreach (var key in l.AdditionalSourceProperties.Keys.Where(p => p != "positionSource"))
-                    {
-                        newProperties.Add(new PropertyNameValue(key, l.AdditionalSourceProperties[key].ToString()));
-                    }
-                }
+                });
                 foreach (var property in newProperties)
                 {
                     var oldProperty = LocationProperties.FirstOrDefault(p => p.Name == property.Name);

@@ -4,13 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="设置"
     Width="800"
     Height="400"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="AttributeTableDialog_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -24,7 +25,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <DataGrid
-            x:Name="dg" fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+            x:Name="dg"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
@@ -36,7 +38,9 @@
             SelectionMode="Single"
             SelectionUnit="Cell">
             <DataGrid.Resources>
-                <Style BasedOn="{StaticResource DefaultDataGridCellStyle}" TargetType="{x:Type DataGridCell}">
+                <Style
+                    BasedOn="{StaticResource DefaultDataGridCellStyle}"
+                    TargetType="{x:Type DataGridCell}">
                     <Setter Property="Background" Value="{x:Null}" />
                     <Setter Property="BorderBrush" Value="{x:Null}" />
                     <Style.Triggers>
@@ -74,7 +78,9 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Grid Grid.Row="2" Margin="8">
+        <Grid
+            Grid.Row="2"
+            Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

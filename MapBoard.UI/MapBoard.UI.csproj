@@ -3,7 +3,7 @@
     <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>MapBoard</AssemblyName>
-    <SatelliteResourceLanguages>zh-hans</SatelliteResourceLanguages>
+    <SatelliteResourceLanguages>zh-cn</SatelliteResourceLanguages>
 
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>

@@ -6,6 +6,7 @@
     xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:u="clr-namespace:MapBoard.UI"
@@ -43,6 +44,10 @@
                         <ComboBoxItem>亮色</ComboBoxItem>
                         <ComboBoxItem>暗色</ComboBoxItem>
                     </ComboBox>
+                    <ui:ToggleSwitch
+                        ui:ControlHelper.Description="开启后，可滚动区域滚动时将启用动画"
+                        ui:ControlHelper.Header="平滑滚动"
+                        IsOn="{Binding Config.SmoothScroll}" />
                 </ui:SimpleStackPanel>
             </TabItem>
             <TabItem
@@ -85,7 +90,7 @@
                             Height="160"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
-                            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
                             AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="True"
@@ -110,15 +115,16 @@
                                                 IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>  
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn
                                     Width="52"
                                     Header="可见">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox
-                                                Margin="16,-2" IsEnabled="{Binding Enable}"
-                                                IsChecked="{Binding Visible , UpdateSourceTrigger=PropertyChanged}"/> 
+                                                Margin="16,-2"
+                                                IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
+                                                IsEnabled="{Binding Enable}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

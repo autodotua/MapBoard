@@ -110,7 +110,7 @@
                         <DataGrid
                             x:Name="dgLayers"
                             Grid.Row="2"
-                            fzc:SmoothScrollViewerHelper.SmoothScroll="True"
+                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
                             AutoGenerateColumns="False"
                             Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
                             CanUserAddRows="False"
@@ -356,7 +356,8 @@
                             Text="{Binding LocationStatus}" />
                         <ListView
                             Grid.Row="2"
-                            Height="188"
+                            Height="200"
+                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
                             ItemsSource="{Binding LocationProperties}"
                             ScrollViewer.CanContentScroll="False">
 
@@ -383,6 +384,13 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
+                        <CheckBox
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Margin="0,0,-48,0"
+                            VerticalAlignment="Bottom"
+                            Content="更新"
+                            IsChecked="{Binding DataSourceOn}" />
                     </Grid>
                 </Grid>
             </Border>

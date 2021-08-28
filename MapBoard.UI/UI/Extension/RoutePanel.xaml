@@ -3,14 +3,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI.Extension"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.Util"
-    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
-    d:DesignHeight="450"
+    d:DesignHeight="450" xmlns:m="clr-namespace:MapBoard"
     d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
@@ -73,7 +73,9 @@
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock VerticalAlignment="Center" Text="起点" />
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="起点" />
             <TextBlock
                 Grid.Row="2"
                 VerticalAlignment="Center"
@@ -121,17 +123,27 @@
             </Button>
         </Grid>
         <ListView
-            Grid.Row="4" fzc:SmoothScrollViewerHelper.SmoothScroll="True"
-            Grid.ColumnSpan="99" ScrollViewer.CanContentScroll="False"
+            Grid.Row="4"
+            Grid.ColumnSpan="99"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             ItemsSource="{Binding SearchResult}"
+            ScrollViewer.CanContentScroll="False"
             SelectedItem="{Binding SelectedRoute}">
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ic}}" Header="序号" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Strategy}" Header="策略" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}" Header="距离" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="用时" />
+                        <GridViewColumn
+                            DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ic}}"
+                            Header="序号" />
+                        <GridViewColumn
+                            DisplayMemberBinding="{Binding Strategy}"
+                            Header="策略" />
+                        <GridViewColumn
+                            DisplayMemberBinding="{Binding Distance, StringFormat={}{0:0m}}"
+                            Header="距离" />
+                        <GridViewColumn
+                            DisplayMemberBinding="{Binding Duration}"
+                            Header="用时" />
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
@@ -172,9 +184,15 @@
                             SelectedItem="{Binding SelectedStep}">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn DisplayMemberBinding="{Binding Road}" Header="路名" />
-                                    <GridViewColumn DisplayMemberBinding="{Binding Distance}" Header="长度" />
-                                    <GridViewColumn DisplayMemberBinding="{Binding Duration}" Header="耗时" />
+                                    <GridViewColumn
+                                        DisplayMemberBinding="{Binding Road}"
+                                        Header="路名" />
+                                    <GridViewColumn
+                                        DisplayMemberBinding="{Binding Distance}"
+                                        Header="长度" />
+                                    <GridViewColumn
+                                        DisplayMemberBinding="{Binding Duration}"
+                                        Header="耗时" />
                                 </GridView>
                             </ListView.View>
                         </ListView>
