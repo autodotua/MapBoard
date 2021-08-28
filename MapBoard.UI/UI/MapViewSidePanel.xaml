@@ -6,6 +6,7 @@
     xmlns:extension="clr-namespace:MapBoard.UI.Extension"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mui="clr-namespace:MapBoard.UI"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
@@ -22,7 +23,7 @@
             Opacity="1"
             ShadowDepth="0"
             Color="{DynamicResource SystemAltHighColor}" />
-
+        <local:ValueTupleConverter x:Key="vtc" />
         <SolidColorBrush
             x:Key="backgroundBrush"
             Color="{DynamicResource SystemAltMediumColor}" />
@@ -59,6 +60,7 @@
                     </ContentControl.RenderTransform>
                 </ContentControl>
             </Border>
+
             <Border
                 x:Name="bdLayers"
                 Grid.Row="2"
@@ -273,6 +275,114 @@
                                 wpf:EasyTransform.EasyRotate="180"
                                 Symbol="Back" />
                         </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border
+                x:Name="bdLocation"
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Right"
+                Background="{DynamicResource backgroundBrush}"
+                CornerRadius="4"
+                Cursor="Hand"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowLocation, Converter={StaticResource b2vc}}">
+                <Grid>
+                    <ui:FontIcon
+                        x:Name="iconLocation"
+                        Width="24"
+                        Glyph="&#xE81D;"
+                        MouseDown="iconLocation_MouseDown" />
+                    <Grid
+                        x:Name="grdLocation"
+                        Opacity="0"
+                        Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="99"
+                            Height="40"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            Click="CloseLocationPanelButton_Click">
+                            <ui:SymbolIcon
+                                wpf:EasyTransform.EasyRotate="180"
+                                Symbol="Back" />
+                        </Button>
+                        <ListBox
+                            Grid.Row="2"
+                            Grid.RowSpan="99"
+                            Grid.Column="2"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            SelectedIndex="{Binding PanMode}">
+
+                            <ListBoxItem
+                                Width="72"
+                                HorizontalContentAlignment="Center">
+                                关闭
+                            </ListBoxItem>
+                            <ListBoxItem
+                                Width="72"
+                                HorizontalContentAlignment="Center">
+                                居中
+                            </ListBoxItem>
+                            <ListBoxItem
+                                Width="72"
+                                HorizontalContentAlignment="Center">
+                                导航
+                            </ListBoxItem>
+                            <ListBoxItem
+                                Width="72"
+                                HorizontalContentAlignment="Center">
+                                指南针
+                            </ListBoxItem>
+                        </ListBox>
+                        <TextBlock
+                            Grid.ColumnSpan="99"
+                            Margin="8"
+                            HorizontalAlignment="Center"
+                            Style="{DynamicResource SubtitleTextBlockStyle}"
+                            Text="{Binding LocationStatus}" />
+                        <ListView
+                            Grid.Row="2"
+                            Height="188"
+                            ItemsSource="{Binding LocationProperties}"
+                            ScrollViewer.CanContentScroll="False">
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}" />
+                                        <TextBox
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            BorderThickness="0"
+                                            IsReadOnly="True"
+                                            Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </Grid>
             </Border>

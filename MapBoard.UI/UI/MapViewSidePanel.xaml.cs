@@ -22,6 +22,13 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FzLib.WPF;
+using Esri.ArcGISRuntime.UI;
+using System.Collections.ObjectModel;
+using System.Windows.Data;
+using System.Globalization;
+using Esri.ArcGISRuntime.Location;
+using Windows.Devices.Enumeration;
+using System.ComponentModel;
 
 namespace MapBoard.UI
 {
@@ -37,7 +44,7 @@ namespace MapBoard.UI
 
         public MapViewSidePanel()
         {
-            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).ToList() ;
+            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).ToList();
             for (int i = 0; i < BaseLayers.Count; i++)
             {
                 BaseLayers[i].Index = i + 1;
@@ -78,6 +85,14 @@ namespace MapBoard.UI
             {
                 bdViewPointInfo.Visibility = Visibility.Collapsed;
                 bdScale.Visibility = Visibility.Collapsed;
+                bdLocation.Visibility = Visibility.Collapsed;
+            }
+            else if (mapView is MapView m)
+            {
+                m.LocationDisplay.AutoPanModeChanged += LocationDisplay_AutoPanModeChanged;
+                m.LocationDisplay.LocationChanged += (s, e) => UpdateLocation();
+                m.LocationDisplay.DataSource.StatusChanged += (s, e) => UpdateLocation();
+                m.LocationDisplay.PropertyChanged += (s, e) => UpdateLocation();
             }
         }
 
@@ -435,5 +450,242 @@ namespace MapBoard.UI
         }
 
         #endregion 搜索
+
+        #region 定位
+
+        private bool isLocationPanelOpened = false;
+        private int panMode = 0;
+        private string locationStatus;
+
+        public string LocationStatus
+        {
+            get => locationStatus;
+            set => this.SetValueAndNotify(ref locationStatus, value, nameof(LocationStatus));
+        }
+
+        public int PanMode
+        {
+            get => panMode;
+            set
+            {
+                if (panMode != value)
+                {
+                    this.SetValueAndNotify(ref panMode, value, nameof(PanMode));
+
+                    (MapView as MapView).LocationDisplay.AutoPanMode = (LocationDisplayAutoPanMode)value;
+                }
+            }
+        }
+
+        public ObservableCollection<PropertyNameValue> LocationProperties { get; } = new ObservableCollection<PropertyNameValue>();
+
+        private async Task OpenOrCloseLocationPanelAsync(bool open)
+        {
+            isLocationPanelOpened = open;
+
+            Storyboard storyboard = new Storyboard();
+            new DoubleAnimation(open ? 360 : 36, Parameters.AnimationDuration)
+                   .SetInOutCubicEase()
+                   .SetStoryboard(WidthProperty, bdLocation)
+                   .AddTo(storyboard);
+            new DoubleAnimation(open ? 248 : 36, Parameters.AnimationDuration)
+                 .SetInOutCubicEase()
+                 .SetStoryboard(HeightProperty, bdLocation)
+                 .AddTo(storyboard);
+
+            new DoubleAnimation(open ? 0 : 1, Parameters.AnimationDuration)
+          .SetInOutCubicEase()
+          .SetStoryboard(OpacityProperty, iconLocation)
+          .AddTo(storyboard);
+            new DoubleAnimation(open ? 1 : 0, Parameters.AnimationDuration)
+                    .SetInOutCubicEase()
+                    .SetStoryboard(OpacityProperty, grdLocation)
+                    .AddTo(storyboard);
+
+            bdLocation.IsHitTestVisible = false;
+
+            if (open)
+            {
+                InitializeLocationInfos();
+                grdLocation.Visibility = Visibility.Visible;
+                bdLocation.Cursor = Cursors.Arrow;
+                await storyboard.BeginAsync();
+            }
+            else
+            {
+                bdLocation.Cursor = Cursors.Hand;
+                await storyboard.BeginAsync();
+                grdLocation.Visibility = Visibility.Collapsed;
+            }
+            bdLocation.IsHitTestVisible = true;
+        }
+
+        private void InitializeLocationInfos()
+        {
+            Debug.Assert(MapView is MapView);
+
+            var ld = (MapView as MapView).LocationDisplay;
+            UpdateLocation();
+            PanMode = (int)ld.AutoPanMode;
+        }
+
+        private bool isUpdatingLocation = false;
+
+        private void UpdateLocation()
+        {
+            if (!isLocationPanelOpened || isUpdatingLocation)
+            {
+                return;
+            }
+            Dispatcher.Invoke(async () =>
+            {
+                List<PropertyNameValue> newProperties = new List<PropertyNameValue>();
+                isUpdatingLocation = true;
+                var ld = (MapView as MapView).LocationDisplay;
+                Esri.ArcGISRuntime.Location.Location l = null;
+                await Task.Run(() => l = ld.Location);
+                LocationStatus = ld.DataSource.Status switch
+                {
+                    LocationDataSourceStatus.Stopped => "已停止",
+                    LocationDataSourceStatus.Starting => "正在定位",
+                    LocationDataSourceStatus.Started => "已定位",
+                    LocationDataSourceStatus.Stopping => "正在停止",
+                    LocationDataSourceStatus.FailedToStart => "定位失败"
+                };
+
+                if (l != null)
+                {
+                    newProperties.Add(new PropertyNameValue("经度", l.Position.X.ToString("0.000000°")));
+                    newProperties.Add(new PropertyNameValue("纬度", l.Position.Y.ToString("0.000000°")));
+                    newProperties.Add(new PropertyNameValue("水平精度", l.HorizontalAccuracy.ToString("0m")));
+                    if (l.Position.Z != 0 && !double.IsNaN(l.VerticalAccuracy))
+                    {
+                        newProperties.Add(new PropertyNameValue("海拔", l.Position.Z.ToString("0m")));
+                        newProperties.Add(new PropertyNameValue("垂直精度", l.VerticalAccuracy.ToString("0m")));
+                    }
+                }
+                if (!double.IsNaN(ld.Heading))
+                {
+                    newProperties.Add(new PropertyNameValue("指向", ld.Heading.ToString("0.0°")));
+                }
+                if (l != null)
+                {
+                    if (l.Timestamp.HasValue)
+                    {
+                        newProperties.Add(new PropertyNameValue("定位时间", l.Timestamp.Value.LocalDateTime.ToString()));
+                    }
+                    newProperties.Add(new PropertyNameValue("过时定位", l.IsLastKnown ? "是" : "否"));
+
+                    if (l.AdditionalSourceProperties.ContainsKey("positionSource"))
+                    {
+                        newProperties.Add(new PropertyNameValue("来源", l.AdditionalSourceProperties["positionSource"].ToString()));
+                    }
+                    foreach (var key in l.AdditionalSourceProperties.Keys.Where(p => p != "positionSource"))
+                    {
+                        newProperties.Add(new PropertyNameValue(key, l.AdditionalSourceProperties[key].ToString()));
+                    }
+                }
+                foreach (var property in newProperties)
+                {
+                    var oldProperty = LocationProperties.FirstOrDefault(p => p.Name == property.Name);
+                    if (oldProperty != null)
+                    {
+                        oldProperty.Value = property.Value;
+                    }
+                    else
+                    {
+                        LocationProperties.Add(property);
+                    }
+                }
+                foreach (var property in LocationProperties.ToList())
+                {
+                    if (!newProperties.Any(p => p.Name == property.Name))
+                    {
+                        LocationProperties.Remove(property);
+                    }
+                }
+                isUpdatingLocation = false;
+            });
+        }
+
+        private void iconLocation_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!isLocationPanelOpened)
+            {
+                OpenOrCloseLocationPanelAsync(true);
+            }
+        }
+
+        private void CloseLocationPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isLocationPanelOpened)
+            {
+                OpenOrCloseLocationPanelAsync(false);
+            }
+        }
+
+        private void LocationDisplay_AutoPanModeChanged(object sender, LocationDisplayAutoPanMode e)
+        {
+            PanMode = (int)e;
+        }
+
+        #endregion 定位
+    }
+
+    public class ValueTupleConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is ITuple t)
+            {
+                if (parameter is int index)
+                {
+                    return t[index];
+                }
+                if (parameter is string s && int.TryParse(s, out int index2))
+                {
+                    return t[index2];
+                }
+                throw new ArgumentException("参数必须为索引值");
+            }
+
+            throw new ArgumentException("绑定值必须为ValueTuple");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class PropertyNameValue : INotifyPropertyChanged
+    {
+        public PropertyNameValue()
+        {
+        }
+
+        public PropertyNameValue(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
+
+        private string name;
+
+        public string Name
+        {
+            get => name;
+            set => this.SetValueAndNotify(ref name, value, nameof(Name));
+        }
+
+        private string v;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Value
+        {
+            get => v;
+            set => this.SetValueAndNotify(ref v, value, nameof(Value));
+        }
     }
 }
