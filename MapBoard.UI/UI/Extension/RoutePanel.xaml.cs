@@ -302,5 +302,34 @@ namespace MapBoard.UI.Extension
                 Destination = new Location();
             }
         }
+
+        private void LocationPointButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MapView is MapView m)
+            {
+                if (m.LocationDisplay.Location == null)
+                {
+                    CommonDialog.ShowErrorDialogAsync("目前还未成功定位");
+                    return;
+                }
+                MapPoint point = GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint;
+
+                if ((sender as FrameworkElement).Tag.Equals("1"))
+                {
+                    Origin = point.ToLocation();
+                    Overlay.SetRouteOrigin(point);
+                }
+                else
+                {
+                    Destination = (GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint).ToLocation();
+
+                    Overlay.SetRouteDestination(point);
+                }
+            }
+            else
+            {
+                CommonDialog.ShowErrorDialogAsync("不支持该地图");
+            }
+        }
     }
 }

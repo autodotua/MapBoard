@@ -5,12 +5,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI.Extension"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.Util"
-    d:DesignHeight="450" xmlns:m="clr-namespace:MapBoard"
+    d:DesignHeight="450"
     d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
@@ -72,6 +73,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 VerticalAlignment="Center"
@@ -113,6 +116,17 @@
                 <ui:FontIcon Glyph="&#xE707;" />
             </Button>
             <Button
+                Grid.Column="8"
+                Padding="8,2"
+                Click="LocationPointButton_Click"
+                IsEnabled="{Binding MapView.LocationDisplay.IsStarted}"
+                Tag="1"
+                ToolTip="设置为当前点">
+                <ui:FontIcon
+                    Width="24"
+                    Glyph="&#xE81D;" />
+            </Button>
+            <Button
                 Grid.Row="2"
                 Grid.Column="6"
                 Padding="8,2"
@@ -120,6 +134,17 @@
                 Tag="2"
                 ToolTip="地图选点">
                 <ui:FontIcon Glyph="&#xE707;" />
+            </Button>
+            <Button
+                Grid.Column="8"
+                Padding="8,2" Grid.Row="2"
+                Click="LocationPointButton_Click"
+                IsEnabled="{Binding MapView.LocationDisplay.IsStarted}"
+                Tag="2"
+                ToolTip="设置为当前点">
+                <ui:FontIcon
+                    Width="24"
+                    Glyph="&#xE81D;" />
             </Button>
         </Grid>
         <ListView

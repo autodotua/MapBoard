@@ -48,7 +48,8 @@
                 Background="{DynamicResource backgroundBrush}"
                 CornerRadius="4"
                 Cursor="Hand"
-                ToolTip="点击返回正北朝上">
+                ToolTip="点击返回正北朝上"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideCompass, Converter={StaticResource b2vc}}">
                 <ContentControl
                     x:Name="vbxRotate"
                     Content="{StaticResource CompassIcon}"
@@ -70,7 +71,9 @@
                 Background="{DynamicResource backgroundBrush}"
                 CornerRadius="4"
                 Cursor="Hand"
-                PreviewMouseDown="LayersPanel_PreviewMouseDown">
+                PreviewMouseDown="LayersPanel_PreviewMouseDown"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideBaseLayers, Converter={StaticResource b2vc}}">
+
                 <Grid>
                     <ContentControl
                         x:Name="iconLayers"
@@ -192,7 +195,8 @@
                 Background="{DynamicResource backgroundBrush}"
                 CornerRadius="4"
                 MouseEnter="ScaleButton_MouseEnter"
-                MouseLeave="PanelScale_MouseLeave">
+                MouseLeave="PanelScale_MouseLeave"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleBar, Converter={StaticResource b2vc}}">
                 <Grid>
                     <TextBlock
                         x:Name="tbkScale"
@@ -232,6 +236,33 @@
             </Border>
 
             <Border
+                x:Name="bdZoomIn"
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Right"
+                Background="{DynamicResource backgroundBrush}"
+                CornerRadius="4"
+                Cursor="Hand"
+                MouseDown="ZoomInOutButton_Click"
+                Tag="1"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource b2vc}}">
+                <ui:SymbolIcon Symbol="Add" />
+            </Border>
+            <Border
+                x:Name="bdZoomOut"
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Right"
+                Background="{DynamicResource backgroundBrush}"
+                CornerRadius="4"
+                Cursor="Hand"
+                MouseDown="ZoomInOutButton_Click"
+                Tag="2"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource b2vc}}">
+                <ui:SymbolIcon Symbol="Remove" />
+            </Border>
+
+            <Border
                 x:Name="bdSearch"
                 Grid.Row="6"
                 Width="36"
@@ -240,7 +271,8 @@
                 Background="{DynamicResource backgroundBrush}"
                 CornerRadius="4"
                 Cursor="Hand"
-                PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown">
+                PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown"
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideSearch, Converter={StaticResource b2vc}}">
                 <Grid>
                     <ContentControl
                         x:Name="vwSearchIcon"
@@ -286,8 +318,19 @@
                 HorizontalAlignment="Right"
                 Background="{DynamicResource backgroundBrush}"
                 CornerRadius="4"
-                Cursor="Hand"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowLocation, Converter={StaticResource b2vc}}">
+                Cursor="Hand">
+                <Border.Visibility>
+                    <MultiBinding Converter="{StaticResource bb2vc}">
+                        <MultiBinding.Bindings>
+                            <Binding
+                                Path="ShowSideLocation"
+                                Source="{x:Static m:Config.Instance}" />
+                            <Binding
+                                Path="ShowLocation"
+                                Source="{x:Static m:Config.Instance}" />
+                        </MultiBinding.Bindings>
+                    </MultiBinding>
+                </Border.Visibility>
                 <Grid>
                     <ui:FontIcon
                         x:Name="iconLocation"

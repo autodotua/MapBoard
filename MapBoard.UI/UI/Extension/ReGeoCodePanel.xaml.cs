@@ -158,5 +158,25 @@ namespace MapBoard.UI.Extension
             Overlay.ClearPois();
             SearchResult = null;
         }
+        private void LocationPointButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MapView is MapView m)
+            {
+                if (m.LocationDisplay.Location == null)
+                {
+                    CommonDialog.ShowErrorDialogAsync("目前还未成功定位");
+                    return;
+                }
+                MapPoint point = GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint;
+
+                Point = point.ToLocation();
+
+            }
+            else
+            {
+                CommonDialog.ShowErrorDialogAsync("不支持该地图");
+            }
+        }
+
     }
 }

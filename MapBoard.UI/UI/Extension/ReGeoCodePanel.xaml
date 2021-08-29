@@ -69,6 +69,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <TextBox
@@ -86,6 +88,16 @@
                 Click="ChoosePointButton_Click"
                 ToolTip="地图选点">
                 <ui:FontIcon Glyph="&#xE707;" />
+            </Button>
+            <Button
+                Grid.Column="6"
+                Padding="8,2"
+                Click="LocationPointButton_Click"
+                IsEnabled="{Binding MapView.LocationDisplay.IsStarted}"
+                ToolTip="设置为当前点">
+                <ui:FontIcon
+                    Width="24"
+                    Glyph="&#xE81D;" />
             </Button>
         </Grid>
         <DockPanel Grid.Row="4">

@@ -86,6 +86,8 @@ namespace MapBoard.UI
                 bdViewPointInfo.Visibility = Visibility.Collapsed;
                 bdScale.Visibility = Visibility.Collapsed;
                 bdLocation.Visibility = Visibility.Collapsed;
+                bdZoomIn.Visibility = Visibility.Collapsed;
+                bdZoomOut.Visibility = Visibility.Collapsed;
             }
             else if (mapView is MapView m)
             {
@@ -279,6 +281,19 @@ namespace MapBoard.UI
         private void ScaleButton_MouseEnter(object sender, MouseEventArgs e)
         {
             OpenOrCloseScalePanelAsync(true);
+        }
+
+        private async void ZoomInOutButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (MapView is MapView m)
+            {
+                double r = ((sender as FrameworkElement).Tag as string).Equals("1") ? 1.0 / 3 : 3;
+                await m.SetViewpointScaleAsync(m.MapScale * r);
+            }
+            else if (MapView is SceneView s)
+            {
+                throw new NotSupportedException();
+            }
         }
 
         #endregion 缩放按钮和缩放条

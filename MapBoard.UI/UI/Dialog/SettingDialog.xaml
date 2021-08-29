@@ -302,30 +302,49 @@
                             Click="OpenBackupFolderButton_Click"
                             Content="打开备份目录" />
                     </ui:SimpleStackPanel>
-                    <CheckBox
-                        Content="快速导出地图/图层包"
-                        IsChecked="{Binding Config.CopyShpFileWhenExport}"
-                        ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
-
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="16">
+                        <TextBlock VerticalAlignment="Center">地图和图层包导出方式：</TextBlock>
+                        <CheckBox
+                            Content="快速导出地图/图层包"
+                            IsChecked="{Binding Config.CopyShpFileWhenExport}"
+                            ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
+                    </ui:SimpleStackPanel>
                     <ui:SimpleStackPanel
                         Orientation="Horizontal"
                         Spacing="16">
                         <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
-                        <ui:ToggleSwitch
-                            IsOn="{Binding Config.TapToSelect}"
-                            OffContent="按下Ctrl键单击以选择"
-                            OnContent="直接单击以选择" />
+                        <CheckBox
+                            Content="不需要按Ctrl，直接单击以选择"
+                            IsChecked="{Binding Config.TapToSelect}" />
+                        <CheckBox
+                            Content="可以选择全部图层"
+                            IsChecked="{Binding Config.TapToSelect}"
+                            Visibility="{Binding Config.TapToSelect, Converter={StaticResource b2vc}}" />
                     </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
-                        IsEnabled="{Binding Config.TapToSelect}"
-                        Orientation="Horizontal"
-                        Spacing="16">
-                        <TextBlock VerticalAlignment="Center">点按选择图形图层：</TextBlock>
-                        <ui:ToggleSwitch
-                            IsOn="{Binding Config.TapToSelectAllLayers}"
-                            OffContent="仅当前图层"
-                            OnContent="全部图层" />
-                    </ui:SimpleStackPanel>
+
+                    <TextBlock VerticalAlignment="Center">侧边栏显示内容</TextBlock>
+                    <WrapPanel Orientation="Horizontal">
+                        <CheckBox
+                            Content="指北针"
+                            IsChecked="{Binding Config.ShowSideCompass}" />
+                        <CheckBox
+                            Content="底图快速设置"
+                            IsChecked="{Binding Config.ShowSideBaseLayers}" />
+                        <CheckBox
+                            Content="缩放条"
+                            IsChecked="{Binding Config.ShowSideScaleBar}" />
+                        <CheckBox
+                            Content="放大缩小按钮"
+                            IsChecked="{Binding Config.ShowSideScaleButton}" />
+                        <CheckBox
+                            Content="搜索"
+                            IsChecked="{Binding Config.ShowSideSearch}" />
+                        <CheckBox
+                            Content="定位"
+                            IsChecked="{Binding Config.ShowSideLocation}" />
+                    </WrapPanel>
                 </ui:SimpleStackPanel>
             </TabItem>
 

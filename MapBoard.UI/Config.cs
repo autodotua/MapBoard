@@ -404,12 +404,60 @@ namespace MapBoard
             this.Save(path, new JsonSerializerSettings().SetIndented());
         }
 
-        private bool smoothScroll;
+        private bool smoothScroll = true;
 
         public bool SmoothScroll
         {
             get => smoothScroll;
             set => this.SetValueAndNotify(ref smoothScroll, value, nameof(SmoothScroll));
+        }
+
+        private bool showSideCompass = true;
+
+        public bool ShowSideCompass
+        {
+            get => showSideCompass;
+            set => this.SetValueAndNotify(ref showSideCompass, value, nameof(ShowSideCompass));
+        }
+
+        private bool showSideBaseLayers = true;
+
+        public bool ShowSideBaseLayers
+        {
+            get => showSideBaseLayers;
+            set => this.SetValueAndNotify(ref showSideBaseLayers, value, nameof(ShowSideBaseLayers));
+        }
+
+        private bool showSideScaleBar = true;
+
+        public bool ShowSideScaleBar
+        {
+            get => showSideScaleBar;
+            set => this.SetValueAndNotify(ref showSideScaleBar, value, nameof(ShowSideScaleBar));
+        }
+
+        private bool showSideScaleButton = false;
+
+        public bool ShowSideScaleButton
+        {
+            get => showSideScaleButton;
+            set => this.SetValueAndNotify(ref showSideScaleButton, value, nameof(ShowSideScaleButton));
+        }
+
+        private bool showSideSearch = true;
+
+        public bool ShowSideSearch
+        {
+            get => showSideSearch;
+            set => this.SetValueAndNotify(ref showSideSearch, value, nameof(ShowSideSearch));
+        }
+
+        private bool showSideLocation = true;
+
+        public bool ShowSideLocation
+        {
+            get => showSideLocation;
+            set => this.SetValueAndNotify(ref showSideLocation, value, nameof(ShowSideLocation));
         }
     }
 }

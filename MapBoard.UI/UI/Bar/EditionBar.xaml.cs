@@ -98,7 +98,7 @@ namespace MapBoard.UI.Bar
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTask.Draw)
+            if (e.NewTask == BoardTask.Draw&&MapView.Editor.Mode is  EditMode.Creat or EditMode.Edit)
             {
                 Title = MapView.Editor.Mode switch
                 {
