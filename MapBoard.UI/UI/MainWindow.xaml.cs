@@ -31,6 +31,7 @@ using Esri.ArcGISRuntime.Ogc;
 using FzLib.Collection;
 using FzLib;
 using FzLib.WPF;
+using System.Windows.Threading;
 
 namespace MapBoard.UI
 {
@@ -157,6 +158,11 @@ namespace MapBoard.UI
         /// </summary>
         private void ResetDrawAndSelectButton()
         {
+            if (!CheckAccess())
+            {
+                Dispatcher.Invoke(ResetDrawAndSelectButton);
+                return;
+            }
             this.Notify(nameof(IsReady));
             grdButtons.Children.OfType<SplitButton>()
                    .ForEach(p => p.Visibility = Visibility.Collapsed);
