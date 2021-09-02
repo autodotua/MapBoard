@@ -48,6 +48,9 @@
                         ui:ControlHelper.Description="开启后，可滚动区域滚动时将启用动画"
                         ui:ControlHelper.Header="平滑滚动"
                         IsOn="{Binding Config.SmoothScroll}" />
+
+                    <Button Content="导出设置" Click="ExportButton_Click" />
+                    <Button Content="导入设置" Click="ImportButton_Click" />
                 </ui:SimpleStackPanel>
             </TabItem>
             <TabItem

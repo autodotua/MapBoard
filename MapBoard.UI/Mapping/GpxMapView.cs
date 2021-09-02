@@ -34,7 +34,6 @@ namespace MapBoard.Mapping
             instances.Add(this);
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
-            AllowDrop = true;
             this.SetHideWatermark();
         }
 
@@ -65,23 +64,7 @@ namespace MapBoard.Mapping
 
         public GraphicsOverlay TapOverlay { get; set; }
 
-        protected override async void OnDrop(DragEventArgs e)
-        {
-            base.OnDrop(e);
-            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
-            {
-                return;
-            }
-            bool yes = true;
-            if (files.Length > 10)
-            {
-                yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{files.Length}个文件");
-            }
-            if (yes)
-            {
-                LoadFilesAsync(files);
-            }
-        }
+  
 
         public MapTapModes MapTapMode { get; set; } = MapTapModes.None;
 
@@ -339,7 +322,7 @@ namespace MapBoard.Mapping
                 };
                 try
                 {
-                    LoadTrack(trackInfo, false, true);
+                    LoadTrack(trackInfo, false, false);
                     loadedTrack.Add(trackInfo);
                 }
                 catch (Exception ex)

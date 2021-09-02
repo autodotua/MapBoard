@@ -73,7 +73,7 @@ namespace MapBoard.UI.GpxToolbox
             else if (File.Exists(Parameters.TrackHistoryPath))
             {
                 string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
-                await arcMap.LoadFilesAsync(files);
+                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
             }
         }
 
@@ -163,8 +163,7 @@ namespace MapBoard.UI.GpxToolbox
 
                 Gpx = arcMap.SelectedTrack.Gpx;
                 GpxTrack = arcMap.SelectedTrack.Track;
-
-                await UpdateUI();
+                await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
             }
         }
 
@@ -311,7 +310,7 @@ namespace MapBoard.UI.GpxToolbox
         {
             if (e.Track.Length > 0)
             {
-                //lvwFiles.SelectedItem = e.Track[e.Track.Length - 1];
+                lvwFiles.SelectedItem = e.Track[^1];
                 //if (!e.Update)
                 //{
                 //    await ZoomToTrackAsync(0);
@@ -352,6 +351,24 @@ namespace MapBoard.UI.GpxToolbox
             {
                 arcMap.ClearSelection();
                 chartHelper.ClearLine();
+            }
+        }
+
+        protected override async void OnDrop(DragEventArgs e)
+        {
+            base.OnDrop(e);
+            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
+            {
+                return;
+            }
+            bool yes = true;
+            if (files.Length > 10)
+            {
+                yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{files.Length}个文件");
+            }
+            if (yes)
+            {
+                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
             }
         }
 
@@ -403,7 +420,7 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private void OpenFilesButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFilesButtonClick(object sender, RoutedEventArgs e)
         {
             string[] files = new FileFilterCollection()
                 .Add("GPX轨迹文件", "gpx")
@@ -411,7 +428,7 @@ namespace MapBoard.UI.GpxToolbox
                 .GetFilePaths();
             if (files != null)
             {
-                arcMap.LoadFilesAsync(files);
+                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在加载轨迹");
             }
         }
 

@@ -9,9 +9,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="GPX工具箱" Width="1000"
+    Title="GPX工具箱"
+    Width="1000"
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
+    AllowDrop="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     WindowStartupLocation="CenterScreen"
@@ -25,11 +27,13 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <GridSplitter
-            Grid.Column="1" Width="4"
+            Grid.Column="1"
+            Width="4"
             HorizontalAlignment="Center"
             Background="Transparent" />
         <Grid
-            x:Name="grdLeft" Margin="8"
+            x:Name="grdLeft"
+            Margin="8"
             IsEnabled="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -41,7 +45,9 @@
             </Grid.RowDefinitions>
 
             <Expander Header="GPX信息">
-                <Grid Margin="8" DataContext="{Binding Gpx}">
+                <Grid
+                    Margin="8"
+                    DataContext="{Binding Gpx}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -71,56 +77,71 @@
                     </Grid.RowDefinitions>
 
                     <TextBox
-                        Grid.ColumnSpan="3" FontSize="18"
+                        Grid.ColumnSpan="3"
+                        FontSize="18"
                         Text="{Binding Name}"
                         TextAlignment="Center" />
                     <TextBlock
-                        Grid.Row="2" HorizontalAlignment="Right"
+                        Grid.Row="2"
+                        HorizontalAlignment="Right"
                         Text="时间：" />
                     <TextBox
-                        Grid.Row="2" Grid.Column="2"
+                        Grid.Row="2"
+                        Grid.Column="2"
                         Text="{Binding Time}" />
                     <TextBlock
-                        Grid.Row="4" HorizontalAlignment="Right"
+                        Grid.Row="4"
+                        HorizontalAlignment="Right"
                         Text="描述：" />
                     <TextBox
-                        Grid.Row="4" Grid.Column="2"
+                        Grid.Row="4"
+                        Grid.Column="2"
                         Text="{Binding Description}" />
                     <TextBlock
-                        Grid.Row="6" HorizontalAlignment="Right"
+                        Grid.Row="6"
+                        HorizontalAlignment="Right"
                         Text="作者：" />
                     <TextBox
-                        Grid.Row="6" Grid.Column="2"
+                        Grid.Row="6"
+                        Grid.Column="2"
                         Text="{Binding Author}" />
                     <TextBlock
-                        Grid.Row="8" HorizontalAlignment="Right"
+                        Grid.Row="8"
+                        HorizontalAlignment="Right"
                         Text="Url：" />
                     <TextBox
-                        Grid.Row="8" Grid.Column="2"
+                        Grid.Row="8"
+                        Grid.Column="2"
                         Text="{Binding Url}" />
                     <TextBlock
                         Grid.Row="10"
                         HorizontalAlignment="Right"
                         Text="Url名称：" />
                     <TextBox
-                        Grid.Row="10" Grid.Column="2"
+                        Grid.Row="10"
+                        Grid.Column="2"
                         Text="{Binding UrlName}" />
                     <TextBlock
                         Grid.Row="12"
-                        HorizontalAlignment="Right" Text="关键词：" />
+                        HorizontalAlignment="Right"
+                        Text="关键词：" />
                     <TextBox
-                        Grid.Row="12" Grid.Column="2"
+                        Grid.Row="12"
+                        Grid.Column="2"
                         Text="{Binding KeyWords}" />
                     <TextBlock
                         Grid.Row="14"
-                        HorizontalAlignment="Right" Text="距离：" />
+                        HorizontalAlignment="Right"
+                        Text="距离：" />
                     <TextBox
-                        Grid.Row="14" Grid.Column="2"
+                        Grid.Row="14"
+                        Grid.Column="2"
                         Text="{Binding Distance}" />
                 </Grid>
             </Expander>
             <Expander
-                Grid.Row="2" Header="Gpx轨迹信息"
+                Grid.Row="2"
+                Header="Gpx轨迹信息"
                 IsExpanded="True">
                 <Grid Margin="8">
                     <Grid.ColumnDefinitions>
@@ -151,59 +172,75 @@
                     </Grid.RowDefinitions>
 
                     <TextBox
-                        Grid.ColumnSpan="3" FontSize="16"
+                        Grid.ColumnSpan="3"
+                        FontSize="16"
                         Text="{Binding GpxTrack.Name}"
                         TextAlignment="Center" />
                     <TextBlock
-                        Grid.Row="2" HorizontalAlignment="Right"
+                        Grid.Row="2"
+                        HorizontalAlignment="Right"
                         Text="描述：" />
                     <TextBox
-                        Grid.Row="2" Grid.Column="2"
+                        Grid.Row="2"
+                        Grid.Column="2"
                         Text="{Binding GpxTrack.Description}" />
                     <TextBlock
-                        Grid.Row="4" HorizontalAlignment="Right"
+                        Grid.Row="4"
+                        HorizontalAlignment="Right"
                         Text="实际距离：" />
                     <TextBox
-                        Grid.Row="4" Grid.Column="2"
+                        Grid.Row="4"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding DistanceText}" />
                     <TextBlock
-                        Grid.Row="6" HorizontalAlignment="Right"
+                        Grid.Row="6"
+                        HorizontalAlignment="Right"
                         Text="全程均速：" />
                     <TextBox
-                        Grid.Row="6" Grid.Column="2"
+                        Grid.Row="6"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding SpeedText}" />
                     <TextBlock
-                        Grid.Row="8" HorizontalAlignment="Right"
+                        Grid.Row="8"
+                        HorizontalAlignment="Right"
                         Text="全程时间：" />
                     <TextBox
-                        Grid.Row="8" Grid.Column="2"
+                        Grid.Row="8"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding GpxTrack.TotalTime, Mode=OneWay}" />
                     <TextBlock
                         Grid.Row="10"
-                        HorizontalAlignment="Right" Text="运动均速：" />
+                        HorizontalAlignment="Right"
+                        Text="运动均速：" />
                     <TextBox
-                        Grid.Row="10" Grid.Column="2"
+                        Grid.Row="10"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding MaxSpeedText}" />
                     <TextBlock
                         Grid.Row="12"
-                        HorizontalAlignment="Right" Text="运动时间：" />
+                        HorizontalAlignment="Right"
+                        Text="运动时间：" />
                     <TextBox
-                        Grid.Row="12" Grid.Column="2"
+                        Grid.Row="12"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding MovingTimeText}" />
                     <TextBlock
                         Grid.Row="14"
-                        HorizontalAlignment="Right" Text="最大速度：" />
+                        HorizontalAlignment="Right"
+                        Text="最大速度：" />
                     <TextBox
-                        Grid.Row="14" Grid.Column="2"
+                        Grid.Row="14"
+                        Grid.Column="2"
                         IsReadOnly="True"
                         Text="{Binding MaxSpeedText}" />
                     <DataGrid
-                        x:Name="grdPoints" Grid.Row="16"
+                        x:Name="grdPoints"
+                        Grid.Row="16"
                         Grid.ColumnSpan="3"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
@@ -213,14 +250,20 @@
                         VerticalScrollBarVisibility="Visible">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Click="SpeedMenuItemClick" Header="计算速度" />
-                                <MenuItem Click="DeletePointMenuClick" Header="删除" />
+                                <MenuItem
+                                    Click="SpeedMenuItemClick"
+                                    Header="计算速度" />
+                                <MenuItem
+                                    Click="DeletePointMenuClick"
+                                    Header="删除" />
                                 <MenuItem
                                     Click="InsertPointButtonClick"
-                                    Header="在之前插入" Tag="Before" />
+                                    Header="在之前插入"
+                                    Tag="Before" />
                                 <MenuItem
                                     Click="InsertPointButtonClick"
-                                    Header="在之后插入" Tag="After" />
+                                    Header="在之后插入"
+                                    Tag="After" />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Resources>
@@ -229,22 +272,29 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 Binding="{Binding Time, StringFormat={}{0:M-d HH:mm:ss}}"
-                                Header="时间" IsReadOnly="False" />
+                                Header="时间"
+                                IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding X, StringFormat={}{0:0.0000000}}"
-                                Header="经度" IsReadOnly="False" />
+                                Header="经度"
+                                IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Y, StringFormat={}{0:0.0000000}}"
-                                Header="纬度" IsReadOnly="False" />
+                                Header="纬度"
+                                IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Z, StringFormat={}{0:0.000m}}"
-                                Header="海拔" IsReadOnly="False" />
+                                Header="海拔"
+                                IsReadOnly="False" />
                             <DataGridTextColumn
                                 Binding="{Binding Speed, Converter={StaticResource speedConverter}}"
-                                Header="速度" IsReadOnly="True" />
+                                Header="速度"
+                                IsReadOnly="True" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Grid Grid.Row="18" Grid.ColumnSpan="3">
+                    <Grid
+                        Grid.Row="18"
+                        Grid.ColumnSpan="3">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="8" />
@@ -298,19 +348,23 @@
                         Click="RecoverCameraButtonClick"
                         Content="恢复视角" />
                     <Button
-                        Grid.Row="2" Grid.Column="2"
+                        Grid.Row="2"
+                        Grid.Column="2"
                         HorizontalAlignment="Stretch"
                         Click="OperationButtonClick"
                         Content="操作" />
                     <Button
-                        Grid.Row="2" Grid.Column="4"
+                        Grid.Row="2"
+                        Grid.Column="4"
                         HorizontalAlignment="Stretch"
-                        Click="SaveFileButtonClick" Content="导出" />
+                        Click="SaveFileButtonClick"
+                        Content="导出" />
                 </Grid>
             </StackPanel>
         </Grid>
         <Grid
-            x:Name="grd" Grid.Column="2"
+            x:Name="grd"
+            Grid.Column="2"
             ClipToBounds="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*" />
@@ -320,17 +374,19 @@
             <Border ClipToBounds="True">
                 <Grid>
                     <mapping:GpxMapView
-                    x:Name="arcMap"
-                    GeoViewTapped="ArcMapTapped"
-                    GpxLoaded="GpxLoaded"
-                    PointSelected="MapPointSelected" />
+                        x:Name="arcMap"
+                        GeoViewTapped="ArcMapTapped"
+                        GpxLoaded="GpxLoaded"
+                        PointSelected="MapPointSelected" />
 
                     <Expander
-            Grid.Column="2" Padding="8,0,8,0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-            Header="文件" IsExpanded="True">
+                        Grid.Column="2"
+                        Padding="8,0,8,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        Header="文件"
+                        IsExpanded="True">
                         <Grid Margin="0,8">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -338,35 +394,50 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <StackPanel
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
-                                <Button Click="OpenFilesButtonClick" Content="导入" />
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <Button
+                                    Click="OpenFilesButtonClick"
+                                    Content="导入" />
                                 <FrameworkElement Width="8" />
-                                <Button Click="ClearFileListButtonClick" Content="清空" />
+                                <Button
+                                    Click="ClearFileListButtonClick"
+                                    Content="清空" />
                             </StackPanel>
                             <ListView
-                    x:Name="lvwFiles" Grid.Row="2"
-                    ItemsSource="{Binding Tracks}"
-                    PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
-                    SelectionChanged="FileSelectionChanged"
-                    SelectionMode="Extended">
+                                x:Name="lvwFiles"
+                                Grid.Row="2"
+                                ItemsSource="{Binding Tracks}"
+                                PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
+                                SelectionChanged="FileSelectionChanged"
+                                SelectionMode="Extended">
 
                                 <ListView.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Click="RemoveTrackFileMenuClick" Header="删除" />
-                                        <MenuItem Click="LinkTrackMenuClick" Header="连接" />
-                                        <MenuItem Click="ZoomToTrackButtonClick" Header="缩放到轨迹" />
-                                        <MenuItem Click="BrowseButtonClick" Header="浏览" />
+                                        <MenuItem
+                                            Click="RemoveTrackFileMenuClick"
+                                            Header="删除" />
+                                        <MenuItem
+                                            Click="LinkTrackMenuClick"
+                                            Header="连接" />
+                                        <MenuItem
+                                            Click="ZoomToTrackButtonClick"
+                                            Header="缩放到轨迹" />
+                                        <MenuItem
+                                            Click="BrowseButtonClick"
+                                            Header="浏览" />
                                     </ContextMenu>
                                 </ListView.ContextMenu>
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn
-                                Width="144"
-                                DisplayMemberBinding="{Binding FileName}"
-                                Header="文件名" />
-                                        <GridViewColumn DisplayMemberBinding="{Binding TrackIndex}" Header="轨迹索引" />
+                                            Width="144"
+                                            DisplayMemberBinding="{Binding FileName}"
+                                            Header="文件名" />
+                                        <GridViewColumn
+                                            DisplayMemberBinding="{Binding TrackIndex}"
+                                            Header="轨迹索引" />
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -375,7 +446,8 @@
                 </Grid>
             </Border>
             <Canvas
-                x:Name="speedChart" Grid.Row="2"
+                x:Name="speedChart"
+                Grid.Row="2"
                 ClipToBounds="True"
                 MouseLeave="SpeedChartMouseLeave" />
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2" />-->

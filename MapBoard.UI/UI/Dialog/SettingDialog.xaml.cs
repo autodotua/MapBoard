@@ -22,6 +22,7 @@ using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ModernWpf.Controls;
+using FzLib.DataStorage.Serialization;
 
 namespace MapBoard.UI.Dialog
 {
@@ -122,17 +123,8 @@ namespace MapBoard.UI.Dialog
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
-            Config.Instance.Save();
-            App.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            (Owner as MainWindow).Close(true);
-            foreach (Window window in App.Current.Windows.Cast<Window>().ToList())
-            {
-                window.Close();
-            }
-            App.Current.MainWindow = new MainWindow();
-            App.Current.MainWindow.Show();
-            App.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
-            Close();
+
+            RestartMainWindow();
         }
 
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
@@ -246,6 +238,50 @@ namespace MapBoard.UI.Dialog
         {
             grd.SelectedItem = item;
             grd.ScrollIntoView(item);
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            string path = new FileFilterCollection().Add("MapBoard配置文件", "mbconfig")
+                .CreateSaveFileDialog()
+                .SetDefault("地图画板配置", null, "mbconfig")
+                .GetFilePath();
+            if (path != null)
+            {
+                Config.Save(path);
+            }
+        }
+
+        private async void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            string path = new FileFilterCollection().Add("MapBoard配置文件", "mbconfig").CreateOpenFileDialog().GetFilePath();
+            if (path != null)
+            {
+                try
+                {
+                    Config.Instance.LoadFromJsonFile(path);
+                    RestartMainWindow();
+                }
+                catch (Exception ex)
+                {
+                    await CommonDialog.ShowErrorDialogAsync(ex, "加载配置文件失败");
+                }
+            }
+        }
+
+        private void RestartMainWindow()
+        {
+            Config.Instance.Save();
+            App.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            (Owner as MainWindow).Close(true);
+            foreach (Window window in App.Current.Windows.Cast<Window>().ToList())
+            {
+                window.Close();
+            }
+            App.Current.MainWindow = new MainWindow();
+            App.Current.MainWindow.Show();
+            App.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
+            Close();
         }
     }
 }
