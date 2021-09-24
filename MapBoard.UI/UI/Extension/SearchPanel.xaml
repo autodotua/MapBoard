@@ -95,7 +95,7 @@
                 <GridView>
                     <GridView.Columns>
                         <GridViewColumn
-                            DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ic}}"
+                            DisplayMemberBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource IndexConverter}}"
                             Header="序号" />
                         <GridViewColumn
                             DisplayMemberBinding="{Binding Name}"

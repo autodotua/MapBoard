@@ -3,15 +3,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converter="clr-namespace:MapBoard.UI.Converter"
     xmlns:converters="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows">
-    <converter:GeometryTypeDescriptionConverter x:Key="gtdc" />
-    <converter:BaseLayerTypeConverter x:Key="bltc" />
-    <converter:IndexConverter x:Key="ic" />
-    <converters:Enum2DescriptionConverter x:Key="e2dc" />
-    <converters:NotNull2BoolConverter x:Key="nn2bc" />
-    <converters:NotNull2VisibleConverter x:Key="n2ic" />
-    <converters:Bool2VisibilityConverter x:Key="b2vc" />
-    <converter:BothBool2VisibilityConverter x:Key="bb2vc" />
-    <converters:InverseBoolConverter x:Key="ibc" />
-    <converters:Color2SolidColorBrushConverter x:Key="c2bc" />
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/FzCoreLib.Windows;component/WPF/Converters/Converters.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <converter:GeometryTypeDescriptionConverter x:Key="GeometryTypeDescriptionConverter" />
+    <converter:BaseLayerTypeConverter x:Key="BaseLayerTypeConverter" />
+    <converter:BothBool2VisibilityConverter x:Key="BothBool2VisibilityConverter" />
     <converter:DrawAndSelectButtonVisiableConverter x:Key="DrawAndSelectButtonVisiableConverter" />
+    <converter:FeaturesHistoryDescriptionConverter x:Key="FeaturesHistoryDescriptionConverter" />
+    <converter:IndexConverter x:Key="IndexConverter" />
+    <converter:SpeedValueConverter x:Key="SpeedValueConverter" />
+    <converter:TileDownloaderTitleConverter x:Key="TileDownloaderTitleConverter" />
 </ResourceDictionary>

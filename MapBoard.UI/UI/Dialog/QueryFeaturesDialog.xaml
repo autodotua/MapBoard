@@ -58,13 +58,13 @@
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock VerticalAlignment="Center" Text="{Binding Parameters.Geometry.GeometryType, Converter={StaticResource gtdc}}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding Parameters.Geometry.GeometryType, Converter={StaticResource GeometryTypeDescriptionConverter}}" />
             <Button
                 Grid.Column="2"
                 HorizontalAlignment="Right"
                 Click="CancelGeometryButton_Click"
                 Content="取消"
-                IsEnabled="{Binding Parameters.Geometry, Converter={StaticResource nn2bc}}" />
+                IsEnabled="{Binding Parameters.Geometry, Converter={StaticResource NotNullConverter}}" />
 
             <ui:SplitButton
                 Grid.Column="4"

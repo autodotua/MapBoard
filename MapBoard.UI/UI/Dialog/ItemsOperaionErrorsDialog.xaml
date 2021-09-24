@@ -46,7 +46,7 @@
                         Margin="12,4"
                         Text="{Binding Exception}"
                         TextWrapping="Wrap"
-                        Visibility="{Binding Exception, Converter={StaticResource n2ic}}" />
+                        Visibility="{Binding Exception, Converter={StaticResource NotNullConverter}}" />
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
         </DataGrid>

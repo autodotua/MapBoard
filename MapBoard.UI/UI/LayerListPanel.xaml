@@ -145,7 +145,7 @@
                     Grid.Row="2"
                     Grid.Column="2"
                     Opacity="0.75"
-                    Text="{Binding GeometryType, Converter={StaticResource gtdc}}" />
+                    Text="{Binding GeometryType, Converter={StaticResource GeometryTypeDescriptionConverter}}" />
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="2"
@@ -180,7 +180,7 @@
                                     <TextBlock
                                         Margin="8,4,0,0"
                                         FontWeight="Bold"
-                                        Text="{Binding Path=Name, Converter={StaticResource gtdc}}" />
+                                        Text="{Binding Path=Name, Converter={StaticResource GeometryTypeDescriptionConverter}}" />
                                     <TextBlock
                                         Margin="16,4,0,8"
                                         Opacity="0.8">

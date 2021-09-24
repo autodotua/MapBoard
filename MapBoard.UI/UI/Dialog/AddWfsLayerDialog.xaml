@@ -16,7 +16,6 @@
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
     PrimaryButtonText="确定" mc:Ignorable="d">
     <commondialog:CommonDialog.Resources>
-        <c:Enum2DescriptionConverter x:Key="e2dc" />
         <ObjectDataProvider
             x:Key="fieldTypeEnum"
             MethodName="GetValues"

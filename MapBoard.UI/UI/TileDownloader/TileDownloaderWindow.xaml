@@ -12,7 +12,8 @@
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:wpf="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
-    Width="1000" Height="700"
+    Width="1000"
+    Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="WindowClosing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -21,17 +22,14 @@
     mc:Ignorable="d">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo
-            x:Name="taskBar" Description="地图瓦片下载拼接器"
+            x:Name="taskBar"
+            Description="地图瓦片下载拼接器"
             ProgressValue="{Binding DownloadingProgressPercent}" />
     </Window.TaskbarItemInfo>
-    <Window.Resources>
-        <c:TileDownloaderTitleConverter x:Key="titleConverter" />
-        <c2:Enum2StringConverter x:Key="e2s" />
-        <c2:Enum2BoolConverter x:Key="e2b" />
-        <c2:Bool2StringConverter x:Key="b2s" />
-    </Window.Resources>
     <Window.Title>
-        <Binding Converter="{StaticResource titleConverter}" Path="DownloadingProgressPercent" />
+        <Binding
+            Converter="{StaticResource TileDownloaderTitleConverter}"
+            Path="DownloadingProgressPercent" />
     </Window.Title>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -52,7 +50,8 @@
             VerticalAlignment="Stretch"
             Background="Transparent" />
         <TabControl
-            x:Name="tab" Grid.Column="2"
+            x:Name="tab"
+            Grid.Column="2"
             SelectionChanged="tab_SelectionChanged"
             Style="{StaticResource TabControlPivotStyle}">
             <TabItem Header="动态地图">
@@ -62,58 +61,74 @@
                         PreviewMouseMove="arcMap_PreviewMouseMove"
                         SelectBoundaryComplete="arcMap_SelectBoundaryComplete" />
                     <Button
-                        Margin="8" HorizontalAlignment="Right"
+                        Margin="8"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
                         Click="SelectAreaButtonClick">
                         <ui:SymbolIcon Symbol="SelectAll" />
                     </Button>
                     <TextBlock
-                        Grid.Column="2" Margin="8"
+                        Grid.Column="2"
+                        Margin="8"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
                         Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}">
                         <TextBlock.Effect>
-                            <BlurEffect KernelType="Box" Radius="3.0" />
+                            <BlurEffect
+                                KernelType="Box"
+                                Radius="3.0" />
                         </TextBlock.Effect>
                     </TextBlock>
                     <TextBlock
-                        x:Name="tbkTileIndex" Grid.Column="2"
-                        Margin="8" HorizontalAlignment="Left"
+                        x:Name="tbkTileIndex"
+                        Grid.Column="2"
+                        Margin="8"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
-                        Panel.ZIndex="1" Foreground="White" />
+                        Panel.ZIndex="1"
+                        Foreground="White" />
                 </Grid>
             </TabItem>
             <TabItem Header="静态地图">
                 <Grid>
                     <wpf:ZoomableBorder ClipToBounds="True">
-                        <Image x:Name="staticMap" ImageFailed="ImageFailed" />
+                        <Image
+                            x:Name="staticMap"
+                            ImageFailed="ImageFailed" />
                     </wpf:ZoomableBorder>
                     <TextBlock
                         x:Name="tbkStichStatus"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center" FontSize="20" />
+                        VerticalAlignment="Center"
+                        FontSize="20" />
                 </Grid>
             </TabItem>
             <TabItem Header="本地地图">
                 <Grid ClipToBounds="True">
 
                     <mapping:TileDownloaderMapView
-                        x:Name="arcLocalMap" IsLocal="True"
+                        x:Name="arcLocalMap"
+                        IsLocal="True"
                         PreviewMouseMove="arcMap_PreviewMouseMove" />
                     <TextBlock
-                        Grid.Column="2" Margin="8"
+                        Grid.Column="2"
+                        Margin="8"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
                         Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}">
                         <TextBlock.Effect>
-                            <BlurEffect KernelType="Box" Radius="3.0" />
+                            <BlurEffect
+                                KernelType="Box"
+                                Radius="3.0" />
                         </TextBlock.Effect>
                     </TextBlock>
                     <TextBlock
-                        Grid.Column="2" Margin="8"
+                        Grid.Column="2"
+                        Margin="8"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
-                        Panel.ZIndex="1" Foreground="White"
+                        Panel.ZIndex="1"
+                        Foreground="White"
                         Text="{Binding ElementName=tbkTileIndex, Path=Text, Mode=OneWay}" />
                 </Grid>
             </TabItem>
@@ -133,7 +148,8 @@
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
                 <Grid
-                    x:Name="grdDownload" Margin="0,0,20,0"
+                    x:Name="grdDownload"
+                    Margin="0,0,20,0"
                     IsEnabled="{Binding ControlsEnable}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -164,8 +180,10 @@
                             </Grid.RowDefinitions>
 
                             <ListView
-                                x:Name="dgrdUrls" Grid.ColumnSpan="3"
-                                MinHeight="108" MaxHeight="196"
+                                x:Name="dgrdUrls"
+                                Grid.ColumnSpan="3"
+                                MinHeight="108"
+                                MaxHeight="196"
                                 BorderThickness="0"
                                 IsEnabled="{Binding ControlsEnable}"
                                 ItemsSource="{Binding Config.Tile_Urls.Sources}"
@@ -178,36 +196,50 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-                            <TextBlock Grid.Row="2" Text="标题：" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Text="标题：" />
 
                             <TextBox
-                                Grid.Row="4" Grid.ColumnSpan="999"
+                                Grid.Row="4"
+                                Grid.ColumnSpan="999"
                                 Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Name}"
                                 TextWrapping="Wrap" />
 
-                            <TextBlock Grid.Row="6" Text="链接：" />
+                            <TextBlock
+                                Grid.Row="6"
+                                Text="链接：" />
                             <TextBox
-                                Grid.Row="8" Grid.ColumnSpan="999"
+                                Grid.Row="8"
+                                Grid.ColumnSpan="999"
                                 Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Url}"
                                 TextWrapping="Wrap" />
-                            <Grid Grid.Row="10" Grid.ColumnSpan="99">
+                            <Grid
+                                Grid.Row="10"
+                                Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="4" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Button HorizontalAlignment="Stretch" Click="NewTileSourceButtonClick">新增</Button>
+                                <Button
+                                    HorizontalAlignment="Stretch"
+                                    Click="NewTileSourceButtonClick">
+                                    新增
+                                </Button>
                                 <Button
                                     Grid.Column="2"
                                     HorizontalAlignment="Stretch"
                                     Click="DeleteTileSourceButtonClick"
-                                    IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource nn2bc}}">
+                                    IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource NotNullConverter}}">
                                     删除
                                 </Button>
                             </Grid>
                         </Grid>
                     </GroupBox>
-                    <GroupBox Grid.Row="2" Header="下载选项">
+                    <GroupBox
+                        Grid.Row="2"
+                        Header="下载选项">
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -235,39 +267,55 @@
                             <!--<TextBlock HorizontalAlignment="Right" Text="瓦片地址：" />
                     <TextBox Grid.Column="2" PreviewKeyDown="TextBox_PreviewKeyDown"  Text="{Binding Config.Url, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ControlsEnable}" />-->
 
-                            <TextBlock Grid.Row="2" Text="下载路径：" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Text="下载路径：" />
                             <TextBox
-                                Grid.Row="2" Grid.Column="2"
+                                Grid.Row="2"
+                                Grid.Column="2"
                                 Text="{Binding Config.Tile_DownloadFolder}" />
-                            <TextBlock Grid.Row="4" Text="用户代理：" />
+                            <TextBlock
+                                Grid.Row="4"
+                                Text="用户代理：" />
                             <TextBox
-                                Grid.Row="4" Grid.Column="2"
+                                Grid.Row="4"
+                                Grid.Column="2"
                                 Text="{Binding Config.Tile_DownloadUserAgent}" />
                             <TextBlock
-                                Grid.Row="6" VerticalAlignment="Center"
+                                Grid.Row="6"
+                                VerticalAlignment="Center"
                                 Text="图片格式：" />
 
                             <ComboBox
-                                Grid.Row="6" Grid.Column="2"
+                                Grid.Row="6"
+                                Grid.Column="2"
                                 ItemsSource="{Binding Formats}"
                                 SelectedItem="{Binding Config.Tile_FormatExtension}" />
                             <CheckBox
-                                Grid.Row="8" Grid.ColumnSpan="3"
+                                Grid.Row="8"
+                                Grid.ColumnSpan="3"
                                 Content="下载时若文件已存在则覆盖"
                                 IsChecked="{Binding Config.Tile_CoverFile}" />
-                            <TextBlock Grid.Row="10" Text="请求超时（毫秒）：" />
+                            <TextBlock
+                                Grid.Row="10"
+                                Text="请求超时（毫秒）：" />
                             <TextBox
-                                Grid.Row="10" Grid.Column="2"
+                                Grid.Row="10"
+                                Grid.Column="2"
                                 Text="{Binding Config.Tile_RequestTimeOut}" />
-                            <TextBlock Grid.Row="12" Text="下载超时（毫秒）：" />
+                            <TextBlock
+                                Grid.Row="12"
+                                Text="下载超时（毫秒）：" />
                             <TextBox
-                                Grid.Row="12" Grid.Column="2"
+                                Grid.Row="12"
+                                Grid.Column="2"
                                 Text="{Binding Config.Tile_ReadTimeOut}" />
                         </Grid>
                     </GroupBox>
 
                     <GroupBox
-                        Grid.Row="4" Header="数据边界与缩放"
+                        Grid.Row="4"
+                        Header="数据边界与缩放"
                         IsEnabled="{Binding ControlsEnable}">
                         <Grid x:Name="grdDownloadInfo">
                             <Grid.ColumnDefinitions>
@@ -289,31 +337,45 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <local:BoundaryInputTable
-                                x:Name="downloadBoundary" Grid.Row="2"
-                                Grid.RowSpan="3" Grid.ColumnSpan="3" />
-                            <TextBlock Grid.Row="6" Text="{Binding ElementName=sldTileMin, Path=Value, StringFormat={}最小缩放值：{0}}" />
+                                x:Name="downloadBoundary"
+                                Grid.Row="2"
+                                Grid.RowSpan="3"
+                                Grid.ColumnSpan="3" />
+                            <TextBlock
+                                Grid.Row="6"
+                                Text="{Binding ElementName=sldTileMin, Path=Value, StringFormat={}最小缩放值：{0}}" />
                             <Slider
-                                x:Name="sldTileMin" Grid.Row="6"
+                                x:Name="sldTileMin"
+                                Grid.Row="6"
                                 Grid.Column="2"
                                 AutoToolTipPlacement="TopLeft"
-                                IsSnapToTickEnabled="True" Maximum="20"
-                                Minimum="0" TickFrequency="1"
+                                IsSnapToTickEnabled="True"
+                                Maximum="20"
+                                Minimum="0"
+                                TickFrequency="1"
                                 TickPlacement="TopLeft"
                                 Value="{Binding CurrentDownload.TileMinLevel}" />
-                            <TextBlock Grid.Row="8" Text="{Binding ElementName=sldTileMax, Path=Value, StringFormat={}最大缩放值：{0}}" />
+                            <TextBlock
+                                Grid.Row="8"
+                                Text="{Binding ElementName=sldTileMax, Path=Value, StringFormat={}最大缩放值：{0}}" />
                             <Slider
-                                x:Name="sldTileMax" Grid.Row="8"
+                                x:Name="sldTileMax"
+                                Grid.Row="8"
                                 Grid.Column="2"
                                 AutoToolTipPlacement="TopLeft"
-                                IsSnapToTickEnabled="True" Maximum="20"
-                                Minimum="0" TickFrequency="1"
+                                IsSnapToTickEnabled="True"
+                                Maximum="20"
+                                Minimum="0"
+                                TickFrequency="1"
                                 TickPlacement="TopLeft"
                                 Value="{Binding CurrentDownload.TileMaxLevel}" />
                         </Grid>
                     </GroupBox>
                 </Grid>
             </ScrollViewer>
-            <GroupBox Grid.Row="4" Header="下载文件">
+            <GroupBox
+                Grid.Row="4"
+                Header="下载文件">
                 <Grid Margin="4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -326,19 +388,33 @@
                         <RowDefinition Height="8" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="{Binding LastDownloadingTile}" />
-                    <TextBlock Grid.Row="2" Text="{Binding LastDownloadingStatus}" />
-                    <Expander Grid.Row="4" Header="错误列表">
+                    <TextBlock
+                        Grid.Row="0"
+                        Text="{Binding LastDownloadingTile}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Text="{Binding LastDownloadingStatus}" />
+                    <Expander
+                        Grid.Row="4"
+                        Header="错误列表">
 
-                        <ListView Height="120" ItemsSource="{Binding DownloadErrors}">
+                        <ListView
+                            Height="120"
+                            ItemsSource="{Binding DownloadErrors}">
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn DisplayMemberBinding="{Binding Tile}" Header="瓦片" />
-                                    <GridViewColumn DisplayMemberBinding="{Binding Error}" Header="错误" />
+                                    <GridViewColumn
+                                        DisplayMemberBinding="{Binding Tile}"
+                                        Header="瓦片" />
+                                    <GridViewColumn
+                                        DisplayMemberBinding="{Binding Error}"
+                                        Header="错误" />
                                     <GridViewColumn Header="详情">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding StackTrace}" ToolTip="{Binding StackTrace}" />
+                                                <TextBlock
+                                                    Text="{Binding StackTrace}"
+                                                    ToolTip="{Binding StackTrace}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -347,15 +423,18 @@
                         </ListView>
                     </Expander>
                     <ProgressBar
-                        Grid.Row="6" Height="24"
-                        BorderThickness="0" Maximum="1"
+                        Grid.Row="6"
+                        Height="24"
+                        BorderThickness="0"
+                        Maximum="1"
                         Minimum="0"
                         Value="{Binding DownloadingProgressPercent}" />
 
                     <TextBlock
                         Grid.Row="8"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center" FontSize="12"
+                        VerticalAlignment="Center"
+                        FontSize="12"
                         Text="{Binding DownloadingProgressStatus}" />
                 </Grid>
             </GroupBox>
@@ -381,22 +460,26 @@
                     Grid.Column="2"
                     HorizontalAlignment="Stretch"
                     Click="DownloadButtonClick"
-                    Content="{Binding Path=CurrentDownloadStatus, Converter={StaticResource e2s}, ConverterParameter=Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停}"
-                    IsEnabled="{Binding Path=CurrentDownloadStatus, Converter={StaticResource e2b}, ConverterParameter=Pausing:false}" />
+                    Content="{Binding Path=CurrentDownloadStatus, Converter={StaticResource StringReplaceConverter}, ConverterParameter=Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停}"
+                    IsEnabled="{Binding Path=CurrentDownloadStatus, Converter={StaticResource Enum2BoolConverter}, ConverterParameter=Pausing:false}" />
                 <Button
-                    Grid.Row="2" Grid.Column="0"
+                    Grid.Row="2"
+                    Grid.Column="0"
                     HorizontalAlignment="Stretch"
                     Click="DeleteEmptyFilesButtonClick"
                     Content="删除空文件"
                     ToolTip="删除下载文件夹中文件大小为0的文件" />
                 <Button
-                    Grid.Row="2" Grid.Column="2"
+                    Grid.Row="2"
+                    Grid.Column="2"
                     HorizontalAlignment="Stretch"
                     Click="OpenFolderButtonClick"
                     Content="打开目录" />
             </Grid>
         </Grid>
-        <Grid Grid.Column="4" Margin="0,8,8,8">
+        <Grid
+            Grid.Column="4"
+            Margin="0,8,8,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="32" />
@@ -414,22 +497,32 @@
                     <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Margin="8,0,0,0" FontSize="20">拼接</TextBlock>
+                <TextBlock
+                    Margin="8,0,0,0"
+                    FontSize="20">
+                    拼接
+                </TextBlock>
 
-                <Grid Grid.Row="2" IsEnabled="{Binding ControlsEnable}">
+                <Grid
+                    Grid.Row="2"
+                    IsEnabled="{Binding ControlsEnable}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock VerticalAlignment="Center" Text="缩放等级：" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="缩放等级：" />
                     <ComboBox
-                        x:Name="cbbLevel" Grid.Column="2"
+                        x:Name="cbbLevel"
+                        Grid.Column="2"
                         VerticalAlignment="Center"
                         SelectionChanged="LevelSelectionChanged" />
                 </Grid>
                 <local:BoundaryInputTable
-                    x:Name="stichBoundary" Grid.Row="4"
+                    x:Name="stichBoundary"
+                    Grid.Row="4"
                     IsEnabled="{Binding ControlsEnable}" />
                 <Grid Grid.Row="100">
                     <Grid.ColumnDefinitions>
@@ -441,13 +534,16 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Button
-                        x:Name="btnStich" Grid.Column="0"
+                        x:Name="btnStich"
+                        Grid.Column="0"
                         HorizontalAlignment="Stretch"
-                        Click="StichButtonClick" Content="开始拼接" />
+                        Click="StichButtonClick"
+                        Content="开始拼接" />
                     <Button
                         Grid.Column="2"
                         HorizontalAlignment="Stretch"
-                        Click="SaveButtonClick" Content="保存"
+                        Click="SaveButtonClick"
+                        Content="保存"
                         IsEnabled="{Binding ControlsEnable}" />
                 </Grid>
             </Grid>
@@ -463,15 +559,21 @@
                     <StackPanel Grid.Row="2">
                         <TextBlock Text="瓦片文件路径格式：" />
                         <FrameworkElement Height="2" />
-                        <TextBlock Foreground="Gray" Text="使用{z}{x}{y}表示层级和坐标" />
+                        <TextBlock
+                            Foreground="Gray"
+                            Text="使用{z}{x}{y}表示层级和坐标" />
                         <FrameworkElement Height="2" />
-                        <TextBlock Foreground="Gray" Text="使用{ext}表示扩展名（不含.）" />
+                        <TextBlock
+                            Foreground="Gray"
+                            Text="使用{ext}表示扩展名（不含.）" />
                         <FrameworkElement Height="4" />
                         <TextBox Text="{Binding Config.Tile_ServerFormat}" />
                         <FrameworkElement Height="8" />
                         <TextBlock Text="服务端口：" />
                         <FrameworkElement Height="4" />
-                        <TextBox x:Name="txtPort" Text="{Binding Config.Tile_ServerPort}" />
+                        <TextBox
+                            x:Name="txtPort"
+                            Text="{Binding Config.Tile_ServerPort}" />
                         <FrameworkElement Height="8" />
                         <TextBlock Text="调用网址：" />
                         <FrameworkElement Height="4" />
@@ -486,7 +588,7 @@
                     Grid.Row="99"
                     HorizontalAlignment="Stretch"
                     Click="ServerButtonClick"
-                    Content="{Binding ServerOn, Converter={StaticResource b2s}, ConverterParameter=关闭服务器:开启服务器}" />
+                    Content="{Binding ServerOn, Converter={StaticResource Bool2StringConverter}, ConverterParameter=关闭服务器:开启服务器}" />
             </Grid>
         </Grid>
     </Grid>

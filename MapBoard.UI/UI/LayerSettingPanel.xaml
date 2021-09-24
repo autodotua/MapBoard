@@ -196,14 +196,14 @@
                                     <component:ColorPickerTextBox
                                         Grid.Row="4 "
                                         Grid.Column="2"
-                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                     <TextBlock
                                         Grid.Row="6"
                                         Text="边框颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="6 "
                                         Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
                                     <TextBlock
                                         Grid.Row="8"
@@ -273,7 +273,7 @@
                                     <component:ColorPickerTextBox
                                         Grid.Row="2 "
                                         Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                     <TextBlock
                                         Grid.Row="4"
                                         Text="边框样式" />
@@ -343,7 +343,7 @@
                                     <component:ColorPickerTextBox
                                         Grid.Row="2 "
                                         Grid.Column="2"
-                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                        ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
                                     <TextBlock
                                         Grid.Row="4"
@@ -351,7 +351,7 @@
                                     <component:ColorPickerTextBox
                                         Grid.Row="4 "
                                         Grid.Column="2"
-                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                        ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                     <TextBlock
                                         Grid.Row="6"
                                         Text="填充样式" />
@@ -469,7 +469,7 @@
                                                     HorizontalAlignment="Stretch"
                                                     Click="Button_Click"
                                                     Content="删除"
-                                                    IsEnabled="{Binding Label, Converter={StaticResource nn2bc}}" />
+                                                    IsEnabled="{Binding Label, Converter={StaticResource NotNullConverter}}" />
                                             </Grid>
                                         </Grid>
                                     </ui:Flyout>
@@ -479,7 +479,7 @@
 
                         <Grid
                             DataContext="{Binding Label}"
-                            IsEnabled="{Binding ., Converter={StaticResource nn2bc}}">
+                            IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="8" />
@@ -536,7 +536,7 @@
                                     <RowDefinition Height="4" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     Text="{Binding FontSize}" />
@@ -567,7 +567,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
@@ -584,7 +584,7 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                <component:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
                                 <TextBox
                                     Grid.Column="2"
                                     VerticalAlignment="Center"
@@ -597,7 +597,7 @@
                                 x:Name="labelBackgroundColor"
                                 Grid.Row="6"
                                 Grid.Column="2"
-                                ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource c2bc}}" />
+                                ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
                             <TextBlock
                                 Grid.Row="8"

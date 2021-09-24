@@ -11,10 +11,6 @@
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
-    <local:BarBase.Resources>
-        <c:Enum2DescriptionConverter x:Key="e2dc" />
-        <cvt:GeometryTypeDescriptionConverter x:Key="gtdc" />
-    </local:BarBase.Resources>
     <Grid x:Name="grd" Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="BarStyles.xaml" />
@@ -45,7 +41,7 @@
                                 VerticalAlignment="Center"
                                 Text="{Binding DisplayName}">
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="{Binding Type, Converter={StaticResource e2dc}}" />
+                                    <TextBlock Text="{Binding Type, Converter={StaticResource DescriptionConverter}}" />
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </DataTemplate>

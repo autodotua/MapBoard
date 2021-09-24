@@ -247,7 +247,7 @@
                         <local:LayerSettingPanel
                             x:Name="layerSettings"
                             Height="480"
-                            IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
+                            IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                         <StackPanel
                             Grid.Row="100"
                             Grid.ColumnSpan="100"
@@ -258,13 +258,13 @@
                                 x:Name="btnBrowseMode"
                                 Click="BrowseModeButtonClick"
                                 Content="浏览模式"
-                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
+                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
                             <Button
                                 x:Name="btnApplyStyle"
                                 Click="ApplyStyleButtonClick"
                                 Content="应用样式"
-                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource nn2bc}}" />
+                                IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
                             <ui:SplitButton
                                 x:Name="btnCreateStyle"
@@ -351,7 +351,7 @@
                                         Click="ExportMenu_Click"
                                         Header="地图包（重建）"
                                         Tag="2"
-                                        Visibility="{Binding Config.CopyShpFileWhenExport, Converter={StaticResource b2vc}}" />
+                                        Visibility="{Binding Config.CopyShpFileWhenExport, Converter={StaticResource Bool2VisibilityConverter}}" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="移动GIS工具箱图层包"

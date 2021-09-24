@@ -23,7 +23,6 @@
             Opacity="1"
             ShadowDepth="0"
             Color="{DynamicResource SystemAltHighColor}" />
-        <local:ValueTupleConverter x:Key="vtc" />
         <SolidColorBrush
             x:Key="backgroundBrush"
             Color="{DynamicResource SystemAltMediumColor}" />
@@ -49,7 +48,7 @@
                 CornerRadius="4"
                 Cursor="Hand"
                 ToolTip="点击返回正北朝上"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideCompass, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideCompass, Converter={StaticResource Bool2VisibilityConverter}}">
                 <ContentControl
                     x:Name="vbxRotate"
                     Content="{StaticResource CompassIcon}"
@@ -72,7 +71,7 @@
                 CornerRadius="4"
                 Cursor="Hand"
                 PreviewMouseDown="LayersPanel_PreviewMouseDown"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideBaseLayers, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideBaseLayers, Converter={StaticResource Bool2VisibilityConverter}}">
 
                 <Grid>
                     <ContentControl
@@ -196,7 +195,7 @@
                 CornerRadius="4"
                 MouseEnter="ScaleButton_MouseEnter"
                 MouseLeave="PanelScale_MouseLeave"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleBar, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleBar, Converter={StaticResource Bool2VisibilityConverter}}">
                 <Grid>
                     <TextBlock
                         x:Name="tbkScale"
@@ -245,7 +244,7 @@
                 Cursor="Hand"
                 MouseDown="ZoomInOutButton_Click"
                 Tag="1"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource Bool2VisibilityConverter}}">
                 <ui:SymbolIcon Symbol="Add" />
             </Border>
             <Border
@@ -258,7 +257,7 @@
                 Cursor="Hand"
                 MouseDown="ZoomInOutButton_Click"
                 Tag="2"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideScaleButton, Converter={StaticResource Bool2VisibilityConverter}}">
                 <ui:SymbolIcon Symbol="Remove" />
             </Border>
 
@@ -272,7 +271,7 @@
                 CornerRadius="4"
                 Cursor="Hand"
                 PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown"
-                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideSearch, Converter={StaticResource b2vc}}">
+                Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideSearch, Converter={StaticResource Bool2VisibilityConverter}}">
                 <Grid>
                     <ContentControl
                         x:Name="vwSearchIcon"
@@ -320,7 +319,7 @@
                 CornerRadius="4"
                 Cursor="Hand">
                 <Border.Visibility>
-                    <MultiBinding Converter="{StaticResource bb2vc}">
+                    <MultiBinding Converter="{StaticResource BothBool2VisibilityConverter}">
                         <MultiBinding.Bindings>
                             <Binding
                                 Path="ShowSideLocation"

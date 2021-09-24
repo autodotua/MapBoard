@@ -142,7 +142,7 @@
                                             <TextBlock
                                                 Margin="12,0,0,0"
                                                 VerticalAlignment="Center"
-                                                Text="{Binding Type, Converter={StaticResource bltc}}" />
+                                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -153,7 +153,7 @@
                                                 SelectedItem="{Binding Type}">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding ., Converter={StaticResource bltc}}" />
+                                                        <TextBlock Text="{Binding ., Converter={StaticResource BaseLayerTypeConverter}}" />
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
@@ -324,7 +324,7 @@
                         <CheckBox
                             Content="可以选择全部图层"
                             IsChecked="{Binding Config.TapToSelect}"
-                            Visibility="{Binding Config.TapToSelect, Converter={StaticResource b2vc}}" />
+                            Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
                     </ui:SimpleStackPanel>
 
                     <TextBlock VerticalAlignment="Center">侧边栏显示内容</TextBlock>
