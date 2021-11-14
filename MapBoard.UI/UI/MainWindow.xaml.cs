@@ -32,6 +32,7 @@ using FzLib.Collection;
 using FzLib;
 using FzLib.WPF;
 using System.Windows.Threading;
+using WinRT;
 
 namespace MapBoard.UI
 {
@@ -240,6 +241,11 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private async void ArcMap_PreviewDrop(object sender, DragEventArgs e)
         {
+            BringToFront();
+            if(arcMap.CurrentTask!=BoardTask.Ready)
+            {
+                return;
+            }
             if (e.Data.GetDataPresent(typeof(MapLayerInfo).FullName))
             {
                 return;

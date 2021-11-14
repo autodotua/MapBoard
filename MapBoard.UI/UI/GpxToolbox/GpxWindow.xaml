@@ -219,7 +219,7 @@
                         Grid.Row="10"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding MaxSpeedText}" />
+                        Text="{Binding MovingSpeedText}" />
                     <TextBlock
                         Grid.Row="12"
                         HorizontalAlignment="Right"

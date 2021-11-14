@@ -283,7 +283,7 @@ namespace MapBoard.UI
                     items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, w, Config.Instance.BasemapCoordinateSystem)));
                 }
             }
-            await CommonDialog.ShowSelectItemDialogAsync("选择打开多个GPX文件的方式", items);
+            await CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式", items);
         }
 
         public async static Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
