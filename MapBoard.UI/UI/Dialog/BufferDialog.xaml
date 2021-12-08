@@ -1,0 +1,43 @@
+﻿<commondialog:CommonDialog
+    x:Class="MapBoard.UI.Dialog.BufferDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="建立缓冲区"
+    CloseButtonText="取消"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    Loaded="Window_Loaded"
+    PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
+    <ui:SimpleStackPanel
+        Width="268"
+        Margin="8"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="8">
+        <ui:NumberBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="距离（米）"
+            Maximum="1e6"
+            Minimum="0.01"
+            Value="{Binding Distance}" />
+        <CheckBox
+            Content="生成单个图形"
+            IsChecked="{Binding Union}" />
+        <CheckBox
+            Content="生成到新图层"
+            IsChecked="{Binding ToNewLayer}" />
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="目标图层"
+            DisplayMemberPath="Name"
+            IsEnabled="{Binding ToNewLayer, Converter={StaticResource InverseBoolConverter}}"
+            ItemsSource="{Binding PolygonLayers}"
+            SelectedItem="{Binding TargetLayer}" />
+        <TextBlock Text="{Binding Message}" Foreground="Red"/>
+    </ui:SimpleStackPanel>
+</commondialog:CommonDialog>

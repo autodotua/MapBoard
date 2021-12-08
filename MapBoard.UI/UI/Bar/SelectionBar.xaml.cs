@@ -292,9 +292,17 @@ namespace MapBoard.UI.Bar
                 layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
                 ("字段赋值","批量为选中的图形赋予新的属性",CopyAttributeAsync, true),
+                ("缓冲区","为选中的图形建立缓冲区",BufferAsync, true),
             };
             OpenMenus(menus, sender as UIElement, header => $"正在进行{header}操作");
-
+            async Task BufferAsync()
+            {
+                var dialog = new BufferDialog(MapView.Layers);
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union,features);
+                }
+            }
             async Task SeparateAsync()
             {
                 var result = await FeatureUtility.SeparateAsync(layer, features);

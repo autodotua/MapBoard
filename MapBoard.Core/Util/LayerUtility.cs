@@ -157,8 +157,14 @@ namespace MapBoard.Util
                 await layer.SetTimeExtentAsync();
             }
         }
-
-        public async static Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, double meters)
+        /// <summary>
+        /// 建立缓冲区
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="layers"></param>
+        /// <param name="meters"></param>
+        /// <returns></returns>
+        public async static Task SimpleBufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, double meters)
         {
             var template = EmptyMapLayerInfo.CreateTemplate();
             foreach (var symbol in layer.Symbols)
@@ -182,6 +188,24 @@ namespace MapBoard.Util
                 }
             });
             await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
+        }
+        public async static Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, IEditableLayerInfo targetLayer, double meters, bool union, Feature[] features=null)
+        {
+            if (targetLayer == null)
+            {
+                var template = EmptyMapLayerInfo.CreateTemplate();
+                foreach (var symbol in layer.Symbols)
+                {
+                    template.Symbols.Add(symbol.Key, new SymbolInfo()
+                    {
+                        OutlineWidth = 0,
+                        FillColor = symbol.Value.LineColor
+                    });
+                }
+                targetLayer = await CreateShapefileLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
+            }
+            await FeatureUtility.BufferToLayerAsync(layer, targetLayer, features==null? await layer.GetAllFeaturesAsync():features, meters, union);
+
         }
 
         /// <summary>

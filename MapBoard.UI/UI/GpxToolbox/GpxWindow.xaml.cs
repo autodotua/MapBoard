@@ -306,15 +306,11 @@ namespace MapBoard.UI.GpxToolbox
             Cursor = Cursors.Arrow;
         }
 
-        private async void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
+        private void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
         {
             if (e.Track.Length > 0)
             {
                 lvwFiles.SelectedItem = e.Track[^1];
-                //if (!e.Update)
-                //{
-                //    await ZoomToTrackAsync(0);
-                //}
             }
         }
 

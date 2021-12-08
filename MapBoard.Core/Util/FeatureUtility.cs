@@ -630,5 +630,53 @@ namespace MapBoard.Util
             }
             return points;
         }
+
+        /// <summary>
+        /// 将图形建立缓冲区后放入一个多边形图层
+        /// </summary>
+        /// <returns></returns>
+        public static async Task SimpleBufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double meters)
+        {
+            List<Feature> newFeatures = new List<Feature>();
+            await Task.Run(() =>
+            {
+                foreach (var feature in features)
+                {
+                    Geometry oldGeometry = GeometryEngine.Project(feature.Geometry, SpatialReferences.WebMercator);
+                    var geometry = GeometryEngine.Buffer(oldGeometry, meters);
+                    Feature newFeature = layerTo.CreateFeature(feature.Attributes, geometry);
+                    newFeatures.Add(newFeature);
+                }
+            });
+            await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
+        }
+        /// <summary>
+        /// 将图形建立缓冲区后放入一个多边形图层
+        /// </summary>
+        /// <returns></returns>
+        public static async Task BufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double meters, bool union)
+        {
+            List<Feature> newFeatures = new List<Feature>();
+            await Task.Run(() =>
+            {
+                var geometries = GeometryEngine.BufferGeodetic(features.Select(p => p.Geometry), new double[] { meters }, LinearUnits.Meters, unionResult: union).ToList();
+                if (!union)
+                {
+                    Debug.Assert(features.Length == geometries.Count);
+                    for (int i = 0; i < features.Length; i++)
+                    {
+                        Feature newFeature = layerTo.CreateFeature(features[i].Attributes, geometries[i]);
+                        newFeatures.Add(newFeature);
+                    }
+                }
+                else
+                {
+                    Debug.Assert(geometries.Count == 1);
+                    Feature newFeature = layerTo.CreateFeature(null, geometries[0]);
+                    newFeatures.Add(newFeature);
+                }
+            });
+            await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
+        }
     }
 }

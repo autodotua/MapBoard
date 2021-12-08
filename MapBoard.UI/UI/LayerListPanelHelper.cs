@@ -292,10 +292,10 @@ namespace MapBoard.UI
 
         private async Task BufferAsync(IMapLayerInfo layer)
         {
-            var num = await CommonDialog.ShowDoubleInputDialogAsync("请输入缓冲区距离（米）");
-            if (num.HasValue)
+            var dialog = new BufferDialog(MapView.Layers);
+            if(await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.BufferAsync(layer, MapView.Layers, num.Value);
+                await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union);
             }
         }
 
