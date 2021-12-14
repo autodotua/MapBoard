@@ -397,7 +397,8 @@ namespace MapBoard
 
         public void Save()
         {
-            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrWhiteSpace(dir)&& !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }

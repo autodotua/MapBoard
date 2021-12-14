@@ -66,7 +66,7 @@ namespace MapBoard.UI
         private void UpdateLayout(double height)
         {
             var r = FindResource("bdGroups") as Border;
-            if (height < 1050)
+            if (height < 800)
             {
                 lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Left;
                 btnGroups.Visibility = Visibility.Visible;

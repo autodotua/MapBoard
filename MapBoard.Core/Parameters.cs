@@ -20,6 +20,7 @@ namespace MapBoard
                 TileDownloadPath = "Download";
                 BackupPath = "Backup";
                 RecordsPath = "Record";
+                LogsPath = "Logs";
             }
             else if (File.Exists(Path.Combine(appPath, ConfigUp)))
             {
@@ -29,6 +30,7 @@ namespace MapBoard
                 TileDownloadPath = "../Download";
                 BackupPath = "../Backup";
                 RecordsPath = "../Record";
+                LogsPath = "../Logs";
             }
             else
             {
@@ -39,6 +41,7 @@ namespace MapBoard
                 TileDownloadPath = Path.Combine(folder, AppName, "Download");
                 BackupPath = Path.Combine(folder, AppName, "Backup");
                 RecordsPath = Path.Combine(folder, AppName, "Record");
+                LogsPath  = Path.Combine(folder, AppName, "Logs");
             }
         }
 
@@ -58,6 +61,7 @@ namespace MapBoard
         public static readonly string TileDownloadPath;
         public static readonly string BackupPath;
         public static readonly string RecordsPath;
+        public static readonly string LogsPath;
 
         public static TimeSpan AnimationDuration { get; set; } = TimeSpan.FromSeconds(0.5);
         public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);

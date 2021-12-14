@@ -16,6 +16,7 @@ using ModernWpf.Controls.Primitives;
 using System.Windows.Media;
 using MapBoard.UI.GpxToolbox;
 using MapBoard.UI.TileDownloader;
+using log4net.Appender;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -42,6 +43,18 @@ namespace MapBoard
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
             Log = LogManager.GetLogger(GetType());
+            var h = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
+            foreach (IAppender a in h.Root.Appenders)
+            {
+                if (a is FileAppender)
+                {
+                    FileAppender fa = (FileAppender)a;
+                    fa.File = System.IO.Path.Combine(Parameters.LogsPath, "MapBoard.log");
+                    fa.ActivateOptions();
+                    break;
+                }
+            }
+
             Log.Info("程序启动");
 
 #if (DEBUG)

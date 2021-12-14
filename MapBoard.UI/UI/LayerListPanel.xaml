@@ -51,10 +51,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <ui:ToggleSwitch
-                    IsOn="{Binding Source={x:Static m:Config.Instance}, Path=UseCompactLayerList}"
-                    OffContent="使用普通图层列表视图"
-                    OnContent="使用简略图层列表视图" />
+
             </ui:SimpleStackPanel>
         </Border>
 
@@ -216,17 +213,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ContentControl x:Name="groupContent" />
-        <Button
-            x:Name="btnGroups"
-            Grid.Row="2"
-            Margin="0,0,8,0"
-            HorizontalAlignment="Right"
-            Background="Transparent">
-            <ui:FontIcon Glyph="&#xF168;" />
-            <ui:FlyoutService.Flyout>
-                <ui:Flyout x:Name="flyoutGroups" />
-            </ui:FlyoutService.Flyout>
-        </Button>
         <ListView
             x:Name="dataGrid"
             Grid.Row="4"
@@ -239,28 +225,55 @@
             ScrollViewer.CanContentScroll="False"
             SelectionChanged="SelectedLayerChanged"
             SelectionMode="Extended" />
-        <ListView
-            x:Name="lvwViewTypes"
+        <Grid
             Grid.Row="2"
-            HorizontalAlignment="Center"
-            SelectedIndex="{Binding ViewType}">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel
-                        VerticalAlignment="Top"
-                        Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemContainerStyle>
-                <Style
-                    BasedOn="{StaticResource DefaultListViewItemStyle}"
-                    TargetType="{x:Type ListViewItem}">
-                    <Setter Property="MinWidth" Value="10" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <sys:String>顺序</sys:String>
-            <sys:String>组别</sys:String>
-            <sys:String>类型</sys:String>
-        </ListView>
+            Margin="4,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ListView
+                x:Name="lvwViewTypes"
+                HorizontalAlignment="Left"
+                SelectedIndex="{Binding ViewType}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style
+                        BasedOn="{StaticResource DefaultListViewItemStyle}"
+                        TargetType="{x:Type ListViewItem}">
+                        <Setter Property="MinWidth" Value="10" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <sys:String>顺序</sys:String>
+                <sys:String>组别</sys:String>
+                <sys:String>类型</sys:String>
+            </ListView>
+            <CheckBox
+                Grid.Column="2"
+                Margin="0,0,-48,0"
+                HorizontalAlignment="Right"
+                Content="紧凑"
+                FocusVisualStyle="{x:Null}"
+                IsChecked="{Binding Source={x:Static m:Config.Instance}, Path=UseCompactLayerList}" />
+            <Button
+                x:Name="btnGroups"
+                Grid.Column="4"
+                Background="Transparent">
+                <ui:FontIcon Glyph="&#xF168;" />
+                <ui:FlyoutService.Flyout>
+                    <ui:Flyout x:Name="flyoutGroups" />
+                </ui:FlyoutService.Flyout>
+            </Button>
+
+        </Grid>
     </Grid>
 </local:UserControlBase>
