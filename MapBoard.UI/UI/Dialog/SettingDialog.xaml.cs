@@ -218,6 +218,7 @@ namespace MapBoard.UI.Dialog
                            .Add("TilePackage切片包", "tpk")
                            .AddUnion()
                            .CreateOpenFileDialog()
+                           .SetParent(this)
                            .GetFilePath();
             if (path == null)
             {
@@ -245,6 +246,7 @@ namespace MapBoard.UI.Dialog
             string path = new FileFilterCollection().Add("MapBoard配置文件", "mbconfig")
                 .CreateSaveFileDialog()
                 .SetDefault("地图画板配置", null, "mbconfig")
+                .SetParent(this)
                 .GetFilePath();
             if (path != null)
             {
@@ -254,7 +256,11 @@ namespace MapBoard.UI.Dialog
 
         private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection().Add("MapBoard配置文件", "mbconfig").CreateOpenFileDialog().GetFilePath();
+            string path = new FileFilterCollection()
+                .Add("MapBoard配置文件", "mbconfig")
+                .CreateOpenFileDialog()
+                .SetParent(this)
+                .GetFilePath();
             if (path != null)
             {
                 try

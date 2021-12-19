@@ -41,12 +41,13 @@ namespace MapBoard.UI
             return filter;
         }
 
-        public static string GetImportFeaturePath(ImportLayerType type)
+        public static string GetImportFeaturePath(ImportLayerType type,Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ImportLayerType.Gpx, "GPS轨迹文件", "gpx")
                 .AddIf(type == ImportLayerType.Csv, "CSV表格", "csv")
                 .CreateOpenFileDialog()
+                .SetParent(parentWindow)
                 .GetFilePath();
         }
 
@@ -87,7 +88,7 @@ namespace MapBoard.UI
             }
         }
 
-        public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type)
+        public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type,Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
@@ -97,6 +98,7 @@ namespace MapBoard.UI
                 .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
                 .CreateSaveFileDialog()
                 .SetDefault(layer.Name)
+                .SetParent(parentWindow)
                 .GetFilePath();
         }
 
@@ -145,7 +147,7 @@ namespace MapBoard.UI
             }
         }
 
-        public static string GetImportMapPath(ImportMapType type)
+        public static string GetImportMapPath(ImportMapType type, Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
@@ -155,6 +157,7 @@ namespace MapBoard.UI
                 .AddIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
                 .AddIf(type == ImportMapType.CSV, "CSV表格", "csv")
                 .CreateOpenFileDialog()
+                .SetParent(parentWindow)
                 .GetFilePath();
         }
 
@@ -216,7 +219,7 @@ namespace MapBoard.UI
             }
         }
 
-        public static string GetExportMapPath(ExportMapType type)
+        public static string GetExportMapPath(ExportMapType type, Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
@@ -226,6 +229,7 @@ namespace MapBoard.UI
                 .AddIf(type == ExportMapType.Screenshot, "截图", "png")
                 .CreateSaveFileDialog()
                 .SetDefault("地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"))
+                .SetParent(parentWindow)
                 .GetFilePath();
         }
 

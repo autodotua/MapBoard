@@ -516,6 +516,7 @@ namespace MapBoard.UI.TileDownloader
                         .Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension)
                         .CreateSaveFileDialog()
                         .SetDefault("地图." + Config.Tile_FormatExtension)
+                        .SetParent(this)
                         .GetFilePath();
                     if (file != null)
                     {

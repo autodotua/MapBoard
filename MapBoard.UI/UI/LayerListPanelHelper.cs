@@ -102,13 +102,13 @@ namespace MapBoard.UI
                             || layer.GeometryType == GeometryType.Multipoint)
                         {
                             AddToMenu(menuImport, "GPX轨迹文件",
-                                () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx),
+                                () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx,MainWindow),
                                 p => IOUtility.ImportFeatureAsync(MainWindow, p, e, MapView, ImportLayerType.Gpx),
                                 "正在导入GPX轨迹文件");
                         }
 
                         AddToMenu(menuImport, "CSV文件",
-                            () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv),
+                            () => IOUtility.GetImportFeaturePath(ImportLayerType.Csv, MainWindow),
                             p => IOUtility.ImportFeatureAsync(MainWindow, p, e, MapView, ImportLayerType.Csv),
                             "正在导入CSV文件");
                     }
@@ -116,29 +116,29 @@ namespace MapBoard.UI
                     menu.Items.Add(menuExport);
 
                     AddToMenu(menuExport, "图层包",
-                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge),
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge,MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                         "正在导出图层包");
                     if (Config.Instance.CopyShpFileWhenExport)
                     {
                         AddToMenu(menuExport, "图层包（重建）",
-                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild),
+                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild, MainWindow),
                             p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
                             "正在导出图层包");
                     }
                     if (layer is ShapefileMapLayerInfo)
                     {
                         AddToMenu(menuExport, "GPS工具箱图层包",
-                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip),
+                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip, MainWindow),
                             p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
                             "正在导出GPS工具箱图层包");
                     }
                     AddToMenu(menuExport, "KML打包文件",
-                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML),
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),
                         "正在导出KML打包文件");
                     AddToMenu(menuExport, "GeoJSON文件",
-                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON),
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
                         "正在导出GeoJSON文件");
                 }

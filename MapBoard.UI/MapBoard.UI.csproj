@@ -81,6 +81,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="icon.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

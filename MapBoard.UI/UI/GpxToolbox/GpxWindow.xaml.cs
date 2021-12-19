@@ -401,7 +401,12 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void SaveFileButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection().Add("GPX轨迹文件", "gpx").CreateSaveFileDialog().SetDefault(Gpx.Name + ".gpx").GetFilePath();
+            string path = new FileFilterCollection()
+                .Add("GPX轨迹文件", "gpx")
+                .CreateSaveFileDialog()
+                .SetDefault(Gpx.Name + ".gpx")
+                .SetParent(this)
+                .GetFilePath();
             if (path != null)
             {
                 try
@@ -612,6 +617,7 @@ namespace MapBoard.UI.GpxToolbox
                 new FileFilterCollection().Add("GPX轨迹文件", "gpx")
                 .CreateSaveFileDialog()
                 .SetDefault(tracks[0].FileName + " - 连接.gpx")
+                .SetParent(this)
                 .GetFilePath();
 
             if (filePath != null)
@@ -761,6 +767,7 @@ namespace MapBoard.UI.GpxToolbox
             string path = new FileFilterCollection().Add("PNG图片", "png")
                 .CreateSaveFileDialog()
                 .SetDefault(Gpx.Name + ".png")
+                .SetParent(this)
                 .GetFilePath();
             if (path != null)
             {

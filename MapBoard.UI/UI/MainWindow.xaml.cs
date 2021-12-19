@@ -470,7 +470,7 @@ namespace MapBoard.UI
                 return;
             }
             canClosing = false; ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = IOUtility.GetExportMapPath(type);
+            string path = IOUtility.GetExportMapPath(type,this);
             if (path != null)
             {
                 await DoAsync(async () =>
@@ -499,7 +499,7 @@ namespace MapBoard.UI
         private async void ImportMenu_Click(object sender, RoutedEventArgs e)
         {
             var type = (ImportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = IOUtility.GetImportMapPath(type);
+            string path = IOUtility.GetImportMapPath(type,this);
             if (path != null)
             {
                 await DoAsync(async p =>

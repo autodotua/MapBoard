@@ -480,6 +480,7 @@ namespace MapBoard.UI.Bar
         {
             string path = filter.CreateSaveFileDialog()
                         .SetDefault(MapView.Selection.SelectedFeatures.Count + "个图形")
+                        .SetParent(Window.GetWindow(this))
                         .GetFilePath();
             if (path != null)
             {
