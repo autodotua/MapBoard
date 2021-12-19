@@ -122,48 +122,60 @@ namespace MapBoard.UI.GpxToolbox
         {
             if (e == null || e.Key == Key.Delete)
             {
-                foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray())
-                {
-                    arcMap.GraphicsOverlays.Remove(item.Overlay);
-                    Tracks.Remove(item);
-                }
+                RemoveSelectedGpxs();
+            }
+        }
+
+        private void RemoveSelectedGpxs()
+        {
+            foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray())
+            {
+                arcMap.GraphicsOverlays.Remove(item.Overlay);
+                Tracks.Remove(item);
             }
         }
 
         private async void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (arcMap.SelectedTrack != null)
+            try
             {
-                arcMap.SelectedTrack.Overlay.Renderer = null;
-                arcMap.SelectedTrack.Overlay.Renderer = NormalRenderer;
+                if (arcMap.SelectedTrack != null)
+                {
+                    arcMap.SelectedTrack.Overlay.Renderer = null;
+                    arcMap.SelectedTrack.Overlay.Renderer = NormalRenderer;
+                }
+                if (lvwFiles.SelectedItem == null)
+                {
+                    arcMap.SelectedTrack = null;
+                    Gpx = null;
+                    GpxTrack = null;
+                    chartHelper.Initialize();
+                    return;
+                }
+
+                if (lvwFiles.SelectedItems.Count > 1)
+                {
+                    arcMap.SelectedTrack = null;
+                    Gpx = null;
+                    GpxTrack = null;
+
+                    chartHelper.Initialize();
+                }
+                else
+                {
+                    arcMap.SelectedTrack = lvwFiles.SelectedItem as TrackInfo;
+
+                    arcMap.SelectedTrack.Overlay.Renderer = CurrentRenderer;
+                    //arcMap.SelectedTrack.Overlay.Graphics[0].Symbol = CurrentLineSymbol;
+
+                    Gpx = arcMap.SelectedTrack.Gpx;
+                    GpxTrack = arcMap.SelectedTrack.Track;
+                    await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
+                }
             }
-            if (lvwFiles.SelectedItem == null)
+            catch(Exception ex)
             {
-                arcMap.SelectedTrack = null;
-                Gpx = null;
-                GpxTrack = null;
-                chartHelper.Initialize();
-                return;
-            }
-
-            if (lvwFiles.SelectedItems.Count > 1)
-            {
-                arcMap.SelectedTrack = null;
-                Gpx = null;
-                GpxTrack = null;
-
-                chartHelper.Initialize();
-            }
-            else
-            {
-                arcMap.SelectedTrack = lvwFiles.SelectedItem as TrackInfo;
-
-                arcMap.SelectedTrack.Overlay.Renderer = CurrentRenderer;
-                //arcMap.SelectedTrack.Overlay.Graphics[0].Symbol = CurrentLineSymbol;
-
-                Gpx = arcMap.SelectedTrack.Gpx;
-                GpxTrack = arcMap.SelectedTrack.Track;
-                await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
+                App.Log.Error("选择Gpx文件时出现错误",ex);
             }
         }
 
@@ -591,10 +603,7 @@ namespace MapBoard.UI.GpxToolbox
             };
         }
 
-        private void RemoveTrackFileMenuClick(object sender, RoutedEventArgs e)
-        {
-            ListViewItemPreviewDeleteKeyDown(null, null);
-        }
+
 
         private async void LinkTrackMenuClick(object sender, RoutedEventArgs e)
         {
@@ -783,10 +792,6 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private async void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
-        {
-            await ZoomToTrackAsync();
-        }
 
         private Task ZoomToTrackAsync(int time = 500)
         {
@@ -797,10 +802,38 @@ namespace MapBoard.UI.GpxToolbox
             return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent), TimeSpan.FromMilliseconds(time)); ;
         }
 
-        private void BrowseButtonClick(object sender, RoutedEventArgs e)
+
+        private void lvwFiles_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            GpxBrowseWindow window = new GpxBrowseWindow(lvwFiles.SelectedItem as TrackInfo);
-            window.Show();
+            ContextMenu menu = new ContextMenu
+            {
+                PlacementTarget = sender as UIElement
+            };
+
+            if (lvwFiles.SelectedItems.Count > 0)
+            {
+                var menuRemove = new MenuItem() { Header = "移除" };
+                menuRemove.Click += (s, e) => RemoveSelectedGpxs();
+                menu.Items.Add(menuRemove);
+
+                if (lvwFiles.SelectedItems.Count > 1)
+                {
+                    var menuLink = new MenuItem() { Header = "连接" };
+                    menuLink.Click += LinkTrackMenuClick;
+                    menu.Items.Add(menuLink);
+                }
+            }
+            if (GpxTrack != null)
+            {
+                var menuZoom = new MenuItem() { Header = "缩放到轨迹" };
+                menuZoom.Click += async (s, e) => await ZoomToTrackAsync();
+                menu.Items.Add(menuZoom);
+
+                var menuBrowse = new MenuItem() { Header = "浏览" };
+                menuBrowse.Click += (s, e) => new GpxBrowseWindow(lvwFiles.SelectedItem as TrackInfo).Show();
+                menu.Items.Add(menuBrowse);
+            }
+            menu.IsOpen = true;
         }
     }
 }

@@ -408,24 +408,8 @@
                                 ItemsSource="{Binding Tracks}"
                                 PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
                                 SelectionChanged="FileSelectionChanged"
+                                PreviewMouseRightButtonDown="lvwFiles_PreviewMouseRightButtonDown"
                                 SelectionMode="Extended">
-
-                                <ListView.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem
-                                            Click="RemoveTrackFileMenuClick"
-                                            Header="删除" />
-                                        <MenuItem
-                                            Click="LinkTrackMenuClick"
-                                            Header="连接" />
-                                        <MenuItem
-                                            Click="ZoomToTrackButtonClick"
-                                            Header="缩放到轨迹" />
-                                        <MenuItem
-                                            Click="BrowseButtonClick"
-                                            Header="浏览" />
-                                    </ContextMenu>
-                                </ListView.ContextMenu>
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn
