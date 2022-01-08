@@ -71,6 +71,7 @@ namespace MapBoard.UI
                 lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Left;
                 btnGroups.Visibility = Visibility.Visible;
                 groupContent.Visibility = Visibility.Collapsed;
+                groupContent.Content = null;
                 flyoutGroups.Content = r;
                 r.Background = Brushes.Transparent;
             }
@@ -79,6 +80,7 @@ namespace MapBoard.UI
                 lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Center;
                 btnGroups.Visibility = Visibility.Collapsed;
                 groupContent.Visibility = Visibility.Visible;
+                flyoutGroups.Content = null;
                 groupContent.Content = r;
                 r.SetResourceReference(BackgroundProperty, "SystemControlBackgroundChromeMediumBrush");
             }
