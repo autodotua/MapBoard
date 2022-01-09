@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -246,16 +247,13 @@ namespace MapBoard.Util
         private static async Task<string> HttpGetAsync(string url)
         {
             // 设置参数
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Timeout = Config.Instance.Tile_RequestTimeOut;
-            request.ReadWriteTimeout = Config.Instance.Tile_ReadTimeOut;
-            request.UserAgent = Config.Instance.Tile_UserAgent;
+            var client = new HttpClient();
+            client.Timeout = TimeSpan.FromMilliseconds(Config.Instance.Tile_RequestTimeOut);
+            client.DefaultRequestHeaders.Add("User-Agent", Config.Instance.Tile_UserAgent);
 
-            using HttpWebResponse response = await request.GetResponseAsync() as HttpWebResponse;
-            using var responseStream = response.GetResponseStream();
-            using StreamReader reader = new StreamReader(responseStream);
-            string text = reader.ReadToEnd();
-            return text;
+            using var response = await client.GetAsync(url);
+            using var content = response.Content;
+            return await content.ReadAsStringAsync();
         }
 
         public static MapPoint ToMapPoint(this Location location)
