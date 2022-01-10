@@ -405,5 +405,37 @@ namespace MapBoard.Util
             //endBearing.Radians = alpha2;
             return new MapPoint(longitude.Degrees, latitude.Degrees, SpatialReferences.Wgs84);
         }
+        /// <summary>
+        /// 获取一个图形的所有结点
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static IEnumerable<MapPoint> GetPoints(this Geometry geometry)
+        {
+            switch (geometry)
+            {
+                case MapPoint point:
+                    yield return point;
+                    break;
+                case Multipoint multipoint:
+                    foreach (var point in multipoint.Points)
+                    {
+                        yield return point;
+                    }
+                    break;
+                case Multipart multipart:
+                    foreach (var part in multipart.Parts)
+                    {
+                        foreach (var point in part.Points)
+                        {
+                            yield return point;
+                        }
+                    }
+                    break;
+                default:
+                    throw new ArgumentException("不支持的Geometry类型");
+            }
+        }
     }
 }

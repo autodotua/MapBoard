@@ -22,6 +22,7 @@ namespace MapBoard.Mapping
         private GraphicsOverlay poiOverlay = new GraphicsOverlay();
         private GraphicsOverlay routeOverlay = new GraphicsOverlay();
         private GraphicsOverlay locationInfoOverlay = new GraphicsOverlay();
+        private GraphicsOverlay drawOverlay = new GraphicsOverlay();
 
         public OverlayHelper(GraphicsOverlayCollection overlays, Func<Geometry, Task> zoomAsync)
         {
@@ -43,8 +44,11 @@ namespace MapBoard.Mapping
             d.WhereClause = "Distance is not null";
             routeOverlay.LabelDefinitions.Add(d);
             routeOverlay.LabelsEnabled = true;
-
             overlays.Add(routeOverlay);
+
+            drawOverlay.Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Cross, System.Drawing.Color.Red, 20));
+            overlays.Add(drawOverlay);
+
             this.zoomAsync = zoomAsync;
         }
 
@@ -315,5 +319,14 @@ namespace MapBoard.Mapping
         }
 
         #endregion 地理逆编码
+
+        public void SetDrawPoint(MapPoint point)
+        {
+            drawOverlay.Graphics.Clear();
+            if (point != null)
+            {
+                drawOverlay.Graphics.Add(new Graphic(point));
+            }
+        }
     }
 }
