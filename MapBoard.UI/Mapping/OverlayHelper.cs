@@ -46,7 +46,7 @@ namespace MapBoard.Mapping
             routeOverlay.LabelsEnabled = true;
             overlays.Add(routeOverlay);
 
-            drawOverlay.Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Cross, System.Drawing.Color.Red, 20));
+            drawOverlay.Renderer = new SimpleRenderer();
             overlays.Add(drawOverlay);
 
             this.zoomAsync = zoomAsync;
@@ -320,12 +320,31 @@ namespace MapBoard.Mapping
 
         #endregion 地理逆编码
 
-        public void SetDrawPoint(MapPoint point)
+        public void SetNearestVertexPoint(MapPoint point)
         {
-            drawOverlay.Graphics.Clear();
+            if (drawOverlay.Graphics.Any(p => p.Attributes["Type"].Equals(1)))
+            {
+                drawOverlay.Graphics.Remove(drawOverlay.Graphics.First(p => p.Attributes["Type"].Equals(1)));
+            }
             if (point != null)
             {
-                drawOverlay.Graphics.Add(new Graphic(point));
+                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.X, Color.Red, 20));
+                g.Attributes.Add("Type", 1);
+                drawOverlay.Graphics.Add(g);
+            }
+        }
+
+        public void SetNearestPointPoint(MapPoint point)
+        {
+            if (drawOverlay.Graphics.Any(p => p.Attributes["Type"].Equals(2)))
+            {
+                drawOverlay.Graphics.Remove(drawOverlay.Graphics.First(p => p.Attributes["Type"].Equals(2)));
+            }
+            if (point != null)
+            {
+                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.X, Color.Yellow, 20));
+                g.Attributes.Add("Type", 2);
+                drawOverlay.Graphics.Add(g);
             }
         }
     }

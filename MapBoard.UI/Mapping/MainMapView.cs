@@ -202,7 +202,7 @@ namespace MapBoard.Mapping
         protected async override void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
-            if (e.RightButton == MouseButtonState.Pressed)
+            if (e.RightButton == MouseButtonState.Pressed&&CurrentTask==BoardTask.Ready)
             {
                 if (!canRotate)
                 {

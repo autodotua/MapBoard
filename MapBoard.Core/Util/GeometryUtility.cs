@@ -405,6 +405,7 @@ namespace MapBoard.Util
             //endBearing.Radians = alpha2;
             return new MapPoint(longitude.Degrees, latitude.Degrees, SpatialReferences.Wgs84);
         }
+
         /// <summary>
         /// 获取一个图形的所有结点
         /// </summary>
@@ -418,12 +419,14 @@ namespace MapBoard.Util
                 case MapPoint point:
                     yield return point;
                     break;
+
                 case Multipoint multipoint:
                     foreach (var point in multipoint.Points)
                     {
                         yield return point;
                     }
                     break;
+
                 case Multipart multipart:
                     foreach (var part in multipart.Parts)
                     {
@@ -433,9 +436,20 @@ namespace MapBoard.Util
                         }
                     }
                     break;
+
                 default:
                     throw new ArgumentException("不支持的Geometry类型");
             }
+        }
+
+        public static T ToWgs84<T>(this T geometry) where T : Geometry
+        {
+            return GeometryEngine.Project(geometry, SpatialReferences.Wgs84) as T;
+        }
+
+        public static T ToWebMercator<T>(this T geometry) where T : Geometry
+        {
+            return GeometryEngine.Project(geometry, SpatialReferences.WebMercator) as T;
         }
     }
 }

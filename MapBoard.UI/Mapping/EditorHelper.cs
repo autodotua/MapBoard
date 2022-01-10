@@ -13,6 +13,7 @@ using MapBoard.Mapping.Model;
 using System.Windows.Controls;
 using MapBoard.Util;
 using Esri.ArcGISRuntime.Symbology;
+using System.Windows;
 
 namespace MapBoard.Mapping
 {
@@ -35,6 +36,11 @@ namespace MapBoard.Mapping
 
         /// <summary>
         /// 最近结点
+        /// </summary>
+        private MapPoint nearestVertex;
+
+        /// <summary>
+        /// 最近的任意点
         /// </summary>
         private MapPoint nearestPoint;
 
@@ -277,26 +283,31 @@ namespace MapBoard.Mapping
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
-        private async Task<MapPoint> GetNearestPointAsync(System.Windows.Point position)
+        private async Task<(MapPoint, MapPoint)> GetNearestVertexAndPointAsync(System.Windows.Point position)
         {
             var location = GeometryEngine.Project(MapView.ScreenToLocation(position), SpatialReferences.Wgs84) as MapPoint;
             var results = await MapView.IdentifyLayersAsync(position, 20, false, int.MaxValue);
-            MapPoint nearestPoint = null;
-            double minDistance = double.MaxValue;
+            MapPoint minVertex = null;
+            MapPoint minPoint = null;
+            double minVertexDistance = double.MaxValue;
+            double minPointDistance = double.MaxValue;
             foreach (var result in results)
             {
                 foreach (var geometry in result.GeoElements.Select(p => p.Geometry))
                 {
-                    foreach (var point in geometry.GetPoints())
+                    var nearestVertexResult = GeometryEngine.NearestVertex(geometry, location);
+                    if (nearestVertexResult != null && nearestVertexResult.Distance < minVertexDistance)
                     {
-                        var distance = GeometryUtility.GetDistance(location, point);
-                        nearestPoint = nearestPoint == null ? point :
-                           (distance < minDistance ? point : nearestPoint);
-                        minDistance = Math.Min(minDistance, distance);
+                        minVertex = nearestVertexResult.Coordinate;
+                    }
+                    var nearestPointResult = GeometryEngine.NearestCoordinate(geometry, location);
+                    if (nearestPointResult != null && nearestPointResult.Distance < minPointDistance)
+                    {
+                        minPoint = nearestPointResult.Coordinate;
                     }
                 }
             }
-            return nearestPoint;
+            return (minVertex, minPoint);
         }
 
         /// <summary>
@@ -308,28 +319,64 @@ namespace MapBoard.Mapping
         {
             if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
             {
+                if (MapView.ToolTip is ToolTip t)
+                {
+                    t.IsOpen = false;
+                    MapView.ToolTip = null;
+                }
                 return;
             }
-            if (SketchEditor.Geometry == null)
+            if (SketchEditor.CreationMode
+                    is SketchCreationMode.Arrow
+                    or SketchCreationMode.Circle
+                    or SketchCreationMode.Ellipse
+                    or SketchCreationMode.Rectangle
+                    or SketchCreationMode.Triangle
+                    or SketchCreationMode.FreehandLine
+                    or SketchCreationMode.FreehandPolygon)
             {
-                switch (SketchEditor.CreationMode)
-                {
-                    case SketchCreationMode.Arrow:
-                    case SketchCreationMode.Circle:
-                    case SketchCreationMode.Ellipse:
-                    case SketchCreationMode.Rectangle:
-                    case SketchCreationMode.Triangle:
-                    case SketchCreationMode.FreehandLine:
-                    case SketchCreationMode.FreehandPolygon:
-                        return;
-                }
+                return;
             }
+            var position = e.GetPosition(MapView);
             if (!isSearchingNearestPoint)
             {
                 isSearchingNearestPoint = true;
-                nearestPoint = await GetNearestPointAsync(e.GetPosition(MapView));
-                MapView.Overlay.SetDrawPoint(nearestPoint);
+
+                (nearestVertex, nearestPoint) = await GetNearestVertexAndPointAsync(position);
                 isSearchingNearestPoint = false;
+                //因为查询需要一定时间，结束以后可能就不在绘制状态了，所以需要再次判断
+                if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
+                {
+                    return;
+                }
+                MapView.Overlay.SetNearestVertexPoint(nearestVertex);
+                MapView.Overlay.SetNearestPointPoint(nearestPoint);
+
+                if (nearestVertex != null)
+                {
+                    if (MapView.ToolTip == null)
+                    {
+                        MapView.ToolTip = new ToolTip()
+                        {
+                            Content = "Ctrl + 右键：捕捉最近的节点（红色）" + Environment.NewLine + "Shift + 右键：捕捉最近的点（黄色）",
+                            IsOpen = true,
+                            Placement = System.Windows.Controls.Primitives.PlacementMode.Relative
+                        };
+                    }
+                }
+                else
+                {
+                    if (MapView.ToolTip is ToolTip tt)
+                    {
+                        tt.IsOpen = false;
+                        MapView.ToolTip = null;
+                    }
+                }
+                if (MapView.ToolTip is ToolTip t)
+                {
+                    t.HorizontalOffset = position.X+20;
+                    t.VerticalOffset = position.Y-40;
+                }
             }
         }
 
@@ -344,61 +391,93 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-            if (SketchEditor.Geometry == null)
+            if (SketchEditor.CreationMode
+                     is SketchCreationMode.Arrow
+                     or SketchCreationMode.Circle
+                     or SketchCreationMode.Ellipse
+                     or SketchCreationMode.Rectangle
+                     or SketchCreationMode.Triangle
+                     or SketchCreationMode.FreehandLine
+                     or SketchCreationMode.FreehandPolygon)
             {
-                switch (SketchEditor.CreationMode)
+                return;
+            }
+
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                if (nearestVertex != null)
                 {
-                    case SketchCreationMode.Arrow:
-                    case SketchCreationMode.Circle:
-                    case SketchCreationMode.Ellipse:
-                    case SketchCreationMode.Rectangle:
-                    case SketchCreationMode.Triangle:
-                    case SketchCreationMode.FreehandLine:
-                    case SketchCreationMode.FreehandPolygon:
-                        return;
+                    AddPointToSketchEditor(nearestVertex);
                 }
+                return;
+            }
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                if (nearestVertex != null)
+                {
+                    AddPointToSketchEditor(nearestPoint);
+                }
+                return;
+            }
+            var location = MapView.ScreenToLocation(e.GetPosition(MapView)).ToWgs84();
+            ContextMenu menu = new ContextMenu();
+            menu.Items.Add(new MenuItem()
+            {
+                IsEnabled = false,
+                Header = new TextBlock()
+                {
+                    Text = $"经度={location.X:0.000000}{Environment.NewLine}纬度={location.Y:0.000000}",
+                    FontSize = 14,
+                    Foreground = App.Current.FindResource("SystemControlForegroundBaseHighBrush") as System.Windows.Media.Brush,
+                    TextAlignment = TextAlignment.Left,
+                }
+            });
+            if (nearestVertex != null)
+            {
+                MenuItem item = new MenuItem() { Header = "捕捉最近的节点（红色）" };
+                item.Click += (s, e2) => AddPointToSketchEditor(nearestVertex);
+                menu.Items.Add(item);
             }
             if (nearestPoint != null)
             {
-                ContextMenu menu = new ContextMenu();
-                MenuItem item = new MenuItem() { Header = "选择最近的节点" };
-                item.Click += (s, e2) => SelectNearestPoint();
+                MenuItem item = new MenuItem() { Header = "捕捉最近的点（黄色）" };
+                item.Click += (s, e2) => AddPointToSketchEditor(nearestPoint);
                 menu.Items.Add(item);
-                menu.IsOpen = true;
             }
+            menu.IsOpen = true;
         }
 
         /// <summary>
         /// 选择最近的结点
         /// </summary>
         /// <param name="position"></param>
-        private void SelectNearestPoint()
+        private void AddPointToSketchEditor(MapPoint point)
         {
-            if (nearestPoint != null)
+            if (point != null)
             {
                 if (SketchEditor.Geometry == null)
                 {
                     switch (SketchEditor.CreationMode)
                     {
                         case SketchCreationMode.Point:
-                            SketchEditor.ReplaceGeometry(nearestPoint);
+                            SketchEditor.ReplaceGeometry(point);
                             break;
 
                         case SketchCreationMode.Multipoint:
-                            SketchEditor.ReplaceGeometry(new Multipoint(new[] { nearestPoint }));
+                            SketchEditor.ReplaceGeometry(new Multipoint(new[] { point }));
                             break;
 
                         case SketchCreationMode.Polyline:
-                            SketchEditor.ReplaceGeometry(new Polyline(new[] { nearestPoint }));
+                            SketchEditor.ReplaceGeometry(new Polyline(new[] { point }));
                             break;
 
                         case SketchCreationMode.Polygon:
-                            SketchEditor.ReplaceGeometry(new Polygon(new[] { nearestPoint }));
+                            SketchEditor.ReplaceGeometry(new Polygon(new[] { point }));
                             break;
                     }
                     return;
                 }
-                SketchEditor.InsertVertexAfterSelectedVertex(GeometryEngine.Project(nearestPoint, SpatialReferences.WebMercator) as MapPoint);
+                SketchEditor.InsertVertexAfterSelectedVertex(GeometryEngine.Project(point, SpatialReferences.WebMercator) as MapPoint);
             }
         }
 
@@ -422,7 +501,8 @@ namespace MapBoard.Mapping
             SketchEditor.Stop();
             EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(false));
             MapView.CurrentTask = BoardTask.Ready;
-            MapView.Overlay.SetDrawPoint(null);
+            MapView.Overlay.SetNearestVertexPoint(null);
+            MapView.Overlay.SetNearestPointPoint(null);
         }
     }
 }
