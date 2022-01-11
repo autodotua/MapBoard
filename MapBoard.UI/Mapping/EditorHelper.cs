@@ -349,16 +349,20 @@ namespace MapBoard.Mapping
                 {
                     return;
                 }
-                MapView.Overlay.SetNearestVertexPoint(nearestVertex);
-                MapView.Overlay.SetNearestPointPoint(nearestPoint);
-
+                if (Config.Instance.ShowNearestPointSymbol)
+                {
+                    MapView.Overlay.SetNearestVertexPoint(nearestVertex);
+                    MapView.Overlay.SetNearestPointPoint(nearestPoint);
+                }
                 if (nearestVertex != null)
                 {
                     if (MapView.ToolTip == null)
                     {
                         MapView.ToolTip = new ToolTip()
                         {
-                            Content = "Ctrl + 右键：捕捉最近的节点（红色）" + Environment.NewLine + "Shift + 右键：捕捉最近的点（黄色）",
+                            Content = "Ctrl + 右键：捕捉最近的结点" + (Config.Instance.ShowNearestPointSymbol ? "（红色）" : "")
+                            + Environment.NewLine
+                            + "Shift + 右键：捕捉最近的任意点" + (Config.Instance.ShowNearestPointSymbol ? "（黄色）" : ""),
                             IsOpen = true,
                             Placement = System.Windows.Controls.Primitives.PlacementMode.Relative
                         };
@@ -374,8 +378,8 @@ namespace MapBoard.Mapping
                 }
                 if (MapView.ToolTip is ToolTip t)
                 {
-                    t.HorizontalOffset = position.X+20;
-                    t.VerticalOffset = position.Y-40;
+                    t.HorizontalOffset = position.X + 20;
+                    t.VerticalOffset = position.Y - 40;
                 }
             }
         }
@@ -434,13 +438,13 @@ namespace MapBoard.Mapping
             });
             if (nearestVertex != null)
             {
-                MenuItem item = new MenuItem() { Header = "捕捉最近的节点（红色）" };
+                MenuItem item = new MenuItem() { Header = "捕捉最近的结点" + (Config.Instance.ShowNearestPointSymbol ? "（红色）" : "") };
                 item.Click += (s, e2) => AddPointToSketchEditor(nearestVertex);
                 menu.Items.Add(item);
             }
             if (nearestPoint != null)
             {
-                MenuItem item = new MenuItem() { Header = "捕捉最近的点（黄色）" };
+                MenuItem item = new MenuItem() { Header = "捕捉最近的结点" + (Config.Instance.ShowNearestPointSymbol ? "（黄色）" : "") };
                 item.Click += (s, e2) => AddPointToSketchEditor(nearestPoint);
                 menu.Items.Add(item);
             }

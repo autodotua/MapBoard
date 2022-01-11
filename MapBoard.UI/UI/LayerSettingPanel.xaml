@@ -55,17 +55,13 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="当前分类" />
+                            <TextBlock VerticalAlignment="Center" Text="当前分类" />
                             <TextBlock
                                 Grid.Column="2"
                                 Margin="4,0"
                                 VerticalAlignment="Center"
                                 Text="{Binding SelectedKey.Key}" />
-                            <Button
-                                x:Name="btnClasses"
-                                Grid.Column="4">
+                            <Button x:Name="btnClasses" Grid.Column="4">
                                 <Button.Content>
                                     <TextBlock>
                                         <Run Text="{Binding Keys.Count, Mode=OneWay}" />
@@ -74,9 +70,7 @@
                                 </Button.Content>
                                 <ui:FlyoutService.Flyout>
                                     <ui:Flyout>
-                                        <Grid
-                                            Margin="8"
-                                            Background="{Binding Background}">
+                                        <Grid Margin="8" Background="{Binding Background}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="8" />
@@ -146,9 +140,7 @@
                             Background="Transparent"
                             DataContext="{Binding SelectedKey.Symbol}">
                             <TabControl.Resources>
-                                <Style
-                                    BasedOn="{StaticResource DefaultTabItemStyle}"
-                                    TargetType="{x:Type TabItem}">
+                                <Style BasedOn="{StaticResource DefaultTabItemStyle}" TargetType="{x:Type TabItem}">
                                     <Setter Property="Visibility" Value="Collapsed" />
                                     <Setter Property="Background" Value="Transparent" />
                                 </Style>
@@ -174,40 +166,30 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Text="直径" />
+                                    <TextBlock Grid.Row="0" Text="直径" />
 
                                     <TextBox
                                         Grid.Row="0"
                                         Grid.Column="2"
                                         Text="{Binding Size}" />
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Text="边框粗细" />
+                                    <TextBlock Grid.Row="2" Text="边框粗细" />
 
                                     <TextBox
                                         Grid.Row="2"
                                         Grid.Column="2"
                                         Text="{Binding OutlineWidth}" />
-                                    <TextBlock
-                                        Grid.Row="4"
-                                        Text="填充颜色" />
+                                    <TextBlock Grid.Row="4" Text="填充颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="4 "
                                         Grid.Column="2"
                                         ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                    <TextBlock
-                                        Grid.Row="6"
-                                        Text="边框颜色" />
+                                    <TextBlock Grid.Row="6" Text="边框颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="6 "
                                         Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
-                                    <TextBlock
-                                        Grid.Row="8"
-                                        Text="填充样式" />
+                                    <TextBlock Grid.Row="8" Text="填充样式" />
                                     <ComboBox
                                         Grid.Row="8"
                                         Grid.Column="2"
@@ -220,9 +202,7 @@
                                         <ComboBoxItem>三角形</ComboBoxItem>
                                         <ComboBoxItem>叉</ComboBoxItem>
                                     </ComboBox>
-                                    <TextBlock
-                                        Grid.Row="10"
-                                        Text="边框样式" />
+                                    <TextBlock Grid.Row="10" Text="边框样式" />
                                     <ComboBox
                                         Grid.Row="10"
                                         Grid.Column="2"
@@ -260,23 +240,17 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Text="宽度" />
+                                    <TextBlock Grid.Row="0" Text="宽度" />
                                     <TextBox
                                         Grid.Row="0"
                                         Grid.Column="2"
                                         Text="{Binding OutlineWidth, Mode=TwoWay}" />
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Text="颜色" />
+                                    <TextBlock Grid.Row="2" Text="颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="2 "
                                         Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                    <TextBlock
-                                        Grid.Row="4"
-                                        Text="边框样式" />
+                                    <TextBlock Grid.Row="4" Text="边框样式" />
                                     <ComboBox
                                         Grid.Row="4"
                                         Grid.Column="2"
@@ -295,9 +269,7 @@
                                         <ComboBoxItem>点点短虚线</ComboBoxItem>
                                         <ComboBoxItem>短点</ComboBoxItem>
                                     </ComboBox>
-                                    <TextBlock
-                                        Grid.Row="6"
-                                        Text="箭头设置" />
+                                    <TextBlock Grid.Row="6" Text="箭头设置" />
                                     <ComboBox
                                         Grid.Row="6"
                                         Grid.Column="2"
@@ -329,32 +301,24 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Text="边框宽度" />
+                                    <TextBlock Grid.Row="0" Text="边框宽度" />
                                     <TextBox
                                         Grid.Row="0"
                                         Grid.Column="2"
                                         Text="{Binding OutlineWidth}" />
 
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Text="填充颜色" />
+                                    <TextBlock Grid.Row="2" Text="填充颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="2 "
                                         Grid.Column="2"
                                         ColorBrush="{Binding FillColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
-                                    <TextBlock
-                                        Grid.Row="4"
-                                        Text="边框颜色" />
+                                    <TextBlock Grid.Row="4" Text="边框颜色" />
                                     <component:ColorPickerTextBox
                                         Grid.Row="4 "
                                         Grid.Column="2"
                                         ColorBrush="{Binding LineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                    <TextBlock
-                                        Grid.Row="6"
-                                        Text="填充样式" />
+                                    <TextBlock Grid.Row="6" Text="填充样式" />
                                     <ComboBox
                                         Grid.Row="6"
                                         Grid.Column="2"
@@ -369,9 +333,7 @@
                                         <ComboBoxItem>实心填充</ComboBoxItem>
                                         <ComboBoxItem>纵线</ComboBoxItem>
                                     </ComboBox>
-                                    <TextBlock
-                                        Grid.Row="8"
-                                        Text="边框样式" />
+                                    <TextBlock Grid.Row="8" Text="边框样式" />
                                     <ComboBox
                                         Grid.Row="8"
                                         Grid.Column="2"
@@ -416,9 +378,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="当前标签" />
+                            <TextBlock VerticalAlignment="Center" Text="当前标签" />
                             <TextBox
                                 Grid.Column="2"
                                 Margin="4,0"
@@ -435,9 +395,7 @@
                                 <ui:FlyoutService.Flyout>
                                     <ui:Flyout>
 
-                                        <Grid
-                                            Margin="8"
-                                            Background="{Binding Background}">
+                                        <Grid Margin="8" Background="{Binding Background}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="8" />
@@ -477,9 +435,7 @@
                             </Button>
                         </Grid>
 
-                        <Grid
-                            DataContext="{Binding Label}"
-                            IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}">
+                        <Grid DataContext="{Binding Label}" IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="8" />
@@ -510,9 +466,7 @@
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                 </Style>
-                                <Style
-                                    BasedOn="{StaticResource DefaultCheckBoxStyle}"
-                                    TargetType="{x:Type CheckBox}">
+                                <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="{x:Type CheckBox}">
                                     <Setter Property="Margin" Value="0,0,-64,0" />
                                 </Style>
                                 <Style TargetType="{x:Type component:ColorPickerTextBox}">
@@ -520,9 +474,7 @@
                                     <Setter Property="HorizontalAlignment" Value="Stretch" />
                                 </Style>
                             </Grid.Resources>
-                            <TextBlock
-                                Grid.Row="0"
-                                Text="字体" />
+                            <TextBlock Grid.Row="0" Text="字体" />
                             <Grid Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -537,9 +489,7 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                <TextBox
-                                    Grid.Column="2"
-                                    Text="{Binding FontSize}" />
+                                <TextBox Grid.Column="2" Text="{Binding FontSize}" />
                                 <ComboBox
                                     Grid.Row="2"
                                     Grid.ColumnSpan="3"
@@ -556,12 +506,8 @@
                                     <CheckBox IsChecked="{Binding Italic}">斜体</CheckBox>
                                 </ui:SimpleStackPanel>
                             </Grid>
-                            <TextBlock
-                                Grid.Row="2"
-                                Text="外描边" />
-                            <Grid
-                                Grid.Row="2"
-                                Grid.Column="2">
+                            <TextBlock Grid.Row="2" Text="外描边" />
+                            <Grid Grid.Row="2" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -573,12 +519,8 @@
                                     VerticalAlignment="Center"
                                     Text="{Binding HaloWidth}" />
                             </Grid>
-                            <TextBlock
-                                Grid.Row="4"
-                                Text="内描边" />
-                            <Grid
-                                Grid.Row="4"
-                                Grid.Column="2">
+                            <TextBlock Grid.Row="4" Text="内描边" />
+                            <Grid Grid.Row="4" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -590,21 +532,15 @@
                                     VerticalAlignment="Center"
                                     Text="{Binding OutlineWidth}" />
                             </Grid>
-                            <TextBlock
-                                Grid.Row="6"
-                                Text="背景" />
+                            <TextBlock Grid.Row="6" Text="背景" />
                             <component:ColorPickerTextBox
                                 x:Name="labelBackgroundColor"
                                 Grid.Row="6"
                                 Grid.Column="2"
                                 ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
-                            <TextBlock
-                                Grid.Row="8"
-                                Text="最小比例" />
-                            <Grid
-                                Grid.Row="8"
-                                Grid.Column="2">
+                            <TextBlock Grid.Row="8" Text="最小比例" />
+                            <Grid Grid.Row="8" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -619,9 +555,7 @@
                                     Click="SetScaleButtonClick"
                                     Content="设为当前" />
                             </Grid>
-                            <TextBlock
-                                Grid.Row="10"
-                                Text="布局" />
+                            <TextBlock Grid.Row="10" Text="布局" />
                             <ComboBox
                                 Grid.Row="10"
                                 Grid.Column="2"
@@ -634,18 +568,14 @@
                                 <ComboBoxItem>跟随图形</ComboBoxItem>
                             </ComboBox>
 
-                            <Grid
-                                Grid.Row="16"
-                                Grid.ColumnSpan="99">
+                            <Grid Grid.Row="16" Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="8" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <CheckBox IsChecked="{Binding AllowRepeat}">允许重复显示</CheckBox>
-                                <CheckBox
-                                    Grid.Column="2"
-                                    IsChecked="{Binding AllowOverlap}">
+                                <CheckBox Grid.Column="2" IsChecked="{Binding AllowOverlap}">
                                     允许重叠显示
                                 </CheckBox>
                             </Grid>
@@ -653,9 +583,7 @@
                                 Grid.Row="12"
                                 VerticalAlignment="Center"
                                 Text="显示内容" />
-                            <Grid
-                                Grid.Row="12"
-                                Grid.Column="2">
+                            <Grid Grid.Row="12" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -666,15 +594,9 @@
                                     VerticalAlignment="Center"
                                     ui:ControlHelper.PlaceholderText="显示的内容"
                                     SelectionChanged="ComboBox_SelectionChanged">
-                                    <CheckBox
-                                        Content="标签"
-                                        IsChecked="{Binding Info}" />
-                                    <CheckBox
-                                        Content="日期"
-                                        IsChecked="{Binding Date}" />
-                                    <CheckBox
-                                        Content="分类"
-                                        IsChecked="{Binding Class}" />
+                                    <CheckBox Content="标签" IsChecked="{Binding Info}" />
+                                    <CheckBox Content="日期" IsChecked="{Binding Date}" />
+                                    <CheckBox Content="分类" IsChecked="{Binding Class}" />
                                 </ComboBox>
                                 <CheckBox
                                     Grid.Column="2"

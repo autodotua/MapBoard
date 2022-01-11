@@ -20,395 +20,343 @@
     Loaded="Window_Loaded"
     mc:Ignorable="d">
     <u:DialogWindowBase.Resources>
-        <CollectionViewSource
-            x:Key="baseLayerTypes"
-            Source="{Binding BaseLayerTypes}" />
+        <CollectionViewSource x:Key="baseLayerTypes" Source="{Binding BaseLayerTypes}" />
     </u:DialogWindowBase.Resources>
-    <Grid Margin="8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TabControl
-            x:Name="tab"
-            Style="{StaticResource TabControlPivotStyle}">
-            <TabItem
-                Padding="8"
-                Header="通用">
-                <ui:SimpleStackPanel Spacing="16">
-                    <ComboBox
-                        ui:ControlHelper.Header="主题"
-                        SelectedIndex="{Binding Theme}">
-                        <ComboBoxItem>自动</ComboBoxItem>
-                        <ComboBoxItem>亮色</ComboBoxItem>
-                        <ComboBoxItem>暗色</ComboBoxItem>
-                    </ComboBox>
-                    <ui:ToggleSwitch
-                        ui:ControlHelper.Description="开启后，可滚动区域滚动时将启用动画"
-                        ui:ControlHelper.Header="平滑滚动"
-                        IsOn="{Binding Config.SmoothScroll}" />
 
-                    <Button Content="导出设置" Click="ExportButton_Click" />
-                    <Button Content="导入设置" Click="ImportButton_Click" />
+    <TabControl
+        x:Name="tab"
+        Padding="16"
+        TabStripPlacement="Left">
+        <TabItem Header="通用">
+
+            <ui:SimpleStackPanel Spacing="16">
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Click="ExportButton_Click" Content="导出设置" />
+                    <Button Click="ImportButton_Click" Content="导入设置" />
                 </ui:SimpleStackPanel>
-            </TabItem>
-            <TabItem
-                Padding="8"
-                Header="地图">
+                <ComboBox ui:ControlHelper.Header="主题" SelectedIndex="{Binding Theme}">
+                    <ComboBoxItem>自动</ComboBoxItem>
+                    <ComboBoxItem>亮色</ComboBoxItem>
+                    <ComboBoxItem>暗色</ComboBoxItem>
+                </ComboBox>
+                <ui:ToggleSwitch
+                    ui:ControlHelper.Description="开启后，可滚动区域滚动时将启用动画"
+                    ui:ControlHelper.Header="平滑滚动"
+                    IsOn="{Binding Config.SmoothScroll}" />
+            </ui:SimpleStackPanel>
+        </TabItem>
+
+        <TabItem Header="网络">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="0" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="2" Text="用户代理：" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    MaxLines="5"
+                    Text="{Binding Config.Tile_DownloadUserAgent}"
+                    TextWrapping="Wrap" />
+
+                <CheckBox
+                    Grid.Row="4"
+                    Grid.ColumnSpan="3"
+                    Content="下载时若文件已存在则覆盖"
+                    IsChecked="{Binding Config.Tile_CoverFile}" />
+                <TextBlock Grid.Row="6" Text="请求超时（毫秒）：" />
+                <ui:NumberBox  SpinButtonPlacementMode="Compact"
+                    Grid.Row="6" SmallChange="100" LargeChange="100"
+                    Grid.Column="2"
+                    Text="{Binding Config.Tile_RequestTimeOut}" />
+                <TextBlock Grid.Row="8" Text="下载超时（毫秒）：" />
+                <ui:NumberBox  SpinButtonPlacementMode="Compact"
+                    Grid.Row="8" SmallChange="100" LargeChange="100"
+                    Grid.Column="2"
+                    Value="{Binding Config.Tile_ReadTimeOut}" />
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="地图">
+            <ui:SimpleStackPanel Spacing="8">
+                <ComboBox
+                    x:Name="cbbCoords"
+                    ui:ControlHelper.Header="底图坐标系"
+                    SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
+
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock VerticalAlignment="Center" Text="数据文件位置：" />
+                    <RadioButton
+                        x:Name="rbtnAppData"
+                        Click="RbtnDataPath_Click"
+                        Content="默认位置（AppData）" />
+                    <RadioButton
+                        x:Name="rbtnHere"
+                        Click="RbtnDataPath_Click"
+                        Content="程序目录" />
+                    <RadioButton
+                        x:Name="rbtnUp"
+                        Click="RbtnDataPath_Click"
+                        Content="程序上级目录" />
+                </ui:SimpleStackPanel>
+                <TextBlock>底图设置</TextBlock>
+                <Grid Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DataGrid
+                        x:Name="grd"
+                        Height="160"
+                        dd:DragDrop.IsDragSource="True"
+                        dd:DragDrop.IsDropTarget="True"
+                        fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="True"
+                        CanUserSortColumns="False"
+                        ItemsSource="{Binding BaseLayers}"
+                        ScrollViewer.CanContentScroll="False"
+                        SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Binding="{Binding Index}"
+                                CanUserSort="False"
+                                Header="序号"
+                                IsReadOnly="True"
+                                SortDirection="Ascending" />
+                            <DataGridTemplateColumn Width="52" Header="启用">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Margin="16,-2" IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="52" Header="可见">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox
+                                            Margin="16,-2"
+                                            IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
+                                            IsEnabled="{Binding Enable}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Binding="{Binding Name}" Header="名称" />
+                            <DataGridTemplateColumn CanUserSort="False" Header="类型">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding Source={StaticResource baseLayerTypes}}" SelectedItem="{Binding Type}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ., Converter={StaticResource BaseLayerTypeConverter}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn CanUserSort="False" Header="不透明度">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Opacity, StringFormat=P0}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <Slider
+                                            Width="120"
+                                            Margin="12,0"
+                                            LargeChange="0.1"
+                                            Maximum="1"
+                                            Minimum="0"
+                                            SmallChange="0.01"
+                                            Value="{Binding Opacity}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn
+                                Width="320"
+                                Binding="{Binding Path=Path}"
+                                CanUserSort="False"
+                                Header="地址" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <ui:SimpleStackPanel
+                        Grid.Row="2"
+                        Grid.ColumnSpan="5"
+                        Margin="8"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <ui:SplitButton Click="AddButtonClick" Content="新增">
+                            <ui:SplitButton.Flyout>
+                                <ui:MenuFlyout>
+                                    <MenuItem Click="AddFileButtonClick" Header="文件（栅格图、Tpk、Shapefile）" />
+                                    <MenuItem Click="AddWmsButtonClick" Header="WMS地图切片服务" />
+                                </ui:MenuFlyout>
+                            </ui:SplitButton.Flyout>
+                        </ui:SplitButton>
+                        <Button Click="DeleteButtonClick" Content="删除" />
+                        <Button Click="OkButtonClick" Content="应用" />
+                    </ui:SimpleStackPanel>
+                </Grid>
+                <Slider
+                    ui:ControlHelper.Header="网络图层加载超时（毫秒）"
+                    AutoToolTipPlacement="TopLeft"
+                    IsSnapToTickEnabled="True"
+                    Maximum="15000"
+                    Minimum="100"
+                    TickPlacement="BottomRight"
+                    Ticks="100 200 300 500 750 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 11000 12000 13000 14000 15000"
+                    Value="{Binding Config.ServerLayerLoadTimeout}" />
+                <CheckBox Click="CheckBox_Click" IsChecked="{Binding Config.HideWatermark}">
+                    <TextBlock>
+                        <Run>尝试隐藏</Run>
+                        <Run FontStyle="Italic">Licensed For Developer Use Only</Run>
+                        <Run>水印</Run>
+                    </TextBlock>
+                </CheckBox>
+            </ui:SimpleStackPanel>
+        </TabItem>
+
+        <TabItem Header="地图画板">
+            <ui:SimpleStackPanel Spacing="16">
+
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+
+                    <TextBlock VerticalAlignment="Center" Text="在绘制下一个图形时，保留：" />
+                    <CheckBox
+                        Margin="0,0,-56,0"
+                        Content="标签"
+                        IsChecked="{Binding Config.RemainLabel}" />
+                    <CheckBox
+                        Margin="0,0,-56,0"
+                        Content="日期"
+                        IsChecked="{Binding Config.RemainDate}" />
+                    <CheckBox
+                        Margin="0,0,-56,0"
+                        Content="分类"
+                        IsChecked="{Binding Config.RemainKey}" />
+                </ui:SimpleStackPanel>
+
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock VerticalAlignment="Center" Text="自动备份选项：" />
+                    <CheckBox Content="退出时自动备份" IsChecked="{Binding Config.BackupWhenExit}" />
+                    <CheckBox Content="导入时自动备份" IsChecked="{Binding Config.BackupWhenReplace}" />
+                </ui:SimpleStackPanel>
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock VerticalAlignment="Center" Text="最大备份数：" />
+                    <TextBox VerticalAlignment="Center" Text="{Binding Config.MaxBackupCount}" />
+                    <TextBlock VerticalAlignment="Center">
+                        <Run>当前共</Run>
+                        <Run Text="{Binding CurrentBackupCount, Mode=OneWay}" />
+                        <Run>个</Run>
+                    </TextBlock>
+                    <Button Click="BackupButton_Click" Content="立即备份" />
+                    <Button Click="OpenBackupFolderButton_Click" Content="打开备份目录" />
+                </ui:SimpleStackPanel>
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock VerticalAlignment="Center">地图和图层包导出方式：</TextBlock>
+                    <CheckBox
+                        Content="快速导出地图/图层包"
+                        IsChecked="{Binding Config.CopyShpFileWhenExport}"
+                        ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
+                </ui:SimpleStackPanel>
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
+                    <CheckBox Content="不需要按Ctrl，直接单击以选择" IsChecked="{Binding Config.TapToSelect}" />
+                    <CheckBox
+                        Content="可以选择全部图层"
+                        IsChecked="{Binding Config.TapToSelect}"
+                        Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
+                </ui:SimpleStackPanel>
+                <CheckBox Content="绘制时，显示最近的节点和任意点位置" IsChecked="{Binding Config.ShowNearestPointSymbol}" />
+
+                <TextBlock VerticalAlignment="Center">侧边栏显示内容</TextBlock>
+                <WrapPanel Orientation="Horizontal">
+                    <CheckBox Content="指北针" IsChecked="{Binding Config.ShowSideCompass}" />
+                    <CheckBox Content="底图快速设置" IsChecked="{Binding Config.ShowSideBaseLayers}" />
+                    <CheckBox Content="缩放条" IsChecked="{Binding Config.ShowSideScaleBar}" />
+                    <CheckBox Content="放大缩小按钮" IsChecked="{Binding Config.ShowSideScaleButton}" />
+                    <CheckBox Content="搜索" IsChecked="{Binding Config.ShowSideSearch}" />
+                    <CheckBox Content="定位" IsChecked="{Binding Config.ShowSideLocation}" />
+                </WrapPanel>
+            </ui:SimpleStackPanel>
+        </TabItem>
+
+        <TabItem Header="GPX工具箱">
+            <ui:SimpleStackPanel Spacing="16">
+                <CheckBox
+                    x:Name="chkGpxHeight"
+                    Content="展示高度"
+                    IsChecked="{Binding Config.Gpx_Height}" />
+                <ui:SimpleStackPanel
+                    x:Name="stkGpxHeight"
+                    IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}"
+                    Spacing="8">
+                    <CheckBox Content="最低高度与地面平齐" IsChecked="{Binding Config.Gpx_RelativeHeight}" />
+                    <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock VerticalAlignment="Center" Text="高度夸大倍率：" />
+                        <TextBox Text="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
+                    </ui:SimpleStackPanel>
+                </ui:SimpleStackPanel>
                 <ui:SimpleStackPanel Spacing="8">
-                    <ComboBox
-                        x:Name="cbbCoords"
-                        ui:ControlHelper.Header="底图坐标系"
-                        SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
-
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="数据文件位置：" />
-                        <RadioButton
-                            x:Name="rbtnAppData"
-                            Click="RbtnDataPath_Click"
-                            Content="默认位置（AppData）" />
-                        <RadioButton
-                            x:Name="rbtnHere"
-                            Click="RbtnDataPath_Click"
-                            Content="程序目录" />
-                        <RadioButton
-                            x:Name="rbtnUp"
-                            Click="RbtnDataPath_Click"
-                            Content="程序上级目录" />
-                    </ui:SimpleStackPanel>
-                    <TextBlock>底图设置</TextBlock>
-                    <Grid Margin="4">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="8" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <DataGrid
-                            x:Name="grd"
-                            Height="160"
-                            dd:DragDrop.IsDragSource="True"
-                            dd:DragDrop.IsDropTarget="True"
-                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="True"
-                            CanUserSortColumns="False"
-                            ItemsSource="{Binding BaseLayers}"
-                            ScrollViewer.CanContentScroll="False"
-                            SelectionMode="Single">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Binding="{Binding Index}"
-                                    CanUserSort="False"
-                                    Header="序号"
-                                    IsReadOnly="True"
-                                    SortDirection="Ascending" />
-                                <DataGridTemplateColumn
-                                    Width="52"
-                                    Header="启用">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox
-                                                Margin="16,-2"
-                                                IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn
-                                    Width="52"
-                                    Header="可见">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox
-                                                Margin="16,-2"
-                                                IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
-                                                IsEnabled="{Binding Enable}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn
-                                    Binding="{Binding Name}"
-                                    Header="名称" />
-                                <DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="类型">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Margin="12,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-
-                                    <DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate>
-                                            <ComboBox
-                                                ItemsSource="{Binding Source={StaticResource baseLayerTypes}}"
-                                                SelectedItem="{Binding Type}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding ., Converter={StaticResource BaseLayerTypeConverter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellEditingTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="不透明度">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Margin="12,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Opacity, StringFormat=P0}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-
-                                    <DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate>
-                                            <Slider
-                                                Width="120"
-                                                Margin="12,0"
-                                                LargeChange="0.1"
-                                                Maximum="1"
-                                                Minimum="0"
-                                                SmallChange="0.01"
-                                                Value="{Binding Opacity}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellEditingTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTextColumn
-                                    Width="320"
-                                    Binding="{Binding Path=Path}"
-                                    CanUserSort="False"
-                                    Header="地址" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                        <ui:SimpleStackPanel
-                            Grid.Row="2"
-                            Grid.ColumnSpan="5"
-                            Margin="8"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <ui:SplitButton
-                                Click="AddButtonClick"
-                                Content="新增">
-                                <ui:SplitButton.Flyout>
-                                    <ui:MenuFlyout>
-                                        <MenuItem
-                                            Click="AddFileButtonClick"
-                                            Header="文件（栅格图、Tpk、Shapefile）" />
-                                        <MenuItem
-                                            Click="AddWmsButtonClick"
-                                            Header="WMS地图切片服务" />
-                                    </ui:MenuFlyout>
-                                </ui:SplitButton.Flyout>
-                            </ui:SplitButton>
-                            <Button
-                                Click="DeleteButtonClick"
-                                Content="删除" />
-                            <Button
-                                Click="OkButtonClick"
-                                Content="应用" />
-                        </ui:SimpleStackPanel>
-                    </Grid>
-                    <Slider
-                        ui:ControlHelper.Header="网络图层加载超时（毫秒）"
-                        AutoToolTipPlacement="TopLeft"
-                        IsSnapToTickEnabled="True"
-                        Maximum="15000"
-                        Minimum="100"
-                        TickPlacement="BottomRight"
-                        Ticks="100 200 300 500 750 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 11000 12000 13000 14000 15000"
-                        Value="{Binding Config.ServerLayerLoadTimeout}" />
                     <CheckBox
-                        Click="CheckBox_Click"
-                        IsChecked="{Binding Config.HideWatermark}">
-                        <TextBlock>
-                            <Run>尝试隐藏</Run>
-                            <Run FontStyle="Italic">Licensed For Developer Use Only</Run>
-                            <Run>水印</Run>
-                        </TextBlock>
-                    </CheckBox>
-                </ui:SimpleStackPanel>
-            </TabItem>
-
-            <TabItem
-                Padding="6"
-                Header="地图画板">
-                <ui:SimpleStackPanel Spacing="16">
-
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="16">
-
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="在绘制下一个图形时，保留：" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="标签"
-                            IsChecked="{Binding Config.RemainLabel}" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="日期"
-                            IsChecked="{Binding Config.RemainDate}" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="分类"
-                            IsChecked="{Binding Config.RemainKey}" />
-                    </ui:SimpleStackPanel>
-
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="16">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="自动备份选项：" />
-                        <CheckBox
-                            Content="退出时自动备份"
-                            IsChecked="{Binding Config.BackupWhenExit}" />
-                        <CheckBox
-                            Content="导入时自动备份"
-                            IsChecked="{Binding Config.BackupWhenReplace}" />
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="16">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="最大备份数：" />
-                        <TextBox
-                            VerticalAlignment="Center"
-                            Text="{Binding Config.MaxBackupCount}" />
-                        <TextBlock VerticalAlignment="Center">
-                            <Run>当前共</Run>
-                            <Run Text="{Binding CurrentBackupCount, Mode=OneWay}" />
-                            <Run>个</Run>
-                        </TextBlock>
-                        <Button
-                            Click="BackupButton_Click"
-                            Content="立即备份" />
-                        <Button
-                            Click="OpenBackupFolderButton_Click"
-                            Content="打开备份目录" />
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="16">
-                        <TextBlock VerticalAlignment="Center">地图和图层包导出方式：</TextBlock>
-                        <CheckBox
-                            Content="快速导出地图/图层包"
-                            IsChecked="{Binding Config.CopyShpFileWhenExport}"
-                            ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="16">
-                        <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
-                        <CheckBox
-                            Content="不需要按Ctrl，直接单击以选择"
-                            IsChecked="{Binding Config.TapToSelect}" />
-                        <CheckBox
-                            Content="可以选择全部图层"
-                            IsChecked="{Binding Config.TapToSelect}"
-                            Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
-                    </ui:SimpleStackPanel>
-
-                    <TextBlock VerticalAlignment="Center">侧边栏显示内容</TextBlock>
-                    <WrapPanel Orientation="Horizontal">
-                        <CheckBox
-                            Content="指北针"
-                            IsChecked="{Binding Config.ShowSideCompass}" />
-                        <CheckBox
-                            Content="底图快速设置"
-                            IsChecked="{Binding Config.ShowSideBaseLayers}" />
-                        <CheckBox
-                            Content="缩放条"
-                            IsChecked="{Binding Config.ShowSideScaleBar}" />
-                        <CheckBox
-                            Content="放大缩小按钮"
-                            IsChecked="{Binding Config.ShowSideScaleButton}" />
-                        <CheckBox
-                            Content="搜索"
-                            IsChecked="{Binding Config.ShowSideSearch}" />
-                        <CheckBox
-                            Content="定位"
-                            IsChecked="{Binding Config.ShowSideLocation}" />
-                    </WrapPanel>
-                </ui:SimpleStackPanel>
-            </TabItem>
-
-            <TabItem
-                Padding="8"
-                Header="GPX工具箱">
-                <ui:SimpleStackPanel Spacing="16">
+                        x:Name="chkGpxAutoSmooth"
+                        Content="自动进行平滑"
+                        IsChecked="{Binding Config.Gpx_AutoSmooth}" />
                     <CheckBox
-                        x:Name="chkGpxHeight"
-                        Content="展示高度"
-                        IsChecked="{Binding Config.Gpx_Height}" />
-                    <ui:SimpleStackPanel
-                        x:Name="stkGpxHeight"
-                        IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}"
-                        Spacing="8">
-                        <CheckBox
-                            Content="最低高度与地面平齐"
-                            IsChecked="{Binding Config.Gpx_RelativeHeight}" />
-                        <ui:SimpleStackPanel
-                            Orientation="Horizontal"
-                            Spacing="16">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="高度夸大倍率：" />
-                            <TextBox Text="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
-                        </ui:SimpleStackPanel>
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel Spacing="8">
-                        <CheckBox
-                            x:Name="chkGpxAutoSmooth"
-                            Content="自动进行平滑"
-                            IsChecked="{Binding Config.Gpx_AutoSmooth}" />
-                        <CheckBox
-                            Content="仅平滑垂直方向"
-                            IsChecked="{Binding Config.Gpx_AutoSmoothOnlyZ}"
-                            IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" />
-                        <ui:SimpleStackPanel
-                            Orientation="Horizontal"
-                            Spacing="16">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="平滑度：" />
-                            <TextBox
-                                IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"
-                                Text="{Binding Config.Gpx_AutoSmoothLevel}" />
-                        </ui:SimpleStackPanel>
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="12">
-                        <CheckBox
-                            Content="在图表中绘制速度点"
-                            IsChecked="{Binding Config.Gpx_DrawPoints}" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Opacity="0.7">
-                            在数据量很大的情况下，绘制点将明显影响程序流畅度
-                        </TextBlock>
+                        Content="仅平滑垂直方向"
+                        IsChecked="{Binding Config.Gpx_AutoSmoothOnlyZ}"
+                        IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" />
+                    <ui:SimpleStackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock VerticalAlignment="Center" Text="平滑度：" />
+                        <TextBox IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" Text="{Binding Config.Gpx_AutoSmoothLevel}" />
                     </ui:SimpleStackPanel>
                 </ui:SimpleStackPanel>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="12">
+                    <CheckBox Content="在图表中绘制速度点" IsChecked="{Binding Config.Gpx_DrawPoints}" />
+                    <TextBlock VerticalAlignment="Center" Opacity="0.7">
+                        在数据量很大的情况下，绘制点将明显影响程序流畅度
+                    </TextBlock>
+                </ui:SimpleStackPanel>
+            </ui:SimpleStackPanel>
+        </TabItem>
+    </TabControl>
 </u:DialogWindowBase>

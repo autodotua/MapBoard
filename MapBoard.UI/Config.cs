@@ -82,6 +82,8 @@ namespace MapBoard
 
         private bool useCompactLayerList;
 
+        private bool showNearestPointSymbol = false;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public event EventHandler ThemeChanged;
@@ -398,7 +400,7 @@ namespace MapBoard
         public void Save()
         {
             string dir = Path.GetDirectoryName(path);
-            if (!string.IsNullOrWhiteSpace(dir)&& !Directory.Exists(dir))
+            if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
@@ -459,6 +461,12 @@ namespace MapBoard
         {
             get => showSideLocation;
             set => this.SetValueAndNotify(ref showSideLocation, value, nameof(ShowSideLocation));
+        }
+
+        public bool ShowNearestPointSymbol
+        {
+            get => showNearestPointSymbol;
+            set => this.SetValueAndNotify(ref showNearestPointSymbol, value, nameof(ShowNearestPointSymbol));
         }
     }
 }
