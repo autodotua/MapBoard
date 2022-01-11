@@ -41,7 +41,7 @@ namespace MapBoard.UI
             return filter;
         }
 
-        public static string GetImportFeaturePath(ImportLayerType type,Window parentWindow)
+        public static string GetImportFeaturePath(ImportLayerType type, Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ImportLayerType.Gpx, "GPS轨迹文件", "gpx")
@@ -51,7 +51,7 @@ namespace MapBoard.UI
                 .GetFilePath();
         }
 
-        public async static Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
+        public static async Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -88,7 +88,7 @@ namespace MapBoard.UI
             }
         }
 
-        public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type,Window parentWindow)
+        public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type, Window parentWindow)
         {
             return new FileFilterCollection()
                 .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
@@ -102,7 +102,7 @@ namespace MapBoard.UI
                 .GetFilePath();
         }
 
-        public async static Task ExportLayerAsync(Window owner, string path, IMapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
+        public static async Task ExportLayerAsync(Window owner, string path, IMapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
         {
             Debug.Assert(path != null);
             try
@@ -161,7 +161,7 @@ namespace MapBoard.UI
                 .GetFilePath();
         }
 
-        public async static Task ImportMapAsync(Window owner, string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
+        public static async Task ImportMapAsync(Window owner, string path, MapLayerCollection layers, ImportMapType type, ProgressRingOverlayArgs args)
         {
             Debug.Assert(path != null);
             try
@@ -276,7 +276,13 @@ namespace MapBoard.UI
         {
             List<SelectDialogItem> items = new List<SelectDialogItem>()
                 {
-                       new SelectDialogItem("使用GPX工具箱打开","使用GPX工具箱打开该轨迹",()=>new GpxToolbox.GpxWindow(files).Show()),
+                       new SelectDialogItem("使用GPX工具箱打开", "使用GPX工具箱打开该轨迹", () =>
+                       {
+                        var win= new GpxToolbox.GpxWindow();
+                           win.LoadFiles=files;
+                           win.Show();
+                           win.BringToFront();
+                       }),
                         new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
                         new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
                 };
@@ -290,7 +296,7 @@ namespace MapBoard.UI
             await CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式", items);
         }
 
-        public async static Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
+        public static async Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
         {
             int index = await CommonDialog.ShowSelectItemDialogAsync("请选择需要导入的内容", new SelectDialogItem[]
             {
@@ -317,7 +323,7 @@ namespace MapBoard.UI
             }
         }
 
-        public async static Task DropFilesAsync(string[] files, MapLayerCollection layers)
+        public static async Task DropFilesAsync(string[] files, MapLayerCollection layers)
         {
             if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
             {

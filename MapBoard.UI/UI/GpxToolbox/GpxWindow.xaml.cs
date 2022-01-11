@@ -47,13 +47,8 @@ namespace MapBoard.UI.GpxToolbox
     {
         public ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
 
-        private string[] loadNeeded = null;
+        public string[] LoadFiles { get; set; } = null;
         private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
-
-        public GpxWindow(string[] load = null) : this()
-        {
-            loadNeeded = load;
-        }
 
         public GpxWindow()
         {
@@ -64,11 +59,11 @@ namespace MapBoard.UI.GpxToolbox
             lvwHelper.EnableDragAndDropItem();
         }
 
-        protected async override Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
-            if (loadNeeded != null)
+            if (LoadFiles != null)
             {
-                await arcMap.LoadFilesAsync(loadNeeded);
+                await arcMap.LoadFilesAsync(LoadFiles);
             }
             else if (File.Exists(Parameters.TrackHistoryPath))
             {
@@ -173,9 +168,9 @@ namespace MapBoard.UI.GpxToolbox
                     await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                App.Log.Error("选择Gpx文件时出现错误",ex);
+                App.Log.Error("选择Gpx文件时出现错误", ex);
             }
         }
 
@@ -603,8 +598,6 @@ namespace MapBoard.UI.GpxToolbox
             };
         }
 
-
-
         private async void LinkTrackMenuClick(object sender, RoutedEventArgs e)
         {
             TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray();
@@ -792,7 +785,6 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-
         private Task ZoomToTrackAsync(int time = 500)
         {
             if (time <= 0)
@@ -801,7 +793,6 @@ namespace MapBoard.UI.GpxToolbox
             }
             return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent), TimeSpan.FromMilliseconds(time)); ;
         }
-
 
         private void lvwFiles_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {

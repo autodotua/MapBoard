@@ -8,7 +8,9 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
 
-    <Grid x:Name="grd" Margin="4,0">
+    <Grid
+        x:Name="grd"
+        Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="BarStyles.xaml" />
         </Grid.Resources>
@@ -24,40 +26,65 @@
             <RowDefinition Height="4" />
         </Grid.RowDefinitions>
         <TextBlock
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding Title}" />
         <TextBlock
             Grid.Column="2"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             Text="{Binding Message}" />
 
         <ui:SimpleStackPanel
-            Grid.Column="4" Orientation="Horizontal"
+            Grid.Column="4"
+            Orientation="Horizontal"
             Spacing="8">
             <Button
                 Grid.Column="12"
-                Click="AddPartButton_Click" IsEnabled="{Binding CanAddPart}"
+                Click="AddPartButton_Click"
+                IsEnabled="{Binding CanAddPart}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="14" Content="{StaticResource AddIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">增加部分</TextBlock>
+                    <ContentControl
+                        Width="14"
+                        Content="{StaticResource AddIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        增加部分
+                    </TextBlock>
                 </StackPanel>
             </Button>
             <Button
                 Grid.Column="12"
-                Click="RemovePartButton_Click" IsEnabled="{Binding CanRemovePart}"
+                Click="RemovePartButton_Click"
+                IsEnabled="{Binding CanRemovePart}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="14" Content="{StaticResource RemoveIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">删除当前部分</TextBlock>
+                    <ContentControl
+                        Width="14"
+                        Content="{StaticResource RemoveIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        删除当前部分
+                    </TextBlock>
                 </StackPanel>
             </Button>
 
-            <Button Command="{Binding MapView.SketchEditor.UndoCommand}" Style="{StaticResource barButtonStyle}">
+            <Button
+                Command="{Binding MapView.SketchEditor.UndoCommand}"
+                Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="12" Content="{StaticResource UndoIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">撤销</TextBlock>
+                    <ContentControl
+                        Width="12"
+                        Content="{StaticResource UndoIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        撤销
+                    </TextBlock>
                 </StackPanel>
             </Button>
             <Button
@@ -65,28 +92,47 @@
                 Command="{Binding MapView.SketchEditor.RedoCommand}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="12" Content="{StaticResource RedoIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">恢复</TextBlock>
+                    <ContentControl
+                        Width="12"
+                        Content="{StaticResource RedoIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        恢复
+                    </TextBlock>
                 </StackPanel>
             </Button>
 
             <Button
-                IsEnabled="{Binding CanDeleteSelectedVertex}"
                 Grid.Column="6"
                 Click="RemoveSelectedVertexButtonClick"
+                IsEnabled="{Binding CanDeleteSelectedVertex}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="12" Content="{StaticResource DeleteIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">删除节点</TextBlock>
+                    <ContentControl
+                        Width="12"
+                        Content="{StaticResource DeleteIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        删除节点
+                    </TextBlock>
                 </StackPanel>
             </Button>
 
             <Button
-                Grid.Column="12" Click="OkButtonClick"
+                Grid.Column="12"
+                Click="OkButtonClick"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="14" Content="{StaticResource OkIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">完成</TextBlock>
+                    <ContentControl
+                        Width="14"
+                        Content="{StaticResource OkIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        完成
+                    </TextBlock>
                 </StackPanel>
             </Button>
 
@@ -95,8 +141,14 @@
                 Click="CancelButtonClick"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ContentControl Width="14" Content="{StaticResource CancelIcon}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">取消</TextBlock>
+                    <ContentControl
+                        Width="14"
+                        Content="{StaticResource CancelIcon}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center">
+                        取消
+                    </TextBlock>
                 </StackPanel>
             </Button>
         </ui:SimpleStackPanel>

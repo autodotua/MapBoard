@@ -7,7 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="grd" Margin="4,0">
+    <Grid
+        x:Name="grd"
+        Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="BarStyles.xaml" />
         </Grid.Resources>
@@ -28,22 +30,26 @@
         </Grid.RowDefinitions>
         <TextBlock
             Grid.Column="0"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding LengthTitle}" />
         <TextBlock
             Grid.Column="2"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding Length}" />
         <TextBlock
             Grid.Column="4"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding AreaTitle}" />
         <TextBlock
             Grid.Column="6"
-            VerticalAlignment="Center" FontSize="16"
+            VerticalAlignment="Center"
+            FontSize="16"
             FontWeight="Bold"
             Text="{Binding Area}" />
         <Button
@@ -51,8 +57,14 @@
             Click="CancelButtonClick"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
-                <ContentControl Width="14" Content="{StaticResource OkIcon}" />
-                <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">完成</TextBlock>
+                <ContentControl
+                    Width="14"
+                    Content="{StaticResource OkIcon}" />
+                <TextBlock
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center">
+                    完成
+                </TextBlock>
             </StackPanel>
         </Button>
     </Grid>

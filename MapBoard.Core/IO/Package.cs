@@ -105,7 +105,7 @@ namespace MapBoard.IO
         /// <param name="layers">图层集合</param>
         /// <param name="copyOnly">是否仅简单复制而非重建</param>
         /// <returns></returns>
-        public async static Task ExportMapAsync(string path, MapLayerCollection layers, bool copyOnly)
+        public static async Task ExportMapAsync(string path, MapLayerCollection layers, bool copyOnly)
         {
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
@@ -124,10 +124,13 @@ namespace MapBoard.IO
             }
             else
             {
-                foreach (var layer in layers.OfType<IFileBasedLayer>())
+                await Task.Run(() =>
                 {
-                    await layer.SaveTo(directory.FullName);
-                }
+                    Parallel.ForEach(layers.OfType<IFileBasedLayer>(), layer =>
+                    {
+                        layer.SaveTo(directory.FullName).Wait();
+                    });
+                });
             }
             layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
 
@@ -142,7 +145,7 @@ namespace MapBoard.IO
         /// <param name="layers">图层集合</param>
         /// <param name="copyOnly">是否仅简单复制而非重建</param>
         /// <returns></returns>
-        public async static Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
+        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
         {
             DirectoryInfo directory = PathUtility.GetTempDir();
             if (layer is IFileBasedLayer f)
@@ -177,7 +180,7 @@ namespace MapBoard.IO
             });
         }
 
-        public async static Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
+        public static async Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
         {
             await ExportMapAsync(Path.Combine(Parameters.BackupPath,
                 DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"),
@@ -187,8 +190,11 @@ namespace MapBoard.IO
             if (files.Count > maxCount)
             {
                 foreach (var file in files
-                    .Select(p => new FileInfo(p)).ToList()
-                    .OrderByDescending(p => p.LastWriteTime).Skip(maxCount).ToList())
+                    .Select(p => new FileInfo(p))
+                    .ToList()
+                    .OrderByDescending(p => p.LastWriteTime)
+                    .Skip(maxCount)
+                    .ToList())
                 {
                     file.Delete();
                 }

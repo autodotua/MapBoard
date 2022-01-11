@@ -5,10 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:u="clr-namespace:MapBoard.UI"
-    d:DesignHeight="450" d:DesignWidth="800"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
     mc:Ignorable="d">
     <Grid
-        x:Name="grd" Grid.Row="2"
+        x:Name="grd"
+        Grid.Row="2"
         MinWidth="100">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -25,25 +27,31 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBox
-            x:Name="txtTop" Grid.Column="2"
+            x:Name="txtTop"
+            Grid.Column="2"
             VerticalAlignment="Center" />
         <TextBox
-            x:Name="txtRight" Grid.Row="2"
+            x:Name="txtRight"
+            Grid.Row="2"
             Grid.Column="4"
             VerticalAlignment="Center" />
         <TextBox
-            x:Name="txtLeft" Grid.Row="2"
+            x:Name="txtLeft"
+            Grid.Row="2"
             VerticalAlignment="Center" />
         <TextBox
-            x:Name="txtBottom" Grid.Row="4"
+            x:Name="txtBottom"
+            Grid.Row="4"
             Grid.Column="2"
             VerticalAlignment="Center" />
 
         <Rectangle
-            x:Name="rect" Grid.Row="2"
+            x:Name="rect"
+            Grid.Row="2"
             Grid.Column="2"
             Height="{Binding ActualWidth, ElementName=rect}"
             Fill="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-            Stroke="Black" StrokeThickness="0" />
+            Stroke="Black"
+            StrokeThickness="0" />
     </Grid>
 </u:UserControlBase>

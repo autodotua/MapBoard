@@ -14,12 +14,13 @@ namespace MapBoard.UI
 {
     public abstract class MainWindowBase : WindowBase
     {
-        public static async Task<T> CreateAndShowAsync<T>() where T : MainWindowBase, new()
+        public static async Task<T> CreateAndShowAsync<T>(Action<T> beforeInitialize = null) where T : MainWindowBase, new()
         {
             T win = new T();
             if (SplashWindow.IsVisiable)
             {
                 win.initialized = true;
+                beforeInitialize?.Invoke(win);
                 try
                 {
                     await win.InitializeAsync();
@@ -41,7 +42,7 @@ namespace MapBoard.UI
             return win;
         }
 
-        protected async override void OnContentRendered(EventArgs e)
+        protected override async void OnContentRendered(EventArgs e)
         {
             base.OnContentRendered(e);
             if (initialized)

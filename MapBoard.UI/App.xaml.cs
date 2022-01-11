@@ -17,6 +17,8 @@ using System.Windows.Media;
 using MapBoard.UI.GpxToolbox;
 using MapBoard.UI.TileDownloader;
 using log4net.Appender;
+using MapBoard.Util;
+using Microsoft.WindowsAPICodePack.FzExtension;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -39,6 +41,7 @@ namespace MapBoard
         }
 
         public static ILog Log { get; private set; }
+        private SingleInstance singleInstance;
 
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -55,6 +58,30 @@ namespace MapBoard
                 }
             }
 
+            singleInstance = new SingleInstance(FzLib.Program.App.ProgramName);
+            await singleInstance.CheckAndOpenWindow<MainWindow>(this);
+            if (singleInstance.ExistAnotherInstance)
+            {
+                Log.Info("已存在正在运行的程序");
+                //过于复杂，不实现
+                //if (e.Args.Length > 0)
+                //{
+                //    if (e.Args[0].EndsWith("mpmpkg"))
+                //    {
+                //        Log.Info("通知正在运行的程序打开地图包");
+                //        try
+                //        {
+                //            await PipeHelper.Send("mbmpkg " + e.Args[0]);
+                //        }
+                //        catch(Exception ex)
+                //        {
+                //            Log.Error("通知正在运行的程序打开地图包失败",ex);
+                //        }
+                //    }
+                //}
+                Environment.Exit(0);
+                return;
+            }
             Log.Info("程序启动");
 
 #if (DEBUG)
@@ -81,6 +108,8 @@ namespace MapBoard
                 {
                     "tile" => await MainWindowBase.CreateAndShowAsync<TileDownloaderWindow>(),
                     "gpx" => await MainWindowBase.CreateAndShowAsync<GpxWindow>(),
+                    string s when s.EndsWith(".mbmpkg") => await MainWindowBase.CreateAndShowAsync<MainWindow>(w => w.LoadFile = arg),
+                    string s when s.EndsWith(".gpx") => await MainWindowBase.CreateAndShowAsync<GpxWindow>(w => w.LoadFiles = new[] { arg }),
                     _ => await MainWindowBase.CreateAndShowAsync<MainWindow>(),
                 };
             }

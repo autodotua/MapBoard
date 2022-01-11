@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:MapBoard.UI.Component"
-    x:Name="picker" Width="15"
+    x:Name="picker"
+    Width="15"
     Height="15"
     DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <UserControl.Resources>
@@ -13,8 +14,10 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <Rectangle
-                            Margin="3" SnapsToDevicePixels="true"
-                            Stroke="Black" StrokeDashArray="1 2"
+                            Margin="3"
+                            SnapsToDevicePixels="true"
+                            Stroke="Black"
+                            StrokeDashArray="1 2"
                             StrokeThickness="1" />
                     </ControlTemplate>
                 </Setter.Value>
@@ -29,8 +32,10 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <Rectangle
-                            Margin="3" SnapsToDevicePixels="true"
-                            Stroke="Black" StrokeDashArray="1 2"
+                            Margin="3"
+                            SnapsToDevicePixels="true"
+                            Stroke="Black"
+                            StrokeDashArray="1 2"
                             StrokeThickness="1" />
                     </ControlTemplate>
                 </Setter.Value>
@@ -40,7 +45,9 @@
             <GradientStop Offset="0" Color="#EDEDED" />
             <GradientStop Offset="0.9" Color="#EDEDED" />
         </LinearGradientBrush>
-        <Style x:Key="ColorButtonStyleFirstRow" TargetType="{x:Type Button}">
+        <Style
+            x:Key="ColorButtonStyleFirstRow"
+            TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
             <Setter Property="Background" Value="{StaticResource ButtonNormalBackgroundFill}" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
@@ -50,14 +57,18 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border
-                            x:Name="buttonBorder" Width="13"
-                            Height="13" Margin="0"
+                            x:Name="buttonBorder"
+                            Width="13"
+                            Height="13"
+                            Margin="0"
                             Background="{TemplateBinding Background}"
                             BorderBrush="#D0D0D0"
                             BorderThickness="1">
                             <Border
-                                x:Name="innerBorder" Width="12"
-                                Height="12" HorizontalAlignment="Center"
+                                x:Name="innerBorder"
+                                Width="12"
+                                Height="12"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 BorderBrush="{x:Null}"
                                 BorderThickness="0.5" />
@@ -73,7 +84,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ColorButtonStyleSecondRow" TargetType="{x:Type Button}">
+        <Style
+            x:Key="ColorButtonStyleSecondRow"
+            TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
             <Setter Property="Background" Value="{StaticResource ButtonNormalBackgroundFill}" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
@@ -83,8 +96,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border
-                            x:Name="buttonBorder" Width="13"
-                            Height="13" Margin="0"
+                            x:Name="buttonBorder"
+                            Width="13"
+                            Height="13"
+                            Margin="0"
                             Background="{TemplateBinding Background}"
                             BorderBrush="#D0D0D0"
                             BorderThickness="1,1,1,0" />
@@ -98,7 +113,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ColorButtonStyle" TargetType="{x:Type Button}">
+        <Style
+            x:Key="ColorButtonStyle"
+            TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
             <Setter Property="Background" Value="{StaticResource ButtonNormalBackgroundFill}" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
@@ -108,8 +125,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border
-                            x:Name="buttonBorder" Width="13"
-                            Height="13" Margin="0"
+                            x:Name="buttonBorder"
+                            Width="13"
+                            Height="13"
+                            Margin="0"
                             Background="{TemplateBinding Background}"
                             BorderBrush="#D0D0D0"
                             BorderThickness="1,0,1,0" />
@@ -123,7 +142,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="toggleButtonStyle" TargetType="{x:Type ToggleButton}">
+        <Style
+            x:Key="toggleButtonStyle"
+            TargetType="{x:Type ToggleButton}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual1}" />
             <Setter Property="Background" Value="{StaticResource ButtonNormalBackgroundFill1}" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
@@ -133,7 +154,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ToggleButton}">
                         <Border
-                            x:Name="buttonBorder" Width="Auto"
+                            x:Name="buttonBorder"
+                            Width="Auto"
                             Height="Auto">
                             <ContentPresenter
                                 Width="36.625"
@@ -162,7 +184,9 @@
             <GradientStop Offset="0.1" Color="Orange" />
             <GradientStop Offset=".9" Color="White" />
         </LinearGradientBrush>
-        <Style x:Key="moreColorsLabel" TargetType="{x:Type Label}">
+        <Style
+            x:Key="moreColorsLabel"
+            TargetType="{x:Type Label}">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="5" />
@@ -201,8 +225,12 @@
             <GradientStop Offset="0" Color="#FFFFFFFF" />
             <GradientStop Offset="0.9" Color="#FFF0F0EA" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="ButtonBorder" Color="#FF003C74" />
-        <Style x:Key="BorderLessButtonStyle" TargetType="{x:Type Button}">
+        <SolidColorBrush
+            x:Key="ButtonBorder"
+            Color="#FF003C74" />
+        <Style
+            x:Key="BorderLessButtonStyle"
+            TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}" />
             <Setter Property="Background" Value="{StaticResource ButtonNormalBackgroundFill}" />
             <Setter Property="BorderBrush" Value="{StaticResource ButtonBorder}" />
@@ -213,7 +241,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border
-                            Width="196" Height="24"
+                            Width="196"
+                            Height="24"
                             Background="#DDE7EE"
                             BorderBrush="#BFBFBF"
                             BorderThickness="0,0,0,0">
@@ -222,8 +251,10 @@
                                 <Label
                                     VerticalAlignment="Center"
                                     VerticalContentAlignment="Center"
-                                    FontFamily="Arial" FontSize="11"
-                                    FontWeight="Bold" Foreground="DarkBlue"
+                                    FontFamily="Arial"
+                                    FontSize="11"
+                                    FontWeight="Bold"
+                                    Foreground="DarkBlue"
                                     SnapsToDevicePixels="True"
                                     Style="{StaticResource moreColorsLabel}">
                                     <ContentPresenter
@@ -250,7 +281,8 @@
             x:Name="ColorButton"
             Width="{Binding Width, ElementName=picker}"
             Height="{Binding Height, ElementName=picker}"
-            Margin="2,0,0,0" Padding="0"
+            Margin="2,0,0,0"
+            Padding="0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Background="Transparent"
@@ -265,7 +297,8 @@
                 Focusable="False" />
         </ToggleButton>
         <Popup
-            x:Name="popup" AllowsTransparency="True"
+            x:Name="popup"
+            AllowsTransparency="True"
             Focusable="True"
             IsOpen="{Binding Path=IsChecked, ElementName=ColorButton}"
             Placement="Bottom"
@@ -279,137 +312,161 @@
                 CornerRadius="4">
                 <StackPanel Orientation="Vertical">
                     <Border
-                        Width="196" Height="Auto"
+                        Width="196"
+                        Height="Auto"
                         BorderThickness="0,0,0,2">
                         <TextBlock
                             VerticalAlignment="Center"
-                            SnapsToDevicePixels="True" Text="主题颜色" />
+                            SnapsToDevicePixels="True"
+                            Text="主题颜色" />
                     </Border>
                     <StackPanel
-                        x:Name="FirstRow" Margin="2,0,0,0"
+                        x:Name="FirstRow"
+                        Margin="2,0,0,0"
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,4,3,4" Background="#FFFFFF"
+                            Margin="3,4,3,4"
+                            Background="#FFFFFF"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#FFFFFF"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#000000"
+                            Margin="3,4,3,4"
+                            Background="#000000"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#000000"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#EEECE1"
+                            Margin="3,4,3,4"
+                            Background="#EEECE1"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#EEECE1"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#1f497d"
+                            Margin="3,4,3,4"
+                            Background="#1f497d"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#1f497d"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#4f81bd"
+                            Margin="3,4,3,4"
+                            Background="#4f81bd"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#4f81bd"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#c0504d"
+                            Margin="3,4,3,4"
+                            Background="#c0504d"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#c0504d"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#9bbb59"
+                            Margin="3,4,3,4"
+                            Background="#9bbb59"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#9bbb59"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#8064a2"
+                            Margin="3,4,3,4"
+                            Background="#8064a2"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#8064a2"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#4bacc6"
+                            Margin="3,4,3,4"
+                            Background="#4bacc6"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#4bacc6"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,4,3,4" Background="#f79646"
+                            Margin="3,4,3,4"
+                            Background="#f79646"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#f79646"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                     </StackPanel>
                     <StackPanel
-                        x:Name="SecondRow" Margin="2,2,0,0"
+                        x:Name="SecondRow"
+                        Margin="2,2,0,0"
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#f2f2f2"
+                            Margin="3,0,3,0"
+                            Background="#f2f2f2"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#f2f2f2"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#7f7f7f"
+                            Margin="3,0,3,0"
+                            Background="#7f7f7f"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#7f7f7f"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ddd9c3"
+                            Margin="3,0,3,0"
+                            Background="#ddd9c3"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ddd9c3"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#c6d9f0"
+                            Margin="3,0,3,0"
+                            Background="#c6d9f0"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#c6d9f0"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#dbe5f1"
+                            Margin="3,0,3,0"
+                            Background="#dbe5f1"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#dbe5f1"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#f2dcdb"
+                            Margin="3,0,3,0"
+                            Background="#f2dcdb"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#f2dcdb"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ebf1dd"
+                            Margin="3,0,3,0"
+                            Background="#ebf1dd"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ebf1dd"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#e5e0ec"
+                            Margin="3,0,3,0"
+                            Background="#e5e0ec"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#e5e0ec"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#dbeef3"
+                            Margin="3,0,3,0"
+                            Background="#dbeef3"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#dbeef3"
                             Style="{StaticResource ColorButtonStyleSecondRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#fdeada"
+                            Margin="3,0,3,0"
+                            Background="#fdeada"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#fdeada"
@@ -420,61 +477,71 @@
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#d8d8d8"
+                            Margin="3,0,3,0"
+                            Background="#d8d8d8"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#d8d8d8"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#595959"
+                            Margin="3,0,3,0"
+                            Background="#595959"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#595959"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#c4bd97"
+                            Margin="3,0,3,0"
+                            Background="#c4bd97"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#c4bd97"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#8db3e2"
+                            Margin="3,0,3,0"
+                            Background="#8db3e2"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#8db3e2"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#b8cce4"
+                            Margin="3,0,3,0"
+                            Background="#b8cce4"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#b8cce4"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#e5b9b7"
+                            Margin="3,0,3,0"
+                            Background="#e5b9b7"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#e5b9b7"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#d7e3bc"
+                            Margin="3,0,3,0"
+                            Background="#d7e3bc"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#d7e3bc"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ccc1d9"
+                            Margin="3,0,3,0"
+                            Background="#ccc1d9"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ccc1d9"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#b7dde8"
+                            Margin="3,0,3,0"
+                            Background="#b7dde8"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#b7dde8"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#fbd5b5"
+                            Margin="3,0,3,0"
+                            Background="#fbd5b5"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#fbd5b5"
@@ -485,61 +552,71 @@
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#bfbfbf"
+                            Margin="3,0,3,0"
+                            Background="#bfbfbf"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#bfbfbf"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#3f3f3f"
+                            Margin="3,0,3,0"
+                            Background="#3f3f3f"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#3f3f3f"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#938953"
+                            Margin="3,0,3,0"
+                            Background="#938953"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#938953"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#548dd4"
+                            Margin="3,0,3,0"
+                            Background="#548dd4"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#548dd4"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#95b3d7"
+                            Margin="3,0,3,0"
+                            Background="#95b3d7"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#95b3d7"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#d99694"
+                            Margin="3,0,3,0"
+                            Background="#d99694"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#d99694"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#c3d69b"
+                            Margin="3,0,3,0"
+                            Background="#c3d69b"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#c3d69b"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#b2a2c7"
+                            Margin="3,0,3,0"
+                            Background="#b2a2c7"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#b2a2c7"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#92cddc"
+                            Margin="3,0,3,0"
+                            Background="#92cddc"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#92cddc"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#fac08f"
+                            Margin="3,0,3,0"
+                            Background="#fac08f"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#fac08f"
@@ -550,198 +627,232 @@
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#a5a5a5"
+                            Margin="3,0,3,0"
+                            Background="#a5a5a5"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#a5a5a5"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#262626"
+                            Margin="3,0,3,0"
+                            Background="#262626"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#262626"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#494429"
+                            Margin="3,0,3,0"
+                            Background="#494429"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#494429"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#17365d"
+                            Margin="3,0,3,0"
+                            Background="#17365d"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#17365d"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#366092"
+                            Margin="3,0,3,0"
+                            Background="#366092"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#366092"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#953734"
+                            Margin="3,0,3,0"
+                            Background="#953734"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#953734"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#76923c"
+                            Margin="3,0,3,0"
+                            Background="#76923c"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#76923c"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#5f497a"
+                            Margin="3,0,3,0"
+                            Background="#5f497a"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#5f497a"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#31859b"
+                            Margin="3,0,3,0"
+                            Background="#31859b"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#31859b"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#e36c09"
+                            Margin="3,0,3,0"
+                            Background="#e36c09"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#e36c09"
                             Style="{StaticResource ColorButtonStyle}" />
                     </StackPanel>
                     <StackPanel
-                        x:Name="ThirdRow" Margin="2,0,0,3"
+                        x:Name="ThirdRow"
+                        Margin="2,0,0,3"
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#7f7f7f"
+                            Margin="3,0,3,0"
+                            Background="#7f7f7f"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#7f7f7f"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#0c0c0c"
+                            Margin="3,0,3,0"
+                            Background="#0c0c0c"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#0c0c0c"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#1d1b10"
+                            Margin="3,0,3,0"
+                            Background="#1d1b10"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#1d1b10"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#0f243e"
+                            Margin="3,0,3,0"
+                            Background="#0f243e"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#0f243e"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#244061"
+                            Margin="3,0,3,0"
+                            Background="#244061"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#244061"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#632423"
+                            Margin="3,0,3,0"
+                            Background="#632423"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#632423"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#4f6128"
+                            Margin="3,0,3,0"
+                            Background="#4f6128"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#4f6128"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#3f3151"
+                            Margin="3,0,3,0"
+                            Background="#3f3151"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#3f3151"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#205867"
+                            Margin="3,0,3,0"
+                            Background="#205867"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#205867"
                             Style="{StaticResource ColorButtonStyle}" />
                         <Button
-                            Margin="3,0,3,0" Background="#974806"
+                            Margin="3,0,3,0"
+                            Background="#974806"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#974806"
                             Style="{StaticResource ColorButtonStyle}" />
                     </StackPanel>
                     <Border
-                        Width="196" Height="Auto"
+                        Width="196"
+                        Height="Auto"
                         BorderThickness="0,0,0,2">
                         <TextBlock
                             VerticalAlignment="Center"
-                            SnapsToDevicePixels="True" Text="标准色" />
+                            SnapsToDevicePixels="True"
+                            Text="标准色" />
                     </Border>
                     <StackPanel
-                        x:Name="LastRow" Margin="2,1,0,2"
+                        x:Name="LastRow"
+                        Margin="2,1,0,2"
                         Orientation="Horizontal"
                         SnapsToDevicePixels="True">
                         <Button
-                            Margin="3,0,3,0" Background="#c00000"
+                            Margin="3,0,3,0"
+                            Background="#c00000"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#c00000"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ff0000"
+                            Margin="3,0,3,0"
+                            Background="#ff0000"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ff0000"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ffc000"
+                            Margin="3,0,3,0"
+                            Background="#ffc000"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ffc000"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#ffff00"
+                            Margin="3,0,3,0"
+                            Background="#ffff00"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#ffff00"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#92d050"
+                            Margin="3,0,3,0"
+                            Background="#92d050"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#92d050"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#00b050"
+                            Margin="3,0,3,0"
+                            Background="#00b050"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#00b050"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#00b0f0"
+                            Margin="3,0,3,0"
+                            Background="#00b0f0"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#00b0f0"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#0070c0"
+                            Margin="3,0,3,0"
+                            Background="#0070c0"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#0070c0"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#002060"
+                            Margin="3,0,3,0"
+                            Background="#002060"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#002060"
                             Style="{StaticResource ColorButtonStyleFirstRow}" />
                         <Button
-                            Margin="3,0,3,0" Background="#7030a0"
+                            Margin="3,0,3,0"
+                            Background="#7030a0"
                             Click="Button_Click"
                             Command="{x:Static local:ColorPicker.SelectColorCommand}"
                             CommandParameter="#7030a0"
@@ -750,7 +861,8 @@
                     <Button
                         Margin="0,12,0,0"
                         HorizontalAlignment="Stretch"
-                        Click="MoreColorsClicked" Content="更多" />
+                        Click="MoreColorsClicked"
+                        Content="更多" />
                 </StackPanel>
             </Border>
         </Popup>

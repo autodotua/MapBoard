@@ -5,13 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:local="clr-namespace:MapBoard.UI.Extension"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:util="clr-namespace:MapBoard.Util"
     d:DesignHeight="450"
-    d:DesignWidth="800" xmlns:m="clr-namespace:MapBoard"
+    d:DesignWidth="800"
     Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
     mc:Ignorable="d">
     <Grid Margin="8">

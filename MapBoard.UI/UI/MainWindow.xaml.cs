@@ -61,6 +61,7 @@ namespace MapBoard.UI
         private bool canClosing = true;
         private bool closing = false;
         public Config Config => Config.Instance;
+        public string LoadFile { get; set; } = null;
 
         #endregion 属性和字段
 
@@ -133,6 +134,10 @@ namespace MapBoard.UI
             };
             ResetDrawAndSelectButton();
             ShowLoadErrorsAsync();//不可await，因为要让主窗口显示出来
+            if (LoadFile != null)
+            {
+                LoadMbmpkg(LoadFile);
+            }
         }
 
         private async Task ShowLoadErrorsAsync()
@@ -242,7 +247,7 @@ namespace MapBoard.UI
         private async void ArcMap_PreviewDrop(object sender, DragEventArgs e)
         {
             BringToFront();
-            if(arcMap.CurrentTask!=BoardTask.Ready)
+            if (arcMap.CurrentTask != BoardTask.Ready)
             {
                 return;
             }
@@ -470,7 +475,7 @@ namespace MapBoard.UI
                 return;
             }
             canClosing = false; ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = IOUtility.GetExportMapPath(type,this);
+            string path = IOUtility.GetExportMapPath(type, this);
             if (path != null)
             {
                 await DoAsync(async () =>
@@ -499,7 +504,7 @@ namespace MapBoard.UI
         private async void ImportMenu_Click(object sender, RoutedEventArgs e)
         {
             var type = (ImportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = IOUtility.GetImportMapPath(type,this);
+            string path = IOUtility.GetImportMapPath(type, this);
             if (path != null)
             {
                 await DoAsync(async p =>
@@ -547,6 +552,22 @@ namespace MapBoard.UI
         private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             OpenFolderButtonClick(sender, (RoutedEventArgs)null);
+        }
+
+        public async void LoadMbmpkg(string path)
+        {
+            if (!File.Exists(path))
+            {
+                await CommonDialog.ShowErrorDialogAsync("找不到文件" + path);
+                return;
+            }
+            if (await CommonDialog.ShowYesNoDialogAsync("加载地图包", "是否加载地图包？这将会覆盖当前的所有图层"))
+            {
+                await DoAsync(async p =>
+                {
+                    await IOUtility.ImportMapAsync(this, path, arcMap.Layers, ImportMapType.MapPackageOverwrite, p);
+                }, "正在导入");
+            }
         }
 
         #endregion 导入导出区事件

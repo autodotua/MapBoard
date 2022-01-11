@@ -11,7 +11,9 @@
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
-    <Grid x:Name="grd" Margin="4,0">
+    <Grid
+        x:Name="grd"
+        Margin="4,0">
         <Grid.Resources>
             <ResourceDictionary Source="BarStyles.xaml" />
         </Grid.Resources>
@@ -33,7 +35,9 @@
             SelectionMode="Single"
             SelectionUnit="Cell">
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="属性名" IsReadOnly="True">
+                <DataGridTemplateColumn
+                    Header="属性名"
+                    IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -48,12 +52,15 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Width="152" Header="属性值">
+                <DataGridTemplateColumn
+                    Width="152"
+                    Header="属性值">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
                                 Margin="8,3,3,3"
-                                VerticalAlignment="Center" Cursor="Hand"
+                                VerticalAlignment="Center"
+                                Cursor="Hand"
                                 PreviewMouseLeftButtonDown="TextBlock_PreviewMouseLeftButtonDown"
                                 Text="{Binding .}"
                                 TextWrapping="Wrap" />
@@ -72,7 +79,9 @@
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
                                                         <DataTemplate>
-                                                            <DatePicker BorderThickness="0" SelectedDate="{Binding DateValue}" />
+                                                            <DatePicker
+                                                                BorderThickness="0"
+                                                                SelectedDate="{Binding DateValue}" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>
@@ -91,7 +100,9 @@
                                                                 Text="{Binding TimeValue, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
 
                                                             <DataTemplate.Triggers>
-                                                                <DataTrigger Binding="{Binding Name}" Value="CrtTime">
+                                                                <DataTrigger
+                                                                    Binding="{Binding Name}"
+                                                                    Value="CrtTime">
                                                                     <Setter TargetName="txtDateTime" Property="IsEnabled" Value="False" />
                                                                 </DataTrigger>
                                                             </DataTemplate.Triggers>

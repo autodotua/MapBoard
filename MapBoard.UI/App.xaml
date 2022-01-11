@@ -15,7 +15,9 @@
                 <ResourceDictionary Source="UI/PathIcons.xaml" />
                 <ResourceDictionary Source="UI/Converter/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="{x:Type TextBox}">
+            <Style
+                BasedOn="{StaticResource DefaultTextBoxStyle}"
+                TargetType="{x:Type TextBox}">
                 <Setter Property="Padding" Value="8,2,6,1" />
             </Style>
         </ResourceDictionary>
