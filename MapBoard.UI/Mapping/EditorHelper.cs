@@ -349,10 +349,21 @@ namespace MapBoard.Mapping
                 {
                     return;
                 }
-                if (Config.Instance.ShowNearestPointSymbol)
+                if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     MapView.Overlay.SetNearestVertexPoint(nearestVertex);
+                }
+                else
+                {
+                    MapView.Overlay.SetNearestVertexPoint(null);
+                }
+                if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                {
                     MapView.Overlay.SetNearestPointPoint(nearestPoint);
+                }
+                else
+                {
+                    MapView.Overlay.SetNearestPointPoint(null);
                 }
                 if (nearestVertex != null)
                 {
