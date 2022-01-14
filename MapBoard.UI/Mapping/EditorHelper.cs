@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using MapBoard.Util;
 using Esri.ArcGISRuntime.Symbology;
 using System.Windows;
+using Esri.ArcGISRuntime.Mapping;
 
 namespace MapBoard.Mapping
 {
@@ -291,7 +292,7 @@ namespace MapBoard.Mapping
             MapPoint minPoint = null;
             double minVertexDistance = double.MaxValue;
             double minPointDistance = double.MaxValue;
-            foreach (var result in results)
+            foreach (var result in results.Where(p=>p.LayerContent is FeatureLayer))
             {
                 foreach (var geometry in result.GeoElements.Select(p => p.Geometry))
                 {
