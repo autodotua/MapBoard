@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
+using System;
+using System.Linq;
 
 namespace MapBoard.IO
 {
     public static class Kml
     {
-        public async static Task ExportAsync(string path, IMapLayerInfo layer)
+        public static async Task ExportAsync(string path, IMapLayerInfo layer)
         {
             KmlDocument kml = new KmlDocument() { Name = layer.Name };
             await Task.Run(async () =>
@@ -27,7 +29,7 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
-        public async static Task ExportAsync(string path, IEnumerable<IMapLayerInfo> layers)
+        public static async Task ExportAsync(string path, IEnumerable<IMapLayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();
             await Task.Run(async () =>
@@ -93,6 +95,7 @@ namespace MapBoard.IO
                             }
                             break;
                     }
+                    placemark.Description = string.Join('\n', feature.Attributes.Select(p => $"{p.Key}：{p.Value}"));
                     nodes.Add(placemark);
                 }
             }
