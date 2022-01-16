@@ -1,5 +1,4 @@
-﻿//using Ionic.Zip;
-using MapBoard.Model;
+﻿using MapBoard.Model;
 using MapBoard.Mapping;
 using System;
 using System.IO;

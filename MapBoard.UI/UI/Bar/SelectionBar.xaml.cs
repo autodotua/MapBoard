@@ -300,7 +300,7 @@ namespace MapBoard.UI.Bar
                 var dialog = new BufferDialog(MapView.Layers);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union,features);
+                    await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union, features);
                 }
             }
             async Task SeparateAsync()
@@ -493,7 +493,7 @@ namespace MapBoard.UI.Bar
                 };
                 snake.ButtonClick += (p1, p2) => IOUtility.OpenFileOrFolder(path);
 
-                snake.ShowMessage("已导出到" + path);
+                snake.ShowMessage("导出成功");
             }
         }
 

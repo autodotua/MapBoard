@@ -479,9 +479,31 @@ namespace MapBoard.UI
             if (path != null)
             {
                 await DoAsync(async () =>
-             {
-                 await IOUtility.ExportMapAsync(this, path, arcMap, arcMap.Layers, type);
-             }, "正在导出");
+                 {
+                     switch (type)
+                     {
+                         case ExportMapType.OpenLayers:
+                             try
+                             {
+                                 var visiableOnly = await CommonDialog.ShowYesNoDialogAsync("是否仅导出可见图层？");
+
+                                 await new OpenLayers(path, Directory.GetFiles("res/openlayers"),
+                                    Config.Instance.BaseLayers.ToArray(),
+                                    arcMap.Layers.OfType<IMapLayerInfo>().Where(p => visiableOnly ? p.LayerVisible : true).ToArray())
+                                 .ExportAsync();
+                                 IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path);
+                             }
+                             catch (Exception ex)
+                             {
+                                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                             }
+                             break;
+
+                         default:
+                             await IOUtility.ExportMapAsync(this, path, arcMap, arcMap.Layers, type);
+                             break;
+                     }
+                 }, "正在导出");
             }
             canClosing = true;
         }

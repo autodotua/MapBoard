@@ -90,16 +90,25 @@ namespace MapBoard.UI
 
         public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type, Window parentWindow)
         {
-            return new FileFilterCollection()
-                .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
-                .AddIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
-                .AddIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
-                .AddIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
-                .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
-                .CreateSaveFileDialog()
-                .SetDefault(layer.Name)
-                .SetParent(parentWindow)
-                .GetFilePath();
+            if ((int)type <= (int)ExportLayerType.GeoJSON)
+            {
+                return new FileFilterCollection()
+                    .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
+                    .AddIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
+                    .AddIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                    .AddIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
+                    .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
+                    .CreateSaveFileDialog()
+                    .SetDefault(layer.Name)
+                    .SetParent(parentWindow)
+                    .GetFilePath();
+            }
+            else
+            {
+                return new CommonOpenFileDialog()
+                      .SetParent(parentWindow)
+                      .GetFolderPath();
+            }
         }
 
         public static async Task ExportLayerAsync(Window owner, string path, IMapLayerInfo layer, MapLayerCollection layers, ExportLayerType type)
@@ -139,7 +148,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                SnakeBar.Show(owner, "导出成功");
+                ShowExportedSnackbarAndClickToOpenFolder(path);
             }
             catch (Exception ex)
             {
@@ -221,7 +230,9 @@ namespace MapBoard.UI
 
         public static string GetExportMapPath(ExportMapType type, Window parentWindow)
         {
-            return new FileFilterCollection()
+            if ((int)type <= (int)ExportMapType.Screenshot)
+            {
+                return new FileFilterCollection()
                 .AddIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
                 .AddIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
                 .AddIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
@@ -231,6 +242,13 @@ namespace MapBoard.UI
                 .SetDefault("地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"))
                 .SetParent(parentWindow)
                 .GetFilePath();
+            }
+            else
+            {
+                return new CommonOpenFileDialog()
+                      .SetParent(parentWindow)
+                      .GetFolderPath();
+            }
         }
 
         public static async Task ExportMapAsync(Window owner, string path, MapView mapView, MapLayerCollection layers, ExportMapType type)
@@ -264,7 +282,8 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                SnakeBar.Show(owner, "导出成功");
+
+                ShowExportedSnackbarAndClickToOpenFolder(path);
             }
             catch (Exception ex)
             {
@@ -366,6 +385,18 @@ namespace MapBoard.UI
             }
         }
 
+        public static void ShowExportedSnackbarAndClickToOpenFolder(string path)
+        {
+            SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
+            {
+                ShowButton = true,
+                ButtonContent = "查看"
+            };
+            snake.ButtonClick += (p1, p2) => OpenFolder(path);
+
+            snake.ShowMessage("导出成功");
+        }
+
         public static void OpenFileOrFolder(string path)
         {
             new Process()
@@ -375,6 +406,31 @@ namespace MapBoard.UI
                     UseShellExecute = true
                 }
             }.Start();
+        }
+
+        public static void OpenFolder(string path)
+        {
+            var p = '"' + Path.GetFullPath(path) + '"';
+            if (Directory.Exists(path))
+            {
+                new Process()
+                {
+                    StartInfo = new ProcessStartInfo("explorer.exe", p)
+                    {
+                        UseShellExecute = true
+                    }
+                }.Start();
+            }
+            if (File.Exists(path))
+            {
+                new Process()
+                {
+                    StartInfo = new ProcessStartInfo("explorer.exe", $"/select,{p}")
+                    {
+                        UseShellExecute = true
+                    }
+                }.Start();
+            }
         }
     }
 
@@ -394,7 +450,8 @@ namespace MapBoard.UI
         MapPackageRebuild = 2,
         GISToolBoxZip = 3,
         KML = 4,
-        Screenshot = 5
+        Screenshot = 5,
+        OpenLayers = 6,
     }
 
     public enum ImportLayerType
@@ -409,6 +466,7 @@ namespace MapBoard.UI
         LayerPackgeRebuild = 2,
         GISToolBoxZip = 3,
         KML = 4,
-        GeoJSON = 5
+        GeoJSON = 5,
+        OpenLayers = 6,
     }
 }

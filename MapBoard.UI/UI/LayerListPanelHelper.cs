@@ -18,6 +18,8 @@ using ListView = System.Windows.Controls.ListView;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using System.Drawing;
+using MapBoard.IO;
+using System.IO;
 
 namespace MapBoard.UI
 {
@@ -102,7 +104,7 @@ namespace MapBoard.UI
                             || layer.GeometryType == GeometryType.Multipoint)
                         {
                             AddToMenu(menuImport, "GPX轨迹文件",
-                                () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx,MainWindow),
+                                () => IOUtility.GetImportFeaturePath(ImportLayerType.Gpx, MainWindow),
                                 p => IOUtility.ImportFeatureAsync(MainWindow, p, e, MapView, ImportLayerType.Gpx),
                                 "正在导入GPX轨迹文件");
                         }
@@ -116,7 +118,7 @@ namespace MapBoard.UI
                     menu.Items.Add(menuExport);
 
                     AddToMenu(menuExport, "图层包",
-                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge,MainWindow),
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                         "正在导出图层包");
                     if (Config.Instance.CopyShpFileWhenExport)
@@ -141,6 +143,10 @@ namespace MapBoard.UI
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
                         "正在导出GeoJSON文件");
+                    AddToMenu(menuExport, "OpenLayers网络地图",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.OpenLayers, MainWindow),
+                        p => ExportOpenLayersLayer(layer,p),
+                    "正在导出OpenLayers网络地图");
                 }
             }
             else
@@ -161,7 +167,19 @@ namespace MapBoard.UI
                 menu.IsOpen = true;
             }
         }
-
+        private async Task ExportOpenLayersLayer(IMapLayerInfo layer, string path)
+        {
+            try
+            {
+                await new OpenLayers(path, Directory.GetFiles("res/openlayers"), Config.Instance.BaseLayers.ToArray(), new[] { layer })
+                 .ExportAsync();
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path);
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+            }
+        }
         private Task PopulateAllAsync(IServerBasedLayer s)
         {
             return s.PopulateAllFromServiceAsync();
@@ -293,7 +311,7 @@ namespace MapBoard.UI
         private async Task BufferAsync(IMapLayerInfo layer)
         {
             var dialog = new BufferDialog(MapView.Layers);
-            if(await dialog.ShowAsync() == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union);
             }
