@@ -485,15 +485,7 @@ namespace MapBoard.UI.Bar
             if (path != null)
             {
                 await task(path);
-
-                SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
-                {
-                    ShowButton = true,
-                    ButtonContent = "打开"
-                };
-                snake.ButtonClick += (p1, p2) => IOUtility.OpenFileOrFolder(path);
-
-                snake.ShowMessage("导出成功");
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path,Window.GetWindow(this));    
             }
         }
 

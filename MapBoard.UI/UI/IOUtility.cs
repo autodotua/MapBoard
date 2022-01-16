@@ -148,7 +148,7 @@ namespace MapBoard.UI
                     default:
                         break;
                 }
-                ShowExportedSnackbarAndClickToOpenFolder(path);
+                ShowExportedSnackbarAndClickToOpenFolder(path, App.Current.MainWindow);
             }
             catch (Exception ex)
             {
@@ -283,7 +283,7 @@ namespace MapBoard.UI
                         break;
                 }
 
-                ShowExportedSnackbarAndClickToOpenFolder(path);
+                ShowExportedSnackbarAndClickToOpenFolder(path, App.Current.MainWindow);
             }
             catch (Exception ex)
             {
@@ -385,9 +385,9 @@ namespace MapBoard.UI
             }
         }
 
-        public static void ShowExportedSnackbarAndClickToOpenFolder(string path)
+        public static void ShowExportedSnackbarAndClickToOpenFolder(string path, Window owner)
         {
-            SnakeBar snake = new SnakeBar(SnakeBar.DefaultOwner.Owner)
+            SnakeBar snake = new SnakeBar(owner)
             {
                 ShowButton = true,
                 ButtonContent = "查看"

@@ -145,7 +145,7 @@ namespace MapBoard.UI
                         "正在导出GeoJSON文件");
                     AddToMenu(menuExport, "OpenLayers网络地图",
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.OpenLayers, MainWindow),
-                        p => ExportOpenLayersLayer(layer,p),
+                        p => ExportOpenLayersLayer(layer, p),
                     "正在导出OpenLayers网络地图");
                 }
             }
@@ -167,19 +167,21 @@ namespace MapBoard.UI
                 menu.IsOpen = true;
             }
         }
+
         private async Task ExportOpenLayersLayer(IMapLayerInfo layer, string path)
         {
             try
             {
                 await new OpenLayers(path, Directory.GetFiles("res/openlayers"), Config.Instance.BaseLayers.ToArray(), new[] { layer })
                  .ExportAsync();
-                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path);
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, MainWindow);
             }
             catch (Exception ex)
             {
                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
+
         private Task PopulateAllAsync(IServerBasedLayer s)
         {
             return s.PopulateAllFromServiceAsync();

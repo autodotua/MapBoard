@@ -491,7 +491,7 @@ namespace MapBoard.UI
                                     Config.Instance.BaseLayers.ToArray(),
                                     arcMap.Layers.OfType<IMapLayerInfo>().Where(p => visiableOnly ? p.LayerVisible : true).ToArray())
                                  .ExportAsync();
-                                 IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path);
+                                 IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, this);
                              }
                              catch (Exception ex)
                              {
