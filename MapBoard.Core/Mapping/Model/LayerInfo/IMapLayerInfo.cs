@@ -27,12 +27,12 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 查询图层边界范围
         /// </summary>
-        Func<QueryParameters, Task<Envelope>> QueryExtentAsync { get; }
+        Task<Envelope> QueryExtentAsync(QueryParameters parameters);
 
         /// <summary>
         /// 查询图层的要素
         /// </summary>
-        Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync { get; }
+        Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters parameters);
 
         /// <summary>
         /// 是否启用了时间限制

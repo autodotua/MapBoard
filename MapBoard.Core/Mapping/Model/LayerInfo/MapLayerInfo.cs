@@ -303,11 +303,15 @@ namespace MapBoard.Mapping.Model
             Unattached?.Invoke(this, new EventArgs());
         }
 
-        [JsonIgnore]
-        public Func<QueryParameters, Task<Envelope>> QueryExtentAsync => table.QueryExtentAsync;
+        public Task<Envelope> QueryExtentAsync(QueryParameters parameters)
+        {
+            return table.QueryExtentAsync(parameters);
+        }
 
-        [JsonIgnore]
-        public Func<QueryParameters, Task<FeatureQueryResult>> QueryFeaturesAsync => table.QueryFeaturesAsync;
+        public Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters parameters)
+        {
+            return table.QueryFeaturesAsync(parameters);
+        }
 
         public event EventHandler Unattached;
     }

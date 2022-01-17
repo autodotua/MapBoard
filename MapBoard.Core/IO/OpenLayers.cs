@@ -1,5 +1,7 @@
-﻿using MapBoard.Mapping.Model;
+﻿using Esri.ArcGISRuntime.Geometry;
+using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,16 +21,15 @@ namespace MapBoard.IO
         {{vector}}
     ],
     view: new ol.View({
-        center: ol.proj.fromLonLat([121, 30]),
-        zoom: 8
+        center: ol.proj.fromLonLat([{{lon}}, {{lat}}]),
+        zoom: {{zoom}}
     }),
 });
 map.on('click', function(e) {
     let i=0;
     map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
        if(i!=0) return;
-       i
-=1;
+       i=1;
        alert(feature.getProperties().description);
     })
 }); ";
@@ -43,7 +44,11 @@ map.on('click', function(e) {
         private const string JS_KML = @"new ol.layer.Vector({
             source: new ol.source.Vector({
                 url: '{{url}}',
-                format: new ol.format.KML(),
+                format: new ol.format.KML({
+                    extractStyles: true,
+                    extractAttributes: true,
+                    showPointNames:true
+                }),
             }),
         }),";
 
@@ -64,13 +69,14 @@ map.on('click', function(e) {
 
         public async Task ExportAsync()
         {
-            PrepareFiles();
+            await PrepareFilesAsync();
             InsertBaseLayers();
             await InsertVectorLayersAsync();
-            await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "openlayers.js"), mainJS, Encoding.UTF8);
+            await CalculateExtentAsync();
+            await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "index.js"), mainJS, Encoding.UTF8);
         }
 
-        private void PrepareFiles()
+        private async Task PrepareFilesAsync()
         {
             if (Directory.Exists(ExportFolderPath))
             {
@@ -82,6 +88,11 @@ map.on('click', function(e) {
             {
                 File.Copy(r, Path.Combine(ExportFolderPath, Path.GetFileName(r)));
             }
+            //KML显示的“点”其实是标签，自带的图表是很丑的大头针，因此需要进行替换。并且大头针有偏移，所以这里稍微修改了一下偏移。
+            string oljs = (await File.ReadAllTextAsync(Path.Combine(ExportFolderPath, "ol.js")))
+                .Replace("CC=\"https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png\",$C=new zv({anchor:OC=[20,2]",
+                "CC=\"point.png\",$C=new zv({anchor:OC=[20,50]");
+            await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "ol.js"), oljs, Encoding.UTF8);
         }
 
         private void InsertBaseLayers()
@@ -109,6 +120,25 @@ map.on('click', function(e) {
                 str.Append(JS_KML.Replace("{{url}}", $"{layer.Name}.kml"));
             }
             mainJS = mainJS.Replace("{{vector}}", str.ToString());
+        }
+
+        private async Task CalculateExtentAsync()
+        {
+            List<Envelope> extents = new List<Envelope>();
+            foreach (var layer in Layers)
+            {
+                extents.Add(await layer.QueryExtentAsync(new Esri.ArcGISRuntime.Data.QueryParameters()));
+            }
+            var extent = GeometryEngine.CombineExtents(extents).ToWgs84();
+            double lon = 0.5 * (extent.XMax + extent.XMin);
+            double lat = 0.5 * (extent.YMax + extent.YMin);
+            var webM = extent.ToWebMercator();
+
+            int zoom = Convert.ToInt32(Math.Round(Math.Log(1e8 / webM.Width, 2)));
+            mainJS = mainJS
+                .Replace("{{lon}}", lon.ToString())
+                .Replace("{{lat}}", lat.ToString())
+                .Replace("{{zoom}}", zoom.ToString());
         }
     }
 }

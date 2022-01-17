@@ -441,24 +441,5 @@ namespace MapBoard.UI
             }
             dialog.BringToFront();
         }
-
-        public void RightButtonClickToSelect(MouseEventArgs e)
-        {
-            return;
-            if (list.SelectedItems.Count > 1)
-            {
-                return;
-            }
-            var obj = e.OriginalSource as FrameworkElement;
-            while (obj != null && !(obj.DataContext is MapLayerInfo))
-            {
-                obj = obj.Parent as FrameworkElement;
-            }
-            var layer = obj.DataContext as MapLayerInfo;
-            if (layer != null)
-            {
-                list.SelectedItem = layer;
-            }
-        }
     }
 }

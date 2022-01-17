@@ -19,17 +19,17 @@ namespace MapBoard.Util
             clinet.GotMessage += ClinetGotMessage;
         }
 
-        private static async void ClinetGotMessage(object sender, PipeMessageEventArgs e)
+        private static void ClinetGotMessage(object sender, PipeMessageEventArgs e)
         {
             if (e.Message.StartsWith("mbmpkg"))
             {
                 string path = e.Message.RemoveStart("mbmpkg ");
                 if (File.Exists(path))
                 {
-                    await App.Current.Dispatcher.Invoke(async () =>
-                    {
-                        (App.Current.MainWindow as MainWindow).LoadMbmpkg(path);
-                    });
+                    App.Current.Dispatcher.Invoke(() =>
+                  {
+                      (App.Current.MainWindow as MainWindow).LoadMbmpkg(path);
+                  });
                 }
             }
         }

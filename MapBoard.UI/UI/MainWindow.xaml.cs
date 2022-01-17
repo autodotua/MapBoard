@@ -474,7 +474,8 @@ namespace MapBoard.UI
                 SnakeBar.ShowError("没有任何数据");
                 return;
             }
-            canClosing = false; ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
+            canClosing = false; 
+            ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
             string path = IOUtility.GetExportMapPath(type, this);
             if (path != null)
             {
@@ -485,7 +486,7 @@ namespace MapBoard.UI
                          case ExportMapType.OpenLayers:
                              try
                              {
-                                 var visiableOnly = await CommonDialog.ShowYesNoDialogAsync("是否仅导出可见图层？");
+                                 var visiableOnly = arcMap.Layers.Any(p => p.LayerVisible) && await CommonDialog.ShowYesNoDialogAsync("是否仅导出可见图层？");
 
                                  await new OpenLayers(path, Directory.GetFiles("res/openlayers"),
                                     Config.Instance.BaseLayers.ToArray(),

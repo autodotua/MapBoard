@@ -108,7 +108,7 @@ namespace MapBoard.UI
                 dataGrid.GroupStyle.Clear();
 
                 CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
-                if(view==null)
+                if (view == null)
                 {
                     return;
                 }
@@ -212,7 +212,6 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void Lvw_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            layerListHelper.RightButtonClickToSelect(e);
         }
 
         /// <summary>
