@@ -215,11 +215,11 @@ namespace MapBoard.UI.Dialog
                 }
                 if (rbtnHere.IsChecked.Value)
                 {
-                    File.WriteAllText(Path.Combine(appPath, Parameters.ConfigHere), "");
+                    await File.WriteAllTextAsync(Path.Combine(appPath, Parameters.ConfigHere), "");
                 }
                 else if (rbtnUp.IsChecked.Value)
                 {
-                    File.WriteAllText(Path.Combine(appPath, Parameters.ConfigUp), "");
+                    await File.WriteAllTextAsync(Path.Combine(appPath, Parameters.ConfigUp), "");
                 }
                 await CommonDialog.ShowOkDialogAsync("修改数据位置", "将在重启后生效");
             }

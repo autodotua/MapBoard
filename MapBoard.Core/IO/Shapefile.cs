@@ -61,7 +61,7 @@ namespace MapBoard.IO
         /// 导入shapefile文件
         /// </summary>
         /// <param name="path"></param>
-        public async static Task ImportAsync(string path, MapLayerCollection layers)
+        public static async Task ImportAsync(string path, MapLayerCollection layers)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
@@ -112,7 +112,7 @@ namespace MapBoard.IO
             layer.LayerVisible = true;
         }
 
-        public async static Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
+        public static async Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
         {
             if (folder == null)
             {
@@ -142,14 +142,14 @@ namespace MapBoard.IO
                 }
             }
 
-            CreateEgisShapefile(type, name, folder, fields);
+            await CreateEgisShapefileAsync(type, name, folder, fields);
             path = path + ".shp";
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
             return table;
         }
 
-        public static void CreateEgisShapefile(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
+        public static async Task CreateEgisShapefileAsync(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
         {
             ShapeType egisType;
             switch (type)
@@ -215,17 +215,17 @@ namespace MapBoard.IO
             if (type == GeometryType.Multipoint)
             {
                 var shpPath = Path.Combine(folder, name + ".shp");
-                var bytes = File.ReadAllBytes(shpPath);
+                var bytes = await File.ReadAllBytesAsync(shpPath);
                 var current = bytes[32];
                 if (current != 1)
                 {
                     throw new Exception("类型字节应为1，实际为" + current);
                 }
                 bytes[32] = 8;
-                File.WriteAllBytes(shpPath, bytes);
+                await File.WriteAllBytesAsync(shpPath, bytes);
             }
-            File.WriteAllText(Path.Combine(folder, name + ".prj"), SpatialReferences.Wgs84.WkText);
-            File.WriteAllText(Path.Combine(folder, name + ".cpg"), "UTF-8");
+            await File.WriteAllTextAsync(Path.Combine(folder, name + ".prj"), SpatialReferences.Wgs84.WkText);
+            await File.WriteAllTextAsync(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
         public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)

@@ -64,8 +64,6 @@ namespace MapBoard.Mapping
 
         public GraphicsOverlay TapOverlay { get; set; }
 
-  
-
         public MapTapModes MapTapMode { get; set; } = MapTapModes.None;
 
         private async void MapViewTapped(object sender, GeoViewInputEventArgs e)
@@ -303,7 +301,7 @@ namespace MapBoard.Mapping
 
         public async Task<List<TrackInfo>> LoadGpxAsync(string filePath, bool raiseEvent)
         {
-            string gpxContent = File.ReadAllText(filePath);
+            string gpxContent = await File.ReadAllTextAsync(filePath);
             Gpx gpx = null;
             await Task.Run(() =>
              {

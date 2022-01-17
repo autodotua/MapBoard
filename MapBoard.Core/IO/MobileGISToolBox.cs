@@ -19,10 +19,10 @@ namespace MapBoard.IO
             Directory.CreateDirectory(tempShpDir);
             Directory.CreateDirectory(tempStyleDir);
             await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
-            File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
+            await File.WriteAllTextAsync(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
             if (layer.Layer.LabelDefinitions.Count > 0)
             {
-                File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+                await File.WriteAllTextAsync(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
             }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);
         }
@@ -37,10 +37,10 @@ namespace MapBoard.IO
             foreach (var layer in layers.OfType<ShapefileMapLayerInfo>())
             {
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
-                File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
+                await File.WriteAllTextAsync(Path.Combine(tempStyleDir, layer.Name + ".uniqueValue.style"), layer.Layer.Renderer.ToJson());
                 if (layer.Layer.LabelDefinitions.Count > 0)
                 {
-                    File.WriteAllText(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
+                    await File.WriteAllTextAsync(Path.Combine(tempStyleDir, layer.Name + ".label.style"), layer.Layer.LabelDefinitions[0].ToJson());
                 }
             }
             ZipFile.CreateFromDirectory(tempDir.FullName, path);

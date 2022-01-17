@@ -67,7 +67,7 @@ namespace MapBoard.UI.GpxToolbox
             }
             else if (File.Exists(Parameters.TrackHistoryPath))
             {
-                string[] files = File.ReadAllLines(Parameters.TrackHistoryPath);
+                string[] files = await File.ReadAllLinesAsync(Parameters.TrackHistoryPath);
                 await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
             }
         }
@@ -106,11 +106,10 @@ namespace MapBoard.UI.GpxToolbox
             chartHelper.LinePointEnbale = (p1, p2) => (p2.CenterTime - p1.CenterTime) < TimeSpan.FromSeconds(200);
         }
 
-        private void WindowClosing(object sender, CancelEventArgs e)
+        private async void WindowClosing(object sender, CancelEventArgs e)
         {
-            File.WriteAllLines(Parameters.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
+            await File.WriteAllLinesAsync(Parameters.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
             Tracks.Clear();
-            // map.Dispose();
         }
 
         private void ListViewItemPreviewDeleteKeyDown(object sender, KeyEventArgs e)
@@ -418,7 +417,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 try
                 {
-                    File.WriteAllText(path, gpx.ToGpxXml());
+                    await File.WriteAllTextAsync(path, gpx.ToGpxXml());
                     SnakeBar.Show("导出成功");
                 }
                 catch (Exception ex)
