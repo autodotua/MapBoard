@@ -25,18 +25,23 @@ namespace MapBoard.Mapping
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public async static Task<ItemsOperationErrorCollection> LoadBaseGeoViewAsync(this GeoView map)
+        public static async Task<ItemsOperationErrorCollection> LoadBaseGeoViewAsync(this GeoView map)
         {
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             try
             {
                 Basemap basemap = new Basemap();
 
-                foreach (var item in Config.Instance.BaseLayers.Where(p=>p.Enable).Reverse<BaseLayerInfo>())
+                foreach (var item in Config.Instance.BaseLayers.Where(p => p.Enable).Reverse())
                 {
-                    var layer = GetLayer(item);
+                    Layer layer = null;
                     try
                     {
+                        if (item.Type is BaseLayerType.RasterLayer or BaseLayerType.ShapefileLayer or BaseLayerType.TpkLayer && !File.Exists(item.Path))
+                        {
+                            throw new IOException("找不到文件：" + item.Path);
+                        }
+                        layer = GetLayer(item);
                         await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                         basemap.BaseLayers.Add(layer);
 
@@ -46,7 +51,7 @@ namespace MapBoard.Mapping
                     }
                     catch (TimeoutException ex)
                     {
-                        layer.CancelLoad();
+                        layer?.CancelLoad();
                         errors.Add($"加载底图{item.Name}({item.Path})超时", ex);
                     }
                     catch (Exception ex)
@@ -194,13 +199,13 @@ namespace MapBoard.Mapping
             }
         }
 
-        public async static Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
+        public static async Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
         {
             var result = await view.GetImageAsync(cut);
             result.Save(path, format);
         }
 
-        public async static Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
+        public static async Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
         {
             RuntimeImage image = await view.ExportImageAsync();
             var bitmapSource = await image.ToImageSourceAsync() as BitmapSource;

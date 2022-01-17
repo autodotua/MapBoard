@@ -19,6 +19,7 @@ using MapBoard.UI.TileDownloader;
 using log4net.Appender;
 using MapBoard.Util;
 using Microsoft.WindowsAPICodePack.FzExtension;
+using System.Xml;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -128,8 +129,11 @@ namespace MapBoard
         private void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
         {
             Log.Error("未捕获的异常", e.Exception);
-            MessageBox.Show(e.Exception.ToString(), "MapBoard - 未捕获的异常", MessageBoxButton.OK, MessageBoxImage.Error);
-            Shutdown(-1);
+            var result = MessageBox.Show("程序发生异常，可能出现数据丢失等问题。是否关闭？" + Environment.NewLine + Environment.NewLine + e.Exception.ToString(), "MapBoard - 未捕获的异常", MessageBoxButton.YesNo, MessageBoxImage.Error);
+            if (result == MessageBoxResult.Yes)
+            {
+                Dispatcher.Invoke(() => Shutdown(-1));
+            }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

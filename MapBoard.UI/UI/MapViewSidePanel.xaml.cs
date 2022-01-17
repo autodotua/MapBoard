@@ -397,7 +397,7 @@ namespace MapBoard.UI
         private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseLayersPanelAsync(false);
-            new SettingDialog(Window.GetWindow(this), (MapView as IMapBoardGeoView).Layers, 1).ShowDialog();
+            new SettingDialog(Window.GetWindow(this), (MapView as IMapBoardGeoView).Layers, 3).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
