@@ -287,12 +287,22 @@ namespace MapBoard.Mapping
         private async Task<(MapPoint, MapPoint)> GetNearestVertexAndPointAsync(System.Windows.Point position)
         {
             var location = GeometryEngine.Project(MapView.ScreenToLocation(position), SpatialReferences.Wgs84) as MapPoint;
-            var results = await MapView.IdentifyLayersAsync(position, 20, false, int.MaxValue);
+            IReadOnlyList<IdentifyLayerResult> results = null;
+            try
+            {
+                results = await MapView.IdentifyLayersAsync(position, 20, false, int.MaxValue);
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("识别最近的图形失败", ex);
+                return (null, null);
+            }
+
             MapPoint minVertex = null;
             MapPoint minPoint = null;
             double minVertexDistance = double.MaxValue;
             double minPointDistance = double.MaxValue;
-            foreach (var result in results.Where(p=>p.LayerContent is FeatureLayer))
+            foreach (var result in results.Where(p => p.LayerContent is FeatureLayer))
             {
                 foreach (var geometry in result.GeoElements.Select(p => p.Geometry))
                 {
