@@ -134,14 +134,14 @@ namespace MapBoard.UI.GpxToolbox
                 || displayedPointsX.Count == 0)
             {
                 return;
-            }  
+            }
             canMouseMoveUpdate = false;
             var pos = e.GetPosition(Sketchpad);
             EllipseGeometry point = GetPoint(pos.X);
             RefreshMouseLine(point);
             RefreshToolTip(point, pos.X, pos.Y);
             MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
-         
+
             await Task.Delay(100);
             canMouseMoveUpdate = true;
         }
@@ -238,7 +238,7 @@ namespace MapBoard.UI.GpxToolbox
 
         public Func<Task> DrawActionAsync { private get; set; }
 
-        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex,bool draw)
+        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex, bool draw)
         {
             BorderInfo border = borders[borderIndex];
             await Task.Run(() =>
@@ -264,7 +264,7 @@ namespace MapBoard.UI.GpxToolbox
                     Stroke = PointBrush,
                 };
 
-            AddSketchpadChildren(path, 3);
+                AddSketchpadChildren(path, 3);
             }
             // lastAction = nameof(DrawPoints);
             // lastPointPoints = items;
@@ -329,7 +329,6 @@ namespace MapBoard.UI.GpxToolbox
             //有可能从Timer线程中调用，因此要保证UI线程
             Sketchpad.Dispatcher.Invoke(async () =>
             {
-             
                 try
                 {
                     Sketchpad.Children.Clear();
@@ -337,6 +336,7 @@ namespace MapBoard.UI.GpxToolbox
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("定时绘制图表失败", ex);
                 }
                 finally
                 {

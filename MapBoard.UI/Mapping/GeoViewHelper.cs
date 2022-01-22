@@ -52,10 +52,12 @@ namespace MapBoard.Mapping
                     catch (TimeoutException ex)
                     {
                         layer?.CancelLoad();
+                        App.Log.Error($"加载底图{item.Name}({item.Path})超时", ex);
                         errors.Add($"加载底图{item.Name}({item.Path})超时", ex);
                     }
                     catch (Exception ex)
                     {
+                        App.Log.Error($"加载底图{item.Name}({item.Path})失败", ex);
                         errors.Add($"加载底图{item.Name}({item.Path})失败", ex);
                     }
                 }
@@ -93,6 +95,7 @@ namespace MapBoard.Mapping
             }
             catch (Exception ex)
             {
+                App.Log.Error("加载底图失败", ex);
                 throw new Exception("加载底图失败", ex);
             }
         }

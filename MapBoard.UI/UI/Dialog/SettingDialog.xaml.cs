@@ -225,6 +225,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("修改数据位置失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "修改数据位置失败");
             }
         }
@@ -244,6 +245,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("备份失败", ex);
                 CommonDialog.ShowErrorDialogAsync(ex, "备份失败");
             }
             this.Notify(nameof(CurrentBackupCount));
@@ -377,6 +379,7 @@ namespace MapBoard.UI.Dialog
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("加载配置文件失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex, "加载配置文件失败");
                 }
             }

@@ -234,6 +234,7 @@ namespace MapBoard.UI.Dialog
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("创建图层失败", ex);
                     Message = "创建图层失败：" + ex.Message;
                 }
             }

@@ -79,6 +79,8 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("加载参数失败", ex);
+
                 extensionEx = ex;
             }
             InitializeComponent();
@@ -474,7 +476,7 @@ namespace MapBoard.UI
                 SnakeBar.ShowError("没有任何数据");
                 return;
             }
-            canClosing = false; 
+            canClosing = false;
             ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
             string path = IOUtility.GetExportMapPath(type, this);
             if (path != null)
@@ -496,6 +498,7 @@ namespace MapBoard.UI
                              }
                              catch (Exception ex)
                              {
+                                 App.Log.Error("导出失败", ex);
                                  await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                              }
                              break;

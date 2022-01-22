@@ -121,6 +121,7 @@ namespace MapBoard.UI.Dialog
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("架子啊Wfs失败", ex);
                     Message = "加载失败：" + ex.Message;
                 }
             }
@@ -155,6 +156,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("查询Wfs图层失败", ex);
                 Message = "查询失败：" + ex.Message;
             }
             finally

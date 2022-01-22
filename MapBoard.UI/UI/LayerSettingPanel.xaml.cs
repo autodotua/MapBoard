@@ -127,6 +127,7 @@ namespace MapBoard.UI
                     }
                     catch (Exception ex)
                     {
+                        App.Log.Error("重命名失败", ex);
                         await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
                     }
                     Layers.Selected = layer;
@@ -139,6 +140,7 @@ namespace MapBoard.UI
             catch (Exception ex)
             {
                 string error = (string.IsNullOrWhiteSpace(layer.Name) ? "图层" + layer.Name : "图层") + "样式加载失败";
+                App.Log.Error(error, ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, error);
             }
         }

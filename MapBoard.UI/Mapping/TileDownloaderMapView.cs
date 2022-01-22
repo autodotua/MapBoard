@@ -98,6 +98,7 @@ namespace MapBoard.Mapping
             }
             catch (Exception ex)
             {
+                App.Log.Error("加载地图失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "加载地图失败");
                 return;
             }
@@ -151,7 +152,7 @@ namespace MapBoard.Mapping
             return polygon;
         }
 
-        protected async override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+        protected override async void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonUp(e);
 

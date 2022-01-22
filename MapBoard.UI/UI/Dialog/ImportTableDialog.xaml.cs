@@ -189,6 +189,7 @@ namespace MapBoard.UI.Dialog
                         }
                         catch (Exception ex)
                         {
+                            App.Log.Error("保存属性失败", ex);
                             failedRowCount++;
                             continue;
                         }
@@ -200,6 +201,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("创建图层失败", ex);
                 Hide();
                 await ShowErrorDialogAsync(ex, "创建图层失败");
                 return;

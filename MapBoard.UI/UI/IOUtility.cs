@@ -84,6 +84,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("导入失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
@@ -152,6 +153,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("导出失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
@@ -187,6 +189,7 @@ namespace MapBoard.UI
                             }
                             catch (Exception ex)
                             {
+                                App.Log.Error("备份失败", ex);
                                 SnakeBar.ShowError("备份失败");
                             }
                         }
@@ -224,6 +227,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("导入失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
             }
         }
@@ -287,6 +291,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("导出失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }

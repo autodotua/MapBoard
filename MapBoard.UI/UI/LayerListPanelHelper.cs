@@ -178,6 +178,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("导出失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
             }
         }
@@ -238,6 +239,7 @@ namespace MapBoard.UI
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("任务执行失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex);
                 }
             };
@@ -259,6 +261,7 @@ namespace MapBoard.UI
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("任务执行失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex);
                 }
             };
@@ -327,6 +330,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("缩放失败，可能是不构成有面积的图形", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "缩放失败，可能是不构成有面积的图形");
             }
         }
@@ -393,6 +397,7 @@ namespace MapBoard.UI
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("加载图层失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex, "加载失败");
                 }
             }, "正在重新加载图层");
@@ -436,6 +441,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
+                App.Log.Error("加载属性失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "加载属性失败");
                 return;
             }

@@ -112,6 +112,7 @@ namespace MapBoard.UI.Dialog
                                 }
                                 catch (Exception ex)
                                 {
+                                    App.Log.Error("设置属性失败", ex);
                                 }
                             }
                         }
@@ -121,6 +122,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("撤销失败", ex);
                 IsEnabled = true;
                 await CommonDialog.ShowErrorDialogAsync(ex, "撤销失败");
             }

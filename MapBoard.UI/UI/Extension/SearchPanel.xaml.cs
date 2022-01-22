@@ -134,6 +134,7 @@ namespace MapBoard.UI.Extension
             }
             catch (Exception ex)
             {
+                App.Log.Error("搜索失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "搜索失败");
             }
             finally

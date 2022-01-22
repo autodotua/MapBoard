@@ -135,6 +135,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("查询Wms图层失败", ex);
                 Message = "查询失败：" + ex.Message;
             }
             finally

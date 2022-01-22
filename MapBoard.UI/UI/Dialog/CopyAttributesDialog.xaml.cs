@@ -121,6 +121,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error(ex);
                 Message = ex.Message;
                 IsPrimaryButtonEnabled = false;
             }

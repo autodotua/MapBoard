@@ -117,6 +117,7 @@ namespace MapBoard.UI.Extension
             }
             catch (Exception ex)
             {
+                App.Log.Error("搜索失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "搜索失败");
             }
             finally
@@ -158,6 +159,7 @@ namespace MapBoard.UI.Extension
             Overlay.ClearPois();
             SearchResult = null;
         }
+
         private void LocationPointButton_Click(object sender, RoutedEventArgs e)
         {
             if (MapView is MapView m)
@@ -170,13 +172,11 @@ namespace MapBoard.UI.Extension
                 MapPoint point = GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint;
 
                 Point = point.ToLocation();
-
             }
             else
             {
                 CommonDialog.ShowErrorDialogAsync("不支持该地图");
             }
         }
-
     }
 }

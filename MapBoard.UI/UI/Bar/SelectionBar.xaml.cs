@@ -254,6 +254,7 @@ namespace MapBoard.UI.Bar
                         }
                         catch (Exception ex)
                         {
+                            App.Log.Error("执行菜单失败", ex);
                             await CommonDialog.ShowErrorDialogAsync(ex);
                         }
                     };
@@ -485,7 +486,7 @@ namespace MapBoard.UI.Bar
             if (path != null)
             {
                 await task(path);
-                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path,Window.GetWindow(this));    
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, Window.GetWindow(this));
             }
         }
 

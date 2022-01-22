@@ -84,8 +84,9 @@ namespace MapBoard.UI.Component
                 }
                 UpdateSlider();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                App.Log.Error(ex);
             }
         }
 

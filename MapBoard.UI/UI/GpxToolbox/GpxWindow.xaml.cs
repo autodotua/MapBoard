@@ -206,6 +206,7 @@ namespace MapBoard.UI.GpxToolbox
             }
             catch (Exception ex)
             {
+                App.Log.Error("绘制GPX图表失败", ex);
             }
         }
 
@@ -422,6 +423,7 @@ namespace MapBoard.UI.GpxToolbox
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("导出失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
                 }
             }

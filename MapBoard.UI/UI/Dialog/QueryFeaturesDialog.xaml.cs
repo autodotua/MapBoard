@@ -103,6 +103,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("选取范围失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "选取范围失败");
             }
             finally
@@ -163,6 +164,7 @@ namespace MapBoard.UI.Dialog
             }
             catch (Exception ex)
             {
+                App.Log.Error("查询要素失败", ex);
                 IsEnabled = true;
                 await CommonDialog.ShowErrorDialogAsync(ex, "查询失败");
             }

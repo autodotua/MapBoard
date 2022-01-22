@@ -150,12 +150,15 @@ namespace MapBoard.Mapping
                 }
                 catch (TaskCanceledException ex)
                 {
+                    App.Log.Error(ex);
                 }
                 catch (HttpRequestException ex)
                 {
+                    App.Log.Error(ex);
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error(ex);
                 }
             }
         }
@@ -199,10 +202,10 @@ namespace MapBoard.Mapping
             }
         }
 
-        protected async override void OnPreviewMouseMove(MouseEventArgs e)
+        protected override async void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
-            if (e.RightButton == MouseButtonState.Pressed&&CurrentTask==BoardTask.Ready)
+            if (e.RightButton == MouseButtonState.Pressed && CurrentTask == BoardTask.Ready)
             {
                 if (!canRotate)
                 {
@@ -289,7 +292,7 @@ namespace MapBoard.Mapping
         /// 键盘按下事件
         /// </summary>
         /// <param name="e"></param>
-        protected async override void OnPreviewKeyDown(KeyEventArgs e)
+        protected override async void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
             switch (e.Key)

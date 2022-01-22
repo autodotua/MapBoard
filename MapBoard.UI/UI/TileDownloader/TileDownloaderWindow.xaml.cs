@@ -160,7 +160,7 @@ namespace MapBoard.UI.TileDownloader
             arcMap.ViewpointChanged += ArcMapViewpointChanged;
         }
 
-        protected async override Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
             await Task.Yield();
         }
@@ -304,6 +304,7 @@ namespace MapBoard.UI.TileDownloader
                     }
                     catch (Exception ex)
                     {
+                        App.Log.Error("下载瓦片失败", ex);
                         LastDownloadingStatus = "失败：" + ex.Message;
                         DownloadErrors.Add(new { Tile = LastDownloadingTile, Error = ex.Message, StackTrace = ex.StackTrace.Replace(Environment.NewLine, "    ") });
                         failed++;
@@ -340,6 +341,7 @@ namespace MapBoard.UI.TileDownloader
                          }
                          catch (Exception ex)
                          {
+                             App.Log.Error("无法删除临时文件夹", ex);
                              Dispatcher.Invoke(async () => await CommonDialog.ShowErrorDialogAsync(ex, "无法删除临时文件夹"));
                          }
                      })
@@ -376,6 +378,7 @@ namespace MapBoard.UI.TileDownloader
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("开启服务失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex, "开启服务失败");
                 }
             }
@@ -467,6 +470,7 @@ namespace MapBoard.UI.TileDownloader
                      }
                      catch (Exception ex)
                      {
+                         App.Log.Error("拼接图片失败", ex);
                          Dispatcher.Invoke(async () =>
                          {
                              await CommonDialog.ShowErrorDialogAsync(ex, "拼接图片失败");
@@ -549,6 +553,7 @@ namespace MapBoard.UI.TileDownloader
                             }
                             catch (Exception ex)
                             {
+                                App.Log.Error("保存瓦片拼接失败", ex);
                                 Dispatcher.Invoke(async () =>
                                 {
                                     await CommonDialog.ShowErrorDialogAsync(ex, "保存失败");
@@ -594,6 +599,7 @@ namespace MapBoard.UI.TileDownloader
             }
             catch (Exception ex)
             {
+                App.Log.Error("无法打开目录", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "无法打开目录");
             }
         }
@@ -703,6 +709,7 @@ namespace MapBoard.UI.TileDownloader
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("删除空文件失败", ex);
                     await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
                 }
             }, "正在删除");

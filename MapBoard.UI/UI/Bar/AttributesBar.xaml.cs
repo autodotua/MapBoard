@@ -87,6 +87,7 @@ namespace MapBoard.UI.Bar
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error(ex);
                 }
             }
             if (Directory.Exists(text))
@@ -98,6 +99,7 @@ namespace MapBoard.UI.Bar
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error(ex);
                 }
             }
             if (Uri.TryCreate(text, UriKind.Absolute, out Uri uriResult)
@@ -110,6 +112,7 @@ namespace MapBoard.UI.Bar
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error(ex);
                 }
             }
 

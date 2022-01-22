@@ -27,6 +27,7 @@ namespace MapBoard.UI
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("窗口初始化失败", ex);
                     win.Loaded += (s, e) =>
                     {
                         CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行").ConfigureAwait(false);
@@ -57,6 +58,7 @@ namespace MapBoard.UI
                 }
                 catch (Exception ex)
                 {
+                    App.Log.Error("窗口初始化失败", ex);
                     CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行");
                 }
             }, "正在初始化", delay: 0);
