@@ -130,10 +130,10 @@ namespace MapBoard.UI
                     }
                     if (layer is ShapefileMapLayerInfo)
                     {
-                        AddToMenu(menuExport, "GPS工具箱图层包",
+                        AddToMenu(menuExport, "移动GIS工具箱图层包",
                             () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip, MainWindow),
                             p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
-                            "正在导出GPS工具箱图层包");
+                            "正在导出移动GIS工具箱图层包");
                     }
                     AddToMenu(menuExport, "KML打包文件",
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML, MainWindow),
