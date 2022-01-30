@@ -77,7 +77,7 @@
                             <Separator />
                             <MenuItem
                                 Click="BrowseSceneMenu_Click"
-                                Header="场景浏览">
+                                Header="3D浏览">
                                 <MenuItem.Icon>
                                     <ui:FontIcon Glyph="&#xE909;" />
                                 </MenuItem.Icon>

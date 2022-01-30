@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d">
-
+    <UserControl.Resources />
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -35,6 +35,96 @@
                 Margin="8,0,12,0"
                 Orientation="Vertical"
                 Spacing="12">
+
+                <Border
+                    Padding="8"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                    CornerRadius="4">
+                    <StackPanel
+                        DataContext="{Binding Layers.Selected}"
+                        Orientation="Vertical">
+                        <TextBlock
+                            Margin="0,0,0,12"
+                            HorizontalAlignment="Center"
+                            Style="{DynamicResource SubtitleTextBlockStyle}"
+                            Text="显示设置" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="4" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="透明度" />
+                            <Slider
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                LargeChange="0.1"
+                                Maximum="1"
+                                Minimum="0"
+                                SmallChange="0.01"
+                                Value="{Binding Display.Opacity}" />
+                            <TextBlock
+                                Grid.Column="4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="{Binding Display.Opacity, StringFormat={}0%}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                VerticalAlignment="Center"
+                                Text="最小比例" />
+                            <TextBox
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Text="{Binding Display.MinScale, StringFormat={}0}" />
+                            <TextBlock
+                                Grid.Row="4"
+                                VerticalAlignment="Center"
+                                Text="最大比例" />
+                            <TextBox
+                                Grid.Row="4"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Text="{Binding Display.MaxScale, StringFormat={}0}" />
+
+                            <Button
+                                Grid.Row="2"
+                                Grid.Column="4"
+                                Height="24"
+                                Padding="8,0"
+                                Click="SetScaleButtonClick"
+                                Content="设为当前"
+                                Tag="min" />
+                            <Button
+                                Grid.Row="4"
+                                Grid.Column="4"
+                                Height="24"
+                                Padding="8,0"
+                                Click="SetScaleButtonClick"
+                                Content="设为当前"
+                                Tag="max" />
+                            <TextBlock
+                                Grid.Row="99"
+                                Grid.ColumnSpan="99"
+                                HorizontalAlignment="Center"
+                                Opacity="0.75"
+                                Text="此处设置无需应用，即时展现" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
                 <Border
                     Padding="8"
@@ -617,7 +707,8 @@
                                     Padding="8,0"
                                     HorizontalAlignment="Right"
                                     Click="SetScaleButtonClick"
-                                    Content="设为当前" />
+                                    Content="设为当前"
+                                    Tag="label" />
                             </Grid>
                             <TextBlock
                                 Grid.Row="10"

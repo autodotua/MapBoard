@@ -466,7 +466,7 @@
                 Margin="0,4,0,-8"
                 HorizontalAlignment="Center"
                 Effect="{StaticResource shadow}"
-                Text="{Binding Scale}" />
+                Text="{Binding ScaleBarLength}" />
             <Canvas
                 Width="120"
                 Height="10">
@@ -476,6 +476,10 @@
                     Stroke="{DynamicResource SystemControlBackgroundBaseHighBrush}"
                     StrokeThickness="3" />
             </Canvas>
+            <TextBlock
+                HorizontalAlignment="Center"
+                Effect="{StaticResource shadow}"
+                Text="{Binding Scale, StringFormat={}1:{0}}" />
         </ui:SimpleStackPanel>
     </Grid>
 </local:UserControlBase>

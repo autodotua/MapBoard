@@ -38,15 +38,18 @@ namespace MapBoard.IO
         private static string GetStyleJson(IMapLayerInfo layer)
         {
             JObject json = new JObject();
-            json.Add("Renderer", JObject.Parse(layer.Layer.Renderer.ToJson()));
+            json.Add(nameof(layer.Layer.Renderer), JObject.Parse(layer.Layer.Renderer.ToJson()));
             JArray jLabels = new JArray();
             foreach (var label in layer.Layer.LabelDefinitions)
             {
                 jLabels.Add(JObject.Parse(label.ToJson()));
             }
-            json.Add("Labels", jLabels);
-            JObject jBasic = new JObject();
-            json.Add("Basic", jBasic);
+            json.Add(nameof(layer.Layer.LabelDefinitions), jLabels);
+            JObject jDisplay = new JObject();
+            jDisplay.Add(nameof(layer.Display.Opacity), layer.Display.Opacity);
+            jDisplay.Add(nameof(layer.Display.MinScale), layer.Display.MinScale);
+            jDisplay.Add(nameof(layer.Display.MaxScale), layer.Display.MaxScale);
+            json.Add(nameof(layer.Display), jDisplay);
             return json.ToString();
         }
     }

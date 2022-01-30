@@ -113,7 +113,7 @@ namespace MapBoard.UI
 
         private string longitude;
 
-        private string scale;
+        private string scaleBarLength;
 
         public string Latitude
         {
@@ -127,10 +127,18 @@ namespace MapBoard.UI
             private set => this.SetValueAndNotify(ref longitude, value, nameof(Longitude));
         }
 
+        public string ScaleBarLength
+        {
+            get => scaleBarLength;
+            private set => this.SetValueAndNotify(ref scaleBarLength, value, nameof(ScaleBarLength));
+        }
+
+        private string scale;
+
         public string Scale
         {
             get => scale;
-            private set => this.SetValueAndNotify(ref scale, value, nameof(Scale));
+            set => this.SetValueAndNotify(ref scale, value, nameof(Scale));
         }
 
         private bool dataSourceOn = true;
@@ -177,8 +185,9 @@ namespace MapBoard.UI
                     location = GeometryEngine.Project(location, SpatialReferences.Wgs84) as MapPoint;
                     Latitude = location.Y.ToString("0.000000");
                     Longitude = location.X.ToString("0.000000");
-                    Scale = (view.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
+                    ScaleBarLength = (view.UnitsPerPixel * ActualWidth * Math.Cos(Math.PI / 180 * location.Y)).ToString("0.00m");
                 }
+                Scale = view.MapScale > 10000 ? (view.MapScale / 10000).ToString("0.00万") : view.MapScale.ToString("0");
                 var level = 5 * (20 + Math.Log(view.Map.MaxScale / view.MapScale, 2));
                 if (level < 0)
                 {

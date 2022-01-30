@@ -73,6 +73,7 @@ namespace MapBoard.Model
         public virtual string Type { get; protected set; }
 
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
+        public LayerDisplay Display { get; set; } = new LayerDisplay();
 
         public virtual object Clone()
         {

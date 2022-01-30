@@ -53,8 +53,15 @@ namespace MapBoard.UI
             }
         }
 
-        public MainMapView MapView { get; private set; }
-        public MapLayerCollection Layers => MapView.Layers;
+        private MainMapView mapView;
+
+        public MainMapView MapView
+        {
+            get => mapView;
+            private set => this.SetValueAndNotify(ref mapView, value, nameof(MapView), nameof(Layers));
+        }
+
+        public MapLayerCollection Layers => MapView?.Layers;
 
         public string[] Fonts { get; }
 
@@ -195,7 +202,20 @@ namespace MapBoard.UI
 
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
-            Label.MinScale = MapView.MapScale;
+            switch ((sender as Button).Tag as string)
+            {
+                case "label":
+                    Label.MinScale = MapView.MapScale;
+                    break;
+
+                case "min":
+                    Layers.Selected.Display.MinScale = MapView.MapScale;
+                    break;
+
+                case "max":
+                    Layers.Selected.Display.MaxScale = MapView.MapScale;
+                    break;
+            }
         }
 
         private KeySymbolPair selectedKey;

@@ -26,6 +26,11 @@ namespace MapBoard.Model
         bool LayerVisible { get; set; }
 
         /// <summary>
+        /// 显示相关属性
+        /// </summary>
+        LayerDisplay Display { get; set; }
+
+        /// <summary>
         /// 图层名
         /// </summary>
         string Name { get; set; }
@@ -36,7 +41,7 @@ namespace MapBoard.Model
         Dictionary<string, SymbolInfo> Symbols { get; set; }
 
         /// <summary>
-        /// 事件范围
+        /// 时间范围
         /// </summary>
         TimeExtentInfo TimeExtent { get; set; }
 

@@ -248,6 +248,29 @@ namespace MapBoard.Mapping.Model
 
         protected virtual void LoadCompleted()
         {
+            layer.MinScale = Display.MinScale;
+            layer.MaxScale = Display.MaxScale;
+            layer.Opacity = Display.Opacity;
+            Display.PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Display.Opacity):
+                        layer.Opacity = Display.Opacity;
+                        break;
+
+                    case nameof(Display.MinScale):
+                        layer.MinScale = Display.MinScale;
+                        break;
+
+                    case nameof(Display.MaxScale):
+                        layer.MaxScale = Display.MaxScale;
+                        break;
+
+                    default:
+                        break;
+                }
+            };
         }
 
         [JsonIgnore]
