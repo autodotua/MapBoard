@@ -20,6 +20,7 @@ using log4net.Appender;
 using MapBoard.Util;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using System.Xml;
+using log4net.Layout;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -46,18 +47,7 @@ namespace MapBoard
 
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
-            Log = LogManager.GetLogger(GetType());
-            var h = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
-            foreach (IAppender a in h.Root.Appenders)
-            {
-                if (a is FileAppender)
-                {
-                    FileAppender fa = (FileAppender)a;
-                    fa.File = System.IO.Path.Combine(Parameters.LogsPath, "MapBoard.log");
-                    fa.ActivateOptions();
-                    break;
-                }
-            }
+            InitializeLogs();
 
             singleInstance = new SingleInstance(FzLib.Program.App.ProgramName);
             await singleInstance.CheckAndOpenWindow<MainWindow>(this);
@@ -83,7 +73,6 @@ namespace MapBoard
                 Environment.Exit(0);
                 return;
             }
-            Log.Info("程序启动");
 
 #if (DEBUG)
 
@@ -124,6 +113,24 @@ namespace MapBoard
             {
                 xcr.UseCompactResources = true;
             }
+        }
+
+        private void InitializeLogs()
+        {
+            Log = LogManager.GetLogger(GetType());
+            RollingFileAppender fa = new RollingFileAppender()
+            {
+                AppendToFile = true,
+                MaxSizeRollBackups = 100,
+                StaticLogFileName = true,
+                RollingStyle = RollingFileAppender.RollingMode.Date,
+                Layout = new PatternLayout("[%date]-[%thread]-[%-p]-[%logger]-[%M] -> %message%newline%newline"),
+                File = System.IO.Path.Combine(Parameters.LogsPath, "MapBoard.log"),
+            };
+            fa.ActivateOptions();
+            ((log4net.Repository.Hierarchy.Logger)Log.Logger).AddAppender(fa);
+
+            Log.Info("程序启动");
         }
 
         private void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
