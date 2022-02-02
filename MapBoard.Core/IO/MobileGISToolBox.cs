@@ -7,11 +7,35 @@ using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using MapBoard.Util;
+using System.Net;
+using System.Threading;
 
 namespace MapBoard.IO
 {
     public class MobileGISToolBox
     {
+        public static async Task OpenHttpServerAsync(string ip, MapLayerCollection layers, CancellationToken cancellationToken)
+        {
+            var path = Path.GetTempFileName() + ".zip";
+            //await ExportMapAsync(path, layers);
+            HttpServerUtil server = new HttpServerUtil();
+            int port = HttpServerUtil.FreeTcpPort();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            cancellationToken.Register(() => server.Stop());
+            await server.Start(ip, port, async req =>
+               {
+                   if (req.HttpMethod == "GET")
+                   {
+                       return await File.ReadAllBytesAsync(path);
+                   }
+                   throw new HttpListenerException(400);
+               });
+        }
+
         public static async Task ExportLayerAsync(string path, ShapefileMapLayerInfo layer)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
@@ -22,7 +46,7 @@ namespace MapBoard.IO
             await Task.Run(() => ZipFile.CreateFromDirectory(tempDir.FullName, path));
         }
 
-        public static async Task ExportMapAsync(string path, MapLayerCollection layers)
+        public static async Task<string> ExportMathToTempDirAsync(MapLayerCollection layers)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();
             string tempShpDir = Path.Combine(tempDir.FullName, "Shapefile");
@@ -32,7 +56,13 @@ namespace MapBoard.IO
                 await Shapefile.CloneFeatureToNewShpAsync(tempShpDir, layer);
                 await File.WriteAllTextAsync(Path.Combine(tempShpDir, layer.Name + ".style"), GetStyleJson(layer));
             }
-            await Task.Run(() => ZipFile.CreateFromDirectory(tempDir.FullName, path));
+            return tempDir.FullName;
+        }
+
+        public static async Task ExportMapAsync(string path, MapLayerCollection layers)
+        {
+            string tempDir = await ExportMathToTempDirAsync(layers);
+            await Task.Run(() => ZipFile.CreateFromDirectory(tempDir, path));
         }
 
         private static string GetStyleJson(IMapLayerInfo layer)

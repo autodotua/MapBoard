@@ -354,20 +354,24 @@
                                         Visibility="{Binding Config.CopyShpFileWhenExport, Converter={StaticResource Bool2VisibilityConverter}}" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
-                                        Header="移动GIS工具箱图层包"
+                                        Header="移动GIS工具箱（ZIP）"
                                         Tag="3" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
-                                        Header="KML打包文件"
+                                        Header="移动GIS工具箱（FTP）"
                                         Tag="4" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
+                                        Header="KML打包文件"
+                                        Tag="8" />
+                                    <MenuItem
+                                        Click="ExportMenu_Click"
                                         Header="截图"
-                                        Tag="5" />
+                                        Tag="6" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="OpenLayers网络地图"
-                                        Tag="6" />
+                                        Tag="7" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>

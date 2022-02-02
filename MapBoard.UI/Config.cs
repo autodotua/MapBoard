@@ -468,5 +468,7 @@ namespace MapBoard
             get => showNearestPointSymbol;
             set => this.SetValueAndNotify(ref showNearestPointSymbol, value, nameof(ShowNearestPointSymbol));
         }
+
+        public string LastFTP { get; set; } = null;
     }
 }

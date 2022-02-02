@@ -234,7 +234,13 @@ namespace MapBoard.UI
 
         public static string GetExportMapPath(ExportMapType type, Window parentWindow)
         {
-            if ((int)type <= (int)ExportMapType.Screenshot)
+            if (type is ExportMapType.OpenLayers)
+            {
+                return new CommonOpenFileDialog()
+                    .SetParent(parentWindow)
+                    .GetFolderPath();
+            }
+            else
             {
                 return new FileFilterCollection()
                 .AddIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
@@ -246,12 +252,6 @@ namespace MapBoard.UI
                 .SetDefault("地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"))
                 .SetParent(parentWindow)
                 .GetFilePath();
-            }
-            else
-            {
-                return new CommonOpenFileDialog()
-                      .SetParent(parentWindow)
-                      .GetFolderPath();
             }
         }
 
@@ -454,9 +454,10 @@ namespace MapBoard.UI
         MapPackage = 1,
         MapPackageRebuild = 2,
         GISToolBoxZip = 3,
-        KML = 4,
-        Screenshot = 5,
-        OpenLayers = 6,
+        GISToolBoxNet = 4,
+        KML = 5,
+        Screenshot = 6,
+        OpenLayers = 7,
     }
 
     public enum ImportLayerType

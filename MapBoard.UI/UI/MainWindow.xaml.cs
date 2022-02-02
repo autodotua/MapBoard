@@ -478,13 +478,71 @@ namespace MapBoard.UI
             }
             canClosing = false;
             ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = IOUtility.GetExportMapPath(type, this);
+            string path = null;
+            if (type is not ExportMapType.GISToolBoxNet)
+            {
+                IOUtility.GetExportMapPath(type, this);
+            }
+            else
+            {
+                path = "";
+            }
             if (path != null)
             {
-                await DoAsync(async () =>
+                await DoAsync(async p =>
                  {
                      switch (type)
                      {
+                         case ExportMapType.GISToolBoxNet:
+                             try
+                             {
+                                 string ip = await CommonDialog.ShowInputDialogAsync("请输入GIS工具箱的IP地址", Config.Instance.LastFTP);
+                                 if (ip != null)
+                                 {
+                                     ip = ip.Trim();
+                                     if (ip.StartsWith("ftp://"))
+                                     {
+                                         ip = ip["ftp://".Length..];
+                                     }
+                                     ip = ip.Trim('/').Trim('\\').Replace("：", ":");
+                                     Config.Instance.LastFTP = ip;
+                                     string shpDir = "Shapefile";
+                                     using (FTPHelper ftp = new FTPHelper(ip, "", "", ""))
+                                     {
+                                         p.SetMessage("正在连接FTP");
+                                         if (!await ftp.IsDirectoryExistAsync(shpDir))
+                                         {
+                                             await ftp.CreateDirectoryAsync(shpDir);
+                                         }
+                                         ftp.GotoDirectory(shpDir, false);
+
+                                         p.SetMessage("正在准备文件");
+                                         string dir = await MobileGISToolBox.ExportMathToTempDirAsync(arcMap.Layers);
+                                         foreach (var file in Directory.EnumerateFiles(Path.Combine(dir, shpDir)))
+                                         {
+                                             p.SetMessage("正在上传：" + Path.GetFileName(file));
+                                             await ftp.UploadAsync(file);
+                                         }
+                                     }
+                                     SnakeBar.Show(this, "上传到FTP完成");
+                                 }
+
+                                 //CancellationTokenSource cts = new CancellationTokenSource();
+                                 ////Task.Delay(5000).ContinueWith(t => cts.Cancel());
+                                 //string[] ips = HttpServerUtil.GetIPs();
+                                 //var result = await CommonDialog.ShowSelectItemDialogAsync("选择本地IP", ips.Select(p => new SelectDialogItem(p)));
+                                 //if (result >= 0)
+                                 //{
+                                 //    await MobileGISToolBox.OpenHttpServerAsync(ips[result], arcMap.Layers, cts.Token);
+                                 //}
+                             }
+                             catch (Exception ex)
+                             {
+                                 App.Log.Error("上传失败", ex);
+                                 await CommonDialog.ShowErrorDialogAsync(ex, "上传失败");
+                             }
+                             break;
+
                          case ExportMapType.OpenLayers:
                              try
                              {
@@ -509,6 +567,7 @@ namespace MapBoard.UI
                      }
                  }, "正在导出");
             }
+
             canClosing = true;
         }
 
