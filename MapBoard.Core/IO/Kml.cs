@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using System;
 using System.Linq;
+using FzLib.Collection;
 
 namespace MapBoard.IO
 {
@@ -58,7 +59,7 @@ namespace MapBoard.IO
                     var placemark = new KmlPlacemark(geometry);
                     foreach (var p in feature.Attributes)
                     {
-                        placemark.Attributes.Add(p.Key, p.Value);
+                        placemark.Attributes.AddOrSetValue(p.Key, p.Value);
                     }
                     placemark.Style = new KmlStyle();
                     SymbolInfo symbol;

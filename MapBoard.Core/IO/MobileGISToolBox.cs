@@ -15,27 +15,6 @@ namespace MapBoard.IO
 {
     public class MobileGISToolBox
     {
-        public static async Task OpenHttpServerAsync(string ip, MapLayerCollection layers, CancellationToken cancellationToken)
-        {
-            var path = Path.GetTempFileName() + ".zip";
-            //await ExportMapAsync(path, layers);
-            HttpServerUtil server = new HttpServerUtil();
-            int port = HttpServerUtil.FreeTcpPort();
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-            cancellationToken.Register(() => server.Stop());
-            await server.Start(ip, port, async req =>
-               {
-                   if (req.HttpMethod == "GET")
-                   {
-                       return await File.ReadAllBytesAsync(path);
-                   }
-                   throw new HttpListenerException(400);
-               });
-        }
-
         public static async Task ExportLayerAsync(string path, ShapefileMapLayerInfo layer)
         {
             DirectoryInfo tempDir = PathUtility.GetTempDir();

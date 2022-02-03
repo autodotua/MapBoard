@@ -537,7 +537,7 @@ namespace MapBoard.UI
                          case ExportMapType.OpenLayers:
                              try
                              {
-                                 var visiableOnly = arcMap.Layers.Any(p => p.LayerVisible) && await CommonDialog.ShowYesNoDialogAsync("是否仅      可见图层？");
+                                 var visiableOnly = arcMap.Layers.Any(p => p.LayerVisible) && await CommonDialog.ShowYesNoDialogAsync("是否仅导出可见图层？");
 
                                  await new OpenLayers(path, Directory.GetFiles("res/openlayers"),
                                     Config.Instance.BaseLayers.ToArray(),
