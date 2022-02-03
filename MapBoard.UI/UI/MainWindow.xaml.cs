@@ -481,7 +481,7 @@ namespace MapBoard.UI
             string path = null;
             if (type is not ExportMapType.GISToolBoxNet)
             {
-                IOUtility.GetExportMapPath(type, this);
+                path = IOUtility.GetExportMapPath(type, this);
             }
             else
             {
@@ -526,15 +526,6 @@ namespace MapBoard.UI
                                      }
                                      SnakeBar.Show(this, "上传到FTP完成");
                                  }
-
-                                 //CancellationTokenSource cts = new CancellationTokenSource();
-                                 ////Task.Delay(5000).ContinueWith(t => cts.Cancel());
-                                 //string[] ips = HttpServerUtil.GetIPs();
-                                 //var result = await CommonDialog.ShowSelectItemDialogAsync("选择本地IP", ips.Select(p => new SelectDialogItem(p)));
-                                 //if (result >= 0)
-                                 //{
-                                 //    await MobileGISToolBox.OpenHttpServerAsync(ips[result], arcMap.Layers, cts.Token);
-                                 //}
                              }
                              catch (Exception ex)
                              {
@@ -546,7 +537,7 @@ namespace MapBoard.UI
                          case ExportMapType.OpenLayers:
                              try
                              {
-                                 var visiableOnly = arcMap.Layers.Any(p => p.LayerVisible) && await CommonDialog.ShowYesNoDialogAsync("是否仅导出可见图层？");
+                                 var visiableOnly = arcMap.Layers.Any(p => p.LayerVisible) && await CommonDialog.ShowYesNoDialogAsync("是否仅      可见图层？");
 
                                  await new OpenLayers(path, Directory.GetFiles("res/openlayers"),
                                     Config.Instance.BaseLayers.ToArray(),
