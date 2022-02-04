@@ -14,6 +14,7 @@
     xmlns:wpf="clr-namespace:FzLib.WPF;assembly=FzCoreLib.Windows"
     d:DesignHeight="600"
     d:DesignWidth="120"
+    Loaded="UserControlBase_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
         <DropShadowEffect

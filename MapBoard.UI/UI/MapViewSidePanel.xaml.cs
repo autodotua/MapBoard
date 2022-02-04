@@ -39,7 +39,6 @@ namespace MapBoard.UI
     {
         private object lockObj = new object();
         private Action setScaleAction;
-        private Timer timer;
         private Action updateScaleAndPositionAction;
 
         public MapViewSidePanel()
@@ -51,24 +50,6 @@ namespace MapBoard.UI
             }
             InitializeComponent();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
-
-            //用于限制最多100毫秒更新一次
-            timer = new Timer(new TimerCallback(p =>
-            {
-                lock (lockObj)
-                {
-                    if (updateScaleAndPositionAction != null)
-                    {
-                        Dispatcher.InvokeAsync(updateScaleAndPositionAction);
-                        updateScaleAndPositionAction = null;
-                    }
-                    if (setScaleAction != null)
-                    {
-                        Dispatcher.InvokeAsync(setScaleAction);
-                        setScaleAction = null;
-                    }
-                }
-            }), null, 100, 100);
         }
 
         public GeoView MapView { get; private set; }
@@ -685,6 +666,29 @@ namespace MapBoard.UI
         }
 
         #endregion 定位
+
+        private async void UserControlBase_Loaded(object sender, RoutedEventArgs e)
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(0.05));
+
+            //在到达指定周期后执行方法
+            while (await timer.WaitForNextTickAsync())
+            {
+                lock (lockObj)
+                {
+                    if (updateScaleAndPositionAction != null)
+                    {
+                        Dispatcher.InvokeAsync(updateScaleAndPositionAction);
+                        updateScaleAndPositionAction = null;
+                    }
+                    if (setScaleAction != null)
+                    {
+                        Dispatcher.InvokeAsync(setScaleAction);
+                        setScaleAction = null;
+                    }
+                }
+            }
+        }
     }
 
     public class PropertyNameValue : INotifyPropertyChanged
