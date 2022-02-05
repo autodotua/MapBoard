@@ -342,16 +342,8 @@ namespace MapBoard.Mapping
         /// <param name="e"></param>
         private async void MapView_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
-            {
-                if (MapView.ToolTip is ToolTip t)
-                {
-                    t.IsOpen = false;
-                    MapView.ToolTip = null;
-                }
-                return;
-            }
-            if (!CanCatchNearestPoint())
+            if (!CanCatchNearestPoint()
+                || e.LeftButton == MouseButtonState.Pressed)
             {
                 return;
             }
@@ -382,28 +374,6 @@ namespace MapBoard.Mapping
                 else
                 {
                     MapView.Overlay.SetNearestPointPoint(null);
-                }
-                if (nearestVertex != null)
-                {
-                    if (MapView.ToolTip == null)
-                    {
-                        MapView.ToolTip = new ToolTip()
-                        {
-                            Content = "Ctrl + 右键：捕捉最近的结点" + (Config.Instance.ShowNearestPointSymbol ? "（红色）" : "")
-                            + Environment.NewLine
-                            + "Shift + 右键：捕捉最近的任意点" + (Config.Instance.ShowNearestPointSymbol ? "（黄色）" : ""),
-                            IsOpen = true,
-                            Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint
-                        };
-                    }
-                }
-                else
-                {
-                    if (MapView.ToolTip is ToolTip tt)
-                    {
-                        tt.IsOpen = false;
-                        MapView.ToolTip = null;
-                    }
                 }
             }
         }
