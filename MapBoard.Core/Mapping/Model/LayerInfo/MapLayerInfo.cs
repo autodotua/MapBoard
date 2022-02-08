@@ -66,24 +66,24 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        [JsonIgnore]
-        public bool TimeExtentEnable
-        {
-            get => TimeExtent == null ? false : TimeExtent.IsEnable;
-            set
-            {
-                if (TimeExtent != null)
-                {
-                    if (value != TimeExtent.IsEnable)
-                    {
-                        TimeExtent.IsEnable = value;
-                        this.SetTimeExtentAsync();
-                    }
-                }
+        //[JsonIgnore]
+        //public bool TimeExtentEnable
+        //{
+        //    get => TimeExtent == null ? false : TimeExtent.IsEnable;
+        //    set
+        //    {
+        //        if (TimeExtent != null)
+        //        {
+        //            if (value != TimeExtent.IsEnable)
+        //            {
+        //                TimeExtent.IsEnable = value;
+        //                this.SetTimeExtentAsync();
+        //            }
+        //        }
 
-                this.Notify(nameof(TimeExtentEnable));
-            }
-        }
+        //        this.Notify(nameof(TimeExtentEnable));
+        //    }
+        //}
 
         public MapLayerInfo()
         {

@@ -37,7 +37,7 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 是否启用了时间限制
         /// </summary>
-        bool TimeExtentEnable { get; set; }
+        //bool TimeExtentEnable { get; set; }
 
         /// <summary>
         /// 图层和地图界面解绑事件
