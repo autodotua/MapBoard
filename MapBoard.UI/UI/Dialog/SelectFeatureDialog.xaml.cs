@@ -47,14 +47,24 @@ namespace MapBoard.UI.Dialog
         public SelectionHelper Selection { get; }
         public MapLayerCollection Layers { get; }
 
-        public SelectFeatureDialog(Window owner, SelectionHelper selection, MapLayerCollection layers) : base(owner)
+        public SelectFeatureDialog(Window owner, MainMapView mapView, MapLayerCollection layers) : base(owner)
         {
-            Selection = selection;
+            Selection = mapView.Selection;
             Layers = layers;
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
-            Selection.CollectionChanged += SelectedFeaturesChanged;
+            mapView.Selection.CollectionChanged += SelectedFeaturesChanged;
+            mapView.BoardTaskChanged += MapView_BoardTaskChanged;
+
             SelectedFeaturesChanged(null, null);
+        }
+
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            if (e.NewTask is not BoardTask.Select && !IsClosed)
+            {
+                Close();
+            }
         }
 
         private string message;
@@ -125,7 +135,6 @@ namespace MapBoard.UI.Dialog
         {
             ResetLocation();
             base.OnContentRendered(e);
-            //Owner.Focus();
         }
 
         public class FeatureSelectionInfo
