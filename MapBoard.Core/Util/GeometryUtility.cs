@@ -451,5 +451,190 @@ namespace MapBoard.Util
         {
             return GeometryEngine.Project(geometry, SpatialReferences.WebMercator) as T;
         }
+
+        public static T Clone<T>(this T geometry) where T : Geometry
+        {
+            if (geometry.HasM || geometry.HasZ)
+            {
+                throw new ArgumentException("不支持含有Z或M的图形");
+            }
+            switch (geometry)
+            {
+                case MapPoint p:
+                    return new MapPoint(p.X, p.Y, p.SpatialReference) as T;
+
+                case Multipoint pp:
+                    return new Multipoint(pp.Points) as T;
+
+                case Polyline l:
+                    return new Polyline(l.Parts) as T;
+
+                case Polygon a:
+                    return new Polygon(a.Parts) as T;
+
+                case Envelope e:
+                    return new Envelope(e.XMin, e.YMin, e.XMax, e.YMax, e.SpatialReference) as T;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Catmull–Rom样条
+        /// </summary>
+        /// <remarks>
+        /// https://stackoverflow.com/questions/9489736/catmull-rom-curve-with-no-cusps-and-no-self-intersections/19283471#19283471
+        /// </remarks>
+        internal class CentripetalCatmullRom
+        {
+            public static List<MapPoint> Interpolate(List<MapPoint> coordinates, int pointsPerSegment, CatmullRomType curveType)
+            {
+                List<MapPoint> vertices = new List<MapPoint>();
+                foreach (MapPoint c in coordinates)
+                {
+                    vertices.Add(c.Clone());
+                }
+                if (pointsPerSegment < 2)
+                {
+                    throw new Exception("The pointsPerSegment parameter must be greater than 2, since 2 points is just the linear segment.");
+                }
+                if (vertices.Count < 3)
+                {
+                    return vertices;
+                }
+                bool isClosed = GeometryEngine.Intersects(vertices[0], vertices[vertices.Count - 1]);
+                if (isClosed)
+                {
+                    MapPoint p2 = vertices[1].Clone();
+                    MapPoint pn1 = vertices[vertices.Count - 2].Clone();
+
+                    vertices.Insert(0, pn1);
+                    vertices.Add(p2);
+                }
+                else
+                {
+                    double dx = vertices[1].X - vertices[0].X;
+                    double dy = vertices[1].Y - vertices[0].Y;
+
+                    double x1 = vertices[0].X - dx;
+                    double y1 = vertices[0].Y - dy;
+
+                    MapPoint start = new MapPoint(x1, y1, vertices[0].Z);
+
+                    int n = vertices.Count - 1;
+                    dx = vertices[n].X - vertices[n - 1].X;
+                    dy = vertices[n].Y - vertices[n - 1].Y;
+                    double xn = vertices[n].X + dx;
+                    double yn = vertices[n].Y + dy;
+                    MapPoint end = new MapPoint(xn, yn, vertices[n].Z);
+
+                    vertices.Insert(0, start);
+
+                    vertices.Add(end);
+                }
+
+                List<MapPoint> result = new List<MapPoint>();
+                for (int i = 0; i < vertices.Count - 3; i++)
+                {
+                    List<MapPoint> points = Interpolate(vertices, i, pointsPerSegment, curveType);
+                    if (result.Count > 0)
+                    {
+                        points.RemoveAt(0);
+                    }
+
+                    result.AddRange(points);
+                }
+                return result;
+            }
+
+            public enum CatmullRomType
+            {
+                /// <summary>
+                /// α=0，拟合度最好，但容易出现过拟合/尖角/闭合
+                /// </summary>
+                Uniform,
+
+                /// <summary>
+                /// α=1/2，一般拟合
+                /// </summary>
+                Centripetal,
+
+                /// <summary>
+                /// α=1，最平滑，但拟合较差
+                /// </summary>
+                Chordal,
+            }
+
+            private static List<MapPoint> Interpolate(List<MapPoint> points, int index, int pointsPerSegment, CatmullRomType curveType)
+            {
+                List<MapPoint> result = new List<MapPoint>();
+                double[] x = new double[4];
+                double[] y = new double[4];
+                double[] time = new double[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    x[i] = points[index + i].X;
+                    y[i] = points[index + i].Y;
+                    time[i] = i;
+                }
+
+                double tstart = 1;
+                double tend = 2;
+                if (!curveType.Equals(CatmullRomType.Uniform))
+                {
+                    double total = 0;
+                    for (int i = 1; i < 4; i++)
+                    {
+                        double dx = x[i] - x[i - 1];
+                        double dy = y[i] - y[i - 1];
+                        if (curveType.Equals(CatmullRomType.Centripetal))
+                        {
+                            total += Math.Pow(dx * dx + dy * dy, .25);
+                        }
+                        else
+                        {
+                            total += Math.Pow(dx * dx + dy * dy, .5);
+                        }
+                        time[i] = total;
+                    }
+                    tstart = time[1];
+                    tend = time[2];
+                }
+                double z1 = 0.0;
+                double z2 = 0.0;
+                if (!double.IsNaN(points[index + 1].Z))
+                {
+                    z1 = points[index + 1].Z;
+                }
+                if (!double.IsNaN(points[index + 2].Z))
+                {
+                    z2 = points[index + 2].Z;
+                }
+                double dz = z2 - z1;
+                int segments = pointsPerSegment - 1;
+                result.Add(points[index + 1]);
+                for (int i = 1; i < segments; i++)
+                {
+                    double xi = Interpolate(x, time, tstart + (i * (tend - tstart)) / segments);
+                    double yi = Interpolate(y, time, tstart + (i * (tend - tstart)) / segments);
+                    double zi = z1 + (dz * i) / segments;
+                    result.Add(new MapPoint(xi, yi, zi));
+                }
+                result.Add(points[index + 2]);
+                return result;
+            }
+
+            private static double Interpolate(double[] p, double[] time, double t)
+            {
+                double L01 = p[0] * (time[1] - t) / (time[1] - time[0]) + p[1] * (t - time[0]) / (time[1] - time[0]);
+                double L12 = p[1] * (time[2] - t) / (time[2] - time[1]) + p[2] * (t - time[1]) / (time[2] - time[1]);
+                double L23 = p[2] * (time[3] - t) / (time[3] - time[2]) + p[3] * (t - time[2]) / (time[3] - time[2]);
+                double L012 = L01 * (time[2] - t) / (time[2] - time[0]) + L12 * (t - time[0]) / (time[2] - time[0]);
+                double L123 = L12 * (time[3] - t) / (time[3] - time[1]) + L23 * (t - time[1]) / (time[3] - time[1]);
+                double C12 = L012 * (time[2] - t) / (time[2] - time[1]) + L123 * (t - time[1]) / (time[2] - time[1]);
+                return C12;
+            }
+        }
     }
 }

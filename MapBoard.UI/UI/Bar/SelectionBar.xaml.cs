@@ -291,6 +291,8 @@ namespace MapBoard.UI.Bar
                 layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
                 layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
+                ("平滑","在适当的位置添加节点，使图形更平滑",SmoothAsync,
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon or GeometryType.Multipoint),
                 ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
                 ("字段赋值","批量为选中的图形赋予新的属性",CopyAttributeAsync, true),
                 ("缓冲区","为选中的图形建立缓冲区",BufferAsync, true),
@@ -390,6 +392,14 @@ namespace MapBoard.UI.Bar
                 if (num.HasValue)
                 {
                     await FeatureUtility.DensifyAsync(layer, features, num.Value);
+                }
+            }
+            async Task SmoothAsync()
+            {
+                int? num = await CommonDialog.ShowIntInputDialogAsync("请输入两个折点之间需要插入的点数量", 10);
+                if (num.HasValue)
+                {
+                    await FeatureUtility.Smooth(layer, features, num.Value);
                 }
             }
             async Task SimplifyAsync()

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using static MapBoard.Mapping.Model.FeaturesChangedSource;
 using MapBoard.Mapping.Model;
+using static MapBoard.Util.GeometryUtility;
+using Esri.ArcGISRuntime.Symbology;
 
 namespace MapBoard.Util
 {
@@ -282,7 +284,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public async static Task VerticalDistanceSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task VerticalDistanceSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -314,7 +316,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public async static Task GeneralizeSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task GeneralizeSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
@@ -650,6 +652,7 @@ namespace MapBoard.Util
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
         }
+
         /// <summary>
         /// 将图形建立缓冲区后放入一个多边形图层
         /// </summary>
@@ -677,6 +680,62 @@ namespace MapBoard.Util
                 }
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
+        }
+
+        /// <summary>
+        /// 平滑
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static async Task Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment)
+        {
+            List<UpdatedFeature> updatedFeatures = new List<UpdatedFeature>();
+            foreach (var feature in features)
+            {
+                Geometry oldGeometry = feature.Geometry;
+                Geometry newGeometry = null;
+                if (feature.Geometry is Multipart m)
+                {
+                    List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+                    foreach (var part in m.Parts)
+                    {
+                        if (part.PointCount <= 2)
+                        {
+                            newParts.Add(part.Points);
+                        }
+                        else
+                        {
+                            newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, CentripetalCatmullRom.CatmullRomType.Centripetal));
+                        }
+                    }
+                    switch (feature.Geometry)
+                    {
+                        case Polyline line:
+                            newGeometry = new Polyline(newParts);
+                            break;
+
+                        case Polygon polygon:
+                            newGeometry = new Polygon(newParts);
+                            break;
+                    }
+                }
+                else if (feature.Geometry is Multipoint mp)
+                {
+                    if (mp.Points.Count > 2)
+                    {
+                        newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, CentripetalCatmullRom.CatmullRomType.Uniform));
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("仅支持多点、折线和多边形");
+                }
+                feature.Geometry = newGeometry;
+                updatedFeatures.Add(new UpdatedFeature(feature, oldGeometry, feature.Attributes));
+            }
+            await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
         }
     }
 }
