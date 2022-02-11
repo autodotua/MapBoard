@@ -96,7 +96,7 @@ namespace MapBoard.IO
                             }
                             break;
                     }
-                    if (layer.Labels.Length == 1)
+                    if (layer.Labels!=null&& layer.Labels.Length == 1)
                     {
                         var label = layer.Labels[0];
                         if (string.IsNullOrEmpty(label.CustomLabelExpression) && (label.Info || label.Class || label.Date))

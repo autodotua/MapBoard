@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib;
+using FzLib.WPF.Dialog;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using MapBoard.UI;
@@ -277,13 +278,19 @@ namespace MapBoard.Mapping
 
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
-            if (geometry is MapPoint)
+            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count==1)
             {
                 if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
                 {
                     geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
                 }
                 geometry = GeometryEngine.Buffer(geometry, 100);
+            }
+            var extent = geometry.Extent;
+            if (double.IsNaN(extent.Width) || double.IsNaN(extent.Height)||extent.Width==0||extent.Height==0)
+            {
+                SnakeBar.ShowError("图形为空");
+                return;
             }
             await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
         }

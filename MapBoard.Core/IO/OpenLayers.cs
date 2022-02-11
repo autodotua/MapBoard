@@ -91,7 +91,7 @@ map.on('click', function(e) {
             //KML显示的“点”其实是标签，自带的图表是很丑的大头针，因此需要进行替换。并且大头针有偏移，所以这里稍微修改了一下偏移。
             string oljs = (await File.ReadAllTextAsync(Path.Combine(ExportFolderPath, "ol.js")))
                 .Replace("CC=\"https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png\",$C=new zv({anchor:OC=[20,2]",
-                "CC=\"point.png\",$C=new zv({anchor:OC=[20,50]");
+                "CC=\"point.png\",$C=new zv({anchor:OC=[12,52]");
             await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "ol.js"), oljs, Encoding.UTF8);
         }
 
