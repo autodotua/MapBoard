@@ -1,0 +1,5 @@
+﻿OpenStreetMap http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
+谷歌地球 https://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}
+高德地图 http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}
+OpenStreetMap自行车 https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png
+OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png

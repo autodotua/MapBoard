@@ -39,7 +39,12 @@ namespace MapBoard.UI.Dialog
             FormatGpxAssociated = FileFormatAssociationUtility.IsAssociated("gpx", gpxID);
 
             BaseLayers = new ObservableCollection<BaseLayerInfo>(
-              Config.Instance.BaseLayers.Select(p => p.Clone()));
+              Config.Instance.BaseLayers.Where(p => p.Type != BaseLayerType.Esri).Select(p => p.Clone()));
+            var esriBaseLayer = Config.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
+            if (esriBaseLayer != null)
+            {
+                EsriBaseLayer = esriBaseLayer.Path;
+            }
             ResetIndex();
             BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
             InitializeComponent();
@@ -53,7 +58,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
             if (File.Exists(Path.Combine(appPath, Parameters.ConfigHere)))
@@ -68,9 +73,44 @@ namespace MapBoard.UI.Dialog
             {
                 rbtnAppData.IsChecked = true;
             }
+            try
+            {
+                var defaultBasemapLayers = GeoViewHelper.GetDefaultBaseLayers();
+                if (defaultBasemapLayers.Any())
+                {
+                    var menu = btnAddBasemapLayer.Flyout as MenuFlyout;
+                    menu.Items.Add(new Separator());
+                    foreach (var layer in defaultBasemapLayers)
+                    {
+                        var menuItem = new MenuItem()
+                        {
+                            Header = layer.Name,
+                        };
+                        menuItem.Click += (s, e) =>
+                        {
+                            BaseLayers.Add(layer);
+                        };
+                        menu.Items.Add(menuItem);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Activate();
+                await CommonDialog.ShowErrorDialogAsync(ex, "获取默认底图失败");
+            }
         }
 
         public Config Config => Config.Instance;
+
+        public string[] EsriBasemaps => new string[] { "" }.Concat(GeoViewHelper.EsriBasemaps).ToArray();
+        private string esriBaseLayer;
+
+        public string EsriBaseLayer
+        {
+            get => esriBaseLayer;
+            set => this.SetValueAndNotify(ref esriBaseLayer, value, nameof(EsriBaseLayer));
+        }
 
         /// <summary>
         /// 是否设置了地图画板地图包格式关联
@@ -134,7 +174,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DialogWindowBase_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void DialogWindowBase_Closing(object sender, CancelEventArgs e)
         {
             if (!canClose)
             {
@@ -178,7 +218,19 @@ namespace MapBoard.UI.Dialog
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
-
+            if (string.IsNullOrEmpty(EsriBaseLayer))
+            {
+                Config.Instance.BaseLayers.RemoveAll(p => p.Type == BaseLayerType.Esri);
+            }
+            else
+            {
+                Config.Instance.BaseLayers.Add(new BaseLayerInfo()
+                {
+                    Type = BaseLayerType.Esri,
+                    Path = EsriBaseLayer,
+                    Name = EsriBaseLayer
+                });
+            }
             RestartMainWindow();
         }
 

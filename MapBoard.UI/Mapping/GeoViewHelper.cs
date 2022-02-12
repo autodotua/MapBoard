@@ -5,11 +5,16 @@ using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib;
 using MapBoard.Model;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,9 +35,26 @@ namespace MapBoard.Mapping
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             try
             {
-                Basemap basemap = new Basemap();
-
-                foreach (var item in Config.Instance.BaseLayers.Where(p => p.Enable).Reverse())
+                Basemap basemap = GetBasemap(errors);
+                await basemap.LoadAsync();
+                if (Config.Instance.BaseLayers.Count == 0)
+                {
+                    //如果没有底图，一般是首次打开软件的时候，那么从默认瓦片底图的文件中读取第一条加载
+                    try
+                    {
+                        var defaultBaseLayers = GetDefaultBaseLayers();
+                        if (defaultBaseLayers.Any())
+                        {
+                            Config.Instance.BaseLayers.Add(defaultBaseLayers.First());
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                //加载底图
+                var baseLayers = Config.Instance.BaseLayers.Where(p => p.Enable && p.Type != BaseLayerType.Esri).Reverse();
+                foreach (var item in baseLayers)
                 {
                     Layer layer = null;
                     try
@@ -61,10 +83,11 @@ namespace MapBoard.Mapping
                         errors.Add($"加载底图{item.Name}({item.Path})失败", ex);
                     }
                 }
-
+                //如果还是没有底图，那么加载单张世界地图
                 if (basemap.BaseLayers.Count == 0)
                 {
-                    basemap = new Basemap(new RasterLayer(Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBaseMap.jpg")));
+                    string defaultBaseMapPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBaseMap.jpg");
+                    basemap = new Basemap(new RasterLayer(defaultBaseMapPath));
                 }
                 await basemap.LoadAsync();
                 if (map is SceneView s)
@@ -100,6 +123,21 @@ namespace MapBoard.Mapping
             }
         }
 
+        public static IEnumerable<BaseLayerInfo> GetDefaultBaseLayers()
+        {
+            string defaultBasemapLayersPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBasemapLayers.txt");
+
+            if (File.Exists(defaultBasemapLayersPath))
+            {
+                return File.ReadAllLines(defaultBasemapLayersPath)
+                    .Select(p => p.Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(p => p.Length == 2 ?
+                    new BaseLayerInfo(BaseLayerType.WebTiledLayer, p[1]) { Name = p[0] }
+                    : throw new FormatException("默认底图文件格式错误"));
+            }
+            return Enumerable.Empty<BaseLayerInfo>();
+        }
+
         public static void SetHideWatermark(this GeoView map)
         {
             map.Margin = GetMinusWatermarkThickness();
@@ -123,11 +161,6 @@ namespace MapBoard.Mapping
             return new Thickness(0, -Config.WatermarkHeight, 0, -Config.WatermarkHeight); ;
         }
 
-        public const string WebTiledLayer = nameof(WebTiledLayer);
-        public const string RasterLayer = nameof(RasterLayer);
-        public const string ShapefileLayer = nameof(ShapefileLayer);
-        public const string TpkLayer = nameof(TpkLayer);
-
         public static Layer GetLayer(BaseLayerInfo baseLayer)
         {
             var type = baseLayer.Type;
@@ -139,8 +172,35 @@ namespace MapBoard.Mapping
                 BaseLayerType.ShapefileLayer => AddShapefileLayer(arg),
                 BaseLayerType.TpkLayer => AddTpkLayer(arg),
                 BaseLayerType.WmsLayer => AddWmsLayer(arg),
-                _ => throw new Exception("未知类型"),
+                _ => throw new InvalidEnumArgumentException("未知类型"),
             };
+        }
+
+        public static readonly string[] EsriBasemaps = typeof(Basemap)
+            .GetMethods(BindingFlags.Static | BindingFlags.Public)
+            .Where(p => p.Name.StartsWith("Create"))
+            .Select(p => p.Name[6..])
+            .ToArray();
+
+        private static Basemap GetBasemap(ItemsOperationErrorCollection errors)
+
+        {
+            var info = Config.Instance.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
+            if (info == null)
+            {
+                return new Basemap();
+            }
+            string type = info.Path;
+            Debug.Assert(type != null);
+            var methods = typeof(Basemap).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            var method = methods.FirstOrDefault(p => p.Name == $"Create{type}");
+            if (method == null)
+            {
+                errors.Add(new ItemsOperationError("Esri底图", $"找不到类型{type}"));
+                return new Basemap();
+            }
+
+            return method.Invoke(null, null) as Basemap;
         }
 
         private static WebTiledLayer AddTiledLayer(string url)

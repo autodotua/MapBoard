@@ -18,6 +18,7 @@
     Closing="DialogWindowBase_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"
+    ResizeMode="CanResize"
     mc:Ignorable="d">
     <u:DialogWindowBase.Resources>
         <CollectionViewSource
@@ -176,17 +177,29 @@
             </ui:SimpleStackPanel>
         </TabItem>
         <TabItem Header="地图">
-            <ui:SimpleStackPanel Spacing="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <GroupBox Header="底图">
                     <Grid Margin="4">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
+                        <ComboBox
+                            ui:ControlHelper.Description="设置Esri预设底图时，该图层将永远置于最底层"
+                            ui:ControlHelper.Header="Esri预设底图"
+                            ItemsSource="{Binding EsriBasemaps}"
+                            SelectedItem="{Binding EsriBaseLayer}" />
                         <DataGrid
                             x:Name="grd"
-                            Height="160"
+                            Grid.Row="2"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
                             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
@@ -292,13 +305,14 @@
                         </DataGrid>
 
                         <ui:SimpleStackPanel
-                            Grid.Row="2"
+                            Grid.Row="4"
                             Grid.ColumnSpan="5"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
                             Orientation="Horizontal"
                             Spacing="8">
                             <ui:SplitButton
+                                x:Name="btnAddBasemapLayer"
                                 Click="AddButtonClick"
                                 Content="新增">
                                 <ui:SplitButton.Flyout>
@@ -321,13 +335,15 @@
                         </ui:SimpleStackPanel>
                         <ComboBox
                             x:Name="cbbCoords"
-                            Grid.Row="2"
+                            Grid.Row="4"
                             ui:ControlHelper.Header="底图坐标系"
                             SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
                     </Grid>
                 </GroupBox>
 
-                <GroupBox Header="界面">
+                <GroupBox
+                    Grid.Row="2"
+                    Header="界面">
                     <ui:SimpleStackPanel Spacing="8">
                         <CheckBox
                             Click="WatermarkCheckBox_Click"
@@ -360,7 +376,7 @@
                         </WrapPanel>
                     </ui:SimpleStackPanel>
                 </GroupBox>
-            </ui:SimpleStackPanel>
+            </Grid>
         </TabItem>
 
         <TabItem Header="地图画板">

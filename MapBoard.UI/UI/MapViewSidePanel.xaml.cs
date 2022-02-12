@@ -43,7 +43,7 @@ namespace MapBoard.UI
 
         public MapViewSidePanel()
         {
-            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).ToList();
+            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable&& p.Type!=BaseLayerType.Esri).ToList();
             for (int i = 0; i < BaseLayers.Count; i++)
             {
                 BaseLayers[i].Index = i + 1;

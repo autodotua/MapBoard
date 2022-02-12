@@ -14,6 +14,8 @@ namespace MapBoard.UI
 {
     public abstract class MainWindowBase : WindowBase
     {
+        protected bool programInitialized = false;
+
         public static async Task<T> CreateAndShowAsync<T>(Action<T> beforeInitialize = null) where T : MainWindowBase, new()
         {
             T win = new T();
@@ -28,6 +30,7 @@ namespace MapBoard.UI
                 catch (Exception ex)
                 {
                     App.Log.Error("窗口初始化失败", ex);
+                    win.programInitialized = false;
                     win.Loaded += (s, e) =>
                     {
                         CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行").ConfigureAwait(false);

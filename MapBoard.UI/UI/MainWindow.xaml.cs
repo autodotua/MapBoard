@@ -151,7 +151,7 @@ namespace MapBoard.UI
             ItemsOperationErrorCollection errors;
             if ((errors = arcMap.BaseMapLoadErrors) != null)
             {
-                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分底图加载失败", errors);
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分加载失败", errors);
             }
             if ((errors = arcMap.Layers.GetLoadErrors()) != null)
             {
@@ -216,7 +216,7 @@ namespace MapBoard.UI
                 return;
             }
             Config.Save();
-            if (arcMap.Layers != null)
+            if (programInitialized && arcMap.Layers != null)
             {
                 arcMap.Layers.Save();
             }

@@ -115,6 +115,7 @@ namespace MapBoard.Model
         RasterLayer,
         ShapefileLayer,
         TpkLayer,
-        WmsLayer
+        WmsLayer,
+        Esri
     }
 }
