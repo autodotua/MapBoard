@@ -406,7 +406,7 @@ namespace MapBoard.UI
         {
             new Process()
             {
-                StartInfo = new ProcessStartInfo(Path.GetFullPath(path))
+                StartInfo = new ProcessStartInfo(GetRealPath(path))
                 {
                     UseShellExecute = true
                 }
@@ -415,7 +415,7 @@ namespace MapBoard.UI
 
         public static void OpenFolder(string path)
         {
-            var p = '"' + Path.GetFullPath(path) + '"';
+            var p = '"' + GetRealPath(path) + '"';
             if (Directory.Exists(path))
             {
                 new Process()
@@ -436,6 +436,27 @@ namespace MapBoard.UI
                     }
                 }.Start();
             }
+        }
+
+        /// <summary>
+        /// 在MSIX下运行时，程序数据目录的位置被重定向。在程序内访问时不需要修改，但通过外部程序调用时，需要获取真实的路径。
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string GetRealPath(string path)
+        {
+            path = Path.GetFullPath(path);
+            var helper = new DesktopBridge.Helpers();
+            if (helper.IsRunningAsUwp())
+            {
+                string virtualAppData = Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path;
+                string local = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).Parent.FullName;
+                if (path.Contains(local))
+                {
+                    path = path.Replace(local, virtualAppData);
+                }
+            }
+            return path;
         }
     }
 

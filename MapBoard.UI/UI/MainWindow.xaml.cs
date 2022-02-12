@@ -605,7 +605,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
             string path = ((sender as FrameworkElement).Tag as string) switch
             {
@@ -615,14 +615,7 @@ namespace MapBoard.UI
                 "4" => Parameters.BackupPath,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            if (Directory.Exists(path))
-            {
-                IOUtility.OpenFileOrFolder(path);
-            }
-            else
-            {
-                await CommonDialog.ShowErrorDialogAsync("目录不存在");
-            }
+            IOUtility.OpenFileOrFolder(path);
         }
 
         private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)

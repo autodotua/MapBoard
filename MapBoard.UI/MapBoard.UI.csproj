@@ -94,6 +94,7 @@
     <PackageReference Include="CsvHelper">
       <Version>27.2.1</Version>
     </PackageReference>
+    <PackageReference Include="DesktopBridge.Helpers" Version="1.2.2" />
     <PackageReference Include="Esri.ArcGISRuntime.WPF" Version="100.13.0" />
     <PackageReference Include="gong-wpf-dragdrop" Version="3.0.0" />
     <PackageReference Include="log4net" Version="2.0.14" />

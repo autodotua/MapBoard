@@ -595,7 +595,7 @@ namespace MapBoard.UI.TileDownloader
                 {
                     Directory.CreateDirectory(Config.Tile_DownloadFolder);
                 }
-                Process.Start("explorer.exe", Config.Tile_DownloadFolder);
+                IOUtility.OpenFolder(Config.Tile_DownloadFolder);
             }
             catch (Exception ex)
             {
