@@ -166,6 +166,10 @@ namespace MapBoard.Mapping
         public async Task ShowPois(IEnumerable<PoiInfo> pois)
         {
             poiOverlay.Graphics.Clear();
+            if (!pois.Any())
+            {
+                return;
+            }
             int index = 0;
             foreach (var poi in pois)
             {

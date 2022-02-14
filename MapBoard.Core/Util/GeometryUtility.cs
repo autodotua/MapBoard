@@ -442,16 +442,36 @@ namespace MapBoard.Util
             }
         }
 
+        /// <summary>
+        /// 转为4326的坐标系
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
         public static T ToWgs84<T>(this T geometry) where T : Geometry
         {
             return GeometryEngine.Project(geometry, SpatialReferences.Wgs84) as T;
         }
 
+        /// <summary>
+        /// 转为3857的坐标系
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
         public static T ToWebMercator<T>(this T geometry) where T : Geometry
         {
             return GeometryEngine.Project(geometry, SpatialReferences.WebMercator) as T;
         }
 
+        /// <summary>
+        /// 创建图形的副本
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="NotSupportedException"></exception>
         public static T Clone<T>(this T geometry) where T : Geometry
         {
             if (geometry.HasM || geometry.HasZ)
@@ -478,6 +498,67 @@ namespace MapBoard.Util
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        /// <summary>
+        /// 确保获得有效的图形，例如线必须包含两个点以上。
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <returns>若图形有效，返回原图形；否则，若部分有效，返回有效的部分，否则返回null。</returns>
+        /// <exception cref="NotSupportedException">不支持的图形类型</exception>
+        public static Geometry EnsureValid(this Geometry geometry)
+        {
+            switch (geometry.GeometryType)
+            {
+                case GeometryType.Point:
+                    return geometry;
+
+                case GeometryType.Polyline:
+                    {
+                        if ((geometry as Polyline).Parts.All(p => IsValid(p, 2)))
+                        {
+                            return geometry;
+                        }
+                        var parts = (geometry as Polyline).Parts.Where(p => IsValid(p, 2));
+                        if (!parts.Any())
+                        {
+                            return null;
+                        }
+                        return new Polyline(parts, geometry.SpatialReference);
+                    }
+                case GeometryType.Polygon:
+                    {
+                        if ((geometry as Polygon).Parts.All(p => IsValid(p, 3)))
+                        {
+                            return geometry;
+                        }
+                        var parts = (geometry as Polygon).Parts.Where(p => IsValid(p, 3));
+                        if (!parts.Any())
+                        {
+                            return null;
+                        }
+                        return new Polygon(parts, geometry.SpatialReference);
+                    }
+                case GeometryType.Multipoint:
+                    if ((geometry as Multipoint).Points.Count >= 1)
+                    {
+                        return geometry;
+                    }
+                    return null;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        private static bool IsValid(ReadOnlyPart part, int dimension)
+        {
+            return dimension switch
+            {
+                3 => part.PointCount >= 3,
+                2 => part.PointCount >= 2,
+                _ => throw new NotSupportedException(),
+            };
         }
 
         /// <summary>

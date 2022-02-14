@@ -8,13 +8,13 @@
   IgnorableNamespaces="uap rescap iot">
 
   <Identity
-    Name="a6844e86-a7e5-466e-ba78-62da95e26c6b"
-    Publisher="CN=autodotua"
-    Version="1.0.11.0" />
+    Name="6510autodotua.598422FC001B6"
+    Publisher="CN=E29A7222-F9F7-4A27-AEB4-E59D26C1B50C"
+    Version="1.0.15.0" />
 
   <Properties>
-    <DisplayName>MapBoard</DisplayName>
-    <PublisherDisplayName>autododua</PublisherDisplayName>
+    <DisplayName>地图画板</DisplayName>
+    <PublisherDisplayName>autodotua</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

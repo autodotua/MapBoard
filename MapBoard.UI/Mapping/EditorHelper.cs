@@ -277,7 +277,7 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-            geometry = SketchEditor.Geometry;
+            geometry = SketchEditor.Geometry?.EnsureValid();
             Stop();
         }
 
