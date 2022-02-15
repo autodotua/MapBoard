@@ -67,7 +67,7 @@ namespace MapBoard.UI.Bar
             Expand();
         }
 
-        private void TextBlock_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private async void TextBlock_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (!dataGrid.Columns[1].IsReadOnly)
             {
@@ -78,42 +78,12 @@ namespace MapBoard.UI.Bar
             {
                 return;
             }
-            if (File.Exists(text))
-            {
-                try
-                {
-                    IOUtility.OpenFileOrFolder(text);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error(ex);
-                }
-            }
-            if (Directory.Exists(text))
-            {
-                try
-                {
-                    IOUtility.OpenFileOrFolder(text);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error(ex);
-                }
-            }
-            if (Uri.TryCreate(text, UriKind.Absolute, out Uri uriResult)
+            if (File.Exists(text)
+                || Directory.Exists(text)
+                || Uri.TryCreate(text, UriKind.Absolute, out Uri uriResult)
     && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                try
-                {
-                    IOUtility.OpenFileOrFolder(text);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error(ex);
-                }
+                await IOUtility.TryOpenInShellAsync(text);
             }
 
             Clipboard.SetText(text);

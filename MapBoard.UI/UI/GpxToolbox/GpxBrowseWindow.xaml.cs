@@ -211,7 +211,7 @@ namespace MapBoard.UI.GpxToolbox
             ResizeMode = ResizeMode.CanResize;
             if (await CommonDialog.ShowYesNoDialogAsync("是否打开目录？") == true)
             {
-                IOUtility.OpenFolder(GetRecordPath());
+                await IOUtility.TryOpenFolderAsync(GetRecordPath());
             }
         }
 

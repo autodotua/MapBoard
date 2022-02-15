@@ -21,6 +21,8 @@ using MapBoard.Util;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using System.Xml;
 using log4net.Layout;
+using System.Reflection;
+using System.Diagnostics;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -91,21 +93,44 @@ namespace MapBoard
                 Theme.SetTheme(Config.Instance.Theme, p1 as Window);
             SnakeBar.DefaultOwner = new WindowOwner(true);
 
-            if (e.Args.Length > 0)
+            try
             {
-                string arg = e.Args[0];
-                MainWindow = arg switch
+                if (e.Args.Length > 0)
                 {
-                    "tile" => await MainWindowBase.CreateAndShowAsync<TileDownloaderWindow>(),
-                    "gpx" => await MainWindowBase.CreateAndShowAsync<GpxWindow>(),
-                    string s when s.EndsWith(".mbmpkg") => await MainWindowBase.CreateAndShowAsync<MainWindow>(w => w.LoadFile = arg),
-                    string s when s.EndsWith(".gpx") => await MainWindowBase.CreateAndShowAsync<GpxWindow>(w => w.LoadFiles = new[] { arg }),
-                    _ => await MainWindowBase.CreateAndShowAsync<MainWindow>(),
-                };
+                    string arg = e.Args[0];
+                    MainWindow = arg switch
+                    {
+                        "tile" => await MainWindowBase.CreateAndShowAsync<TileDownloaderWindow>(),
+                        "gpx" => await MainWindowBase.CreateAndShowAsync<GpxWindow>(),
+                        string s when s.EndsWith(".mbmpkg") => await MainWindowBase.CreateAndShowAsync<MainWindow>(w => w.LoadFile = arg),
+                        string s when s.EndsWith(".gpx") => await MainWindowBase.CreateAndShowAsync<GpxWindow>(w => w.LoadFiles = new[] { arg }),
+                        _ => await MainWindowBase.CreateAndShowAsync<MainWindow>(),
+                    };
+                }
+                else
+                {
+                    MainWindow = await MainWindowBase.CreateAndShowAsync<MainWindow>();
+                }
             }
-            else
+            catch (TargetInvocationException ex) when (ex.InnerException?.InnerException?.InnerException?.InnerException is DllNotFoundException)
             {
-                MainWindow = await MainWindowBase.CreateAndShowAsync<MainWindow>();
+                SplashWindow.EnsureInvisiable();
+                Log.Error("找不到C++库", ex);
+
+                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" + Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        string url = "https://docs.microsoft.com/zh-cn/cpp/windows/latest-supported-vc-redist";
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }
+                    catch
+                    {
+                    }
+                }
+                Shutdown();
+                return;
             }
 
             var xcr = Resources.MergedDictionaries.OfType<XamlControlsResources>().FirstOrDefault();

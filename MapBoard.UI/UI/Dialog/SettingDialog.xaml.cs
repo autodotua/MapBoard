@@ -311,9 +311,9 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OpenBackupFolderButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenBackupFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            IOUtility.OpenFileOrFolder(Parameters.BackupPath);
+            await IOUtility.TryOpenInShellAsync(Parameters.BackupPath);
         }
 
         /// <summary>

@@ -397,44 +397,70 @@ namespace MapBoard.UI
                 ShowButton = true,
                 ButtonContent = "查看"
             };
-            snake.ButtonClick += (p1, p2) => OpenFolder(path);
+            snake.ButtonClick += async (p1, p2) => await TryOpenFolderAsync(path);
 
             snake.ShowMessage("导出成功");
         }
 
-        public static void OpenFileOrFolder(string path)
+        /// <summary>
+        /// 使用Shell打开文件，文件夹或Url等。
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static async Task TryOpenInShellAsync(string path)
         {
-            new Process()
-            {
-                StartInfo = new ProcessStartInfo(GetRealPath(path))
-                {
-                    UseShellExecute = true
-                }
-            }.Start();
-        }
-
-        public static void OpenFolder(string path)
-        {
-            var p = '"' + GetRealPath(path) + '"';
-            if (Directory.Exists(path))
+            try
             {
                 new Process()
                 {
-                    StartInfo = new ProcessStartInfo("explorer.exe", p)
+                    StartInfo = new ProcessStartInfo(GetRealPath(path))
                     {
                         UseShellExecute = true
                     }
                 }.Start();
             }
-            if (File.Exists(path))
+            catch (Exception ex)
             {
-                new Process()
+                App.Log.Error("打开失败", ex);
+                CommonDialog.ShowErrorDialogAsync(ex, "打开失败");
+            }
+        }
+
+        /// <summary>
+        /// 若输入为目录，直接打开；若输入为文件，则打开目录并选中文件。
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static async Task TryOpenFolderAsync(string path)
+        {
+            try
+            {
+                var p = '"' + GetRealPath(path) + '"';
+                if (Directory.Exists(path))
                 {
-                    StartInfo = new ProcessStartInfo("explorer.exe", $"/select,{p}")
+                    new Process()
                     {
-                        UseShellExecute = true
-                    }
-                }.Start();
+                        StartInfo = new ProcessStartInfo("explorer.exe", p)
+                        {
+                            UseShellExecute = true
+                        }
+                    }.Start();
+                }
+                if (File.Exists(path))
+                {
+                    new Process()
+                    {
+                        StartInfo = new ProcessStartInfo("explorer.exe", $"/select,{p}")
+                        {
+                            UseShellExecute = true
+                        }
+                    }.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("打开文件夹失败", ex);
+                await CommonDialog.ShowErrorDialogAsync("文件或目录不存在", ex.Message);
             }
         }
 
@@ -446,6 +472,11 @@ namespace MapBoard.UI
         public static string GetRealPath(string path)
         {
             path = Path.GetFullPath(path);
+            string oldPath = path;
+            if (File.Exists(path) || Directory.Exists(path))
+            {
+                return path;
+            }
             var helper = new DesktopBridge.Helpers();
             if (helper.IsRunningAsUwp())
             {
@@ -455,6 +486,10 @@ namespace MapBoard.UI
                 {
                     path = path.Replace(local, virtualAppData);
                 }
+            }
+            if (!File.Exists(path) && !Directory.Exists(path))
+            {
+                throw new FileNotFoundException(path, new FileNotFoundException(oldPath));
             }
             return path;
         }

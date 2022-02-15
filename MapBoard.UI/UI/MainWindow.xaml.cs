@@ -605,7 +605,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
         {
             string path = ((sender as FrameworkElement).Tag as string) switch
             {
@@ -615,7 +615,7 @@ namespace MapBoard.UI
                 "4" => Parameters.BackupPath,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            IOUtility.OpenFileOrFolder(path);
+            await IOUtility.TryOpenInShellAsync(path);
         }
 
         private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)

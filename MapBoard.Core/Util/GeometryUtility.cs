@@ -514,31 +514,21 @@ namespace MapBoard.Util
                     return geometry;
 
                 case GeometryType.Polyline:
-                    {
-                        if ((geometry as Polyline).Parts.All(p => IsValid(p, 2)))
-                        {
-                            return geometry;
-                        }
-                        var parts = (geometry as Polyline).Parts.Where(p => IsValid(p, 2));
-                        if (!parts.Any())
-                        {
-                            return null;
-                        }
-                        return new Polyline(parts, geometry.SpatialReference);
-                    }
                 case GeometryType.Polygon:
+
+                    if ((geometry as Multipart).Parts.All(p => IsValid(p, (int)geometry.Dimension + 1)))
                     {
-                        if ((geometry as Polygon).Parts.All(p => IsValid(p, 3)))
-                        {
-                            return geometry;
-                        }
-                        var parts = (geometry as Polygon).Parts.Where(p => IsValid(p, 3));
-                        if (!parts.Any())
-                        {
-                            return null;
-                        }
-                        return new Polygon(parts, geometry.SpatialReference);
+                        return geometry;
                     }
+                    var parts = (geometry as Multipart).Parts.Where(p => IsValid(p, (int)geometry.Dimension + 1));
+                    if (!parts.Any())
+                    {
+                        return null;
+                    }
+                    return geometry.GeometryType == GeometryType.Polyline ?
+                        new Polyline(parts, geometry.SpatialReference) as Geometry
+                        : new Polygon(parts, geometry.SpatialReference);
+
                 case GeometryType.Multipoint:
                     if ((geometry as Multipoint).Points.Count >= 1)
                     {
