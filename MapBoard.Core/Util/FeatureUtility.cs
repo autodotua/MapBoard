@@ -228,9 +228,9 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> ReverseAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task ReverseAsync(IEditableLayerInfo layer, Feature[] features)
         {
-            List<Feature> newFeatures = new List<Feature>();
+            List<UpdatedFeature> updatedFeatures = new List<UpdatedFeature>();
             await Task.Run(() =>
             {
                 foreach (var feature in features.ToList())
@@ -247,12 +247,12 @@ namespace MapBoard.Util
                         newGeo = new Polyline(points.ToList());
                     }
                     var newFeature = layer.CreateFeature(feature.Attributes, newGeo);
-                    newFeatures.Add(newFeature);
+                    var oldGeom = feature.Geometry;
+                    feature.Geometry = newGeo;
+                    updatedFeatures.Add(new UpdatedFeature(feature, oldGeom, feature.Attributes));
                 }
             });
-            await layer.DeleteFeaturesAsync(features, FeatureOperation);
-            await layer.AddFeaturesAsync(newFeatures, FeatureOperation);
-            return newFeatures.AsReadOnly();
+            await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
         }
 
         /// <summary>

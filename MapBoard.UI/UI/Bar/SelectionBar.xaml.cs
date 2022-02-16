@@ -206,7 +206,8 @@ namespace MapBoard.UI.Bar
             {
                 await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
                 {
-                    await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
+                    var result = await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
+                    SnakeBar.Show($"已分割为{result.Count}个图形");
                 }, "正在分割", true);
             }
         }
@@ -315,13 +316,15 @@ namespace MapBoard.UI.Bar
                 }
                 else
                 {
-                    MapView.Selection.Select(result, true);
+                    SnakeBar.Show($"已分离出{result.Count}个图形");
+                    MapView.Selection.ClearSelection();
                 }
             }
             async Task UnionAsync()
             {
                 var result = await FeatureUtility.UnionAsync(layer, features);
                 MapView.Selection.Select(result, true);
+                SnakeBar.Show($"合并完成");
             }
 
             async Task LinkAsync()
@@ -382,8 +385,8 @@ namespace MapBoard.UI.Bar
 
             async Task ReverseAsync()
             {
-                IReadOnlyList<Feature> result = await FeatureUtility.ReverseAsync(layer, features);
-                MapView.Selection.Select(result, true);
+                await FeatureUtility.ReverseAsync(layer, features);
+                SnakeBar.Show($"反转完成");
             }
 
             async Task DensifyAsync()
@@ -392,6 +395,7 @@ namespace MapBoard.UI.Bar
                 if (num.HasValue)
                 {
                     await FeatureUtility.DensifyAsync(layer, features, num.Value);
+                    SnakeBar.Show($"加密完成");
                 }
             }
             async Task SmoothAsync()
