@@ -37,55 +37,15 @@ namespace MapBoard.UI.Dialog
             LayerName = "WMS图层";
         }
 
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
-        private string layerName;
-
-        public string LayerName
-        {
-            get => layerName;
-            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
-        }
-
-        private bool autoPopulateAll;
-
-        public bool AutoPopulateAll
-        {
-            get => autoPopulateAll;
-            set => this.SetValueAndNotify(ref autoPopulateAll, value, nameof(AutoPopulateAll));
-        }
-
-        private string url;
-
-        public string Url
-        {
-            get => url;
-            set => this.SetValueAndNotify(ref url, value, nameof(Url));
-        }
-
-        private string wmsLayerName;
-
-        public string WmsLayerName
-        {
-            get => wmsLayerName;
-            set => this.SetValueAndNotify(ref wmsLayerName, value, nameof(WmsLayerName));
-        }
-
-        private ObservableCollection<WmsLayerInfo> wmtsLayers;
-
-        public ObservableCollection<WmsLayerInfo> WmsLayers
-        {
-            get => wmtsLayers;
-            set => this.SetValueAndNotify(ref wmtsLayers, value, nameof(WmsLayers));
-        }
-
+        public bool AutoPopulateAll { get; set; }
+        public string LayerName { get; set; }
         public MapLayerCollection Layers { get; }
+        public string Message { get; set; }
+        public string Url { get; set; }
+
+        public string WmsLayerName { get; set; }
+
+        public ObservableCollection<WmsLayerInfo> WmsLayers { get; set; }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
@@ -108,7 +68,7 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             try
             {
-                WmsService s = new WmsService(new Uri(url));
+                WmsService s = new WmsService(new Uri(Url));
                 await s.LoadAsync();
                 var layers = s.ServiceInfo.LayerInfos;
                 WmsLayers = new ObservableCollection<WmsLayerInfo>();

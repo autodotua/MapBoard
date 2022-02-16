@@ -20,7 +20,8 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class CopyAttributesDialog : CommonDialog
     {
-        public IEditableLayerInfo Layer { get; }
+        private FieldInfo fieldSource;
+        private FieldInfo fieldTarget;
 
         public CopyAttributesDialog(IEditableLayerInfo layer)
         {
@@ -29,53 +30,42 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
+        public string DateFormat { get; set; } = "yyyy-MM-dd";
         public FieldInfo[] Fields { get; }
-        private FieldInfo fieldSource;
+        public IEditableLayerInfo Layer { get; }
+        public string Message { get; set; }
 
         public FieldInfo SourceField
         {
             get => fieldSource;
             set
             {
-                this.SetValueAndNotify(ref fieldSource, value, nameof(SourceField));
+                fieldSource = value;
                 UpdateMessage();
             }
         }
-
-        private FieldInfo fieldTarget;
 
         public FieldInfo TargetField
         {
             get => fieldTarget;
             set
             {
-                this.SetValueAndNotify(ref fieldTarget, value, nameof(TargetField));
+                fieldTarget = value;
                 UpdateMessage();
             }
         }
 
-        private string text;
+        public string Text { get; set; }
+        public CopyAttributesType Type { get; set; }
 
-        public string Text
+        private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
-            get => text;
-            set => this.SetValueAndNotify(ref text, value, nameof(Text));
+            Type = (CopyAttributesType)tab.SelectedIndex;
         }
 
-        private string message;
-
-        public string Message
+        private void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
-        private string dateFormat = "yyyy-MM-dd";
-
-        public string DateFormat
-        {
-            get => dateFormat;
-            set => this.SetValueAndNotify(ref dateFormat, value, nameof(DateFormat));
+            UpdateMessage();
         }
 
         private void UpdateMessage()
@@ -127,20 +117,8 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        public CopyAttributesType Type { get; set; }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-        }
-
-        private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
-        {
-            Type = (CopyAttributesType)tab.SelectedIndex;
-        }
-
-        private void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            UpdateMessage();
         }
     }
 }

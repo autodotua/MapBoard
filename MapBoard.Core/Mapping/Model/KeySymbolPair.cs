@@ -16,22 +16,10 @@ namespace MapBoard.Mapping.Model
             Symbol = symbol;
         }
 
-        private string key;
-
-        public string Key
-        {
-            get => key;
-            set => this.SetValueAndNotify(ref key, value, nameof(Key));
-        }
-
-        private SymbolInfo symbol;
+        public string Key { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public SymbolInfo Symbol
-        {
-            get => symbol;
-            set => this.SetValueAndNotify(ref symbol, value, nameof(Symbol));
-        }
+        public SymbolInfo Symbol { get; set; }
     }
 }

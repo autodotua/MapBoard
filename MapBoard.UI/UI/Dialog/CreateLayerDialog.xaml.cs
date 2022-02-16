@@ -30,32 +30,6 @@ namespace MapBoard.UI.Dialog
         public MapLayerInfo editLayer = null;
         private string layerType;
 
-        public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
-        {
-            _ = layers ?? throw new ArgumentNullException(nameof(layers));
-            return new CreateLayerDialog(layers, null, GetLayerType<T>()).ShowAsync();
-        }
-
-        public static Task OpenEditDialog<T>(MapLayerCollection layers, T layer) where T : MapLayerInfo
-        {
-            _ = layers ?? throw new ArgumentNullException(nameof(layers));
-            _ = layer ?? throw new ArgumentNullException(nameof(layer));
-            return new CreateLayerDialog(layers, layer, GetLayerType<T>()).ShowAsync();
-        }
-
-        private static string GetLayerType<T>() where T : MapLayerInfo
-        {
-            if (typeof(T) == typeof(ShapefileMapLayerInfo))
-            {
-                return MapLayerInfo.Types.Shapefile;
-            }
-            else if (typeof(T) == typeof(TempMapLayerInfo))
-            {
-                return MapLayerInfo.Types.Temp;
-            }
-            throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
-        }
-
         private CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer, string layerType)
         {
             this.layerType = layerType;
@@ -123,58 +97,43 @@ namespace MapBoard.UI.Dialog
         }
 
         public ObservableCollection<FieldInfo> Fields { get; } = new ObservableCollection<FieldInfo>();
-        public FieldInfo[] StaticFields { get; }
-        private string layerName;
 
-        public string LayerName
-        {
-            get => layerName;
-            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
-        }
+        public string LayerName { get; set; }
 
         public MapLayerCollection Layers { get; }
-        private string message;
 
-        public string Message
+        public string Message { get; set; }
+
+        public FieldInfo[] StaticFields { get; }
+
+        public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
+            _ = layers ?? throw new ArgumentNullException(nameof(layers));
+            return new CreateLayerDialog(layers, null, GetLayerType<T>()).ShowAsync();
+        }
+
+        public static Task OpenEditDialog<T>(MapLayerCollection layers, T layer) where T : MapLayerInfo
+        {
+            _ = layers ?? throw new ArgumentNullException(nameof(layers));
+            _ = layer ?? throw new ArgumentNullException(nameof(layer));
+            return new CreateLayerDialog(layers, layer, GetLayerType<T>()).ShowAsync();
+        }
+
+        private static string GetLayerType<T>() where T : MapLayerInfo
+        {
+            if (typeof(T) == typeof(ShapefileMapLayerInfo))
+            {
+                return MapLayerInfo.Types.Shapefile;
+            }
+            else if (typeof(T) == typeof(TempMapLayerInfo))
+            {
+                return MapLayerInfo.Types.Temp;
+            }
+            throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
         }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
-        }
-
-        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
-            {
-                if (e.Column.DisplayIndex == 0)
-                {
-                    var field = e.Row.Item as FieldInfo;
-                    if (string.IsNullOrEmpty(field.DisplayName))
-                    {
-                        field.DisplayName = field.Name;
-                    }
-                }
-            }
-            HashSet<string> names = new HashSet<string>();
-            HashSet<string> displayNames = new HashSet<string>();
-            foreach (var field in Fields)
-            {
-                if (field.Name == Parameters.ClassFieldName
-                    || field.Name == Parameters.LabelFieldName
-                    || field.Name == Parameters.DateFieldName
-                    || field.DisplayName.Length * field.Name.Length == 0
-                    && field.Name.Length + field.DisplayName.Length > 0
-                    || !displayNames.Add(field.DisplayName)
-                    || !names.Add(field.Name))
-                {
-                    IsPrimaryButtonEnabled = false;
-                    return;
-                }
-            }
-            IsPrimaryButtonEnabled = true;
         }
 
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
@@ -240,6 +199,38 @@ namespace MapBoard.UI.Dialog
             }
 
             IsEnabled = true;
+        }
+
+        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                if (e.Column.DisplayIndex == 0)
+                {
+                    var field = e.Row.Item as FieldInfo;
+                    if (string.IsNullOrEmpty(field.DisplayName))
+                    {
+                        field.DisplayName = field.Name;
+                    }
+                }
+            }
+            HashSet<string> names = new HashSet<string>();
+            HashSet<string> displayNames = new HashSet<string>();
+            foreach (var field in Fields)
+            {
+                if (field.Name == Parameters.ClassFieldName
+                    || field.Name == Parameters.LabelFieldName
+                    || field.Name == Parameters.DateFieldName
+                    || field.DisplayName.Length * field.Name.Length == 0
+                    && field.Name.Length + field.DisplayName.Length > 0
+                    || !displayNames.Add(field.DisplayName)
+                    || !names.Add(field.Name))
+                {
+                    IsPrimaryButtonEnabled = false;
+                    return;
+                }
+            }
+            IsPrimaryButtonEnabled = true;
         }
     }
 }

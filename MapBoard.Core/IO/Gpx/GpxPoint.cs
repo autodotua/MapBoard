@@ -20,6 +20,38 @@ namespace MapBoard.IO.Gpx
             Time = time;
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public Dictionary<string, string> OtherProperties { get; internal set; } = new Dictionary<string, string>();
+
+        public double Speed { get; set; }
+
+        public DateTime Time { get; set; }
+
+        public double X { get; set; }
+
+        public double Y { get; set; }
+
+        public double Z { get; set; }
+
+        public object Clone()
+        {
+            return new GpxPoint(X, Y, Z, Time)
+            {
+                OtherProperties = OtherProperties.ToDictionary(p => p.Key, p => p.Value)
+            };
+        }
+
+        public MapPoint ToMapPoint()
+        {
+            return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
+        }
+
+        public MapPoint ToXYMapPoint()
+        {
+            return new MapPoint(X, Y, SpatialReferences.Wgs84);
+        }
+
         internal static GpxPoint FromXml(XmlNode xml)
         {
             double x = 0;
@@ -68,50 +100,6 @@ namespace MapBoard.IO.Gpx
             return point;
         }
 
-        private double x;
-
-        public double X
-        {
-            get => x;
-            set => this.SetValueAndNotify(ref x, value, nameof(X));
-        }
-
-        private double y;
-
-        public double Y
-        {
-            get => y;
-            set => this.SetValueAndNotify(ref y, value, nameof(Y));
-        }
-
-        private double z;
-
-        public double Z
-        {
-            get => z;
-            set => this.SetValueAndNotify(ref z, value, nameof(Z));
-        }
-
-        private DateTime time;
-
-        public DateTime Time
-        {
-            get => time;
-            set => this.SetValueAndNotify(ref time, value, nameof(Time));
-        }
-
-        private double speed;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public double Speed
-        {
-            get => speed;
-            set => this.SetValueAndNotify(ref speed, value, nameof(Speed));
-        }
-
-        public Dictionary<string, string> OtherProperties { get; internal set; } = new Dictionary<string, string>();
-
         internal void WriteGpxXml(XmlDocument doc, XmlElement trkpt)
         {
             trkpt.SetAttribute("lat", Y.ToString());
@@ -130,24 +118,6 @@ namespace MapBoard.IO.Gpx
                 child.InnerText = value;
                 trkpt.AppendChild(child);
             }
-        }
-
-        public MapPoint ToMapPoint()
-        {
-            return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
-        }
-
-        public MapPoint ToXYMapPoint()
-        {
-            return new MapPoint(X, Y, SpatialReferences.Wgs84);
-        }
-
-        public object Clone()
-        {
-            return new GpxPoint(X, Y, Z, Time)
-            {
-                OtherProperties = OtherProperties.ToDictionary(p => p.Key, p => p.Value)
-            };
         }
     }
 }

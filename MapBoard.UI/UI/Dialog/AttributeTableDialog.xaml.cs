@@ -23,7 +23,6 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class AttributeTableDialog : LayerDialogBase
     {
-        private ObservableCollection<FeatureAttributeCollection> attributes;
         private Dictionary<long, FeatureAttributeCollection> feature2Attributes;
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
@@ -44,11 +43,7 @@ namespace MapBoard.UI.Dialog
             IsEnabled = e.NewTask != BoardTask.Draw;
         }
 
-        public ObservableCollection<FeatureAttributeCollection> Attributes
-        {
-            get => attributes;
-            private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
-        }
+        public ObservableCollection<FeatureAttributeCollection> Attributes { get; set; }
 
         private static Dictionary<IMapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<IMapLayerInfo, AttributeTableDialog>();
 
@@ -87,7 +82,7 @@ namespace MapBoard.UI.Dialog
                 Attributes = new ObservableCollection<FeatureAttributeCollection>(
                     features.Select(p =>
                         FeatureAttributeCollection.FromFeature(Layer, p)));
-                feature2Attributes = attributes.ToDictionary(p => p.Feature.GetID());
+                feature2Attributes = Attributes.ToDictionary(p => p.Feature.GetID());
             });
             //对已经选择的要素应用到属性表中（理论上，不该存在的吧）
             foreach (var attr in Attributes)

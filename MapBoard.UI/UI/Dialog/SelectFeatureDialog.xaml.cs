@@ -21,13 +21,7 @@ namespace MapBoard.UI.Dialog
     public partial class SelectFeatureDialog : DialogWindowBase
     {
         public const int MaxCount = 100;
-        private ObservableCollection<FeatureSelectionInfo> selectedFeatures;
-
-        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures
-        {
-            get => selectedFeatures;
-            set => this.SetValueAndNotify(ref selectedFeatures, value, nameof(SelectedFeatures));
-        }
+        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; set; }
 
         private FeatureSelectionInfo selected;
 
@@ -67,13 +61,7 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
+        public string Message { get; set; }
 
         private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {

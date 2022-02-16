@@ -27,15 +27,12 @@ namespace MapBoard.Model
     [DebuggerDisplay("Name={Name} Disp={DisplayName} Type={Type}")]
     public class FieldInfo : INotifyPropertyChanged, ICloneable
     {
-        private string displayName = "";
         private string name = "";
-
-        private FieldInfoType type;
 
         public FieldInfo(string name, string displayName, FieldInfoType type)
         {
             this.name = name;
-            this.displayName = displayName;
+            DisplayName = displayName;
             Type = type;
         }
 
@@ -45,11 +42,7 @@ namespace MapBoard.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string DisplayName
-        {
-            get => displayName;
-            set => this.SetValueAndNotify(ref displayName, value, nameof(DisplayName));
-        }
+        public string DisplayName { get; set; } = "";
 
         public string Name
         {
@@ -71,15 +64,10 @@ namespace MapBoard.Model
                 else
                 {
                 }
-                this.Notify(nameof(Name));
             }
         }
 
-        public FieldInfoType Type
-        {
-            get => type;
-            set => this.SetValueAndNotify(ref type, value, nameof(Type));
-        }
+        public FieldInfoType Type { get; set; }
 
         public object Clone()
         {

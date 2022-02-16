@@ -39,7 +39,7 @@ namespace MapBoard.UI.Dialog
             get => layer;
             set
             {
-                this.SetValueAndNotify(ref layer, value, nameof(Layer));
+                layer = value;
                 if (menuFields == null)
                 {
                     return;

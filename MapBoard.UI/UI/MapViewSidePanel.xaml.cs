@@ -43,7 +43,7 @@ namespace MapBoard.UI
 
         public MapViewSidePanel()
         {
-            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable&& p.Type!=BaseLayerType.Esri).ToList();
+            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable && p.Type != BaseLayerType.Esri).ToList();
             for (int i = 0; i < BaseLayers.Count; i++)
             {
                 BaseLayers[i].Index = i + 1;
@@ -89,40 +89,11 @@ namespace MapBoard.UI
 
         #region 右下角坐标和比例尺
 
-        private string latitude;
+        private bool dataSourceOn = true;
+
         private MapPoint location;
 
-        private string longitude;
-
         private string scaleBarLength;
-
-        public string Latitude
-        {
-            get => latitude;
-            private set => this.SetValueAndNotify(ref latitude, value, nameof(Latitude));
-        }
-
-        public string Longitude
-        {
-            get => longitude;
-            private set => this.SetValueAndNotify(ref longitude, value, nameof(Longitude));
-        }
-
-        public string ScaleBarLength
-        {
-            get => scaleBarLength;
-            private set => this.SetValueAndNotify(ref scaleBarLength, value, nameof(ScaleBarLength));
-        }
-
-        private string scale;
-
-        public string Scale
-        {
-            get => scale;
-            set => this.SetValueAndNotify(ref scale, value, nameof(Scale));
-        }
-
-        private bool dataSourceOn = true;
 
         public bool DataSourceOn
         {
@@ -140,10 +111,17 @@ namespace MapBoard.UI
                     {
                         (MapView as MapView).LocationDisplay.DataSource.StopAsync();
                     }
-                    this.SetValueAndNotify(ref dataSourceOn, value, nameof(DataSourceOn));
+                    dataSourceOn = value;
                 }
             }
         }
+
+        public string Latitude { get; set; }
+
+        public string Longitude { get; set; }
+
+        public string Scale { get; set; }
+        public string ScaleBarLength { get; set; }
 
         public void UpdateScaleAndPosition(Point? position = null)
         {
@@ -213,7 +191,6 @@ namespace MapBoard.UI
         #region 缩放按钮和缩放条
 
         private double mapScalePercent = 0;
-        private string scaleLevel = "50%";
 
         public double MapScalePercent
         {
@@ -234,21 +211,11 @@ namespace MapBoard.UI
                 else if (MapView is SceneView s)
                 {
                     throw new NotSupportedException();
-                    //setScaleAction = () => m.SetViewpointScaleAsync(MapView.Map.MaxScale / Math.Pow(2, value / 5 - 20));
                 }
             }
         }
 
-        public string ScaleLevel
-        {
-            get => scaleLevel;
-            private set => this.SetValueAndNotify(ref scaleLevel, value, nameof(ScaleLevel));
-        }
-
-        private void PanelScale_MouseLeave(object sender, MouseEventArgs e)
-        {
-            OpenOrCloseScalePanelAsync(false);
-        }
+        public string ScaleLevel { get; set; }
 
         private async Task OpenOrCloseScalePanelAsync(bool open)
         {
@@ -266,6 +233,11 @@ namespace MapBoard.UI
                 .SetStoryboard(OpacityProperty, grdScale)
                 .AddTo(storyboard);
             await storyboard.BeginAsync();
+        }
+
+        private void PanelScale_MouseLeave(object sender, MouseEventArgs e)
+        {
+            OpenOrCloseScalePanelAsync(false);
         }
 
         private void ScaleButton_MouseEnter(object sender, MouseEventArgs e)
@@ -290,31 +262,9 @@ namespace MapBoard.UI
 
         #region 底图
 
-        private List<BaseLayerInfo> baseLayers;
-
         private bool isLayerPanelOpened = false;
 
-        public List<BaseLayerInfo> BaseLayers
-        {
-            get => baseLayers;
-            set => this.SetValueAndNotify(ref baseLayers, value, nameof(BaseLayers));
-        }
-
-        private void LayersPanel_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (isLayerPanelOpened && !IsMouseOver)
-            {
-                OpenOrCloseLayersPanelAsync(false);
-            }
-        }
-
-        private void LayersPanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!isLayerPanelOpened)
-            {
-                OpenOrCloseLayersPanelAsync(true);
-            }
-        }
+        public List<BaseLayerInfo> BaseLayers { get; set; }
 
         /// <summary>
         /// 单击底图的可见单选框
@@ -343,6 +293,22 @@ namespace MapBoard.UI
         private void CloseLayerPanelButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseLayersPanelAsync(false);
+        }
+
+        private void LayersPanel_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (isLayerPanelOpened && !IsMouseOver)
+            {
+                OpenOrCloseLayersPanelAsync(false);
+            }
+        }
+
+        private void LayersPanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!isLayerPanelOpened)
+            {
+                OpenOrCloseLayersPanelAsync(true);
+            }
         }
 
         private async Task OpenOrCloseLayersPanelAsync(bool open)
@@ -387,7 +353,7 @@ namespace MapBoard.UI
         private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseLayersPanelAsync(false);
-            new SettingDialog(Window.GetWindow(this), (MapView as IMapBoardGeoView).Layers, 3).ShowDialog();
+            new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, 3).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -432,11 +398,6 @@ namespace MapBoard.UI
 
         private bool isSearchPanelOpened = false;
 
-        private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            OpenOrCloseSearchPanelAsync(true);
-        }
-
         private void CloseSearchPanelButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseSearchPanelAsync(false);
@@ -477,19 +438,21 @@ namespace MapBoard.UI
             bdSearch.Cursor = open ? Cursors.Arrow : Cursors.Hand;
         }
 
+        private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            OpenOrCloseSearchPanelAsync(true);
+        }
+
         #endregion 搜索
 
         #region 定位
 
         private bool isLocationPanelOpened = false;
+        private bool isUpdatingLocation = false;
         private int panMode = 0;
-        private string locationStatus;
 
-        public string LocationStatus
-        {
-            get => locationStatus;
-            set => this.SetValueAndNotify(ref locationStatus, value, nameof(LocationStatus));
-        }
+        public ObservableCollection<PropertyNameValue> LocationProperties { get; } = new ObservableCollection<PropertyNameValue>();
+        public string LocationStatus { get; set; }
 
         public int PanMode
         {
@@ -498,14 +461,41 @@ namespace MapBoard.UI
             {
                 if (panMode != value)
                 {
-                    this.SetValueAndNotify(ref panMode, value, nameof(PanMode));
-
+                    panMode = value;
                     (MapView as MapView).LocationDisplay.AutoPanMode = (LocationDisplayAutoPanMode)value;
                 }
             }
         }
 
-        public ObservableCollection<PropertyNameValue> LocationProperties { get; } = new ObservableCollection<PropertyNameValue>();
+        private void CloseLocationPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isLocationPanelOpened)
+            {
+                OpenOrCloseLocationPanelAsync(false);
+            }
+        }
+
+        private void iconLocation_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!isLocationPanelOpened)
+            {
+                OpenOrCloseLocationPanelAsync(true);
+            }
+        }
+
+        private void InitializeLocationInfos()
+        {
+            Debug.Assert(MapView is MapView);
+
+            var ld = (MapView as MapView).LocationDisplay;
+            UpdateLocation();
+            PanMode = (int)ld.AutoPanMode;
+        }
+
+        private void LocationDisplay_AutoPanModeChanged(object sender, LocationDisplayAutoPanMode e)
+        {
+            PanMode = (int)e;
+        }
 
         private async Task OpenOrCloseLocationPanelAsync(bool open)
         {
@@ -547,17 +537,6 @@ namespace MapBoard.UI
             }
             bdLocation.IsHitTestVisible = true;
         }
-
-        private void InitializeLocationInfos()
-        {
-            Debug.Assert(MapView is MapView);
-
-            var ld = (MapView as MapView).LocationDisplay;
-            UpdateLocation();
-            PanMode = (int)ld.AutoPanMode;
-        }
-
-        private bool isUpdatingLocation = false;
 
         private void UpdateLocation()
         {
@@ -644,27 +623,6 @@ namespace MapBoard.UI
             });
         }
 
-        private void iconLocation_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!isLocationPanelOpened)
-            {
-                OpenOrCloseLocationPanelAsync(true);
-            }
-        }
-
-        private void CloseLocationPanelButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isLocationPanelOpened)
-            {
-                OpenOrCloseLocationPanelAsync(false);
-            }
-        }
-
-        private void LocationDisplay_AutoPanModeChanged(object sender, LocationDisplayAutoPanMode e)
-        {
-            PanMode = (int)e;
-        }
-
         #endregion 定位
 
         private async void UserControlBase_Loaded(object sender, RoutedEventArgs e)
@@ -703,22 +661,10 @@ namespace MapBoard.UI
             Value = value;
         }
 
-        private string name;
-
-        public string Name
-        {
-            get => name;
-            set => this.SetValueAndNotify(ref name, value, nameof(Name));
-        }
-
-        private string v;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Value
-        {
-            get => v;
-            set => this.SetValueAndNotify(ref v, value, nameof(Value));
-        }
+        public string Name { get; set; }
+
+        public string Value { get; set; }
     }
 }

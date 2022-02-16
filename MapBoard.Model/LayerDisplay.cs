@@ -8,22 +8,10 @@ namespace MapBoard.Model
 {
     public class LayerDisplay : INotifyPropertyChanged
     {
+        private double maxScale = 0;
         private double minScale = 0;
 
-        public double MinScale
-        {
-            get => minScale;
-            set
-            {
-                if(value<0)
-                {
-                    value = 0;
-                }
-                this.SetValueAndNotify(ref minScale, value, nameof(MinScale));
-            }
-        }
-
-        private double maxScale = 0;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public double MaxScale
         {
@@ -34,18 +22,21 @@ namespace MapBoard.Model
                 {
                     value = 0;
                 }
-                this.SetValueAndNotify(ref maxScale, value, nameof(MaxScale));
             }
         }
 
-        private double opacity = 1;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public double Opacity
+        public double MinScale
         {
-            get => opacity;
-            set => this.SetValueAndNotify(ref opacity, value, nameof(Opacity));
+            get => minScale;
+            set
+            {
+                if (value < 0)
+                {
+                    value = 0;
+                }
+            }
         }
+
+        public double Opacity { get; set; } = 1;
     }
 }

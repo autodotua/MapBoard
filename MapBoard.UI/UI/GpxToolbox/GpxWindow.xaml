@@ -32,9 +32,8 @@
             HorizontalAlignment="Center"
             Background="Transparent" />
         <Grid
-            x:Name="grdLeft"
             Margin="8"
-            IsEnabled="False">
+            IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="8" />
@@ -407,8 +406,8 @@
                                 Grid.Row="2"
                                 ItemsSource="{Binding Tracks}"
                                 PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
-                                SelectionChanged="FileSelectionChanged"
                                 PreviewMouseRightButtonDown="lvwFiles_PreviewMouseRightButtonDown"
+                                SelectionChanged="FileSelectionChanged"
                                 SelectionMode="Extended">
                                 <ListView.View>
                                     <GridView>

@@ -24,30 +24,32 @@ using Microsoft.WindowsAPICodePack.FzExtension;
 
 namespace MapBoard.UI.TileDownloader
 {
+    public enum DownloadStatus
+    {
+        Downloading,
+        Paused,
+        Stop,
+        Pausing
+    }
+
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class TileDownloaderWindow : MainWindowBase
     {
-        public Config Config => Config.Instance;
+        private bool closing = false;
+
+        private DownloadStatus currentDownloadStatus = DownloadStatus.Stop;
 
         /// <summary>
-        /// 左上角的点
+        /// 当前投影信息
         /// </summary>
-        //  MapPoint leftUpPoint;
-        //  /// <summary>
-        /// 右下角的点
-        /// </summary>
-        //  MapPoint rightDownPoint;
-        /// <summary>
-        /// 控制在执行耗时工作时控件的可用性
-        /// </summary>
-        private bool controlsEnable = true;
+        private ProjectInfo currentProject;
 
         /// <summary>
-        /// 是否有终止拼接的命令
+        /// 暂停时瓦片的序号
         /// </summary>
-        private bool stopStich = false;
+        private int lastIndex = 0;
 
         /// <summary>
         /// 暂停时最后一块瓦片
@@ -55,65 +57,46 @@ namespace MapBoard.UI.TileDownloader
         private TileInfo lastTile = null;
 
         /// <summary>
-        /// 暂停时瓦片的序号
-        /// </summary>
-        private int lastIndex = 0;
-
-        ///// <summary>
-        ///// 是否正在下载
-        ///// </summary>
-        //private bool downloading = false;
-
-        /// <summary>
         /// 保存的拼接完成后临时图片的位置
         /// </summary>
         private string savedImgPath = null;
 
-        private bool closing = false;
+        /// <summary>
+        /// 是否有终止拼接的命令
+        /// </summary>
+        private bool stopStich = false;
 
-        public IReadOnlyList<string> Formats { get; } = new List<string> { "jpg", "png", "bmp", "tiff" }.AsReadOnly();
+        private bool waiting = false;
 
         /// <summary>
-        /// 当前投影信息
+        /// 构造函数
         /// </summary>
-        private ProjectInfo currentProject;
-
-        public ObservableCollection<dynamic> DownloadErrors { get; } = new ObservableCollection<dynamic>();
-        private string lastdownloadingTile = "还未下载";
-
-        public string LastDownloadingTile
+        public TileDownloaderWindow()
         {
-            get => lastdownloadingTile;
-            set => this.SetValueAndNotify(ref lastdownloadingTile, value, nameof(LastDownloadingTile));
+            InitializeComponent();
+            BindingOperations.EnableCollectionSynchronization(DownloadErrors, DownloadErrors);
+
+            // txtUrl.Text = Config.Instance.Url;
+            //SnakeBar.DefaultWindow = this;
+            foreach (var i in Enumerable.Range(0, 21))
+            {
+                cbbLevel.Items.Add(i);
+            }
+            cbbLevel.SelectedIndex = 10;
+            arcMap.ViewpointChanged += ArcMapViewpointChanged;
         }
 
-        private string lastdownloadingStatus = "准备就绪";
+        public Config Config => Config.Instance;
+        public bool ControlsEnable { get; set; } = true;
 
-        public string LastDownloadingStatus
-        {
-            get => lastdownloadingStatus;
-            set => this.SetValueAndNotify(ref lastdownloadingStatus, value, nameof(LastDownloadingStatus));
-        }
-
-        private string downloadingProgressStatus = "准备就绪";
-
-        public string DownloadingProgressStatus
-        {
-            get => downloadingProgressStatus;
-            set => this.SetValueAndNotify(ref downloadingProgressStatus, value, nameof(DownloadingProgressStatus));
-        }
-
-        private double downloadingProgressPercent = 0;
-
-        public double DownloadingProgressPercent { get => downloadingProgressPercent; set => this.SetValueAndNotify(ref downloadingProgressPercent, value, nameof(DownloadingProgressPercent)); }
-        private DownloadStatus currentDownloadStatus = DownloadStatus.Stop;
+        public DownloadInfo CurrentDownload { get; set; }
 
         public DownloadStatus CurrentDownloadStatus
         {
             get => currentDownloadStatus;
             set
             {
-                this.SetValueAndNotify(ref currentDownloadStatus, value, nameof(CurrentDownloadStatus));
+                currentDownloadStatus = value;
                 switch (value)
                 {
                     case DownloadStatus.Downloading:
@@ -134,31 +117,22 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private bool serverOn = false;
+        public ObservableCollection<dynamic> DownloadErrors { get; } = new ObservableCollection<dynamic>();
 
-        public bool ServerOn
-        {
-            get => serverOn;
-            set => this.SetValueAndNotify(ref serverOn, value, nameof(ServerOn));
-        }
+        public double DownloadingProgressPercent { get; set; }
 
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public TileDownloaderWindow()
-        {
-            InitializeComponent();
-            BindingOperations.EnableCollectionSynchronization(DownloadErrors, DownloadErrors);
+        public string DownloadingProgressStatus { get; set; } = "准备就绪";
 
-            // txtUrl.Text = Config.Instance.Url;
-            //SnakeBar.DefaultWindow = this;
-            foreach (var i in Enumerable.Range(0, 21))
-            {
-                cbbLevel.Items.Add(i);
-            }
-            cbbLevel.SelectedIndex = 10;
-            arcMap.ViewpointChanged += ArcMapViewpointChanged;
-        }
+        ///// <summary>
+        ///// 是否正在下载
+        ///// </summary>
+        //private bool downloading = false;
+        public IReadOnlyList<string> Formats { get; } = new List<string> { "jpg", "png", "bmp", "tiff" }.AsReadOnly();
+
+        public string LastDownloadingStatus { get; set; } = "准备就绪";
+
+        public string LastDownloadingTile { get; set; } = "还未下载";
+        public bool ServerOn { get; set; }
 
         protected override async Task InitializeAsync()
         {
@@ -170,6 +144,33 @@ namespace MapBoard.UI.TileDownloader
             base.OnActivated(e);
         }
 
+        private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (waiting)
+            {
+                return;
+            }
+            TileDownloaderMapView map = sender as TileDownloaderMapView;
+            if (map.Map == null || map.Map.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded)
+            {
+                return;
+            }
+            MapPoint point = map.ScreenToLocation(e.GetPosition(sender as IInputElement));
+
+            point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
+            int z = (int)(Math.Log(1e9 / map.MapScale, 2));
+            (int x, int y) = TileLocation.GeoPointToTile(point, z);
+            string l = Environment.NewLine;
+            tbkTileIndex.Text = $"Z={z}{l}X={x}{l}Y={y}";
+            waiting = true;
+            Task.Delay(250).ContinueWith(p => waiting = false);
+        }
+
+        private void arcMap_SelectBoundaryComplete(object sender, EventArgs e)
+        {
+            downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
+        }
+
         /// <summary>
         /// 地图的显示区域发生改变，清空选择框
         /// </summary>
@@ -178,34 +179,6 @@ namespace MapBoard.UI.TileDownloader
         private void ArcMapViewpointChanged(object sender, EventArgs e)
         {
             // cvs.StopDrawing(false);
-        }
-
-        private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
-        {
-            await arcMap.SelectAsync();
-        }
-
-        private DownloadInfo currentDownload;
-
-        public DownloadInfo CurrentDownload
-        {
-            get => currentDownload;
-            set => this.SetValueAndNotify(ref currentDownload, value, nameof(CurrentDownload));
-        }
-
-        public bool ControlsEnable
-        {
-            get => controlsEnable;
-            set => this.SetValueAndNotify(ref controlsEnable, value, nameof(ControlsEnable));
-        }
-
-        private bool waiting = false;
-
-        private async void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
-        {
-            await CalculateTileNumberAsync();
-            lastTile = null;
-            CurrentDownloadStatus = DownloadStatus.Stop;
         }
 
         private async Task CalculateTileNumberAsync(bool save = true)
@@ -236,6 +209,51 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        private async void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
+        {
+            await CalculateTileNumberAsync();
+            lastTile = null;
+            CurrentDownloadStatus = DownloadStatus.Stop;
+        }
+
+        private async void DeleteEmptyFilesButtonClick(object sender, RoutedEventArgs e)
+        {
+            await DoAsync(async () =>
+            {
+                try
+                {
+                    string[] files = null;
+                    await Task.Run(() => files = Directory.EnumerateFiles(Config.Instance.Tile_DownloadFolder, "*", SearchOption.AllDirectories)
+                    .Where(p => new FileInfo(p).Length == 0).ToArray());
+                    if (files.Length == 0)
+                    {
+                        await CommonDialog.ShowErrorDialogAsync("没有空文件");
+                    }
+                    else
+                    {
+                        if (await CommonDialog.ShowYesNoDialogAsync($"共找到{files.Length}个空文件，是否删除？") == true)
+                        {
+                            foreach (var file in files)
+                            {
+                                File.Delete(file);
+                            }
+                            await CommonDialog.ShowOkDialogAsync("删除空文件", "删除成功");
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    App.Log.Error("删除空文件失败", ex);
+                    await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
+                }
+            }, "正在删除");
+        }
+
+        private void DeleteTileSourceButtonClick(object sender, RoutedEventArgs e)
+        {
+            Config.Tile_Urls.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
+        }
+
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
         {
             if (Config.Instance.Tile_Urls.SelectedUrl == null)
@@ -259,9 +277,152 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private void StopDownloading()
+        private void ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
-            CurrentDownloadStatus = DownloadStatus.Pausing;
+            tbkStichStatus.Text = "图片显示失败，但文件可能已经保存";
+        }
+
+        private async void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (CurrentDownload != null)
+            {
+                await CalculateTileNumberAsync();
+            }
+        }
+
+        private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
+        {
+            TileSourceInfo tile = new TileSourceInfo();
+            if (dgrdUrls.SelectedIndex == -1)
+            {
+                Config.Tile_Urls.Sources.Add(tile);
+            }
+            else
+            {
+                Config.Tile_Urls.Sources.Insert(dgrdUrls.SelectedIndex + 1, tile);
+            }
+            dgrdUrls.SelectedItem = tile;
+            dgrdUrls.ScrollIntoView(tile);
+        }
+
+        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!Directory.Exists(Config.Tile_DownloadFolder))
+                {
+                    Directory.CreateDirectory(Config.Tile_DownloadFolder);
+                }
+                await IOUtility.TryOpenFolderAsync(Config.Tile_DownloadFolder);
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("无法打开目录", ex);
+                await CommonDialog.ShowErrorDialogAsync(ex, "无法打开目录");
+            }
+        }
+
+        private async void SaveButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (savedImgPath != null)
+            {
+                if (File.Exists(savedImgPath))
+                {
+                    var file = new FileFilterCollection()
+                        .Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension)
+                        .CreateSaveFileDialog()
+                        .SetDefault("地图." + Config.Tile_FormatExtension)
+                        .SetParent(this)
+                        .GetFilePath();
+                    if (file != null)
+                    {
+                        tbkStichStatus.Text = "正在保存地图";
+                        await Task.Run(() =>
+                        {
+                            try
+                            {
+                                if (File.Exists(file))
+                                {
+                                    File.Delete(file);
+                                }
+                                File.Copy(savedImgPath, file);
+                                if (currentProject != null)
+                                {
+                                    string worldFile = file + "w";
+                                    string projFile = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + ".prj");
+
+                                    if (File.Exists(worldFile))
+                                    {
+                                        File.Delete(worldFile);
+                                    }
+                                    if (File.Exists(projFile))
+                                    {
+                                        File.Delete(projFile);
+                                    }
+                                    File.WriteAllText(worldFile, currentProject.ToString());
+                                    File.WriteAllText(projFile, SpatialReferences.WebMercator.WkText);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                App.Log.Error("保存瓦片拼接失败", ex);
+                                Dispatcher.Invoke(async () =>
+                                {
+                                    await CommonDialog.ShowErrorDialogAsync(ex, "保存失败");
+                                });
+                            }
+                        });
+
+                        tbkStichStatus.Text = "";
+                    }
+                }
+                else
+                {
+                    await CommonDialog.ShowErrorDialogAsync("没有已生成的地图！");
+                }
+            }
+        }
+
+        private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
+        {
+            await arcMap.SelectAsync();
+        }
+
+        private async void ServerButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (!ServerOn)
+            {
+                ServerOn = true;
+                try
+                {
+                    NetUtility.StartServer(Config.Tile_ServerPort, Config.Tile_ServerFormat, Config.Tile_FormatExtension);
+                }
+                catch (SocketException sex)
+                {
+                    switch (sex.ErrorCode)
+                    {
+                        case 10048:
+                            await CommonDialog.ShowErrorDialogAsync("端口不可用，清更换端口");
+                            break;
+
+                        default:
+                            await CommonDialog.ShowErrorDialogAsync(sex, "开启服务失败");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    App.Log.Error("开启服务失败", ex);
+                    await CommonDialog.ShowErrorDialogAsync(ex, "开启服务失败");
+                }
+            }
+            else
+            {
+                ServerOn = false;
+                NetUtility.StopServer();
+            }
+            // 关闭服务器
+            // tcpListener.Stop();
         }
 
         private async Task StartOrContinueDowloadingAsync()
@@ -352,43 +513,6 @@ namespace MapBoard.UI.TileDownloader
             {
                 Close();
             }
-        }
-
-        private async void ServerButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (!ServerOn)
-            {
-                ServerOn = true;
-                try
-                {
-                    NetUtility.StartServer(Config.Tile_ServerPort, Config.Tile_ServerFormat, Config.Tile_FormatExtension);
-                }
-                catch (SocketException sex)
-                {
-                    switch (sex.ErrorCode)
-                    {
-                        case 10048:
-                            await CommonDialog.ShowErrorDialogAsync("端口不可用，清更换端口");
-                            break;
-
-                        default:
-                            await CommonDialog.ShowErrorDialogAsync(sex, "开启服务失败");
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error("开启服务失败", ex);
-                    await CommonDialog.ShowErrorDialogAsync(ex, "开启服务失败");
-                }
-            }
-            else
-            {
-                ServerOn = false;
-                NetUtility.StopServer();
-            }
-            // 关闭服务器
-            // tcpListener.Stop();
         }
 
         private async void StichButtonClick(object sender, RoutedEventArgs e)
@@ -497,111 +621,9 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void StopDownloading()
         {
-            if (CurrentDownload != null)
-            {
-                await CalculateTileNumberAsync();
-            }
-        }
-
-        private void ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            tbkStichStatus.Text = "图片显示失败，但文件可能已经保存";
-        }
-
-        private async void SaveButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (savedImgPath != null)
-            {
-                if (File.Exists(savedImgPath))
-                {
-                    var file = new FileFilterCollection()
-                        .Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension)
-                        .CreateSaveFileDialog()
-                        .SetDefault("地图." + Config.Tile_FormatExtension)
-                        .SetParent(this)
-                        .GetFilePath();
-                    if (file != null)
-                    {
-                        tbkStichStatus.Text = "正在保存地图";
-                        await Task.Run(() =>
-                        {
-                            try
-                            {
-                                if (File.Exists(file))
-                                {
-                                    File.Delete(file);
-                                }
-                                File.Copy(savedImgPath, file);
-                                if (currentProject != null)
-                                {
-                                    string worldFile = file + "w";
-                                    string projFile = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + ".prj");
-
-                                    if (File.Exists(worldFile))
-                                    {
-                                        File.Delete(worldFile);
-                                    }
-                                    if (File.Exists(projFile))
-                                    {
-                                        File.Delete(projFile);
-                                    }
-                                    File.WriteAllText(worldFile, currentProject.ToString());
-                                    File.WriteAllText(projFile, SpatialReferences.WebMercator.WkText);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                App.Log.Error("保存瓦片拼接失败", ex);
-                                Dispatcher.Invoke(async () =>
-                                {
-                                    await CommonDialog.ShowErrorDialogAsync(ex, "保存失败");
-                                });
-                            }
-                        });
-
-                        tbkStichStatus.Text = "";
-                    }
-                }
-                else
-                {
-                    await CommonDialog.ShowErrorDialogAsync("没有已生成的地图！");
-                }
-            }
-        }
-
-        private async void WindowClosing(object sender, CancelEventArgs e)
-        {
-            if (CurrentDownloadStatus == DownloadStatus.Downloading)
-            {
-                e.Cancel = true;
-                if (await CommonDialog.ShowYesNoDialogAsync("正在下载瓦片，是否停止下载后关闭窗口？"))
-                {
-                    closing = true;
-                    StopDownloading();
-                }
-            }
-            Config.Instance.Tile_LastDownload = CurrentDownload;
-
-            Config.Save();
-        }
-
-        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!Directory.Exists(Config.Tile_DownloadFolder))
-                {
-                    Directory.CreateDirectory(Config.Tile_DownloadFolder);
-                }
-                await IOUtility.TryOpenFolderAsync(Config.Tile_DownloadFolder);
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("无法打开目录", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "无法打开目录");
-            }
+            CurrentDownloadStatus = DownloadStatus.Pausing;
         }
 
         private async void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -614,11 +636,6 @@ namespace MapBoard.UI.TileDownloader
                 }
                 await arcLocalMap.LoadAsync();
             }
-        }
-
-        private void arcMap_SelectBoundaryComplete(object sender, EventArgs e)
-        {
-            downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -640,87 +657,20 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private async void WindowClosing(object sender, CancelEventArgs e)
         {
-            if (waiting)
+            if (CurrentDownloadStatus == DownloadStatus.Downloading)
             {
-                return;
-            }
-            TileDownloaderMapView map = sender as TileDownloaderMapView;
-            if (map.Map == null || map.Map.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded)
-            {
-                return;
-            }
-            MapPoint point = map.ScreenToLocation(e.GetPosition(sender as IInputElement));
-
-            point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
-            int z = (int)(Math.Log(1e9 / map.MapScale, 2));
-            (int x, int y) = TileLocation.GeoPointToTile(point, z);
-            string l = Environment.NewLine;
-            tbkTileIndex.Text = $"Z={z}{l}X={x}{l}Y={y}";
-            waiting = true;
-            Task.Delay(250).ContinueWith(p => waiting = false);
-        }
-
-        private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
-        {
-            TileSourceInfo tile = new TileSourceInfo();
-            if (dgrdUrls.SelectedIndex == -1)
-            {
-                Config.Tile_Urls.Sources.Add(tile);
-            }
-            else
-            {
-                Config.Tile_Urls.Sources.Insert(dgrdUrls.SelectedIndex + 1, tile);
-            }
-            dgrdUrls.SelectedItem = tile;
-            dgrdUrls.ScrollIntoView(tile);
-        }
-
-        private void DeleteTileSourceButtonClick(object sender, RoutedEventArgs e)
-        {
-            Config.Tile_Urls.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
-        }
-
-        private async void DeleteEmptyFilesButtonClick(object sender, RoutedEventArgs e)
-        {
-            await DoAsync(async () =>
-            {
-                try
+                e.Cancel = true;
+                if (await CommonDialog.ShowYesNoDialogAsync("正在下载瓦片，是否停止下载后关闭窗口？"))
                 {
-                    string[] files = null;
-                    await Task.Run(() => files = Directory.EnumerateFiles(Config.Instance.Tile_DownloadFolder, "*", SearchOption.AllDirectories)
-                    .Where(p => new FileInfo(p).Length == 0).ToArray());
-                    if (files.Length == 0)
-                    {
-                        await CommonDialog.ShowErrorDialogAsync("没有空文件");
-                    }
-                    else
-                    {
-                        if (await CommonDialog.ShowYesNoDialogAsync($"共找到{files.Length}个空文件，是否删除？") == true)
-                        {
-                            foreach (var file in files)
-                            {
-                                File.Delete(file);
-                            }
-                            await CommonDialog.ShowOkDialogAsync("删除空文件", "删除成功");
-                        }
-                    };
+                    closing = true;
+                    StopDownloading();
                 }
-                catch (Exception ex)
-                {
-                    App.Log.Error("删除空文件失败", ex);
-                    await CommonDialog.ShowErrorDialogAsync(ex, "删除失败");
-                }
-            }, "正在删除");
-        }
-    }
+            }
+            Config.Instance.Tile_LastDownload = CurrentDownload;
 
-    public enum DownloadStatus
-    {
-        Downloading,
-        Paused,
-        Stop,
-        Pausing
+            Config.Save();
+        }
     }
 }

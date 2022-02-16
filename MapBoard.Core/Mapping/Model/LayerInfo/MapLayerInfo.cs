@@ -7,6 +7,7 @@ using MapBoard.Model;
 using MapBoard.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,73 +18,72 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
+    public enum FeaturesChangedSource
     {
-        public class Types
+        [Description("绘制")]
+        Draw,
+
+        [Description("编辑")]
+        Edit,
+
+        [Description("要素操作")]
+        FeatureOperation,
+
+        [Description("撤销")]
+        Undo,
+
+        [Description("导入")]
+        Import
+    }
+
+    public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
+    {
+        public FeaturesChangedEventArgs(MapLayerInfo layer,
+            IEnumerable<Feature> addedFeatures,
+            IEnumerable<Feature> deletedFeatures,
+            IEnumerable<UpdatedFeature> changedFeatures,
+            FeaturesChangedSource source)
         {
-            //public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
-            //{
-            //   Types.Shapefile,null,Types.WFS,Types.Temp
-            //};
-            [Description("Shapefile文件")]
-            public const string Shapefile = "Shapefile";
-
-            [Description("网络矢量服务")]
-            public const string WFS = "WFS";
-
-            [Description("临时矢量图层")]
-            public const string Temp = "Temp";
-
-            private static IEnumerable<System.Reflection.FieldInfo> GetSupportedTypes()
+            Source = source;
+            Time = DateTime.Now;
+            int count = 0;
+            if (deletedFeatures != null)
             {
-                return typeof(Types).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                    .Where(fi => fi.IsLiteral && !fi.IsInitOnly);
+                count++;
+                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
             }
-
-            /// <summary>
-            /// 获取所有支持的图层类型名
-            /// </summary>
-            /// <returns></returns>
-            public static IEnumerable<string> GetSupportedTypeNames()
+            if (addedFeatures != null)
             {
-                return GetSupportedTypes().Select(p => p.GetRawConstantValue() as string).Concat(new string[] { null });
+                count++;
+                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
             }
-
-            /// <summary>
-            /// 获取给定类型代码的图层类型描述
-            /// </summary>
-            /// <param name="type"></param>
-            /// <returns></returns>
-            public static string GetDescription(string type)
+            if (changedFeatures != null)
             {
-                var types = GetSupportedTypes();
-                var target = types.Where(p => p.GetRawConstantValue() as string == type).FirstOrDefault();
-                if (target == null)
-                {
-                    throw new ArgumentException("找不到类型：" + type);
-                }
-                return target.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault()?.Description ?? type;
+                count++;
+                UpdatedFeatures = new List<UpdatedFeature>(changedFeatures).AsReadOnly();
             }
+            Debug.Assert(count == 1);
+            Layer = layer;
         }
 
-        //[JsonIgnore]
-        //public bool TimeExtentEnable
-        //{
-        //    get => TimeExtent == null ? false : TimeExtent.IsEnable;
-        //    set
-        //    {
-        //        if (TimeExtent != null)
-        //        {
-        //            if (value != TimeExtent.IsEnable)
-        //            {
-        //                TimeExtent.IsEnable = value;
-        //                this.SetTimeExtentAsync();
-        //            }
-        //        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        //        this.Notify(nameof(TimeExtentEnable));
-        //    }
-        //}
+        public IReadOnlyList<Feature> AddedFeatures { get; }
+
+        public bool CanUndo { get; set; }
+
+        public IReadOnlyList<Feature> DeletedFeatures { get; }
+        public MapLayerInfo Layer { get; }
+        public FeaturesChangedSource Source { get; }
+        public DateTime Time { get; }
+        public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
+    }
+
+    public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
+    {
+        protected FeatureTable table;
+
+        private FeatureLayer layer;
 
         public MapLayerInfo()
         {
@@ -102,14 +102,51 @@ namespace MapBoard.Mapping.Model
            }).CreateMapper().Map(layer, this);
         }
 
-        public override object Clone()
-        {
-            var layer = new MapperConfiguration(cfg =>
-              {
-                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
-              }).CreateMapper().Map<MapLayerInfo>(this);
+        public event EventHandler Unattached;
 
-            return layer;
+        [JsonIgnore]
+        public GeometryType GeometryType => table.GeometryType;
+
+        [JsonIgnore]
+        public bool HasTable => table != null;
+
+        [JsonIgnore]
+        [AlsoNotifyFor(nameof(GeometryType))]
+        public bool IsLoaded { get; set; }
+
+        [JsonIgnore]
+        public FeatureLayer Layer => layer;
+
+        public override bool LayerVisible
+        {
+            get => base.LayerVisible;
+            set
+            {
+                base.LayerVisible = value;
+                if (Layer != null)
+                {
+                    Layer.IsVisible = value;
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public Exception LoadError { get; private set; }
+
+        [JsonIgnore]
+        public long NumberOfFeatures
+        {
+            get
+            {
+                try
+                {
+                    return table == null ? 0 : table.NumberOfFeatures;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
         }
 
         /// <summary>
@@ -120,27 +157,19 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public abstract Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers);
 
-        private FeatureLayer layer;
-
-        [JsonIgnore]
-        public FeatureLayer Layer => layer;
-
-        protected FeatureTable table;
-
-        /// <summary>
-        /// 获取要素类
-        /// </summary>
-        /// <returns></returns>
-        protected abstract FeatureTable GetTable();
-
-        /// <summary>
-        /// 获取用于进行操作的图层
-        /// </summary>
-        /// <param name="table"></param>
-        /// <returns></returns>
-        protected virtual FeatureLayer GetNewLayer(FeatureTable table)
+        public override object Clone()
         {
-            return new FeatureLayer(table);
+            var layer = new MapperConfiguration(cfg =>
+              {
+                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
+              }).CreateMapper().Map<MapLayerInfo>(this);
+
+            return layer;
+        }
+
+        public virtual void Dispose()
+        {
+            Unattached?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
@@ -152,49 +181,16 @@ namespace MapBoard.Mapping.Model
             return layer;
         }
 
-        private bool isLoaded;
-
-        [JsonIgnore]
-        public bool IsLoaded
+        public SymbolInfo GetDefaultSymbol()
         {
-            get => isLoaded;
-            private set
+            return GeometryType switch
             {
-                this.SetValueAndNotify(ref isLoaded, value, nameof(IsLoaded));
-                this.Notify(nameof(GeometryType));
-            }
-        }
-
-        /// <summary>
-        /// 重新加载
-        /// </summary>
-        /// <param name="layers"></param>
-        /// <returns></returns>
-        public async Task ReloadAsync(MapLayerCollection layers)
-        {
-            FeatureTable newTable = GetTable();
-            try
-            {
-                await newTable.LoadAsync();
-            }
-            catch
-            {
-                IsLoaded = false;
-                throw;
-            }
-            //如果上面加载失败，那么不会执行下面的语句
-            table = newTable;
-            layer = GetNewLayer(table);
-            await Task.Run(this.ApplyStyle);
-            await this.LayerCompleteAsync();
-
-            //也许是Esri的BUG，如果不重新插入，那么可能啥都不会显示
-            layers.RefreshEsriLayer(this);
-
-            IsLoaded = true;
-            this.Notify(nameof(NumberOfFeatures));
-            this.Notify(nameof(GeometryType));
-            LoadCompleted();
+                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
+                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
+                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
+                _ => null
+            };
         }
 
         /// <summary>
@@ -243,8 +239,62 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        [JsonIgnore]
-        public Exception LoadError { get; private set; }
+        public Task<Envelope> QueryExtentAsync(QueryParameters parameters)
+        {
+            return table.QueryExtentAsync(parameters);
+        }
+
+        public Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters parameters)
+        {
+            return table.QueryFeaturesAsync(parameters);
+        }
+
+        /// <summary>
+        /// 重新加载
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns></returns>
+        public async Task ReloadAsync(MapLayerCollection layers)
+        {
+            FeatureTable newTable = GetTable();
+            try
+            {
+                await newTable.LoadAsync();
+            }
+            catch
+            {
+                IsLoaded = false;
+                throw;
+            }
+            //如果上面加载失败，那么不会执行下面的语句
+            table = newTable;
+            layer = GetNewLayer(table);
+            await Task.Run(this.ApplyStyle);
+            await this.LayerCompleteAsync();
+
+            //也许是Esri的BUG，如果不重新插入，那么可能啥都不会显示
+            layers.RefreshEsriLayer(this);
+
+            IsLoaded = true;
+            this.Notify(nameof(NumberOfFeatures), nameof(GeometryType));
+            LoadCompleted();
+        }
+
+        /// <summary>
+        /// 获取用于进行操作的图层
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        protected virtual FeatureLayer GetNewLayer(FeatureTable table)
+        {
+            return new FeatureLayer(table);
+        }
+
+        /// <summary>
+        /// 获取要素类
+        /// </summary>
+        /// <returns></returns>
+        protected abstract FeatureTable GetTable();
 
         protected virtual void LoadCompleted()
         {
@@ -273,134 +323,51 @@ namespace MapBoard.Mapping.Model
             };
         }
 
-        [JsonIgnore]
-        public bool HasTable => table != null;
-
-        [JsonIgnore]
-        public GeometryType GeometryType => table.GeometryType;
-
-        public override bool LayerVisible
+        public class Types
         {
-            get => base.LayerVisible;
-            set
+            //public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
+            //{
+            //   Types.Shapefile,null,Types.WFS,Types.Temp
+            //};
+            [Description("Shapefile文件")]
+            public const string Shapefile = "Shapefile";
+
+            [Description("临时矢量图层")]
+            public const string Temp = "Temp";
+
+            [Description("网络矢量服务")]
+            public const string WFS = "WFS";
+
+            /// <summary>
+            /// 获取给定类型代码的图层类型描述
+            /// </summary>
+            /// <param name="type"></param>
+            /// <returns></returns>
+            public static string GetDescription(string type)
             {
-                base.LayerVisible = value;
-                if (Layer != null)
+                var types = GetSupportedTypes();
+                var target = types.Where(p => p.GetRawConstantValue() as string == type).FirstOrDefault();
+                if (target == null)
                 {
-                    Layer.IsVisible = value;
+                    throw new ArgumentException("找不到类型：" + type);
                 }
-                this.Notify(nameof(LayerVisible));
+                return target.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault()?.Description ?? type;
             }
-        }
 
-        public SymbolInfo GetDefaultSymbol()
-        {
-            return GeometryType switch
+            /// <summary>
+            /// 获取所有支持的图层类型名
+            /// </summary>
+            /// <returns></returns>
+            public static IEnumerable<string> GetSupportedTypeNames()
             {
-                GeometryType.Point => SymbolInfo.DefaultPointSymbol,
-                GeometryType.Multipoint => SymbolInfo.DefaultPointSymbol,
-                GeometryType.Polyline => SymbolInfo.DefaultLineSymbol,
-                GeometryType.Polygon => SymbolInfo.DefaultPolygonSymbol,
-                _ => null
-            };
-        }
-
-        [JsonIgnore]
-        public long NumberOfFeatures
-        {
-            get
-            {
-                try
-                {
-                    return table == null ? 0 : table.NumberOfFeatures;
-                }
-                catch
-                {
-                    return 0;
-                }
+                return GetSupportedTypes().Select(p => p.GetRawConstantValue() as string).Concat(new string[] { null });
             }
-        }
 
-        public virtual void Dispose()
-        {
-            Unattached?.Invoke(this, new EventArgs());
-        }
-
-        public Task<Envelope> QueryExtentAsync(QueryParameters parameters)
-        {
-            return table.QueryExtentAsync(parameters);
-        }
-
-        public Task<FeatureQueryResult> QueryFeaturesAsync(QueryParameters parameters)
-        {
-            return table.QueryFeaturesAsync(parameters);
-        }
-
-        public event EventHandler Unattached;
-    }
-
-    public enum FeaturesChangedSource
-    {
-        [Description("绘制")]
-        Draw,
-
-        [Description("编辑")]
-        Edit,
-
-        [Description("要素操作")]
-        FeatureOperation,
-
-        [Description("撤销")]
-        Undo,
-
-        [Description("导入")]
-        Import
-    }
-
-    public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
-    {
-        public IReadOnlyList<Feature> DeletedFeatures { get; }
-        public IReadOnlyList<Feature> AddedFeatures { get; }
-        public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
-        public MapLayerInfo Layer { get; }
-        public DateTime Time { get; }
-        public FeaturesChangedSource Source { get; }
-        private bool canUndo = true;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public bool CanUndo
-        {
-            get => canUndo;
-            set => this.SetValueAndNotify(ref canUndo, value, nameof(CanUndo));
-        }
-
-        public FeaturesChangedEventArgs(MapLayerInfo layer,
-            IEnumerable<Feature> addedFeatures,
-            IEnumerable<Feature> deletedFeatures,
-            IEnumerable<UpdatedFeature> changedFeatures,
-            FeaturesChangedSource source)
-        {
-            Source = source;
-            Time = DateTime.Now;
-            int count = 0;
-            if (deletedFeatures != null)
+            private static IEnumerable<System.Reflection.FieldInfo> GetSupportedTypes()
             {
-                count++;
-                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
+                return typeof(Types).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                    .Where(fi => fi.IsLiteral && !fi.IsInitOnly);
             }
-            if (addedFeatures != null)
-            {
-                count++;
-                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
-            }
-            if (changedFeatures != null)
-            {
-                count++;
-                UpdatedFeatures = new List<UpdatedFeature>(changedFeatures).AsReadOnly();
-            }
-            Debug.Assert(count == 1);
-            Layer = layer;
         }
     }
 }

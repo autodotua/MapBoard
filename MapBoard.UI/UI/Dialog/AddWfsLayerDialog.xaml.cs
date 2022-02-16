@@ -30,8 +30,8 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class AddWfsLayerDialog : CommonDialog
     {
-        public bool editMode = false;
         public WfsMapLayerInfo editLayer = null;
+        public bool editMode = false;
 
         public AddWfsLayerDialog(MapLayerCollection layers, WfsMapLayerInfo layer = null)
         {
@@ -53,55 +53,13 @@ namespace MapBoard.UI.Dialog
             Layers = layers;
         }
 
-        private IReadOnlyList<WfsLayerInfo> wfsLayers;
-
-        public IReadOnlyList<WfsLayerInfo> WfsLayers
-        {
-            get => wfsLayers;
-            set => this.SetValueAndNotify(ref wfsLayers, value, nameof(WfsLayers));
-        }
-
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
-        private string layerName;
-
-        public string LayerName
-        {
-            get => layerName;
-            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
-        }
-
-        private bool autoPopulateAll;
-
-        public bool AutoPopulateAll
-        {
-            get => autoPopulateAll;
-            set => this.SetValueAndNotify(ref autoPopulateAll, value, nameof(AutoPopulateAll));
-        }
-
-        private string url;
-
-        public string Url
-        {
-            get => url;
-            set => this.SetValueAndNotify(ref url, value, nameof(Url));
-        }
-
-        private string wfsLayerName;
-
-        public string WfsLayerName
-        {
-            get => wfsLayerName;
-            set => this.SetValueAndNotify(ref wfsLayerName, value, nameof(WfsLayerName));
-        }
-
+        public bool AutoPopulateAll { get; set; }
+        public string LayerName { get; set; }
         public MapLayerCollection Layers { get; }
+        public string Message { get; set; }
+        public string Url { get; set; }
+        public string WfsLayerName { get; set; }
+        public IReadOnlyList<WfsLayerInfo> WfsLayers { get; set; }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
@@ -146,7 +104,7 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             try
             {
-                WfsService s = new WfsService(new Uri(url));
+                WfsService s = new WfsService(new Uri(Url));
                 await s.LoadAsync();
                 WfsLayers = s.ServiceInfo.LayerInfos;
                 if (WfsLayers.Count > 0)

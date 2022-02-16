@@ -137,9 +137,6 @@ namespace MapBoard.Util
             int receivelength = netstream.Read(buffer, 0, 2048);
             string requeststring = Encoding.UTF8.GetString(buffer, 0, receivelength);
 
-            // 在服务器端输出请求的消息
-            //Debug.WriteLine(requeststring);
-
             Regex r = new Regex("GET /([0-9]+)-([0-9]+)-([0-9]+) HTTP");
             if (r.IsMatch(requeststring))
             {

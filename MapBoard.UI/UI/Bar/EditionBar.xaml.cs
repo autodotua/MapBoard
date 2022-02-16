@@ -24,6 +24,30 @@ namespace MapBoard.UI.Bar
             InitializeComponent();
         }
 
+        public override FeatureAttributeCollection Attributes => MapView.Editor.Attributes;
+
+        public bool CanAddPart => IsOpen
+            && MapView.SketchEditor.Geometry != null
+            && MapView.SketchEditor.Geometry is Multipart m
+            && MapView.SketchEditor.CreationMode is SCM.Polyline or SCM.Polygon;
+
+        public bool CanDeleteSelectedVertex => MapView != null && MapView.SketchEditor != null && MapView.SketchEditor.SelectedVertex != null;
+
+        public bool CanRemovePart => IsOpen
+            && MapView.SketchEditor.Geometry != null
+            && MapView.SketchEditor.Geometry is Multipart m
+            && MapView.SketchEditor.CreationMode is SCM.Polyline or SCM.Polygon
+            && MapView.SketchEditor.SelectedVertex != null
+            && m.Parts.Count > 1;
+
+        public override double ExpandDistance => 28;
+
+        public string Message { get; set; }
+
+        public string Title { get; set; }
+
+        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
+
         public override void Initialize()
         {
             MapView.BoardTaskChanged += BoardTaskChanged;
@@ -31,14 +55,51 @@ namespace MapBoard.UI.Bar
             MapView.SketchEditor.PropertyChanged += SketchEditor_PropertyChanged;
         }
 
-        private void SketchEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void AddPartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (e.PropertyName is nameof(MapView.SketchEditor.Geometry) or nameof(MapView.SketchEditor.CreationMode))
+            var geometry = MapView.SketchEditor.Geometry;
+            if (geometry is Multipart m)
             {
-                this.Notify(nameof(CanAddPart), nameof(CanRemovePart));
-
-                Message = (!IsOpen || MapView.SketchEditor.Geometry == null) ? "" : GetMessage();
+                if (m.Parts[^1].PointCount == 0)
+                {
+                    //如果最后一个部分已经建立但没有图形，那么就取消选中就可以了
+                    MapView.SketchEditor.ClearVertexSelection();
+                    return;
+                }
+                var parts = new List<IEnumerable<Segment>>(m.Parts);
+                parts.Add(Array.Empty<Segment>());
+                MapView.SketchEditor.ReplaceGeometry(m is Polyline ? new Polyline(parts) : new Polygon(parts));
+                MapView.SketchEditor.ClearVertexSelection();//清除选中的节点，才能开始下一个部分
             }
+            else
+            {
+                throw new NotSupportedException("只支持对多部分图形增加部分");
+            }
+        }
+
+        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            if (e.NewTask == BoardTask.Draw && MapView.Editor.Mode is EditMode.Creat or EditMode.Edit)
+            {
+                Title = MapView.Editor.Mode switch
+                {
+                    EditMode.Creat => "正在绘制",
+                    EditMode.Edit => "正在编辑",
+                    _ => ""
+                };
+                Message = "";
+                this.Notify(nameof(MapView));
+                Expand();
+            }
+            else
+            {
+                Collapse();
+            }
+        }
+
+        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        {
+            MapView.Editor.Cancel();
         }
 
         private string GetMessage()
@@ -71,112 +132,9 @@ namespace MapBoard.UI.Bar
             };
         }
 
-        public bool CanAddPart => IsOpen
-            && MapView.SketchEditor.Geometry != null
-            && MapView.SketchEditor.Geometry is Multipart m
-            && MapView.SketchEditor.CreationMode is SCM.Polyline or SCM.Polygon;
-
-        public bool CanRemovePart => IsOpen
-            && MapView.SketchEditor.Geometry != null
-            && MapView.SketchEditor.Geometry is Multipart m
-            && MapView.SketchEditor.CreationMode is SCM.Polyline or SCM.Polygon
-            && MapView.SketchEditor.SelectedVertex != null
-            && m.Parts.Count > 1;
-
-        public bool CanDeleteSelectedVertex => MapView != null && MapView.SketchEditor != null && MapView.SketchEditor.SelectedVertex != null;
-
-        public override FeatureAttributeCollection Attributes => MapView.Editor.Attributes;
-
-        private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
-        {
-            this.Notify(nameof(CanDeleteSelectedVertex), nameof(CanRemovePart));
-        }
-
-        public override double ExpandDistance => 28;
-
-        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
-
-        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
-        {
-            if (e.NewTask == BoardTask.Draw&&MapView.Editor.Mode is  EditMode.Creat or EditMode.Edit)
-            {
-                Title = MapView.Editor.Mode switch
-                {
-                    EditMode.Creat => "正在绘制",
-                    EditMode.Edit => "正在编辑",
-                    _ => ""
-                };
-                Message = "";
-                this.Notify(nameof(MapView));
-                Expand();
-            }
-            else
-            {
-                Collapse();
-            }
-        }
-
-        private string title;
-
-        public string Title
-        {
-            get => title;
-            set => this.SetValueAndNotify(ref title, value, nameof(Title));
-        }
-
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             MapView.Editor.StopAndSave();
-        }
-
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
-        {
-            MapView.Editor.Cancel();
-        }
-
-        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
-        {
-            MapView.SketchEditor.RemoveSelectedVertex();
-        }
-
-        private void TextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Enter)
-            {
-                (sender as TextBox).GetBindingExpression(TextBox.TextProperty)
-                      .UpdateSource();//由于要失去焦点才会更新数据，因此按回车以后要手动强制更新
-                MapView.Editor.StopAndSave();
-            }
-        }
-
-        private void AddPartButton_Click(object sender, RoutedEventArgs e)
-        {
-            var geometry = MapView.SketchEditor.Geometry;
-            if (geometry is Multipart m)
-            {
-                if (m.Parts[^1].PointCount == 0)
-                {
-                    //如果最后一个部分已经建立但没有图形，那么就取消选中就可以了
-                    MapView.SketchEditor.ClearVertexSelection();
-                    return;
-                }
-                var parts = new List<IEnumerable<Segment>>(m.Parts);
-                parts.Add(Array.Empty<Segment>());
-                MapView.SketchEditor.ReplaceGeometry(m is Polyline ? new Polyline(parts) : new Polygon(parts));
-                MapView.SketchEditor.ClearVertexSelection();//清除选中的节点，才能开始下一个部分
-            }
-            else
-            {
-                throw new NotSupportedException("只支持对多部分图形增加部分");
-            }
         }
 
         private void RemovePartButton_Click(object sender, RoutedEventArgs e)
@@ -201,6 +159,36 @@ namespace MapBoard.UI.Bar
             else
             {
                 throw new NotSupportedException("只支持对多部分图形增加部分");
+            }
+        }
+
+        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
+        {
+            MapView.SketchEditor.RemoveSelectedVertex();
+        }
+
+        private void SketchEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(MapView.SketchEditor.Geometry) or nameof(MapView.SketchEditor.CreationMode))
+            {
+                this.Notify(nameof(CanAddPart), nameof(CanRemovePart));
+
+                Message = (!IsOpen || MapView.SketchEditor.Geometry == null) ? "" : GetMessage();
+            }
+        }
+
+        private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
+        {
+            this.Notify(nameof(CanDeleteSelectedVertex), nameof(CanRemovePart));
+        }
+
+        private void TextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                (sender as TextBox).GetBindingExpression(TextBox.TextProperty)
+                      .UpdateSource();//由于要失去焦点才会更新数据，因此按回车以后要手动强制更新
+                MapView.Editor.StopAndSave();
             }
         }
     }

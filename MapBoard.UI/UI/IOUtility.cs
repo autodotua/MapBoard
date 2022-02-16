@@ -27,6 +27,7 @@ using MapBoard.UI.Dialog;
 using System.Drawing.Imaging;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using FzLib.WPF;
 
 namespace MapBoard.UI
 {
@@ -422,7 +423,7 @@ namespace MapBoard.UI
             catch (Exception ex)
             {
                 App.Log.Error("打开失败", ex);
-                CommonDialog.ShowErrorDialogAsync(ex, "打开失败");
+                await CommonDialog.ShowErrorDialogAsync(ex, "打开失败");
             }
         }
 

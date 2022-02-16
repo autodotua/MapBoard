@@ -204,15 +204,15 @@
                                                     Click="CreateKeyButtonClick"
                                                     Content="新建" />
                                                 <Button
-                                                    x:Name="btnChangeKey"
                                                     Grid.Column="4"
                                                     Click="ChangeKeyButtonClick"
-                                                    Content="修改" />
+                                                    Content="修改"
+                                                    IsEnabled="{Binding CanChangeOrDeleteKey}" />
                                                 <Button
-                                                    x:Name="btnDeleteKey"
                                                     Grid.Column="6"
                                                     Click="DeleteKeyButtonClick"
-                                                    Content="删除" />
+                                                    Content="删除"
+                                                    IsEnabled="{Binding CanChangeOrDeleteKey}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.ColumnSpan="3"

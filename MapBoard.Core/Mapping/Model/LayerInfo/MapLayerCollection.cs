@@ -52,7 +52,7 @@ namespace MapBoard.Mapping.Model
                 {
                     SelectedIndex = -1;
                 }
-                this.SetValueAndNotify(ref selected, value, nameof(Selected));
+                selected = value;
             }
         }
 

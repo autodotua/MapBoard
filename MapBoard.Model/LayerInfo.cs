@@ -12,29 +12,11 @@ namespace MapBoard.Model
     [DebuggerDisplay("{Name}")]
     public class LayerInfo : ICloneable, ILayerInfo
     {
-        private string name;
-
-        public string Name
-        {
-            get => name;
-            set => this.SetValueAndNotify(ref name, value, nameof(Name));
-        }
-
-        public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
-
-        private bool layerVisible = true;
-
-        public virtual bool LayerVisible
-        {
-            get => layerVisible;
-            set
-            {
-                layerVisible = value;
-                this.Notify(nameof(LayerVisible));
-            }
-        }
-
         private FieldInfo[] fields;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public LayerDisplay Display { get; set; } = new LayerDisplay();
 
         public FieldInfo[] Fields
         {
@@ -46,34 +28,23 @@ namespace MapBoard.Model
                 }
                 return fields;
             }
-            set => this.SetValueAndNotify(ref fields, value, nameof(Fields));
+            set => fields = value;
         }
 
-        private string group;
-
-        public string Group
-        {
-            get => group;
-            set => this.SetValueAndNotify(ref group, value, nameof(Group));
-        }
-
-        private TimeExtentInfo timeExtent;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public TimeExtentInfo TimeExtent
-        {
-            get => timeExtent;
-            set => this.SetValueAndNotify(ref timeExtent, value, nameof(TimeExtent));
-        }
+        public string Group { get; set; }
 
         public LabelInfo[] Labels { get; set; }
 
-        [JsonProperty]
-        public virtual string Type { get; protected set; }
+        public virtual bool LayerVisible { get; set; }
+
+        public string Name { get; set; }
 
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
-        public LayerDisplay Display { get; set; } = new LayerDisplay();
+        public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
+        public TimeExtentInfo TimeExtent { get; set; }
+
+        [JsonProperty]
+        public virtual string Type { get; protected set; }
 
         public virtual object Clone()
         {

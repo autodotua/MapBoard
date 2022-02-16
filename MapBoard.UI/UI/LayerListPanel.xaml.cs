@@ -1,31 +1,20 @@
 ﻿using FzLib;
-using FzLib.WPF.Dialog;
-
-using MapBoard.IO;
 using MapBoard.Model;
 using MapBoard.Mapping;
-using MapBoard.Util;
-using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using Color = System.Drawing.Color;
-using Path = System.IO.Path;
 using MapBoard.Mapping.Model;
 using System.Windows.Input;
 using System.Collections;
 using System.Collections.Generic;
 using ModernWpf.Controls;
-using MapBoard.UI.Component;
 using GongSolutions.Wpf.DragDrop;
-using System.Diagnostics;
+using FzLib.WPF;
 
 namespace MapBoard.UI
 {
@@ -34,7 +23,16 @@ namespace MapBoard.UI
     /// </summary>
     public partial class LayerListPanel : UserControlBase, IDropTarget
     {
+        private bool changingSelection = false;
+
+        /// <summary>
+        /// 是否正在修改分组可见
+        /// </summary>
+        private bool isChangingGroupVisiable = false;
+
         private LayerListPanelHelper layerListHelper;
+
+        private int viewType = 0;
 
         public LayerListPanel()
         {
@@ -43,59 +41,29 @@ namespace MapBoard.UI
             Config.Instance.PropertyChanged += Instance_PropertyChanged;
         }
 
-        private void Instance_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        /// <summary>
+        /// 传递SelectionChanged事件
+        /// </summary>
+        public event SelectionChangedEventHandler SelectionChanged
         {
-            if (e.PropertyName == nameof(Config.Instance.UseCompactLayerList))
+            add
             {
-                SetListDataTemplate();
+                dataGrid.SelectionChanged += value;
+            }
+            remove
+            {
+                dataGrid.SelectionChanged -= value;
             }
         }
-
-        private void SetListDataTemplate()
-        {
-            if (Config.Instance.UseCompactLayerList)
-            {
-                dataGrid.ItemTemplate = FindResource("dtCompact") as DataTemplate;
-            }
-            else
-            {
-                dataGrid.ItemTemplate = FindResource("dtNormal") as DataTemplate;
-            }
-        }
-
-        private void UpdateLayout(double height)
-        {
-            var r = FindResource("bdGroups") as Border;
-            if (height < 800)
-            {
-                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Left;
-                btnGroups.Visibility = Visibility.Visible;
-                groupContent.Visibility = Visibility.Collapsed;
-                groupContent.Content = null;
-                flyoutGroups.Content = r;
-                r.Background = Brushes.Transparent;
-            }
-            else
-            {
-                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Center;
-                btnGroups.Visibility = Visibility.Collapsed;
-                groupContent.Visibility = Visibility.Visible;
-                flyoutGroups.Content = null;
-                groupContent.Content = r;
-                r.SetResourceReference(BackgroundProperty, "SystemControlBackgroundChromeMediumBrush");
-            }
-        }
-
-        private bool changingSelection = false;
 
         /// <summary>
         /// 分组
         /// </summary>
         public ObservableCollection<GroupInfo> Groups { get; } = new ObservableCollection<GroupInfo>();
 
-        public MainMapView MapView { get; set; }
         public MapLayerCollection Layers => MapView.Layers;
-        private int viewType = 0;
+
+        public MainMapView MapView { get; set; }
 
         public int ViewType
         {
@@ -137,6 +105,61 @@ namespace MapBoard.UI
             }
         }
 
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
+            {
+                return;
+            }
+            if (dropInfo.TargetItem == dropInfo.Data
+                || dropInfo.Data is IList)
+            {
+                return;
+            }
+            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
+            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            {
+                return;
+            }
+            dropInfo.Effects = DragDropEffects.Move;
+            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+        }
+
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
+            {
+                return;
+            }
+            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
+            if (oldIndex < 0 || oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            {
+                return;
+            }
+            int targetIndex = dropInfo.InsertIndex > oldIndex ? dropInfo.InsertIndex - 1 : dropInfo.InsertIndex;
+
+            Layers.Move(oldIndex, targetIndex);
+        }
+
+        /// <summary>
+        /// 生成分组多选框
+        /// </summary>
+        public void GenerateGroups()
+        {
+            Groups.Clear();
+            if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
+            {
+                Groups.Add(new GroupInfo("（无）",
+                    GetGroupVisiable(Layers.Where(p => string.IsNullOrEmpty(p.Group))), true));
+            }
+            foreach (var layers in Layers
+                .Where(p => !string.IsNullOrEmpty(p.Group))
+               .GroupBy(p => p.Group))
+            {
+                Groups.Add(new GroupInfo(layers.Key, GetGroupVisiable(layers)));
+            }
+        }
+
         /// <summary>
         /// 初始化
         /// </summary>
@@ -158,7 +181,75 @@ namespace MapBoard.UI
             Layers.CollectionChanged += Layers_CollectionChanged;
             Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
             //初始化图层列表相关操作
-            layerListHelper = new LayerListPanelHelper(dataGrid, Window.GetWindow(this) as MainWindow, mapView);
+            layerListHelper = new LayerListPanelHelper(dataGrid, this.GetWindow() as MainWindow, mapView);
+        }
+
+        /// <summary>
+        /// 单击分组可见多选框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            GroupInfo group = (sender as FrameworkElement).DataContext as GroupInfo;
+            isChangingGroupVisiable = true;
+            GetLayersByGroup(group).ForEach(p => p.LayerVisible = group.Visiable.Value);
+            isChangingGroupVisiable = false;
+        }
+
+        /// <summary>
+        /// 获取分组可见情况
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns>true为可见，false为不可见，null为部分可见</returns>
+        private bool? GetGroupVisiable(IEnumerable<ILayerInfo> layers)
+        {
+            int count = layers.Count();
+            int visiableCount = layers.Where(p => p.LayerVisible).Count();
+            if (visiableCount == 0)
+            {
+                return false;
+            }
+            if (count == visiableCount)
+            {
+                return true;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 根据分组获取该分组的所有图层
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private IEnumerable<ILayerInfo> GetLayersByGroup(GroupInfo group)
+        {
+            if (group.IsNull)
+            {
+                return Layers.Where(p => string.IsNullOrEmpty(p.Group));
+            }
+            else
+            {
+                return Layers.Where(p => p.Group == group.Name);
+            }
+        }
+
+        private void Instance_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.Instance.UseCompactLayerList))
+            {
+                SetListDataTemplate();
+            }
+        }
+
+        private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (Config.Instance.LastLayerListGroupType is >= 0 and < 3)
+            {
+                ViewType = Config.Instance.LastLayerListGroupType;
+            }
+            this.GetWindow().SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
+            UpdateLayout(this.GetWindow().ActualHeight);
         }
 
         /// <summary>
@@ -246,93 +337,16 @@ namespace MapBoard.UI
             changingSelection = false;
         }
 
-        /// <summary>
-        /// 传递SelectionChanged事件
-        /// </summary>
-        public event SelectionChangedEventHandler SelectionChanged
+        private void SetListDataTemplate()
         {
-            add
+            if (Config.Instance.UseCompactLayerList)
             {
-                dataGrid.SelectionChanged += value;
-            }
-            remove
-            {
-                dataGrid.SelectionChanged -= value;
-            }
-        }
-
-        /// <summary>
-        /// 根据分组获取该分组的所有图层
-        /// </summary>
-        /// <param name="group"></param>
-        /// <returns></returns>
-        private IEnumerable<ILayerInfo> GetLayersByGroup(GroupInfo group)
-        {
-            if (group.IsNull)
-            {
-                return Layers.Where(p => string.IsNullOrEmpty(p.Group));
+                dataGrid.ItemTemplate = FindResource("dtCompact") as DataTemplate;
             }
             else
             {
-                return Layers.Where(p => p.Group == group.Name);
+                dataGrid.ItemTemplate = FindResource("dtNormal") as DataTemplate;
             }
-        }
-
-        /// <summary>
-        /// 获取分组可见情况
-        /// </summary>
-        /// <param name="layers"></param>
-        /// <returns>true为可见，false为不可见，null为部分可见</returns>
-        private bool? GetGroupVisiable(IEnumerable<ILayerInfo> layers)
-        {
-            int count = layers.Count();
-            int visiableCount = layers.Where(p => p.LayerVisible).Count();
-            if (visiableCount == 0)
-            {
-                return false;
-            }
-            if (count == visiableCount)
-            {
-                return true;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 生成分组多选框
-        /// </summary>
-        public void GenerateGroups()
-        {
-            Groups.Clear();
-            if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
-            {
-                Groups.Add(new GroupInfo("（无）",
-                    GetGroupVisiable(Layers.Where(p => string.IsNullOrEmpty(p.Group))), true));
-            }
-            foreach (var layers in Layers
-                .Where(p => !string.IsNullOrEmpty(p.Group))
-               .GroupBy(p => p.Group))
-            {
-                Groups.Add(new GroupInfo(layers.Key, GetGroupVisiable(layers)));
-            }
-        }
-
-        /// <summary>
-        /// 是否正在修改分组可见
-        /// </summary>
-        private bool isChangingGroupVisiable = false;
-
-        /// <summary>
-        /// 单击分组可见多选框
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            GroupInfo group = (sender as FrameworkElement).DataContext as GroupInfo;
-            isChangingGroupVisiable = true;
-            GetLayersByGroup(group).ForEach(p => p.LayerVisible = group.Visiable.Value);
-            isChangingGroupVisiable = false;
         }
 
         /// <summary>
@@ -369,50 +383,27 @@ namespace MapBoard.UI
             txt.SelectAll();
         }
 
-        private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
+        private void UpdateLayout(double height)
         {
-            if (Config.Instance.LastLayerListGroupType is >= 0 and < 3)
+            var r = FindResource("bdGroups") as Border;
+            if (height < 800)
             {
-                ViewType = Config.Instance.LastLayerListGroupType;
+                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Left;
+                btnGroups.Visibility = Visibility.Visible;
+                groupContent.Visibility = Visibility.Collapsed;
+                groupContent.Content = null;
+                flyoutGroups.Content = r;
+                r.Background = Brushes.Transparent;
             }
-            Window.GetWindow(this).SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
-            UpdateLayout(Window.GetWindow(this).ActualHeight);
-        }
-
-        void IDropTarget.DragOver(IDropInfo dropInfo)
-        {
-            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
+            else
             {
-                return;
+                lvwViewTypes.HorizontalAlignment = HorizontalAlignment.Center;
+                btnGroups.Visibility = Visibility.Collapsed;
+                groupContent.Visibility = Visibility.Visible;
+                flyoutGroups.Content = null;
+                groupContent.Content = r;
+                r.SetResourceReference(BackgroundProperty, "SystemControlBackgroundChromeMediumBrush");
             }
-            if (dropInfo.TargetItem == dropInfo.Data
-                || dropInfo.Data is IList)
-            {
-                return;
-            }
-            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
-            {
-                return;
-            }
-            dropInfo.Effects = DragDropEffects.Move;
-            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-        }
-
-        void IDropTarget.Drop(IDropInfo dropInfo)
-        {
-            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
-            {
-                return;
-            }
-            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex < 0 || oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
-            {
-                return;
-            }
-            int targetIndex = dropInfo.InsertIndex > oldIndex ? dropInfo.InsertIndex - 1 : dropInfo.InsertIndex;
-
-            Layers.Move(oldIndex, targetIndex);
         }
     }
 }

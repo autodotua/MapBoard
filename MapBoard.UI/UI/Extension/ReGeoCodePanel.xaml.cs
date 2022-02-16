@@ -21,6 +21,10 @@ namespace MapBoard.UI.Extension
     /// </summary>
     public partial class ReGeoCodePanel : ExtensionPanelBase
     {
+        private int radius = 1000;
+
+        private PoiInfo selectedPoi;
+
         public ReGeoCodePanel()
         {
             if (ExtensionUtility.ReGeoCodeEngines.Count > 0)
@@ -30,9 +34,7 @@ namespace MapBoard.UI.Extension
             InitializeComponent();
         }
 
-        private int radius = 1000;
-
-        private LocationInfo searchResult = null;
+        public Location Point { get; set; }
 
         /// <summary>
         /// 搜索半径
@@ -51,28 +53,13 @@ namespace MapBoard.UI.Extension
                     radius = 3000;
                 }
                 radius = value;
-                this.Notify(nameof(Radius));
             }
         }
 
         /// <summary>
         /// 搜索结果
         /// </summary>
-        public LocationInfo SearchResult
-        {
-            get => searchResult;
-            set => this.SetValueAndNotify(ref searchResult, value, nameof(SearchResult));
-        }
-
-        private Location point;
-
-        public Location Point
-        {
-            get => point;
-            private set => this.SetValueAndNotify(ref point, value, nameof(Point));
-        }
-
-        private PoiInfo selectedPoi;
+        public LocationInfo SearchResult { get; set; }
 
         /// <summary>
         /// 选中的POI
@@ -82,7 +69,7 @@ namespace MapBoard.UI.Extension
             get => selectedPoi;
             set
             {
-                this.SetValueAndNotify(ref selectedPoi, value, nameof(SelectedPoi));
+                selectedPoi = value;
                 Overlay.SelectPoi(value);
             }
         }
@@ -91,6 +78,51 @@ namespace MapBoard.UI.Extension
         /// 使用的搜索引擎
         /// </summary>
         public IReGeoCodeEngine SelectedReGeoCodeEngine { get; set; }
+
+        private async void ChoosePointButton_Click(object sender, RoutedEventArgs e)
+        {
+            MapPoint point = await GetPointAsync();
+            if (point != null)
+            {
+                point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
+                Point = point.ToLocation();
+                Overlay.ShowLocation(point);
+            }
+        }
+
+        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            Overlay.ClearLocation();
+            Overlay.ClearPois();
+            SearchResult = null;
+        }
+
+        private void LocationPointButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MapView is MapView m)
+            {
+                if (m.LocationDisplay.Location == null)
+                {
+                    CommonDialog.ShowErrorDialogAsync("目前还未成功定位");
+                    return;
+                }
+                MapPoint point = GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint;
+
+                Point = point.ToLocation();
+            }
+            else
+            {
+                CommonDialog.ShowErrorDialogAsync("不支持该地图");
+            }
+        }
+
+        private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (Point == null)
+            {
+                Point = new Location();
+            }
+        }
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
@@ -131,51 +163,6 @@ namespace MapBoard.UI.Extension
             if (e.Key == Key.Enter)
             {
                 btnSearch.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-            }
-        }
-
-        private async void ChoosePointButton_Click(object sender, RoutedEventArgs e)
-        {
-            MapPoint point = await GetPointAsync();
-            if (point != null)
-            {
-                point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
-                Point = point.ToLocation();
-                Overlay.ShowLocation(point);
-            }
-        }
-
-        private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (Point == null)
-            {
-                Point = new Location();
-            }
-        }
-
-        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            Overlay.ClearLocation();
-            Overlay.ClearPois();
-            SearchResult = null;
-        }
-
-        private void LocationPointButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (MapView is MapView m)
-            {
-                if (m.LocationDisplay.Location == null)
-                {
-                    CommonDialog.ShowErrorDialogAsync("目前还未成功定位");
-                    return;
-                }
-                MapPoint point = GeometryEngine.Project(m.LocationDisplay.MapLocation, SpatialReferences.Wgs84) as MapPoint;
-
-                Point = point.ToLocation();
-            }
-            else
-            {
-                CommonDialog.ShowErrorDialogAsync("不支持该地图");
             }
         }
     }

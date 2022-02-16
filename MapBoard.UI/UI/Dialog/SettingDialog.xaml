@@ -431,7 +431,9 @@
                         <TextBlock
                             Opacity="0.7"
                             Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}}">
-                            绘制时，直接点击即可捕捉最近节点。此时无法捕捉正在编辑的图形。
+                            <Run>绘制时，直接点击即可捕捉最近节点。此时无法捕捉正在编辑的图形。</Run>
+                            <LineBreak />
+                            <Run>按住Ctrl+左键暂时取消捕捉，Shift+左键可捕捉最近任意点。</Run>
                         </TextBlock>
                         <ui:NumberBox
                             ui:ControlHelper.Header="捕捉范围（像素）"

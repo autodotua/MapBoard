@@ -40,7 +40,8 @@ namespace MapBoard.Mapping.Model
         }
 
 #pragma warning disable CS1998 // 异步方法缺少 "await" 运算符，将以同步方式运行
-        public async override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+
+        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
 #pragma warning restore CS1998 // 异步方法缺少 "await" 运算符，将以同步方式运行
         {
             Name = newName;
@@ -61,14 +62,8 @@ namespace MapBoard.Mapping.Model
         [JsonIgnore]
         public bool HasPopulateAll { get; private set; }
 
-        private bool isDownloading;
-
         [JsonIgnore]
-        public bool IsDownloading
-        {
-            get => isDownloading;
-            private set => this.SetValueAndNotify(ref isDownloading, value, nameof(IsDownloading));
-        }
+        public bool IsDownloading { get; set; }
 
         public async Task PopulateAllFromServiceAsync(CancellationToken? cancellationToken = null)
         {
@@ -116,7 +111,7 @@ namespace MapBoard.Mapping.Model
             ServiceParameters.AddOrSetValue(nameof(AutoPopulateAll), AutoPopulateAll.ToString());
         }
 
-        protected async override void LoadCompleted()
+        protected override async void LoadCompleted()
         {
             if (AutoPopulateAll)
             {

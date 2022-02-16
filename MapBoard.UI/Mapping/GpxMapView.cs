@@ -22,9 +22,11 @@ using static MapBoard.UI.GpxToolbox.SymbolResources;
 using MapBoard.Model;
 using MapBoard.Mapping.Model;
 using FzLib.Collection;
+using PropertyChanged;
 
 namespace MapBoard.Mapping
 {
+    [DoNotNotify]
     public class GpxMapView : SceneView
     {
         public ObservableCollection<TrackInfo> Tracks { get; set; }

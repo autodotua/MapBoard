@@ -21,7 +21,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class FeatureHistoryDialog : LayerDialogBase
     {
-        private FeatureAttributeCollection[] attributes;
+        private static Dictionary<IMapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<IMapLayerInfo, FeatureHistoryDialog>();
 
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
 
@@ -33,17 +33,9 @@ namespace MapBoard.UI.Dialog
             arcMap.BoardTaskChanged += ArcMap_BoardTaskChanged;
         }
 
-        private void ArcMap_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
-        {
-            IsEnabled = e.NewTask == BoardTask.Ready;
-        }
+        public FeatureAttributeCollection[] Attributes { get; set; }
 
-        private void Histories_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            scr.ScrollToEnd();
-        }
-
-        private static Dictionary<IMapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<IMapLayerInfo, FeatureHistoryDialog>();
+        public int EditedFeaturesCount => editedAttributes.Count;
 
         public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView arcMap)
         {
@@ -56,18 +48,20 @@ namespace MapBoard.UI.Dialog
             return dialog;
         }
 
-        public FeatureAttributeCollection[] Attributes
+        private void ArcMap_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            get => attributes;
-            private set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
+            IsEnabled = e.NewTask == BoardTask.Ready;
         }
-
-        public int EditedFeaturesCount => editedAttributes.Count;
 
         private void Dialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Debug.Assert(dialogs.ContainsKey(Layer));
             dialogs.Remove(Layer);
+        }
+
+        private void Histories_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            scr.ScrollToEnd();
         }
 
         private async void UndoButton_Click(object sender, RoutedEventArgs e)

@@ -22,6 +22,7 @@ using MapBoard.Mapping.Model;
 using MapBoard.UI.Component;
 using System.ComponentModel;
 using System.Diagnostics;
+using PropertyChanged;
 
 namespace MapBoard.UI
 {
@@ -32,11 +33,35 @@ namespace MapBoard.UI
     {
         private const string defaultKeyName = "（默认）";
 
+        private Random r = new Random();
+
+        private KeySymbolPair selectedKey;
+
         public LayerSettingPanel()
         {
             InitializeComponent();
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
+
+        public string[] Fonts { get; }
+
+        public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
+
+        public LabelInfo Label { get; set; }
+
+        public ObservableCollection<LabelInfo> Labels { get; set; }
+
+        public string LayerName { get; set; } = "图层名称";
+
+        public MapLayerCollection Layers => MapView?.Layers;
+
+        [AlsoNotifyFor(nameof(Layers))]
+        public MainMapView MapView { get; set; }
+
+        public bool CanChangeOrDeleteKey => SelectedKey != null && SelectedKey.Key != defaultKeyName;
+
+        [AlsoNotifyFor(nameof(CanChangeOrDeleteKey))]
+        public KeySymbolPair SelectedKey { get; set; }
 
         public void Initialize(MainMapView mapView)
         {
@@ -45,61 +70,52 @@ namespace MapBoard.UI
             MapView.Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
         }
 
-        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
+        public void ResetLayerSettingUI()
         {
-            if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
+            IMapLayerInfo layer = Layers.Selected;
+            if (layer == null)
             {
-                ResetLayerSettingUI();
+                tab.IsEnabled = false;
+                return;
             }
-        }
-
-        private MainMapView mapView;
-
-        public MainMapView MapView
-        {
-            get => mapView;
-            private set => this.SetValueAndNotify(ref mapView, value, nameof(MapView), nameof(Layers));
-        }
-
-        public MapLayerCollection Layers => MapView?.Layers;
-
-        public string[] Fonts { get; }
-
-        public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
-
-        public KeySymbolPair SelectedKey
-        {
-            get => selectedKey;
-            set
+            else
             {
-                this.SetValueAndNotify(ref selectedKey, value, nameof(SelectedKey));
+                LayerName = layer.Name;
 
-                btnChangeKey.IsEnabled = btnDeleteKey.IsEnabled = value != null && value.Key != defaultKeyName;
+                Labels = layer.Labels == null ?
+                    new ObservableCollection<LabelInfo>() :
+                    new ObservableCollection<LabelInfo>(layer.Labels);
+                Label = Labels.Count > 0 ? Labels[0] : null;
+
+                Keys.Clear();
+                foreach (var symbol in layer.Symbols)
+                {
+                    Keys.Add(new KeySymbolPair(
+                        symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
+                }
+                if (!Keys.Any(p => p.Key == defaultKeyName))
+                {
+                    Keys.Add(new KeySymbolPair(defaultKeyName, MapView.Layers.Selected.GetDefaultSymbol()));
+                }
+                SelectedKey = Keys.First(p => p.Key == defaultKeyName);
+                btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
             }
-        }
-
-        private string layerName = "图层名称";
-
-        public string LayerName
-        {
-            get => layerName;
-            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
-        }
-
-        private LabelInfo label;
-
-        public LabelInfo Label
-        {
-            get => label;
-            set => this.SetValueAndNotify(ref label, value, nameof(Label));
-        }
-
-        private ObservableCollection<LabelInfo> labels;
-
-        public ObservableCollection<LabelInfo> Labels
-        {
-            get => labels;
-            set => this.SetValueAndNotify(ref labels, value, nameof(Labels));
+            try
+            {
+                tab.SelectedIndex = layer.GeometryType switch
+                {
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
+                    _ => throw new InvalidEnumArgumentException("未知的类型"),
+                };
+                tab.IsEnabled = true;
+            }
+            catch (InvalidEnumArgumentException)
+            {
+                tab.IsEnabled = false;
+            }
         }
 
         public async Task SetStyleFromUI()
@@ -152,88 +168,19 @@ namespace MapBoard.UI
             }
         }
 
-        public void ResetLayerSettingUI()
+        private void AddLabelButton_Click(object sender, RoutedEventArgs e)
         {
-            IMapLayerInfo layer = Layers.Selected;
-            if (layer == null)
-            {
-                tab.IsEnabled = false;
-                return;
-            }
-            else
-            {
-                LayerName = layer.Name;
-
-                Labels = layer.Labels == null ?
-                    new ObservableCollection<LabelInfo>() :
-                    new ObservableCollection<LabelInfo>(layer.Labels);
-                Label = Labels.Count > 0 ? Labels[0] : null;
-
-                Keys.Clear();
-                foreach (var symbol in layer.Symbols)
-                {
-                    Keys.Add(new KeySymbolPair(
-                        symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
-                }
-                if (!Keys.Any(p => p.Key == defaultKeyName))
-                {
-                    Keys.Add(new KeySymbolPair(defaultKeyName, MapView.Layers.Selected.GetDefaultSymbol()));
-                }
-                SelectedKey = Keys.First(p => p.Key == defaultKeyName);
-                btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
-            }
-            try
-            {
-                tab.SelectedIndex = layer.GeometryType switch
-                {
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
-                    _ => throw new InvalidEnumArgumentException("未知的类型"),
-                };
-                tab.IsEnabled = true;
-            }
-            catch (InvalidEnumArgumentException)
-            {
-                tab.IsEnabled = false;
-            }
+            Labels.Add(new LabelInfo());
+            Label = Labels[^1];
         }
 
-        private void SetScaleButtonClick(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            switch ((sender as Button).Tag as string)
+            Debug.Assert(Label != null);
+            Labels.Remove(Label);
+            if (Labels.Count > 0)
             {
-                case "label":
-                    Label.MinScale = MapView.MapScale;
-                    break;
-
-                case "min":
-                    Layers.Selected.Display.MinScale = MapView.MapScale;
-                    break;
-
-                case "max":
-                    Layers.Selected.Display.MaxScale = MapView.MapScale;
-                    break;
-            }
-        }
-
-        private KeySymbolPair selectedKey;
-
-        private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
-        {
-            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
-            if (key != null)
-            {
-                if (Keys.Any(p => p.Key == key))
-                {
-                    await CommonDialog.ShowErrorDialogAsync("该分类已存在");
-                    return;
-                }
-
-                var keySymbol = new KeySymbolPair(key, MapView.Layers.Selected.GetDefaultSymbol());
-                Keys.Add(keySymbol);
-                SelectedKey = keySymbol;
+                Label = Labels[0];
             }
         }
 
@@ -249,6 +196,28 @@ namespace MapBoard.UI
                 }
 
                 SelectedKey.Key = key;
+            }
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            (sender as ComboBox).SelectedItem = null;
+        }
+
+        private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
+            if (key != null)
+            {
+                if (Keys.Any(p => p.Key == key))
+                {
+                    await CommonDialog.ShowErrorDialogAsync("该分类已存在");
+                    return;
+                }
+
+                var keySymbol = new KeySymbolPair(key, MapView.Layers.Selected.GetDefaultSymbol());
+                Keys.Add(keySymbol);
+                SelectedKey = keySymbol;
             }
         }
 
@@ -272,7 +241,14 @@ namespace MapBoard.UI
             }
         }
 
-        private Random r = new Random();
+        private void GenerateRandomColorButtonClick(object sender, RoutedEventArgs e)
+        {
+            foreach (var key in Keys)
+            {
+                key.Symbol.LineColor = GetRandomColor();
+                key.Symbol.FillColor = GetRandomColor();
+            }
+        }
 
         private Color GetRandomColor()
         {
@@ -284,33 +260,29 @@ namespace MapBoard.UI
             return Color.FromArgb(255, R, G, B);
         }
 
-        private void GenerateRandomColorButtonClick(object sender, RoutedEventArgs e)
+        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
         {
-            foreach (var key in Keys)
+            if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
             {
-                key.Symbol.LineColor = GetRandomColor();
-                key.Symbol.FillColor = GetRandomColor();
+                ResetLayerSettingUI();
             }
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
-            (sender as ComboBox).SelectedItem = null;
-        }
-
-        private void AddLabelButton_Click(object sender, RoutedEventArgs e)
-        {
-            Labels.Add(new LabelInfo());
-            Label = Labels[^1];
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(Label != null);
-            Labels.Remove(Label);
-            if (Labels.Count > 0)
+            switch ((sender as Button).Tag as string)
             {
-                Label = Labels[0];
+                case "label":
+                    Label.MinScale = MapView.MapScale;
+                    break;
+
+                case "min":
+                    Layers.Selected.Display.MinScale = MapView.MapScale;
+                    break;
+
+                case "max":
+                    Layers.Selected.Display.MaxScale = MapView.MapScale;
+                    break;
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿//#define ERROR
 
 using FzLib;
+using PropertyChanged;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -222,6 +223,7 @@ namespace MapBoard.Model
 
         private double? floatValue;
 
+        [AlsoNotifyFor(nameof(Value))]
         public double? FloatValue
         {
             get => floatValue;
@@ -233,12 +235,12 @@ namespace MapBoard.Model
                 }
                 attrValue = value;
                 floatValue = value;
-                this.Notify(nameof(FloatValue), nameof(Value));
             }
         }
 
         private string textValue;
 
+        [AlsoNotifyFor(nameof(Value))]
         public string TextValue
         {
             get => textValue;
@@ -250,12 +252,12 @@ namespace MapBoard.Model
                 }
                 attrValue = value;
                 textValue = value;
-                this.Notify(nameof(TextValue), nameof(Value));
             }
         }
 
         private DateTime? dateValue;
 
+        [AlsoNotifyFor(nameof(Value))]
         public DateTime? DateValue
         {
             get => dateValue;
@@ -267,12 +269,12 @@ namespace MapBoard.Model
                 }
                 attrValue = value;
                 dateValue = value;
-                this.Notify(nameof(DateValue), nameof(Value));
             }
         }
 
         private DateTime? timeValue;
 
+        [AlsoNotifyFor(nameof(Value))]
         public DateTime? TimeValue
         {
             get => timeValue;
@@ -284,7 +286,6 @@ namespace MapBoard.Model
                 }
                 attrValue = value;
                 timeValue = value;
-                this.Notify(nameof(TimeValue), nameof(Value));
             }
         }
 

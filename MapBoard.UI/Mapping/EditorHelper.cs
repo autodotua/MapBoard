@@ -22,9 +22,9 @@ namespace MapBoard.Mapping
     public class EditorHelper : INotifyPropertyChanged
     {
         /// <summary>
-        /// 正在编辑的要素的属性
+        /// 正在编辑的要素
         /// </summary>
-        private FeatureAttributeCollection attributes;
+        private Feature editingFeature;
 
         /// <summary>
         /// 绘制完成的图形
@@ -37,19 +37,14 @@ namespace MapBoard.Mapping
         private bool isSearchingNearestPoint = false;
 
         /// <summary>
-        /// 最近结点
-        /// </summary>
-        private MapPoint nearestVertex;
-
-        /// <summary>
         /// 最近的任意点
         /// </summary>
         private MapPoint nearestPoint;
 
         /// <summary>
-        /// 正在编辑的要素
+        /// 最近结点
         /// </summary>
-        private Feature editingFeature;
+        private MapPoint nearestVertex;
 
         public EditorHelper(MainMapView mapView)
         {
@@ -75,11 +70,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 正在编辑的要素的属性
         /// </summary>
-        public FeatureAttributeCollection Attributes
-        {
-            get => attributes;
-            set => this.SetValueAndNotify(ref attributes, value, nameof(Attributes));
-        }
+        public FeatureAttributeCollection Attributes { get; set; }
 
         public MapLayerCollection Layers => MapView.Layers;
 
@@ -289,6 +280,52 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
+        /// 选择最近的结点
+        /// </summary>
+        /// <param name="position"></param>
+        private void AddPointToSketchEditor(MapPoint point)
+        {
+            if (point != null)
+            {
+                if (SketchEditor.Geometry == null)
+                {
+                    switch (SketchEditor.CreationMode)
+                    {
+                        case SketchCreationMode.Point:
+                            SketchEditor.ReplaceGeometry(point);
+                            break;
+
+                        case SketchCreationMode.Multipoint:
+                            SketchEditor.ReplaceGeometry(new Multipoint(new[] { point }));
+                            break;
+
+                        case SketchCreationMode.Polyline:
+                            SketchEditor.ReplaceGeometry(new Polyline(new[] { point }));
+                            break;
+
+                        case SketchCreationMode.Polygon:
+                            SketchEditor.ReplaceGeometry(new Polygon(new[] { point }));
+                            break;
+                    }
+                    return;
+                }
+                SketchEditor.InsertVertexAfterSelectedVertex(GeometryEngine.Project(point, SpatialReferences.WebMercator) as MapPoint);
+            }
+        }
+
+        private bool CanCatchNearestPoint()
+        {
+            return SketchEditor.CreationMode
+                       is not (SketchCreationMode.Arrow
+                       or SketchCreationMode.Circle
+                       or SketchCreationMode.Ellipse
+                       or SketchCreationMode.Rectangle
+                       or SketchCreationMode.Triangle
+                       or SketchCreationMode.FreehandLine
+                       or SketchCreationMode.FreehandPolygon);
+        }
+
+        /// <summary>
         /// 获取离指定位置最近的结点
         /// </summary>
         /// <param name="position"></param>
@@ -344,18 +381,6 @@ namespace MapBoard.Mapping
             return (minVertex, minPoint);
         }
 
-        private bool CanCatchNearestPoint()
-        {
-            return SketchEditor.CreationMode
-                       is not (SketchCreationMode.Arrow
-                       or SketchCreationMode.Circle
-                       or SketchCreationMode.Ellipse
-                       or SketchCreationMode.Rectangle
-                       or SketchCreationMode.Triangle
-                       or SketchCreationMode.FreehandLine
-                       or SketchCreationMode.FreehandPolygon);
-        }
-
         /// <summary>
         /// 鼠标位置移动事件
         /// </summary>
@@ -396,40 +421,6 @@ namespace MapBoard.Mapping
                 {
                     MapView.Overlay.SetNearestPointPoint(null);
                 }
-            }
-        }
-
-        private void MapviewTapped(object sender, GeoViewInputEventArgs e)
-        {
-            if (MapView.CurrentTask != BoardTask.Draw)
-            {
-                return;
-            }
-            if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
-            {
-                return;
-            }
-            if (!CanCatchNearestPoint())
-            {
-                return;
-            }
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-            {
-                if (nearestVertex != null)
-                {
-                    AddPointToSketchEditor(nearestPoint);
-                    e.Handled = true;
-                }
-                return;
-            }
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ^ Config.Instance.AutoCatchToNearestVertex)//只有一个可以为true
-            {
-                if (nearestVertex != null)
-                {
-                    AddPointToSketchEditor(nearestVertex);
-                    e.Handled = true;
-                }
-                return;
             }
         }
 
@@ -477,37 +468,37 @@ namespace MapBoard.Mapping
             menu.IsOpen = true;
         }
 
-        /// <summary>
-        /// 选择最近的结点
-        /// </summary>
-        /// <param name="position"></param>
-        private void AddPointToSketchEditor(MapPoint point)
+        private void MapviewTapped(object sender, GeoViewInputEventArgs e)
         {
-            if (point != null)
+            if (MapView.CurrentTask != BoardTask.Draw)
             {
-                if (SketchEditor.Geometry == null)
+                return;
+            }
+            if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
+            {
+                return;
+            }
+            if (!CanCatchNearestPoint())
+            {
+                return;
+            }
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                if (nearestVertex != null)
                 {
-                    switch (SketchEditor.CreationMode)
-                    {
-                        case SketchCreationMode.Point:
-                            SketchEditor.ReplaceGeometry(point);
-                            break;
-
-                        case SketchCreationMode.Multipoint:
-                            SketchEditor.ReplaceGeometry(new Multipoint(new[] { point }));
-                            break;
-
-                        case SketchCreationMode.Polyline:
-                            SketchEditor.ReplaceGeometry(new Polyline(new[] { point }));
-                            break;
-
-                        case SketchCreationMode.Polygon:
-                            SketchEditor.ReplaceGeometry(new Polygon(new[] { point }));
-                            break;
-                    }
-                    return;
+                    AddPointToSketchEditor(nearestPoint);
+                    e.Handled = true;
                 }
-                SketchEditor.InsertVertexAfterSelectedVertex(GeometryEngine.Project(point, SpatialReferences.WebMercator) as MapPoint);
+                return;
+            }
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ^ Config.Instance.AutoCatchToNearestVertex)//只有一个可以为true
+            {
+                if (nearestVertex != null)
+                {
+                    AddPointToSketchEditor(nearestVertex);
+                    e.Handled = true;
+                }
+                return;
             }
         }
 

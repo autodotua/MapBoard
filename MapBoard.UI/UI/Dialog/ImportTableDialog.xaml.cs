@@ -45,66 +45,23 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
-        private void LoadFields()
-        {
-            int index = 0;
-            foreach (DataColumn column in Table.Columns)
-            {
-                ImportTableFieldInfo field = new ImportTableFieldInfo()
-                {
-                    ColumnName = column.ColumnName,
-                    ColumnIndex = ++index
-                };
-                field.Field.Name = new string(column.ColumnName.Take(10).ToArray());
-                field.Field.DisplayName = column.ColumnName;
-                field.Field.Type = FieldInfoType.Text;
-                Fields.Add(field);
-            }
-        }
+        public string DateFormat { get; set; } = "yyyy-MM-dd";
 
         public ObservableCollection<ImportTableFieldInfo> Fields { get; } = new ObservableCollection<ImportTableFieldInfo>();
-        public int LongitudeIndex { get; set; } = -1;
-        public int LatitudeIndex { get; set; } = -1;
-        private string layerName;
 
-        public string LayerName
-        {
-            get => layerName;
-            set => this.SetValueAndNotify(ref layerName, value, nameof(LayerName));
-        }
+        public int LatitudeIndex { get; set; } = -1;
+
+        public string LayerName { get; set; }
 
         public MapLayerCollection Layers { get; }
+
+        public int LongitudeIndex { get; set; } = -1;
+
+        public string Message { get; set; }
+
         public DataTable Table { get; }
-        public string DateFormat { get; set; } = "yyyy-MM-dd";
+
         public string TimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
-        private string message;
-
-        public string Message
-        {
-            get => message;
-            set => this.SetValueAndNotify(ref message, value, nameof(Message));
-        }
-
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-            Check();
-        }
-
-        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
-            {
-                if (e.Column.DisplayIndex == 0)
-                {
-                    var field = e.Row.Item as ImportTableFieldInfo;
-                    if (string.IsNullOrEmpty(field.Field.DisplayName))
-                    {
-                        field.Field.DisplayName = field.Field.Name;
-                    }
-                }
-            }
-            Check();
-        }
 
         private void Check()
         {
@@ -124,6 +81,11 @@ namespace MapBoard.UI.Dialog
                 }
             }
             IsPrimaryButtonEnabled = true;
+        }
+
+        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            Check();
         }
 
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
@@ -205,6 +167,39 @@ namespace MapBoard.UI.Dialog
                 Hide();
                 await ShowErrorDialogAsync(ex, "创建图层失败");
                 return;
+            }
+        }
+
+        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                if (e.Column.DisplayIndex == 0)
+                {
+                    var field = e.Row.Item as ImportTableFieldInfo;
+                    if (string.IsNullOrEmpty(field.Field.DisplayName))
+                    {
+                        field.Field.DisplayName = field.Field.Name;
+                    }
+                }
+            }
+            Check();
+        }
+
+        private void LoadFields()
+        {
+            int index = 0;
+            foreach (DataColumn column in Table.Columns)
+            {
+                ImportTableFieldInfo field = new ImportTableFieldInfo()
+                {
+                    ColumnName = column.ColumnName,
+                    ColumnIndex = ++index
+                };
+                field.Field.Name = new string(column.ColumnName.Take(10).ToArray());
+                field.Field.DisplayName = column.ColumnName;
+                field.Field.Type = FieldInfoType.Text;
+                Fields.Add(field);
             }
         }
     }

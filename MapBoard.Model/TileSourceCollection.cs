@@ -29,20 +29,10 @@ namespace MapBoard.Model
               };
         }
 
-        public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
-        private int selectedIndex;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int SelectedIndex
-        {
-            get => selectedIndex;
-            set
-            {
-                this.SetValueAndNotify(ref selectedIndex, value, nameof(SelectedUrl));
-            }
-        }
-
+        public int SelectedIndex { get; set; }
         public TileSourceInfo SelectedUrl => SelectedIndex == -1 || SelectedIndex >= Sources.Count ? null : Sources[SelectedIndex];
+        public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
     }
 }

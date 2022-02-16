@@ -11,10 +11,17 @@ namespace MapBoard.Model
 {
     public class DownloadInfo : INotifyPropertyChanged
     {
-        public GeoRect<double> MapRange { get; set; } = new GeoRect<double>();
+        public IDictionary<int, GeoRect<int>> tiles = new Dictionary<int, GeoRect<int>>();
 
         //先Max后Min这样序列化的时候才不会出错
         private int tileMaxLevel = 2;
+
+        private int tileMinLevel = 2;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public GeoRect<double> MapRange { get; set; } = new GeoRect<double>();
+        public int TileCount { get; private set; }
 
         public int TileMaxLevel
         {
@@ -25,11 +32,8 @@ namespace MapBoard.Model
                 {
                     tileMaxLevel = value;
                 }
-                this.Notify(nameof(TileMaxLevel));
             }
         }
-
-        private int tileMinLevel = 2;
 
         public int TileMinLevel
         {
@@ -40,25 +44,11 @@ namespace MapBoard.Model
                 {
                     tileMinLevel = value;
                 }
-                this.Notify(nameof(TileMinLevel));
             }
         }
 
-        public IDictionary<int, GeoRect<int>> tiles = new Dictionary<int, GeoRect<int>>();
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         [JsonIgnore]
         public IReadOnlyDictionary<int, GeoRect<int>> Tiles { get; private set; }
-
-        public void SetRange(GeoRect<double> range, IDictionary<int, GeoRect<int>> tiles, int count)
-        {
-            MapRange = range;
-            this.tiles = tiles;
-            Tiles = new ReadOnlyDictionary<int, GeoRect<int>>(tiles);
-
-            TileCount = count;
-        }
 
         public IEnumerator<TileInfo> GetEnumerator()
         {
@@ -70,10 +60,21 @@ namespace MapBoard.Model
             return new TileEnumerator(tiles, start);
         }
 
-        public int TileCount { get; private set; }
+        public void SetRange(GeoRect<double> range, IDictionary<int, GeoRect<int>> tiles, int count)
+        {
+            MapRange = range;
+            this.tiles = tiles;
+            Tiles = new ReadOnlyDictionary<int, GeoRect<int>>(tiles);
+
+            TileCount = count;
+        }
 
         public class TileEnumerator : IEnumerator<TileInfo>
         {
+            private TileInfo current;
+
+            private GeoRect<int> currentRange = null;
+
             public TileEnumerator(IDictionary<int, GeoRect<int>> ranges, TileInfo start = null)
             {
                 Ranges = new Dictionary<int, GeoRect<int>>(ranges);
@@ -84,12 +85,13 @@ namespace MapBoard.Model
                 }
             }
 
-            private TileInfo current;
             public TileInfo Current => current;
-            public Dictionary<int, GeoRect<int>> Ranges { get; }
             object IEnumerator.Current => current;
+            public Dictionary<int, GeoRect<int>> Ranges { get; }
 
-            private GeoRect<int> currentRange = null;
+            public void Dispose()
+            {
+            }
 
             public bool MoveNext()
             {
@@ -137,10 +139,6 @@ namespace MapBoard.Model
             public void Reset()
             {
                 current = null;
-            }
-
-            public void Dispose()
-            {
             }
         }
     }

@@ -31,8 +31,6 @@ namespace MapBoard.UI.Extension
 
         private int radius = 1000;
 
-        private PoiInfo[] searchResult = Array.Empty<PoiInfo>();
-
         /// <summary>
         /// 关键次
         /// </summary>
@@ -62,11 +60,7 @@ namespace MapBoard.UI.Extension
         /// <summary>
         /// 搜索结果
         /// </summary>
-        public PoiInfo[] SearchResult
-        {
-            get => searchResult;
-            set => this.SetValueAndNotify(ref searchResult, value, nameof(SearchResult));
-        }
+        public PoiInfo[] SearchResult { get; set; }
 
         private PoiInfo selectedPoi;
 
@@ -78,7 +72,7 @@ namespace MapBoard.UI.Extension
             get => selectedPoi;
             set
             {
-                this.SetValueAndNotify(ref selectedPoi, value, nameof(SelectedPoi));
+                selectedPoi = value;
                 Overlay.SelectPoi(value);
             }
         }

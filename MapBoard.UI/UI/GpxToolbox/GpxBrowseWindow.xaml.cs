@@ -73,7 +73,7 @@ namespace MapBoard.UI.GpxToolbox
 
         private void SetToFirstPoint()
         {
-            var points = track.Track.Points;
+            var points = Track.Track.Points;
             var curve = GeometryUtility.CalculateGeodeticCurve(points[0].ToMapPoint(), points[1].ToMapPoint());
             var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(points[0].ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
             var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
@@ -88,7 +88,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 Interval = TimeSpan.FromSeconds(1.0 / BrowseInfo.FPS),
             };
-            var points = track.Track.Points;
+            var points = Track.Track.Points;
 
             int i = 0;
             DateTime startTime = DateTime.Now;
@@ -138,7 +138,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 Directory.CreateDirectory(GetRecordPath());
             }
-            var points = track.Track.Points;
+            var points = Track.Track.Points;
             DateTime startTime = points.First().Time;
             int i = 0;
             int count = 0;
@@ -230,16 +230,7 @@ namespace MapBoard.UI.GpxToolbox
             };
         }
 
-        private TrackInfo track;
-
-        public TrackInfo Track
-        {
-            get => track;
-            set
-            {
-                this.SetValueAndNotify(ref track, value, nameof(Track));
-            }
-        }
+        public TrackInfo Track { get; set; }
 
         #region 左下角按钮
 

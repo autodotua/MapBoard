@@ -4,11 +4,13 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib;
+using FzLib.WPF;
 using FzLib.WPF.Dialog;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using MapBoard.UI;
 using MapBoard.Util;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +23,39 @@ using System.Windows.Input;
 
 namespace MapBoard.Mapping
 {
+    /// 画板任务类型
+    /// </summary>
+    public enum BoardTask
+    {
+        NotReady,
+        Ready,
+        Draw,
+        Select,
+    }
+
+    /// <summary>
+    /// 画板任务改变事件参数
+    /// </summary>
+    public class BoardTaskChangedEventArgs : EventArgs
+    {
+        public BoardTaskChangedEventArgs(BoardTask oldTask, BoardTask newTask)
+        {
+            OldTask = oldTask;
+            NewTask = newTask;
+        }
+
+        /// <summary>
+        /// 新任务
+        /// </summary>
+        public BoardTask NewTask { get; private set; }
+
+        /// <summary>
+        /// 旧任务
+        /// </summary>
+        public BoardTask OldTask { get; private set; }
+    }
+
+    [DoNotNotify]
     public class BrowseSceneView : SceneView, INotifyPropertyChanged, IMapBoardGeoView
     {
         private static List<BrowseSceneView> instances = new List<BrowseSceneView>();
@@ -33,31 +68,21 @@ namespace MapBoard.Mapping
             this.SetHideWatermark();
         }
 
+        public MapLayerCollection Layers { get; private set; }
+
+        public OverlayHelper Overlay { get; private set; }
+
+        public Task<MapPoint> GetPointAsync()
+        {
+            return SceneEditHelper.CreatePointAsync(this);
+        }
+
         public async Task LoadAsync()
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this);
             Layers = await MapLayerCollection.GetInstanceAsync(Scene.OperationalLayers);
             ZoomToLastExtent().ConfigureAwait(false);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
-        }
-
-        public async Task ZoomToLastExtent()
-        {
-            if (Layers.MapViewExtentJson != null)
-            {
-                try
-                {
-                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        public Task<MapPoint> GetPointAsync()
-        {
-            return SceneEditHelper.CreatePointAsync(this);
         }
 
         public Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
@@ -73,14 +98,34 @@ namespace MapBoard.Mapping
             return SetViewpointAsync(new Viewpoint(geometry));
         }
 
-        public OverlayHelper Overlay { get; private set; }
-        public MapLayerCollection Layers { get; private set; }
+        public async Task ZoomToLastExtent()
+        {
+            if (Layers.MapViewExtentJson != null)
+            {
+                try
+                {
+                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
+                }
+                catch
+                {
+                }
+            }
+        }
     }
 
+    [DoNotNotify]
     public class MainMapView : MapView, IMapBoardGeoView
     {
+        /// <summary>
+        /// 画板当前任务
+        /// </summary>
+        private static BoardTask currentTask = BoardTask.NotReady;
+
         private static List<MainMapView> instances = new List<MainMapView>();
-        public static IReadOnlyList<MainMapView> Instances => instances.AsReadOnly();
+        private bool canRotate = true;
+        private CancellationTokenSource ctsWfs = null;
+        private Point startPosition = default;
+        private double startRotation = 0;
 
         public MainMapView()
         {
@@ -100,74 +145,10 @@ namespace MapBoard.Mapping
             Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
 
-        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Config.ShowLocation))
-            {
-                SetLocationDisplay();
-            }
-        }
+        public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
-        public void SetLocationDisplay()
-        {
-            LocationDisplay.ShowLocation = Config.Instance.ShowLocation;
-            LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
-        }
-
-        private CancellationTokenSource ctsWfs = null;
-
-        private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
-        {
-            //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。
-            if (Layers.Any(p => p is IServerBasedLayer
-            && !(p as IServerBasedLayer).AutoPopulateAll
-            && !(p as IServerBasedLayer).HasPopulateAll)
-                && CurrentTask == BoardTask.Ready)
-            {
-                Envelope currentExtent = VisibleArea.Extent;
-
-                // Create a query based on the current visible extent.
-                QueryParameters visibleExtentQuery = new QueryParameters
-                {
-                    Geometry = currentExtent,
-                    SpatialRelationship = SpatialRelationship.Intersects
-                };
-                if (ctsWfs != null)
-                {
-                    ctsWfs.Cancel();
-                }
-                ctsWfs = new CancellationTokenSource();
-                try
-                {
-                    List<Task> tasks = new();
-                    foreach (IServerBasedLayer layer in Layers
-                        .OfType<IServerBasedLayer>()
-                        .Where(p => p.IsLoaded))
-                    {
-                        tasks.Add(layer.PopulateFromServiceAsync(visibleExtentQuery, false, cancellationToken: ctsWfs.Token));
-                    }
-                    await Task.WhenAll(tasks);
-                    ctsWfs = null;
-                }
-                catch (TaskCanceledException ex)
-                {
-                    App.Log.Error(ex);
-                }
-                catch (HttpRequestException ex)
-                {
-                    App.Log.Error(ex);
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error(ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 画板当前任务
-        /// </summary>
-        private static BoardTask currentTask = BoardTask.NotReady;
+        public static IReadOnlyList<MainMapView> Instances => instances.AsReadOnly();
+        public ItemsOperationErrorCollection BaseMapLoadErrors { get; private set; }
 
         /// <summary>
         /// 画板当前任务
@@ -187,67 +168,13 @@ namespace MapBoard.Mapping
             }
         }
 
-        public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
+        public EditorHelper Editor { get; private set; }
 
-        private double startRotation = 0;
-        private Point startPosition = default;
-        private bool canRotate = true;
+        public MapLayerCollection Layers { get; }
 
-        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
-        {
-            base.OnPreviewMouseDown(e);
-            if (e.RightButton == MouseButtonState.Pressed)
-            {
-                startRotation = MapRotation;
-                startPosition = e.GetPosition(this);
-            }
-        }
-
-        protected override async void OnPreviewMouseMove(MouseEventArgs e)
-        {
-            base.OnPreviewMouseMove(e);
-            if (e.RightButton == MouseButtonState.Pressed && CurrentTask == BoardTask.Ready)
-            {
-                if (!canRotate)
-                {
-                    return;
-                }
-                Point position = e.GetPosition(this);
-                double distance = position.X - startPosition.X;
-                if (Math.Abs(distance) < 10)
-                {
-                    return;
-                }
-                canRotate = false;
-                SetViewpointRotationAsync(startRotation + distance / 5);
-                await Task.Delay(100);
-                canRotate = true;
-                //防止旋转过快造成卡顿
-            }
-        }
-
-        protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
-        {
-            base.OnPreviewMouseDoubleClick(e);
-            if (e.ChangedButton.HasFlag(MouseButton.Right))
-            {
-                SetViewpointRotationAsync(0);
-            }
-        }
-
-        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
-        {
-            if (Layers != null
-                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-            {
-                Layers.MapViewExtentJson = envelope.ToJson();
-            }
-        }
+        public OverlayHelper Overlay { get; private set; }
 
         public SelectionHelper Selection { get; private set; }
-        public EditorHelper Editor { get; private set; }
-        public OverlayHelper Overlay { get; private set; }
-        public MapLayerCollection Layers { get; }
 
         public async Task LoadAsync()
         {
@@ -262,23 +189,15 @@ namespace MapBoard.Mapping
             CurrentTask = BoardTask.Ready;
         }
 
-        public ItemsOperationErrorCollection BaseMapLoadErrors { get; private set; }
-
-        private void Selection_CollectionChanged(object sender, EventArgs e)
+        public void SetLocationDisplay()
         {
-            if (Selection.SelectedFeatures.Count > 0)
-            {
-                Layer selectionLayer = Selection.SelectedFeatures.First().FeatureTable.Layer;
-                if (selectionLayer != Layers.Selected.Layer)
-                {
-                    Layers.Selected = Layers.FirstOrDefault(p => (p as MapLayerInfo).Layer == selectionLayer) as MapLayerInfo;
-                }
-            }
+            LocationDisplay.ShowLocation = Config.Instance.ShowLocation;
+            LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
         }
 
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
-            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count==1)
+            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count == 1)
             {
                 if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
                 {
@@ -287,12 +206,26 @@ namespace MapBoard.Mapping
                 geometry = GeometryEngine.Buffer(geometry, 100);
             }
             var extent = geometry.Extent;
-            if (double.IsNaN(extent.Width) || double.IsNaN(extent.Height)||extent.Width==0||extent.Height==0)
+            if (double.IsNaN(extent.Width) || double.IsNaN(extent.Height) || extent.Width == 0 || extent.Height == 0)
             {
                 SnakeBar.ShowError("图形为空");
                 return;
             }
             await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
+        }
+
+        public async Task ZoomToLastExtent()
+        {
+            if (Layers.MapViewExtentJson != null)
+            {
+                try
+                {
+                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
+                }
+                catch
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -309,7 +242,7 @@ namespace MapBoard.Mapping
                     break;
 
                 case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IEditableLayerInfo w:
-                    await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
+                    await (this.GetWindow() as MainWindow).DoAsync(async () =>
                    {
                        await FeatureUtility.DeleteAsync(w, Selection.SelectedFeatures.ToArray());
                        Selection.ClearSelection();
@@ -367,50 +300,123 @@ namespace MapBoard.Mapping
             }
         }
 
-        public async Task ZoomToLastExtent()
+        protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
         {
-            if (Layers.MapViewExtentJson != null)
+            base.OnPreviewMouseDoubleClick(e);
+            if (e.ChangedButton.HasFlag(MouseButton.Right))
             {
+                SetViewpointRotationAsync(0);
+            }
+        }
+
+        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseDown(e);
+            if (e.RightButton == MouseButtonState.Pressed)
+            {
+                startRotation = MapRotation;
+                startPosition = e.GetPosition(this);
+            }
+        }
+
+        protected override async void OnPreviewMouseMove(MouseEventArgs e)
+        {
+            base.OnPreviewMouseMove(e);
+            if (e.RightButton == MouseButtonState.Pressed && CurrentTask == BoardTask.Ready)
+            {
+                if (!canRotate)
+                {
+                    return;
+                }
+                Point position = e.GetPosition(this);
+                double distance = position.X - startPosition.X;
+                if (Math.Abs(distance) < 10)
+                {
+                    return;
+                }
+                canRotate = false;
+                SetViewpointRotationAsync(startRotation + distance / 5);
+                await Task.Delay(100);
+                canRotate = true;
+                //防止旋转过快造成卡顿
+            }
+        }
+
+        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
+        {
+            if (Layers != null
+                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                Layers.MapViewExtentJson = envelope.ToJson();
+            }
+        }
+
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.ShowLocation))
+            {
+                SetLocationDisplay();
+            }
+        }
+
+        private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
+        {
+            //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。
+            if (Layers.Any(p => p is IServerBasedLayer
+            && !(p as IServerBasedLayer).AutoPopulateAll
+            && !(p as IServerBasedLayer).HasPopulateAll)
+                && CurrentTask == BoardTask.Ready)
+            {
+                Envelope currentExtent = VisibleArea.Extent;
+
+                // Create a query based on the current visible extent.
+                QueryParameters visibleExtentQuery = new QueryParameters
+                {
+                    Geometry = currentExtent,
+                    SpatialRelationship = SpatialRelationship.Intersects
+                };
+                if (ctsWfs != null)
+                {
+                    ctsWfs.Cancel();
+                }
+                ctsWfs = new CancellationTokenSource();
                 try
                 {
-                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
+                    List<Task> tasks = new();
+                    foreach (IServerBasedLayer layer in Layers
+                        .OfType<IServerBasedLayer>()
+                        .Where(p => p.IsLoaded))
+                    {
+                        tasks.Add(layer.PopulateFromServiceAsync(visibleExtentQuery, false, cancellationToken: ctsWfs.Token));
+                    }
+                    await Task.WhenAll(tasks);
+                    ctsWfs = null;
                 }
-                catch
+                catch (TaskCanceledException ex)
                 {
+                    App.Log.Error(ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    App.Log.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    App.Log.Error(ex);
                 }
             }
         }
-    }
 
-    /// 画板任务类型
-    /// </summary>
-    public enum BoardTask
-    {
-        NotReady,
-        Ready,
-        Draw,
-        Select,
-    }
-
-    /// <summary>
-    /// 画板任务改变事件参数
-    /// </summary>
-    public class BoardTaskChangedEventArgs : EventArgs
-    {
-        public BoardTaskChangedEventArgs(BoardTask oldTask, BoardTask newTask)
+        private void Selection_CollectionChanged(object sender, EventArgs e)
         {
-            OldTask = oldTask;
-            NewTask = newTask;
+            if (Selection.SelectedFeatures.Count > 0)
+            {
+                Layer selectionLayer = Selection.SelectedFeatures.First().FeatureTable.Layer;
+                if (selectionLayer != Layers.Selected.Layer)
+                {
+                    Layers.Selected = Layers.FirstOrDefault(p => (p as MapLayerInfo).Layer == selectionLayer) as MapLayerInfo;
+                }
+            }
         }
-
-        /// <summary>
-        /// 旧任务
-        /// </summary>
-        public BoardTask OldTask { get; private set; }
-
-        /// <summary>
-        /// 新任务
-        /// </summary>
-        public BoardTask NewTask { get; private set; }
     }
 }

@@ -2,6 +2,7 @@
 using FzLib.DataStorage.Serialization;
 using MapBoard.Model;
 using Newtonsoft.Json;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,88 +14,17 @@ namespace MapBoard
 {
     public class Config : IJsonSerializable, INotifyPropertyChanged
     {
-        public static int WatermarkHeight = 72;
+        public static readonly int WatermarkHeight = 72;
         private static Config instance;
-        private static string path = Parameters.ConfigPath;
-        private bool autoCatchToNearestVertex;
-        private bool backupWhenExit = true;
-
-        private bool backupWhenReplace = true;
-
-        private List<BaseLayerInfo> baseLayers = new List<BaseLayerInfo>();
-
-        private CoordinateSystem basemapCoordinateSystem = CoordinateSystem.WGS84;
-
-        private int catchDistance = 10;
-        private bool copyShpFileWhenExport = true;
-
-        private bool gpx_AutoSmooth = true;
-
-        private int gpx_AutoSmoothLevel = 5;
-
-        private bool gpx_AutoSmoothOnlyZ = false;
-
-        private bool gpx_DrawPoints;
-        private bool gpx_Height = false;
-
-        private int gpx_HeightExaggeratedMagnification = 5;
-
-        private bool gpx_RelativeHeight = false;
-
-        private bool hideWatermark = true;
-
-        private int lastLayerListGroupType;
-        private int maxBackupCount = 100;
-
-        private double maxScale = 100;
+        private static readonly string path = Parameters.ConfigPath;
 
         private int readTimeOut = 1000;
-
-        private bool remainDate = false;
-
-        private bool remainKey = false;
-
-        private bool remainLabel = false;
 
         private int requestTimeOut = 1000;
 
         private int serverLayerLoadTimeout = 5000;
-        private bool showLocation;
-        private bool showNearestPointSymbol = false;
-        private bool showSideBaseLayers = true;
-        private bool showSideCompass = true;
-        private bool showSideLocation = true;
-        private bool showSideScaleBar = true;
-        private bool showSideScaleButton = false;
-        private bool showSideSearch = true;
-        private bool smoothScroll = true;
-        private bool tapToSelect;
-        private bool tapToSelectAllLayers = true;
+
         private int theme = 0;
-
-        private BrowseInfo tile_BrowseInfo = new BrowseInfo();
-
-        private bool tile_CoverFile = false;
-
-        private string tile_DownloadFolder = Parameters.TileDownloadPath;
-
-        private string tile_DownloadUserAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-
-        private string tile_FormatExtension = "png";
-
-        private DownloadInfo tile_LastDownload;
-
-        private string tile_ServerFormat = @"..\Download\{z}/{x}-{y}.{ext}";
-
-        private int tile_ServerPort = 8080;
-
-        private TileSourceCollection tile_Urls = new TileSourceCollection();
-
-        private string tile_UserAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-
-        private string url = "http://mt3.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}";
-
-        private bool useCompactLayerList;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -120,135 +50,51 @@ namespace MapBoard
             }
         }
 
-        public bool AutoCatchToNearestVertex
-        {
-            get => autoCatchToNearestVertex;
-            set => this.SetValueAndNotify(ref autoCatchToNearestVertex, value, nameof(AutoCatchToNearestVertex));
-        }
+        public bool AutoCatchToNearestVertex { get; set; } = true;
 
-        public bool BackupWhenExit
-        {
-            get => backupWhenExit;
-            set => this.SetValueAndNotify(ref backupWhenExit, value, nameof(BackupWhenExit));
-        }
+        public bool BackupWhenExit { get; set; } = false;
 
-        public bool BackupWhenReplace
-        {
-            get => backupWhenReplace;
-            set => this.SetValueAndNotify(ref backupWhenReplace, value, nameof(BackupWhenReplace));
-        }
+        public bool BackupWhenReplace { get; set; } = true;
 
-        public List<BaseLayerInfo> BaseLayers
-        {
-            get => baseLayers;
-            set => this.SetValueAndNotify(ref baseLayers, value, nameof(BaseLayers));
-        }
+        public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
 
-        public CoordinateSystem BasemapCoordinateSystem
-        {
-            get => basemapCoordinateSystem;
-            set => this.SetValueAndNotify(ref basemapCoordinateSystem, value, nameof(BasemapCoordinateSystem));
-        }
+        public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;
 
-        public int CatchDistance
-        {
-            get => catchDistance;
-            set => this.SetValueAndNotify(ref catchDistance, value, nameof(CatchDistance));
-        }
+        public int CatchDistance { get; set; } = 12;
 
-        public bool CopyShpFileWhenExport
-        {
-            get => copyShpFileWhenExport;
-            set => this.SetValueAndNotify(ref copyShpFileWhenExport, value, nameof(CopyShpFileWhenExport));
-        }
+        public bool CopyShpFileWhenExport { get; set; } = true;
 
-        public bool Gpx_AutoSmooth
-        {
-            get => gpx_AutoSmooth;
-            set => this.SetValueAndNotify(ref gpx_AutoSmooth, value, nameof(Gpx_AutoSmooth));
-        }
+        public bool Gpx_AutoSmooth { get; set; } = false;
 
-        public int Gpx_AutoSmoothLevel
-        {
-            get => gpx_AutoSmoothLevel;
-            set => this.SetValueAndNotify(ref gpx_AutoSmoothLevel, value, nameof(Gpx_AutoSmoothLevel));
-        }
+        public int Gpx_AutoSmoothLevel { get; set; } = 5;
 
-        public bool Gpx_AutoSmoothOnlyZ
-        {
-            get => gpx_AutoSmoothOnlyZ;
-            set => this.SetValueAndNotify(ref gpx_AutoSmoothOnlyZ, value, nameof(Gpx_AutoSmoothOnlyZ));
-        }
+        public bool Gpx_AutoSmoothOnlyZ { get; set; } = false;
 
-        public bool Gpx_DrawPoints
-        {
-            get => gpx_DrawPoints;
-            set => this.SetValueAndNotify(ref gpx_DrawPoints, value, nameof(Gpx_DrawPoints));
-        }
+        public bool Gpx_DrawPoints { get; set; } = false;
 
-        public bool Gpx_Height
-        {
-            get => gpx_Height;
-            set => this.SetValueAndNotify(ref gpx_Height, value, nameof(Gpx_Height));
-        }
+        public bool Gpx_Height { get; set; } = false;
 
-        public int Gpx_HeightExaggeratedMagnification
-        {
-            get => gpx_HeightExaggeratedMagnification;
-            set => this.SetValueAndNotify(ref gpx_HeightExaggeratedMagnification, value, nameof(Gpx_HeightExaggeratedMagnification));
-        }
+        public int Gpx_HeightExaggeratedMagnification { get; set; } = 5;
 
-        public bool Gpx_RelativeHeight
-        {
-            get => gpx_RelativeHeight;
-            set => this.SetValueAndNotify(ref gpx_RelativeHeight, value, nameof(Gpx_RelativeHeight));
-        }
+        public bool Gpx_RelativeHeight { get; set; } = false;
 
-        public bool HideWatermark
-        {
-            get => hideWatermark;
-            set => this.SetValueAndNotify(ref hideWatermark, value, nameof(HideWatermark));
-        }
+        public bool HideWatermark { get; set; } = true;
 
         public string LastFTP { get; set; } = null;
 
-        public int LastLayerListGroupType
-        {
-            get => lastLayerListGroupType;
-            set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
-        }
+        public int LastLayerListGroupType { get; set; } = 0;
 
         public Exception LoadError { get; private set; }
 
-        public int MaxBackupCount
-        {
-            get => maxBackupCount;
-            set => this.SetValueAndNotify(ref maxBackupCount, value, nameof(MaxBackupCount));
-        }
+        public int MaxBackupCount { get; set; } = 100;
 
-        public double MaxScale
-        {
-            get => maxScale;
-            set => this.SetValueAndNotify(ref maxScale, value, nameof(MaxScale));
-        }
+        public double MaxScale { get; set; } = 100;
 
-        public bool RemainDate
-        {
-            get => remainDate;
-            set => this.SetValueAndNotify(ref remainDate, value, nameof(RemainDate));
-        }
+        public bool RemainDate { get; set; } = false;
 
-        public bool RemainKey
-        {
-            get => remainKey;
-            set => this.SetValueAndNotify(ref remainKey, value, nameof(RemainKey));
-        }
+        public bool RemainKey { get; set; } = false;
 
-        public bool RemainLabel
-        {
-            get => remainLabel;
-            set => this.SetValueAndNotify(ref remainLabel, value, nameof(RemainLabel));
-        }
+        public bool RemainLabel { get; set; } = false;
 
         public int ServerLayerLoadTimeout
         {
@@ -256,76 +102,32 @@ namespace MapBoard
             set
             {
                 Debug.Assert(value >= 100);
-                this.SetValueAndNotify(ref serverLayerLoadTimeout, value, nameof(ServerLayerLoadTimeout));
+                serverLayerLoadTimeout = value;
                 Parameters.LoadTimeout = TimeSpan.FromMilliseconds(value);
             }
         }
 
-        public bool ShowLocation
-        {
-            get => showLocation;
-            set => this.SetValueAndNotify(ref showLocation, value, nameof(ShowLocation));
-        }
+        public bool ShowLocation { get; set; } = false;
 
-        public bool ShowNearestPointSymbol
-        {
-            get => showNearestPointSymbol;
-            set => this.SetValueAndNotify(ref showNearestPointSymbol, value, nameof(ShowNearestPointSymbol));
-        }
+        public bool ShowNearestPointSymbol { get; set; } = true;
 
-        public bool ShowSideBaseLayers
-        {
-            get => showSideBaseLayers;
-            set => this.SetValueAndNotify(ref showSideBaseLayers, value, nameof(ShowSideBaseLayers));
-        }
+        public bool ShowSideBaseLayers { get; set; } = true;
 
-        public bool ShowSideCompass
-        {
-            get => showSideCompass;
-            set => this.SetValueAndNotify(ref showSideCompass, value, nameof(ShowSideCompass));
-        }
+        public bool ShowSideCompass { get; set; } = true;
 
-        public bool ShowSideLocation
-        {
-            get => showSideLocation;
-            set => this.SetValueAndNotify(ref showSideLocation, value, nameof(ShowSideLocation));
-        }
+        public bool ShowSideLocation { get; set; } = true;
 
-        public bool ShowSideScaleBar
-        {
-            get => showSideScaleBar;
-            set => this.SetValueAndNotify(ref showSideScaleBar, value, nameof(ShowSideScaleBar));
-        }
+        public bool ShowSideScaleBar { get; set; } = true;
 
-        public bool ShowSideScaleButton
-        {
-            get => showSideScaleButton;
-            set => this.SetValueAndNotify(ref showSideScaleButton, value, nameof(ShowSideScaleButton));
-        }
+        public bool ShowSideScaleButton { get; set; } = false;
 
-        public bool ShowSideSearch
-        {
-            get => showSideSearch;
-            set => this.SetValueAndNotify(ref showSideSearch, value, nameof(ShowSideSearch));
-        }
+        public bool ShowSideSearch { get; set; } = true;
 
-        public bool SmoothScroll
-        {
-            get => smoothScroll;
-            set => this.SetValueAndNotify(ref smoothScroll, value, nameof(SmoothScroll));
-        }
+        public bool SmoothScroll { get; set; } = true;
 
-        public bool TapToSelect
-        {
-            get => tapToSelect;
-            set => this.SetValueAndNotify(ref tapToSelect, value, nameof(TapToSelect));
-        }
+        public bool TapToSelect { get; set; } = false;
 
-        public bool TapToSelectAllLayers
-        {
-            get => tapToSelectAllLayers;
-            set => this.SetValueAndNotify(ref tapToSelectAllLayers, value, nameof(TapToSelectAllLayers));
-        }
+        public bool TapToSelectAllLayers { get; set; } = true;
 
         public int Theme
         {
@@ -337,65 +139,32 @@ namespace MapBoard
             }
         }
 
-        public BrowseInfo Tile_BrowseInfo
-        {
-            get => tile_BrowseInfo;
-            set => this.SetValueAndNotify(ref tile_BrowseInfo, value, nameof(Tile_BrowseInfo));
-        }
+        public BrowseInfo Tile_BrowseInfo { get; set; } = new BrowseInfo();
 
-        public bool Tile_CoverFile
-        {
-            get => tile_CoverFile;
-            set => this.SetValueAndNotify(ref tile_CoverFile, value, nameof(Tile_CoverFile));
-        }
+        public bool Tile_CoverFile { get; set; } = false;
 
-        public string Tile_DownloadFolder
-        {
-            get => tile_DownloadFolder;
-            set => this.SetValueAndNotify(ref tile_DownloadFolder, value, nameof(Tile_DownloadFolder));
-        }
+        public string Tile_DownloadFolder { get; set; } = Parameters.TileDownloadPath;
 
-        public string Tile_DownloadUserAgent
-        {
-            get => tile_DownloadUserAgent;
-            set => this.SetValueAndNotify(ref tile_DownloadUserAgent, value, nameof(Tile_DownloadUserAgent));
-        }
+        public string Tile_DownloadUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
 
-        public string Tile_FormatExtension
-        {
-            get => tile_FormatExtension;
-            set => this.SetValueAndNotify(ref tile_FormatExtension, value, nameof(Tile_FormatExtension));
-        }
+        public string Tile_FormatExtension { get; set; } = "png";
 
         public ImageFormat Tile_ImageFormat
         {
             get
             {
-                switch (Tile_FormatExtension.ToLower())
+                return Tile_FormatExtension.ToLower() switch
                 {
-                    case "jpg":
-                        return ImageFormat.Jpeg;
-
-                    case "png":
-                        return ImageFormat.Png;
-
-                    case "tiff":
-                        return ImageFormat.Tiff;
-
-                    case "bmp":
-                        return ImageFormat.Bmp;
-
-                    default:
-                        throw new Exception("无法识别后缀名" + Tile_FormatExtension);
-                }
+                    "jpg" => ImageFormat.Jpeg,
+                    "png" => ImageFormat.Png,
+                    "tiff" => ImageFormat.Tiff,
+                    "bmp" => ImageFormat.Bmp,
+                    _ => throw new Exception("无法识别后缀名" + Tile_FormatExtension),
+                };
             }
         }
 
-        public DownloadInfo Tile_LastDownload
-        {
-            get => tile_LastDownload;
-            set => this.SetValueAndNotify(ref tile_LastDownload, value, nameof(Tile_LastDownload));
-        }
+        public DownloadInfo Tile_LastDownload { get; set; } = null;
 
         public int Tile_ReadTimeOut
         {
@@ -406,7 +175,6 @@ namespace MapBoard
                 {
                     readTimeOut = value;
                 }
-                this.Notify();
             }
         }
 
@@ -419,47 +187,20 @@ namespace MapBoard
                 {
                     requestTimeOut = value;
                 }
-                this.Notify();
             }
         }
 
-        public string Tile_ServerFormat
-        {
-            get => tile_ServerFormat;
-            set => this.SetValueAndNotify(ref tile_ServerFormat, value, nameof(Tile_ServerFormat));
-        }
+        public string Tile_ServerFormat { get; set; } = @"..\Download\{z}/{x}-{y}.{ext}";
 
-        public int Tile_ServerPort
-        {
-            get => tile_ServerPort;
-            set => this.SetValueAndNotify(ref tile_ServerPort, value, nameof(Tile_ServerPort));
-        }
+        public int Tile_ServerPort { get; set; } = 8080;
 
         public (int width, int height) Tile_TileSize { get; set; } = (256, 256);
 
-        public TileSourceCollection Tile_Urls
-        {
-            get => tile_Urls;
-            set => this.SetValueAndNotify(ref tile_Urls, value, nameof(Tile_Urls));
-        }
+        public TileSourceCollection Tile_Urls { get; set; } = new TileSourceCollection();
 
-        public string Tile_UserAgent
-        {
-            get => tile_UserAgent;
-            set => this.SetValueAndNotify(ref tile_UserAgent, value, nameof(Tile_UserAgent));
-        }
+        public string Tile_UserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
 
-        public string Url
-        {
-            get => url;
-            set => this.SetValueAndNotify(ref url, value, nameof(Url));
-        }
-
-        public bool UseCompactLayerList
-        {
-            get => useCompactLayerList;
-            set => this.SetValueAndNotify(ref useCompactLayerList, value, nameof(UseCompactLayerList));
-        }
+        public bool UseCompactLayerList { get; set; } = false;
 
         public void Save()
         {

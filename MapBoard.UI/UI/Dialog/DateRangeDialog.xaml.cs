@@ -45,7 +45,6 @@ namespace MapBoard.UI.Dialog
             set
             {
                 enableDateRange = value;
-                this.Notify(nameof(EnableDateRange));
                 IsPrimaryButtonEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
             }
         }

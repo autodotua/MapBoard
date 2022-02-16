@@ -7,6 +7,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.WPF.Dialog;
 using MapBoard.Model;
 using ModernWpf.FzExtension.CommonDialog;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,6 +18,7 @@ using static MapBoard.Mapping.Model.TileInfoExtension;
 
 namespace MapBoard.Mapping
 {
+    [DoNotNotify]
     public class TileDownloaderMapView : MapView
     {
         public TileDownloaderMapView()

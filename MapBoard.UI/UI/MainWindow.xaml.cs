@@ -248,7 +248,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private async void ArcMap_PreviewDrop(object sender, DragEventArgs e)
         {
-            BringToFront();
+            this.BringToFront();
             if (arcMap.CurrentTask != BoardTask.Ready)
             {
                 return;

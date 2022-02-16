@@ -14,6 +14,7 @@ namespace MapBoard.UI
 {
     public abstract class MainWindowBase : WindowBase
     {
+        protected bool initialized = false;
         protected bool programInitialized = false;
 
         public static async Task<T> CreateAndShowAsync<T>(Action<T> beforeInitialize = null) where T : MainWindowBase, new()
@@ -46,6 +47,12 @@ namespace MapBoard.UI
             return win;
         }
 
+        /// <summary>
+        /// 用于处理一些窗口在初始化后需要加载的耗时异步操作
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task InitializeAsync();
+
         protected override async void OnContentRendered(EventArgs e)
         {
             base.OnContentRendered(e);
@@ -66,18 +73,12 @@ namespace MapBoard.UI
                 }
             }, "正在初始化", delay: 0);
         }
-
-        protected bool initialized = false;
-
-        /// <summary>
-        /// 用于处理一些窗口在初始化后需要加载的耗时异步操作
-        /// </summary>
-        /// <returns></returns>
-        protected abstract Task InitializeAsync();
     }
 
     public abstract class WindowBase : Window, INotifyPropertyChanged
     {
+        private ProgressRingOverlay loading = null;
+
         public WindowBase()
         {
             DataContext = this;
@@ -90,30 +91,6 @@ namespace MapBoard.UI
 
         public bool IsClosed { get; private set; }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            IsClosed = true;
-        }
-
-        public void BringToFront()
-        {
-            if (!IsVisible)
-            {
-                Show();
-            }
-
-            if (WindowState == WindowState.Minimized)
-            {
-                WindowState = WindowState.Normal;
-            }
-
-            Activate();
-            Topmost = true;  // important
-            Topmost = false; // important
-            Focus();
-        }
-
         /// <summary>
         /// 显示处理中遮罩并处理需要长时间运行的方法
         /// </summary>
@@ -123,39 +100,6 @@ namespace MapBoard.UI
         public Task DoAsync(Func<Task> action, string message, bool catchException = false, int delay = 0)
         {
             return DoAsync(async p => await action(), message, catchException, delay);
-        }
-
-        private ProgressRingOverlay loading = null;
-
-        protected void ShowLoading(int delay, string message)
-        {
-            if (loading == null)
-            {
-                if (Content is Grid grd)
-                {
-                    loading = new ProgressRingOverlay();
-                    Grid.SetColumnSpan(loading, int.MaxValue);
-                    Grid.SetRowSpan(loading, int.MaxValue);
-                    loading.Margin = new Thickness(
-                        -grd.Margin.Left,
-                        -grd.Margin.Top,
-                        -grd.Margin.Right,
-                        -grd.Margin.Bottom);
-                    Panel.SetZIndex(loading, int.MaxValue);
-                    grd.Children.Add(loading);
-                }
-                else
-                {
-                    throw new NotSupportedException("不支持非Grid的窗口内容布局");
-                }
-            }
-            loading.Message = message;
-            loading.Show(delay);
-        }
-
-        protected void HideLoading()
-        {
-            loading?.Hide();
         }
 
         /// <summary>
@@ -186,6 +130,43 @@ namespace MapBoard.UI
             {
                 HideLoading();
             }
+        }
+
+        protected void HideLoading()
+        {
+            loading?.Hide();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            IsClosed = true;
+        }
+
+        protected void ShowLoading(int delay, string message)
+        {
+            if (loading == null)
+            {
+                if (Content is Grid grd)
+                {
+                    loading = new ProgressRingOverlay();
+                    Grid.SetColumnSpan(loading, int.MaxValue);
+                    Grid.SetRowSpan(loading, int.MaxValue);
+                    loading.Margin = new Thickness(
+                        -grd.Margin.Left,
+                        -grd.Margin.Top,
+                        -grd.Margin.Right,
+                        -grd.Margin.Bottom);
+                    Panel.SetZIndex(loading, int.MaxValue);
+                    grd.Children.Add(loading);
+                }
+                else
+                {
+                    throw new NotSupportedException("不支持非Grid的窗口内容布局");
+                }
+            }
+            loading.Message = message;
+            loading.Show(delay);
         }
     }
 }

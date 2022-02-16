@@ -29,6 +29,7 @@ using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using FzLib.WPF;
 
 namespace MapBoard.UI.Bar
 {
@@ -37,109 +38,30 @@ namespace MapBoard.UI.Bar
     /// </summary>
     public partial class SelectionBar : BarBase
     {
+        private FeatureAttributeCollection attributes;
+
+        private SelectFeatureDialog selectFeatureDialog;
+
         public SelectionBar()
         {
             InitializeComponent();
         }
 
-        public override void Initialize()
-        {
-            MapView.BoardTaskChanged += BoardTaskChanged;
-            Window.GetWindow(this).SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
-            Window.GetWindow(this).LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
-            MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
-        }
-
-        private void Layers_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(MapLayerCollection.Selected))
-            {
-                this.Notify(nameof(IsLayerEditable));
-            }
-        }
+        public override FeatureAttributeCollection Attributes => attributes;
 
         public bool IsLayerEditable => (Layers?.Selected) != null && Layers?.Selected is IEditableLayerInfo;
 
-        private SelectFeatureDialog selectFeatureDialog;
+        public string Message { get; set; } = "正在编辑";
 
-        private async void SelectedFeaturesChanged(object sender, EventArgs e)
+        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
+
+        public override void Initialize()
         {
-            if (MapView.CurrentTask != BoardTask.Select)
-            {
-                return;
-            }
-            int count = MapView.Selection.SelectedFeatures.Count;
-            btnRedraw.IsEnabled = count == 1 && IsLayerEditable;
-            //btnMoreAttributes.IsEnabled = count == 1;
-            var layer = Layers.Selected;
-            btnCut.IsEnabled = (layer.GeometryType == GeometryType.Polygon
-                || layer.GeometryType == GeometryType.Polyline)
-                && IsLayerEditable;
-            btnDelete.IsEnabled = IsLayerEditable;
-            btnMenu.IsEnabled = IsLayerEditable;
-            attributes = count != 1 ?
-                null : FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
-
-            if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
-            {
-                selectFeatureDialog = new SelectFeatureDialog(Window.GetWindow(this), MapView, MapView.Layers);
-                selectFeatureDialog.Show(); ;
-            }
-
-            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
-            Message = sb.ToString();
-            await Task.Run(() =>
-            {
-                try
-                {
-                    switch (layer.GeometryType)
-                    {
-                        case GeometryType.Point when count == 1:
-                            var point = MapView.Selection.SelectedFeatures.First().Geometry as MapPoint;
-                            sb.Append($"，经度={point.X:0.0000000}，纬度={point.Y:0.0000000}");
-                            break;
-
-                        case GeometryType.Envelope:
-                            return;
-
-                        case GeometryType.Polyline:
-                            double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                            sb.Append("，长度：" + NumberConverter.MeterToFitString(length));
-
-                            break;
-
-                        case GeometryType.Polygon:
-                            double length2 = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                            double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
-                            sb.Append("，周长：" + NumberConverter.MeterToFitString(length2));
-                            sb.Append("，面积：" + NumberConverter.SquareMeterToFitString(area));
-
-                            break;
-
-                        case GeometryType.Multipoint:
-                            int pointCount = MapView.Selection.SelectedFeatures
-                            .Select(p => (p.Geometry as Multipoint).Points.Count).Sum();
-                            sb.Append($"，{pointCount}个点");
-                            break;
-
-                        default:
-                            return;
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    //当MapView.Selection.SelectedFeatures集合发生改变时会抛出错误，此时不需要继续进行计算
-                    return;
-                }
-            });
-            Message = sb.ToString();
-
-            this.Notify(nameof(Attributes));
+            MapView.BoardTaskChanged += BoardTaskChanged;
+            this.GetWindow().SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            this.GetWindow().LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
         }
-
-        private FeatureAttributeCollection attributes;
-
-        public override FeatureAttributeCollection Attributes => attributes;
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
@@ -154,118 +76,25 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private string message = "正在编辑";
-
-        public string Message
+        private void BtnExportClick(object sender, RoutedEventArgs e)
         {
-            get => message;
-            set
-            {
-                message = value;
-                this.Notify(nameof(Message));
-            }
-        }
-
-        protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
-
-        private async void DeleteButtonClick(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
-            await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
-            {
-                await FeatureUtility.DeleteAsync(Layers.Selected as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
-                MapView.Selection.ClearSelection();
-            }, "正在删除", true);
-        }
-
-        private async void CopyButtonClick(object sender, RoutedEventArgs e)
-        {
-            await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
-            {
-                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
-                    p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType,
-                    true);
-                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-                {
-                    bool copy = Layers.Selected is IEditableLayerInfo ?
-                    await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") : true;
-
-                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
-                    MapView.Selection.ClearSelection();
-                    Layers.Selected = dialog.SelectedLayer;
-                }
-            }, "正在复制图形");
-        }
-
-        private async void CutButtonClick(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            var layer = Layers.Selected;
             var features = MapView.Selection.SelectedFeatures.ToArray();
-            var line = await MapView.Editor.GetPolylineAsync();
-            if (line != null)
+            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
+           {
+                ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
+                ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
+            };
+            OpenMenus(menus, sender as UIElement, header => $"正在{header}");
+
+            Task ToCsvAsync()
             {
-                await (Window.GetWindow(this) as MainWindow).DoAsync(async () =>
-                {
-                    var result = await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
-                    SnakeBar.Show($"已分割为{result.Count}个图形");
-                }, "正在分割", true);
+                return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, MapView.Selection.SelectedFeatures));
             }
-        }
-
-        private async void EditButtonClick(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
-            var feature = MapView.Selection.SelectedFeatures.First();
-            MapView.Selection.ClearSelection();
-            await MapView.Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
-        }
-
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
-        {
-            MapView.Selection.ClearSelection();
-        }
-
-        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent, Func<string, string> getMessage)
-        {
-            ContextMenu menu = new ContextMenu();
-
-            foreach (var (header, desc, action, visiable) in menus)
+            Task ToGeoJsonAsync()
             {
-                if (visiable)
-                {
-                    StackPanel content = new StackPanel();
-                    content.Children.Add(new TextBlock()
-                    {
-                        Text = header,
-                        FontWeight = FontWeights.Bold,
-                        Margin = new Thickness(0, 4, 0, 4)
-                    });
-                    content.Children.Add(new TextBlock()
-                    {
-                        Text = desc,
-                        Margin = new Thickness(0, 0, 0, 4)
-                    });
-                    MenuItem item = new MenuItem() { Header = content };
-                    item.Click += async (p1, p2) =>
-                    {
-                        try
-                        {
-                            await (Window.GetWindow(this) as MainWindow).DoAsync(action, getMessage(header));
-                        }
-                        catch (Exception ex)
-                        {
-                            App.Log.Error("执行菜单失败", ex);
-                            await CommonDialog.ShowErrorDialogAsync(ex);
-                        }
-                    };
-                    menu.Items.Add(item);
-                }
+                return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, MapView.Selection.SelectedFeatures));
             }
-
-            menu.Placement = PlacementMode.Bottom;
-            menu.PlacementTarget = parent;
-            menu.IsOpen = true;
         }
 
         private void BtnMenuClick(object sender, RoutedEventArgs e)
@@ -351,7 +180,7 @@ namespace MapBoard.UI.Bar
                     "请选择连接类型", typeList, "查看图形起点和终点", async () =>
                      {
                          await MapView.Overlay.ShowHeadAndTailOfFeatures(features);
-                         SnakeBar snake = new SnakeBar(Window.GetWindow(this))
+                         SnakeBar snake = new SnakeBar(this.GetWindow())
                          {
                              ShowButton = true,
                              ButtonContent = "继续",
@@ -491,17 +320,200 @@ namespace MapBoard.UI.Bar
             }
         }
 
+        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        {
+            MapView.Selection.ClearSelection();
+        }
+
+        private async void CopyButtonClick(object sender, RoutedEventArgs e)
+        {
+            await (this.GetWindow() as MainWindow).DoAsync(async () =>
+            {
+                SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
+                    p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType,
+                    true);
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    bool copy = Layers.Selected is IEditableLayerInfo ?
+                    await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？") : true;
+
+                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    MapView.Selection.ClearSelection();
+                    Layers.Selected = dialog.SelectedLayer;
+                }
+            }, "正在复制图形");
+        }
+
+        private async void CutButtonClick(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            var features = MapView.Selection.SelectedFeatures.ToArray();
+            var line = await MapView.Editor.GetPolylineAsync();
+            if (line != null)
+            {
+                await (this.GetWindow() as MainWindow).DoAsync(async () =>
+                {
+                    var result = await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
+                    SnakeBar.Show($"已分割为{result.Count}个图形");
+                }, "正在分割", true);
+            }
+        }
+
+        private async void DeleteButtonClick(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            await (this.GetWindow() as MainWindow).DoAsync(async () =>
+            {
+                await FeatureUtility.DeleteAsync(Layers.Selected as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
+                MapView.Selection.ClearSelection();
+            }, "正在删除", true);
+        }
+
+        private async void EditButtonClick(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
+            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            var feature = MapView.Selection.SelectedFeatures.First();
+            MapView.Selection.ClearSelection();
+            await MapView.Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
+        }
+
         private async Task ExportBase(FileFilterCollection filter, Func<string, Task> task)
         {
             string path = filter.CreateSaveFileDialog()
                         .SetDefault(MapView.Selection.SelectedFeatures.Count + "个图形")
-                        .SetParent(Window.GetWindow(this))
+                        .SetParent(this.GetWindow())
                         .GetFilePath();
             if (path != null)
             {
                 await task(path);
-                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, Window.GetWindow(this));
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, this.GetWindow());
             }
+        }
+
+        private void Layers_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MapLayerCollection.Selected))
+            {
+                this.Notify(nameof(IsLayerEditable));
+            }
+        }
+
+        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent, Func<string, string> getMessage)
+        {
+            ContextMenu menu = new ContextMenu();
+
+            foreach (var (header, desc, action, visiable) in menus)
+            {
+                if (visiable)
+                {
+                    StackPanel content = new StackPanel();
+                    content.Children.Add(new TextBlock()
+                    {
+                        Text = header,
+                        FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 4, 0, 4)
+                    });
+                    content.Children.Add(new TextBlock()
+                    {
+                        Text = desc,
+                        Margin = new Thickness(0, 0, 0, 4)
+                    });
+                    MenuItem item = new MenuItem() { Header = content };
+                    item.Click += async (p1, p2) =>
+                    {
+                        try
+                        {
+                            await (this.GetWindow() as MainWindow).DoAsync(action, getMessage(header));
+                        }
+                        catch (Exception ex)
+                        {
+                            App.Log.Error("执行菜单失败", ex);
+                            await CommonDialog.ShowErrorDialogAsync(ex);
+                        }
+                    };
+                    menu.Items.Add(item);
+                }
+            }
+
+            menu.Placement = PlacementMode.Bottom;
+            menu.PlacementTarget = parent;
+            menu.IsOpen = true;
+        }
+
+        private async void SelectedFeaturesChanged(object sender, EventArgs e)
+        {
+            if (MapView.CurrentTask != BoardTask.Select)
+            {
+                return;
+            }
+            int count = MapView.Selection.SelectedFeatures.Count;
+            btnRedraw.IsEnabled = count == 1 && IsLayerEditable;
+            //btnMoreAttributes.IsEnabled = count == 1;
+            var layer = Layers.Selected;
+            btnCut.IsEnabled = (layer.GeometryType == GeometryType.Polygon
+                || layer.GeometryType == GeometryType.Polyline)
+                && IsLayerEditable;
+            btnDelete.IsEnabled = IsLayerEditable;
+            btnMenu.IsEnabled = IsLayerEditable;
+            attributes = count != 1 ?
+                null : FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
+
+            if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
+            {
+                selectFeatureDialog = new SelectFeatureDialog(this.GetWindow(), MapView, MapView.Layers);
+                selectFeatureDialog.Show(); ;
+            }
+
+            StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
+            Message = sb.ToString();
+            await Task.Run(() =>
+            {
+                try
+                {
+                    switch (layer.GeometryType)
+                    {
+                        case GeometryType.Point when count == 1:
+                            var point = MapView.Selection.SelectedFeatures.First().Geometry as MapPoint;
+                            sb.Append($"，经度={point.X:0.0000000}，纬度={point.Y:0.0000000}");
+                            break;
+
+                        case GeometryType.Envelope:
+                            return;
+
+                        case GeometryType.Polyline:
+                            double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                            sb.Append("，长度：" + NumberConverter.MeterToFitString(length));
+
+                            break;
+
+                        case GeometryType.Polygon:
+                            double length2 = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
+                            double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
+                            sb.Append("，周长：" + NumberConverter.MeterToFitString(length2));
+                            sb.Append("，面积：" + NumberConverter.SquareMeterToFitString(area));
+
+                            break;
+
+                        case GeometryType.Multipoint:
+                            int pointCount = MapView.Selection.SelectedFeatures
+                            .Select(p => (p.Geometry as Multipoint).Points.Count).Sum();
+                            sb.Append($"，{pointCount}个点");
+                            break;
+
+                        default:
+                            return;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    //当MapView.Selection.SelectedFeatures集合发生改变时会抛出错误，此时不需要继续进行计算
+                    return;
+                }
+            });
+            Message = sb.ToString();
+
+            this.Notify(nameof(Attributes));
         }
 
         private void ValueTextBlock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -513,27 +525,6 @@ namespace MapBoard.UI.Bar
                     Clipboard.SetText(tbk.Text);
                     SnakeBar.Show($"已复制“{tbk.Text}”到剪贴板");
                 }
-            }
-        }
-
-        private void BtnExportClick(object sender, RoutedEventArgs e)
-        {
-            var layer = Layers.Selected;
-            var features = MapView.Selection.SelectedFeatures.ToArray();
-            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
-           {
-                ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
-                ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
-            };
-            OpenMenus(menus, sender as UIElement, header => $"正在{header}");
-
-            Task ToCsvAsync()
-            {
-                return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, MapView.Selection.SelectedFeatures));
-            }
-            Task ToGeoJsonAsync()
-            {
-                return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, MapView.Selection.SelectedFeatures));
             }
         }
     }

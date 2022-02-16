@@ -15,24 +15,30 @@ namespace MapBoard.Mapping.Model
 {
     public class FeatureAttributeCollection : INotifyPropertyChanged
     {
-        private List<FeatureAttribute> others = new List<FeatureAttribute>();
         private List<FeatureAttribute> all = new List<FeatureAttribute>();
+        private bool isSelected;
+        private List<FeatureAttribute> others = new List<FeatureAttribute>();
 
         private FeatureAttributeCollection()
         {
         }
 
-        [JsonIgnore]
-        private Feature feature;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        [JsonIgnore]
-        public Feature Feature
+        public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
+
+        public DateTime? Date
         {
-            get => feature;
-            private set => this.SetValueAndNotify(ref feature, value, nameof(Feature));
+            get => all.FirstOrDefault(p => p.Name == Parameters.DateFieldName)?.DateValue;
+            set
+            {
+                var item = all.First(p => p.Name == Parameters.DateFieldName);
+                item.DateValue = value;
+            }
         }
 
-        private bool isSelected;
+        [JsonIgnore]
+        public Feature Feature { get; set; }
 
         [JsonIgnore]
         public bool IsSelected
@@ -45,20 +51,6 @@ namespace MapBoard.Mapping.Model
                     return;
                 }
                 isSelected = value;
-                this.Notify(nameof(IsSelected));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public string Label
-        {
-            get => all.FirstOrDefault(p => p.Name == Parameters.LabelFieldName)?.TextValue;
-            set
-            {
-                var item = all.First(p => p.Name == Parameters.LabelFieldName);
-                item.TextValue = value;
-                this.Notify(nameof(Label));
             }
         }
 
@@ -69,23 +61,20 @@ namespace MapBoard.Mapping.Model
             {
                 var item = all.First(p => p.Name == Parameters.ClassFieldName);
                 item.TextValue = value;
-                this.Notify(nameof(Key));
             }
         }
 
-        public DateTime? Date
+        public string Label
         {
-            get => all.FirstOrDefault(p => p.Name == Parameters.DateFieldName)?.DateValue;
+            get => all.FirstOrDefault(p => p.Name == Parameters.LabelFieldName)?.TextValue;
             set
             {
-                var item = all.First(p => p.Name == Parameters.DateFieldName);
-                item.DateValue = value;
-                this.Notify(nameof(Date));
+                var item = all.First(p => p.Name == Parameters.LabelFieldName);
+                item.TextValue = value;
             }
         }
 
         public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
-        public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
 
         public static FeatureAttributeCollection Empty(ILayerInfo layer)
         {

@@ -29,6 +29,10 @@ namespace MapBoard.UI.Extension
     /// </summary>
     public partial class RoutePanel : ExtensionPanelBase
     {
+        private RouteInfo selectedRoute;
+
+        private RouteStepInfo selectedStep;
+
         public RoutePanel()
         {
             if (ExtensionUtility.RouteEngines.Count > 0)
@@ -38,40 +42,14 @@ namespace MapBoard.UI.Extension
             InitializeComponent();
         }
 
-        private RouteInfo[] searchResult = Array.Empty<RouteInfo>();
+        public Location Destination { get; set; }
 
-        /// <summary>
-        /// 起点
-        /// </summary>
-        private Location origin;
-
-        public Location Origin
-        {
-            get => origin;
-            private set => this.SetValueAndNotify(ref origin, value, nameof(Origin));
-        }
-
-        /// <summary>
-        /// 终点
-        /// </summary>
-        private Location destination;
-
-        public Location Destination
-        {
-            get => destination;
-            private set => this.SetValueAndNotify(ref destination, value, nameof(Destination));
-        }
+        public Location Origin { get; set; }
 
         /// <summary>
         /// 搜索结果
         /// </summary>
-        public RouteInfo[] SearchResult
-        {
-            get => searchResult;
-            set => this.SetValueAndNotify(ref searchResult, value, nameof(SearchResult));
-        }
-
-        private RouteInfo selectedRoute;
+        public RouteInfo[] SearchResult { get; set; } = Array.Empty<RouteInfo>();
 
         /// <summary>
         /// 选中的某一条路线
@@ -81,23 +59,8 @@ namespace MapBoard.UI.Extension
             get => selectedRoute;
             set
             {
-                this.SetValueAndNotify(ref selectedRoute, value, nameof(SelectedRoute));
+                selectedRoute = value;
                 Overlay.SelectRoute(value);
-            }
-        }
-
-        private RouteStepInfo selectedStep;
-
-        /// <summary>
-        /// 选中的某一步骤
-        /// </summary>
-        public RouteStepInfo SelectedStep
-        {
-            get => selectedStep;
-            set
-            {
-                this.SetValueAndNotify(ref selectedStep, value, nameof(SelectedStep));
-                Overlay.SelectStep(value);
             }
         }
 
@@ -107,56 +70,15 @@ namespace MapBoard.UI.Extension
         public IRouteEngine SelectedRouteEngine { get; set; }
 
         /// <summary>
-        /// 点击清空按钮
+        /// 选中的某一步骤
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+        public RouteStepInfo SelectedStep
         {
-            SearchResult = Array.Empty<RouteInfo>();
-            Overlay.ClearRoutes();
-        }
-
-        /// <summary>
-        /// 点击搜索按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedRouteEngine == null)
+            get => selectedStep;
+            set
             {
-                await CommonDialog.ShowErrorDialogAsync("没有选择任何POI搜索引擎");
-                return;
-            }
-            if (Origin == null || Destination == null || Origin.Longitude * Origin.Latitude * Destination.Longitude * Destination.Latitude == 0)
-            {
-                await CommonDialog.ShowErrorDialogAsync("请先完全设置起点和终点的经纬度");
-                return;
-            }
-            if ((sender as Button).IsEnabled == false)
-            {
-                return;
-            }
-            try
-            {
-                (sender as Button).IsEnabled = false;
-                var type = (RouteType)(cbbType.SelectedIndex + 1);
-
-                SearchResult = await SelectedRouteEngine.SearchRouteAsync(type, Origin.ToMapPoint(), Destination.ToMapPoint());
-
-                //将搜索结果从GCJ02转为WGS84
-
-                Overlay.ShowRoutes(SearchResult);
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("搜索失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "搜索失败");
-            }
-            finally
-            {
-                (sender as Button).IsEnabled = true;
+                selectedStep = value;
+                Overlay.SelectStep(value);
             }
         }
 
@@ -194,6 +116,17 @@ namespace MapBoard.UI.Extension
                     Overlay.SetRouteDestination(point);
                 }
             }
+        }
+
+        /// <summary>
+        /// 点击清空按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchResult = Array.Empty<RouteInfo>();
+            Overlay.ClearRoutes();
         }
 
         /// <summary>
@@ -292,18 +225,6 @@ namespace MapBoard.UI.Extension
             }
         }
 
-        private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (Origin == null)
-            {
-                Origin = new Location();
-            }
-            if (Destination == null)
-            {
-                Destination = new Location();
-            }
-        }
-
         private void LocationPointButton_Click(object sender, RoutedEventArgs e)
         {
             if (MapView is MapView m)
@@ -330,6 +251,61 @@ namespace MapBoard.UI.Extension
             else
             {
                 CommonDialog.ShowErrorDialogAsync("不支持该地图");
+            }
+        }
+
+        private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (Origin == null)
+            {
+                Origin = new Location();
+            }
+            if (Destination == null)
+            {
+                Destination = new Location();
+            }
+        }
+
+        /// <summary>
+        /// 点击搜索按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedRouteEngine == null)
+            {
+                await CommonDialog.ShowErrorDialogAsync("没有选择任何POI搜索引擎");
+                return;
+            }
+            if (Origin == null || Destination == null || Origin.Longitude * Origin.Latitude * Destination.Longitude * Destination.Latitude == 0)
+            {
+                await CommonDialog.ShowErrorDialogAsync("请先完全设置起点和终点的经纬度");
+                return;
+            }
+            if ((sender as Button).IsEnabled == false)
+            {
+                return;
+            }
+            try
+            {
+                (sender as Button).IsEnabled = false;
+                var type = (RouteType)(cbbType.SelectedIndex + 1);
+
+                SearchResult = await SelectedRouteEngine.SearchRouteAsync(type, Origin.ToMapPoint(), Destination.ToMapPoint());
+
+                //将搜索结果从GCJ02转为WGS84
+
+                Overlay.ShowRoutes(SearchResult);
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("搜索失败", ex);
+                await CommonDialog.ShowErrorDialogAsync(ex, "搜索失败");
+            }
+            finally
+            {
+                (sender as Button).IsEnabled = true;
             }
         }
     }

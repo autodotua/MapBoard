@@ -7,174 +7,53 @@ namespace MapBoard.Model
 {
     public class LabelInfo : INotifyPropertyChanged, ICloneable
     {
-        private bool @class;
-
-        /// <summary>
-        /// 是否允许重叠
-        /// </summary>
-        private bool allowOverlap;
-
-        /// <summary>
-        /// 是否允许重复
-        /// </summary>
-        private bool allowRepeat;
-
-        private Color backgroundColor = Color.Transparent;
-        private bool bold;
-        private string customLabelExpression;
-        private bool date;
-        private Color fontColor = Color.Black;
-        private string fontFamily;
-        private double fontSize = 12;
-        private Color haloColor = Color.FromArgb(255, 248, 220);
-        private double haloWidth = 3;
-        private bool info = true;
-        private bool italic;
-
-        /// <summary>
-        /// 标签布局
-        /// </summary>
-        private int layout = 0;
-
         private double minScale = 0;
-        private bool newLine;
-        private Color outlineColor = Color.Transparent;
-        private double outlineWidth = 0;
-
-        private string whereClause = "";
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public bool AllowOverlap
-        {
-            get => allowOverlap;
-            set => this.SetValueAndNotify(ref allowOverlap, value, nameof(AllowOverlap));
-        }
+        public bool AllowOverlap { get; set; }
 
-        public bool AllowRepeat
-        {
-            get => allowRepeat;
-            set => this.SetValueAndNotify(ref allowRepeat, value, nameof(AllowRepeat));
-        }
+        public bool AllowRepeat { get; set; }
 
-        public Color BackgroundColor
-        {
-            get => backgroundColor;
-            set => this.SetValueAndNotify(ref backgroundColor, value, nameof(BackgroundColor));
-        }
+        public Color BackgroundColor { get; set; } = Color.Transparent;
 
-        public bool Bold
-        {
-            get => bold;
-            set => this.SetValueAndNotify(ref bold, value, nameof(Bold));
-        }
+        public bool Bold { get; set; }
 
-        public bool Class
-        {
-            get => @class;
-            set => this.SetValueAndNotify(ref @class, value, nameof(Class));
-        }
+        public bool Class { get; set; }
 
-        public string CustomLabelExpression
-        {
-            get => customLabelExpression;
-            set => this.SetValueAndNotify(ref customLabelExpression, value, nameof(CustomLabelExpression));
-        }
+        public string CustomLabelExpression { get; set; }
 
-        public bool Date
-        {
-            get => date;
-            set => this.SetValueAndNotify(ref date, value, nameof(Date));
-        }
+        public bool Date { get; set; }
 
-        public Color FontColor
-        {
-            get => fontColor;
-            set => this.SetValueAndNotify(ref fontColor, value, nameof(FontColor));
-        }
+        public Color FontColor { get; set; } = Color.Black;
 
-        public string FontFamily
-        {
-            get => fontFamily;
-            set => this.SetValueAndNotify(ref fontFamily, value, nameof(FontFamily));
-        }
+        public string FontFamily { get; set; }
 
-        public double FontSize
-        {
-            get => fontSize;
-            set => this.SetValueAndNotify(ref fontSize, value, nameof(FontSize));
-        }
+        public double FontSize { get; set; } = 12;
 
-        public Color HaloColor
-        {
-            get => haloColor;
-            set => this.SetValueAndNotify(ref haloColor, value, nameof(HaloColor));
-        }
+        public Color HaloColor { get; set; } = Color.FromArgb(255, 248, 220);
 
-        public double HaloWidth
-        {
-            get => haloWidth;
-            set => this.SetValueAndNotify(ref haloWidth, value, nameof(HaloWidth));
-        }
+        public double HaloWidth { get; set; } = 3;
 
-        public bool Info
-        {
-            get => info;
-            set => this.SetValueAndNotify(ref info, value, nameof(Info));
-        }
+        public bool Info { get; set; } = true;
 
-        public bool Italic
-        {
-            get => italic;
-            set => this.SetValueAndNotify(ref italic, value, nameof(Italic));
-        }
+        public bool Italic { get; set; }
 
-        public int Layout
-        {
-            get => layout;
-            set => this.SetValueAndNotify(ref layout, value, nameof(Layout));
-        }
+        public int Layout { get; set; } = 0;
 
         public double MinScale
         {
             get => minScale;
-            set
-            {
-                if (value >= 0)
-                {
-                    minScale = value;
-                }
-                else
-                {
-                    minScale = 0;
-                }
-                this.Notify(nameof(MinScale));
-            }
+            set => minScale = value >= 0 ? value : 0;
         }
 
-        public bool NewLine
-        {
-            get => newLine;
-            set => this.SetValueAndNotify(ref newLine, value, nameof(NewLine));
-        }
+        public bool NewLine { get; set; }
 
-        public Color OutlineColor
-        {
-            get => outlineColor;
-            set => this.SetValueAndNotify(ref outlineColor, value, nameof(OutlineColor));
-        }
+        public Color OutlineColor { get; set; } = Color.Transparent;
 
-        public double OutlineWidth
-        {
-            get => outlineWidth;
-            set => this.SetValueAndNotify(ref outlineWidth, value, nameof(OutlineWidth));
-        }
+        public double OutlineWidth { get; set; } = 0;
 
-        public string WhereClause
-        {
-            get => whereClause;
-            set => this.SetValueAndNotify(ref whereClause, value, nameof(WhereClause));
-        }
+        public string WhereClause { get; set; } = "";
 
         public object Clone()
         {
