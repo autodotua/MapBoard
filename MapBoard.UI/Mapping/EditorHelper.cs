@@ -46,6 +46,11 @@ namespace MapBoard.Mapping
         /// </summary>
         private MapPoint nearestPoint;
 
+        /// <summary>
+        /// 正在编辑的要素
+        /// </summary>
+        private Feature editingFeature;
+
         public EditorHelper(MainMapView mapView)
         {
             MapView = mapView;
@@ -155,8 +160,10 @@ namespace MapBoard.Mapping
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             StartDraw(EditMode.Edit);
+            editingFeature = feature;
             await SketchEditor.StartAsync(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
                 GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
+            editingFeature = null;
             if (geometry != null)
             {
                 UpdatedFeature newFeature = new UpdatedFeature(feature, feature.Geometry, new Dictionary<string, object>(feature.Attributes));
@@ -285,39 +292,53 @@ namespace MapBoard.Mapping
         /// 获取离指定位置最近的结点
         /// </summary>
         /// <param name="position"></param>
+        /// <param name="excludeSelf">是否排除当前正在编辑的图层</param>
         /// <returns></returns>
-        private async Task<(MapPoint, MapPoint)> GetNearestVertexAndPointAsync(System.Windows.Point position)
+        private async Task<(MapPoint, MapPoint)> GetNearestVertexAndPointAsync(Point position, bool excludeSelf)
         {
-            var location = GeometryEngine.Project(MapView.ScreenToLocation(position), SpatialReferences.Wgs84) as MapPoint;
+            var location = MapView.ScreenToLocation(position).ToWgs84();
             IReadOnlyList<IdentifyLayerResult> results = null;
             try
             {
-                results = await MapView.IdentifyLayersAsync(position, 20, false, int.MaxValue);
+                results = await MapView.IdentifyLayersAsync(position, Config.Instance.CatchDistance, false, int.MaxValue);
             }
             catch (Exception ex)
             {
                 App.Log.Error("识别最近的图形失败", ex);
                 return (null, null);
             }
-
             MapPoint minVertex = null;
             MapPoint minPoint = null;
             double minVertexDistance = double.MaxValue;
             double minPointDistance = double.MaxValue;
-            foreach (var result in results.Where(p => p.LayerContent is FeatureLayer))
+            foreach (var geometry in results
+                .Where(p => p.LayerContent is FeatureLayer)
+                .SelectMany(p => p.GeoElements)
+                .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())
+                .Select(p => p.Geometry)
+                .Select(p => p is Polygon ? (p as Polygon).ToPolyline() : p))
             {
-                foreach (var geometry in result.GeoElements.Select(p => p.Geometry))
+                var nearestVertexResult = GeometryEngine.NearestVertex(geometry, location);
+                if (nearestVertexResult != null && nearestVertexResult.Distance < minVertexDistance)
                 {
-                    var nearestVertexResult = GeometryEngine.NearestVertex(geometry, location);
-                    if (nearestVertexResult != null && nearestVertexResult.Distance < minVertexDistance)
-                    {
-                        minVertex = nearestVertexResult.Coordinate;
-                    }
-                    var nearestPointResult = GeometryEngine.NearestCoordinate(geometry, location);
-                    if (nearestPointResult != null && nearestPointResult.Distance < minPointDistance)
-                    {
-                        minPoint = nearestPointResult.Coordinate;
-                    }
+                    minVertex = nearestVertexResult.Coordinate;
+                    minVertexDistance = nearestVertexResult.Distance;
+                }
+                var nearestPointResult = GeometryEngine.NearestCoordinate(geometry, location);
+                if (nearestPointResult != null && nearestPointResult.Distance < minPointDistance)
+                {
+                    minPoint = nearestPointResult.Coordinate;
+                    minPointDistance = nearestPointResult.Distance;
+                }
+            }
+            if (minVertex != null)
+            {
+                //最近任意点一定在要求的范围内，但是最近节点可能大于甚至远大于范围
+                var vertexPoint = MapView.LocationToScreen(minVertex);
+                var distance = Math.Sqrt((Math.Pow(vertexPoint.X - position.X, 2) + Math.Pow(vertexPoint.Y - position.Y, 2)));
+                if (distance > Config.Instance.CatchDistance)
+                {
+                    return (null, minPoint);
                 }
             }
             return (minVertex, minPoint);
@@ -352,7 +373,7 @@ namespace MapBoard.Mapping
             {
                 isSearchingNearestPoint = true;
 
-                (nearestVertex, nearestPoint) = await GetNearestVertexAndPointAsync(position);
+                (nearestVertex, nearestPoint) = await GetNearestVertexAndPointAsync(position, Config.Instance.AutoCatchToNearestVertex);
                 isSearchingNearestPoint = false;
                 //因为查询需要一定时间，结束以后可能就不在绘制状态了，所以需要再次判断
                 if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
@@ -392,21 +413,20 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-            {
-                if (nearestVertex != null)
-                {
-                    AddPointToSketchEditor(nearestVertex);
-                    e.Handled = true;
-                }
-                return;
-            }
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
                 if (nearestVertex != null)
                 {
                     AddPointToSketchEditor(nearestPoint);
+                    e.Handled = true;
+                }
+                return;
+            }
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ^ Config.Instance.AutoCatchToNearestVertex)//只有一个可以为true
+            {
+                if (nearestVertex != null)
+                {
+                    AddPointToSketchEditor(nearestVertex);
                     e.Handled = true;
                 }
                 return;

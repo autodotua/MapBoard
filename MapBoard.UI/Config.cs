@@ -13,10 +13,10 @@ namespace MapBoard
 {
     public class Config : IJsonSerializable, INotifyPropertyChanged
     {
-        private static string path = Parameters.ConfigPath;
         public static int WatermarkHeight = 72;
         private static Config instance;
-
+        private static string path = Parameters.ConfigPath;
+        private bool autoCatchToNearestVertex;
         private bool backupWhenExit = true;
 
         private bool backupWhenReplace = true;
@@ -25,6 +25,7 @@ namespace MapBoard
 
         private CoordinateSystem basemapCoordinateSystem = CoordinateSystem.WGS84;
 
+        private int catchDistance = 10;
         private bool copyShpFileWhenExport = true;
 
         private bool gpx_AutoSmooth = true;
@@ -33,6 +34,7 @@ namespace MapBoard
 
         private bool gpx_AutoSmoothOnlyZ = false;
 
+        private bool gpx_DrawPoints;
         private bool gpx_Height = false;
 
         private int gpx_HeightExaggeratedMagnification = 5;
@@ -41,6 +43,7 @@ namespace MapBoard
 
         private bool hideWatermark = true;
 
+        private int lastLayerListGroupType;
         private int maxBackupCount = 100;
 
         private double maxScale = 100;
@@ -56,6 +59,17 @@ namespace MapBoard
         private int requestTimeOut = 1000;
 
         private int serverLayerLoadTimeout = 5000;
+        private bool showLocation;
+        private bool showNearestPointSymbol = false;
+        private bool showSideBaseLayers = true;
+        private bool showSideCompass = true;
+        private bool showSideLocation = true;
+        private bool showSideScaleBar = true;
+        private bool showSideScaleButton = false;
+        private bool showSideSearch = true;
+        private bool smoothScroll = true;
+        private bool tapToSelect;
+        private bool tapToSelectAllLayers = true;
         private int theme = 0;
 
         private BrowseInfo tile_BrowseInfo = new BrowseInfo();
@@ -82,8 +96,6 @@ namespace MapBoard
 
         private bool useCompactLayerList;
 
-        private bool showNearestPointSymbol = false;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public event EventHandler ThemeChanged;
@@ -108,7 +120,11 @@ namespace MapBoard
             }
         }
 
-        public Exception LoadError { get; private set; }
+        public bool AutoCatchToNearestVertex
+        {
+            get => autoCatchToNearestVertex;
+            set => this.SetValueAndNotify(ref autoCatchToNearestVertex, value, nameof(AutoCatchToNearestVertex));
+        }
 
         public bool BackupWhenExit
         {
@@ -134,34 +150,16 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref basemapCoordinateSystem, value, nameof(BasemapCoordinateSystem));
         }
 
+        public int CatchDistance
+        {
+            get => catchDistance;
+            set => this.SetValueAndNotify(ref catchDistance, value, nameof(CatchDistance));
+        }
+
         public bool CopyShpFileWhenExport
         {
             get => copyShpFileWhenExport;
             set => this.SetValueAndNotify(ref copyShpFileWhenExport, value, nameof(CopyShpFileWhenExport));
-        }
-
-        private bool tapToSelect;
-
-        public bool TapToSelect
-        {
-            get => tapToSelect;
-            set => this.SetValueAndNotify(ref tapToSelect, value, nameof(TapToSelect));
-        }
-
-        private bool tapToSelectAllLayers = true;
-
-        public bool TapToSelectAllLayers
-        {
-            get => tapToSelectAllLayers;
-            set => this.SetValueAndNotify(ref tapToSelectAllLayers, value, nameof(TapToSelectAllLayers));
-        }
-
-        private bool showLocation;
-
-        public bool ShowLocation
-        {
-            get => showLocation;
-            set => this.SetValueAndNotify(ref showLocation, value, nameof(ShowLocation));
         }
 
         public bool Gpx_AutoSmooth
@@ -182,6 +180,12 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref gpx_AutoSmoothOnlyZ, value, nameof(Gpx_AutoSmoothOnlyZ));
         }
 
+        public bool Gpx_DrawPoints
+        {
+            get => gpx_DrawPoints;
+            set => this.SetValueAndNotify(ref gpx_DrawPoints, value, nameof(Gpx_DrawPoints));
+        }
+
         public bool Gpx_Height
         {
             get => gpx_Height;
@@ -200,15 +204,13 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref gpx_RelativeHeight, value, nameof(Gpx_RelativeHeight));
         }
 
-        private bool gpx_DrawPoints;
-
-        public bool Gpx_DrawPoints
+        public bool HideWatermark
         {
-            get => gpx_DrawPoints;
-            set => this.SetValueAndNotify(ref gpx_DrawPoints, value, nameof(Gpx_DrawPoints));
+            get => hideWatermark;
+            set => this.SetValueAndNotify(ref hideWatermark, value, nameof(HideWatermark));
         }
 
-        private int lastLayerListGroupType;
+        public string LastFTP { get; set; } = null;
 
         public int LastLayerListGroupType
         {
@@ -216,11 +218,7 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
         }
 
-        public bool HideWatermark
-        {
-            get => hideWatermark;
-            set => this.SetValueAndNotify(ref hideWatermark, value, nameof(HideWatermark));
-        }
+        public Exception LoadError { get; private set; }
 
         public int MaxBackupCount
         {
@@ -261,6 +259,72 @@ namespace MapBoard
                 this.SetValueAndNotify(ref serverLayerLoadTimeout, value, nameof(ServerLayerLoadTimeout));
                 Parameters.LoadTimeout = TimeSpan.FromMilliseconds(value);
             }
+        }
+
+        public bool ShowLocation
+        {
+            get => showLocation;
+            set => this.SetValueAndNotify(ref showLocation, value, nameof(ShowLocation));
+        }
+
+        public bool ShowNearestPointSymbol
+        {
+            get => showNearestPointSymbol;
+            set => this.SetValueAndNotify(ref showNearestPointSymbol, value, nameof(ShowNearestPointSymbol));
+        }
+
+        public bool ShowSideBaseLayers
+        {
+            get => showSideBaseLayers;
+            set => this.SetValueAndNotify(ref showSideBaseLayers, value, nameof(ShowSideBaseLayers));
+        }
+
+        public bool ShowSideCompass
+        {
+            get => showSideCompass;
+            set => this.SetValueAndNotify(ref showSideCompass, value, nameof(ShowSideCompass));
+        }
+
+        public bool ShowSideLocation
+        {
+            get => showSideLocation;
+            set => this.SetValueAndNotify(ref showSideLocation, value, nameof(ShowSideLocation));
+        }
+
+        public bool ShowSideScaleBar
+        {
+            get => showSideScaleBar;
+            set => this.SetValueAndNotify(ref showSideScaleBar, value, nameof(ShowSideScaleBar));
+        }
+
+        public bool ShowSideScaleButton
+        {
+            get => showSideScaleButton;
+            set => this.SetValueAndNotify(ref showSideScaleButton, value, nameof(ShowSideScaleButton));
+        }
+
+        public bool ShowSideSearch
+        {
+            get => showSideSearch;
+            set => this.SetValueAndNotify(ref showSideSearch, value, nameof(ShowSideSearch));
+        }
+
+        public bool SmoothScroll
+        {
+            get => smoothScroll;
+            set => this.SetValueAndNotify(ref smoothScroll, value, nameof(SmoothScroll));
+        }
+
+        public bool TapToSelect
+        {
+            get => tapToSelect;
+            set => this.SetValueAndNotify(ref tapToSelect, value, nameof(TapToSelect));
+        }
+
+        public bool TapToSelectAllLayers
+        {
+            get => tapToSelectAllLayers;
+            set => this.SetValueAndNotify(ref tapToSelectAllLayers, value, nameof(TapToSelectAllLayers));
         }
 
         public int Theme
@@ -406,69 +470,5 @@ namespace MapBoard
             }
             this.Save(path, new JsonSerializerSettings().SetIndented());
         }
-
-        private bool smoothScroll = true;
-
-        public bool SmoothScroll
-        {
-            get => smoothScroll;
-            set => this.SetValueAndNotify(ref smoothScroll, value, nameof(SmoothScroll));
-        }
-
-        private bool showSideCompass = true;
-
-        public bool ShowSideCompass
-        {
-            get => showSideCompass;
-            set => this.SetValueAndNotify(ref showSideCompass, value, nameof(ShowSideCompass));
-        }
-
-        private bool showSideBaseLayers = true;
-
-        public bool ShowSideBaseLayers
-        {
-            get => showSideBaseLayers;
-            set => this.SetValueAndNotify(ref showSideBaseLayers, value, nameof(ShowSideBaseLayers));
-        }
-
-        private bool showSideScaleBar = true;
-
-        public bool ShowSideScaleBar
-        {
-            get => showSideScaleBar;
-            set => this.SetValueAndNotify(ref showSideScaleBar, value, nameof(ShowSideScaleBar));
-        }
-
-        private bool showSideScaleButton = false;
-
-        public bool ShowSideScaleButton
-        {
-            get => showSideScaleButton;
-            set => this.SetValueAndNotify(ref showSideScaleButton, value, nameof(ShowSideScaleButton));
-        }
-
-        private bool showSideSearch = true;
-
-        public bool ShowSideSearch
-        {
-            get => showSideSearch;
-            set => this.SetValueAndNotify(ref showSideSearch, value, nameof(ShowSideSearch));
-        }
-
-        private bool showSideLocation = true;
-
-        public bool ShowSideLocation
-        {
-            get => showSideLocation;
-            set => this.SetValueAndNotify(ref showSideLocation, value, nameof(ShowSideLocation));
-        }
-
-        public bool ShowNearestPointSymbol
-        {
-            get => showNearestPointSymbol;
-            set => this.SetValueAndNotify(ref showNearestPointSymbol, value, nameof(ShowNearestPointSymbol));
-        }
-
-        public string LastFTP { get; set; } = null;
     }
 }

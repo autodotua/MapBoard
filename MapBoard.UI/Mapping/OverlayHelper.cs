@@ -332,7 +332,7 @@ namespace MapBoard.Mapping
             }
             if (point != null)
             {
-                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.X, Color.Red, 20));
+                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Red, 6));
                 g.Attributes.Add("Type", 1);
                 drawOverlay.Graphics.Add(g);
             }
@@ -346,7 +346,7 @@ namespace MapBoard.Mapping
             }
             if (point != null)
             {
-                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.X, Color.Yellow, 20));
+                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Yellow, 6));
                 g.Attributes.Add("Type", 2);
                 drawOverlay.Graphics.Add(g);
             }

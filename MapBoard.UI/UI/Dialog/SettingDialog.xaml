@@ -94,30 +94,33 @@
                 <ui:NumberBox
                     ui:ControlHelper.Header="请求超时（毫秒）"
                     LargeChange="100"
+                    Maximum="15000"
+                    Minimum="100"
                     SmallChange="100"
                     SpinButtonPlacementMode="Compact"
                     Text="{Binding Config.Tile_RequestTimeOut}" />
                 <ui:NumberBox
                     ui:ControlHelper.Header="下载超时（毫秒）"
                     LargeChange="100"
+                    Maximum="15000"
+                    Minimum="100"
                     SmallChange="100"
                     SpinButtonPlacementMode="Compact"
                     Value="{Binding Config.Tile_ReadTimeOut}" />
-                <Slider
+                <ui:NumberBox
                     ui:ControlHelper.Header="网络图层加载超时（毫秒）"
-                    AutoToolTipPlacement="TopLeft"
-                    IsSnapToTickEnabled="True"
+                    LargeChange="1000"
                     Maximum="15000"
                     Minimum="100"
-                    TickPlacement="BottomRight"
-                    Ticks="100 200 300 500 750 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 11000 12000 13000 14000 15000"
+                    SmallChange="1000"
+                    SpinButtonPlacementMode="Compact"
                     Value="{Binding Config.ServerLayerLoadTimeout}" />
             </ui:SimpleStackPanel>
         </TabItem>
         <TabItem Header="数据">
             <ui:SimpleStackPanel
                 Orientation="Vertical"
-                Spacing="8">
+                Spacing="16">
                 <GroupBox Header="数据文件位置">
                     <ui:SimpleStackPanel
                         Orientation="Horizontal"
@@ -172,6 +175,12 @@
                                 Click="OpenBackupFolderButton_Click"
                                 Content="打开备份目录" />
                         </ui:SimpleStackPanel>
+                        <GroupBox Header="导出">
+                            <CheckBox
+                                Content="快速导出地图/图层包"
+                                IsChecked="{Binding Config.CopyShpFileWhenExport}"
+                                ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
+                        </GroupBox>
                     </ui:SimpleStackPanel>
                 </GroupBox>
             </ui:SimpleStackPanel>
@@ -379,37 +388,62 @@
             </Grid>
         </TabItem>
 
-        <TabItem Header="地图画板">
+        <TabItem Header="画板">
             <ui:SimpleStackPanel Spacing="8">
-                <GroupBox Header="绘制">
+                <GroupBox Header="属性">
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="8">
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="在绘制下一个图形时，保留：" />
+                        <CheckBox
+                            Margin="0,0,-56,0"
+                            Content="标签"
+                            IsChecked="{Binding Config.RemainLabel}" />
+                        <CheckBox
+                            Margin="0,0,-56,0"
+                            Content="日期"
+                            IsChecked="{Binding Config.RemainDate}" />
+                        <CheckBox
+                            Margin="0,0,-56,0"
+                            Content="分类"
+                            IsChecked="{Binding Config.RemainKey}" />
+                    </ui:SimpleStackPanel>
+                </GroupBox>
+                <GroupBox Header="捕捉">
                     <ui:SimpleStackPanel
                         Orientation="Vertical"
                         Spacing="8">
-                        <ui:SimpleStackPanel
-                            Orientation="Horizontal"
-                            Spacing="8">
 
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="在绘制下一个图形时，保留：" />
-                            <CheckBox
-                                Margin="0,0,-56,0"
-                                Content="标签"
-                                IsChecked="{Binding Config.RemainLabel}" />
-                            <CheckBox
-                                Margin="0,0,-56,0"
-                                Content="日期"
-                                IsChecked="{Binding Config.RemainDate}" />
-                            <CheckBox
-                                Margin="0,0,-56,0"
-                                Content="分类"
-                                IsChecked="{Binding Config.RemainKey}" />
-                        </ui:SimpleStackPanel>
                         <CheckBox
                             Content="绘制时，显示最近的节点和任意点位置"
                             IsChecked="{Binding Config.ShowNearestPointSymbol}" />
+                        <CheckBox
+                            Content="自动捕捉到最近的节点"
+                            IsChecked="{Binding Config.AutoCatchToNearestVertex}" />
+                        <TextBlock
+                            Opacity="0.7"
+                            Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
+                            绘制时，按住Ctrl+左键可捕捉最近节点，Shift+左键可捕捉最近任意点。
+                        </TextBlock>
+                        <TextBlock
+                            Opacity="0.7"
+                            Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}}">
+                            绘制时，直接点击即可捕捉最近节点。此时无法捕捉正在编辑的图形。
+                        </TextBlock>
+                        <ui:NumberBox
+                            ui:ControlHelper.Header="捕捉范围（像素）"
+                            LargeChange="10"
+                            Maximum="100"
+                            Minimum="2"
+                            SmallChange="5"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{Binding Config.CatchDistance}" />
                     </ui:SimpleStackPanel>
                 </GroupBox>
+
                 <GroupBox Header="选择">
                     <ui:SimpleStackPanel
                         Orientation="Horizontal"
@@ -423,12 +457,6 @@
                             IsChecked="{Binding Config.TapToSelect}"
                             Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
                     </ui:SimpleStackPanel>
-                </GroupBox>
-                <GroupBox Header="默认导出方式">
-                    <CheckBox
-                        Content="快速导出地图/图层包"
-                        IsChecked="{Binding Config.CopyShpFileWhenExport}"
-                        ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
                 </GroupBox>
             </ui:SimpleStackPanel>
         </TabItem>

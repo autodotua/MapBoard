@@ -67,6 +67,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EGIS.ShapeFileLib\EGIS.ShapeFileLib.csproj" />
     <ProjectReference Include="..\MapBoard.Core\MapBoard.Core.csproj" />
+    <ProjectReference Include="..\MapBoard.Extension.AMap\MapBoard.Extension.AMap.csproj" />
     <ProjectReference Include="..\MapBoard.Extension\MapBoard.Extension.csproj" />
     <ProjectReference Include="..\MapBoard.Model\MapBoard.Model.csproj" />
   </ItemGroup>
