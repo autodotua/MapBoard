@@ -68,7 +68,7 @@ namespace MapBoard.UI.Dialog
         {
             IsEnabled = false;
             Owner.IsEnabled = false;
-            FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
+            FeaturesChangedEventArgs current = (sender as Button).DataContext as FeaturesChangedEventArgs;
             var layer = Layer as IEditableLayerInfo;
             Debug.Assert(current != null);
             Debug.Assert(layer != null);
@@ -133,7 +133,7 @@ namespace MapBoard.UI.Dialog
 
         private void UndoButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            FeaturesChangedEventArgs current = (sender as Button).Tag as FeaturesChangedEventArgs;
+            FeaturesChangedEventArgs current = (sender as Button).DataContext as FeaturesChangedEventArgs;
 
             var layer = Layer as IEditableLayerInfo;
             Debug.Assert(current != null);

@@ -100,7 +100,7 @@
                 Grid.Column="6"
                 Padding="8,2"
                 Click="LocationPointButton_Click"
-                IsEnabled="{Binding MapView.LocationDisplay.IsStarted}"
+                IsEnabled="{Binding MapView.LocationDisplay.Started}"
                 ToolTip="设置为当前点">
                 <ui:FontIcon
                     Width="24"

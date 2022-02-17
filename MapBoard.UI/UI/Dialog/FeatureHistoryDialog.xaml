@@ -64,7 +64,6 @@
                                     Background="Transparent"
                                     Click="UndoButton_Click"
                                     MouseEnter="UndoButton_MouseEnter"
-                                    Tag="{Binding .}"
                                     ToolTipService.InitialShowDelay="0">
                                     <ui:SymbolIcon Symbol="Undo" />
                                 </Button>

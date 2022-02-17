@@ -687,10 +687,21 @@ namespace MapBoard.Util
         /// </summary>
         /// <param name="layer"></param>
         /// <param name="features"></param>
-        /// <param name="max"></param>
+        /// <param name="pointsPerSegment">两个节点之间生成多少新点</param>
+        /// <param name="level">平滑等级，0最拟合，1一般，2最平滑</param>
         /// <returns></returns>
-        public static async Task Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment)
+        public static async Task Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment, int level)
         {
+            if (level < 0 || level > 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(level));
+            }
+            if (pointsPerSegment <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pointsPerSegment));
+            }
+            //CentripetalCatmullRom中数量是算上头尾的
+            pointsPerSegment += 2;
             List<UpdatedFeature> updatedFeatures = new List<UpdatedFeature>();
             foreach (var feature in features)
             {
@@ -707,7 +718,7 @@ namespace MapBoard.Util
                         }
                         else
                         {
-                            newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, CentripetalCatmullRom.CatmullRomType.Centripetal));
+                            newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
                         }
                     }
                     switch (feature.Geometry)
@@ -725,7 +736,7 @@ namespace MapBoard.Util
                 {
                     if (mp.Points.Count > 2)
                     {
-                        newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, CentripetalCatmullRom.CatmullRomType.Uniform));
+                        newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
                     }
                 }
                 else

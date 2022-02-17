@@ -70,7 +70,7 @@ namespace MapBoard.Mapping.Model
 
         public IReadOnlyList<Feature> AddedFeatures { get; }
 
-        public bool CanUndo { get; set; }
+        public bool CanUndo { get; set; } = true;
 
         public IReadOnlyList<Feature> DeletedFeatures { get; }
         public MapLayerInfo Layer { get; }

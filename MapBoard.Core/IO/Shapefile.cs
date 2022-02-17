@@ -233,12 +233,19 @@ namespace MapBoard.IO
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
             Feature[] features = await layer.GetAllFeaturesAsync();
-            foreach (var feature in features)
+            try
             {
-                newFeatures.Add(
-                    table.CreateFeature(
-                        feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
-                        feature.Geometry));
+                foreach (var feature in features)
+                {
+                    newFeatures.Add(
+                        table.CreateFeature(
+                            feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
+                            feature.Geometry));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
             await table.AddFeaturesAsync(newFeatures);
             table.Close();

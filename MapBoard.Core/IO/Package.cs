@@ -124,8 +124,12 @@ namespace MapBoard.IO
             }
             else
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
+                    //foreach (var layer in layers.OfType<IFileBasedLayer>())
+                    //{
+                    //    await layer.SaveTo(directory.FullName);
+                    //}
                     Parallel.ForEach(layers.OfType<IFileBasedLayer>(), layer =>
                     {
                         layer.SaveTo(directory.FullName).Wait();

@@ -624,17 +624,17 @@ namespace MapBoard.Util
                 /// <summary>
                 /// α=0，拟合度最好，但容易出现过拟合/尖角/闭合
                 /// </summary>
-                Uniform,
+                Uniform = 0,
 
                 /// <summary>
                 /// α=1/2，一般拟合
                 /// </summary>
-                Centripetal,
+                Centripetal = 1,
 
                 /// <summary>
                 /// α=1，最平滑，但拟合较差
                 /// </summary>
-                Chordal,
+                Chordal = 2,
             }
 
             private static List<MapPoint> Interpolate(List<MapPoint> points, int index, int pointsPerSegment, CatmullRomType curveType)

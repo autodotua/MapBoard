@@ -229,59 +229,45 @@ namespace MapBoard.UI.Bar
             }
             async Task SmoothAsync()
             {
-                int? num = await CommonDialog.ShowIntInputDialogAsync("请输入两个折点之间需要插入的点数量", 10);
-                if (num.HasValue)
+                var dialog = new SmoothDialog();
+                if (await dialog.ShowAsync(ContentDialogPlacement.InPlace) == ContentDialogResult.Primary)
                 {
-                    await FeatureUtility.Smooth(layer, features, num.Value);
+                    await FeatureUtility.Smooth(layer, features, dialog.PointsPerSegment, dialog.Level);
+                    if (dialog.Simplify)
+                    {
+                        await FeatureUtility.GeneralizeSimplifyAsync(layer, features, dialog.MaxDeviation);
+                    }
                 }
             }
             async Task SimplifyAsync()
             {
                 int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new SelectDialogItem[]
                    {
-                new SelectDialogItem("间隔取点法","或每几个点保留一点"),
-                new SelectDialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
-                new SelectDialogItem("分裂法","连接首尾点，计算每一点到连线的垂距，检查是否所有点距离小于限差；若不满足，则保留最大垂距的点，将直线一分为二，递归进行上述操作"),
-                new SelectDialogItem("最大偏离法","保证新的图形与旧图形之间的距离不超过一个值")
+                        new SelectDialogItem("间隔取点法","或每几个点保留一点"),
+                        new SelectDialogItem("垂距法","中间隔一个点连接两个点，然后计算垂距或角度，在某一个值以内则可以删除中间间隔的点"),
+                        new SelectDialogItem("最大偏离法","保证新的图形与旧图形之间的距离不超过一个值")
                    });
-                double? num = null;
-                switch (i)
+                if (i >= 0)
                 {
-                    case 0:
-                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入间隔几点取一点");
-
-                        if (num.HasValue)
+                    double? num = null;
+                    num = i switch
+                    {
+                        0 => await CommonDialog.ShowDoubleInputDialogAsync("请输入间隔几点取一点"),
+                        1 => await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）"),
+                        2 => await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）"),
+                        _ => throw new NotImplementedException()
+                    };
+                    if (num.HasValue)
+                    {
+                        var task = i switch
                         {
-                            await FeatureUtility.IntervalTakePointsSimplifyAsync(layer, features, num.Value);
-                        }
-                        break;
-
-                    case 1:
-                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）");
-
-                        if (num.HasValue)
-                        {
-                            await FeatureUtility.VerticalDistanceSimplifyAsync(layer, features, num.Value);
-                        }
-                        break;
-
-                    case 2:
-                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大垂距（米）");
-
-                        if (num.HasValue)
-                        {
-                            await FeatureUtility.DouglasPeuckerSimplifyAsync(layer, features, num.Value);
-                        }
-                        break;
-
-                    case 3:
-                        num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大允许的偏移距离（米）");
-
-                        if (num.HasValue)
-                        {
-                            await FeatureUtility.GeneralizeSimplifyAsync(layer, features, num.Value);
-                        }
-                        break;
+                            0 => FeatureUtility.IntervalTakePointsSimplifyAsync(layer, features, num.Value),
+                            1 => FeatureUtility.VerticalDistanceSimplifyAsync(layer, features, num.Value),
+                            2 => FeatureUtility.GeneralizeSimplifyAsync(layer, features, num.Value),
+                            _ => throw new NotImplementedException()
+                        };
+                        await task;
+                    }
                 }
             }
             async Task CreateCopyAsync()

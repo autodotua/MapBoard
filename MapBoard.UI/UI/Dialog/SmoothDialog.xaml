@@ -1,0 +1,50 @@
+﻿<commondialog:CommonDialog
+    x:Class="MapBoard.UI.Dialog.SmoothDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="平滑"
+    CloseButtonText="取消"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
+    <ui:SimpleStackPanel
+        Width="268"
+        Margin="8"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="8">
+        <ui:NumberBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="两个节点之间生成新节点的数量"
+            Maximum="100"
+            Minimum="1"
+            Value="{Binding PointsPerSegment}" />
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="平滑等级"
+            SelectedIndex="{Binding Level}">
+            <ComboBoxItem>最拟合</ComboBoxItem>
+            <ComboBoxItem>一般</ComboBoxItem>
+            <ComboBoxItem>最平滑</ComboBoxItem>
+        </ComboBox>
+
+        <CheckBox
+            Content="同时进行简化"
+            IsChecked="{Binding Simplify}" />
+        <ui:NumberBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="最大垂距（米）"
+            IsEnabled="{Binding Simplify}"
+            Maximum="100000"
+            Minimum="0.01"
+            Value="{Binding MaxDeviation}" />
+        <TextBlock
+            Foreground="Red"
+            Text="{Binding Message}" />
+    </ui:SimpleStackPanel>
+</commondialog:CommonDialog>

@@ -48,7 +48,7 @@ namespace MapBoard.Model
 
         public int LineStyle { get; set; } = 5;
 
-        public int Arrow { get; set; } = 6;
+        public int Arrow { get; set; } = 0;
 
         public object Clone()
         {
