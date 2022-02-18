@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MapBoard.UI;
+using MapBoard.Util;
 
 namespace MapBoard.Mapping
 {
@@ -116,7 +117,7 @@ namespace MapBoard.Mapping
             {
                 return false;
             }
-            return UnSelect(new[] { feature }) == 1;
+            return Unselect(new[] { feature }) == 1;
         }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace MapBoard.Mapping
         /// <param name="features"></param>
         /// <param name="clearAll"></param>
         /// <returns>新增选取的个数</returns>
-        public int UnSelect(IEnumerable<Feature> features)
+        public int Unselect(IEnumerable<Feature> features)
         {
             if (features == null || !features.Any())
             {
@@ -155,6 +156,10 @@ namespace MapBoard.Mapping
             return remove.Count;
         }
 
+        /// <summary>
+        /// 框选
+        /// </summary>
+        /// <returns></returns>
         public async Task SelectRectangleAsync()
         {
             ClearSelection();
@@ -162,13 +167,14 @@ namespace MapBoard.Mapping
             if (envelope != null)
             {
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
-                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                bool allLayers = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
-                    await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New);
+                    await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New, allLayers);
                 }
                 else
                 {
-                    await SelectAsync(envelope, null, SpatialRelationship.Contains, SelectionMode.New);
+                    await SelectAsync(envelope, null, SpatialRelationship.Contains, SelectionMode.New, allLayers);
                 }
             }
         }
@@ -181,6 +187,11 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 点击选择
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void MapviewTapped(object sender, GeoViewInputEventArgs e)
         {
             if (MapView.CurrentTask == BoardTask.Draw //正在绘制
@@ -214,7 +225,9 @@ namespace MapBoard.Mapping
             bool edit = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Alt;
             await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, allLayers, edit);
         }
-        private bool isSelecting=false;
+
+        private bool isSelecting = false;
+
         private async Task SelectAsync(Envelope envelope,
             Point? point,
             SpatialRelationship relationship,
@@ -224,14 +237,15 @@ namespace MapBoard.Mapping
         {
             if (allLayers && !point.HasValue)
             {
-                throw new ArgumentException("需要选取多图层，但是没有给鼠标位置");
+                throw new ArgumentException("需要选取多图层，但是没有提供鼠标位置");
             }
 
-            if (envelope == null|| isSelecting)
+            if (envelope == null || isSelecting)
             {
                 return;
             }
-            isSelecting = true; try
+            isSelecting = true;
+            try
             {
                 QueryParameters query = new QueryParameters
                 {
@@ -243,33 +257,33 @@ namespace MapBoard.Mapping
                 IMapLayerInfo layer = null;
                 if (allLayers)
                 {
-                    var results = await MapView.IdentifyLayersAsync(point.Value, 8, false);
-                    IdentifyLayerResult result = results.FirstOrDefault(p => p.LayerContent.IsVisible);
+                    var result = (await MapView.IdentifyLayersAsync(point.Value, 8, false))
+                        .Where(p => p.LayerContent.IsVisible)
+                        .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
+                        .Where(p => p.Layer.Interaction.CanSelect)
+                        .FirstOrDefault();
+
                     if (result == null)
                     {
                         return;
                     }
-                    if (result.LayerContent is FeatureLayer l)
-                    {
-                        layer = Layers.Find(l);
-                    }
-                    else if (result.LayerContent is FeatureCollectionLayer cl)
-                    {
-                        layer = Layers.Find(cl.Layers[0]);
-                    }
+                    layer = result.Layer;
                     Debug.Assert(layer != null);
                     MapView.Layers.Selected = layer;
-                    features = result.GeoElements.Cast<Feature>().ToList();
+                    features = result.Elements.Cast<Feature>().ToList();
                     layer.Layer.SelectFeatures(features);
                 }
                 else
                 {
                     layer = Layers.Selected;
-                    FeatureLayer fLayer = Layers.Selected?.Layer;
-                    if (Layers.Selected == null || !Layers.Selected.LayerVisible)
+
+                    if (layer == null
+                        || !layer.Interaction.CanSelect
+                        || !layer.LayerVisible)
                     {
                         return;
                     }
+                    FeatureLayer fLayer = layer.Layer;
                     FeatureQueryResult result = await fLayer.SelectFeaturesAsync(query, mode);
 
                     await Task.Run(() =>

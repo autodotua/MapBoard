@@ -247,5 +247,7 @@ namespace MapBoard.Mapping.Model
                 throw;
             }
         }
+
+        public IEnumerable<MapLayerInfo> EditableLayers => this.OfType<MapLayerInfo>().Where(p => p.CanEdit);
     }
 }

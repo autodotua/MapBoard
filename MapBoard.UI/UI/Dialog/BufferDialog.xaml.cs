@@ -20,8 +20,9 @@ namespace MapBoard.UI.Dialog
         {
             Layers = layers;
             PolygonLayers = Layers
-                .OfType<IEditableLayerInfo>()
+                .EditableLayers
                 .Where(p => p.GeometryType is Esri.ArcGISRuntime.Geometry.GeometryType.Polygon)
+                .Cast<IEditableLayerInfo>()
                 .ToList();
             InitializeComponent();
         }

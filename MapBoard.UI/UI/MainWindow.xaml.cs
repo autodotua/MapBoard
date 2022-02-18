@@ -172,9 +172,11 @@ namespace MapBoard.UI
                 return;
             }
             this.Notify(nameof(IsReady));
-            grdButtons.Children.OfType<SplitButton>()
+            grdDraw.Children.OfType<SplitButton>()
                    .ForEach(p => p.Visibility = Visibility.Collapsed);
-            if (arcMap.Layers.Selected != null && arcMap.Layers.Selected is IEditableLayerInfo)
+            if (arcMap.Layers.Selected != null
+                && arcMap.Layers.Selected is IEditableLayerInfo
+               && arcMap.Layers.Selected.Interaction.CanEdit)
             {
                 UIElement btn = arcMap.Layers.Selected.GeometryType switch
                 {

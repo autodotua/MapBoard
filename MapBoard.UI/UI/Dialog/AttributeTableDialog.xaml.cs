@@ -137,7 +137,7 @@ namespace MapBoard.UI.Dialog
                 {
                     Header = field.DisplayName,
                     Binding = binding,
-                    IsReadOnly = field.Name == Parameters.CreateTimeFieldName
+                    IsReadOnly = field.Name == Parameters.CreateTimeFieldName || !Layer.CanEdit
                 });
                 column++;
             }

@@ -18,6 +18,8 @@ namespace MapBoard.Model
 
         public LayerDisplay Display { get; set; } = new LayerDisplay();
 
+        public LayerInteraction Interaction { get; set; } = new LayerInteraction();
+
         public FieldInfo[] Fields
         {
             get

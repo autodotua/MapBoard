@@ -337,7 +337,7 @@ namespace MapBoard.Mapping
             IReadOnlyList<IdentifyLayerResult> results = null;
             try
             {
-                results = await MapView.IdentifyLayersAsync(position, Config.Instance.CatchDistance, false, int.MaxValue);
+                results = (await MapView.IdentifyLayersAsync(position, Config.Instance.CatchDistance, false, int.MaxValue));
             }
             catch (Exception ex)
             {
@@ -349,11 +349,13 @@ namespace MapBoard.Mapping
             double minVertexDistance = double.MaxValue;
             double minPointDistance = double.MaxValue;
             foreach (var geometry in results
-                .Where(p => p.LayerContent is FeatureLayer)
-                .SelectMany(p => p.GeoElements)
-                .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())
-                .Select(p => p.Geometry)
-                .Select(p => p is Polygon ? (p as Polygon).ToPolyline() : p))
+                        .Where(p => p.LayerContent.IsVisible)//图层可见
+                        .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
+                        .Where(p => p.Layer.Interaction.CanCatch)//图层可捕捉
+                        .SelectMany(p => p.Elements)
+                        .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())//直接捕捉配置下，排除正在编辑的图形
+                        .Select(p => p.Geometry)
+                        .Select(p => p is Polygon ? (p as Polygon).ToPolyline() : p))//将面转为线
             {
                 var nearestVertexResult = GeometryEngine.NearestVertex(geometry, location);
                 if (nearestVertexResult != null && nearestVertexResult.Distance < minVertexDistance)

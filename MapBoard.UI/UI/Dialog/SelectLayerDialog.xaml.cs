@@ -18,13 +18,13 @@ namespace MapBoard.UI.Dialog
     {
         private bool canSelect = false;
 
-        public SelectLayerDialog(MapLayerCollection layers, Func<MapLayerInfo, bool> filter, bool notSelectedLayer)
+        public SelectLayerDialog(MapLayerCollection layers, Func<MapLayerInfo, bool> filter, bool excludeSelectedLayer)
         {
             InitializeComponent();
             var list = layers.Cast<MapLayerInfo>();
             list = list.Where(p => filter(p));
 
-            if (notSelectedLayer)
+            if (excludeSelectedLayer)
             {
                 list = list.Where(p => p != layers.Selected);
             }

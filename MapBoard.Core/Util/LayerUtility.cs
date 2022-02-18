@@ -298,5 +298,18 @@ namespace MapBoard.Util
 
             return layer;
         }
+
+        public static MapLayerInfo FindLayer(this MapLayerCollection layers, ILayerContent layer)
+        {
+            if (layer is FeatureLayer l)
+            {
+                return layers.Find(l);
+            }
+            else if (layer is FeatureCollectionLayer cl)
+            {
+                return layers.Find(cl.Layers[0]);
+            }
+            throw new Exception("找不到指定的图层");
+        }
     }
 }

@@ -54,6 +54,10 @@ namespace MapBoard.Model
         /// 表示一些额外参数
         /// </summary>
         Dictionary<string, string> ServiceParameters { get; }
+        /// <summary>
+        /// 交互相关属性
+        /// </summary>
+        LayerInteraction Interaction { get; set; }
 
         /// <summary>
         /// 创建新的深度克隆副本

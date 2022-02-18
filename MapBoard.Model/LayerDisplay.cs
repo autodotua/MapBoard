@@ -10,6 +10,7 @@ namespace MapBoard.Model
     {
         private double maxScale = 0;
         private double minScale = 0;
+        private double opacity = 1;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -22,6 +23,7 @@ namespace MapBoard.Model
                 {
                     value = 0;
                 }
+                maxScale = value;
             }
         }
 
@@ -34,9 +36,25 @@ namespace MapBoard.Model
                 {
                     value = 0;
                 }
+                minScale = value;
             }
         }
 
-        public double Opacity { get; set; } = 1;
+        public double Opacity
+        {
+            get => opacity;
+            set
+            {
+                if (value < 0)
+                {
+                    value = 0;
+                }
+                if (value > 1)
+                {
+                    value = 1;
+                }
+                opacity = value;
+            }
+        }
     }
 }

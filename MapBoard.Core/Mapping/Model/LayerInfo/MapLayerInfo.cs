@@ -11,76 +11,15 @@ using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public enum FeaturesChangedSource
-    {
-        [Description("绘制")]
-        Draw,
-
-        [Description("编辑")]
-        Edit,
-
-        [Description("要素操作")]
-        FeatureOperation,
-
-        [Description("撤销")]
-        Undo,
-
-        [Description("导入")]
-        Import
-    }
-
-    public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
-    {
-        public FeaturesChangedEventArgs(MapLayerInfo layer,
-            IEnumerable<Feature> addedFeatures,
-            IEnumerable<Feature> deletedFeatures,
-            IEnumerable<UpdatedFeature> changedFeatures,
-            FeaturesChangedSource source)
-        {
-            Source = source;
-            Time = DateTime.Now;
-            int count = 0;
-            if (deletedFeatures != null)
-            {
-                count++;
-                DeletedFeatures = new List<Feature>(deletedFeatures).AsReadOnly();
-            }
-            if (addedFeatures != null)
-            {
-                count++;
-                AddedFeatures = new List<Feature>(addedFeatures).AsReadOnly();
-            }
-            if (changedFeatures != null)
-            {
-                count++;
-                UpdatedFeatures = new List<UpdatedFeature>(changedFeatures).AsReadOnly();
-            }
-            Debug.Assert(count == 1);
-            Layer = layer;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public IReadOnlyList<Feature> AddedFeatures { get; }
-
-        public bool CanUndo { get; set; } = true;
-
-        public IReadOnlyList<Feature> DeletedFeatures { get; }
-        public MapLayerInfo Layer { get; }
-        public FeaturesChangedSource Source { get; }
-        public DateTime Time { get; }
-        public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
-    }
-
     public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
     {
+        public static bool UseDynamicRenderMode = true;
         protected FeatureTable table;
 
         private FeatureLayer layer;
@@ -132,6 +71,9 @@ namespace MapBoard.Mapping.Model
 
         [JsonIgnore]
         public Exception LoadError { get; private set; }
+
+        [JsonIgnore]
+        public bool CanEdit => this is IEditableLayerInfo && Interaction.CanEdit;
 
         [JsonIgnore]
         public long NumberOfFeatures
@@ -301,6 +243,7 @@ namespace MapBoard.Mapping.Model
             layer.MinScale = Display.MinScale;
             layer.MaxScale = Display.MaxScale;
             layer.Opacity = Display.Opacity;
+            Layer.RenderingMode = UseDynamicRenderMode ? FeatureRenderingMode.Dynamic : FeatureRenderingMode.Automatic;
             Display.PropertyChanged += (s, e) =>
             {
                 switch (e.PropertyName)

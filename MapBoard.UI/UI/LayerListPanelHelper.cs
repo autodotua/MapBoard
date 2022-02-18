@@ -90,9 +90,12 @@ namespace MapBoard.UI
                     {
                         AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
                     }
-                    AddToMenu<IEditableLayerInfo>(menu, "坐标转换", layer, CoordinateTransformateAsync);
-                    AddToMenu<IEditableLayerInfo>(menu, "字段赋值", layer, CopyAttributesAsync);
-                    AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
+                    if (layer.CanEdit)
+                    {
+                        AddToMenu<IEditableLayerInfo>(menu, "坐标转换", layer, CoordinateTransformateAsync);
+                        AddToMenu<IEditableLayerInfo>(menu, "字段赋值", layer, CopyAttributesAsync);
+                        AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
+                    }
                     AddToMenu<IHasDefaultFields>(menu, "设置时间范围", layer, SetTimeExtentAsync);
                     menu.Items.Add(new Separator());
 
@@ -272,7 +275,7 @@ namespace MapBoard.UI
         private async Task CopyFeaturesAsync(IMapLayerInfo layer)
         {
             SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
-                p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType
+                p => p.CanEdit && p.GeometryType == MapView.Layers.Selected.GeometryType
                 , true);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

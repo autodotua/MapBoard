@@ -417,76 +417,78 @@
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
+                        <Grid
+                            x:Name="grdDraw">
+                            <ui:SplitButton
+                                x:Name="btnDraw"
+                                HorizontalAlignment="Stretch"
+                                Content="绘制"
+                                IsEnabled="False"
+                                Tag="always" />
 
-                        <ui:SplitButton
-                            x:Name="btnDraw"
-                            HorizontalAlignment="Stretch"
-                            Content="绘制"
-                            IsEnabled="False"
-                            Tag="always" />
+                            <ui:SplitButton
+                                x:Name="splBtnPolyline"
+                                HorizontalAlignment="Stretch"
+                                Click="DrawButtonsClick"
+                                Content="多段线"
+                                Visibility="Collapsed">
+                                <ui:SplitButton.Flyout>
+                                    <ui:MenuFlyout>
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="自由线" />
+                                    </ui:MenuFlyout>
+                                </ui:SplitButton.Flyout>
+                            </ui:SplitButton>
+                            <ui:SplitButton
+                                x:Name="splBtnPolygon"
+                                HorizontalAlignment="Stretch"
+                                Click="DrawButtonsClick"
+                                Content="多边形"
+                                Visibility="Collapsed">
+                                <ui:SplitButton.Flyout>
+                                    <ui:MenuFlyout>
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="自由面" />
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="圆" />
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="椭圆" />
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="矩形" />
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="三角形" />
+                                        <MenuItem
+                                            Click="DrawButtonsClick"
+                                            Header="箭头" />
+                                    </ui:MenuFlyout>
+                                </ui:SplitButton.Flyout>
+                            </ui:SplitButton>
 
-                        <ui:SplitButton
-                            x:Name="splBtnPolyline"
-                            HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多段线"
-                            Visibility="Collapsed">
-                            <ui:SplitButton.Flyout>
-                                <ui:MenuFlyout>
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="自由线" />
-                                </ui:MenuFlyout>
-                            </ui:SplitButton.Flyout>
-                        </ui:SplitButton>
-                        <ui:SplitButton
-                            x:Name="splBtnPolygon"
-                            HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多边形"
-                            Visibility="Collapsed">
-                            <ui:SplitButton.Flyout>
-                                <ui:MenuFlyout>
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="自由面" />
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="圆" />
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="椭圆" />
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="矩形" />
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="三角形" />
-                                    <MenuItem
-                                        Click="DrawButtonsClick"
-                                        Header="箭头" />
-                                </ui:MenuFlyout>
-                            </ui:SplitButton.Flyout>
-                        </ui:SplitButton>
-
-                        <ui:SplitButton
-                            x:Name="splBtnPoint"
-                            HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="点"
-                            Visibility="Collapsed" />
-                        <ui:SplitButton
-                            x:Name="splBtnMultiPoint"
-                            HorizontalAlignment="Stretch"
-                            Click="DrawButtonsClick"
-                            Content="多点"
-                            Visibility="Collapsed" />
-
+                            <ui:SplitButton
+                                x:Name="splBtnPoint"
+                                HorizontalAlignment="Stretch"
+                                Click="DrawButtonsClick"
+                                Content="点"
+                                Visibility="Collapsed" />
+                            <ui:SplitButton
+                                x:Name="splBtnMultiPoint"
+                                HorizontalAlignment="Stretch"
+                                Click="DrawButtonsClick"
+                                Content="多点"
+                                Visibility="Collapsed" />
+                        </Grid>
                         <Button
                             x:Name="btnSelect"
                             Grid.Column="2"
                             Click="SelectToggleButtonClick"
-                            FocusVisualStyle="{x:Null}">
+                            FocusVisualStyle="{x:Null}"
+                            IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected.Interaction.CanSelect}">
                             <ui:SymbolIcon Symbol="SelectAll" />
                             <Button.ToolTip>
                                 <ui:SimpleStackPanel
@@ -512,7 +514,9 @@
                                         TextWrapping="Wrap">
                                         框选
                                     </TextBlock>
-                                    <TextBlock TextWrapping="Wrap">点击该按钮开始框选。鼠标按下后不松开，拖动形成矩形，松开结束选择。默认情况下，只选择完全处于矩形内部的图形。当松开时同时按住Shift时，将选择与矩形相交的图形。</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">点击该按钮开始框选。鼠标按下后不松开，拖动形成矩形，松开结束选择。默认情况下，只选择完全处于矩形内部的图形。送开始按下：</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Ctrl：将选择与矩形相交的图形。</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Shift：可选择所有图层。</TextBlock>
                                 </ui:SimpleStackPanel>
                             </Button.ToolTip>
                         </Button>

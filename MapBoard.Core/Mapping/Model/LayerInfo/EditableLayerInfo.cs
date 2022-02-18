@@ -27,6 +27,14 @@ namespace MapBoard.Mapping.Model
         {
         }
 
+        private void ThrowIfNotEditable()
+        {
+            if (!Interaction.CanEdit)
+            {
+                throw new NotSupportedException("当前图层被禁止编辑");
+            }
+        }
+
         public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
 
         private void NotifyFeaturesChanged(IEnumerable<Feature> added,
@@ -46,19 +54,21 @@ namespace MapBoard.Mapping.Model
 
         public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             return AddFeatureAsync(feature, source, feature.FeatureTable != table);
         }
 
         public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source, bool rebuildFeature)
         {
+            ThrowIfNotEditable();
             Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
             await table.AddFeatureAsync(newFeature);
-
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
 
         public Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             if (features.Select(p => p.FeatureTable).Distinct().Count() != 1)
             {
                 throw new ArgumentException("集合为空或要素来自不同的要素类");
@@ -75,6 +85,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
         {
+            ThrowIfNotEditable();
             Dictionary<string, FieldInfo> key2Field = (this is IHasDefaultFields ? Fields.IncludeDefaultFields() : Fields)
                 .ToDictionary(p => p.Name);
 
@@ -107,35 +118,41 @@ namespace MapBoard.Mapping.Model
 
         public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             await table.DeleteFeatureAsync(feature);
             NotifyFeaturesChanged(null, new[] { feature }, null, source);
         }
 
         public async Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             await table.DeleteFeaturesAsync(features);
             NotifyFeaturesChanged(null, features, null, source);
         }
 
         public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             await table.UpdateFeatureAsync(feature.Feature);
             NotifyFeaturesChanged(null, null, new[] { feature }, source);
         }
 
         public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
         {
+            ThrowIfNotEditable();
             await table.UpdateFeaturesAsync(features.Select(p => p.Feature));
             NotifyFeaturesChanged(null, null, features, source);
         }
 
         public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
         {
+            ThrowIfNotEditable();
             return table.CreateFeature(attributes, geometry);
         }
 
         public Feature CreateFeature()
         {
+            ThrowIfNotEditable();
             return table.CreateFeature();
         }
     }

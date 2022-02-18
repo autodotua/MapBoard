@@ -65,7 +65,7 @@
             </StackPanel>
         </Button>
         <Button
-            x:Name="btnRedraw"
+            x:Name="btnEdit"
             Grid.Column="6"
             Click="EditButtonClick"
             Style="{StaticResource barButtonStyle}">

@@ -49,7 +49,9 @@ namespace MapBoard.UI.Bar
 
         public override FeatureAttributeCollection Attributes => attributes;
 
-        public bool IsLayerEditable => (Layers?.Selected) != null && Layers?.Selected is IEditableLayerInfo;
+        public bool IsLayerEditable =>
+            (Layers?.Selected) != null
+            && Layers?.Selected?.CanEdit==true;
 
         public string Message { get; set; } = "正在编辑";
 
@@ -107,24 +109,34 @@ namespace MapBoard.UI.Bar
             var features = MapView.Selection.SelectedFeatures.ToArray();
             List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
            {
-                ("合并","将多个图形合并为一个具有多个部分的图形",UnionAsync,
+                ("合并","将多个图形合并为一个具有多个部分的图形",
+                UnionAsync,
                 layer.GeometryType is GeometryType.Polygon or GeometryType.Polyline or GeometryType.Multipoint
-                && features.Length>1),
+                    &&IsLayerEditable
+                    && features.Length>1
+                ),
                 ("分离","将拥有多个部分的图形分离为单独的图形",
-                SeparateAsync,layer.GeometryType is GeometryType.Polygon or GeometryType.Polyline),
-                ("连接","将折线的端点互相连接",LinkAsync,layer.GeometryType==GeometryType.Polyline
-                && features.Length>1
-                && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)),
+                SeparateAsync
+                ,layer.GeometryType is GeometryType.Polygon or GeometryType.Polyline
+                    &&IsLayerEditable
+                ),
+                ("连接","将折线的端点互相连接",
+                LinkAsync,
+                layer.GeometryType==GeometryType.Polyline
+                    && features.Length>1
+                    && features.All(p=>(p.Geometry as Polyline).Parts.Count==1)
+                    &&IsLayerEditable
+                ),
                 ("反转","交换点的顺序",ReverseAsync,
-                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon&&IsLayerEditable),
                 ("加密","在每两个折点之间添加更多的点",DensifyAsync,
-                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon&&IsLayerEditable),
                 ("简化","删除部分折点，降低图形的复杂度",SimplifyAsync,
-                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon&&IsLayerEditable),
                 ("平滑","在适当的位置添加节点，使图形更平滑",SmoothAsync,
-                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon or GeometryType.Multipoint),
-                ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, true),
-                ("字段赋值","批量为选中的图形赋予新的属性",CopyAttributeAsync, true),
+                layer.GeometryType is GeometryType.Polyline or GeometryType.Polygon or GeometryType.Multipoint&&IsLayerEditable),
+                ("建立副本","在原位置创建拥有相同图形和属性的要素",CreateCopyAsync, IsLayerEditable),
+                ("字段赋值","批量为选中的图形赋予新的属性",CopyAttributeAsync, IsLayerEditable),
                 ("缓冲区","为选中的图形建立缓冲区",BufferAsync, true),
             };
             OpenMenus(menus, sender as UIElement, header => $"正在进行{header}操作");
@@ -316,7 +328,7 @@ namespace MapBoard.UI.Bar
             await (this.GetWindow() as MainWindow).DoAsync(async () =>
             {
                 SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
-                    p => p is IEditableLayerInfo && p.GeometryType == MapView.Layers.Selected.GeometryType,
+                    p => p.CanEdit && p.GeometryType == MapView.Layers.Selected.GeometryType,
                     true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
@@ -434,7 +446,7 @@ namespace MapBoard.UI.Bar
                 return;
             }
             int count = MapView.Selection.SelectedFeatures.Count;
-            btnRedraw.IsEnabled = count == 1 && IsLayerEditable;
+            btnEdit.IsEnabled = count == 1 && IsLayerEditable;
             //btnMoreAttributes.IsEnabled = count == 1;
             var layer = Layers.Selected;
             btnCut.IsEnabled = (layer.GeometryType == GeometryType.Polygon

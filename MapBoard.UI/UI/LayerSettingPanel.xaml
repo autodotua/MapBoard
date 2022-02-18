@@ -36,6 +36,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.Resources>
                 <Style
@@ -272,13 +273,42 @@
                                 Grid.ColumnSpan="99"
                                 HorizontalAlignment="Center"
                                 Opacity="0.75"
-                                Text="此处设置无需应用，即时展现" />
+                                Text="此处设置无需应用" />
                         </Grid>
                     </StackPanel>
                 </Border>
             </Expander>
             <Expander
                 Grid.Row="1"
+                Header="交互设置">
+                <Border
+                    Padding="8"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                    <ui:SimpleStackPanel
+                        DataContext="{Binding Layers.Selected}"
+                        Orientation="Vertical"
+                        Spacing="8">
+                        <CheckBox
+                            Content="允许选择"
+                            IsChecked="{Binding Interaction.CanSelect}" />
+                        <CheckBox
+                            Content="允许捕捉"
+                            IsChecked="{Binding Interaction.CanCatch}" />
+                        <CheckBox
+                            Content="允许编辑"
+                            IsChecked="{Binding Interaction.CanEdit}" />
+
+                        <TextBlock
+                            Grid.Row="99"
+                            Grid.ColumnSpan="99"
+                            HorizontalAlignment="Center"
+                            Opacity="0.75"
+                            Text="此处设置无需应用" />
+                    </ui:SimpleStackPanel>
+                </Border>
+            </Expander>
+            <Expander
+                Grid.Row="2"
                 Header="符号样式">
                 <Border
                     Padding="8"
@@ -635,7 +665,7 @@
                 </Border>
             </Expander>
             <Expander
-                Grid.Row="2"
+                Grid.Row="3"
                 BorderBrush="{StaticResource SystemControlBackgroundBaseLowBrush}"
                 BorderThickness="0,0,0,1"
                 Header="标签样式">

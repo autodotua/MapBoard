@@ -86,5 +86,6 @@ namespace MapBoard.Mapping.Model
         /// 加载失败信息
         /// </summary>
         Exception LoadError { get; }
+        bool CanEdit { get; }
     }
 }
