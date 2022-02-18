@@ -19,7 +19,6 @@ namespace MapBoard.Mapping.Model
 {
     public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
     {
-        public static bool UseDynamicRenderMode = true;
         protected FeatureTable table;
 
         private FeatureLayer layer;
@@ -243,7 +242,7 @@ namespace MapBoard.Mapping.Model
             layer.MinScale = Display.MinScale;
             layer.MaxScale = Display.MaxScale;
             layer.Opacity = Display.Opacity;
-            Layer.RenderingMode = UseDynamicRenderMode ? FeatureRenderingMode.Dynamic : FeatureRenderingMode.Automatic;
+            layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
             Display.PropertyChanged += (s, e) =>
             {
                 switch (e.PropertyName)
@@ -258,6 +257,10 @@ namespace MapBoard.Mapping.Model
 
                     case nameof(Display.MaxScale):
                         layer.MaxScale = Display.MaxScale;
+                        break;
+
+                    case nameof(Display.RenderingMode):
+                        layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
                         break;
 
                     default:

@@ -11,9 +11,13 @@ namespace MapBoard.Model
         private double maxScale = 0;
         private double minScale = 0;
         private double opacity = 1;
+        private int renderingMode = 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 最大缩放比例的倒数
+        /// </summary>
         public double MaxScale
         {
             get => maxScale;
@@ -27,6 +31,9 @@ namespace MapBoard.Model
             }
         }
 
+        /// <summary>
+        /// 最小缩放比例的倒数
+        /// </summary>
         public double MinScale
         {
             get => minScale;
@@ -40,6 +47,9 @@ namespace MapBoard.Model
             }
         }
 
+        /// <summary>
+        /// 透明度（0-1）
+        /// </summary>
         public double Opacity
         {
             get => opacity;
@@ -54,6 +64,22 @@ namespace MapBoard.Model
                     value = 1;
                 }
                 opacity = value;
+            }
+        }
+
+        /// <summary>
+        /// 渲染模式，0：自动；1：静态；2：动态
+        /// </summary>
+        public int RenderingMode
+        {
+            get => renderingMode;
+            set
+            {
+                if (value < 0 || value > 2)
+                {
+                    value = 0;
+                }
+                renderingMode = value;
             }
         }
     }

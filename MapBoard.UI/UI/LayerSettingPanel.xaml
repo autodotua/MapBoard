@@ -54,7 +54,7 @@
                                 <Border
                                     x:Name="bd"
                                     Padding="{TemplateBinding Padding}"
-                                    BorderBrush="{StaticResource SystemControlBackgroundBaseLowBrush}"
+                                    BorderBrush="{StaticResource SystemControlBackgroundChromeMediumBrush}"
                                     BorderThickness="0,1,0,0">
                                     <Grid
                                         x:Name="grd"
@@ -216,6 +216,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="8" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -268,6 +270,20 @@
                                 Click="SetScaleButtonClick"
                                 Content="设为当前"
                                 Tag="max" />
+                            <TextBlock
+                                Grid.Row="6"
+                                VerticalAlignment="Center"
+                                Text="渲染模式" />
+                            <ComboBox
+                                Grid.Row="6"
+                                Grid.Column="2"
+                                Grid.ColumnSpan="99"
+                                HorizontalAlignment="Stretch"
+                                SelectedIndex="{Binding Display.RenderingMode}">
+                                <ComboBoxItem>自动</ComboBoxItem>
+                                <ComboBoxItem>静态</ComboBoxItem>
+                                <ComboBoxItem>动态</ComboBoxItem>
+                            </ComboBox>
                             <TextBlock
                                 Grid.Row="99"
                                 Grid.ColumnSpan="99"
