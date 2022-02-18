@@ -471,7 +471,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private async void ExportMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(Parameters.DataPath) || !Directory.EnumerateFiles(Parameters.DataPath).Any())
+            if (!Directory.Exists(FolderPaths.DataPath) || !Directory.EnumerateFiles(FolderPaths.DataPath).Any())
             {
                 SnakeBar.ShowError("没有任何数据");
                 return;
@@ -609,10 +609,10 @@ namespace MapBoard.UI
         {
             string path = ((sender as FrameworkElement).Tag as string) switch
             {
-                "1" => Parameters.DataPath,
+                "1" => FolderPaths.DataPath,
                 "2" => FzLib.Program.App.ProgramDirectoryPath,
-                "3" => Path.GetDirectoryName(Parameters.ConfigPath),
-                "4" => Parameters.BackupPath,
+                "3" => Path.GetDirectoryName(FolderPaths.ConfigPath),
+                "4" => FolderPaths.BackupPath,
                 _ => throw new ArgumentOutOfRangeException()
             };
             await IOUtility.TryOpenInShellAsync(path);

@@ -35,8 +35,6 @@ namespace MapBoard.UI
 
         private Random r = new Random();
 
-        private KeySymbolPair selectedKey;
-
         public LayerSettingPanel()
         {
             InitializeComponent();
@@ -138,7 +136,7 @@ namespace MapBoard.UI
                 {
                     await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
                 }
-                else if (File.Exists(Path.Combine(Parameters.DataPath, newName + ".shp")))
+                else if (File.Exists(Path.Combine(FolderPaths.DataPath, newName + ".shp")))
                 {
                     await CommonDialog.ShowErrorDialogAsync("该名称的文件已存在");
                 }

@@ -23,6 +23,7 @@ using System.Xml;
 using log4net.Layout;
 using System.Reflection;
 using System.Diagnostics;
+using MapBoard.IO;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -150,7 +151,7 @@ namespace MapBoard
                 StaticLogFileName = true,
                 RollingStyle = RollingFileAppender.RollingMode.Date,
                 Layout = new PatternLayout("[%date]-[%thread]-[%-p]-[%logger]-[%M] -> %message%newline%newline"),
-                File = System.IO.Path.Combine(Parameters.LogsPath, "MapBoard.log"),
+                File = System.IO.Path.Combine(FolderPaths.LogsPath, "MapBoard.log"),
             };
             fa.ActivateOptions();
             ((log4net.Repository.Hierarchy.Logger)Log.Logger).AddAppender(fa);

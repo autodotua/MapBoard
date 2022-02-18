@@ -1,5 +1,6 @@
 ﻿using FzLib;
 using FzLib.DataStorage.Serialization;
+using MapBoard.IO;
 using MapBoard.Model;
 using Newtonsoft.Json;
 using PropertyChanged;
@@ -16,7 +17,7 @@ namespace MapBoard
     {
         public static readonly int WatermarkHeight = 72;
         private static Config instance;
-        private static readonly string path = Parameters.ConfigPath;
+        private static readonly string path = FolderPaths.ConfigPath;
 
         private int readTimeOut = 1000;
 
@@ -143,7 +144,7 @@ namespace MapBoard
 
         public bool Tile_CoverFile { get; set; } = false;
 
-        public string Tile_DownloadFolder { get; set; } = Parameters.TileDownloadPath;
+        public string Tile_DownloadFolder { get; set; } = FolderPaths.TileDownloadPath;
 
         public string Tile_DownloadUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
 

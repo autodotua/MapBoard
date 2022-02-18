@@ -37,6 +37,7 @@ using Microsoft.WindowsAPICodePack.FzExtension;
 using FzLib.WPF.Controls;
 using FzLib.WPF;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using MapBoard.IO;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -74,9 +75,9 @@ namespace MapBoard.UI.GpxToolbox
             {
                 await arcMap.LoadFilesAsync(LoadFiles);
             }
-            else if (File.Exists(Parameters.TrackHistoryPath))
+            else if (File.Exists(FolderPaths.TrackHistoryPath))
             {
-                string[] files = await File.ReadAllLinesAsync(Parameters.TrackHistoryPath);
+                string[] files = await File.ReadAllLinesAsync(FolderPaths.TrackHistoryPath);
                 await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
             }
         }
@@ -626,7 +627,7 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
-            await File.WriteAllLinesAsync(Parameters.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
+            await File.WriteAllLinesAsync(FolderPaths.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
             Tracks.Clear();
         }
 

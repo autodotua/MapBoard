@@ -93,8 +93,6 @@ namespace MapBoard.UI
 
         private MapPoint location;
 
-        private string scaleBarLength;
-
         public bool DataSourceOn
         {
             get => dataSourceOn;

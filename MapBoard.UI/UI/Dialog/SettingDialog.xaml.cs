@@ -67,6 +67,12 @@ namespace MapBoard.UI.Dialog
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
             Layers = layers;
             tab.SelectedIndex = tabIndex;
+
+            var helper = new DesktopBridge.Helpers();
+            if (helper.IsRunningAsUwp())
+            {
+                grpFilePath.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -84,7 +90,7 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 当前备份数量
         /// </summary>
-        public int CurrentBackupCount => Directory.EnumerateFiles(Parameters.BackupPath, "*.mbmpkg").Count();
+        public int CurrentBackupCount => Directory.EnumerateFiles(FolderPaths.BackupPath, "*.mbmpkg").Count();
 
         public string EsriBaseLayer { get; set; }
 
@@ -358,7 +364,7 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private async void OpenBackupFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            await IOUtility.TryOpenInShellAsync(Parameters.BackupPath);
+            await IOUtility.TryOpenInShellAsync(FolderPaths.BackupPath);
         }
 
         /// <summary>
@@ -371,21 +377,21 @@ namespace MapBoard.UI.Dialog
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
             try
             {
-                if (File.Exists(Path.Combine(appPath, Parameters.ConfigHere)))
+                if (File.Exists(Path.Combine(appPath, FolderPaths.ConfigHere)))
                 {
-                    File.Delete(Path.Combine(appPath, Parameters.ConfigHere));
+                    File.Delete(Path.Combine(appPath, FolderPaths.ConfigHere));
                 }
-                if (File.Exists(Path.Combine(appPath, Parameters.ConfigUp)))
+                if (File.Exists(Path.Combine(appPath, FolderPaths.ConfigUp)))
                 {
-                    File.Delete(Path.Combine(appPath, Parameters.ConfigUp));
+                    File.Delete(Path.Combine(appPath, FolderPaths.ConfigUp));
                 }
                 if (rbtnHere.IsChecked.Value)
                 {
-                    await File.WriteAllTextAsync(Path.Combine(appPath, Parameters.ConfigHere), "");
+                    await File.WriteAllTextAsync(Path.Combine(appPath, FolderPaths.ConfigHere), "");
                 }
                 else if (rbtnUp.IsChecked.Value)
                 {
-                    await File.WriteAllTextAsync(Path.Combine(appPath, Parameters.ConfigUp), "");
+                    await File.WriteAllTextAsync(Path.Combine(appPath, FolderPaths.ConfigUp), "");
                 }
                 await CommonDialog.ShowOkDialogAsync("修改数据位置", "将在重启后生效");
             }
@@ -464,11 +470,11 @@ namespace MapBoard.UI.Dialog
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
-            if (File.Exists(Path.Combine(appPath, Parameters.ConfigHere)))
+            if (File.Exists(Path.Combine(appPath, FolderPaths.ConfigHere)))
             {
                 rbtnHere.IsChecked = true;
             }
-            else if (File.Exists(Path.Combine(appPath, Parameters.ConfigUp)))
+            else if (File.Exists(Path.Combine(appPath, FolderPaths.ConfigUp)))
             {
                 rbtnUp.IsChecked = true;
             }

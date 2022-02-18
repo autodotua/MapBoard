@@ -22,13 +22,13 @@ namespace MapBoard.IO
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
-        public async static Task<ShapefileMapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCs)
+        public static async Task<ShapefileMapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCs)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);
 
             var gpx = LibGpx.FromString(content);
-            string newName = FileSystem.GetNoDuplicateFile(Path.Combine(Parameters.DataPath, name + ".shp"));
+            string newName = FileSystem.GetNoDuplicateFile(Path.Combine(FolderPaths.DataPath, name + ".shp"));
 
             var layer = await LayerUtility.CreateShapefileLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName));
@@ -61,7 +61,7 @@ namespace MapBoard.IO
             return layer;
         }
 
-        public async static Task<ShapefileMapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
+        public static async Task<ShapefileMapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
         {
             var layer = await ImportToNewLayerAsync(paths[0], type, layers, baseCS);
             for (int i = 1; i < paths.Length; i++)
@@ -71,7 +71,7 @@ namespace MapBoard.IO
             return layer;
         }
 
-        public async static Task ImportToLayersAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
+        public static async Task ImportToLayersAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             foreach (var path in paths)
             {
@@ -79,7 +79,7 @@ namespace MapBoard.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
+        public static async Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string content = File.ReadAllText(path);

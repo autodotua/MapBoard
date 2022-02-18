@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using MLayerCollection = MapBoard.Model.LayerCollection;
 using ELayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 using AutoMapper;
+using MapBoard.IO;
 
 namespace MapBoard.Mapping.Model
 {
@@ -58,7 +59,7 @@ namespace MapBoard.Mapping.Model
 
         public static async Task<MapLayerCollection> GetInstanceAsync(ELayerCollection esriLayers)
         {
-            string path = Path.Combine(Parameters.DataPath, LayersFileName);
+            string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
             if (!File.Exists(path))
             {
                 return new MapLayerCollection(esriLayers);
@@ -87,7 +88,7 @@ namespace MapBoard.Mapping.Model
         {
             EsriLayers = esriLayers;
             SetLayers(new ObservableCollection<ILayerInfo>());
-            string path = Path.Combine(Parameters.DataPath, LayersFileName);
+            string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
             if (!File.Exists(path))
             {
                 return;
@@ -199,7 +200,7 @@ namespace MapBoard.Mapping.Model
 
         public void Save()
         {
-            Save(Path.Combine(Parameters.DataPath, LayersFileName));
+            Save(Path.Combine(FolderPaths.DataPath, LayersFileName));
         }
 
         public ELayerCollection EsriLayers { get; private set; }

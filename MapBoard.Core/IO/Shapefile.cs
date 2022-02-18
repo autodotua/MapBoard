@@ -33,120 +33,27 @@ namespace MapBoard.IO
             ".sbx",
         };
 
-        /// <summary>
-        /// 获取某一个无扩展名的shapefile的名称可能对应的shapefile的所有文件
-        /// </summary>
-        /// <param name="directory"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static IEnumerable<string> GetExistShapefiles(string directory, string name)
+        public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)
         {
-            if (name.EndsWith(".shp"))
-            {
-                name = name.RemoveEnd(".shp");
-            }
-            foreach (var file in Directory.EnumerateFiles(directory))
-            {
-                if (Path.GetFileNameWithoutExtension(file) == name)
-                {
-                    if (ShapefileExtensions.Contains(Path.GetExtension(file)))
-                    {
-                        yield return file;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 导入shapefile文件
-        /// </summary>
-        /// <param name="path"></param>
-        public static async Task ImportAsync(string path, MapLayerCollection layers)
-        {
-            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
-            await table.LoadAsync();
-            bool label = table.Fields.Any(p => p.Name == Parameters.LabelFieldName && p.FieldType == FieldType.Text);
-            bool date = table.Fields.Any(p => p.Name == Parameters.DateFieldName && p.FieldType == FieldType.Date);
-            bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
-            FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
-            var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
-            ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,
-                 Path.GetFileNameWithoutExtension(path),
-                fieldMap.Values.ToList());
-            layer.LayerVisible = false;
-            var fields = layer.Fields.Select(p => p.Name).ToHashSet();
+            var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in features)
+            Feature[] features = await layer.GetAllFeaturesAsync();
+            try
             {
-                Dictionary<string, object> newAttributes = new Dictionary<string, object>();
-                foreach (var attr in feature.Attributes)
+                foreach (var feature in features)
                 {
-                    if (attr.Key.ToLower() == "id")
-                    {
-                        continue;
-                    }
-                    string name = attr.Key;//现在是源文件的字段名
-
-                    if (!fieldMap.ContainsKey(name))
-                    {
-                        continue;
-                    }
-                    name = fieldMap[name].Name;//切换到目标表的字段名
-
-                    object value = attr.Value;
-                    if (value is short)
-                    {
-                        value = Convert.ToInt32(value);
-                    }
-                    else if (value is float)
-                    {
-                        value = Convert.ToDouble(value);
-                    }
-                    newAttributes.Add(name, value);
-                }
-                Feature newFeature = layer.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
-                newFeatures.Add(newFeature);
-            }
-            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
-
-            layer.LayerVisible = true;
-        }
-
-        public static async Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
-        {
-            if (folder == null)
-            {
-                folder = Parameters.DataPath;
-            }
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
-            string path = Path.Combine(folder, name);
-            if (fields == null)
-            {
-                fields = FieldExtension.DefaultFields;
-            }
-            else
-            {
-                fields = fields
-                    .Where(p => p.Name.ToLower() != "fid")
-                    .Where(p => p.Name.ToLower() != "id")
-                    .Where(p => p.Name.ToLower() != "shape_leng")
-                    .Where(p => p.Name.ToLower() != "shape_area")
-                    .IncludeDefaultFields();
-                if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
-                      || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
-                {
-                    throw new ArgumentException($"字段名存在不合法");
+                    newFeatures.Add(
+                        table.CreateFeature(
+                            feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
+                            feature.Geometry));
                 }
             }
-
-            await CreateEgisShapefileAsync(type, name, folder, fields);
-            path = path + ".shp";
-            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
-            await table.LoadAsync();
-            return table;
+            catch (Exception ex)
+            {
+                throw;
+            }
+            await table.AddFeaturesAsync(newFeatures);
+            table.Close();
         }
 
         public static async Task CreateEgisShapefileAsync(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
@@ -228,27 +135,113 @@ namespace MapBoard.IO
             await File.WriteAllTextAsync(Path.Combine(folder, name + ".cpg"), "UTF-8");
         }
 
-        public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)
+        public static async Task<ShapefileFeatureTable> CreateShapefileAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
         {
-            var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
-            List<Feature> newFeatures = new List<Feature>();
-            Feature[] features = await layer.GetAllFeaturesAsync();
-            try
+            if (folder == null)
             {
-                foreach (var feature in features)
+                folder = FolderPaths.DataPath;
+            }
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            string path = Path.Combine(folder, name);
+            if (fields == null)
+            {
+                fields = FieldExtension.DefaultFields;
+            }
+            else
+            {
+                fields = fields
+                    .Where(p => p.Name.ToLower() != "fid")
+                    .Where(p => p.Name.ToLower() != "id")
+                    .Where(p => p.Name.ToLower() != "shape_leng")
+                    .Where(p => p.Name.ToLower() != "shape_area")
+                    .IncludeDefaultFields();
+                if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
+                      || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
                 {
-                    newFeatures.Add(
-                        table.CreateFeature(
-                            feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
-                            feature.Geometry));
+                    throw new ArgumentException($"字段名存在不合法");
                 }
             }
-            catch (Exception ex)
+
+            await CreateEgisShapefileAsync(type, name, folder, fields);
+            path = path + ".shp";
+            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
+            await table.LoadAsync();
+            return table;
+        }
+
+        /// <summary>
+        /// 获取某一个无扩展名的shapefile的名称可能对应的shapefile的所有文件
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetExistShapefiles(string directory, string name)
+        {
+            if (name.EndsWith(".shp"))
             {
-                throw;
+                name = name.RemoveEnd(".shp");
             }
-            await table.AddFeaturesAsync(newFeatures);
-            table.Close();
+            return Directory.EnumerateFiles(directory)
+                 .Where(p => Path.GetFileNameWithoutExtension(p) == name)
+                 .Where(p => ShapefileExtensions.Contains(Path.GetExtension(p)));
+        }
+
+        /// <summary>
+        /// 导入shapefile文件
+        /// </summary>
+        /// <param name="path"></param>
+        public static async Task ImportAsync(string path, MapLayerCollection layers)
+        {
+            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
+            await table.LoadAsync();
+            bool label = table.Fields.Any(p => p.Name == Parameters.LabelFieldName && p.FieldType == FieldType.Text);
+            bool date = table.Fields.Any(p => p.Name == Parameters.DateFieldName && p.FieldType == FieldType.Date);
+            bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
+            FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
+            var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
+            ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,
+                 Path.GetFileNameWithoutExtension(path),
+                fieldMap.Values.ToList());
+            layer.LayerVisible = false;
+            var fields = layer.Fields.Select(p => p.Name).ToHashSet();
+            List<Feature> newFeatures = new List<Feature>();
+            foreach (var feature in features)
+            {
+                Dictionary<string, object> newAttributes = new Dictionary<string, object>();
+                foreach (var attr in feature.Attributes)
+                {
+                    if (attr.Key.ToLower() == "id")
+                    {
+                        continue;
+                    }
+                    string name = attr.Key;//现在是源文件的字段名
+
+                    if (!fieldMap.ContainsKey(name))
+                    {
+                        continue;
+                    }
+                    name = fieldMap[name].Name;//切换到目标表的字段名
+
+                    object value = attr.Value;
+                    if (value is short)
+                    {
+                        value = Convert.ToInt32(value);
+                    }
+                    else if (value is float)
+                    {
+                        value = Convert.ToDouble(value);
+                    }
+                    newAttributes.Add(name, value);
+                }
+                Feature newFeature = layer.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
+                newFeatures.Add(newFeature);
+            }
+            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
+
+            layer.LayerVisible = true;
         }
     }
 }

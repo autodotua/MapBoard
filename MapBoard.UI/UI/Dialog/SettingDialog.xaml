@@ -121,7 +121,9 @@
             <ui:SimpleStackPanel
                 Orientation="Vertical"
                 Spacing="16">
-                <GroupBox Header="数据文件位置">
+                <GroupBox
+                    x:Name="grpFilePath"
+                    Header="数据文件位置">
                     <ui:SimpleStackPanel
                         Orientation="Horizontal"
                         Spacing="8">

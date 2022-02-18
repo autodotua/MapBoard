@@ -21,6 +21,7 @@ using MapBoard.Mapping;
 using MapBoard.Util;
 using MapBoard.Mapping.Model;
 using System.Drawing.Imaging;
+using MapBoard.IO;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -180,11 +181,11 @@ namespace MapBoard.UI.GpxToolbox
                 string filePath = null;
                 if (useTimeFileName)
                 {
-                    filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
+                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
                 }
                 else
                 {
-                    filePath = Path.Combine(Parameters.RecordsPath, Track.FileName, ++count + ".png");
+                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, ++count + ".png");
                 }
                 await arcMap.ExportImageAsync(filePath, ImageFormat.Png, GeoViewHelper.GetWatermarkThickness());
             }
@@ -192,7 +193,7 @@ namespace MapBoard.UI.GpxToolbox
 
         private string GetRecordPath()
         {
-            return Path.Combine(Parameters.RecordsPath, Track.FileName);
+            return Path.Combine(FolderPaths.RecordsPath, Track.FileName);
         }
 
         private void StopPlay()

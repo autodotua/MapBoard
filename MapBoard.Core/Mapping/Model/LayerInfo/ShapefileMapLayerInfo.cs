@@ -62,7 +62,7 @@ namespace MapBoard.Mapping.Model
             base.Dispose();
         }
 
-        public async override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             Debug.Assert(!string.IsNullOrEmpty(newName));
             if (newName == Name)
@@ -75,9 +75,9 @@ namespace MapBoard.Mapping.Model
                 throw new IOException("新文件名不合法");
             }
             //检查文件存在
-            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, Layer.Name))
+            foreach (var file in Shapefile.GetExistShapefiles(FolderPaths.DataPath, Layer.Name))
             {
-                if (File.Exists(Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file))))
+                if (File.Exists(Path.Combine(FolderPaths.DataPath, newName + Path.GetExtension(file))))
                 {
                     throw new IOException("该名称的文件已存在");
                 }
@@ -91,9 +91,9 @@ namespace MapBoard.Mapping.Model
 
             (table as ShapefileFeatureTable).Close();
             //重命名
-            foreach (var file in Shapefile.GetExistShapefiles(Parameters.DataPath, Layer.Name))
+            foreach (var file in Shapefile.GetExistShapefiles(FolderPaths.DataPath, Layer.Name))
             {
-                File.Move(file, Path.Combine(Parameters.DataPath, newName + Path.GetExtension(file)));
+                File.Move(file, Path.Combine(FolderPaths.DataPath, newName + Path.GetExtension(file)));
             }
             Name = newName;
             await LoadAsync();
@@ -102,12 +102,12 @@ namespace MapBoard.Mapping.Model
 
         public string[] GetFilePaths()
         {
-            return Shapefile.GetExistShapefiles(Parameters.DataPath, Name).ToArray();
+            return Shapefile.GetExistShapefiles(FolderPaths.DataPath, Name).ToArray();
         }
 
         public string GetMainFilePath()
         {
-            return Path.Combine(Parameters.DataPath, Name + ".shp");
+            return Path.Combine(FolderPaths.DataPath, Name + ".shp");
         }
 
         public Task SaveTo(string directory)
