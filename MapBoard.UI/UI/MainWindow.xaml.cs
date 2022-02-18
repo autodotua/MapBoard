@@ -309,17 +309,13 @@ namespace MapBoard.UI
 
         private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (e.NewSize.Height < 800)
+            if (e.NewSize.Height < 1050)
             {
-                layerSettings.Height = 240;
-            }
-            else if (e.NewSize.Height < 1050)
-            {
-                layerSettings.Height = 360;
+                layerSettings.MaxHeight = 388;
             }
             else
             {
-                layerSettings.Height = 480;
+                layerSettings.MaxHeight = 480;
             }
         }
 

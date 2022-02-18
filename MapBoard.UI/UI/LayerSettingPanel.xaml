@@ -18,36 +18,187 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBox
+            Margin="8,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"
+            ui:TextBoxHelper.IsDeleteButtonVisible="False"
             Background="Transparent"
             BorderThickness="0"
             FontSize="20"
             Text="{Binding LayerName}" />
-        <ScrollViewer
-            x:Name="scrMain"
-            Grid.Row="2"
-            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <ui:SimpleStackPanel
-                Margin="8,0,12,0"
-                Orientation="Vertical"
-                Spacing="12">
 
+        <Grid
+            x:Name="grdExpanders"
+            Grid.Row="2"
+            Margin="8,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <Style
+                    x:Key="ExpanderDownHeaderStyle"
+                    TargetType="ToggleButton">
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <ControlTemplate.Resources>
+                                    <StreamGeometry x:Key="ChevronDown">M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z</StreamGeometry>
+                                    <StreamGeometry x:Key="ChevronUp">M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z</StreamGeometry>
+                                </ControlTemplate.Resources>
+                                <Border
+                                    x:Name="bd"
+                                    Padding="{TemplateBinding Padding}"
+                                    BorderBrush="{StaticResource SystemControlBackgroundBaseLowBrush}"
+                                    BorderThickness="0,1,0,0">
+                                    <Grid
+                                        x:Name="grd"
+                                        Background="Transparent"
+                                        SnapsToDevicePixels="False">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter
+                                            x:Name="content"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            RecognizesAccessKey="True"
+                                            SnapsToDevicePixels="True" />
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="true">
+                                        <Setter TargetName="content" Property="TextElement.FontWeight" Value="Bold" />
+                                        <Setter TargetName="bd" Property="Background" Value="{StaticResource SystemControlBackgroundChromeMediumBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="true">
+                                        <Setter TargetName="bd" Property="Background" Value="{StaticResource SystemControlBackgroundChromeMediumBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style
+                    BasedOn="{StaticResource DefaultExpanderStyle}"
+                    TargetType="Expander">
+                    <EventSetter
+                        Event="Expanded"
+                        Handler="Expander_Expanded" />
+                    <Setter Property="Padding" Value="8" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Expander">
+                                <Border
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                                    SnapsToDevicePixels="true">
+                                    <DockPanel>
+                                        <ToggleButton
+                                            x:Name="HeaderSite"
+                                            MinWidth="0"
+                                            MinHeight="0"
+                                            Padding="{TemplateBinding Padding}"
+                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            ui:FocusVisualHelper.FocusVisualMargin="-3"
+                                            ui:FocusVisualHelper.UseSystemFocusVisuals="True"
+                                            Content="{TemplateBinding Header}"
+                                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                            ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                                            DockPanel.Dock="Top"
+                                            FocusVisualStyle="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}"
+                                            FontFamily="{TemplateBinding FontFamily}"
+                                            FontSize="{TemplateBinding FontSize}"
+                                            FontStretch="{TemplateBinding FontStretch}"
+                                            FontStyle="{TemplateBinding FontStyle}"
+                                            FontWeight="{TemplateBinding FontWeight}"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Style="{StaticResource ExpanderDownHeaderStyle}" />
+                                        <ScrollViewer
+                                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
+                                            HorizontalScrollBarVisibility="Disabled"
+                                            VerticalScrollBarVisibility="Auto">
+                                            <ContentPresenter
+                                                x:Name="ExpandSite"
+                                                DockPanel.Dock="Bottom"
+                                                Focusable="false"
+                                                Visibility="Visible">
+                                                <ContentPresenter.LayoutTransform>
+                                                    <ScaleTransform ScaleY="0" />
+                                                </ContentPresenter.LayoutTransform>
+                                            </ContentPresenter>
+                                        </ScrollViewer>
+                                    </DockPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger xmlns:mbc="clr-namespace:MapBoard;assembly=MapBoard.Core" Property="IsExpanded" Value="true">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="ExpandSite"
+                                                        Storyboard.TargetProperty="(ContentPresenter.LayoutTransform).(ScaleTransform.ScaleY)"
+                                                        To="1"
+                                                        Duration="0:0:0.2" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="ExpandSite"
+                                                        Storyboard.TargetProperty="(ContentPresenter.LayoutTransform).(ScaleTransform.ScaleY)"
+                                                        To="0"
+                                                        Duration="0:0:0.2" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <Trigger Property="ExpandDirection" Value="Right">
+                                        <Setter TargetName="ExpandSite" Property="DockPanel.Dock" Value="Right" />
+                                        <Setter TargetName="HeaderSite" Property="DockPanel.Dock" Value="Left" />
+                                        <Setter TargetName="HeaderSite" Property="Style" Value="{StaticResource ExpanderRightHeaderStyle}" />
+                                    </Trigger>
+                                    <Trigger Property="ExpandDirection" Value="Up">
+                                        <Setter TargetName="ExpandSite" Property="DockPanel.Dock" Value="Top" />
+                                        <Setter TargetName="HeaderSite" Property="DockPanel.Dock" Value="Bottom" />
+                                        <Setter TargetName="HeaderSite" Property="Style" Value="{StaticResource ExpanderUpHeaderStyle}" />
+                                    </Trigger>
+                                    <Trigger Property="ExpandDirection" Value="Left">
+                                        <Setter TargetName="ExpandSite" Property="DockPanel.Dock" Value="Left" />
+                                        <Setter TargetName="HeaderSite" Property="DockPanel.Dock" Value="Right" />
+                                        <Setter TargetName="HeaderSite" Property="Style" Value="{StaticResource ExpanderLeftHeaderStyle}" />
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="false">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Resources>
+            <Expander
+                Grid.Row="0"
+                Header="显示设置">
                 <Border
                     Padding="8"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                    CornerRadius="4">
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
                     <StackPanel
                         DataContext="{Binding Layers.Selected}"
                         Orientation="Vertical">
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            HorizontalAlignment="Center"
-                            Style="{DynamicResource SubtitleTextBlockStyle}"
-                            Text="显示设置" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -125,17 +276,14 @@
                         </Grid>
                     </StackPanel>
                 </Border>
-
+            </Expander>
+            <Expander
+                Grid.Row="1"
+                Header="符号样式">
                 <Border
                     Padding="8"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                    CornerRadius="4">
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
                     <StackPanel Orientation="Vertical">
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            HorizontalAlignment="Center"
-                            Style="{DynamicResource SubtitleTextBlockStyle}"
-                            Text="符号样式" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -485,17 +633,16 @@
                         </TabControl>
                     </StackPanel>
                 </Border>
-
+            </Expander>
+            <Expander
+                Grid.Row="2"
+                BorderBrush="{StaticResource SystemControlBackgroundBaseLowBrush}"
+                BorderThickness="0,0,0,1"
+                Header="标签样式">
                 <Border
                     Padding="8"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                    CornerRadius="4">
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
                     <StackPanel Orientation="Vertical">
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            HorizontalAlignment="Center"
-                            Style="{DynamicResource SubtitleTextBlockStyle}"
-                            Text="标签样式" />
 
                         <Grid Margin="0,0,0,18">
                             <Grid.ColumnDefinitions>
@@ -790,7 +937,7 @@
                         </Grid>
                     </StackPanel>
                 </Border>
-            </ui:SimpleStackPanel>
-        </ScrollViewer>
+            </Expander>
+        </Grid>
     </Grid>
 </local:UserControlBase>

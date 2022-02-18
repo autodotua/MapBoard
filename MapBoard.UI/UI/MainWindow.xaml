@@ -246,7 +246,7 @@
                         Spacing="12">
                         <local:LayerSettingPanel
                             x:Name="layerSettings"
-                            Height="480"
+                            MaxHeight="480"
                             IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                         <StackPanel
                             Grid.Row="100"

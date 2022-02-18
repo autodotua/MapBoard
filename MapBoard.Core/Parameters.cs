@@ -17,6 +17,7 @@ namespace MapBoard
         public const string DateFormat = "yyyy-MM-dd";
         public const string CompactDateTimeFormat = "yyyyMMdd-HHmmss";
 
+        public static TimeSpan FastAnimationDuration { get; set; } = TimeSpan.FromSeconds(0.2);
         public static TimeSpan AnimationDuration { get; set; } = TimeSpan.FromSeconds(0.5);
         public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);
     }

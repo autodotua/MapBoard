@@ -283,5 +283,19 @@ namespace MapBoard.UI
                     break;
             }
         }
+
+        private void Expander_Expanded(object sender, RoutedEventArgs e)
+        {
+            //手动实现手风琴效果
+            Expander expander = sender as Expander;
+            foreach (var ex in grdExpanders.Children.OfType<Expander>().Where(p => p != sender))
+            {
+                ex.IsExpanded = false;
+            }
+            for (int i = 0; i < grdExpanders.Children.Count; i++)
+            {
+                grdExpanders.RowDefinitions[i].Height = Grid.GetRow(expander) == i ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+            }
+        }
     }
 }
