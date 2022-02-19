@@ -161,7 +161,7 @@ namespace MapBoard.Util
             {
                 //查询需要替换的字段
                 List<FieldInfo> sourceFields = includeField ?
-                layer.Fields.IncludeDefaultFields().Where(p => text.Contains($"[{p.Name}]")).ToList() : new List<FieldInfo>();
+                layer.Fields.Where(p => text.Contains($"[{p.Name}]")).ToList() : new List<FieldInfo>();
 
                 foreach (var feature in features)
                 {

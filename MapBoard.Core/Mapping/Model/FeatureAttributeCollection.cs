@@ -17,7 +17,6 @@ namespace MapBoard.Mapping.Model
     {
         private List<FeatureAttribute> all = new List<FeatureAttribute>();
         private bool isSelected;
-        private List<FeatureAttribute> others = new List<FeatureAttribute>();
 
         private FeatureAttributeCollection()
         {
@@ -25,7 +24,7 @@ namespace MapBoard.Mapping.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
+        public IReadOnlyList<FeatureAttribute> Attributes => all.AsReadOnly();
 
         [JsonIgnore]
         public Feature Feature { get; set; }
@@ -44,8 +43,6 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
-
         public static FeatureAttributeCollection Empty(ILayerInfo layer)
         {
             var attributes = new FeatureAttributeCollection();
@@ -53,7 +50,6 @@ namespace MapBoard.Mapping.Model
             foreach (var field in layer.Fields)
             {
                 var attr = new FeatureAttribute(field);
-                attributes.others.Add(attr);
                 attributes.all.Add(attr);
             }
             return attributes;
@@ -111,7 +107,6 @@ namespace MapBoard.Mapping.Model
                         Value = attr.Value
                     };
                 }
-                attributes.others.Add(newAttr);
                 attributes.all.Add(newAttr);
             }
             return attributes;
@@ -124,7 +119,7 @@ namespace MapBoard.Mapping.Model
 
         public void SaveToFeature(Feature feature)
         {
-            foreach (var attr in All)
+            foreach (var attr in Attributes)
             {
                 switch (attr.Type)
                 {

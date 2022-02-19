@@ -108,23 +108,16 @@ namespace MapBoard.Mapping
                 throw new NotSupportedException("选中的图层不支持编辑");
             }
             var layer = Layers.Selected as IEditableLayerInfo;
-            if (Attributes != null)
+            if (Attributes != null && Config.Instance.RemainAttribute)
             {
-                var label = Attributes.Label;
-                var key = Attributes.Key;
-                var date = Attributes.Date;
+                var oldAttributes = Attributes;
                 Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
-                if (Config.Instance.RemainLabel)
+                foreach (var attribute in oldAttributes.Attributes)
                 {
-                    Attributes.Label = label;
-                }
-                if (Config.Instance.RemainKey)
-                {
-                    Attributes.Key = key;
-                }
-                if (Config.Instance.RemainDate)
-                {
-                    Attributes.Date = date;
+                    if (Attributes.Attributes.Any(p => p.Name == attribute.Name))
+                    {
+                        Attributes.Attributes.FirstOrDefault(p => p.Name == attribute.Name).Value = attribute.Value;
+                    }
                 }
             }
             else

@@ -9,6 +9,7 @@
     xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
     <UserControl.Resources />
     <Grid>
@@ -365,8 +366,26 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="8" />
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
+                                            <DockPanel LastChildFill="True">
+                                                <Button
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Bottom"
+                                                    Content="清除"
+                                                    Click="ClearKeyFieldButton_Click"
+                                                    DockPanel.Dock="Right" />
+                                                <ComboBox
+                                                    HorizontalAlignment="Stretch"
+                                                    ui:ControlHelper.Header="分类字段"
+                                                    DisplayMemberPath="DisplayName"
+                                                    ItemsSource="{Binding Layers.Selected.Fields}"
+                                                    SelectedItem="{Binding KeyField}" />
+                                            </DockPanel>
+
                                             <ListView
+                                                Grid.Row="2"
                                                 BorderThickness="0"
                                                 ItemsSource="{Binding Keys}"
                                                 SelectedItem="{Binding SelectedKey}">
@@ -377,7 +396,7 @@
                                                 </ListBox.ItemTemplate>
                                             </ListView>
 
-                                            <Grid Grid.Row="2">
+                                            <Grid Grid.Row="4">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="4" />
@@ -411,13 +430,15 @@
                                                     Grid.Row="2"
                                                     Grid.ColumnSpan="3"
                                                     Click="GenerateKeyButtonClick"
-                                                    Content="自动生成全部" />
+                                                    Content="自动生成全部"
+                                                    IsEnabled="{Binding CanGenerateKey}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.Column="4"
                                                     Grid.ColumnSpan="3"
                                                     Click="GenerateRandomColorButtonClick"
-                                                    Content="随机生成颜色" />
+                                                    Content="随机生成颜色"
+                                                    IsEnabled="{Binding CanGenerateKey}" />
                                             </Grid>
                                         </Grid>
                                     </ui:Flyout>

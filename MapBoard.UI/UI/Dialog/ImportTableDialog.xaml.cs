@@ -69,10 +69,7 @@ namespace MapBoard.UI.Dialog
             HashSet<string> displayNames = new HashSet<string>();
             foreach (var field in Fields.Where(p => p.Import))
             {
-                if (field.Field.Name == Parameters.ClassFieldName
-                    || field.Field.Name == Parameters.LabelFieldName
-                    || field.Field.Name == Parameters.DateFieldName
-                    || field.Field.DisplayName.Length * field.Field.Name.Length == 0
+                if (field.Field.DisplayName.Length * field.Field.Name.Length == 0
                     || !displayNames.Add(field.Field.DisplayName)
                     || !names.Add(field.Field.Name))
                 {

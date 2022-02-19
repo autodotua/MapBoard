@@ -45,6 +45,9 @@ namespace MapBoard.UI
 
         public ObservableCollection<KeySymbolPair> Keys { get; set; } = new ObservableCollection<KeySymbolPair>();
 
+        [AlsoNotifyFor(nameof(CanGenerateKey), nameof(CanChangeOrDeleteKey))]
+        public FieldInfo KeyField { get; set; } = null;
+
         public LabelInfo Label { get; set; }
 
         public ObservableCollection<LabelInfo> Labels { get; set; }
@@ -56,7 +59,8 @@ namespace MapBoard.UI
         [AlsoNotifyFor(nameof(Layers))]
         public MainMapView MapView { get; set; }
 
-        public bool CanChangeOrDeleteKey => SelectedKey != null && SelectedKey.Key != defaultKeyName;
+        public bool CanChangeOrDeleteKey => SelectedKey != null && SelectedKey.Key != defaultKeyName && KeyField != null;
+        public bool CanGenerateKey => KeyField != null;
 
         [AlsoNotifyFor(nameof(CanChangeOrDeleteKey))]
         public KeySymbolPair SelectedKey { get; set; }
@@ -88,8 +92,7 @@ namespace MapBoard.UI
                 Keys.Clear();
                 foreach (var symbol in layer.Symbols)
                 {
-                    Keys.Add(new KeySymbolPair(
-                        symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
+                    Keys.Add(new KeySymbolPair(symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
                 }
                 if (!Keys.Any(p => p.Key == defaultKeyName))
                 {
@@ -121,9 +124,17 @@ namespace MapBoard.UI
             var layer = Layers.Selected;
 
             layer.Symbols.Clear();
+            layer.Symbols.KeyFieldName = KeyField?.Name;
             foreach (var keySymbol in Keys)
             {
-                layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
+                if (keySymbol.Key == defaultKeyName)
+                {
+                    layer.Symbols.DefaultSymbol = keySymbol.Symbol;
+                }
+                else
+                {
+                    layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
+                }
             }
             layer.Labels = Labels.ToArray();
             string newName = LayerName;
@@ -228,10 +239,11 @@ namespace MapBoard.UI
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
             var layer = Layers.Selected;
-            var keys = (await layer.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(Parameters.ClassFieldName) as string).Distinct();
+            Debug.Assert(KeyField != null);
+            var keys = (await layer.GetAllFeaturesAsync()).Select(p => p.GetAttributeValue(KeyField.Name) as string).Distinct();
             foreach (var key in keys)
             {
-                if (!Keys.Any(p => p.Key == key) && key != "")
+                if (!Keys.Any(p => p.Key == key))
                 {
                     SymbolInfo symbol = layer.GetDefaultSymbol();
                     Keys.Add(new KeySymbolPair(key, symbol));
@@ -295,6 +307,15 @@ namespace MapBoard.UI
             for (int i = 0; i < grdExpanders.Children.Count; i++)
             {
                 grdExpanders.RowDefinitions[i].Height = Grid.GetRow(expander) == i ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+            }
+        }
+
+        private void ClearKeyFieldButton_Click(object sender, RoutedEventArgs e)
+        {
+            KeyField=null;
+            foreach (var key in Keys.Where(p=>p.Key!=defaultKeyName).ToList())
+            {
+                Keys.Remove(key);
             }
         }
     }

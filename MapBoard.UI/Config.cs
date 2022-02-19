@@ -91,11 +91,7 @@ namespace MapBoard
 
         public double MaxScale { get; set; } = 100;
 
-        public bool RemainDate { get; set; } = false;
-
-        public bool RemainKey { get; set; } = false;
-
-        public bool RemainLabel { get; set; } = false;
+        public bool RemainAttribute { get; set; } = false;
 
         public int ServerLayerLoadTimeout
         {

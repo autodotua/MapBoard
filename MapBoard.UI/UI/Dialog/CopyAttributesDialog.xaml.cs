@@ -26,7 +26,7 @@ namespace MapBoard.UI.Dialog
         public CopyAttributesDialog(IEditableLayerInfo layer)
         {
             Layer = layer;
-            Fields = layer.Fields.IncludeDefaultFields().ToArray();
+            Fields = layer.Fields;
             InitializeComponent();
         }
 

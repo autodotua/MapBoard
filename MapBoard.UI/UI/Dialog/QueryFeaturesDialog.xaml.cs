@@ -48,7 +48,7 @@ namespace MapBoard.UI.Dialog
                 menuFields.Items.Clear();
                 if (value != null)
                 {
-                    foreach (var field in value.Fields.IncludeDefaultFields())
+                    foreach (var field in value.Fields)
                     {
                         var menu = new MenuItem()
                         {

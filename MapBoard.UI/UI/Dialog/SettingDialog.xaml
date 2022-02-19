@@ -393,26 +393,9 @@
         <TabItem Header="画板">
             <ui:SimpleStackPanel Spacing="8">
                 <GroupBox Header="属性">
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="8">
-
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="在绘制下一个图形时，保留：" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="标签"
-                            IsChecked="{Binding Config.RemainLabel}" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="日期"
-                            IsChecked="{Binding Config.RemainDate}" />
-                        <CheckBox
-                            Margin="0,0,-56,0"
-                            Content="分类"
-                            IsChecked="{Binding Config.RemainKey}" />
-                    </ui:SimpleStackPanel>
+                    <CheckBox
+                            Content="在绘制下一个图形时，保留之前的属性"
+                            IsChecked="{Binding Config.RemainAttribute}" />
                 </GroupBox>
                 <GroupBox Header="捕捉">
                     <ui:SimpleStackPanel

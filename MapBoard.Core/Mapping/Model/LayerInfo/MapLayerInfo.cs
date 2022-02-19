@@ -41,22 +41,6 @@ namespace MapBoard.Mapping.Model
            }).CreateMapper().Map(layer, this);
         }
 
-        private FieldInfo[] fields = null;
-
-        public override FieldInfo[] Fields
-        {
-            get
-            {
-                if (fields == null)
-                {
-                    fields = FieldExtension.SyncWithSource(base.Fields, table).ToArray();
-                    base.Fields = fields;
-                }
-                return fields;
-            }
-            set => base.Fields = value;
-        }
-
         public event EventHandler Unattached;
 
         [JsonIgnore]
@@ -241,6 +225,7 @@ namespace MapBoard.Mapping.Model
 
         protected virtual void ApplyProperties()
         {
+            Fields = FieldExtension.SyncWithSource(base.Fields, table).ToArray();
             layer.IsVisible = LayerVisible;
             layer.MinScale = Display.MinScale;
             layer.MaxScale = Display.MaxScale;
