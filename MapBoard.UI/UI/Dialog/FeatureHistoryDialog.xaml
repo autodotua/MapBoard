@@ -11,7 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="设置"
+    Title="历史记录"
     Width="220"
     Height="400"
     ui:WindowHelper.UseModernWindowStyle="True"

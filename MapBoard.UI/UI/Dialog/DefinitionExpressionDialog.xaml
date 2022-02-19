@@ -1,0 +1,52 @@
+﻿<dialog:LayerDialogBase
+    x:Class="MapBoard.UI.Dialog.DefinitionExpressionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="clr-namespace:MapBoard.UI.Converter"
+    xmlns:cvt2="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    xmlns:m="clr-namespace:MapBoard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="筛选"
+    Width="600"
+    Height="400"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    Closing="Dialog_Closing"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    ResizeMode="CanResize"
+    ShowInTaskbar="True"
+    mc:Ignorable="d">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBox
+            ui:ControlHelper.Header="表达式"
+            AcceptsReturn="True"
+            Text="{Binding Expression}"
+            TextWrapping="Wrap" />
+        <ui:SimpleStackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Grid.Row="2"
+                HorizontalAlignment="Right"
+                Click="DateExtentButton_Click"
+                Content="设置时间范围" />
+            <Button
+                Click="ApplyButton_Click"
+                Content="应用" />
+            <Button
+                Click="OkButton_Click"
+                Content="确定" />
+        </ui:SimpleStackPanel>
+    </Grid>
+</dialog:LayerDialogBase>

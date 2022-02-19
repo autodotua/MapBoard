@@ -12,58 +12,19 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class DateRangeDialog : CommonDialog
     {
-        private ILayerInfo Layer { get; }
-
-        public DateRangeDialog(ILayerInfo layer)
+        public DateRangeDialog()
         {
-            Layer = layer;
             InitializeComponent();
-            if (layer.TimeExtent == null)
-            {
-                EnableDateRange = false;
-                dateFrom.SelectedDate = DateTime.Now.AddYears(-1);
-                dateTo.SelectedDate = DateTime.Now;
-            }
-            else
-            {
-                EnableDateRange = true;
-                EnableDateRange = layer.TimeExtent.IsEnable;
-                dateFrom.SelectedDate = layer.TimeExtent.From.Date;
-                dateTo.SelectedDate = layer.TimeExtent.To.Date;
-            }
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private bool enableDateRange;
-
-        public bool EnableDateRange
-        {
-            get => enableDateRange;
-            set
-            {
-                enableDateRange = value;
-                IsPrimaryButtonEnabled = !EnableDateRange || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue && dateTo.SelectedDate > dateFrom.SelectedDate;
-            }
+            From = DateTime.Now.AddYears(-1);
+            To = DateTime.Now;
         }
 
         private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            IsPrimaryButtonEnabled = !EnableDateRange
-                || dateFrom.SelectedDate.HasValue && dateTo.SelectedDate.HasValue
-                && dateTo.SelectedDate >= dateFrom.SelectedDate;
+            IsPrimaryButtonEnabled = To >= From;
         }
 
-        private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
-        {
-            Layer.TimeExtent = new TimeExtentInfo()
-            {
-                IsEnable = EnableDateRange,
-                From = dateFrom.SelectedDate.Value,
-                To = dateTo.SelectedDate.Value,
-            };
-        }
+        public DateTime From { get; set; }
+        public DateTime To { get; set; }
     }
 }

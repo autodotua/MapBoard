@@ -23,46 +23,28 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class AttributeTableDialog : LayerDialogBase
     {
+        public bool isLoaded = false;
+        private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
         private Dictionary<long, FeatureAttributeCollection> feature2Attributes;
 
-        private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
-
-        private AttributeTableDialog(Window owner, IMapLayerInfo layer, MainMapView mapView) : base(owner, layer)
+        private AttributeTableDialog(Window owner, IMapLayerInfo layer, MainMapView mapView) : base(owner, layer, mapView)
         {
             InitializeComponent();
             Title = "属性表 - " + layer.Name;
 
-            MapView = mapView;
             Width = 800;
             Height = 600;
             mapView.BoardTaskChanged += MapView_BoardTaskChanged;
         }
 
-        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
-        {
-            IsEnabled = e.NewTask != BoardTask.Draw;
-        }
-
         public ObservableCollection<FeatureAttributeCollection> Attributes { get; set; }
-
-        private static Dictionary<IMapLayerInfo, AttributeTableDialog> dialogs = new Dictionary<IMapLayerInfo, AttributeTableDialog>();
-
-        public static AttributeTableDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
-        {
-            if (dialogs.ContainsKey(layer))
-            {
-                return dialogs[layer];
-            }
-            var dialog = new AttributeTableDialog(owner, layer, mapView);
-            dialogs.Add(layer, dialog);
-            return dialog;
-        }
 
         public int EditedFeaturesCount => editedAttributes.Count;
 
-        public MainMapView MapView { get; }
-
-        public bool isLoaded = false;
+        public static AttributeTableDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
+        {
+            return GetInstance(layer, () => new AttributeTableDialog(owner, layer, mapView));
+        }
 
         /// <summary>
         /// 加载数据
@@ -148,36 +130,68 @@ namespace MapBoard.UI.Dialog
         }
 
         /// <summary>
-        /// 图层中选择的要素修改后，同步更新属性表
+        /// 在表格末尾添加列按钮
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Selection_CollectionChanged(object sender, Mapping.SelectedFeaturesChangedEventArgs e)
+        /// <param name="dg"></param>
+        /// <param name="content"></param>
+        /// <param name="handler"></param>
+        private void AddButton(DataGrid dg, object content, Delegate handler)
         {
-            if (e.Layer != Layer)
+            FrameworkElementFactory factory = new FrameworkElementFactory(typeof(Button));
+            //factory.SetValue(OpacityProperty, 0.7);
+            factory.SetValue(ContentProperty, content);
+            factory.SetResourceReference(ForegroundProperty, "SystemControlHighlightAccentBrush");
+            factory.SetValue(BackgroundProperty, System.Windows.Media.Brushes.Transparent);
+            factory.SetValue(TagProperty, new Binding("."));
+            factory.AddHandler(Button.ClickEvent, handler);
+            dg.Columns.Add(new DataGridTemplateColumn()
+            {
+                CellTemplate = new DataTemplate(typeof(FeatureAttributeCollection))
+                {
+                    VisualTree = factory
+                }
+            });
+        }
+
+        private void AddSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
+            MapView.Selection.Select(feature);
+        }
+
+        private async void AttributeTableDialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (closing)
             {
                 return;
             }
-            if (e.Selected.Length + e.UnSelected.Length == 0)
+            if (EditedFeaturesCount > 0)
             {
-                return;
-            }
-            foreach (var feature in e.Selected)
-            {
-                long id = feature.GetID();
-                if (feature2Attributes.ContainsKey(id))
+                e.Cancel = true;
+                if (await CommonDialog.ShowYesNoDialogAsync("是否关闭", "当前编辑未保存，是否关闭？"))
                 {
-                    feature2Attributes[id].IsSelected = true;
+                    closing = true;
+                    Close();
                 }
             }
-            foreach (var feature in e.UnSelected)
+        }
+
+        private async void BtnSave_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Layer is ShapefileMapLayerInfo);
+
+            btnSave.IsEnabled = false;
+            List<UpdatedFeature> features = new List<UpdatedFeature>();
+            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
             {
-                long id = feature.GetID();
-                if (feature2Attributes.ContainsKey(id))
-                {
-                    feature2Attributes[id].IsSelected = false;
-                }
+                var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
+                attr.SaveToFeature();
+                features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
             }
+            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
+
+            editedAttributes.Clear();
+            this.Notify(nameof(EditedFeaturesCount));
         }
 
         /// <summary>
@@ -200,6 +214,19 @@ namespace MapBoard.UI.Dialog
             else
             {
                 MapView.Selection.UnSelect(fa.Feature);
+            }
+        }
+
+        private void Dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                if (e.Row.Item is FeatureAttributeCollection attribute)
+                {
+                    editedAttributes.Add(attribute);
+                    btnSave.IsEnabled = true;
+                    this.Notify(nameof(EditedFeaturesCount));
+                }
             }
         }
 
@@ -247,82 +274,15 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        /// <summary>
-        /// 在表格末尾添加列按钮
-        /// </summary>
-        /// <param name="dg"></param>
-        /// <param name="content"></param>
-        /// <param name="handler"></param>
-        private void AddButton(DataGrid dg, object content, Delegate handler)
-        {
-            FrameworkElementFactory factory = new FrameworkElementFactory(typeof(Button));
-            //factory.SetValue(OpacityProperty, 0.7);
-            factory.SetValue(ContentProperty, content);
-            factory.SetResourceReference(ForegroundProperty, "SystemControlHighlightAccentBrush");
-            factory.SetValue(BackgroundProperty, System.Windows.Media.Brushes.Transparent);
-            factory.SetValue(TagProperty, new Binding("."));
-            factory.AddHandler(Button.ClickEvent, handler);
-            dg.Columns.Add(new DataGridTemplateColumn()
-            {
-                CellTemplate = new DataTemplate(typeof(FeatureAttributeCollection))
-                {
-                    VisualTree = factory
-                }
-            });
-        }
-
-        private void AddSelectButton_Click(object sender, RoutedEventArgs e)
-        {
-            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
-            MapView.Selection.Select(feature);
-        }
-
-        private async void AttributeTableDialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (closing)
-            {
-                Debug.Assert(dialogs.ContainsKey(Layer));
-                dialogs.Remove(Layer);
-                return;
-            }
-            if (EditedFeaturesCount > 0)
-            {
-                e.Cancel = true;
-                if (await CommonDialog.ShowYesNoDialogAsync("是否关闭", "当前编辑未保存，是否关闭？"))
-                {
-                    closing = true;
-                    Close();
-                }
-            }
-            else
-            {
-                Debug.Assert(dialogs.ContainsKey(Layer));
-                dialogs.Remove(Layer);
-            }
-        }
-
-        private async void BtnSave_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(Layer is ShapefileMapLayerInfo);
-
-            btnSave.IsEnabled = false;
-            List<UpdatedFeature> features = new List<UpdatedFeature>();
-            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
-            {
-                var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
-                attr.SaveToFeature();
-                features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
-            }
-            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
-
-            editedAttributes.Clear();
-            this.Notify(nameof(EditedFeaturesCount));
-        }
-
         private async void LocateButton_Click(object sender, RoutedEventArgs e)
         {
             var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
             await MapView.ZoomToGeometryAsync(feature.Geometry);
+        }
+
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            IsEnabled = e.NewTask != BoardTask.Draw;
         }
 
         private void SelectButton_Click(object sender, RoutedEventArgs e)
@@ -331,15 +291,35 @@ namespace MapBoard.UI.Dialog
             MapView.Selection.Select(feature, true);
         }
 
-        private void Dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        /// <summary>
+        /// 图层中选择的要素修改后，同步更新属性表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Selection_CollectionChanged(object sender, Mapping.SelectedFeaturesChangedEventArgs e)
         {
-            if (e.EditAction == DataGridEditAction.Commit)
+            if (e.Layer != Layer)
             {
-                if (e.Row.Item is FeatureAttributeCollection attribute)
+                return;
+            }
+            if (e.Selected.Length + e.UnSelected.Length == 0)
+            {
+                return;
+            }
+            foreach (var feature in e.Selected)
+            {
+                long id = feature.GetID();
+                if (feature2Attributes.ContainsKey(id))
                 {
-                    editedAttributes.Add(attribute);
-                    btnSave.IsEnabled = true;
-                    this.Notify(nameof(EditedFeaturesCount));
+                    feature2Attributes[id].IsSelected = true;
+                }
+            }
+            foreach (var feature in e.UnSelected)
+            {
+                long id = feature.GetID();
+                if (feature2Attributes.ContainsKey(id))
+                {
+                    feature2Attributes[id].IsSelected = false;
                 }
             }
         }

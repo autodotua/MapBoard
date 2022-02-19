@@ -145,16 +145,6 @@ namespace MapBoard.Util
             await target.AddFeaturesAsync(features, FeaturesChangedSource.FeatureOperation);
         }
 
-        public static async Task LayerCompleteAsync(this IMapLayerInfo layer)
-        {
-            layer.Layer.IsVisible = layer.LayerVisible;
-            //layer. Layer.LabelsEnabled = layer.Label == null ? false : layer.Label.Enable;
-            if (layer is IHasDefaultFields && layer.TimeExtent?.IsEnable == true)
-            {
-                await layer.SetTimeExtentAsync();
-            }
-        }
-
         /// <summary>
         /// 建立缓冲区
         /// </summary>
@@ -216,23 +206,6 @@ namespace MapBoard.Util
                 targetLayer = await CreateShapefileLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
             }
             await FeatureUtility.BufferToLayerAsync(layer, targetLayer, features == null ? await layer.GetAllFeaturesAsync() : features, meters, union);
-        }
-
-        /// <summary>
-        /// 根据时间范围，控制每个要素的可见性。
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        public static async Task SetTimeExtentAsync(this IMapLayerInfo layer)
-        {
-            if (layer.TimeExtent == null || !(layer is IHasDefaultFields))
-            {
-                layer.Layer.DefinitionExpression = "";
-            }
-            else
-            {
-                layer.Layer.DefinitionExpression = $"{Parameters.DateFieldName} >= date '{layer.TimeExtent.From:yyyy-MM-dd}' and {Parameters.DateFieldName} <= date '{layer.TimeExtent.To:yyyy-MM-dd}'";
-            }
         }
 
         /// <summary>

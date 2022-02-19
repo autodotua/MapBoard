@@ -16,9 +16,8 @@ namespace MapBoard.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public string DefinitionExpression { get; set; } = "";
         public LayerDisplay Display { get; set; } = new LayerDisplay();
-
-        public LayerInteraction Interaction { get; set; } = new LayerInteraction();
 
         public FieldInfo[] Fields
         {
@@ -34,7 +33,7 @@ namespace MapBoard.Model
         }
 
         public string Group { get; set; }
-
+        public LayerInteraction Interaction { get; set; } = new LayerInteraction();
         public LabelInfo[] Labels { get; set; }
 
         public virtual bool LayerVisible { get; set; }
@@ -43,7 +42,6 @@ namespace MapBoard.Model
 
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
-        public TimeExtentInfo TimeExtent { get; set; }
 
         [JsonProperty]
         public virtual string Type { get; protected set; }

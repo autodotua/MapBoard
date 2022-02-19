@@ -111,7 +111,7 @@ namespace MapBoard.Mapping.Model
             ServiceParameters.AddOrSetValue(nameof(AutoPopulateAll), AutoPopulateAll.ToString());
         }
 
-        protected override async void LoadCompleted()
+        protected override async void ApplyProperties()
         {
             if (AutoPopulateAll)
             {

@@ -96,7 +96,7 @@ namespace MapBoard.UI
                         AddToMenu<IEditableLayerInfo>(menu, "字段赋值", layer, CopyAttributesAsync);
                         AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
                     }
-                    AddToMenu<IHasDefaultFields>(menu, "设置时间范围", layer, SetTimeExtentAsync);
+                    AddToMenu<IMapLayerInfo>(menu, "筛选显示图形", layer, SetDefinitionExpression, !string.IsNullOrEmpty(layer.DefinitionExpression));
                     menu.Items.Add(new Separator());
 
                     if (layer is IEditableLayerInfo e)
@@ -224,17 +224,22 @@ namespace MapBoard.UI
             dialog.BringToFront();
         }
 
-        private void AddToMenu<T>(ItemsControl menu, string header, IMapLayerInfo layer, Func<T, Task> func) where T : class
+        private void AddToMenu<T>(ItemsControl menu, string header, IMapLayerInfo layer, Func<T, Task> func, bool? isChecked = null) where T : class
         {
             if (layer is T)
             {
-                AddToMenu(menu, header, () => func(layer as T));
+                AddToMenu(menu, header, () => func(layer as T),isChecked);
             }
         }
 
-        private void AddToMenu(ItemsControl menu, string header, Func<Task> func)
+        private void AddToMenu(ItemsControl menu, string header, Func<Task> func, bool? isChecked = null)
         {
             MenuItem item = new MenuItem() { Header = header };
+            if (isChecked.HasValue)
+            {
+                item.IsCheckable = true;
+                item.IsChecked = isChecked.Value;
+            }
             item.Click += async (p1, p2) =>
             {
                 try
@@ -368,13 +373,11 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task SetTimeExtentAsync(IHasDefaultFields layer)
+        private async Task SetDefinitionExpression(IMapLayerInfo layer)
         {
-            DateRangeDialog dialog = new DateRangeDialog(MapView.Layers.Selected);
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                await LayerUtility.SetTimeExtentAsync(layer as IMapLayerInfo);
-            }
+            DefinitionExpressionDialog dialog = DefinitionExpressionDialog.Get(MainWindow, layer, MapView);
+            dialog.Show();
+            await Task.Yield();
         }
 
         private async Task DeleteLayersAsync(IList<IMapLayerInfo> layers)

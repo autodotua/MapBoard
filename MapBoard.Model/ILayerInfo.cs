@@ -43,7 +43,7 @@ namespace MapBoard.Model
         /// <summary>
         /// 时间范围
         /// </summary>
-        TimeExtentInfo TimeExtent { get; set; }
+        string DefinitionExpression { get; set; } 
 
         /// <summary>
         /// 图层的类型
@@ -54,6 +54,7 @@ namespace MapBoard.Model
         /// 表示一些额外参数
         /// </summary>
         Dictionary<string, string> ServiceParameters { get; }
+
         /// <summary>
         /// 交互相关属性
         /// </summary>

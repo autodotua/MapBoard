@@ -55,19 +55,6 @@ namespace MapBoard.Mapping.Model
         [JsonIgnore]
         public FeatureLayer Layer => layer;
 
-        public override bool LayerVisible
-        {
-            get => base.LayerVisible;
-            set
-            {
-                base.LayerVisible = value;
-                if (Layer != null)
-                {
-                    Layer.IsVisible = value;
-                }
-            }
-        }
-
         [JsonIgnore]
         public Exception LoadError { get; private set; }
 
@@ -167,10 +154,9 @@ namespace MapBoard.Mapping.Model
                     throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
                 }
                 await Task.Run(this.ApplyStyle);
-                await this.LayerCompleteAsync();
                 IsLoaded = true;
                 this.Notify(nameof(GeometryType));
-                LoadCompleted();
+                ApplyProperties();
             }
             catch (Exception ex)
             {
@@ -211,14 +197,13 @@ namespace MapBoard.Mapping.Model
             table = newTable;
             layer = GetNewLayer(table);
             await Task.Run(this.ApplyStyle);
-            await this.LayerCompleteAsync();
 
             //也许是Esri的BUG，如果不重新插入，那么可能啥都不会显示
             layers.RefreshEsriLayer(this);
 
             IsLoaded = true;
             this.Notify(nameof(NumberOfFeatures), nameof(GeometryType));
-            LoadCompleted();
+            ApplyProperties();
         }
 
         /// <summary>
@@ -237,44 +222,53 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         protected abstract FeatureTable GetTable();
 
-        protected virtual void LoadCompleted()
+        protected virtual void ApplyProperties()
         {
+            layer.IsVisible = LayerVisible;
             layer.MinScale = Display.MinScale;
             layer.MaxScale = Display.MaxScale;
             layer.Opacity = Display.Opacity;
+            layer.DefinitionExpression = DefinitionExpression;
             layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
-            Display.PropertyChanged += (s, e) =>
+            PropertyChanged += PropertiesChanged;
+            Display.PropertyChanged += PropertiesChanged;
+        }
+
+        private void PropertiesChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
             {
-                switch (e.PropertyName)
-                {
-                    case nameof(Display.Opacity):
-                        layer.Opacity = Display.Opacity;
-                        break;
+                case nameof(Display.Opacity):
+                    layer.Opacity = Display.Opacity;
+                    break;
 
-                    case nameof(Display.MinScale):
-                        layer.MinScale = Display.MinScale;
-                        break;
+                case nameof(Display.MinScale):
+                    layer.MinScale = Display.MinScale;
+                    break;
 
-                    case nameof(Display.MaxScale):
-                        layer.MaxScale = Display.MaxScale;
-                        break;
+                case nameof(Display.MaxScale):
+                    layer.MaxScale = Display.MaxScale;
+                    break;
 
-                    case nameof(Display.RenderingMode):
-                        layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
-                        break;
+                case nameof(Display.RenderingMode):
+                    layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
+                    break;
 
-                    default:
-                        break;
-                }
-            };
+                case nameof(LayerVisible):
+                    layer.IsVisible = LayerVisible;
+                    break;
+
+                case nameof(DefinitionExpression):
+                    layer.DefinitionExpression = DefinitionExpression;
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         public class Types
         {
-            //public static readonly HashSet<string> SupportedLayerTypes = new HashSet<string>()
-            //{
-            //   Types.Shapefile,null,Types.WFS,Types.Temp
-            //};
             [Description("Shapefile文件")]
             public const string Shapefile = "Shapefile";
 

@@ -21,11 +21,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class FeatureHistoryDialog : LayerDialogBase
     {
-        private static Dictionary<IMapLayerInfo, FeatureHistoryDialog> dialogs = new Dictionary<IMapLayerInfo, FeatureHistoryDialog>();
-
-        private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
-
-        private FeatureHistoryDialog(Window owner, IEditableLayerInfo layer, MainMapView arcMap) : base(owner, layer)
+        private FeatureHistoryDialog(Window owner, IEditableLayerInfo layer, MainMapView arcMap) : base(owner, layer, arcMap)
         {
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
@@ -33,19 +29,9 @@ namespace MapBoard.UI.Dialog
             arcMap.BoardTaskChanged += ArcMap_BoardTaskChanged;
         }
 
-        public FeatureAttributeCollection[] Attributes { get; set; }
-
-        public int EditedFeaturesCount => editedAttributes.Count;
-
-        public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView arcMap)
+        public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView mapView)
         {
-            if (dialogs.ContainsKey(layer))
-            {
-                return dialogs[layer];
-            }
-            var dialog = new FeatureHistoryDialog(owner, layer, arcMap);
-            dialogs.Add(layer, dialog);
-            return dialog;
+            return GetInstance(layer, () => new FeatureHistoryDialog(owner, layer, mapView));
         }
 
         private void ArcMap_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
@@ -55,8 +41,6 @@ namespace MapBoard.UI.Dialog
 
         private void Dialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Debug.Assert(dialogs.ContainsKey(Layer));
-            dialogs.Remove(Layer);
         }
 
         private void Histories_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
