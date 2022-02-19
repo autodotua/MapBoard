@@ -10,7 +10,7 @@
   <Identity
     Name="6510autodotua.598422FC001B6"
     Publisher="CN=E29A7222-F9F7-4A27-AEB4-E59D26C1B50C"
-    Version="1.0.22.0" />
+    Version="1.0.26.0" />
 
   <Properties>
     <DisplayName>地图画板</DisplayName>

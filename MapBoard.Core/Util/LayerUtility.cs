@@ -162,6 +162,8 @@ namespace MapBoard.Util
         /// <param name="layers"></param>
         /// <param name="meters"></param>
         /// <returns></returns>
+
+        [Obsolete]
         public static async Task SimpleBufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, double meters)
         {
             var template = EmptyMapLayerInfo.CreateTemplate();
@@ -188,6 +190,16 @@ namespace MapBoard.Util
             await newLayer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
+        /// <summary>
+        /// 建立缓冲区
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="layers"></param>
+        /// <param name="targetLayer"></param>
+        /// <param name="meters"></param>
+        /// <param name="union"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public static async Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, IEditableLayerInfo targetLayer, double meters, bool union, Feature[] features = null)
         {
             if (targetLayer == null)
@@ -215,45 +227,21 @@ namespace MapBoard.Util
         {
             if (layer.TimeExtent == null || !(layer is IHasDefaultFields))
             {
-                return;
-            }
-            FeatureLayer featureLayer = layer.Layer;
-
-            if (layer.TimeExtent.IsEnable)
-            {
-                List<Feature> visiableFeatures = new List<Feature>();
-                List<Feature> invisiableFeatures = new List<Feature>();
-
-                var features = await layer.GetAllFeaturesAsync();
-
-                foreach (var feature in features)
-                {
-                    if (feature.Attributes[Parameters.DateFieldName] is DateTimeOffset date)
-                    {
-                        if (date.UtcDateTime >= layer.TimeExtent.From && date.UtcDateTime <= layer.TimeExtent.To)
-                        {
-                            visiableFeatures.Add(feature);
-                        }
-                        else
-                        {
-                            invisiableFeatures.Add(feature);
-                        }
-                    }
-                    else
-                    {
-                        invisiableFeatures.Add(feature);
-                    }
-                }
-
-                featureLayer.SetFeaturesVisible(visiableFeatures, true);
-                featureLayer.SetFeaturesVisible(invisiableFeatures, false);
+                layer.Layer.DefinitionExpression = "";
             }
             else
             {
-                featureLayer.SetFeaturesVisible(await layer.GetAllFeaturesAsync(), true);
+                layer.Layer.DefinitionExpression = $"{Parameters.DateFieldName} >= date '{layer.TimeExtent.From:yyyy-MM-dd}' and {Parameters.DateFieldName} <= date '{layer.TimeExtent.To:yyyy-MM-dd}'";
             }
         }
 
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public static async Task CoordinateTransformateAsync(this IEditableLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
         {
             if (source == target)
@@ -271,6 +259,13 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
         }
 
+        /// <summary>
+        /// 合并
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <param name="layerCollection"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public static async Task<ShapefileMapLayerInfo> UnionAsync(IEnumerable<MapLayerInfo> layers, MapLayerCollection layerCollection)
         {
             if (layers == null || !layers.Any())

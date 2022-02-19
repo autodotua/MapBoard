@@ -25,7 +25,7 @@ namespace MapBoard.IO
                 FolderPaths.SwitchToNewDataPath();
             }
             var tempDir = PathUtility.GetTempDir().FullName;
-            ZipFile.ExtractToDirectory(path, tempDir);
+            await Task.Run(() => ZipFile.ExtractToDirectory(path, tempDir));
             var configPath = Path.Combine(tempDir, MapLayerCollection.LayersFileName);
             if (!File.Exists(configPath))
             {
