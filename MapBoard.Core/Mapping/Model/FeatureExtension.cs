@@ -31,10 +31,6 @@ namespace MapBoard.Mapping.Model
         public static Feature Clone(this Feature feature, EditableLayerInfo layer)
         {
             IEnumerable<FieldInfo> fields = layer.Fields;
-            if (layer is IHasDefaultFields)
-            {
-                fields = fields.IncludeDefaultFields();
-            }
             return feature.Clone(layer, fields.ToDictionary(p => p.Name));
         }
 

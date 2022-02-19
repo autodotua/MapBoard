@@ -19,11 +19,7 @@ namespace MapBoard.Model
 
         public bool Bold { get; set; }
 
-        public bool Class { get; set; }
-
-        public string CustomLabelExpression { get; set; }
-
-        public bool Date { get; set; }
+        public string Expression { get; set; }
 
         public Color FontColor { get; set; } = Color.Black;
 
@@ -35,8 +31,6 @@ namespace MapBoard.Model
 
         public double HaloWidth { get; set; } = 3;
 
-        public bool Info { get; set; } = true;
-
         public bool Italic { get; set; }
 
         public int Layout { get; set; } = 0;
@@ -46,8 +40,6 @@ namespace MapBoard.Model
             get => minScale;
             set => minScale = value >= 0 ? value : 0;
         }
-
-        public bool NewLine { get; set; }
 
         public Color OutlineColor { get; set; } = Color.Transparent;
 

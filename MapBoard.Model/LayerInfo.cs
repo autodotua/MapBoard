@@ -19,7 +19,7 @@ namespace MapBoard.Model
         public string DefinitionExpression { get; set; } = "";
         public LayerDisplay Display { get; set; } = new LayerDisplay();
 
-        public FieldInfo[] Fields
+        public virtual FieldInfo[] Fields
         {
             get
             {
@@ -41,7 +41,7 @@ namespace MapBoard.Model
         public string Name { get; set; }
 
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
-        public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
+        public UniqueValueRendererInfo Symbols { get; set; } = new UniqueValueRendererInfo();
 
         [JsonProperty]
         public virtual string Type { get; protected set; }

@@ -62,27 +62,6 @@
                 多边形
             </RadioButton>
         </Grid>
-        <TextBlock>默认字段：</TextBlock>
-        <DataGrid
-            Grid.Row="2"
-            AutoGenerateColumns="False"
-            ItemsSource="{Binding StaticFields}">
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Binding="{Binding Name}"
-                    Header="字段名"
-                    IsReadOnly="True" />
-                <DataGridTextColumn
-                    Binding="{Binding DisplayName}"
-                    Header="别名"
-                    IsReadOnly="True" />
-                <DataGridTextColumn
-                    Binding="{Binding Type, Converter={StaticResource DescriptionConverter}, Mode=OneTime}"
-                    Header="类型"
-                    IsReadOnly="True" />
-            </DataGrid.Columns>
-        </DataGrid>
-        <TextBlock>自定义字段：</TextBlock>
 
         <DataGrid
             x:Name="dg"
@@ -90,7 +69,7 @@
             MaxHeight="200"
             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             AutoGenerateColumns="False"
-            CellEditEnding="dg_CellEditEnding"
+            CellEditEnding="CellEditEnding"
             ItemsSource="{Binding Fields}">
             <DataGrid.Columns>
                 <DataGridTextColumn
@@ -126,6 +105,14 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        <Button HorizontalAlignment="Right" Content="添加默认字段">
+            <ui:FlyoutService.Flyout>
+                <ui:MenuFlyout>
+                    <MenuItem Header="创建时间" Click="CreateTimeMenuItem_Click" />
+                    <MenuItem Header="修改时间" Click="ModifiedTimeMenuItem_Click" />
+                </ui:MenuFlyout>
+            </ui:FlyoutService.Flyout>
+        </Button>
         <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>

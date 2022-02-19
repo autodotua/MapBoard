@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public class TempMapLayerInfo : EditableLayerInfo, IHasDefaultFields, ICanChangeField, ICanChangeGeometryType
+    public class TempMapLayerInfo : EditableLayerInfo, ICanChangeField, ICanChangeGeometryType
     {
         private FeatureCollectionLayer featureCollectionLayer;
 
@@ -30,7 +30,7 @@ namespace MapBoard.Mapping.Model
             Fields = fields.ToArray();
         }
 
-        public async override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             this.Name = newName;
             await Task.Yield();
@@ -47,7 +47,7 @@ namespace MapBoard.Mapping.Model
             {
                 type = GeometryType.Polyline;
             }
-            var fields = Fields?.IncludeDefaultFields()?.ToEsriFields();
+            var fields = Fields?.ToEsriFields();
             FeatureCollectionTable table = new FeatureCollectionTable(fields, type, SpatialReferences.Wgs84);
             FeatureCollection collection = new FeatureCollection(new[] { table });
             featureCollectionLayer = new FeatureCollectionLayer(collection);

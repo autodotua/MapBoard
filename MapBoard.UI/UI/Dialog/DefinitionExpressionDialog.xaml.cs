@@ -27,9 +27,11 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
             Title = "筛选显示图形 - " + layer.Name;
             Expression = layer.DefinitionExpression;
+            throw new NotImplementedException();
         }
 
         public string Expression { get; set; }
+        public string DateFieldName { get; set; }
 
         public static DefinitionExpressionDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
         {
@@ -50,7 +52,7 @@ namespace MapBoard.UI.Dialog
             DateRangeDialog dialog = new DateRangeDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                Expression = $"{Parameters.DateFieldName} >= date '{dialog.From:yyyy-MM-dd}' and {Parameters.DateFieldName} <= date '{dialog.To:yyyy-MM-dd}'";
+                Expression = $"{DateFieldName} >= date '{dialog.From:yyyy-MM-dd}' and {DateFieldName} <= date '{dialog.To:yyyy-MM-dd}'";
             }
         }
 

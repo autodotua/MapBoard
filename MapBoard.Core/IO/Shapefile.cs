@@ -153,11 +153,9 @@ namespace MapBoard.IO
             else
             {
                 fields = fields
-                    .Where(p => p.Name.ToLower() != "fid")
-                    .Where(p => p.Name.ToLower() != "id")
+                    .Where(p => !p.IsIdField())
                     .Where(p => p.Name.ToLower() != "shape_leng")
-                    .Where(p => p.Name.ToLower() != "shape_area")
-                    .IncludeDefaultFields();
+                    .Where(p => p.Name.ToLower() != "shape_area");
                 if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
                       || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
                 {
@@ -197,9 +195,6 @@ namespace MapBoard.IO
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await table.LoadAsync();
-            bool label = table.Fields.Any(p => p.Name == Parameters.LabelFieldName && p.FieldType == FieldType.Text);
-            bool date = table.Fields.Any(p => p.Name == Parameters.DateFieldName && p.FieldType == FieldType.Date);
-            bool key = table.Fields.Any(p => p.Name == Parameters.ClassFieldName && p.FieldType == FieldType.Text);
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
             var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
             ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,

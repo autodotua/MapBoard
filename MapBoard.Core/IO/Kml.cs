@@ -62,15 +62,18 @@ namespace MapBoard.IO
                         placemark.Attributes.AddOrSetValue(p.Key, p.Value);
                     }
                     placemark.Style = new KmlStyle();
-                    SymbolInfo symbol;
-                    var c = feature.Attributes[Parameters.ClassFieldName] as string;
-                    if (!string.IsNullOrEmpty(c) && layer.Symbols.ContainsKey(c))
+                    SymbolInfo symbol = null;
+                    if (layer.Symbols.HasCustomSymbols)
                     {
-                        symbol = layer.Symbols[c];
+                        var c = feature.Attributes[layer.Symbols.KeyFieldName] as string;
+                        if (!string.IsNullOrEmpty(c) && layer.Symbols.ContainsKey(c))
+                        {
+                            symbol = layer.Symbols[c];
+                        }
                     }
-                    else
+                    if (symbol == null)
                     {
-                        symbol = layer.Symbols[""];
+                        symbol = layer.Symbols.DefaultSymbol;
                     }
                     switch (layer.GeometryType)
                     {
@@ -95,27 +98,6 @@ namespace MapBoard.IO
                                 placemark.Style.PolygonStyle.IsOutlined = false;
                             }
                             break;
-                    }
-                    if (layer.Labels!=null&& layer.Labels.Length == 1)
-                    {
-                        var label = layer.Labels[0];
-                        if (string.IsNullOrEmpty(label.CustomLabelExpression) && (label.Info || label.Class || label.Date))
-                        {
-                            List<string> labels = new List<string>();
-                            if (label.Info)
-                            {
-                                labels.Add(feature.GetAttributeValue(Parameters.LabelFieldName).ToString());
-                            }
-                            if (label.Class)
-                            {
-                                labels.Add(feature.GetAttributeValue(Parameters.ClassFieldName).ToString());
-                            }
-                            if (label.Date && feature.GetAttributeValue(Parameters.DateFieldName) is DateTimeOffset dto)
-                            {
-                                labels.Add(dto.DateTime.ToString());
-                            }
-                            placemark.Name = string.Join(label.NewLine ? '\n' : ' ', labels);
-                        }
                     }
                     placemark.Description = string.Join('\n', feature.Attributes.Select(p => $"{p.Key}：{p.Value}"));
                     nodes.Add(placemark);

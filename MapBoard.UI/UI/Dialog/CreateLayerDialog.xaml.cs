@@ -132,6 +132,35 @@ namespace MapBoard.UI.Dialog
             throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
         }
 
+        private void CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                if (e.Column.DisplayIndex == 0)
+                {
+                    var field = e.Row.Item as FieldInfo;
+                    if (string.IsNullOrEmpty(field.DisplayName))
+                    {
+                        field.DisplayName = field.Name;
+                    }
+                }
+            }
+            HashSet<string> names = new HashSet<string>();
+            HashSet<string> displayNames = new HashSet<string>();
+            foreach (var field in Fields)
+            {
+                if (field.DisplayName.Length * field.Name.Length == 0
+                    && field.Name.Length + field.DisplayName.Length > 0
+                    || !displayNames.Add(field.DisplayName)
+                    || !names.Add(field.Name))
+                {
+                    IsPrimaryButtonEnabled = false;
+                    return;
+                }
+            }
+            IsPrimaryButtonEnabled = true;
+        }
+
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
         }
@@ -201,36 +230,20 @@ namespace MapBoard.UI.Dialog
             IsEnabled = true;
         }
 
-        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        private void CreateTimeMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (e.EditAction == DataGridEditAction.Commit)
+            if (!Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
             {
-                if (e.Column.DisplayIndex == 0)
-                {
-                    var field = e.Row.Item as FieldInfo;
-                    if (string.IsNullOrEmpty(field.DisplayName))
-                    {
-                        field.DisplayName = field.Name;
-                    }
-                }
+                Fields.Add(FieldExtension.CreateTimeField);
             }
-            HashSet<string> names = new HashSet<string>();
-            HashSet<string> displayNames = new HashSet<string>();
-            foreach (var field in Fields)
+        }
+
+        private void ModifiedTimeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName))
             {
-                if (field.Name == Parameters.ClassFieldName
-                    || field.Name == Parameters.LabelFieldName
-                    || field.Name == Parameters.DateFieldName
-                    || field.DisplayName.Length * field.Name.Length == 0
-                    && field.Name.Length + field.DisplayName.Length > 0
-                    || !displayNames.Add(field.DisplayName)
-                    || !names.Add(field.Name))
-                {
-                    IsPrimaryButtonEnabled = false;
-                    return;
-                }
+                Fields.Add(FieldExtension.ModifiedTimeField);
             }
-            IsPrimaryButtonEnabled = true;
         }
     }
 }

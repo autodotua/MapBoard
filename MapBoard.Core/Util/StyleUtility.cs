@@ -32,22 +32,16 @@ namespace MapBoard.Util
                 case null:
                     {
                         UniqueValueRenderer renderer = new UniqueValueRenderer();
-                        renderer.FieldNames.Add(Parameters.ClassFieldName);
-
-                        foreach (var info in layer.Symbols)
+                        if (layer.Symbols.HasCustomSymbols)
                         {
-                            var key = info.Key;
-                            var symbolInfo = info.Value;
+                            renderer.FieldNames.Add(layer.Symbols.KeyFieldName);
 
-                            if (key.Length == 0)
+                            foreach (var info in layer.Symbols)
                             {
-                                renderer.DefaultSymbol = symbolInfo.ToSymbol(layer.GeometryType);
-                            }
-                            else
-                            {
-                                renderer.UniqueValues.Add(new UniqueValue(key, key, symbolInfo.ToSymbol(layer.GeometryType), key));
+                                renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), info.Key));
                             }
                         }
+                        renderer.DefaultSymbol = layer.Symbols.DefaultSymbol.ToSymbol(layer.GeometryType);
                         layer.Layer.Renderer = renderer;
                     }
                     break;
@@ -110,7 +104,7 @@ namespace MapBoard.Util
 
         public static LabelDefinition GetLabelDefinition(this LabelInfo label)
         {
-            var exp = new ArcadeLabelExpression(label.GetExpression());
+            var exp = new ArcadeLabelExpression(label.Expression);
             TextSymbol symbol = new TextSymbol()
             {
                 HaloColor = label.HaloColor,
@@ -135,58 +129,6 @@ namespace MapBoard.Util
                 FeatureBoundaryOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
             };
             return labelDefinition;
-        }
-
-        private static string GetExpression(this LabelInfo label)
-        {
-            if (!string.IsNullOrEmpty(label.CustomLabelExpression))
-            {
-                return label.CustomLabelExpression;
-            }
-            string l = Parameters.LabelFieldName;
-            string d = Parameters.DateFieldName;
-            string c = Parameters.ClassFieldName;
-
-            string newLine = $@"
-if({label.NewLine})
-{{
-    exp=exp+'\n';
-}}
-else
-{{
-    exp=exp+'    ';
-}}
-";
-            string exp = $@"
-var exp='';
-if({label.Info}&&$feature.{ l}!='')
-{{
-    exp=exp+$feature.{ l};
-    {newLine}
-}}
-if({label.Date})
-{{
-if($feature.{ d}!=null)
-{{
-    exp=exp+Year($feature.{d})+'-'+(Month($feature.{d})+1)+'-'+Day($feature.{d});
-    {newLine}
-}}
-}}
-if({label.Class}&&$feature.{ c}!='')
-{{
-    exp=exp+$feature.{ c};
-    {newLine}
-}}
-if({label.NewLine})
-{{
-    exp=Left(exp,Count(exp)-1);
-}}
-else
-{{
-    exp=Left(exp,Count(exp)-4);
-}}
-exp";
-            return exp;
         }
     }
 }

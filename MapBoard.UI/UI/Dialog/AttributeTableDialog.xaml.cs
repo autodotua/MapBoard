@@ -83,7 +83,7 @@ namespace MapBoard.UI.Dialog
                 s.FeaturesChanged += Layer_FeaturesChanged;
             }
             //将属性加入DataGrid中
-            var fields = Layer.Fields.IncludeDefaultFields().ToList();
+            var fields = Layer.Fields.ToList();
             int column = 0;
             foreach (var field in Attributes[0].All)
             {

@@ -1,4 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Model;
 using System;
 using System.Collections.Generic;
@@ -11,26 +12,44 @@ namespace MapBoard.Mapping.Model
 {
     public static class FieldExtension
     {
-        public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
+        //public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
+        //{
+        //    if (!fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+        //    {
+        //        yield return CreateTimeField;
+        //    }
+        //    if (!fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName))
+        //    {
+        //        yield return ModifiedTimeField;
+        //    }
+        //    foreach (var field in fields)
+        //    {
+        //        yield return field;
+        //    }
+        //}
+
+        public static bool IsIdField(this Field field)
         {
-            if (!fields.Any(p => p.Name == Parameters.LabelFieldName))
+            return field.Name.ToLower() == "fid";
+            //暂时不考虑GID、ID、ObjectID
+        }
+
+        public static bool IsIdField(this FieldInfo field)
+        {
+            return field.Name.ToLower() == "fid";
+            //暂时不考虑GID、ID、ObjectID
+        }
+
+        public static IEnumerable<FieldInfo> SyncWithSource(FieldInfo[] fields, FeatureTable table)
+        {
+            foreach (var esriField in table.Fields.Where(p => !p.IsIdField()))
             {
-                yield return LabelField;
-            }
-            if (!fields.Any(p => p.Name == Parameters.DateFieldName))
-            {
-                yield return DateField;
-            }
-            if (!fields.Any(p => p.Name == Parameters.ClassFieldName))
-            {
-                yield return ClassField;
-            }
-            if (!fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
-            {
-                yield return CreateTimeField;
-            }
-            foreach (var field in fields)
-            {
+                var oldField = fields.FirstOrDefault(p => p.Name == esriField.Name);
+                var field = esriField.ToFieldInfo();
+                if (oldField != null)
+                {
+                    field.DisplayName = oldField.DisplayName;
+                }
                 yield return field;
             }
         }
@@ -80,6 +99,7 @@ namespace MapBoard.Mapping.Model
                 yield return field.ToEsriField();
             }
         }
+
         /// <summary>
         /// 从ArcGISRuntime到FiledInfo
         /// </summary>
@@ -102,32 +122,14 @@ namespace MapBoard.Mapping.Model
 
         public static FieldInfo ToFieldInfo(this Field field)
         {
-            FieldInfoType type;
-            switch ((int)field.FieldType)
+            var type = (int)field.FieldType switch
             {
-                case (int)FieldType.OID:
-                case (int)FieldType.Int16:
-                case (int)FieldType.Int32:
-                case 2:
-                    type = FieldInfoType.Integer;
-                    break;
-
-                case (int)FieldType.Float32:
-                case (int)FieldType.Float64:
-                    type = FieldInfoType.Float;
-                    break;
-
-                case (int)FieldType.Date:
-                    type = FieldInfoType.Date;
-                    break;
-
-                case (int)FieldType.Text:
-                    type = FieldInfoType.Text;
-                    break;
-
-                default:
-                    throw new NotSupportedException();
-            }
+                (int)FieldType.OID or (int)FieldType.Int16 or (int)FieldType.Int32 or 2 => FieldInfoType.Integer,
+                (int)FieldType.Float32 or (int)FieldType.Float64 => FieldInfoType.Float,
+                (int)FieldType.Date => FieldInfoType.Date,
+                (int)FieldType.Text => FieldInfoType.Text,
+                _ => throw new NotSupportedException(),
+            };
             string name = field.Name;
             //对不符合要求的字段名进行转换
             if (!Regex.IsMatch(name[0].ToString(), "[a-zA-Z]")
@@ -162,10 +164,8 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public static FieldInfo[] DefaultFields => new[] { LabelField, DateField, ClassField, CreateTimeField };
-        public static readonly FieldInfo LabelField = new FieldInfo(Parameters.LabelFieldName, "标签", FieldInfoType.Text);
-        public static readonly FieldInfo DateField = new FieldInfo(Parameters.DateFieldName, "日期", FieldInfoType.Date);
-        public static readonly FieldInfo ClassField = new FieldInfo(Parameters.ClassFieldName, "分类", FieldInfoType.Text);
-        public static readonly FieldInfo CreateTimeField = new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+        public static FieldInfo[] DefaultFields => new[] { CreateTimeField, ModifiedTimeField };
+        public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+        public static FieldInfo ModifiedTimeField => new FieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
     }
 }

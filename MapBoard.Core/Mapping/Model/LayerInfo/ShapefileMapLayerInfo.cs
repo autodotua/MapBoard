@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
-    public class ShapefileMapLayerInfo : EditableLayerInfo, IHasDefaultFields, IFileBasedLayer
+    public class ShapefileMapLayerInfo : EditableLayerInfo, IFileBasedLayer
     {
         public ShapefileMapLayerInfo() : base()
         {

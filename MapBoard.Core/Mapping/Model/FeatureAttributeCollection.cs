@@ -27,16 +27,6 @@ namespace MapBoard.Mapping.Model
 
         public IReadOnlyList<FeatureAttribute> All => all.AsReadOnly();
 
-        public DateTime? Date
-        {
-            get => all.FirstOrDefault(p => p.Name == Parameters.DateFieldName)?.DateValue;
-            set
-            {
-                var item = all.First(p => p.Name == Parameters.DateFieldName);
-                item.DateValue = value;
-            }
-        }
-
         [JsonIgnore]
         public Feature Feature { get; set; }
 
@@ -54,34 +44,11 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public string Key
-        {
-            get => all.FirstOrDefault(p => p.Name == Parameters.ClassFieldName)?.TextValue;
-            set
-            {
-                var item = all.First(p => p.Name == Parameters.ClassFieldName);
-                item.TextValue = value;
-            }
-        }
-
-        public string Label
-        {
-            get => all.FirstOrDefault(p => p.Name == Parameters.LabelFieldName)?.TextValue;
-            set
-            {
-                var item = all.First(p => p.Name == Parameters.LabelFieldName);
-                item.TextValue = value;
-            }
-        }
-
         public IReadOnlyList<FeatureAttribute> Others => others.AsReadOnly();
 
         public static FeatureAttributeCollection Empty(ILayerInfo layer)
         {
             var attributes = new FeatureAttributeCollection();
-            attributes.all.Add(new FeatureAttribute(FieldExtension.LabelField, null));
-            attributes.all.Add(new FeatureAttribute(FieldExtension.ClassField, null));
-            attributes.all.Add(new FeatureAttribute(FieldExtension.DateField, null));
 
             foreach (var field in layer.Fields)
             {
@@ -99,25 +66,26 @@ namespace MapBoard.Mapping.Model
                 Feature = feature
             };
 
-            if (feature.Attributes.ContainsKey(Parameters.LabelFieldName))
-            {
-                attributes.all.Add(new FeatureAttribute(FieldExtension.LabelField, feature.Attributes[Parameters.LabelFieldName] as string));
-            }
-            if (feature.Attributes.ContainsKey(Parameters.ClassFieldName))
-            {
-                attributes.all.Add(new FeatureAttribute(FieldExtension.ClassField, feature.Attributes[Parameters.ClassFieldName] as string));
-            }
-            if (feature.Attributes.ContainsKey(Parameters.DateFieldName))
-            {
-                attributes.all.Add(new FeatureAttribute(FieldExtension.DateField, (feature.Attributes[Parameters.DateFieldName] as DateTimeOffset?)?.UtcDateTime));
-            }
             if (feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName))
             {
                 var createTimeString = feature.Attributes[Parameters.CreateTimeFieldName] as string;
                 DateTime? createTime = null;
                 try
                 {
-                    createTime = string.IsNullOrEmpty(createTimeString) ? (DateTime?)null : DateTime.Parse(createTimeString);
+                    createTime = string.IsNullOrEmpty(createTimeString) ? null : DateTime.Parse(createTimeString);
+                }
+                catch
+                {
+                }
+                attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
+            }
+            if (feature.Attributes.ContainsKey(Parameters.ModifiedTimeFieldName))
+            {
+                var createTimeString = feature.Attributes[Parameters.ModifiedTimeFieldName] as string;
+                DateTime? createTime = null;
+                try
+                {
+                    createTime = string.IsNullOrEmpty(createTimeString) ? null : DateTime.Parse(createTimeString);
                 }
                 catch
                 {
@@ -125,7 +93,7 @@ namespace MapBoard.Mapping.Model
                 attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
             }
 
-            foreach (var attr in feature.Attributes.GetCustomAttributes())
+            foreach (var attr in feature.Attributes.Where(p => p.Key is not "FID" or "ObjectID" or Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName))
             {
                 FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))

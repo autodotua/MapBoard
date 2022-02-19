@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using FieldInfo = MapBoard.Model.FieldInfo;
 
 namespace MapBoard.Mapping.Model
 {
@@ -38,6 +39,22 @@ namespace MapBoard.Mapping.Model
            {
                cfg.CreateMap<LayerInfo, MapLayerInfo>();
            }).CreateMapper().Map(layer, this);
+        }
+
+        private FieldInfo[] fields = null;
+
+        public override FieldInfo[] Fields
+        {
+            get
+            {
+                if (fields == null)
+                {
+                    fields = FieldExtension.SyncWithSource(base.Fields, table).ToArray();
+                    base.Fields = fields;
+                }
+                return fields;
+            }
+            set => base.Fields = value;
         }
 
         public event EventHandler Unattached;

@@ -38,12 +38,12 @@ namespace MapBoard.Model
         /// <summary>
         /// 符号系统
         /// </summary>
-        Dictionary<string, SymbolInfo> Symbols { get; set; }
+        UniqueValueRendererInfo Symbols { get; set; }
 
         /// <summary>
         /// 时间范围
         /// </summary>
-        string DefinitionExpression { get; set; } 
+        string DefinitionExpression { get; set; }
 
         /// <summary>
         /// 图层的类型

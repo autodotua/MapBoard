@@ -86,8 +86,7 @@ namespace MapBoard.Mapping.Model
         public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
         {
             ThrowIfNotEditable();
-            Dictionary<string, FieldInfo> key2Field = (this is IHasDefaultFields ? Fields.IncludeDefaultFields() : Fields)
-                .ToDictionary(p => p.Name);
+            Dictionary<string, FieldInfo> key2Field = Fields.ToDictionary(p => p.Name);
 
             //为了避免出现问题，改成了强制重建，经测试用不了多长时间
             if (true || rebuildFeature)

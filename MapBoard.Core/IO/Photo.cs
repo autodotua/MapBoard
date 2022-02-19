@@ -75,12 +75,14 @@ namespace MapBoard.IO
 
         public static async Task ImportImageLocation(IEnumerable<string> files, MapLayerCollection layers)
         {
-            string addressField = "Addr";
-            string timeField = "Time";
+            string nameField = "name";
+            string addressField = "address";
+            string timeField = "time";
             var fields = new[]
             {
-                      new FieldInfo(addressField,"照片位置",FieldInfoType.Text),
-                      new FieldInfo(addressField,"拍摄时间",FieldInfoType.Text),
+                      new FieldInfo(nameField,"名称",FieldInfoType.Text),
+                      new FieldInfo(addressField,"路径",FieldInfoType.Text),
+                      new FieldInfo(timeField,"拍摄时间",FieldInfoType.Text),
             };
             var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
@@ -97,10 +99,9 @@ namespace MapBoard.IO
                                 Dictionary<string, object> attr = new Dictionary<string, object>();
                                 if (info.Value.time.HasValue)
                                 {
-                                    attr.Add(Parameters.DateFieldName, info.Value.time);
                                     attr.Add(timeField, info.Value.time);
                                 }
-                                attr.Add(Parameters.LabelFieldName, Path.GetFileName(file));
+                                attr.Add(nameField, Path.GetFileName(file));
                                 attr.Add(addressField, file);
                                 var feature = layer.CreateFeature(attr, point);
                                 features.Add(feature);
