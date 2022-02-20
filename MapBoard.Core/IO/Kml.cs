@@ -73,7 +73,7 @@ namespace MapBoard.IO
                     }
                     if (symbol == null)
                     {
-                        symbol = layer.Renderer.DefaultSymbol;
+                        symbol = layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol();
                     }
                     switch (layer.GeometryType)
                     {

@@ -37,13 +37,13 @@ namespace MapBoard.Util
                                 renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), info.Key));
                             }
                         }
-                        renderer.DefaultSymbol = layer.Renderer.DefaultSymbol.ToSymbol(layer.GeometryType);
+                        renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);
                         layer.Layer.Renderer = renderer;
                     }
                     break;
 
                 case MapLayerInfo.Types.WFS:
-                    layer.Layer.Renderer = new SimpleRenderer(layer.Renderer.DefaultSymbol.ToSymbol(layer.GeometryType));
+                    layer.Layer.Renderer = new SimpleRenderer((layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType));
                     break;
 
                 default:

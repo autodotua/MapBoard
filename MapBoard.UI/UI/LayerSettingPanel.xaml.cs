@@ -117,7 +117,7 @@ namespace MapBoard.UI
                 Label = Labels.Count > 0 ? Labels[0] : null;
 
                 Keys.Clear();
-                Keys.Add(new KeySymbolPair(defaultKeyName, layer.Renderer.DefaultSymbol));
+                Keys.Add(new KeySymbolPair(defaultKeyName, layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()));
                 foreach (var symbol in layer.Renderer.Symbols)
                 {
                     Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));

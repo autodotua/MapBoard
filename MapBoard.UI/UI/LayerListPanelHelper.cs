@@ -237,7 +237,7 @@ namespace MapBoard.UI
             MenuItem item = new MenuItem() { Header = header };
             if (isChecked.HasValue)
             {
-                item.IsCheckable = true;
+                item.IsCheckable = isChecked.Value;//没开的时候也没必要设置可选择了
                 item.IsChecked = isChecked.Value;
             }
             item.Click += async (p1, p2) =>

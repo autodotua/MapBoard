@@ -9,6 +9,7 @@
     Title="请选择日期范围"
     CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    IsPrimaryButtonEnabled="False"
     PrimaryButtonText="确定"
     mc:Ignorable="d">
     <Grid
@@ -16,17 +17,31 @@
         Margin="8"
         HorizontalAlignment="Center"
         VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="8" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
+        <ComboBox
+            Grid.ColumnSpan="99"
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="日期字段"
+            ItemsSource="{Binding Fields}"
+            SelectedItem="{Binding Field}"
+            DisplayMemberPath="DisplayName"
+            SelectionChanged="SelectionChanged" />
         <DatePicker
+            Grid.Row="2"
             HorizontalAlignment="Stretch"
             ui:ControlHelper.Header="开始时间"
             SelectedDate="{Binding From}" />
         <DatePicker
+            Grid.Row="2"
             Grid.Column="2"
             HorizontalAlignment="Stretch"
             ui:ControlHelper.Header="结束时间"

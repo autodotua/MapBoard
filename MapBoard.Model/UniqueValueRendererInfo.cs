@@ -13,7 +13,7 @@ namespace MapBoard.Model
         [JsonIgnore]
         public int Count => Symbols.Count;
 
-        public SymbolInfo DefaultSymbol { get; set; } = new SymbolInfo();
+        public SymbolInfo DefaultSymbol { get; set; }
 
         [JsonIgnore]
         public bool HasCustomSymbols => !string.IsNullOrEmpty(KeyFieldName) && Symbols.Count > 0;

@@ -114,7 +114,7 @@ namespace MapBoard.UI.Dialog
                         path = nameof(field.TextValue);
                         break;
                 }
-                binding.Path = new PropertyPath($"All[{column}].{path}");
+                binding.Path = new PropertyPath($"{nameof(FeatureAttributeCollection.Attributes)}[{column}].{path}");
                 dg.Columns.Add(new DataGridTextColumn()
                 {
                     Header = field.DisplayName,

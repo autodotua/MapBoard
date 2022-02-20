@@ -36,7 +36,7 @@ namespace MapBoard.Model
         public LayerInteraction Interaction { get; set; } = new LayerInteraction();
         public LabelInfo[] Labels { get; set; }
 
-        public virtual bool LayerVisible { get; set; }
+        public virtual bool LayerVisible { get; set; }=true;
 
         public string Name { get; set; }
 

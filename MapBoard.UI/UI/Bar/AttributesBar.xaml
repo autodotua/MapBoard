@@ -30,7 +30,7 @@
             CanUserDeleteRows="False"
             DataGridCell.Selected="DataGridCell_Selected"
             HeadersVisibility="Column"
-            ItemsSource="{Binding Attributes.All}"
+            ItemsSource="{Binding Attributes.Attributes}"
             PreviewKeyDown="dataGrid_PreviewKeyDown"
             SelectionMode="Single"
             SelectionUnit="Cell">
@@ -45,7 +45,12 @@
                                 VerticalAlignment="Center"
                                 Text="{Binding DisplayName}">
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="{Binding Type, Converter={StaticResource DescriptionConverter}}" />
+                                    <ui:SimpleStackPanel
+                                        Orientation="Vertical"
+                                        Spacing="8">
+                                        <TextBlock Text="{Binding Type, Converter={StaticResource DescriptionConverter}, StringFormat={}类型：{0}}" />
+                                        <TextBlock Text="{Binding Name, StringFormat={}字段名：{0}}" />
+                                    </ui:SimpleStackPanel>
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </DataTemplate>

@@ -77,12 +77,14 @@ namespace MapBoard.IO
         {
             string nameField = "name";
             string addressField = "address";
+            string dateField = "date";
             string timeField = "time";
             var fields = new[]
             {
                       new FieldInfo(nameField,"名称",FieldInfoType.Text),
                       new FieldInfo(addressField,"路径",FieldInfoType.Text),
-                      new FieldInfo(timeField,"拍摄时间",FieldInfoType.Text),
+                      new FieldInfo(dateField,"拍摄日期",FieldInfoType.Date),
+                      new FieldInfo(timeField,"拍摄时间",FieldInfoType.Time),
             };
             var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
@@ -99,7 +101,8 @@ namespace MapBoard.IO
                                 Dictionary<string, object> attr = new Dictionary<string, object>();
                                 if (info.Value.time.HasValue)
                                 {
-                                    attr.Add(timeField, info.Value.time);
+                                    attr.Add(dateField, info.Value.time.Value);
+                                    attr.Add(timeField, info.Value.time.Value.ToString(Parameters.TimeFormat));
                                 }
                                 attr.Add(nameField, Path.GetFileName(file));
                                 attr.Add(addressField, file);
