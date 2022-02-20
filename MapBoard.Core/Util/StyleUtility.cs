@@ -21,10 +21,6 @@ namespace MapBoard.Util
 
         private static void ApplyRenderer(this IMapLayerInfo layer)
         {
-            if (layer.Symbols.Count == 0 || !layer.Symbols.ContainsKey(""))
-            {
-                layer.Symbols.Add("", layer.GetDefaultSymbol());
-            }
             switch (layer.Type)
             {
                 case MapLayerInfo.Types.Shapefile:
@@ -32,22 +28,22 @@ namespace MapBoard.Util
                 case null:
                     {
                         UniqueValueRenderer renderer = new UniqueValueRenderer();
-                        if (layer.Symbols.HasCustomSymbols)
+                        if (layer.Renderer.HasCustomSymbols)
                         {
-                            renderer.FieldNames.Add(layer.Symbols.KeyFieldName);
+                            renderer.FieldNames.Add(layer.Renderer.KeyFieldName);
 
-                            foreach (var info in layer.Symbols)
+                            foreach (var info in layer.Renderer.Symbols)
                             {
                                 renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), info.Key));
                             }
                         }
-                        renderer.DefaultSymbol = layer.Symbols.DefaultSymbol.ToSymbol(layer.GeometryType);
+                        renderer.DefaultSymbol = layer.Renderer.DefaultSymbol.ToSymbol(layer.GeometryType);
                         layer.Layer.Renderer = renderer;
                     }
                     break;
 
                 case MapLayerInfo.Types.WFS:
-                    layer.Layer.Renderer = new SimpleRenderer(layer.Symbols[""].ToSymbol(layer.GeometryType));
+                    layer.Layer.Renderer = new SimpleRenderer(layer.Renderer.DefaultSymbol.ToSymbol(layer.GeometryType));
                     break;
 
                 default:

@@ -63,17 +63,17 @@ namespace MapBoard.IO
                     }
                     placemark.Style = new KmlStyle();
                     SymbolInfo symbol = null;
-                    if (layer.Symbols.HasCustomSymbols)
+                    if (layer.Renderer.HasCustomSymbols)
                     {
-                        var c = feature.Attributes[layer.Symbols.KeyFieldName] as string;
-                        if (!string.IsNullOrEmpty(c) && layer.Symbols.ContainsKey(c))
+                        var c = feature.Attributes[layer.Renderer.KeyFieldName] as string;
+                        if (!string.IsNullOrEmpty(c) && layer.Renderer.Symbols.ContainsKey(c))
                         {
-                            symbol = layer.Symbols[c];
+                            symbol = layer.Renderer.Symbols[c];
                         }
                     }
                     if (symbol == null)
                     {
-                        symbol = layer.Symbols.DefaultSymbol;
+                        symbol = layer.Renderer.DefaultSymbol;
                     }
                     switch (layer.GeometryType)
                     {

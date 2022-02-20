@@ -131,7 +131,6 @@ namespace MapBoard.UI
                 if (e.PropertyName == nameof(MapLayerCollection.Selected))
                 {
                     ResetDrawAndSelectButton();
-                    layerSettings.ResetLayerSettingUI();
                 }
             };
             ResetDrawAndSelectButton();

@@ -38,7 +38,7 @@ namespace MapBoard.Model
         /// <summary>
         /// 符号系统
         /// </summary>
-        UniqueValueRendererInfo Symbols { get; set; }
+        UniqueValueRendererInfo Renderer { get; set; }
 
         /// <summary>
         /// 时间范围

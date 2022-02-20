@@ -373,8 +373,8 @@
                                                 <Button
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Bottom"
-                                                    Content="清除"
                                                     Click="ClearKeyFieldButton_Click"
+                                                    Content="清除"
                                                     DockPanel.Dock="Right" />
                                                 <ComboBox
                                                     HorizontalAlignment="Stretch"
@@ -448,6 +448,7 @@
 
                         <TabControl
                             x:Name="tab"
+                            Height="200"
                             Background="Transparent"
                             DataContext="{Binding SelectedKey.Symbol}">
                             <TabControl.Resources>
@@ -459,7 +460,7 @@
                                 </Style>
                             </TabControl.Resources>
                             <TabItem Header="点">
-                                <Grid>
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="8" />
@@ -549,7 +550,7 @@
                                 </Grid>
                             </TabItem>
                             <TabItem Header="折线">
-                                <Grid>
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="8" />
@@ -616,7 +617,7 @@
                                 </Grid>
                             </TabItem>
                             <TabItem Header="折线">
-                                <Grid>
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="8" />
@@ -805,10 +806,6 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="8" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.Resources>
                                 <Style TargetType="{x:Type TextBlock}">
@@ -825,9 +822,33 @@
                                 </Style>
                             </Grid.Resources>
                             <TextBlock
-                                Grid.Row="0"
+                                VerticalAlignment="Center"
+                                Text="表达式" />
+                            <DockPanel
+                                Grid.Column="2"
+                                LastChildFill="True">
+                                <Button
+                                    Margin="12,0,0,0"
+                                    DockPanel.Dock="Right">
+                                    <ui:SymbolIcon Symbol="List" />
+                                    <ui:FlyoutService.Flyout>
+                                        <ui:MenuFlyout x:Name="menuFields" />
+                                    </ui:FlyoutService.Flyout>
+                                </Button>
+                                <TextBox
+                                    ui:ControlHelper.PlaceholderText="使用Arcade表达式&#10;不填写时，使用上方的模板"
+                                    AcceptsReturn="True"
+                                    AcceptsTab="True"
+                                    MinLines="3"
+                                    Text="{Binding Expression}" />
+                            </DockPanel>
+
+                            <TextBlock
+                                Grid.Row="2"
                                 Text="字体" />
-                            <Grid Grid.Column="2">
+                            <Grid
+                                Grid.Row="2"
+                                Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -861,10 +882,10 @@
                                 </ui:SimpleStackPanel>
                             </Grid>
                             <TextBlock
-                                Grid.Row="2"
+                                Grid.Row="4"
                                 Text="外描边" />
                             <Grid
-                                Grid.Row="2"
+                                Grid.Row="4"
                                 Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -878,10 +899,10 @@
                                     Text="{Binding HaloWidth}" />
                             </Grid>
                             <TextBlock
-                                Grid.Row="4"
+                                Grid.Row="6"
                                 Text="内描边" />
                             <Grid
-                                Grid.Row="4"
+                                Grid.Row="6"
                                 Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -895,19 +916,19 @@
                                     Text="{Binding OutlineWidth}" />
                             </Grid>
                             <TextBlock
-                                Grid.Row="6"
+                                Grid.Row="8"
                                 Text="背景" />
                             <component:ColorPickerTextBox
                                 x:Name="labelBackgroundColor"
-                                Grid.Row="6"
+                                Grid.Row="8"
                                 Grid.Column="2"
                                 ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
 
                             <TextBlock
-                                Grid.Row="8"
+                                Grid.Row="10"
                                 Text="最小比例" />
                             <Grid
-                                Grid.Row="8"
+                                Grid.Row="10"
                                 Grid.Column="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -925,10 +946,10 @@
                                     Tag="label" />
                             </Grid>
                             <TextBlock
-                                Grid.Row="10"
+                                Grid.Row="12"
                                 Text="布局" />
                             <ComboBox
-                                Grid.Row="10"
+                                Grid.Row="12"
                                 Grid.Column="2"
                                 HorizontalAlignment="Stretch"
                                 SelectedIndex="{Binding Layout}">
@@ -940,7 +961,7 @@
                             </ComboBox>
 
                             <Grid
-                                Grid.Row="16"
+                                Grid.Row="14"
                                 Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -954,53 +975,7 @@
                                     允许重叠显示
                                 </CheckBox>
                             </Grid>
-                            <TextBlock
-                                Grid.Row="12"
-                                VerticalAlignment="Center"
-                                Text="显示内容" />
-                            <Grid
-                                Grid.Row="12"
-                                Grid.Column="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ComboBox
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center"
-                                    ui:ControlHelper.PlaceholderText="显示的内容"
-                                    SelectionChanged="ComboBox_SelectionChanged">
-                                    <CheckBox
-                                        Content="标签"
-                                        IsChecked="{Binding Info}" />
-                                    <CheckBox
-                                        Content="日期"
-                                        IsChecked="{Binding Date}" />
-                                    <CheckBox
-                                        Content="分类"
-                                        IsChecked="{Binding Class}" />
-                                </ComboBox>
-                                <CheckBox
-                                    Grid.Column="2"
-                                    Width="0"
-                                    Margin="0,0,-48,0"
-                                    VerticalAlignment="Center"
-                                    Content="换行"
-                                    IsChecked="{Binding NewLine}" />
-                            </Grid>
-                            <TextBlock
-                                Grid.Row="14"
-                                VerticalAlignment="Center"
-                                Text="自定义&#10;Arcade&#10;表达式" />
-                            <TextBox
-                                Grid.Row="14"
-                                Grid.Column="2"
-                                ui:ControlHelper.PlaceholderText="使用Arcade表达式&#10;不填写时，使用上方的模板"
-                                AcceptsReturn="True"
-                                AcceptsTab="True"
-                                MinLines="3"
-                                Text="{Binding CustomLabelExpression}" />
+
                         </Grid>
                     </StackPanel>
                 </Border>

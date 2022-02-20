@@ -69,7 +69,34 @@ namespace MapBoard.UI
         {
             MapView = mapView;
             ResetLayerSettingUI();
-            MapView.Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
+            Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
+            Layers.PropertyChanged += Layers_PropertyChanged;
+        }
+
+        private void Layers_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Layers.Selected))
+            {
+                ResetLayerSettingUI();
+            }
+        }
+
+        private void LoadLabelFieldsMenu()
+        {
+            menuFields.Items.Clear();
+            foreach (var field in Layers.Selected.Fields)
+            {
+                var item = new MenuItem()
+                {
+                    Tag = field.Name,
+                    Header = $"{field.DisplayName}（{field.Name}）"
+                };
+                item.Click += (s, e) =>
+                {
+                    Label.Expression = $"$feature.{(s as MenuItem).Tag as string}";
+                };
+                menuFields.Items.Add(item);
+            }
         }
 
         public void ResetLayerSettingUI()
@@ -90,15 +117,13 @@ namespace MapBoard.UI
                 Label = Labels.Count > 0 ? Labels[0] : null;
 
                 Keys.Clear();
-                foreach (var symbol in layer.Symbols)
+                Keys.Add(new KeySymbolPair(defaultKeyName, layer.Renderer.DefaultSymbol));
+                foreach (var symbol in layer.Renderer.Symbols)
                 {
-                    Keys.Add(new KeySymbolPair(symbol.Key.Length == 0 ? defaultKeyName : symbol.Key, symbol.Value));
-                }
-                if (!Keys.Any(p => p.Key == defaultKeyName))
-                {
-                    Keys.Add(new KeySymbolPair(defaultKeyName, MapView.Layers.Selected.GetDefaultSymbol()));
+                    Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
+                KeyField = layer.Fields.FirstOrDefault(p => p.Name == layer.Renderer.KeyFieldName);
                 btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
             }
             try
@@ -117,31 +142,30 @@ namespace MapBoard.UI
             {
                 tab.IsEnabled = false;
             }
+            LoadLabelFieldsMenu();
         }
 
         public async Task SetStyleFromUI()
         {
             var layer = Layers.Selected;
 
-            layer.Symbols.Clear();
-            layer.Symbols.KeyFieldName = KeyField?.Name;
+            layer.Renderer.Symbols.Clear();
+            layer.Renderer.KeyFieldName = KeyField?.Name;
             foreach (var keySymbol in Keys)
             {
                 if (keySymbol.Key == defaultKeyName)
                 {
-                    layer.Symbols.DefaultSymbol = keySymbol.Symbol;
+                    layer.Renderer.DefaultSymbol = keySymbol.Symbol;
                 }
                 else
                 {
-                    layer.Symbols.Add(keySymbol.Key == defaultKeyName ? "" : keySymbol.Key, keySymbol.Symbol);
+                    layer.Renderer.Symbols.Add(keySymbol.Key, keySymbol.Symbol);
                 }
             }
             layer.Labels = Labels.ToArray();
             string newName = LayerName;
             if (newName != layer.Name)
             {
-                int index = Layers.IndexOf(Layers.Selected);
-
                 if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
                     || newName.Length > 240 || newName.Length < 1)
                 {
@@ -312,8 +336,8 @@ namespace MapBoard.UI
 
         private void ClearKeyFieldButton_Click(object sender, RoutedEventArgs e)
         {
-            KeyField=null;
-            foreach (var key in Keys.Where(p=>p.Key!=defaultKeyName).ToList())
+            KeyField = null;
+            foreach (var key in Keys.Where(p => p.Key != defaultKeyName).ToList())
             {
                 Keys.Remove(key);
             }

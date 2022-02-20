@@ -157,9 +157,9 @@ namespace MapBoard.Util
         public static async Task SimpleBufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, double meters)
         {
             var template = EmptyMapLayerInfo.CreateTemplate();
-            foreach (var symbol in layer.Symbols)
+            foreach (var symbol in layer.Renderer.Symbols)
             {
-                template.Symbols.Add(symbol.Key, new SymbolInfo()
+                template.Renderer.Symbols.Add(symbol.Key, new SymbolInfo()
                 {
                     OutlineWidth = 0,
                     FillColor = symbol.Value.LineColor
@@ -195,9 +195,9 @@ namespace MapBoard.Util
             if (targetLayer == null)
             {
                 var template = EmptyMapLayerInfo.CreateTemplate();
-                foreach (var symbol in layer.Symbols)
+                foreach (var symbol in layer.Renderer.Symbols)
                 {
-                    template.Symbols.Add(symbol.Key, new SymbolInfo()
+                    template.Renderer.Symbols.Add(symbol.Key, new SymbolInfo()
                     {
                         OutlineWidth = 0,
                         FillColor = symbol.Value.LineColor

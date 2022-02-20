@@ -11,8 +11,8 @@ namespace MapBoard.Model
         public static SymbolInfo DefaultPointSymbol =>
             new SymbolInfo()
             {
-                Size = 12,
-                OutlineWidth = 2,
+                Size = 6,
+                OutlineWidth = 1,
                 FillColor = ColorTranslator.FromHtml("#FFE36C09"),
                 LineColor = ColorTranslator.FromHtml("#FFF2F2F2"),
             };
@@ -20,21 +20,21 @@ namespace MapBoard.Model
         public static SymbolInfo DefaultLineSymbol =>
             new SymbolInfo()
             {
-                OutlineWidth = 6,
+                OutlineWidth = 2,
                 LineColor = ColorTranslator.FromHtml("#BB12EDED"),
             };
 
         public static SymbolInfo DefaultPolygonSymbol =>
             new SymbolInfo()
             {
-                OutlineWidth = 4,
+                OutlineWidth = 2,
                 FillColor = ColorTranslator.FromHtml("#66008000"),
                 LineColor = ColorTranslator.FromHtml("#FF92CDDC"),
             };
 
         public double Size { get; set; } = 6;
 
-        public double OutlineWidth { get; set; } = 6;
+        public double OutlineWidth { get; set; } = 2;
 
         public Color LineColor { get; set; } = Color.Red;
 

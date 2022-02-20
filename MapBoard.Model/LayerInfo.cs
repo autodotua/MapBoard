@@ -41,7 +41,7 @@ namespace MapBoard.Model
         public string Name { get; set; }
 
         public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
-        public UniqueValueRendererInfo Symbols { get; set; } = new UniqueValueRendererInfo();
+        public UniqueValueRendererInfo Renderer { get; set; } = new UniqueValueRendererInfo();
 
         [JsonProperty]
         public virtual string Type { get; protected set; }
@@ -49,9 +49,9 @@ namespace MapBoard.Model
         public virtual object Clone()
         {
             LayerInfo layer = MemberwiseClone() as LayerInfo;
-            foreach (var key in Symbols.Keys.ToList())
+            foreach (var key in Renderer.Symbols.Keys.ToList())
             {
-                layer.Symbols[key] = Symbols[key].Clone() as SymbolInfo;
+                layer.Renderer.Symbols[key] = Renderer.Symbols[key].Clone() as SymbolInfo;
             }
             layer.fields = fields?.Select(p => p.Clone() as FieldInfo).ToArray();
             layer.Labels = Labels?.Select(p => p.Clone() as LabelInfo).ToArray();
