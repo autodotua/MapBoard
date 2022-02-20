@@ -49,6 +49,10 @@ namespace MapBoard.Mapping.Model
                 if (oldField != null)
                 {
                     field.DisplayName = oldField.DisplayName;
+                    if (field.Type == FieldInfoType.Text && oldField.Type == FieldInfoType.Time)
+                    {
+                        field.Type = FieldInfoType.Time;
+                    }
                 }
                 yield return field;
             }

@@ -27,26 +27,7 @@ namespace MapBoard.Mapping.Model
         {
         }
 
-        private void ThrowIfNotEditable()
-        {
-            if (!Interaction.CanEdit)
-            {
-                throw new NotSupportedException("当前图层被禁止编辑");
-            }
-        }
-
         public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
-
-        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
-            IEnumerable<Feature> deleted,
-            IEnumerable<UpdatedFeature> updated,
-            FeaturesChangedSource source)
-        {
-            this.Notify(nameof(NumberOfFeatures));
-            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
-            FeaturesChanged?.Invoke(this, h);
-            Histories.Add(h);
-        }
 
         [JsonIgnore]
         [IgnoreMap]
@@ -62,6 +43,7 @@ namespace MapBoard.Mapping.Model
         {
             ThrowIfNotEditable();
             Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
+            AddCreateTimeAttributeIfExistField(newFeature);
             await table.AddFeatureAsync(newFeature);
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
@@ -107,12 +89,28 @@ namespace MapBoard.Mapping.Model
                     if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
                         || feature.Attributes[Parameters.CreateTimeFieldName] == null)
                     {
-                        feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                        AddCreateTimeAttributeIfExistField(feature);
+                    }
+                    else
+                    {
+                        AddModifiedTimeAttributeIfExistField(feature);
                     }
                 }
                 await table.AddFeaturesAsync(features);
                 NotifyFeaturesChanged(features, null, null, source);
             }
+        }
+
+        public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
+        {
+            ThrowIfNotEditable();
+            return table.CreateFeature(attributes, geometry);
+        }
+
+        public Feature CreateFeature()
+        {
+            ThrowIfNotEditable();
+            return table.CreateFeature();
         }
 
         public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
@@ -132,6 +130,7 @@ namespace MapBoard.Mapping.Model
         public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
+            AddModifiedTimeAttributeIfExistField(feature.Feature);
             await table.UpdateFeatureAsync(feature.Feature);
             NotifyFeaturesChanged(null, null, new[] { feature }, source);
         }
@@ -139,20 +138,48 @@ namespace MapBoard.Mapping.Model
         public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
+            features.ForEach(feature => AddModifiedTimeAttributeIfExistField(feature.Feature));
             await table.UpdateFeaturesAsync(features.Select(p => p.Feature));
             NotifyFeaturesChanged(null, null, features, source);
         }
 
-        public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
+        private void AddCreateTimeAttributeIfExistField(Feature feature)
         {
-            ThrowIfNotEditable();
-            return table.CreateFeature(attributes, geometry);
+            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+            {
+                if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
+                        || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+                {
+                    feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                }
+            }
         }
 
-        public Feature CreateFeature()
+        private void AddModifiedTimeAttributeIfExistField(Feature feature)
         {
-            ThrowIfNotEditable();
-            return table.CreateFeature();
+            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+            {
+                feature.SetAttributeValue(Parameters.ModifiedTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+            }
+        }
+
+        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
+            IEnumerable<Feature> deleted,
+            IEnumerable<UpdatedFeature> updated,
+            FeaturesChangedSource source)
+        {
+            this.Notify(nameof(NumberOfFeatures));
+            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
+            FeaturesChanged?.Invoke(this, h);
+            Histories.Add(h);
+        }
+
+        private void ThrowIfNotEditable()
+        {
+            if (!Interaction.CanEdit)
+            {
+                throw new NotSupportedException("当前图层被禁止编辑");
+            }
         }
     }
 }

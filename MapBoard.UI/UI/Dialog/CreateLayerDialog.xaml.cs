@@ -33,7 +33,7 @@ namespace MapBoard.UI.Dialog
         private CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer, string layerType)
         {
             this.layerType = layerType;
-            StaticFields = FieldExtension.DefaultFields;
+            Fields.CollectionChanged += (s, e) => this.Notify(nameof(CanAddCreateTimeField), nameof(CanAddModifiedTimeField));
             InitializeComponent();
             if (layer != null)
             {
@@ -104,7 +104,8 @@ namespace MapBoard.UI.Dialog
 
         public string Message { get; set; }
 
-        public FieldInfo[] StaticFields { get; }
+        public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
+        public bool CanAddModifiedTimeField => !Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName);
 
         public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {

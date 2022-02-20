@@ -6,12 +6,12 @@
     xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="新建图层"
-    xmlns:m="clr-namespace:MapBoard"
     CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
@@ -105,11 +105,19 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Button HorizontalAlignment="Right" Content="添加默认字段">
+        <Button
+            HorizontalAlignment="Right"
+            Content="添加默认字段">
             <ui:FlyoutService.Flyout>
                 <ui:MenuFlyout>
-                    <MenuItem Header="创建时间" Click="CreateTimeMenuItem_Click" />
-                    <MenuItem Header="修改时间" Click="ModifiedTimeMenuItem_Click" />
+                    <MenuItem
+                        Click="CreateTimeMenuItem_Click"
+                        Header="创建时间"
+                        IsEnabled="{Binding CanAddCreateTimeField}" />
+                    <MenuItem
+                        Click="ModifiedTimeMenuItem_Click"
+                        Header="修改时间"
+                        IsEnabled="{Binding CanAddModifiedTimeField}" />
                 </ui:MenuFlyout>
             </ui:FlyoutService.Flyout>
         </Button>

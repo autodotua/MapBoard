@@ -58,29 +58,14 @@ namespace MapBoard.IO
 
         public static async Task CreateEgisShapefileAsync(GeometryType type, string name, string folder, IEnumerable<FieldInfo> fields)
         {
-            ShapeType egisType;
-            switch (type)
+            var egisType = type switch
             {
-                case GeometryType.Point:
-                    egisType = ShapeType.Point;
-                    break;
-
-                case GeometryType.Polyline:
-                    egisType = ShapeType.PolyLine;
-                    break;
-
-                case GeometryType.Polygon:
-                    egisType = ShapeType.Polygon;
-                    break;
-
-                case GeometryType.Multipoint:
-                    egisType = ShapeType.Point;
-                    break;
-
-                default:
-                    throw new NotSupportedException();
-            }
-
+                GeometryType.Point => ShapeType.Point,
+                GeometryType.Polyline => ShapeType.PolyLine,
+                GeometryType.Polygon => ShapeType.Polygon,
+                GeometryType.Multipoint => ShapeType.Point,
+                _ => throw new NotSupportedException(),
+            };
             List<DbfFieldDesc> egisFields = new List<DbfFieldDesc>();
             foreach (var field in fields)
             {
@@ -146,21 +131,15 @@ namespace MapBoard.IO
                 Directory.CreateDirectory(folder);
             }
             string path = Path.Combine(folder, name);
-            if (fields == null)
+
+            fields = fields
+                .Where(p => !p.IsIdField())
+                .Where(p => p.Name.ToLower() != "shape_leng")
+                .Where(p => p.Name.ToLower() != "shape_area");
+            if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
+                  || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
             {
-                fields = FieldExtension.DefaultFields;
-            }
-            else
-            {
-                fields = fields
-                    .Where(p => !p.IsIdField())
-                    .Where(p => p.Name.ToLower() != "shape_leng")
-                    .Where(p => p.Name.ToLower() != "shape_area");
-                if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
-                      || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
-                {
-                    throw new ArgumentException($"字段名存在不合法");
-                }
+                throw new ArgumentException($"字段名存在不合法");
             }
 
             await CreateEgisShapefileAsync(type, name, folder, fields);

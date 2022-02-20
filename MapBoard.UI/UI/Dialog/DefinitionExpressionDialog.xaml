@@ -37,10 +37,11 @@
             Orientation="Horizontal"
             Spacing="8">
             <Button
-                Grid.Row="2"
-                HorizontalAlignment="Right"
                 Click="DateExtentButton_Click"
                 Content="设置时间范围" />
+            <Button
+                Click="ClearButton_Click"
+                Content="显示所有图形" />
             <Button
                 Click="ApplyButton_Click"
                 Content="应用" />

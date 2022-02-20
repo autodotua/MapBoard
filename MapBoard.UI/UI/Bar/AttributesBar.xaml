@@ -110,6 +110,11 @@
                                                                     Value="CrtTime">
                                                                     <Setter TargetName="txtDateTime" Property="IsEnabled" Value="False" />
                                                                 </DataTrigger>
+                                                                <DataTrigger
+                                                                    Binding="{Binding Name}"
+                                                                    Value="MdfTime">
+                                                                    <Setter TargetName="txtDateTime" Property="IsEnabled" Value="False" />
+                                                                </DataTrigger>
                                                             </DataTemplate.Triggers>
                                                         </DataTemplate>
                                                     </Setter.Value>

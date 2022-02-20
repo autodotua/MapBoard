@@ -64,5 +64,11 @@ namespace MapBoard.UI.Dialog
             Layer.DefinitionExpression = Expression;
             Close();
         }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            Layer.DefinitionExpression = "";
+            Close();
+        }
     }
 }
