@@ -246,5 +246,10 @@ namespace MapBoard.UI.Dialog
                 Fields.Add(FieldExtension.ModifiedTimeField);
             }
         }
+
+        private void AddFieldButton_Click(object sender, RoutedEventArgs e)
+        {
+            Fields.Add(new FieldInfo());
+        }
     }
 }

@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MapBoard.Mapping.Model;
+using System;
+using System.Diagnostics;
 
 namespace MapBoard.Util
 {
@@ -34,7 +36,24 @@ namespace MapBoard.Util
 
                             foreach (var info in layer.Renderer.Symbols)
                             {
-                                renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), info.Key));
+                              Func<object> func = layer.Fields.First(p => p.Name == layer.Renderer.KeyFieldName).Type switch
+                              {
+                                  FieldInfoType.Text or FieldInfoType.Time => () => info.Key,
+                                  FieldInfoType.Date => () => DateTime.Parse(info.Key),
+                                  FieldInfoType.Integer => () => int.Parse(info.Key),
+                                  FieldInfoType.Float => () => double.Parse(info.Key),
+                                  _ => throw new NotImplementedException(),
+                              };
+                                try
+                                {
+                                    renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), func()));
+
+                                }
+                                catch(Exception ex)
+                                {
+                                    Debug.WriteLine("转换唯一值渲染器的Key失败："+ex.ToString());
+                                }
+
                             }
                         }
                         renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);

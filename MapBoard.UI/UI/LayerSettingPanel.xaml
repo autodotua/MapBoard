@@ -380,7 +380,7 @@
                                                     HorizontalAlignment="Stretch"
                                                     ui:ControlHelper.Header="分类字段"
                                                     DisplayMemberPath="DisplayName"
-                                                    ItemsSource="{Binding Layers.Selected.Fields}"
+                                                    ItemsSource="{Binding KeyFields}"
                                                     SelectedItem="{Binding KeyField}" />
                                             </DockPanel>
 
@@ -415,30 +415,31 @@
                                                     Grid.ColumnSpan="3"
                                                     HorizontalAlignment="Stretch"
                                                     Click="CreateKeyButtonClick"
-                                                    Content="新建" />
+                                                    Content="新建"
+                                                    IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="4"
                                                     Click="ChangeKeyButtonClick"
                                                     Content="修改"
-                                                    IsEnabled="{Binding CanChangeOrDeleteKey}" />
+                                                    IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="6"
                                                     Click="DeleteKeyButtonClick"
                                                     Content="删除"
-                                                    IsEnabled="{Binding CanChangeOrDeleteKey}" />
+                                                    IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.ColumnSpan="3"
                                                     Click="GenerateKeyButtonClick"
                                                     Content="自动生成全部"
-                                                    IsEnabled="{Binding CanGenerateKey}" />
+                                                    IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.Column="4"
                                                     Grid.ColumnSpan="3"
                                                     Click="GenerateRandomColorButtonClick"
                                                     Content="随机生成颜色"
-                                                    IsEnabled="{Binding CanGenerateKey}" />
+                                                    IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                             </Grid>
                                         </Grid>
                                     </ui:Flyout>
@@ -827,9 +828,10 @@
                             <DockPanel
                                 Grid.Column="2"
                                 LastChildFill="True">
-                                <Button Focusable="False"
+                                <Button
                                     Margin="12,0,0,0"
-                                    DockPanel.Dock="Right">
+                                    DockPanel.Dock="Right"
+                                    Focusable="False">
                                     <ui:SymbolIcon Symbol="List" />
                                     <ui:FlyoutService.Flyout>
                                         <ui:MenuFlyout x:Name="menuFields" />

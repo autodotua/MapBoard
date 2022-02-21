@@ -36,6 +36,7 @@ namespace MapBoard
     {
         public App()
         {
+#if !DEBUG
             try
             {
                 SplashWindow.CreateAndShow();
@@ -43,6 +44,7 @@ namespace MapBoard
             catch (Exception ex)
             {
             }
+#endif
         }
 
         public static ILog Log { get; private set; }

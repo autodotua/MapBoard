@@ -69,6 +69,7 @@
             MaxHeight="200"
             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             AutoGenerateColumns="False"
+            CanUserAddRows="False"
             CellEditEnding="CellEditEnding"
             ItemsSource="{Binding Fields}">
             <DataGrid.Columns>
@@ -105,22 +106,28 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Button
+        <ui:SimpleStackPanel
             HorizontalAlignment="Right"
-            Content="添加默认字段">
-            <ui:FlyoutService.Flyout>
-                <ui:MenuFlyout>
-                    <MenuItem
-                        Click="CreateTimeMenuItem_Click"
-                        Header="创建时间"
-                        IsEnabled="{Binding CanAddCreateTimeField}" />
-                    <MenuItem
-                        Click="ModifiedTimeMenuItem_Click"
-                        Header="修改时间"
-                        IsEnabled="{Binding CanAddModifiedTimeField}" />
-                </ui:MenuFlyout>
-            </ui:FlyoutService.Flyout>
-        </Button>
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Click="AddFieldButton_Click"
+                Content="添加字段" />
+            <Button Content="添加默认字段">
+                <ui:FlyoutService.Flyout>
+                    <ui:MenuFlyout>
+                        <MenuItem
+                            Click="CreateTimeMenuItem_Click"
+                            Header="创建时间"
+                            IsEnabled="{Binding CanAddCreateTimeField}" />
+                        <MenuItem
+                            Click="ModifiedTimeMenuItem_Click"
+                            Header="修改时间"
+                            IsEnabled="{Binding CanAddModifiedTimeField}" />
+                    </ui:MenuFlyout>
+                </ui:FlyoutService.Flyout>
+            </Button>
+        </ui:SimpleStackPanel>
         <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>

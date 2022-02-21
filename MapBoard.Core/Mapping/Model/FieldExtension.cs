@@ -12,26 +12,14 @@ namespace MapBoard.Mapping.Model
 {
     public static class FieldExtension
     {
-        //public static IEnumerable<FieldInfo> IncludeDefaultFields(this IEnumerable<FieldInfo> fields)
-        //{
-        //    if (!fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
-        //    {
-        //        yield return CreateTimeField;
-        //    }
-        //    if (!fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName))
-        //    {
-        //        yield return ModifiedTimeField;
-        //    }
-        //    foreach (var field in fields)
-        //    {
-        //        yield return field;
-        //    }
-        //}
+  public static bool CanBeRendererKey(this FieldInfo field)
+        {
+            return field.Type is FieldInfoType.Text or FieldInfoType.Integer or FieldInfoType.Float;
+        }
 
         public static bool IsIdField(this Field field)
         {
-            return field.Name.ToLower() == "fid";
-            //暂时不考虑GID、ID、ObjectID
+            return field.Name.ToLower() is "fid" or "objectid";
         }
 
         public static bool IsIdField(this FieldInfo field)

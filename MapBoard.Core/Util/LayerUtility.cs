@@ -122,6 +122,17 @@ namespace MapBoard.Util
             }
         }
 
+        public static async Task<object[]> GetUniqueAttributeValues(this IMapLayerInfo layer, string fieldName)
+        {
+            var parameters = new StatisticsQueryParameters(new StatisticDefinition[]
+            {
+                new StatisticDefinition(fieldName,StatisticType.Count,null)
+            });
+            parameters.GroupByFieldNames.Add(fieldName);
+            var result = await layer.Layer.FeatureTable.QueryStatisticsAsync(parameters);
+            return result.Select(p => p.Group[fieldName]).ToArray();
+        }
+
         public static async Task<Feature[]> GetAllFeaturesAsync(this IMapLayerInfo layer)
         {
             FeatureQueryResult result = await layer.QueryFeaturesAsync(new QueryParameters());
