@@ -107,7 +107,7 @@ namespace MapBoard.IO
             }
         }
 
-        public async static Task<IReadOnlyList<Feature>> ImportAsync(string path, IEditableLayerInfo layer)
+        public static async Task<IReadOnlyList<Feature>> ImportAsync(string path, IEditableLayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();
@@ -173,18 +173,17 @@ namespace MapBoard.IO
             return features.AsReadOnly();
         }
 
-        public async static Task<DataTable> ImportToDataTableAsync(string path)
+        public static Task<DataTable> ImportToDataTableAsync(string path)
         {
-            DataTable dt = null;
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 using var reader = new StreamReader(path);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
                 using var dr = new CsvDataReader(csv);
-                dt = new DataTable();
+                using var dt = new DataTable();
                 dt.Load(dr);
+                return dt;
             });
-            return dt;
         }
     }
 }

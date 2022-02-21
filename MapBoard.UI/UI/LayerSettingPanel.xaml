@@ -730,7 +730,9 @@
                                 Margin="4,0"
                                 VerticalAlignment="Center"
                                 ui:ControlHelper.PlaceholderText="SQL筛选语句"
-                                Text="{Binding Label.WhereClause}" />
+                                MaxLines="3"
+                                Text="{Binding Label.WhereClause}"
+                                TextWrapping="Wrap" />
                             <Button Grid.Column="4">
                                 <Button.Content>
                                     <TextBlock>
@@ -838,11 +840,13 @@
                                     </ui:FlyoutService.Flyout>
                                 </Button>
                                 <TextBox
-                                    ui:ControlHelper.PlaceholderText="使用Arcade表达式&#10;不填写时，使用上方的模板"
+                                    x:Name="txtExpression"
+                                    ui:ControlHelper.PlaceholderText="使用Arcade表达式"
                                     AcceptsReturn="True"
                                     AcceptsTab="True"
                                     MinLines="3"
-                                    Text="{Binding Expression}" />
+                                    Text="{Binding Expression}"
+                                    TextWrapping="Wrap" />
                             </DockPanel>
 
                             <TextBlock

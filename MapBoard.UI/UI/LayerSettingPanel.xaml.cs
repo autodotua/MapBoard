@@ -60,8 +60,10 @@ namespace MapBoard.UI
         public string LayerName { get; set; } = "图层名称";
 
         public MapLayerCollection Layers => MapView?.Layers;
+
         [AlsoNotifyFor(nameof(Layers), nameof(KeyFields))]
         public MainMapView MapView { get; set; }
+
         [AlsoNotifyFor(nameof(IsChangeOrDeleteKeyButtonEnabled))]
         public KeySymbolPair SelectedKey { get; set; }
 
@@ -72,6 +74,7 @@ namespace MapBoard.UI
             Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
             Layers.PropertyChanged += Layers_PropertyChanged;
         }
+
         private void InitializeKeys()
         {
             Debug.Assert(Layers.Selected != null);
@@ -82,6 +85,7 @@ namespace MapBoard.UI
             Keys.Add(defaultSymbol);
             SelectedKey = Keys[0];
         }
+
         public void ResetLayerSettingUI()
         {
             IMapLayerInfo layer = Layers.Selected;
@@ -249,7 +253,6 @@ namespace MapBoard.UI
                             //}
                             //else if (DateTime.TryParse(key, out DateTime time2))
                             //{
-
                             //    key = time2.ToString(Parameters.TimeFormat);
                             //}
                             //else
@@ -355,11 +358,13 @@ namespace MapBoard.UI
                 };
                 item.Click += (s, e) =>
                 {
-                    Label.Expression = $"$feature.{(s as MenuItem).Tag as string}";
+                    txtExpression.SelectedText = $"$feature.{(s as MenuItem).Tag as string}";
+                    txtExpression.SelectionStart = txtExpression.SelectionStart + txtExpression.SelectionLength;
                 };
                 menuFields.Items.Add(item);
             }
         }
+
         private void SetScaleButtonClick(object sender, RoutedEventArgs e)
         {
             switch ((sender as Button).Tag as string)

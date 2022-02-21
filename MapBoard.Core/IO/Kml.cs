@@ -66,7 +66,7 @@ namespace MapBoard.IO
                     if (layer.Renderer.HasCustomSymbols)
                     {
                         var c = feature.Attributes[layer.Renderer.KeyFieldName] as string;
-                        if (!string.IsNullOrEmpty(c) && layer.Renderer.Symbols.ContainsKey(c))
+                        if ( layer.Renderer.Symbols.ContainsKey(c))
                         {
                             symbol = layer.Renderer.Symbols[c];
                         }
