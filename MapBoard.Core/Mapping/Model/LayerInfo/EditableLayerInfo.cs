@@ -145,7 +145,8 @@ namespace MapBoard.Mapping.Model
 
         private void AddCreateTimeAttributeIfExistField(Feature feature)
         {
-            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName)
+                && table.Fields.First(p => p.Name == Parameters.CreateTimeFieldName).FieldType==FieldType.Text)
             {
                 if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
                         || feature.Attributes[Parameters.CreateTimeFieldName] == null)
@@ -157,7 +158,8 @@ namespace MapBoard.Mapping.Model
 
         private void AddModifiedTimeAttributeIfExistField(Feature feature)
         {
-            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
+            if (table.Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName)
+                && table.Fields.First(p => p.Name == Parameters.ModifiedTimeFieldName).FieldType == FieldType.Text)
             {
                 feature.SetAttributeValue(Parameters.ModifiedTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
             }

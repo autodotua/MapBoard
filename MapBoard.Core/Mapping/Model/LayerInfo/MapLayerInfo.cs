@@ -154,10 +154,10 @@ namespace MapBoard.Mapping.Model
                     table.CancelLoad();
                     throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
                 }
-                await Task.Run(this.ApplyStyle);
+                ApplyProperties();
+                this.ApplyStyle();
                 IsLoaded = true;
                 this.Notify(nameof(GeometryType));
-                ApplyProperties();
             }
             catch (Exception ex)
             {
@@ -197,14 +197,14 @@ namespace MapBoard.Mapping.Model
             //如果上面加载失败，那么不会执行下面的语句
             table = newTable;
             layer = GetNewLayer(table);
-            await Task.Run(this.ApplyStyle);
+            ApplyProperties();
+            this.ApplyStyle();
 
             //也许是Esri的BUG，如果不重新插入，那么可能啥都不会显示
             layers.RefreshEsriLayer(this);
 
             IsLoaded = true;
             this.Notify(nameof(NumberOfFeatures), nameof(GeometryType));
-            ApplyProperties();
         }
 
         /// <summary>

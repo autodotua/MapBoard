@@ -57,9 +57,12 @@ namespace MapBoard.Model
             instance.SetLayers(new ObservableCollection<ILayerInfo>());
             if (layersJson is JArray layerJsonArray)
             {
-                foreach (var layerJson in layerJsonArray)
+                foreach (JObject jLayer in layerJsonArray)
                 {
-                    instance.LayerList.Add(layerJson.ToObject<LayerInfo>());
+                    var layer = jLayer.ToObject<LayerInfo>();
+                    //用于迁移旧版的Symbols到新版的Renderer
+                    VersionTransition.V20220222_SymbolsToRenderer(jLayer, layer);
+                    instance.LayerList.Add(layer);
                 }
             }
             return instance;

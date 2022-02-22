@@ -50,10 +50,13 @@ namespace MapBoard.IO
                     case null:
                     case "":
                     case MapLayerInfo.Types.Shapefile:
-                        foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                        await Task.Run(() =>
                         {
-                            File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-                        }
+                            foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                            {
+                                File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
+                            }
+                        });
                         break;
                 }
 
