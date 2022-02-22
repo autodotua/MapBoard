@@ -40,7 +40,7 @@
                             <CheckBox
                                 Margin="0,0,-30,0"
                                 Click="CheckBox_Click"
-                                IsChecked="{Binding Visiable}">
+                                IsChecked="{Binding Visible}">
                                 <TextBlock
                                     Height="24"
                                     MaxWidth="60"
@@ -51,7 +51,6 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-
             </ui:SimpleStackPanel>
         </Border>
 
@@ -273,7 +272,6 @@
                     <ui:Flyout x:Name="flyoutGroups" />
                 </ui:FlyoutService.Flyout>
             </Button>
-
         </Grid>
     </Grid>
 </local:UserControlBase>

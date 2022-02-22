@@ -28,7 +28,7 @@ namespace MapBoard.UI
         /// <summary>
         /// 是否正在修改分组可见
         /// </summary>
-        private bool isChangingGroupVisiable = false;
+        private bool isChangingGroupVisible = false;
 
         private LayerListPanelHelper layerListHelper;
 
@@ -71,7 +71,6 @@ namespace MapBoard.UI
             set
             {
                 viewType = value;
-                this.Notify(nameof(ViewType));
                 Config.Instance.LastLayerListGroupType = value;
                 dataGrid.GroupStyle.Clear();
 
@@ -150,13 +149,13 @@ namespace MapBoard.UI
             if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
             {
                 Groups.Add(new GroupInfo("（无）",
-                    GetGroupVisiable(Layers.Where(p => string.IsNullOrEmpty(p.Group))), true));
+                    GetGroupVisible(Layers.Where(p => string.IsNullOrEmpty(p.Group))), true));
             }
             foreach (var layers in Layers
                 .Where(p => !string.IsNullOrEmpty(p.Group))
                .GroupBy(p => p.Group))
             {
-                Groups.Add(new GroupInfo(layers.Key, GetGroupVisiable(layers)));
+                Groups.Add(new GroupInfo(layers.Key, GetGroupVisible(layers)));
             }
         }
 
@@ -192,9 +191,9 @@ namespace MapBoard.UI
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
             GroupInfo group = (sender as FrameworkElement).DataContext as GroupInfo;
-            isChangingGroupVisiable = true;
-            GetLayersByGroup(group).ForEach(p => p.LayerVisible = group.Visiable.Value);
-            isChangingGroupVisiable = false;
+            isChangingGroupVisible = true;
+            GetLayersByGroup(group).ForEach(p => p.LayerVisible = group.Visible.Value);
+            isChangingGroupVisible = false;
         }
 
         /// <summary>
@@ -202,15 +201,15 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="layers"></param>
         /// <returns>true为可见，false为不可见，null为部分可见</returns>
-        private bool? GetGroupVisiable(IEnumerable<ILayerInfo> layers)
+        private bool? GetGroupVisible(IEnumerable<ILayerInfo> layers)
         {
             int count = layers.Count();
-            int visiableCount = layers.Where(p => p.LayerVisible).Count();
-            if (visiableCount == 0)
+            int visibleCount = layers.Where(p => p.LayerVisible).Count();
+            if (visibleCount == 0)
             {
                 return false;
             }
-            if (count == visiableCount)
+            if (count == visibleCount)
             {
                 return true;
             }
@@ -273,11 +272,11 @@ namespace MapBoard.UI
             {
                 GenerateGroups();
             }
-            if (e.PropertyName == nameof(LayerInfo.LayerVisible) && !isChangingGroupVisiable)
+            if (e.PropertyName == nameof(LayerInfo.LayerVisible) && !isChangingGroupVisible)
             {
                 foreach (var group in Groups)
                 {
-                    group.Visiable = GetGroupVisiable(GetLayersByGroup(group));
+                    group.Visible = GetGroupVisible(GetLayersByGroup(group));
                 }
             }
         }

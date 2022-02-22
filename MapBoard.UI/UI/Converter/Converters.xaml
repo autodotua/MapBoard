@@ -9,7 +9,7 @@
     <converter:GeometryTypeDescriptionConverter x:Key="GeometryTypeDescriptionConverter" />
     <converter:BaseLayerTypeConverter x:Key="BaseLayerTypeConverter" />
     <converter:BothBool2VisibilityConverter x:Key="BothBool2VisibilityConverter" />
-    <converter:DrawAndSelectButtonVisiableConverter x:Key="DrawAndSelectButtonVisiableConverter" />
+    <converter:DrawAndSelectButtonVisibleConverter x:Key="DrawAndSelectButtonVisibleConverter" />
     <converter:FeaturesHistoryDescriptionConverter x:Key="FeaturesHistoryDescriptionConverter" />
     <converter:IndexConverter x:Key="IndexConverter" />
     <converter:SpeedValueConverter x:Key="SpeedValueConverter" />

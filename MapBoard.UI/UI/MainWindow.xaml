@@ -405,7 +405,7 @@
                         Grid.Row="100"
                         Margin="8,0,12,0">
                         <Grid.IsEnabled>
-                            <MultiBinding Converter="{StaticResource DrawAndSelectButtonVisiableConverter}">
+                            <MultiBinding Converter="{StaticResource DrawAndSelectButtonVisibleConverter}">
                                 <Binding Path="IsReady" />
                                 <Binding
                                     ElementName="arcMap"

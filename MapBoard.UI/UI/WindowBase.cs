@@ -20,7 +20,7 @@ namespace MapBoard.UI
         public static async Task<T> CreateAndShowAsync<T>(Action<T> beforeInitialize = null) where T : MainWindowBase, new()
         {
             T win = new T();
-            if (SplashWindow.IsVisiable)
+            if (SplashWindow.IsShowing)
             {
                 win.initialized = true;
                 beforeInitialize?.Invoke(win);
@@ -38,7 +38,7 @@ namespace MapBoard.UI
                     };
                 }
                 win.Show();
-                SplashWindow.EnsureInvisiable();
+                SplashWindow.EnsureInvisible();
             }
             else
             {

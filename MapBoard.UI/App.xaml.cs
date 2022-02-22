@@ -36,7 +36,6 @@ namespace MapBoard
     {
         public App()
         {
-#if !DEBUG
             try
             {
                 SplashWindow.CreateAndShow();
@@ -44,7 +43,6 @@ namespace MapBoard
             catch (Exception ex)
             {
             }
-#endif
         }
 
         public static ILog Log { get; private set; }
@@ -117,7 +115,7 @@ namespace MapBoard
             }
             catch (TargetInvocationException ex) when (ex.InnerException?.InnerException?.InnerException?.InnerException is DllNotFoundException)
             {
-                SplashWindow.EnsureInvisiable();
+                SplashWindow.EnsureInvisible();
                 Log.Error("找不到C++库", ex);
 
                 var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" + Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);

@@ -51,7 +51,7 @@ namespace MapBoard.UI.Bar
 
         public bool IsLayerEditable =>
             (Layers?.Selected) != null
-            && Layers?.Selected?.CanEdit==true;
+            && Layers?.Selected?.CanEdit == true;
 
         public string Message { get; set; } = "正在编辑";
 
@@ -82,7 +82,7 @@ namespace MapBoard.UI.Bar
         {
             var layer = Layers.Selected;
             var features = MapView.Selection.SelectedFeatures.ToArray();
-            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
+            List<(string header, string desc, Func<Task> action, bool visible)> menus = new List<(string header, string desc, Func<Task> action, bool visible)>()
            {
                 ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
                 ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
@@ -107,7 +107,7 @@ namespace MapBoard.UI.Bar
                 return;
             }
             var features = MapView.Selection.SelectedFeatures.ToArray();
-            List<(string header, string desc, Func<Task> action, bool visiable)> menus = new List<(string header, string desc, Func<Task> action, bool visiable)>()
+            List<(string header, string desc, Func<Task> action, bool visible)> menus = new List<(string header, string desc, Func<Task> action, bool visible)>()
            {
                 ("合并","将多个图形合并为一个具有多个部分的图形",
                 UnionAsync,
@@ -397,13 +397,13 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visiable)> menus, UIElement parent, Func<string, string> getMessage)
+        private void OpenMenus(List<(string header, string desc, Func<Task> action, bool visible)> menus, UIElement parent, Func<string, string> getMessage)
         {
             ContextMenu menu = new ContextMenu();
 
-            foreach (var (header, desc, action, visiable) in menus)
+            foreach (var (header, desc, action, visible) in menus)
             {
-                if (visiable)
+                if (visible)
                 {
                     StackPanel content = new StackPanel();
                     content.Children.Add(new TextBlock()

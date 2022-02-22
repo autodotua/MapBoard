@@ -5,10 +5,10 @@ namespace MapBoard.Mapping.Model
 {
     public class GroupInfo : INotifyPropertyChanged
     {
-        public GroupInfo(string name, bool? visiable, bool isNull = false)
+        public GroupInfo(string name, bool? visible, bool isNull = false)
         {
             Name = name;
-            Visiable = visiable;
+            Visible = visible;
             IsNull = isNull;
         }
 
@@ -16,6 +16,6 @@ namespace MapBoard.Mapping.Model
 
         public bool IsNull { get; set; }
         public string Name { get; set; }
-        public bool? Visiable { get; set; }
+        public bool? Visible { get; set; }
     }
 }

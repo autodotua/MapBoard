@@ -25,7 +25,7 @@ namespace MapBoard.UI
             InitializeComponent();
         }
 
-        public static bool IsVisiable => instance != null;
+        public static bool IsShowing => instance != null;
 
         private static SplashWindow instance;
 
@@ -51,7 +51,7 @@ namespace MapBoard.UI
 #endif
         }
 
-        public static void EnsureInvisiable()
+        public static void EnsureInvisible()
         {
             if (instance == null)
             {
@@ -64,6 +64,5 @@ namespace MapBoard.UI
             });
             instance = null;
         }
-
     }
 }

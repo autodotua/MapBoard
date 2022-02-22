@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace MapBoard.UI.Converter
 {
-    public class DrawAndSelectButtonVisiableConverter : IMultiValueConverter
+    public class DrawAndSelectButtonVisibleConverter : IMultiValueConverter
     {
         /// <summary>
         ///
