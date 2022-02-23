@@ -363,17 +363,29 @@ namespace MapBoard.Mapping
                     minPointDistance = nearestPointResult.Distance;
                 }
             }
-            if (minVertex != null)
+            //最近任意点一定在要求的范围内（面除外），但是最近节点可能大于甚至远大于范围
+
+            if (minVertex != null && !CheckInDistance(minVertex))
             {
-                //最近任意点一定在要求的范围内，但是最近节点可能大于甚至远大于范围
-                var vertexPoint = MapView.LocationToScreen(minVertex);
-                var distance = Math.Sqrt((Math.Pow(vertexPoint.X - position.X, 2) + Math.Pow(vertexPoint.Y - position.Y, 2)));
+                minVertex = null;
+            }
+            if (minPoint != null && !CheckInDistance(minPoint))
+            {
+                minPoint = null;
+            }
+
+            return (minVertex, minPoint);
+
+            bool CheckInDistance(MapPoint p)
+            {
+                var screenPoint = MapView.LocationToScreen(p);
+                var distance = Math.Sqrt((Math.Pow(screenPoint.X - position.X, 2) + Math.Pow(screenPoint.Y - position.Y, 2)));
                 if (distance > Config.Instance.CatchDistance)
                 {
-                    return (null, minPoint);
+                    return false;
                 }
+                return true;
             }
-            return (minVertex, minPoint);
         }
 
         /// <summary>

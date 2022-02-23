@@ -42,6 +42,14 @@ namespace MapBoard.Model
                             layer.Renderer.Symbols.Add(key, symbols[key]);
                         }
                     }
+
+
+                    layer.Fields = layer.Fields.Concat(new FieldInfo[] {
+                        new FieldInfo("Info","标签",FieldInfoType.Text),
+                        new FieldInfo("Key","分类",FieldInfoType.Text),
+                        new FieldInfo("Date","日期",FieldInfoType.Date),
+                        new FieldInfo("CrtTime","创建时间",FieldInfoType.Time),
+                    }).ToArray();
                 }
                 catch (Exception ex)
                 {
