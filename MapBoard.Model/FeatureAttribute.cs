@@ -1,9 +1,10 @@
-﻿//#define ERROR
+﻿#define ERROR
 
 using FzLib;
 using PropertyChanged;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace MapBoard.Model
@@ -14,16 +15,28 @@ namespace MapBoard.Model
         public static string DateTimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
         private object attrValue;
 
-        public FeatureAttribute(FieldInfo field, object value = null)
-        {
-            Name = field.Name;
-            DisplayName = field.DisplayName;
-            Type = field.Type;
-            Value = value;
-        }
 
         public FeatureAttribute()
         {
+        }
+
+        public static FeatureAttribute FromFieldAndValue(FieldInfo field, object value = null)
+        {
+            FeatureAttribute attribute = new FeatureAttribute()
+            {
+                Name = field.Name,
+                DisplayName = field.DisplayName,
+                Type = field.Type,
+            };
+            try
+            {
+                attribute.Value = value;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            return attribute;
         }
 
         public object Value
@@ -165,7 +178,7 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ArgumentException("输入的值无法转换为日期");
+                            throw new ArgumentException("输入的值无法转换为时间" );
                         case FieldInfoType.Text:
                             if (value is string str4)
                             {

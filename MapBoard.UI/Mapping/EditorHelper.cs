@@ -412,14 +412,6 @@ namespace MapBoard.Mapping
                 {
                     return;
                 }
-                if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                {
-                    MapView.Overlay.SetNearestVertexPoint(nearestVertex);
-                }
-                else
-                {
-                    MapView.Overlay.SetNearestVertexPoint(null);
-                }
                 if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                 {
                     MapView.Overlay.SetNearestPointPoint(nearestPoint);
@@ -428,6 +420,16 @@ namespace MapBoard.Mapping
                 {
                     MapView.Overlay.SetNearestPointPoint(null);
                 }
+                
+                if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                {
+                    MapView.Overlay.SetNearestVertexPoint(nearestVertex);
+                }
+                else
+                {
+                    MapView.Overlay.SetNearestVertexPoint(null);
+                }
+        
             }
         }
 
@@ -491,7 +493,7 @@ namespace MapBoard.Mapping
             }
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                if (nearestVertex != null)
+                if (nearestPoint != null)
                 {
                     AddPointToSketchEditor(nearestPoint);
                     e.Handled = true;

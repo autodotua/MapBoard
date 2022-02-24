@@ -49,7 +49,7 @@ namespace MapBoard.Mapping.Model
 
             foreach (var field in layer.Fields)
             {
-                var attr = new FeatureAttribute(field);
+                var attr = FeatureAttribute.FromFieldAndValue(field);
                 attributes.all.Add(attr);
             }
             return attributes;
@@ -62,40 +62,13 @@ namespace MapBoard.Mapping.Model
                 Feature = feature
             };
 
-            //if (feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName))
-            //{
-            //    var createTimeString = feature.Attributes[Parameters.CreateTimeFieldName] as string;
-            //    DateTime? createTime = null;
-            //    try
-            //    {
-            //        createTime = string.IsNullOrEmpty(createTimeString) ? null : DateTime.Parse(createTimeString);
-            //    }
-            //    catch
-            //    {
-            //    }
-            //    attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
-            //}
-            //if (feature.Attributes.ContainsKey(Parameters.ModifiedTimeFieldName))
-            //{
-            //    var createTimeString = feature.Attributes[Parameters.ModifiedTimeFieldName] as string;
-            //    DateTime? createTime = null;
-            //    try
-            //    {
-            //        createTime = string.IsNullOrEmpty(createTimeString) ? null : DateTime.Parse(createTimeString);
-            //    }
-            //    catch
-            //    {
-            //    }
-            //    attributes.all.Add(new FeatureAttribute(FieldExtension.CreateTimeField, createTime));
-            //}
-
             foreach (var attr in feature.Attributes.Where(p => p.Key is not "FID" or "ObjectID" or Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName))
             {
                 FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))
                 {
                     var field = layer.Fields.First(p => p.Name == attr.Key);
-                    newAttr = new FeatureAttribute(field, attr.Value);
+                    newAttr =  FeatureAttribute.FromFieldAndValue(field, attr.Value);
                 }
                 else
                 {
