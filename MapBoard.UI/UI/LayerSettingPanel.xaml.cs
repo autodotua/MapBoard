@@ -75,12 +75,20 @@ namespace MapBoard.UI
             Layers.PropertyChanged += Layers_PropertyChanged;
         }
 
-        private void InitializeKeys()
+        private void InitializeKeys(bool canKeepDefaultKey)
         {
             Debug.Assert(Layers.Selected != null);
-            var defaultSymbol = Keys.FirstOrDefault(p => p.Key == defaultKeyName)//优先级1：本来的默认
+            KeySymbolPair defaultSymbol = null;
+            if (canKeepDefaultKey)
+            {
+                defaultSymbol = Keys.FirstOrDefault(p => p.Key == defaultKeyName)//优先级1：本来的默认
                 ?? new KeySymbolPair(defaultKeyName, Layers.Selected.Renderer.DefaultSymbol//优先级2：定义的默认
                 ?? Layers.Selected.GetDefaultSymbol());//优先级3：类型默认
+            }
+            else
+            {
+                defaultSymbol = new KeySymbolPair(defaultKeyName, Layers.Selected.Renderer.DefaultSymbol ?? Layers.Selected.GetDefaultSymbol());
+            }
             Keys.Clear();
             Keys.Add(defaultSymbol);
             SelectedKey = Keys[0];
@@ -102,7 +110,7 @@ namespace MapBoard.UI
                     new ObservableCollection<LabelInfo>() :
                     new ObservableCollection<LabelInfo>(layer.Labels);
                 Label = Labels.Count > 0 ? Labels[0] : null;
-                InitializeKeys();
+                InitializeKeys(false);
                 foreach (var symbol in layer.Renderer.Symbols)
                 {
                     Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
@@ -220,7 +228,7 @@ namespace MapBoard.UI
         private void ClearKeyFieldButton_Click(object sender, RoutedEventArgs e)
         {
             KeyField = null;
-            InitializeKeys();
+            InitializeKeys(true);
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -298,7 +306,7 @@ namespace MapBoard.UI
         {
             var layer = Layers.Selected;
             Debug.Assert(KeyField != null);
-            InitializeKeys();
+            InitializeKeys(true);
             var keys = await layer.GetUniqueAttributeValues(KeyField.Name);
 
             foreach (var key in keys)
