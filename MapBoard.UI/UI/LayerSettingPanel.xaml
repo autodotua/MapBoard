@@ -845,7 +845,7 @@
                                     AcceptsReturn="True"
                                     AcceptsTab="True"
                                     MinLines="3"
-                                    Text="{Binding Expression}"
+                                    Text="{Binding Expression, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </DockPanel>
 

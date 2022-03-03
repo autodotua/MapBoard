@@ -161,11 +161,21 @@ namespace MapBoard
 
         private void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
         {
-            Log.Error("未捕获的异常", e.Exception);
-            var result = MessageBox.Show("程序发生异常，可能出现数据丢失等问题。是否关闭？" + Environment.NewLine + Environment.NewLine + e.Exception.ToString(), "MapBoard - 未捕获的异常", MessageBoxButton.YesNo, MessageBoxImage.Error);
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                Dispatcher.Invoke(() => Shutdown(-1));
+                Log.Error("未捕获的异常", e.Exception);
+                Dispatcher.Invoke(() =>
+                {
+                    var result = MessageBox.Show("程序发生异常，可能出现数据丢失等问题。是否关闭？" + Environment.NewLine + Environment.NewLine + e.Exception.ToString(), "MapBoard - 未捕获的异常", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        Shutdown(-1);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 
