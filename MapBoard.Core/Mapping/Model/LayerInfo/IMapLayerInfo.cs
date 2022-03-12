@@ -75,7 +75,7 @@ namespace MapBoard.Mapping.Model
         /// 获取添加到Esri图层集合中的图层
         /// </summary>
         /// <returns></returns>
-        Layer GetAddedLayer();
+        Layer GetLayerForLayerList();
 
         /// <summary>
         /// 是否已经加载

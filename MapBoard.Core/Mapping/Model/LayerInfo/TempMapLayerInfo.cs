@@ -66,14 +66,15 @@ namespace MapBoard.Mapping.Model
 
         public override string Type => Types.Temp;
 
-        public override Layer GetAddedLayer()
+        public override Layer GetLayerForLayerList()
         {
             return featureCollectionLayer;
         }
 
-        protected override FeatureLayer GetNewLayer(FeatureTable table)
+        protected override FeatureLayer GetLayerForLoading(FeatureTable table)
         {
             return featureCollectionLayer.Layers[0];
         }
+
     }
 }

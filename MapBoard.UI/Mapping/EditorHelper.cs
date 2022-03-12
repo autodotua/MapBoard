@@ -344,7 +344,7 @@ namespace MapBoard.Mapping
             foreach (var geometry in results
                         .Where(p => p.LayerContent.IsVisible)//图层可见
                         .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
-                        .Where(p => p.Layer.Interaction.CanCatch)//图层可捕捉
+                        .Where(p => p.Layer?.Interaction?.CanCatch??false)//图层可捕捉
                         .SelectMany(p => p.Elements)
                         .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())//直接捕捉配置下，排除正在编辑的图形
                         .Select(p => p.Geometry)

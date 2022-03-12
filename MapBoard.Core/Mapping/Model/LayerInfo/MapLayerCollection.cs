@@ -150,7 +150,7 @@ namespace MapBoard.Mapping.Model
             }
             int index = Count - 1 - IndexOf(layer);
             EsriLayers.RemoveAt(index);
-            EsriLayers.Insert(index, layer.GetAddedLayer());
+            EsriLayers.Insert(index, layer.GetLayerForLayerList());
         }
 
         public void Clear()
@@ -183,7 +183,7 @@ namespace MapBoard.Mapping.Model
         {
             try
             {
-                EsriLayers.Remove(layer.Layer);
+                EsriLayers.Remove(layer.GetLayerForLayerList());
                 layer.Dispose();
             }
             catch
@@ -220,7 +220,7 @@ namespace MapBoard.Mapping.Model
                         Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
                     }
                 }
-                Layer fl = layer.GetAddedLayer();
+                Layer fl = layer.GetLayerForLayerList();
                 Debug.Assert(fl != null);
                 if (index == -1)
                 {

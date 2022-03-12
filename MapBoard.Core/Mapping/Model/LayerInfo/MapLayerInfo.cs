@@ -105,7 +105,7 @@ namespace MapBoard.Mapping.Model
         /// 获取添加到MapView的图层集合中的图层
         /// </summary>
         /// <returns></returns>
-        public virtual Layer GetAddedLayer()
+        public virtual Layer GetLayerForLayerList()
         {
             return layer;
         }
@@ -143,7 +143,7 @@ namespace MapBoard.Mapping.Model
                 }
                 finally
                 {
-                    layer = GetNewLayer(table);
+                    layer = GetLayerForLoading(table);
                 }
                 try
                 {
@@ -196,7 +196,7 @@ namespace MapBoard.Mapping.Model
             }
             //如果上面加载失败，那么不会执行下面的语句
             table = newTable;
-            layer = GetNewLayer(table);
+            layer = GetLayerForLoading(table);
             ApplyProperties();
             this.ApplyStyle();
 
@@ -212,7 +212,7 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        protected virtual FeatureLayer GetNewLayer(FeatureTable table)
+        protected virtual FeatureLayer GetLayerForLoading(FeatureTable table)
         {
             return new FeatureLayer(table);
         }

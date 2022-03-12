@@ -259,9 +259,15 @@ namespace MapBoard.Mapping
                 {
                     var result = (await MapView.IdentifyLayersAsync(point.Value, 8, false))
                         .Where(p => p.LayerContent.IsVisible)
-                        .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
+                        .Select(p => new
+                        {
+                            Layer = Layers.FindLayer(p.LayerContent),
+                            Elements = p.GeoElements,
+                            SubLayer = p.SublayerResults.Any() ? p.SublayerResults[0] : null
+                        })
                         .Where(p => p.Layer.Interaction.CanSelect)
                         .FirstOrDefault();
+
 
                     if (result == null)
                     {
@@ -270,7 +276,8 @@ namespace MapBoard.Mapping
                     layer = result.Layer;
                     Debug.Assert(layer != null);
                     MapView.Layers.Selected = layer;
-                    features = result.Elements.Cast<Feature>().ToList();
+                    IReadOnlyList<GeoElement> elements = result.SubLayer?.GeoElements ?? result.Elements;
+                    features = elements.Cast<Feature>().ToList();
                     layer.Layer.SelectFeatures(features);
                 }
                 else
