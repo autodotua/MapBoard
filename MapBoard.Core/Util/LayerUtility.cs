@@ -220,30 +220,6 @@ namespace MapBoard.Util
         }
 
         /// <summary>
-        /// 坐标转换
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public static async Task CoordinateTransformateAsync(this IEditableLayerInfo layer, CoordinateSystem source, CoordinateSystem target)
-        {
-            if (source == target)
-            {
-                return;
-            }
-            var features = await layer.GetAllFeaturesAsync();
-            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
-
-            foreach (var feature in features)
-            {
-                newFeatures.Add(new UpdatedFeature(feature));
-                feature.Geometry = Transformate(feature.Geometry, source, target);
-            }
-            await layer.UpdateFeaturesAsync(newFeatures, FeaturesChangedSource.FeatureOperation);
-        }
-
-        /// <summary>
         /// 合并
         /// </summary>
         /// <param name="layers"></param>

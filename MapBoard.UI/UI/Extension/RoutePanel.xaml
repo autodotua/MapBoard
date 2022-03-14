@@ -136,8 +136,9 @@
                 <ui:FontIcon Glyph="&#xE707;" />
             </Button>
             <Button
+                Grid.Row="2"
                 Grid.Column="8"
-                Padding="8,2" Grid.Row="2"
+                Padding="8,2"
                 Click="LocationPointButton_Click"
                 IsEnabled="{Binding MapView.LocationDisplay.Started}"
                 Tag="2"

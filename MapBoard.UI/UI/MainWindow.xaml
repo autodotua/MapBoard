@@ -490,6 +490,11 @@
                             FocusVisualStyle="{x:Null}"
                             IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected.Interaction.CanSelect}">
                             <ui:SymbolIcon Symbol="SelectAll" />
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="全选" Click="SelectAllMenu_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
                             <Button.ToolTip>
                                 <ui:SimpleStackPanel
                                     Width="200"

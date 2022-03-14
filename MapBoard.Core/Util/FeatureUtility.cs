@@ -11,6 +11,8 @@ using static MapBoard.Mapping.Model.FeaturesChangedSource;
 using MapBoard.Mapping.Model;
 using static MapBoard.Util.GeometryUtility;
 using Esri.ArcGISRuntime.Symbology;
+using MapBoard.Model;
+using System.Collections.Concurrent;
 
 namespace MapBoard.Util
 {
@@ -320,7 +322,7 @@ namespace MapBoard.Util
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
-            foreach (var feature in features)
+            Parallel.ForEach(features.Where(p=>!p.Geometry.IsEmpty), feature =>
             {
                 Geometry geometry = feature.Geometry;
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
@@ -328,7 +330,7 @@ namespace MapBoard.Util
                 geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
                 newFeatures.Add(new UpdatedFeature(feature, geometry, feature.Attributes));
                 feature.Geometry = geometry;
-            }
+            });
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
@@ -702,51 +704,79 @@ namespace MapBoard.Util
             }
             //CentripetalCatmullRom中数量是算上头尾的
             pointsPerSegment += 2;
-            List<UpdatedFeature> updatedFeatures = new List<UpdatedFeature>();
-            foreach (var feature in features)
+            ConcurrentBag<UpdatedFeature> updatedFeatures = new ConcurrentBag<UpdatedFeature>();
+            await Task.Run(() =>
             {
-                Geometry oldGeometry = feature.Geometry;
-                Geometry newGeometry = null;
-                if (feature.Geometry is Multipart m)
+                Parallel.ForEach(features, feature =>
                 {
-                    List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
-                    foreach (var part in m.Parts)
+                    Geometry oldGeometry = feature.Geometry;
+                    Geometry newGeometry = null;
+                    if (feature.Geometry is Multipart m)
                     {
-                        if (part.PointCount <= 2)
+                        List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+                        foreach (var part in m.Parts)
                         {
-                            newParts.Add(part.Points);
+                            if (part.PointCount <= 2)
+                            {
+                                newParts.Add(part.Points);
+                            }
+                            else
+                            {
+                                newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
+                            }
                         }
-                        else
+                        switch (feature.Geometry)
                         {
-                            newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
-                        }
-                    }
-                    switch (feature.Geometry)
-                    {
-                        case Polyline line:
-                            newGeometry = new Polyline(newParts);
-                            break;
+                            case Polyline line:
+                                newGeometry = new Polyline(newParts);
+                                break;
 
-                        case Polygon polygon:
-                            newGeometry = new Polygon(newParts);
-                            break;
+                            case Polygon polygon:
+                                newGeometry = new Polygon(newParts);
+                                break;
+                        }
                     }
-                }
-                else if (feature.Geometry is Multipoint mp)
-                {
-                    if (mp.Points.Count > 2)
+                    else if (feature.Geometry is Multipoint mp)
                     {
-                        newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
+                        if (mp.Points.Count > 2)
+                        {
+                            newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
+                        }
                     }
-                }
-                else
-                {
-                    throw new NotSupportedException("仅支持多点、折线和多边形");
-                }
-                feature.Geometry = newGeometry;
-                updatedFeatures.Add(new UpdatedFeature(feature, oldGeometry, feature.Attributes));
-            }
+                    else
+                    {
+                        throw new NotSupportedException("仅支持多点、折线和多边形");
+                    }
+                    feature.Geometry = newGeometry;
+                    updatedFeatures.Add(new UpdatedFeature(feature, oldGeometry, feature.Attributes));
+                });
+            });
             await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
         }
+
+
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static async Task CoordinateTransformateAsync(this IEditableLayerInfo layer, Feature[] features, CoordinateSystem source, CoordinateSystem target)
+        {
+            if (source == target)
+            {
+                return;
+            }
+            List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
+
+            foreach (var feature in features)
+            {
+                newFeatures.Add(new UpdatedFeature(feature));
+                feature.Geometry = CoordinateTransformation. Transformate(feature.Geometry, source, target);
+            }
+            await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
+        }
+
     }
 }

@@ -76,30 +76,41 @@ namespace MapBoard.UI
                     AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
 
                     AddToMenu<IServerBasedLayer>(menu, "下载全部图形", layer, PopulateAllAsync);
-                    AddToMenu<ShapefileMapLayerInfo>(menu, "设置图层", layer, SetShapefileLayerAsync);
-                    AddToMenu<WfsMapLayerInfo>(menu, "设置图层", layer, SetWfsLayerAsync);
-                    AddToMenu<TempMapLayerInfo>(menu, "设置图层", layer, SetTempLayerAsync);
+                    AddToMenu<ShapefileMapLayerInfo>(menu, "属性", layer, SetShapefileLayerAsync);
+                    AddToMenu<WfsMapLayerInfo>(menu, "属性", layer, SetWfsLayerAsync);
+                    AddToMenu<TempMapLayerInfo>(menu, "属性", layer, SetTempLayerAsync);
                     AddToMenu<TempMapLayerInfo>(menu, "重置", layer, ResetTempLayerAsync);
 
                     menu.Items.Add(new Separator());
                     AddToMenu(menu, "查询要素", () => QueryAsync(layer));
 
-                    if (layer.GeometryType == GeometryType.Polyline
-                        || layer.GeometryType == GeometryType.Point
-                        || layer.GeometryType == GeometryType.Multipoint)
-                    {
-                        AddToMenu(menu, "建立缓冲区", () => BufferAsync(layer));
-                    }
                     if (layer.CanEdit)
                     {
-                        AddToMenu<IEditableLayerInfo>(menu, "坐标转换", layer, CoordinateTransformateAsync);
-                        AddToMenu<IEditableLayerInfo>(menu, "字段赋值", layer, CopyAttributesAsync);
                         AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
+                        if (layer.NumberOfFeatures > 0)
+                        {
+                            MenuItem subMenu = new MenuItem() { Header = "图形编辑（正在加载）" };
+                            menu.Items.Add( subMenu);
+                            //需要获取所有要素后，再显示菜单
+                            layer.GetAllFeaturesAsync().ContinueWith(featuresTask =>
+                            {
+                                var features = featuresTask.Result;
+                                MainWindow.Dispatcher.Invoke(() =>
+                                {
+                                    subMenu.Header = "图形编辑";
+                                    var menuHelper = new FeatureLayerMenuHelper(MainWindow, MapView, layer, features);
+                                    foreach (var item in menuHelper.GetEditMenus(header => $"正在进行{header}操作"))
+                                    {
+                                        subMenu.Items.Add(item);
+                                    }
+                                });
+                            });
+                        }
                     }
                     AddToMenu<IMapLayerInfo>(menu, "筛选显示图形", layer, SetDefinitionExpression, !string.IsNullOrEmpty(layer.DefinitionExpression));
                     menu.Items.Add(new Separator());
 
-                    if (layer is IEditableLayerInfo e)
+                    if (layer is IEditableLayerInfo e && layer.CanEdit)
                     {
                         var menuImport = new MenuItem() { Header = "导入" };
                         menu.Items.Add(menuImport);
@@ -161,10 +172,6 @@ namespace MapBoard.UI
                     AddToMenu(menu, "合并", () => LayerUtility.UnionAsync(layers, MapView.Layers));
                 }
                 AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                if (layers.All(p => p.IsLoaded && p is ShapefileMapLayerInfo))
-                {
-                    AddToMenu(menu, "坐标转换", () => CoordinateTransformateAsync(layers.Cast<IEditableLayerInfo>().ToList()));
-                }
             }
             if (menu.Items.Count > 0)
             {
@@ -228,7 +235,7 @@ namespace MapBoard.UI
         {
             if (layer is T)
             {
-                AddToMenu(menu, header, () => func(layer as T),isChecked);
+                AddToMenu(menu, header, () => func(layer as T), isChecked);
             }
         }
 
@@ -344,34 +351,7 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task CoordinateTransformateAsync(IEditableLayerInfo layer)
-        {
-            CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
-            {
-                await MainWindow.DoAsync(async () =>
-                {
-                    await LayerUtility.CoordinateTransformateAsync(layer, dialog.Source, dialog.Target);
-                }, "正在进行坐标转换");
-            }
-        }
 
-        private async Task CoordinateTransformateAsync(IList<IEditableLayerInfo> layers)
-        {
-            CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
-            {
-                await MainWindow.DoAsync(async p =>
-                {
-                    int index = 0;
-                    foreach (var layer in layers)
-                    {
-                        p.SetMessage($"正在转换图层{++index}/{layers.Count}：{layer.Name}");
-                        await LayerUtility.CoordinateTransformateAsync(layer, dialog.Source, dialog.Target);
-                    }
-                }, "正在进行坐标转换");
-            }
-        }
 
         private async Task SetDefinitionExpression(IMapLayerInfo layer)
         {

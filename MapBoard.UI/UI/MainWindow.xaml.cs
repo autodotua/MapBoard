@@ -736,5 +736,17 @@ namespace MapBoard.UI
         }
 
         #endregion 图层列表事件
+
+
+        private async void SelectAllMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (arcMap.Layers.Selected != null)
+            {
+                await DoAsync(async () =>
+                 {
+                     arcMap.Selection.Select(await arcMap.Layers.Selected.QueryFeaturesAsync(new QueryParameters()), true);
+                 }, "正在全选");
+            }
+        }
     }
 }
