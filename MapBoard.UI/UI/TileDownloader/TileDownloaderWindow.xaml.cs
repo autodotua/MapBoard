@@ -21,6 +21,8 @@ using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
+using MapBoard.IO;
+using System.Drawing.Imaging;
 
 namespace MapBoard.UI.TileDownloader
 {
@@ -251,7 +253,7 @@ namespace MapBoard.UI.TileDownloader
 
         private void DeleteTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
-            Config.Tile_Urls.Sources.Remove(dgrdUrls.SelectedItem as TileSourceInfo);
+            Config.Tile_Urls.Sources.Remove(Config.Tile_Urls.SelectedUrl);
         }
 
         private async void DownloadButtonClick(object sender, RoutedEventArgs e)
@@ -293,15 +295,16 @@ namespace MapBoard.UI.TileDownloader
         private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
             TileSourceInfo tile = new TileSourceInfo();
-            if (dgrdUrls.SelectedIndex == -1)
+            if (Config.Tile_Urls.SelectedIndex == -1)
             {
                 Config.Tile_Urls.Sources.Add(tile);
+                Config.Tile_Urls.SelectedIndex = Config.Tile_Urls.Sources.Count - 1;
             }
             else
             {
-                Config.Tile_Urls.Sources.Insert(dgrdUrls.SelectedIndex + 1, tile);
+                Config.Tile_Urls.Sources.Insert(Config.Tile_Urls.SelectedIndex + 1, tile);
+                Config.Tile_Urls.SelectedIndex = Config.Tile_Urls.SelectedIndex + 1;
             }
-            dgrdUrls.SelectedItem = tile;
             dgrdUrls.ScrollIntoView(tile);
         }
 
@@ -329,9 +332,9 @@ namespace MapBoard.UI.TileDownloader
                 if (File.Exists(savedImgPath))
                 {
                     var file = new FileFilterCollection()
-                        .Add(Config.Tile_FormatExtension + "图片", Config.Tile_FormatExtension)
+                        .Add("TIFF图片", "tif")
                         .CreateSaveFileDialog()
-                        .SetDefault("地图." + Config.Tile_FormatExtension)
+                        .SetDefault("地图.tif")
                         .SetParent(this)
                         .GetFilePath();
                     if (file != null)
@@ -395,7 +398,7 @@ namespace MapBoard.UI.TileDownloader
                 ServerOn = true;
                 try
                 {
-                    NetUtility.StartServer(Config.Tile_ServerPort, Config.Tile_ServerFormat, Config.Tile_FormatExtension);
+                    NetUtility.StartServer(Config.Tile_ServerPort, Config.Tile_ServerFilePathFormat.Replace("{Download}", FolderPaths.TileDownloadPath), Config.Tile_FormatExtension);
                 }
                 catch (SocketException sex)
                 {
@@ -435,7 +438,7 @@ namespace MapBoard.UI.TileDownloader
             int skip = lastTile == null ? 0 : lastIndex;
             string baseUrl = Config.Tile_Urls.SelectedUrl.Url;
             arcMap.SketchEditor.IsEnabled = false;
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
                 while (enumerator.MoveNext())
@@ -451,7 +454,7 @@ namespace MapBoard.UI.TileDownloader
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                            NetUtility.HttpDownload(url, path, Config.Tile_RequestTimeOut, Config.Tile_ReadTimeOut, Config.Tile_DownloadUserAgent);
+                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
                             LastDownloadingStatus = "下载成功";
 
@@ -553,7 +556,7 @@ namespace MapBoard.UI.TileDownloader
                          {
                              Dispatcher.Invoke(async () =>
                             {
-                                await CommonDialog.ShowErrorDialogAsync("图片尺寸对于内存来说太大");
+                                await CommonDialog.ShowErrorDialogAsync("内存不足");
                             });
                              return;
                          }
@@ -589,7 +592,7 @@ namespace MapBoard.UI.TileDownloader
                          {
                              new FileInfo(savedImgPath).Directory.Create();
                          }
-                         bitmap.Save(savedImgPath, Config.Tile_ImageFormat);
+                         bitmap.Save(savedImgPath, ImageFormat.Tiff);
                          bitmap.Dispose();
                      }
                      catch (Exception ex)

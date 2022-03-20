@@ -82,11 +82,36 @@
                 Orientation="Vertical"
                 Spacing="8">
 
-                <TextBox
+                <ComboBox
+                    HorizontalAlignment="Stretch"
                     ui:ControlHelper.Header="用户代理"
-                    MaxLines="5"
-                    Text="{Binding Config.Tile_DownloadUserAgent}"
-                    TextWrapping="Wrap" />
+                    IsEditable="True"
+                    Text="{Binding Config.HttpUserAgent}">
+                    <ComboBox.ItemsSource>
+                        <x:Array Type="{x:Type system:String}">
+                            <system:String>Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) QQ/3.3.8.22043 TIM2.0/3.3.8.22043 Chrome/43.0.2357.134 Safari/537.36 QBCore/3.43.1298.400 QQBrowser/9.0.2524.400</system:String>
+                            <system:String>Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)</system:String>
+                            <system:String>ArcGISRuntime-NET/100.13 (Windows 10.0.19044; Win64; WOW64; .NET6.0.2; devmode)</system:String>
+                        </x:Array>
+                    </ComboBox.ItemsSource>
+                    <ComboBox.Resources>
+                        <Style
+                            x:Key="TxtStyle"
+                            BasedOn="{StaticResource ComboBoxTextBoxStyle}"
+                            TargetType="TextBox">
+                            <Setter Property="MaxLines" Value="5" />
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </Style>
+                    </ComboBox.Resources>
+                    <ComboBox.Style>
+                        <Style
+                            BasedOn="{StaticResource DefaultComboBoxStyle}"
+                            TargetType="{x:Type ComboBox}">
+                            <Setter Property="ui:ComboBoxHelper.TextBoxStyle" Value="{StaticResource TxtStyle}" />
+                        </Style>
+                    </ComboBox.Style>
+                </ComboBox>
 
                 <CheckBox
                     Content="下载时若文件已存在则覆盖"
@@ -98,15 +123,7 @@
                     Minimum="100"
                     SmallChange="100"
                     SpinButtonPlacementMode="Compact"
-                    Text="{Binding Config.Tile_RequestTimeOut}" />
-                <ui:NumberBox
-                    ui:ControlHelper.Header="下载超时（毫秒）"
-                    LargeChange="100"
-                    Maximum="15000"
-                    Minimum="100"
-                    SmallChange="100"
-                    SpinButtonPlacementMode="Compact"
-                    Value="{Binding Config.Tile_ReadTimeOut}" />
+                    Text="{Binding Config.HttpTimeOut}" />
                 <ui:NumberBox
                     ui:ControlHelper.Header="网络图层加载超时（毫秒）"
                     LargeChange="1000"
@@ -394,8 +411,8 @@
             <ui:SimpleStackPanel Spacing="8">
                 <GroupBox Header="属性">
                     <CheckBox
-                            Content="在绘制下一个图形时，保留之前的属性"
-                            IsChecked="{Binding Config.RemainAttribute}" />
+                        Content="在绘制下一个图形时，保留之前的属性"
+                        IsChecked="{Binding Config.RemainAttribute}" />
                 </GroupBox>
                 <GroupBox Header="捕捉">
                     <ui:SimpleStackPanel

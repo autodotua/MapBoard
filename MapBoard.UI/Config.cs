@@ -19,9 +19,7 @@ namespace MapBoard
         private static Config instance;
         private static readonly string path = FolderPaths.ConfigPath;
 
-        private int readTimeOut = 1000;
-
-        private int requestTimeOut = 1000;
+        private int httpTimeOut = 1000;
 
         private int serverLayerLoadTimeout = 5000;
 
@@ -163,31 +161,19 @@ namespace MapBoard
 
         public DownloadInfo Tile_LastDownload { get; set; } = null;
 
-        public int Tile_ReadTimeOut
+        public int HttpTimeOut
         {
-            get => readTimeOut;
+            get => httpTimeOut;
             set
             {
                 if (value > 0)
                 {
-                    readTimeOut = value;
+                    httpTimeOut = value;
                 }
             }
         }
 
-        public int Tile_RequestTimeOut
-        {
-            get => requestTimeOut;
-            set
-            {
-                if (value > 0)
-                {
-                    requestTimeOut = value;
-                }
-            }
-        }
-
-        public string Tile_ServerFormat { get; set; } = @"..\Download\{z}/{x}-{y}.{ext}";
+        public string Tile_ServerFilePathFormat { get; set; } = @"{Download}/{z}/{x}-{y}.{ext}";
 
         public int Tile_ServerPort { get; set; } = 8080;
 
@@ -195,7 +181,7 @@ namespace MapBoard
 
         public TileSourceCollection Tile_Urls { get; set; } = new TileSourceCollection();
 
-        public string Tile_UserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
+        public string HttpUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
 
         public bool UseCompactLayerList { get; set; } = false;
 

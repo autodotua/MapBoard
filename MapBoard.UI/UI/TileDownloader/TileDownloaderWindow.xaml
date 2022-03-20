@@ -467,7 +467,7 @@
                         <FrameworkElement Height="2" />
                         <TextBlock Foreground="Gray" Text="使用{ext}表示扩展名（不含.）" />
                         <FrameworkElement Height="4" />
-                        <TextBox Text="{Binding Config.Tile_ServerFormat}" />
+                        <TextBox Text="{Binding Config.Tile_ServerFilePathFormat}" />
                         <FrameworkElement Height="8" />
                         <TextBlock Text="服务端口：" />
                         <FrameworkElement Height="4" />

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
@@ -15,7 +16,7 @@ namespace MapBoard.Util
 {
     public static class NetUtility
     {
-        public static void HttpDownload(string url, string path, int requestTimeOut, int readTimeOut, string userAgent)
+        public static async Task HttpDownloadAsync(string url, string path, TimeSpan timeOut, string userAgent)
         {
             string tempPath = Path.Combine(Path.GetDirectoryName(path), "temp");
             Directory.CreateDirectory(tempPath);  //创建临时文件目录
@@ -29,15 +30,11 @@ namespace MapBoard.Util
 
                 using (FileStream fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    // 设置参数
-                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                    request.Timeout = requestTimeOut;
-                    request.ReadWriteTimeout = readTimeOut;
-                    request.UserAgent = userAgent;
-
-                    using HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                    using var responseStream = response.GetResponseStream();
-                    //创建本地文件写入流
+                    using HttpClient client = new HttpClient();
+                    client.Timeout = timeOut;
+                    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+                    using var responseStream=await     client.GetStreamAsync(url);
+                   
                     byte[] bArr = new byte[1024 * 1024];
                     int size = responseStream.Read(bArr, 0, bArr.Length);
                     while (size > 0)
@@ -76,7 +73,7 @@ namespace MapBoard.Util
         /// </summary>
         private static TcpListener tcpListener;
 
-        public static void StartServer(int port, string serverFormat, string extension)
+        public static void StartServer(int port, string filePathFormat, string extension)
         {
             IPAddress localaddress = IPAddress.Loopback;
 
@@ -109,7 +106,7 @@ namespace MapBoard.Util
                         {
                             try
                             {
-                                SendPic(client, serverFormat, extension);
+                                SendPic(client, filePathFormat, extension);
                             }
                             catch (Exception ex)
                             {
@@ -128,7 +125,7 @@ namespace MapBoard.Util
             });
         }
 
-        private static void SendPic(TcpClient client, string serverFormat, string extension)
+        private static void SendPic(TcpClient client, string fileFormat, string extension)
         {
             NetworkStream netstream = client.GetStream();
             // 把客户端的请求数据读入保存到一个数组中
@@ -144,7 +141,7 @@ namespace MapBoard.Util
                 int x = int.Parse(match.Groups[1].Value);
                 int y = int.Parse(match.Groups[2].Value);
                 int z = int.Parse(match.Groups[3].Value);
-                string file = serverFormat
+                string file = fileFormat
                     .Replace("{x}", x.ToString())
                     .Replace("{y}", y.ToString())
                     .Replace("{z}", z.ToString())

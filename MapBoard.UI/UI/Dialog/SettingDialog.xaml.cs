@@ -43,7 +43,6 @@ namespace MapBoard.UI.Dialog
         /// 地图画板地图包格式的ID
         /// </summary>
         private const string MbmpkgID = "MapBoard_mpmpkg";
-
         /// <summary>
         /// 是否可以关闭窗口
         /// </summary>

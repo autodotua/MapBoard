@@ -203,9 +203,10 @@ namespace MapBoard.Mapping
             return method.Invoke(null, null) as Basemap;
         }
 
-        private static WebTiledLayer AddTiledLayer(string url)
+        private static XYZTiledLayer AddTiledLayer(string url)
         {
-            WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+            XYZTiledLayer layer = XYZTiledLayer.Create(url, Config.Instance.HttpUserAgent);
+            //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return layer;
         }
 

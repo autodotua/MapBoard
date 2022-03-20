@@ -248,8 +248,8 @@ namespace MapBoard.Util
         {
             // 设置参数
             var client = new HttpClient();
-            client.Timeout = TimeSpan.FromMilliseconds(Config.Instance.Tile_RequestTimeOut);
-            client.DefaultRequestHeaders.Add("User-Agent", Config.Instance.Tile_UserAgent);
+            client.Timeout = TimeSpan.FromMilliseconds(Config.Instance.HttpTimeOut);
+            client.DefaultRequestHeaders.Add("User-Agent", Config.Instance.HttpUserAgent);
 
             using var response = await client.GetAsync(url);
             using var content = response.Content;

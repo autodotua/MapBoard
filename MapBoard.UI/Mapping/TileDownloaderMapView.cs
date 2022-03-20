@@ -11,6 +11,7 @@ using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -35,7 +36,7 @@ namespace MapBoard.Mapping
             graphic.IsVisible = false;
             graphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, Color.FromArgb(0x77, 0xFF, 0x00, 0x00), new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Green, 12));
             overlay.Graphics.Add(graphic);
-            Map = new Esri.ArcGISRuntime.Mapping.Map(SpatialReferences.WebMercator);
+            Map = new Map(SpatialReferences.WebMercator);
 
             Map.LoadAsync().Wait();
 
@@ -81,7 +82,7 @@ namespace MapBoard.Mapping
             {
                 if (IsLocal)
                 {
-                    baseLayer = new WebTiledLayer($"http://127.0.0.1:" + Config.Instance.Tile_ServerPort + "/{col}-{row}-{level}");
+                    baseLayer =  XYZTiledLayer.Create  ($"http://127.0.0.1:" + Config.Instance.Tile_ServerPort + "/{x}-{y}-{z}",null);
                 }
                 else
                 {
@@ -89,8 +90,8 @@ namespace MapBoard.Mapping
                     {
                         return;
                     }
-
-                    baseLayer = new WebTiledLayer(Config.Instance.Tile_Urls.SelectedUrl.Url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+                    var a = new WebTiledLayer("http://{level}.{col}.{row}");
+                    baseLayer = XYZTiledLayer .Create(Config.Instance.Tile_Urls.SelectedUrl.Url,Config.Instance.HttpUserAgent);
                 }
                 Basemap basemap = new Basemap(baseLayer);
 
