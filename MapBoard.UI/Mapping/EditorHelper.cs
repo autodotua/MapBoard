@@ -343,6 +343,7 @@ namespace MapBoard.Mapping
             double minPointDistance = double.MaxValue;
             foreach (var geometry in results
                         .Where(p => p.LayerContent.IsVisible)//图层可见
+                        .Where(p=>p.LayerContent is FeatureLayer)//需要矢量图层
                         .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
                         .Where(p => p.Layer?.Interaction?.CanCatch??false)//图层可捕捉
                         .SelectMany(p => p.Elements)
@@ -396,6 +397,7 @@ namespace MapBoard.Mapping
         private async void MapView_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (!CanCatchNearestPoint()
+                || MapView.CurrentTask!=BoardTask.Draw
                 || e.LeftButton == MouseButtonState.Pressed)
             {
                 return;
