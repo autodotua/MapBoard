@@ -12,20 +12,23 @@ namespace MapBoard.Mapping.Model
 {
     public static class FieldExtension
     {
-  public static bool CanBeRendererKey(this FieldInfo field)
+        public static bool CanBeRendererKey(this FieldInfo field)
         {
             return field.Type is FieldInfoType.Text or FieldInfoType.Integer or FieldInfoType.Float;
         }
 
         public static bool IsIdField(this Field field)
         {
-            return field.Name.ToLower() is "fid" or "objectid";
+            return IsIdField(field.Name);
         }
 
         public static bool IsIdField(this FieldInfo field)
         {
-            return field.Name.ToLower() == "fid";
-            //暂时不考虑GID、ID、ObjectID
+            return IsIdField(field.Name);
+        }
+        public static bool IsIdField(string field)
+        {
+            return field.ToLower() is "fid" or "id" or "objectid";
         }
 
         public static IEnumerable<FieldInfo> SyncWithSource(FieldInfo[] fields, FeatureTable table)
@@ -102,12 +105,10 @@ namespace MapBoard.Mapping.Model
             Dictionary<string, FieldInfo> result = new Dictionary<string, FieldInfo>();
             foreach (var field in fields)
             {
-                string name = field.Name.ToLower();
-                if (name == "id" || name == "fid")
+                if (!field.IsIdField())
                 {
-                    continue;
+                    result.Add(field.Name, field.ToFieldInfo());
                 }
-                result.Add(field.Name, field.ToFieldInfo());
             }
             return result;
         }

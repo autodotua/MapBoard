@@ -123,10 +123,15 @@ namespace MapBoard.IO
             }
             else
             {
-                await Parallel.ForEachAsync(layers.OfType<IFileBasedLayer>(), async (layer, cancel) =>
-                 {
-                     await layer.SaveTo(directory.FullName);
-                 });
+                //await Parallel.ForEachAsync(layers.OfType<IFileBasedLayer>(), async (layer, cancel) =>
+                // {
+                //     await layer.SaveTo(directory.FullName);
+                // });
+
+                foreach (IFileBasedLayer layer in layers)
+                {
+                    await layer.SaveTo(directory.FullName);
+                }
             }
             layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
 

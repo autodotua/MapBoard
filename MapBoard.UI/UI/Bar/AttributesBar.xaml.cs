@@ -85,9 +85,15 @@ namespace MapBoard.UI.Bar
             {
                 await IOUtility.TryOpenInShellAsync(text);
             }
-
-            Clipboard.SetText(text);
-            SnakeBar.Show($"已复制{text}到剪贴板");
+            try
+            {
+                Clipboard.SetText(text);
+                SnakeBar.Show($"已复制{text}到剪贴板");
+            }
+            catch(Exception ex)
+            {
+                SnakeBar.ShowError(ex.Message);
+            }
         }
 
         private void DataGridCell_Selected(object sender, RoutedEventArgs e)

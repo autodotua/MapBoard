@@ -82,7 +82,7 @@ namespace MapBoard.UI.Dialog
                         {
                             newFeature.Add(new UpdatedFeature(feature.Feature));
                             feature.Feature.Geometry = feature.OldGeometry;
-                            foreach (var attr in feature.OldAttributes.Where(p => p.Key != "FID"))
+                            foreach (var attr in feature.OldAttributes.Where(p => !FieldExtension.IsIdField(p.Key)))
                             {
                                 try
                                 {

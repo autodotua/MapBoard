@@ -62,13 +62,13 @@ namespace MapBoard.Mapping.Model
                 Feature = feature
             };
 
-            foreach (var attr in feature.Attributes.Where(p => p.Key is not "FID" or "ObjectID" or Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName))
+            foreach (var attr in feature.Attributes.Where(p => !FieldExtension.IsIdField(p.Key)))
             {
                 FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))
                 {
                     var field = layer.Fields.First(p => p.Name == attr.Key);
-                    newAttr =  FeatureAttribute.FromFieldAndValue(field, attr.Value);
+                    newAttr = FeatureAttribute.FromFieldAndValue(field, attr.Value);
                 }
                 else
                 {
