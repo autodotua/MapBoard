@@ -84,7 +84,7 @@ namespace MapBoard
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
 
 #endif
-
+            System.IO.Directory.SetCurrentDirectory(FzLib.Program.App.ProgramDirectoryPath);
             Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
             Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;
 
@@ -175,7 +175,6 @@ namespace MapBoard
             }
             catch (Exception ex)
             {
-
             }
         }
 
