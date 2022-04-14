@@ -343,9 +343,9 @@ namespace MapBoard.Mapping
             double minPointDistance = double.MaxValue;
             foreach (var geometry in results
                         .Where(p => p.LayerContent.IsVisible)//图层可见
-                        .Where(p=>p.LayerContent is FeatureLayer)//需要矢量图层
+                        .Where(p => p.LayerContent is FeatureLayer)//需要矢量图层
                         .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
-                        .Where(p => p.Layer?.Interaction?.CanCatch??false)//图层可捕捉
+                        .Where(p => p.Layer?.Interaction?.CanCatch ?? false)//图层可捕捉
                         .SelectMany(p => p.Elements)
                         .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())//直接捕捉配置下，排除正在编辑的图形
                         .Select(p => p.Geometry)
@@ -390,19 +390,51 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
+        /// 鼠标是否在绘制的图形旁。
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        private bool IsMouseNearSketch(MapPoint location)
+        {
+            Geometry geometry = SketchEditor.Geometry;
+            if (geometry == null || geometry.IsEmpty)
+            {
+                return false;
+            }
+            if (geometry is Polygon p)
+            {
+                geometry = p.ToPolyline();
+            }
+            location = location.ToWebMercator();
+            var tolerance = 3; //像素
+            var buffer = GeometryEngine.BufferGeodetic(location,
+                tolerance * MapView.UnitsPerPixel * tolerance,
+                LinearUnits.Meters);
+            if (GeometryEngine.Intersects(buffer, geometry))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 鼠标位置移动事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private async void MapView_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (!CanCatchNearestPoint()
-                || MapView.CurrentTask!=BoardTask.Draw
-                || e.LeftButton == MouseButtonState.Pressed)
+            var position = e.GetPosition(MapView);
+            var location = MapView.ScreenToLocation(position);
+            if (!CanCatchNearestPoint()//没开
+                || MapView.CurrentTask != BoardTask.Draw//没有正在画质
+                || e.LeftButton == MouseButtonState.Pressed//鼠标左键按下了
+                || IsMouseNearSketch(location))//距离正在绘制的图形太近
             {
+                MapView.Overlay.SetNearestPointPoint(null);
+                MapView.Overlay.SetNearestVertexPoint(null);
                 return;
             }
-            var position = e.GetPosition(MapView);
             if (!isSearchingNearestPoint)
             {
                 isSearchingNearestPoint = true;
@@ -422,7 +454,7 @@ namespace MapBoard.Mapping
                 {
                     MapView.Overlay.SetNearestPointPoint(null);
                 }
-                
+
                 if (Config.Instance.ShowNearestPointSymbol || Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     MapView.Overlay.SetNearestVertexPoint(nearestVertex);
@@ -431,7 +463,6 @@ namespace MapBoard.Mapping
                 {
                     MapView.Overlay.SetNearestVertexPoint(null);
                 }
-        
             }
         }
 

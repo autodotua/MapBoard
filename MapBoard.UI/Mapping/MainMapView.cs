@@ -14,6 +14,7 @@ using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -272,6 +273,15 @@ namespace MapBoard.Mapping
                             {
                                 await Editor.DrawAsync(type.Value);
                             }
+                            break;
+
+                        case BoardTask.Select
+                        when Selection.SelectedFeatures.Count == 1
+                            && Layers.Selected?.LayerVisible == true
+                            && Layers.Selected?.CanEdit == true:
+                            var feature = Selection.SelectedFeatures.Single();
+                            Selection.ClearSelection();
+                            Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
                             break;
                     }
                     break;
