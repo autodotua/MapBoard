@@ -201,7 +201,7 @@ namespace MapBoard.Util
         /// <param name="union"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, IEditableLayerInfo targetLayer, double meters, bool union, Feature[] features = null)
+        public static async Task BufferAsync(this IMapLayerInfo layer, MapLayerCollection layers, IEditableLayerInfo targetLayer, double[] meters, bool union, Feature[] features = null)
         {
             if (targetLayer == null)
             {
@@ -214,6 +214,10 @@ namespace MapBoard.Util
                         FillColor = symbol.Value.LineColor
                     });
                 }
+                template.Fields = new FieldInfo[]
+                {
+                    new FieldInfo("RingIndex","环索引",FieldInfoType.Integer)
+                };
                 targetLayer = await CreateShapefileLayerAsync(GeometryType.Polygon, layers, template, true, layer.Name + "-缓冲区");
             }
             await FeatureUtility.BufferToLayerAsync(layer, targetLayer, features == null ? await layer.GetAllFeaturesAsync() : features, meters, union);

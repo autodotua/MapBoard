@@ -37,16 +37,16 @@ namespace MapBoard.UI
             this.mapView = mapView ?? throw new ArgumentNullException(nameof(mapView));
         }
 
-        async Task BufferAsync()
+        private async Task BufferAsync()
         {
             var dialog = new BufferDialog(mapView.Layers);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.BufferAsync(layer, mapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union, features);
+                await LayerUtility.BufferAsync(layer, mapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distances, dialog.Union, features);
             }
         }
 
-        async Task SeparateAsync()
+        private async Task SeparateAsync()
         {
             var result = await FeatureUtility.SeparateAsync(editableLayer, features);
             if (result == null || result.Count == 0)
@@ -60,14 +60,14 @@ namespace MapBoard.UI
             }
         }
 
-        async Task UnionAsync()
+        private async Task UnionAsync()
         {
             var result = await FeatureUtility.UnionAsync(editableLayer, features);
             mapView.Selection.Select(result, true);
             SnakeBar.Show($"合并完成");
         }
 
-        async Task LinkAsync()
+        private async Task LinkAsync()
         {
             List<SelectDialogItem> typeList = new List<SelectDialogItem>();
             bool headToHead = false;
@@ -123,13 +123,13 @@ namespace MapBoard.UI
             mapView.Selection.Select(feature, true);
         }
 
-        async Task ReverseAsync()
+        private async Task ReverseAsync()
         {
             await FeatureUtility.ReverseAsync(editableLayer, features);
             SnakeBar.Show($"反转完成");
         }
 
-        async Task DensifyAsync()
+        private async Task DensifyAsync()
         {
             double? num = await CommonDialog.ShowDoubleInputDialogAsync("请输入最大间隔（米）");
             if (num.HasValue)
@@ -139,7 +139,7 @@ namespace MapBoard.UI
             }
         }
 
-        async Task SmoothAsync()
+        private async Task SmoothAsync()
         {
             var dialog = new SmoothDialog();
             if (await dialog.ShowAsync(ContentDialogPlacement.InPlace) == ContentDialogResult.Primary)
@@ -152,7 +152,7 @@ namespace MapBoard.UI
             }
         }
 
-        async Task SimplifyAsync()
+        private async Task SimplifyAsync()
         {
             int i = await CommonDialog.ShowSelectItemDialogAsync("请选择简化方法", new SelectDialogItem[]
                {
@@ -184,14 +184,14 @@ namespace MapBoard.UI
             }
         }
 
-        async Task CreateCopyAsync()
+        private async Task CreateCopyAsync()
         {
             mapView.Selection.ClearSelection();
             var newFeatures = await FeatureUtility.CreateCopyAsync(editableLayer, features);
             mapView.Selection.Select(newFeatures);
         }
 
-        async Task CopyAttributeAsync()
+        private async Task CopyAttributeAsync()
         {
             var dialog = new CopyAttributesDialog(editableLayer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -220,7 +220,7 @@ namespace MapBoard.UI
             }
         }
 
-        async Task CoordinateTransformateAsync()
+        private async Task CoordinateTransformateAsync()
         {
             CoordinateTransformationDialog dialog = new CoordinateTransformationDialog();
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Source != dialog.Target)
@@ -241,14 +241,17 @@ namespace MapBoard.UI
                 IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, mainWindow);
             }
         }
-        Task ToCsvAsync()
+
+        private Task ToCsvAsync()
         {
             return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, mapView.Selection.SelectedFeatures));
         }
-        Task ToGeoJsonAsync()
+
+        private Task ToGeoJsonAsync()
         {
             return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, mapView.Selection.SelectedFeatures));
         }
+
         private List<(string header, string desc, Func<Task> action, bool visible)> GetEditMenus() =>
 new List<(string header, string desc, Func<Task> action, bool visible)>()
        {
@@ -296,13 +299,14 @@ new List<(string header, string desc, Func<Task> action, bool visible)>()
             }
             return GetMenus(getMessage, GetEditMenus());
         }
+
         public IEnumerable<MenuItem> GetExportMenus(Func<string, string> getMessage)
         {
             return GetMenus(getMessage, GetExportMenus());
         }
+
         private IEnumerable<MenuItem> GetMenus(Func<string, string> getMessage, List<(string header, string desc, Func<Task> action, bool visible)> menus)
         {
-
             foreach (var (header, desc, action, visible) in menus)
             {
                 if (visible)

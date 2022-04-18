@@ -55,6 +55,8 @@ namespace MapBoard
 
         public bool BackupWhenReplace { get; set; } = true;
 
+        public List<double> BufferDistances { get; set; } = new List<double>() { 1000 };
+
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
 
         public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;

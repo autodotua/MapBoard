@@ -13,6 +13,7 @@ using static MapBoard.Util.GeometryUtility;
 using Esri.ArcGISRuntime.Symbology;
 using MapBoard.Model;
 using System.Collections.Concurrent;
+using FzLib.Collection;
 
 namespace MapBoard.Util
 {
@@ -322,15 +323,15 @@ namespace MapBoard.Util
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
-            Parallel.ForEach(features.Where(p=>!p.Geometry.IsEmpty), feature =>
-            {
-                Geometry geometry = feature.Geometry;
-                geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
-                geometry = GeometryEngine.Generalize(geometry, max, false);
-                geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
-                newFeatures.Add(new UpdatedFeature(feature, geometry, feature.Attributes));
-                feature.Geometry = geometry;
-            });
+            Parallel.ForEach(features.Where(p => !p.Geometry.IsEmpty), feature =>
+              {
+                  Geometry geometry = feature.Geometry;
+                  geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
+                  geometry = GeometryEngine.Generalize(geometry, max, false);
+                  geometry = GeometryEngine.Project(geometry, SpatialReferences.Wgs84);
+                  newFeatures.Add(new UpdatedFeature(feature, geometry, feature.Attributes));
+                  feature.Geometry = geometry;
+              });
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
 
@@ -659,26 +660,36 @@ namespace MapBoard.Util
         /// 将图形建立缓冲区后放入一个多边形图层
         /// </summary>
         /// <returns></returns>
-        public static async Task BufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double meters, bool union)
+        public static async Task BufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double[] meters, bool union)
         {
             List<Feature> newFeatures = new List<Feature>();
+            Debug.Assert(Enumerable.Range(0, meters.Length - 1).All(i => meters[i] < meters[i + 1]));
             await Task.Run(() =>
             {
-                var geometries = GeometryEngine.BufferGeodetic(features.Select(p => p.Geometry), new double[] { meters }, LinearUnits.Meters, unionResult: union).ToList();
-                if (!union)
+                List<List<Geometry>> rings = new List<List<Geometry>>();
+                foreach (var meter in meters)
                 {
-                    Debug.Assert(features.Length == geometries.Count);
-                    for (int i = 0; i < features.Length; i++)
-                    {
-                        Feature newFeature = layerTo.CreateFeature(features[i].Attributes, geometries[i]);
-                        newFeatures.Add(newFeature);
-                    }
+                    List<Geometry> geometries = GeometryEngine.BufferGeodetic(features.Select(p => p.Geometry), new double[] { meter }, LinearUnits.Meters, unionResult: union).ToList();
+
+                    rings.Add(geometries);
                 }
-                else
+                Debug.Assert(rings.All(p => p.Count == (union ? 1 : features.Length)));
+                for (int i = 0; i < (union ? 1 : features.Length); i++)
                 {
-                    Debug.Assert(geometries.Count == 1);
-                    Feature newFeature = layerTo.CreateFeature(null, geometries[0]);
-                    newFeatures.Add(newFeature);
+                    Geometry innerGeom = null;
+                    for (int j = 0; j < rings.Count; j++)
+                    {
+                        var geom = rings[j][i];
+                        Feature newFeature = innerGeom == null ?
+                            layerTo.CreateFeature(features[i].Attributes, geom)
+                            : layerTo.CreateFeature(features[i].Attributes, GeometryEngine.SymmetricDifference(geom, innerGeom));
+                        if (newFeature.Attributes.ContainsKey("RingIndex"))
+                        {
+                            newFeature.Attributes["RingIndex"] = j + 1;
+                        }
+                        newFeatures.Add(newFeature);
+                        innerGeom = geom;
+                    }
                 }
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
@@ -754,7 +765,6 @@ namespace MapBoard.Util
             await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
         }
 
-
         /// <summary>
         /// 坐标转换
         /// </summary>
@@ -773,10 +783,9 @@ namespace MapBoard.Util
             foreach (var feature in features)
             {
                 newFeatures.Add(new UpdatedFeature(feature));
-                feature.Geometry = CoordinateTransformation. Transformate(feature.Geometry, source, target);
+                feature.Geometry = CoordinateTransformation.Transformate(feature.Geometry, source, target);
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
-
     }
 }

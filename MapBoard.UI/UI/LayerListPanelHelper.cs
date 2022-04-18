@@ -90,7 +90,7 @@ namespace MapBoard.UI
                         if (layer.NumberOfFeatures > 0)
                         {
                             MenuItem subMenu = new MenuItem() { Header = "图形编辑（正在加载）" };
-                            menu.Items.Add( subMenu);
+                            menu.Items.Add(subMenu);
                             //需要获取所有要素后，再显示菜单
                             layer.GetAllFeaturesAsync().ContinueWith(featuresTask =>
                             {
@@ -334,7 +334,7 @@ namespace MapBoard.UI
             var dialog = new BufferDialog(MapView.Layers);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distance, dialog.Union);
+                await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distances, dialog.Union);
             }
         }
 
@@ -350,8 +350,6 @@ namespace MapBoard.UI
                 await CommonDialog.ShowErrorDialogAsync(ex, "缩放失败，可能是不构成有面积的图形");
             }
         }
-
-
 
         private async Task SetDefinitionExpression(IMapLayerInfo layer)
         {

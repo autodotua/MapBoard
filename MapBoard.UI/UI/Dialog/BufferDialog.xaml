@@ -19,12 +19,24 @@
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
         Spacing="8">
-        <ui:NumberBox
-            HorizontalAlignment="Stretch"
-            ui:ControlHelper.Header="距离（米）"
-            Maximum="1e6"
-            Minimum="0.01"
-            Value="{Binding Distance}" />
+        <TextBlock
+            Margin="0,0,0,-4"
+            Text="缓冲区半径" />
+        <ItemsControl ItemsSource="{Binding DistanceWrappers}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ui:NumberBox
+                        Margin="0,4"
+                        HorizontalAlignment="Stretch"
+                        Maximum="1e6"
+                        Minimum="0.01"
+                        Value="{Binding Value}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Click="AddDistanceButton_Click">
+            <ui:SymbolIcon Symbol="Add" />
+        </Button>
         <CheckBox
             Content="生成单个图形"
             IsChecked="{Binding Union}" />
@@ -38,6 +50,8 @@
             IsEnabled="{Binding ToNewLayer, Converter={StaticResource InverseBoolConverter}}"
             ItemsSource="{Binding PolygonLayers}"
             SelectedItem="{Binding TargetLayer}" />
-        <TextBlock Text="{Binding Message}" Foreground="Red"/>
+        <TextBlock
+            Foreground="Red"
+            Text="{Binding Message}" />
     </ui:SimpleStackPanel>
 </commondialog:CommonDialog>
