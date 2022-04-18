@@ -433,6 +433,7 @@ namespace MapBoard.Mapping
             {
                 MapView.Overlay.SetNearestPointPoint(null);
                 MapView.Overlay.SetNearestVertexPoint(null);
+                nearestVertex = nearestPoint = null;
                 return;
             }
             if (!isSearchingNearestPoint)

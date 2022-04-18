@@ -97,6 +97,7 @@ namespace MapBoard.UI
         public void ResetLayerSettingUI()
         {
             IMapLayerInfo layer = Layers.Selected;
+            this.Notify(nameof(KeyFields));
             if (layer == null)
             {
                 tab.IsEnabled = false;

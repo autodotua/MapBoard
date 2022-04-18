@@ -22,7 +22,7 @@ namespace MapBoard.Util
     {
         public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
         {
-            if (layers.Contains(layer))
+            if (layers != null && layers.Contains(layer))
             {
                 layers.Remove(layer);
             }
@@ -81,15 +81,29 @@ namespace MapBoard.Util
             return layer;
         }
 
-        public static async Task<ShapefileMapLayerInfo> CreateShapefileLayerAsync(GeometryType type,
+        public static Task<ShapefileMapLayerInfo> CreateShapefileLayerAsync(GeometryType type,
                                                              MapLayerCollection layers,
                                                              IMapLayerInfo template,
                                                              bool includeFields,
                                                              string name = null)
         {
+            return CreateShapefileLayerAsync(type, layers, template, includeFields, null, name);
+        }
+
+        public static async Task<ShapefileMapLayerInfo> CreateShapefileLayerAsync(GeometryType type,
+                                                             MapLayerCollection layers,
+                                                             IMapLayerInfo template,
+                                                             bool includeFields,
+                                                             FieldInfo[] fileds,
+                                                             string name = null)
+        {
             if (template == null)
             {
                 throw new ArgumentNullException(nameof(template));
+            }
+            if (fileds != null && includeFields)
+            {
+                throw new ArgumentException("不可同时继承字段又指定字段");
             }
             if (name == null)
             {
@@ -100,8 +114,15 @@ namespace MapBoard.Util
             await Shapefile.CreateShapefileAsync(type, name, null, template.Fields);
             Debug.Assert(template is MapLayerInfo);
             ShapefileMapLayerInfo layer = new ShapefileMapLayerInfo(template as MapLayerInfo, name, includeFields);
-            await layers.AddAsync(layer);
-            layers.Selected = layer;
+            if (fileds != null)
+            {
+                layer.Fields = fileds;
+            }
+            if (layers != null)
+            {
+                await layers.AddAsync(layer);
+                layers.Selected = layer;
+            }
             return layer;
         }
 
@@ -147,6 +168,12 @@ namespace MapBoard.Util
         public static FeatureQueryResult GetAllFeatures(this IMapLayerInfo layer)
         {
             return layer.QueryFeaturesAsync(new QueryParameters()).Result;
+        }
+
+        public static void CopyStyles(IMapLayerInfo source, IMapLayerInfo target)
+        {
+            target.Labels = source.Labels.Select(p => p.Clone() as LabelInfo).ToArray();
+            target.Renderer = source.Renderer.Clone() as UniqueValueRendererInfo;
         }
 
         public static async Task CopyAllFeaturesAsync(IMapLayerInfo source, ShapefileMapLayerInfo target)

@@ -41,7 +41,7 @@ namespace MapBoard.Model
         UniqueValueRendererInfo Renderer { get; set; }
 
         /// <summary>
-        /// 时间范围
+        /// 筛选
         /// </summary>
         string DefinitionExpression { get; set; }
 

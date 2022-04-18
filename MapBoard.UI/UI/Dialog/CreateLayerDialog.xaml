@@ -30,6 +30,7 @@
     </commondialog:CommonDialog.Resources>
     <ui:SimpleStackPanel Spacing="8">
         <TextBox
+            x:Name="txtName"
             ui:ControlHelper.Header="图层名"
             Text="{Binding LayerName}" />
         <Grid
@@ -107,6 +108,7 @@
             </DataGrid.Columns>
         </DataGrid>
         <ui:SimpleStackPanel
+            x:Name="stkAddField"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
             Spacing="8">

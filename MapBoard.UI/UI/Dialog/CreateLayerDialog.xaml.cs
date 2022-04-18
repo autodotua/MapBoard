@@ -22,6 +22,7 @@ using System.Windows.Shapes;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.Dialogs.Controls;
+using EsriLayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 
 namespace MapBoard.UI.Dialog
 {
@@ -30,7 +31,7 @@ namespace MapBoard.UI.Dialog
         public MapLayerInfo editLayer = null;
         private string layerType;
 
-        private CreateLayerDialog(MapLayerCollection layers, MapLayerInfo layer, string layerType)
+        private CreateLayerDialog(MapLayerCollection layers, string layerType, MapLayerInfo layer, EsriLayerCollection esriLayers)
         {
             this.layerType = layerType;
             Fields.CollectionChanged += (s, e) => this.Notify(nameof(CanAddCreateTimeField), nameof(CanAddModifiedTimeField));
@@ -39,8 +40,7 @@ namespace MapBoard.UI.Dialog
             {
                 Title = layer switch
                 {
-                    ShapefileMapLayerInfo => "编辑字段别名",
-                    TempMapLayerInfo => "编辑图层属性",
+                    ShapefileMapLayerInfo or TempMapLayerInfo => "编辑图层属性",
                     _ => throw new ArgumentException()
                 };
                 if (layer is TempMapLayerInfo)
@@ -82,6 +82,8 @@ namespace MapBoard.UI.Dialog
                     dg.Columns[2].IsReadOnly = true;
                     dg.CanUserAddRows = false;
                     dg.CanUserDeleteRows = false;
+                    txtName.IsReadOnly = true;
+                    stkAddField.Visibility = Visibility.Collapsed;
                 }
 
                 foreach (var field in layer.Fields)
@@ -94,6 +96,7 @@ namespace MapBoard.UI.Dialog
                 LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
             }
             Layers = layers;
+            EsriLayers = esriLayers;
         }
 
         public ObservableCollection<FieldInfo> Fields { get; } = new ObservableCollection<FieldInfo>();
@@ -101,7 +104,7 @@ namespace MapBoard.UI.Dialog
         public string LayerName { get; set; }
 
         public MapLayerCollection Layers { get; }
-
+        public EsriLayerCollection EsriLayers { get; }
         public string Message { get; set; }
 
         public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
@@ -110,14 +113,14 @@ namespace MapBoard.UI.Dialog
         public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
-            return new CreateLayerDialog(layers, null, GetLayerType<T>()).ShowAsync();
+            return new CreateLayerDialog(layers, GetLayerType<T>(), null, null).ShowAsync();
         }
 
-        public static Task OpenEditDialog<T>(MapLayerCollection layers, T layer) where T : MapLayerInfo
+        public static Task OpenEditDialog<T>(MapLayerCollection layers, EsriLayerCollection esriLayers, T layer) where T : MapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
             _ = layer ?? throw new ArgumentNullException(nameof(layer));
-            return new CreateLayerDialog(layers, layer, GetLayerType<T>()).ShowAsync();
+            return new CreateLayerDialog(layers, GetLayerType<T>(), layer, esriLayers).ShowAsync();
         }
 
         private static string GetLayerType<T>() where T : MapLayerInfo
@@ -182,6 +185,7 @@ namespace MapBoard.UI.Dialog
                 switch (layerType)
                 {
                     case MapLayerInfo.Types.Shapefile:
+                        //(editLayer as ShapefileMapLayerInfo).ModifyFieldsAsync(Fields.ToArray(), EsriLayers);
                         editLayer.Fields = Fields.ToArray();
                         break;
 

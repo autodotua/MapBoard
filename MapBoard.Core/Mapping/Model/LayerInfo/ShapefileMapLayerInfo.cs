@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
 using MapBoard.Model;
+using MapBoard.Util;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -98,6 +99,33 @@ namespace MapBoard.Mapping.Model
             Name = newName;
             await LoadAsync();
             layers[index] = Layer;
+        }
+
+        public async Task ModifyFieldsAsync(FieldInfo[] newFields, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            //检查图层是否在集合中
+            if (!layers.Contains(Layer))
+            {
+                throw new ArgumentException("本图层不在给定的图层集合中");
+            }
+            int index = layers.IndexOf(Layer);
+
+            var oldFeatures = (await QueryFeaturesAsync(new QueryParameters())).ToList();
+            (table as ShapefileFeatureTable).Close();
+            //重命名
+            await LayerUtility.DeleteLayerAsync(this, null, true);
+
+            await LayerUtility.CreateShapefileLayerAsync(GeometryType, null, this, false, newFields, Name);
+
+            await LoadAsync();
+            layers[index] = Layer;
+            try
+            {
+                await AddFeaturesAsync(oldFeatures, FeaturesChangedSource.Import);
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         public string[] GetFilePaths()

@@ -72,6 +72,7 @@ namespace MapBoard.UI
                     }
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
+                    AddToMenu(menu, "复制样式到", () => CopyStylesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
                     AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
 
@@ -89,7 +90,7 @@ namespace MapBoard.UI
                         AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
                         if (layer.NumberOfFeatures > 0)
                         {
-                            MenuItem subMenu = new MenuItem() { Header = "图形编辑（正在加载）" };
+                            MenuItem subMenu = new MenuItem() { Header = "地理分析（正在加载）" };
                             menu.Items.Add(subMenu);
                             //需要获取所有要素后，再显示菜单
                             layer.GetAllFeaturesAsync().ContinueWith(featuresTask =>
@@ -97,7 +98,7 @@ namespace MapBoard.UI
                                 var features = featuresTask.Result;
                                 MainWindow.Dispatcher.Invoke(() =>
                                 {
-                                    subMenu.Header = "图形编辑";
+                                    subMenu.Header = "地理分析";
                                     var menuHelper = new FeatureLayerMenuHelper(MainWindow, MapView, layer, features);
                                     foreach (var item in menuHelper.GetEditMenus(header => $"正在进行{header}操作"))
                                     {
@@ -284,6 +285,16 @@ namespace MapBoard.UI
             menu.Items.Add(item);
         }
 
+        private async Task CopyStylesAsync(IMapLayerInfo layer)
+        {
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, p => true, true);
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                LayerUtility.CopyStyles(layer, dialog.SelectedLayer);
+                dialog.SelectedLayer.ApplyStyle();
+            }
+        }
+
         private async Task CopyFeaturesAsync(IMapLayerInfo layer)
         {
             SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
@@ -297,19 +308,14 @@ namespace MapBoard.UI
 
         private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
         {
-            if (layer.Fields.Length == 0)
-            {
-                await CommonDialog.ShowErrorDialogAsync("该图层没有自定义字段");
-                return;
-            }
             MapView.Selection.ClearSelection();
-            await CreateLayerDialog.OpenEditDialog(MapView.Layers, layer);
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
         }
 
         private async Task SetTempLayerAsync(TempMapLayerInfo layer)
         {
             MapView.Selection.ClearSelection();
-            await CreateLayerDialog.OpenEditDialog(MapView.Layers, layer);
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
         }
 
         private async Task CreateCopyAsync(IMapLayerInfo layer)
@@ -362,7 +368,7 @@ namespace MapBoard.UI
         {
             if (list.SelectedItems.Count == 0)
             {
-                SnakeBar.ShowError("没有选择任何样式");
+                SnakeBar.ShowError("没有选择任何图层");
                 return;
             }
             foreach (MapLayerInfo layer in layers)

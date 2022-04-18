@@ -55,7 +55,7 @@ namespace MapBoard
 
         public bool BackupWhenReplace { get; set; } = true;
 
-        public List<double> BufferDistances { get; set; } = new List<double>() { 1000 };
+        public List<double> BufferDistances { get; set; } = new List<double>();
 
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
 
