@@ -89,14 +89,27 @@ namespace MapBoard.UI.GpxToolbox
             {
                 return;
             }
-            bool yes = true;
-            if (files.Length > 10)
+
+            List<string> fileList=new List<string>();
+            foreach (var file in files)
             {
-                yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{files.Length}个文件");
+                if(File.Exists(file))
+                {
+                    fileList.Add(file);
+                }
+                else if(Directory.Exists(file))
+                {
+                    fileList.AddRange(Directory.EnumerateFiles(file, "*.gpx", SearchOption.AllDirectories));
+                }
+            }
+            bool yes = true;
+            if (fileList.Count > 10)
+            {
+                yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{fileList.Count}个文件");
             }
             if (yes)
             {
-                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
+                await DoAsync(() => arcMap.LoadFilesAsync(fileList), "正在导入轨迹");
             }
         }
 
