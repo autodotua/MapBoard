@@ -26,9 +26,15 @@ namespace MapBoard.Mapping.Model
         {
             return IsIdField(field.Name);
         }
+
         public static bool IsIdField(string field)
         {
             return field.ToLower() is "fid" or "id" or "objectid";
+        }
+
+        public static bool HasField(this ILayerInfo layer, string name,FieldInfoType type)
+        {
+            return layer.Fields.Any(p => p.Name == name && p.Type == type);
         }
 
         public static IEnumerable<FieldInfo> SyncWithSource(FieldInfo[] fields, FeatureTable table)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MapBoard.IO.Gpx
@@ -11,12 +12,12 @@ namespace MapBoard.IO.Gpx
     {
         internal const string GpxTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
 
-        public static Gpx FromFile(string path)
+        public static async Task<Gpx> FromFileAsync(string path)
         {
-            return FromString(File.ReadAllText(path));
+            return FromString(path,await File.ReadAllTextAsync(path));
         }
 
-        public static Gpx FromString(string gpxString)
+        public static Gpx FromString(string path,string gpxString)
         {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(gpxString);
@@ -25,14 +26,15 @@ namespace MapBoard.IO.Gpx
             {
                 throw new XmlException("没有找到gpx元素");
             }
-            Gpx info = new Gpx(xmlGpx);
+            Gpx info = new Gpx(path,xmlGpx);
 
             return info;
         }
 
-        private Gpx(XmlElement xml)
+        private Gpx(string path,XmlElement xml)
         {
             LoadGpxInfoProperties(this, xml);
+            FilePath = path;
         }
 
         public Gpx()
@@ -55,6 +57,7 @@ namespace MapBoard.IO.Gpx
         public Dictionary<string, string> OtherProperties { get; private set; } = new Dictionary<string, string>();
 
         public List<GpxTrack> Tracks { get; private set; } = new List<GpxTrack>();
+        public string FilePath { get; }
 
         public static void LoadGpxInfoProperties(Gpx info, XmlNode xml)
         {

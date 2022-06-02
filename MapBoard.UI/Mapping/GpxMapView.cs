@@ -303,11 +303,10 @@ namespace MapBoard.Mapping
 
         public async Task<List<TrackInfo>> LoadGpxAsync(string filePath, bool raiseEvent)
         {
-            string gpxContent = await File.ReadAllTextAsync(filePath);
             Gpx gpx = null;
-            await Task.Run(() =>
+            await Task.Run(async () =>
              {
-                 gpx = Gpx.FromString(gpxContent);
+                 gpx =await Gpx.FromFileAsync(filePath);
              });
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)

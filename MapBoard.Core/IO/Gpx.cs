@@ -17,6 +17,13 @@ namespace MapBoard.IO
 {
     public static class Gps
     {
+        private const string Filed_Name = "Name";
+        private const string Filed_Path = "Path";
+        private const string Filed_Date = "Date";
+        private const string Filed_Time = "DateTime";
+        private const string Filed_Index = "Index";
+        private const string Filed_PointIndex = "PIndex";
+
         /// <summary>
         /// 导入GPX文件
         /// </summary>
@@ -25,40 +32,94 @@ namespace MapBoard.IO
         public static async Task<ShapefileMapLayerInfo> ImportToNewLayerAsync(string path, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCs)
         {
             string name = Path.GetFileNameWithoutExtension(path);
-            string content = File.ReadAllText(path);
 
-            var gpx = LibGpx.FromString(content);
+            var gpx =await LibGpx.FromFileAsync(path);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(FolderPaths.DataPath, name + ".shp"));
+            var fields = new List<FieldInfo>()
+                {
+                    new FieldInfo(Filed_Name,"名称",FieldInfoType.Text),
+                    new FieldInfo(Filed_Path,"文件路径",FieldInfoType.Text),
+                    new FieldInfo(Filed_Date,"日期",FieldInfoType.Date),
+                    new FieldInfo(Filed_Time,"时间",FieldInfoType.Time),
+                    new FieldInfo(Filed_Index,"轨迹序号",FieldInfoType.Integer),
+                };
+            if (type == GpxImportType.Point)
+            {
+                fields.Add(new FieldInfo(Filed_PointIndex, "点序号", FieldInfoType.Integer));
+            }
 
             var layer = await LayerUtility.CreateShapefileLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
-                layers, name: Path.GetFileNameWithoutExtension(newName));
+                layers, name: Path.GetFileNameWithoutExtension(newName), fields);
             List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
             {
                 if (type == GpxImportType.Point)
                 {
-                    foreach (var point in track.Points)
-                    {
-                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
-                        Feature feature = layer.CreateFeature();
-                        feature.Geometry = TransformateToMapPoint;
-                        newFeatures.Add(feature);
-                    }
+                    newFeatures.AddRange(ImportAsPoint(track, layer, baseCs));
                 }
                 else
                 {
-                    List<MapPoint> points = new List<MapPoint>();
-                    foreach (var point in track.Points)
-                    {
-                        points.Add(CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs));
-                    }
-                    Feature feature = layer.CreateFeature();
-                    feature.Geometry = new Polyline(points);
-                    newFeatures.Add(feature);
+                    newFeatures.AddRange(ImportAsPolyline(track, layer, baseCs));
                 }
             }
             await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
             return layer;
+        }
+
+        private static IEnumerable<Feature> ImportAsPolyline(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
+        {
+            List<MapPoint> points = new List<MapPoint>();
+            foreach (var point in track.Points)
+            {
+                points.Add(CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs));
+            }
+            Feature feature = layer.CreateFeature();
+            feature.Geometry = new Polyline(points);
+            ApplyAttributes(track, layer,null, feature);
+            yield return feature;
+        }
+
+        private static IEnumerable<Feature> ImportAsPoint(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
+        {
+            int i = 0;
+            foreach (var point in track.Points)
+            {
+                MapPoint mapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
+                Feature feature = layer.CreateFeature();
+                feature.Geometry = mapPoint;
+                 ApplyAttributes(track, layer, i++, feature);
+                yield return feature;
+            }
+        }
+
+        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature)
+        {
+            if (layer.HasField(Filed_Name, FieldInfoType.Text))
+            {
+                feature.SetAttributeValue(Filed_Name, track.GpxInfo.Name);
+                //feature.SetAttributeValue(Filed_Name, Path.GetFileNameWithoutExtension(track.GpxInfo.FilePath));
+            }
+            if (layer.HasField(Filed_Path, FieldInfoType.Text))
+            {
+                feature.SetAttributeValue(Filed_Path, track.GpxInfo.FilePath);
+            }
+            if (layer.HasField(Filed_Date, FieldInfoType.Date))
+            {
+                feature.SetAttributeValue(Filed_Date, track.GpxInfo.Time);
+            }
+            if (layer.HasField(Filed_Time, FieldInfoType.Time))
+            {
+                feature.SetAttributeValue(Filed_Time, track.GpxInfo.Time.ToString(Parameters.TimeFormat));
+            }
+            if (layer.HasField(Filed_Index, FieldInfoType.Integer))
+            {
+                feature.SetAttributeValue(Filed_Index, track.GpxInfo.Tracks.IndexOf(track));
+            }
+            if (layer.HasField(Filed_PointIndex, FieldInfoType.Integer)&&index.HasValue)
+            {
+                feature.SetAttributeValue(Filed_PointIndex, index.Value);
+            }
+
         }
 
         public static async Task<ShapefileMapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
@@ -81,38 +142,18 @@ namespace MapBoard.IO
 
         public static async Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
-            string name = Path.GetFileNameWithoutExtension(path);
-            string content = File.ReadAllText(path);
-
-            var gpx = LibGpx.FromString(content);
+            var gpx =await LibGpx.FromFileAsync(path);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)
             {
                 if (layer.GeometryType == GeometryType.Point)
                 {
-                    List<Feature> features = new List<Feature>();
-                    foreach (var point in track.Points)
-                    {
-                        MapPoint TransformateToMapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCS);
-                        Feature feature = layer.CreateFeature();
-                        feature.Geometry = TransformateToMapPoint;
-                        features.Add(feature);
-                    }
-                    importedFeatures = features;
-                    await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
-                }
-                else if (layer.GeometryType == GeometryType.Multipoint)
-                {
-                    throw new NotSupportedException("多点暂不支持导入GPX");
+                    importedFeatures.AddRange(ImportAsPoint(track, layer, baseCS));
                 }
                 else if (layer.GeometryType == GeometryType.Polyline)
                 {
-                    var points = track.Points.Select(p =>
-                    CoordinateTransformation.Transformate(p.ToXYMapPoint(), WGS84, baseCS));
-                    Feature feature = layer.CreateFeature();
-                    feature.Geometry = new Polyline(points, SpatialReferences.Wgs84);
-                    importedFeatures.Add(feature);
+                    importedFeatures.AddRange(ImportAsPolyline(track, layer, baseCS));
                 }
                 else
                 {
