@@ -22,16 +22,16 @@ namespace MapBoard.UI.Dialog
 {
     public partial class ItemsOperaionErrorsDialog : CommonDialog
     {
-        public ItemsOperaionErrorsDialog(string title, ItemsOperationErrorCollection errors)
+        public ItemsOperaionErrorsDialog(string title, ICollection<ItemsOperationError> errors)
         {
             Title = title;
             Errors = errors;
             InitializeComponent();
         }
 
-        public ItemsOperationErrorCollection Errors { get; }
+        public ICollection<ItemsOperationError> Errors { get; }
 
-        public async static Task TryShowErrorsAsync(string title, ItemsOperationErrorCollection errors)
+        public async static Task TryShowErrorsAsync(string title, ICollection<ItemsOperationError> errors)
         {
             if (errors == null || errors.Count == 0)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace MapBoard.Model
@@ -36,9 +37,18 @@ namespace MapBoard.Model
             Exception = ex;
             ErrorMessage = ex.Message;
         }
-
+        
         public string Name { get; set; }
         public string ErrorMessage { get; set; }
         public Exception Exception { get; set; }
+    }
+
+    public class ItemsOperationException : Exception
+    {
+        public ItemsOperationException(ItemsOperationErrorCollection errors)
+        {
+            Errors = errors;
+        }
+        public ItemsOperationErrorCollection Errors { get;private set; }
     }
 }

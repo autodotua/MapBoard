@@ -28,11 +28,24 @@ using System.Drawing.Imaging;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using FzLib.WPF;
+using FzLib;
 
 namespace MapBoard.UI
 {
     public static class IOUtility
     {
+        private static async Task ShowException(Exception ex, string message)
+        {
+            App.Log.Error(message, ex);
+            if (ex is ItemsOperationException e)
+            {
+                await ItemsOperaionErrorsDialog.TryShowErrorsAsync(message, e.Errors);
+            }
+            else
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, message);
+            }
+        }
         public static FileFilterCollection AddIf(this FileFilterCollection filter, bool b, string display, params string[] extensions)
         {
             if (b)
@@ -85,8 +98,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                App.Log.Error("导入失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                ShowException(ex, "导入失败");
             }
         }
 
@@ -154,8 +166,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                App.Log.Error("导出失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                ShowException(ex, "导出失败");
             }
         }
 
@@ -228,8 +239,7 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                App.Log.Error("导入失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "导入失败");
+                ShowException(ex, "导入失败");
             }
         }
 
@@ -292,102 +302,152 @@ namespace MapBoard.UI
             }
             catch (Exception ex)
             {
-                App.Log.Error("导出失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+                ShowException(ex, "导出失败");
             }
         }
 
-        private static async Task ImportGpxAsync(string[] files, IMapLayerInfo layer, MapLayerCollection layers)
+        private static async Task ImportGpxAsync(IEnumerable<string> files, IMapLayerInfo layer, MapLayerCollection layers)
         {
             List<SelectDialogItem> items = new List<SelectDialogItem>()
                 {
-                       new SelectDialogItem("使用GPX工具箱打开", "使用GPX工具箱打开该轨迹", () =>
-                       {
-                        var win= new GpxToolbox.GpxWindow();
-                           win.LoadFiles=files;
-                           win.Show();
-                           win.BringToFront();
-                       }),
-                        new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Line,layers,Config.Instance.BasemapCoordinateSystem)),
-                        new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点",async()=>await Gps.ImportAllToNewLayerAsync(files,Gps.GpxImportType.Point,layers,Config.Instance.BasemapCoordinateSystem)),
+                       new SelectDialogItem("使用GPX工具箱打开", "使用GPX工具箱打开该轨迹"),
+                        new SelectDialogItem("导入到新图层（线）","每一个文件将会生成一条线"),
+                        new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点"),
                 };
-            if (layer != null && layer is IEditableLayerInfo w)
+            if (layer != null
+                && layer is IEditableLayerInfo
+                && layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
             {
-                if (layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
-                {
-                    items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层", async () => await Gps.ImportToLayersAsync(files, w, Config.Instance.BasemapCoordinateSystem)));
-                }
+                items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层"));
             }
-            await CommonDialog.ShowSelectItemDialogAsync("选择打开GPX文件的方式", items);
-        }
-
-        public static async Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
-        {
-            int index = await CommonDialog.ShowSelectItemDialogAsync("请选择需要导入的内容", new SelectDialogItem[]
-            {
-                new SelectDialogItem("照片位置","根据照片EXIF信息的经纬度，生成点图层"),
-            });
+            int index = await CommonDialog.ShowSelectItemDialogAsync($"选择打开GPX文件的方式，共{files.Count()}个文件", items);
             switch (index)
             {
                 case 0:
-                    List<string> files = new List<string>();
-                    string[] extensions = { ".jpg" };
-                    await Task.Run(() =>
+                    var win = new GpxToolbox.GpxWindow
                     {
-                        foreach (var folder in folders)
-                        {
-                            files.AddRange(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Where(file => extensions.Contains(Path.GetExtension(file))));
-                        }
-                    });
-                    await Photo.ImportImageLocation(files, layers);
-
+                        LoadFiles = files.ToArray()
+                    };
+                    win.Show();
+                    win.BringToFront();
+                    break;
+                case 1:
+                    await Gps.ImportAllToNewLayerAsync(files, Gps.GpxImportType.Line, layers, Config.Instance.BasemapCoordinateSystem);
+                    break;
+                case 2:
+                    await Gps.ImportAllToNewLayerAsync(files, Gps.GpxImportType.Point, layers, Config.Instance.BasemapCoordinateSystem);
+                    break;
+                case 3:
+                    await Gps.ImportToLayersAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
                     break;
 
                 default:
-                    break;
+                    throw new IndexOutOfRangeException();
+            }
+        }
+
+        private static async Task<List<string>> EnumerateFilesAsync(IEnumerable<string> folders, IEnumerable<string> extensions)
+        {
+            List<string> files = new List<string>();
+            var exs = extensions.Select(p => p.StartsWith(".") ? p : $".{p}").ToList();
+            await Task.Run(() =>
+            {
+                foreach (var folder in folders)
+                {
+                    if (File.Exists(folder) && exs.Contains(Path.GetExtension(folder)))
+                    {
+                        files.Add(folder);
+                    }
+                    else if (Directory.Exists(folder))
+                    {
+                        files.AddRange(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Where(p => exs.Contains(Path.GetExtension(p))));
+                    }
+                }
+            });
+            return files;
+        }
+        public static async Task DropFoldersAsync(string[] folders, MapLayerCollection layers)
+        {
+            int index = await CommonDialog.ShowSelectItemDialogAsync("请选择目录中的文件类型", new SelectDialogItem[]
+            {
+                new SelectDialogItem("照片位置","根据照片EXIF信息的经纬度，生成点图层"),
+                new SelectDialogItem("GPS轨迹文件","作为GPX文件导入"),
+            });
+            if (index >= 0)
+            {
+                try
+                {
+                    List<string> files = null;
+                    switch (index)
+                    {
+                        case 0:
+                            string[] extensions = { ".jpg" };
+                            files = await EnumerateFilesAsync(folders, extensions);
+                            await Photo.ImportImageLocation(files, layers);
+
+                            break;
+                        case 1:
+                            files = await EnumerateFilesAsync(folders, new string[] { ".gpx" });
+                            await ImportGpxAsync(files, layers.Selected, layers);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, "导入失败");
+                }
             }
         }
 
         public static async Task DropFilesAsync(string[] files, MapLayerCollection layers)
         {
-            if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
+            try
             {
-                await ImportGpxAsync(files, layers.Selected, layers);
-            }
-            else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
-            {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
+                if (files.Count(p => p.EndsWith(".gpx")) == files.Length)
                 {
-                    await Package.ImportMapAsync(files[0], layers, true);
+                    await ImportGpxAsync(files, layers.Selected, layers);
+                }
+                else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
+                {
+                    if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
+                    {
+                        await Package.ImportMapAsync(files[0], layers, true);
+                    }
+                    else
+                    {
+                        await Package.ImportMapAsync(files[0], layers, false);
+                    }
+                }
+                else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
+                {
+                    if (await CommonDialog.ShowYesNoDialogAsync("是否导入图层？") == true)
+                    {
+                        foreach (var file in files)
+                        {
+                            await Package.ImportLayerAsync(file, layers);
+                        }
+                    }
+                }
+                else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IEditableLayerInfo w2)
+                {
+                    if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
+                    {
+                        foreach (var file in files)
+                        {
+                            await Csv.ImportAsync(file, w2);
+                        }
+                    }
                 }
                 else
                 {
-                    await Package.ImportMapAsync(files[0], layers, false);
+                    SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
                 }
             }
-            else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
+            catch (Exception ex)
             {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否导入图层？") == true)
-                {
-                    foreach (var file in files)
-                    {
-                        await Package.ImportLayerAsync(file, layers);
-                    }
-                }
-            }
-            else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IEditableLayerInfo w2)
-            {
-                if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
-                {
-                    foreach (var file in files)
-                    {
-                        await Csv.ImportAsync(file, w2);
-                    }
-                }
-            }
-            else
-            {
-                SnakeBar.ShowError("不支持的文件格式，文件数量过多，或文件集合的类型不都一样");
+                ShowException(ex, "导入失败");
             }
         }
 

@@ -33,7 +33,7 @@ namespace MapBoard.IO
         {
             string name = Path.GetFileNameWithoutExtension(path);
 
-            var gpx =await LibGpx.FromFileAsync(path);
+            var gpx = await LibGpx.FromFileAsync(path);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(FolderPaths.DataPath, name + ".shp"));
             var fields = new List<FieldInfo>()
                 {
@@ -75,7 +75,7 @@ namespace MapBoard.IO
             }
             Feature feature = layer.CreateFeature();
             feature.Geometry = new Polyline(points);
-            ApplyAttributes(track, layer,null, feature);
+            ApplyAttributes(track, layer, null, feature);
             yield return feature;
         }
 
@@ -87,7 +87,7 @@ namespace MapBoard.IO
                 MapPoint mapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
                 Feature feature = layer.CreateFeature();
                 feature.Geometry = mapPoint;
-                 ApplyAttributes(track, layer, i++, feature);
+                ApplyAttributes(track, layer, i++, feature);
                 yield return feature;
             }
         }
@@ -105,7 +105,14 @@ namespace MapBoard.IO
             }
             if (layer.HasField(Filed_Date, FieldInfoType.Date))
             {
-                feature.SetAttributeValue(Filed_Date, track.GpxInfo.Time);
+                try
+                {
+                    feature.SetAttributeValue(Filed_Date, track.GpxInfo.Time);
+                }
+                catch
+                {
+
+                }
             }
             if (layer.HasField(Filed_Time, FieldInfoType.Time))
             {
@@ -115,34 +122,66 @@ namespace MapBoard.IO
             {
                 feature.SetAttributeValue(Filed_Index, track.GpxInfo.Tracks.IndexOf(track));
             }
-            if (layer.HasField(Filed_PointIndex, FieldInfoType.Integer)&&index.HasValue)
+            if (layer.HasField(Filed_PointIndex, FieldInfoType.Integer) && index.HasValue)
             {
                 feature.SetAttributeValue(Filed_PointIndex, index.Value);
             }
 
         }
 
-        public static async Task<ShapefileMapLayerInfo> ImportAllToNewLayerAsync(string[] paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
+        public static async Task ImportAllToNewLayerAsync(IEnumerable<string> paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
         {
-            var layer = await ImportToNewLayerAsync(paths[0], type, layers, baseCS);
-            for (int i = 1; i < paths.Length; i++)
+            ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
+            ShapefileMapLayerInfo layer = null;
+            try
             {
-                await ImportToLayerAsync(paths[i], layer, baseCS);
+                layer = await ImportToNewLayerAsync(paths.First(), type, layers, baseCS);
             }
-            return layer;
+            catch (Exception ex)
+            {
+                errors.Add(new ItemsOperationError(paths.First(), ex));
+            }
+
+            foreach (var path in paths.Skip(1))
+            {
+                try
+                {
+                    await ImportToLayerAsync(path, layer, baseCS);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new ItemsOperationError(paths.First(), ex));
+                }
+            }
+            if (errors.Count > 0)
+            {
+                throw new ItemsOperationException(errors);
+            }
         }
 
         public static async Task ImportToLayersAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
+            ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             foreach (var path in paths)
             {
-                await ImportToLayerAsync(path, layer, baseCS);
+                try
+                {
+                    await ImportToLayerAsync(path, layer, baseCS);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new ItemsOperationError(path, ex));
+                }
+            }
+            if (errors.Count > 0)
+            {
+                throw new ItemsOperationException(errors);
             }
         }
 
         public static async Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
-            var gpx =await LibGpx.FromFileAsync(path);
+            var gpx = await LibGpx.FromFileAsync(path);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)
