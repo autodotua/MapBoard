@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MapBoard.Mapping
@@ -313,37 +314,49 @@ namespace MapBoard.Mapping
         protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDoubleClick(e);
-            if (e.ChangedButton.HasFlag(MouseButton.Right))
+            if (e.ChangedButton.HasFlag(MouseButton.Middle))
             {
                 SetViewpointRotationAsync(0);
             }
         }
-
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
-            if (e.RightButton == MouseButtonState.Pressed)
+            if (e.MiddleButton == MouseButtonState.Pressed)
             {
                 startRotation = MapRotation;
                 startPosition = e.GetPosition(this);
+            }
+            else if (e.RightButton == MouseButtonState.Pressed)
+            {
+                ContextMenu menu = new ContextMenu();
+                var location = ScreenToLocation(e.GetPosition(this)).ToWgs84();
+                MenuItem item = new MenuItem()
+                {
+                    Header = $"经度={location.X:0.000000}{Environment.NewLine}纬度={location.Y:0.000000}",
+                };
+                item.Click += (s, e) =>
+                {
+                    Clipboard.SetText($"{location.X:0.000000},{location.Y:0.000000}");
+                    SnakeBar.Show("已复制经纬度到剪贴板");
+                };
+                menu.Items.Add(item);
+                menu.IsOpen = true;
             }
         }
 
         protected override async void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
-            if (e.RightButton == MouseButtonState.Pressed && CurrentTask == BoardTask.Ready)
+            if (e.MiddleButton == MouseButtonState.Pressed && canRotate)
             {
-                if (!canRotate)
-                {
-                    return;
-                }
                 Point position = e.GetPosition(this);
                 double distance = position.X - startPosition.X;
                 if (Math.Abs(distance) < 10)
                 {
                     return;
                 }
+                Debug.WriteLine(distance);
                 canRotate = false;
                 SetViewpointRotationAsync(startRotation + distance / 5);
                 await Task.Delay(100);
