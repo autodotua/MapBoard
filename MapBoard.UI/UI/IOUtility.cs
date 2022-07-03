@@ -341,8 +341,6 @@ namespace MapBoard.UI
                     await Gps.ImportToLayersAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
                     break;
 
-                default:
-                    throw new IndexOutOfRangeException();
             }
         }
 

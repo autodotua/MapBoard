@@ -88,11 +88,11 @@ namespace MapBoard.UI.Bar
             try
             {
                 Clipboard.SetText(text);
-                SnakeBar.Show($"已复制{text}到剪贴板");
+                SnakeBar.Show(this.GetWindow(), $"已复制{text}到剪贴板");
             }
             catch(Exception ex)
             {
-                SnakeBar.ShowError(ex.Message);
+                SnakeBar.ShowError(this.GetWindow(), ex.Message);
             }
         }
 

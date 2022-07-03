@@ -13,12 +13,13 @@ using System.Data;
 using CsvHelper;
 using System.Globalization;
 using FzLib;
+using System.Dynamic;
 
 namespace MapBoard.IO
 {
     public static class Csv
     {
-        public static Task ExportAsync(string path, IEnumerable<Feature> features)
+        public static Task ExportAsync(string path, Feature[] features)
         {
             return Task.Run(() =>
             {
@@ -26,14 +27,12 @@ namespace MapBoard.IO
             });
         }
 
-        public static void Export(string path, IEnumerable<Feature> features)
+        public static void Export(string path, Feature[] features)
         {
-            StringBuilder sb = new StringBuilder();
-
             List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();
             Dictionary<object, int> featureIndexs = new Dictionary<object, int>();
             Dictionary<object, int> partIndexs = new Dictionary<object, int>();
-            if (path != null)
+                if (path != null)
             {
                 int featureIndex = 0;
                 int partIndex = 0;
@@ -82,28 +81,39 @@ namespace MapBoard.IO
                     }
                 }
 
+                using var writer = new StreamWriter(path,false,new UTF8Encoding(true));
+                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                List<dynamic> records=new List<dynamic>();
                 if (parts.Any())
                 {
                     foreach (var part in parts)
                     {
-                        Append("Feature" + featureIndexs[part], "Part" + (partIndexs.ContainsKey(part) ? partIndexs[part] : 1));
+                        var featureID = featureIndexs[part];
+                        var partID = partIndexs.ContainsKey(part) ? partIndexs[part] : 1;
+
+                        int id = 0;
                         foreach (var point in part)
                         {
-                            Append(point.X.ToString(), point.Y.ToString());
+                            dynamic record = new ExpandoObject();
+                          var dic=  record as IDictionary<string, object>;
+                            dic.Add("FeatureIndex", featureID);
+                            dic.Add("PartIndex", partID);
+                            dic.Add("PointIndex", ++id);
+                            record.X = point.X;
+                            record.Y = point.Y;
+                            foreach (var attr in features[featureID-1].Attributes)
+                            {
+                                dic.Add(attr.Key,attr.Value);
+                            }
+                            records.Add(record);
                         }
-                        sb.AppendLine();
                     }
-
-                    File.WriteAllText(path, sb.ToString());
+                    csv.WriteRecords(records);
+                    csv.Flush();
                 }
                 else
                 {
                 }
-            }
-
-            void Append(string col1, string col2)
-            {
-                sb.Append(col1).Append(',').Append(col2).AppendLine();
             }
         }
 

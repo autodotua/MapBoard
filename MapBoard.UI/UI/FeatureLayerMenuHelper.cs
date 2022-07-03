@@ -244,7 +244,7 @@ namespace MapBoard.UI
 
         private Task ToCsvAsync()
         {
-            return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, mapView.Selection.SelectedFeatures));
+            return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, mapView.Selection.SelectedFeatures.ToArray()));
         }
 
         private Task ToGeoJsonAsync()
