@@ -347,18 +347,23 @@ namespace MapBoard.UI
         private static async Task<List<string>> EnumerateFilesAsync(IEnumerable<string> folders, IEnumerable<string> extensions)
         {
             List<string> files = new List<string>();
-            var exs = extensions.Select(p => p.StartsWith(".") ? p : $".{p}").ToList();
+            var exs = extensions
+                .Select(p => p.StartsWith(".") ? p : $".{p}")
+                .Select(p=>p.ToLower())
+                .ToList();
             await Task.Run(() =>
             {
                 foreach (var folder in folders)
                 {
-                    if (File.Exists(folder) && exs.Contains(Path.GetExtension(folder)))
+                    if (File.Exists(folder) 
+                    && exs.Contains(Path.GetExtension(folder).ToLower()))
                     {
                         files.Add(folder);
                     }
                     else if (Directory.Exists(folder))
                     {
-                        files.AddRange(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Where(p => exs.Contains(Path.GetExtension(p))));
+                        files.AddRange(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
+                            .Where(p => exs.Contains(Path.GetExtension(p).ToLower())));
                     }
                 }
             });
@@ -379,7 +384,7 @@ namespace MapBoard.UI
                     switch (index)
                     {
                         case 0:
-                            string[] extensions = { ".jpg" };
+                            string[] extensions = { ".jpg",".jpeg",".heif",".heic",".dng" };
                             files = await EnumerateFilesAsync(folders, extensions);
                             await Photo.ImportImageLocation(files, layers);
 

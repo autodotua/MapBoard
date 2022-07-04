@@ -12,67 +12,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
+using MetadataExtractor;
+using System.Diagnostics;
 
 namespace MapBoard.IO
 {
     public static class Photo
     {
-        private static (double lng, double lat, DateTime? time)? GetImageExifInfo(string jpgPath)
-        {
-            double lat = double.NaN;
-            double lng = double.NaN;
-            DateTime? date = null;
-
-            using (var image = System.Drawing.Image.FromStream(File.OpenRead(jpgPath), false, false))
-            {
-                var propertyItems = image.PropertyItems.OrderBy(x => x.Id)
-                .Where(p => p.Id >= 0x0000 && p.Id <= 0x001e || p.Id == 0x9003);
-                foreach (var objItem in propertyItems)
-                {
-                    switch (objItem.Id)
-                    {
-                        case 0x0002://设置纬度
-                            if (objItem.Value.Length == 24)
-                            {
-                                //degrees(将byte[0]~byte[3]转成uint, 除以byte[4]~byte[7]转成的uint)
-                                double d = BitConverter.ToUInt32(objItem.Value, 0) * 1.0d / BitConverter.ToUInt32(objItem.Value, 4);
-                                //minutes(將byte[8]~byte[11]转成uint, 除以byte[12]~byte[15]转成的uint)
-                                double m = BitConverter.ToUInt32(objItem.Value, 8) * 1.0d / BitConverter.ToUInt32(objItem.Value, 12);
-                                //seconds(將byte[16]~byte[19]转成uint, 除以byte[20]~byte[23]转成的uint)
-                                double s = BitConverter.ToUInt32(objItem.Value, 16) * 1.0d / BitConverter.ToUInt32(objItem.Value, 20);
-                                lat = (((s / 60 + m) / 60) + d);
-                            }
-                            break;
-
-                        case 0x0004: //设置经度
-                            if (objItem.Value.Length == 24)
-                            {
-                                //degrees(将byte[0]~byte[3]转成uint, 除以byte[4]~byte[7]转成的uint)
-                                double d = BitConverter.ToUInt32(objItem.Value, 0) * 1.0d / BitConverter.ToUInt32(objItem.Value, 4);
-                                //minutes(将byte[8]~byte[11]转成uint, 除以byte[12]~byte[15]转成的uint)
-                                double m = BitConverter.ToUInt32(objItem.Value, 8) * 1.0d / BitConverter.ToUInt32(objItem.Value, 12);
-                                //seconds(将byte[16]~byte[19]转成uint, 除以byte[20]~byte[23]转成的uint)
-                                double s = BitConverter.ToUInt32(objItem.Value, 16) * 1.0d / BitConverter.ToUInt32(objItem.Value, 20);
-                                lng = (((s / 60 + m) / 60) + d);
-                            }
-                            break;
-
-                        case 0x9003:
-                            var propItemValue = objItem.Value;
-                            var dateTimeStr = System.Text.Encoding.ASCII.GetString(propItemValue).Trim('\0');
-                            date = DateTime.ParseExact(dateTimeStr, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture);
-                            break;
-                    }
-                }
-            }
-            GC.Collect();
-            if (double.IsNaN(lng) || double.IsNaN(lat))
-            {
-                return null;
-            }
-            return (lng, lat, date);
-        }
-
         public static async Task ImportImageLocation(IEnumerable<string> files, MapLayerCollection layers)
         {
             string nameField = "name";
@@ -110,12 +56,58 @@ namespace MapBoard.IO
                                 features.Add(feature);
                             }
                         }
-                        catch
+                        catch(Exception ex)
                         {
+                            Debug.WriteLine($"照片{file}解析失败：" + ex.Message);
                         }
                     });
             });
             await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
+        }
+
+        private static double GetDegree(Rational[] rationals)
+        {
+            if (rationals == null || rationals.Length != 3)
+            {
+                throw new ArgumentException();
+            }
+
+            double d = rationals[0].Numerator;
+            double m = rationals[1].Numerator;
+            double s = 1.0 * rationals[2].Numerator / rationals[2].Denominator;
+            return d + m / 60 + s / 3600;
+        }
+
+        private static (double lng, double lat, DateTime? time)? GetImageExifInfo(string path)
+        {
+            double latDegree = double.NaN;
+            double lngDegree = double.NaN;
+
+            DateTime? time = null;
+            var directories = ImageMetadataReader.ReadMetadata(path).ToList();
+            var gps = directories.FirstOrDefault(p => p.Name == "GPS");
+            if (gps != null && !gps.HasError)
+            {
+                var lat = gps.GetRationalArray(2);
+                var lng = gps.GetRationalArray(4);
+                if (lat != null && lng != null)
+                {
+                    latDegree = GetDegree(lat);
+                    lngDegree = GetDegree(lng);
+
+                    var main = directories.FirstOrDefault(p => p.Name == "Exif IFD0");
+                    if (main != null && !main.HasError)
+                    {
+                        time = main.GetDateTime(306);
+                    }
+                }
+            }
+
+            if (!double.IsNaN(latDegree) && !double.IsNaN(lngDegree))
+            {
+                return (lngDegree, latDegree, time);
+            }
+            return null;
         }
     }
 }
