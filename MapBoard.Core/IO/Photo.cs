@@ -23,7 +23,7 @@ namespace MapBoard.IO
             double lng = double.NaN;
             DateTime? date = null;
 
-            using (var image = System.Drawing.Image.FromFile(jpgPath))
+            using (var image = System.Drawing.Image.FromStream(File.OpenRead(jpgPath), false, false))
             {
                 var propertyItems = image.PropertyItems.OrderBy(x => x.Id)
                 .Where(p => p.Id >= 0x0000 && p.Id <= 0x001e || p.Id == 0x9003);
