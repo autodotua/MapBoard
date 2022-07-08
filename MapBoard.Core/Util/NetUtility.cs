@@ -16,7 +16,7 @@ namespace MapBoard.Util
 {
     public static class NetUtility
     {
-        public static async Task HttpDownloadAsync(string url, string path, TimeSpan timeOut, string userAgent)
+        public static async Task HttpDownloadAsync(string url, string path, TimeSpan timeOut, string userAgent, string proxyAddress)
         {
             string tempPath = Path.Combine(Path.GetDirectoryName(path), "temp");
             Directory.CreateDirectory(tempPath);  //创建临时文件目录
@@ -30,11 +30,22 @@ namespace MapBoard.Util
 
                 using (FileStream fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using HttpClient client = new HttpClient();
+                    HttpClientHandler httpClientHandler = new HttpClientHandler();
+                    if (!string.IsNullOrWhiteSpace(proxyAddress))
+                    {
+                        var proxy = new WebProxy
+                        {
+                            Address = new Uri(proxyAddress),
+                            BypassProxyOnLocal = false,
+                        };
+                        httpClientHandler.Proxy = proxy;
+                    }
+
+                    using HttpClient client = new HttpClient(httpClientHandler);
                     client.Timeout = timeOut;
                     client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-                    using var responseStream=await     client.GetStreamAsync(url);
-                   
+                    using var responseStream = await client.GetStreamAsync(url);
+
                     byte[] bArr = new byte[1024 * 1024];
                     int size = responseStream.Read(bArr, 0, bArr.Length);
                     while (size > 0)

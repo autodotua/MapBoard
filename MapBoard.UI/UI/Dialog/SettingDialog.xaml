@@ -84,7 +84,7 @@
 
                 <ComboBox
                     HorizontalAlignment="Stretch"
-                    ui:ControlHelper.Header="用户代理"
+                    ui:ControlHelper.Header="用户代理（通用）"
                     IsEditable="True"
                     Text="{Binding Config.HttpUserAgent}">
                     <ComboBox.ItemsSource>
@@ -112,7 +112,39 @@
                         </Style>
                     </ComboBox.Style>
                 </ComboBox>
-
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    ui:ControlHelper.Header="用户代理（瓦片下载）"
+                    IsEditable="True"
+                    Text="{Binding Config.Tile_DownloadUserAgent}">
+                    <ComboBox.ItemsSource>
+                        <x:Array Type="{x:Type system:String}">
+                            <system:String>Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) QQ/3.3.8.22043 TIM2.0/3.3.8.22043 Chrome/43.0.2357.134 Safari/537.36 QBCore/3.43.1298.400 QQBrowser/9.0.2524.400</system:String>
+                            <system:String>Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)</system:String>
+                            <system:String>ArcGISRuntime-NET/100.13 (Windows 10.0.19044; Win64; WOW64; .NET6.0.2; devmode)</system:String>
+                        </x:Array>
+                    </ComboBox.ItemsSource>
+                    <ComboBox.Resources>
+                        <Style
+                            x:Key="TxtStyle"
+                            BasedOn="{StaticResource ComboBoxTextBoxStyle}"
+                            TargetType="TextBox">
+                            <Setter Property="MaxLines" Value="5" />
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </Style>
+                    </ComboBox.Resources>
+                    <ComboBox.Style>
+                        <Style
+                            BasedOn="{StaticResource DefaultComboBoxStyle}"
+                            TargetType="{x:Type ComboBox}">
+                            <Setter Property="ui:ComboBoxHelper.TextBoxStyle" Value="{StaticResource TxtStyle}" />
+                        </Style>
+                    </ComboBox.Style>
+                </ComboBox>
+                <TextBox
+                    ui:ControlHelper.Header="代理服务器地址（瓦片下载）"
+                    Text="{Binding Config.HttpProxy}" />
                 <CheckBox
                     Content="下载时若文件已存在则覆盖"
                     IsChecked="{Binding Config.Tile_CoverFile}" />

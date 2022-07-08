@@ -454,7 +454,7 @@ namespace MapBoard.UI.TileDownloader
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent);
+                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent,Config.Tile_HttpProxy);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
                             LastDownloadingStatus = "下载成功";
 
