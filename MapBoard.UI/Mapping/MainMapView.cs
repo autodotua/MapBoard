@@ -319,6 +319,7 @@ namespace MapBoard.Mapping
                 SetViewpointRotationAsync(0);
             }
         }
+
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);

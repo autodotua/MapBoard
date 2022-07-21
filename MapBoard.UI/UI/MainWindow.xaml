@@ -153,11 +153,14 @@
                         ViewpointChanged="ArcMap_ViewpointChanged" />
                 </Border>
                 <Border
+                    x:Name="bdMapInfo"
                     Margin="0,36,8,12"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Stretch"
-                    IsEnabled="{Binding IsReady}">
+                    VerticalAlignment="Stretch">
                     <local:MapViewSidePanel x:Name="mapInfo" />
+                    <Border.RenderTransform>
+                        <TranslateTransform />
+                    </Border.RenderTransform>
                 </Border>
                 <bar:EditionBar
                     x:Name="editBar"
@@ -417,8 +420,7 @@
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Grid
-                            x:Name="grdDraw">
+                        <Grid x:Name="grdDraw">
                             <ui:SplitButton
                                 x:Name="btnDraw"
                                 HorizontalAlignment="Stretch"
@@ -492,7 +494,9 @@
                             <ui:SymbolIcon Symbol="SelectAll" />
                             <Button.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="全选" Click="SelectAllMenu_Click"/>
+                                    <MenuItem
+                                        Click="SelectAllMenu_Click"
+                                        Header="全选" />
                                 </ContextMenu>
                             </Button.ContextMenu>
                             <Button.ToolTip>

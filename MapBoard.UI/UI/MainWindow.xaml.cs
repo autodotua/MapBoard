@@ -133,6 +133,10 @@ namespace MapBoard.UI
                     ResetDrawAndSelectButton();
                 }
             };
+            (attributesBar.RenderTransform as TranslateTransform).Changed += (s, e) =>
+            {
+                (bdMapInfo.RenderTransform as TranslateTransform).X = (s as TranslateTransform).X - attributesBar.Width;
+            };
             ResetDrawAndSelectButton();
             ShowLoadErrorsAsync();//不可await，因为要让主窗口显示出来
             if (LoadFile != null)

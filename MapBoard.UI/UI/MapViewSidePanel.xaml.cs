@@ -348,8 +348,16 @@ namespace MapBoard.UI
             bdLayers.IsHitTestVisible = true;
         }
 
-        private void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
+            if(MapView is MainMapView mapView)
+            {
+                if(mapView.CurrentTask!=BoardTask.Ready)
+                {
+                    await CommonDialog.ShowErrorDialogAsync("当前模式不可进入设置界面");
+                    return;
+                }
+            }
             OpenOrCloseLayersPanelAsync(false);
             new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, 3).ShowDialog();
         }
