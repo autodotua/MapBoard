@@ -179,6 +179,7 @@ namespace MapBoard.UI
                 .AddIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
                 .AddIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
                 .AddIf(type == ImportMapType.CSV, "CSV表格", "csv")
+                .AddIf(type == ImportMapType.KML, "KML（可扩展标记语言）", "kml","kmz")
                 .CreateOpenFileDialog()
                 .SetParent(parentWindow)
                 .GetFilePath();
@@ -229,6 +230,10 @@ namespace MapBoard.UI
                         var table = await Csv.ImportToDataTableAsync(path);
                         await new ImportTableDialog(layers, table, Path.GetFileNameWithoutExtension(path))
                             .ShowAsync();
+                        break;
+
+                    case ImportMapType.KML:
+                        await Kml.ImportAsync(path,layers);
                         break;
 
                     default:
@@ -566,7 +571,8 @@ namespace MapBoard.UI
         LayerPackge = 3,
         Gpx = 4,
         Shapefile = 5,
-        CSV = 6
+        CSV = 6,
+        KML=7,
     }
 
     public enum ExportMapType

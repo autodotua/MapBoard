@@ -11,6 +11,7 @@ using MapBoard.Mapping.Model;
 using System;
 using System.Linq;
 using FzLib.Collection;
+using Esri.ArcGISRuntime.Mapping;
 
 namespace MapBoard.IO
 {
@@ -66,7 +67,7 @@ namespace MapBoard.IO
                     if (layer.Renderer.HasCustomSymbols)
                     {
                         var c = feature.Attributes[layer.Renderer.KeyFieldName] as string;
-                        if ( layer.Renderer.Symbols.ContainsKey(c))
+                        if (layer.Renderer.Symbols.ContainsKey(c))
                         {
                             symbol = layer.Renderer.Symbols[c];
                         }
@@ -102,6 +103,61 @@ namespace MapBoard.IO
                     placemark.Description = string.Join('\n', feature.Attributes.Select(p => $"{p.Key}：{p.Value}"));
                     nodes.Add(placemark);
                 }
+            }
+        }
+
+        public static async Task ImportAsync(string path, MapLayerCollection layers)
+        {
+            KmlDataset kml = new KmlDataset(new Uri(path));
+            await kml.LoadAsync();
+            List<MapPoint> points = new List<MapPoint>();
+            List<Polyline> lines = new List<Polyline>();
+            List<Polygon> polygons = new List<Polygon>();
+            foreach (var doc in kml.RootNodes.OfType<KmlDocument>())
+            {
+                foreach (var node in doc.ChildNodes.OfType<KmlPlacemark>())
+                {
+                    switch (node.GraphicType)
+                    {
+                        case KmlGraphicType.None:
+                            break;
+                        case KmlGraphicType.Point:
+                            points.Add(node.Geometry.RemoveZAndM() as MapPoint);
+                            break;
+                        case KmlGraphicType.Polyline:
+                            lines.Add(node.Geometry.RemoveZAndM() as Polyline);
+                            break;
+                        case KmlGraphicType.Polygon:
+                            polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
+                            break;
+                        case KmlGraphicType.ExtrudedPoint:
+                            break;
+                        case KmlGraphicType.ExtrudedPolyline:
+                            break;
+                        case KmlGraphicType.ExtrudedPolygon:
+                            break;
+                        case KmlGraphicType.Model:
+                            break;
+                        case KmlGraphicType.MultiGeometry:
+                            break;
+                    }
+                }
+            }
+            string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
+            if (points.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name);
+                await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
+            }
+            if (lines.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name);
+                await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
+            }
+            if (polygons.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name);
+                await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
         }
     }

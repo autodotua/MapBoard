@@ -338,6 +338,10 @@
                                         Click="ImportMenu_Click"
                                         Header="CSV表格"
                                         Tag="6" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="KML"
+                                        Tag="7" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
