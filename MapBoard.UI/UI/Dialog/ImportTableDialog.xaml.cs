@@ -63,7 +63,7 @@ namespace MapBoard.UI.Dialog
 
         public string TimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
 
-        private void Check()
+        private bool CheckFields()
         {
             HashSet<string> names = new HashSet<string>();
             HashSet<string> displayNames = new HashSet<string>();
@@ -73,16 +73,15 @@ namespace MapBoard.UI.Dialog
                     || !displayNames.Add(field.Field.DisplayName)
                     || !names.Add(field.Field.Name))
                 {
-                    IsPrimaryButtonEnabled = false;
-                    return;
+                    return false;
                 }
             }
-            IsPrimaryButtonEnabled = true;
+            return true;
         }
 
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            Check();
+            CheckFields();
         }
 
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
@@ -91,6 +90,11 @@ namespace MapBoard.UI.Dialog
             if (LongitudeIndex < 0 || LatitudeIndex < 0)
             {
                 Message = "请先选择经度和纬度字段";
+                return;
+            }
+            if (!CheckFields())
+            {
+                Message = "请检查是否有异常字段名";
                 return;
             }
             IsPrimaryButtonEnabled = false;
@@ -167,7 +171,7 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private void dg_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        private void Grid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditAction == DataGridEditAction.Commit)
             {
@@ -180,7 +184,6 @@ namespace MapBoard.UI.Dialog
                     }
                 }
             }
-            Check();
         }
 
         private void LoadFields()
@@ -194,6 +197,10 @@ namespace MapBoard.UI.Dialog
                     ColumnIndex = ++index
                 };
                 field.Field.Name = new string(column.ColumnName.Take(10).ToArray());
+                if(field.Field.Name.Length==0)
+                {
+                    field.Field.Name = $"Field{index}";
+                }
                 field.Field.DisplayName = column.ColumnName;
                 field.Field.Type = FieldInfoType.Text;
                 Fields.Add(field);

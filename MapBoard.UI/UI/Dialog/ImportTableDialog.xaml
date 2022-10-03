@@ -63,7 +63,7 @@
             CanUserAddRows="False"
             CanUserDeleteRows="False"
             CanUserSortColumns="False"
-            CellEditEnding="dg_CellEditEnding"
+            CellEditEnding="Grid_CellEditEnding"
             ItemsSource="{Binding Fields}">
             <DataGrid.Columns>
 
