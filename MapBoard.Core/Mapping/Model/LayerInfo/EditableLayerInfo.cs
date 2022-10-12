@@ -48,7 +48,7 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
 
-        public Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
+        public Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
             if (features.Select(p => p.FeatureTable).Distinct().Count() != 1)
@@ -65,11 +65,10 @@ namespace MapBoard.Mapping.Model
         /// <param name="source"></param>
         /// <param name="rebuildFeature">是否需要根据属性和图形新建要素。若源要素属于另一个拥有不同字段的要素类，则该值应设为True</param>
         /// <returns></returns>
-        public async Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
+        public async Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
         {
             ThrowIfNotEditable();
             Dictionary<string, FieldInfo> key2Field = Fields.ToDictionary(p => p.Name);
-
             //为了避免出现问题，改成了强制重建，经测试用不了多长时间
             if (true || rebuildFeature)
             {
@@ -81,6 +80,7 @@ namespace MapBoard.Mapping.Model
                 }
                 await table.AddFeaturesAsync(newFeatures);
                 NotifyFeaturesChanged(newFeatures, null, null, source);
+                features = newFeatures;
             }
             else
             {
@@ -99,6 +99,7 @@ namespace MapBoard.Mapping.Model
                 await table.AddFeaturesAsync(features);
                 NotifyFeaturesChanged(features, null, null, source);
             }
+            return features;
         }
 
         public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)

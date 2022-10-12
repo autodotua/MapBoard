@@ -120,12 +120,14 @@ namespace MapBoard.UI.Bar
             Debug.Assert(Layers.Selected is IEditableLayerInfo);
             var features = MapView.Selection.SelectedFeatures.ToArray();
             var line = await MapView.Editor.GetPolylineAsync();
+
             if (line != null)
             {
                 await (this.GetWindow() as MainWindow).DoAsync(async () =>
                 {
                     var result = await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
                     SnakeBar.Show($"已分割为{result.Count}个图形");
+                    MapView.Selection.ClearSelection();
                 }, "正在分割", true);
             }
         }

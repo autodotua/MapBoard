@@ -44,7 +44,7 @@ namespace MapBoard.IO
                 {
                     newFeatures.Add(
                         table.CreateFeature(
-                            feature.Attributes.Where(p => p.Key.ToLower() != "fid" && p.Key.ToLower() != "id"),
+                            feature.Attributes.Where(p => !FieldExtension.IsIdField(p.Key)),
                             feature.Geometry));
                 }
             }

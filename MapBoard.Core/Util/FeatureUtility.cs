@@ -546,7 +546,7 @@ namespace MapBoard.Util
                         if (layer.GeometryType == GeometryType.Polygon)
                         {
                             count++;
-                            Feature newFeature = layer.CreateFeature(feature.Attributes, newGeo);
+                            Feature newFeature = layer.CreateFeature(feature.Attributes.Where(p => !FieldExtension.IsIdField(p.Key)), newGeo);
                             added.Add(newFeature);
                         }
                         //对于线，可以每个部分单独成为一个图形
@@ -555,7 +555,7 @@ namespace MapBoard.Util
                             foreach (var part in (newGeo as Multipart).Parts)
                             {
                                 count++;
-                                Feature newFeature = layer.CreateFeature(feature.Attributes, new Polyline(part));
+                                Feature newFeature = layer.CreateFeature(feature.Attributes.Where(p => !FieldExtension.IsIdField(p.Key)), new Polyline(part));
                                 added.Add(newFeature);
                             }
                         }

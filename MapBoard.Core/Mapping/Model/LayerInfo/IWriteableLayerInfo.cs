@@ -45,7 +45,7 @@ namespace MapBoard.Mapping.Model
         /// <param name="features"></param>
         /// <param name="source"></param>
         /// <returns></returns>
-        Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source);
+        Task<IEnumerable<Feature>>  AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source);
 
         /// <summary>
         /// 添加一组要素
@@ -54,7 +54,7 @@ namespace MapBoard.Mapping.Model
         /// <param name="source"></param>
         /// <param name="rebuildFeatures"></param>
         /// <returns></returns>
-        Task AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeatures);
+        Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeatures);
 
         /// <summary>
         /// 创建空要素

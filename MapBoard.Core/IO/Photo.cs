@@ -62,6 +62,10 @@ namespace MapBoard.IO
                         }
                     });
             });
+            if(features.IsEmpty)
+            {
+                throw new Exception("指定的目录中不存在包含坐标信息的图片");
+            }
             await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
         }
 
