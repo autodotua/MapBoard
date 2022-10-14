@@ -66,7 +66,7 @@ namespace MapBoard.IO
                     SymbolInfo symbol = null;
                     if (layer.Renderer.HasCustomSymbols)
                     {
-                        var c = feature.Attributes[layer.Renderer.KeyFieldName] as string;
+                        var c = feature.Attributes[layer.Renderer.KeyFieldName].ToString();
                         if (layer.Renderer.Symbols.ContainsKey(c))
                         {
                             symbol = layer.Renderer.Symbols[c];
@@ -146,17 +146,17 @@ namespace MapBoard.IO
             string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
             if (points.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name);
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name+"（点）");
                 await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (lines.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name);
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name + "（线）");
                 await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (polygons.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name);
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name + "（面）");
                 await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
         }

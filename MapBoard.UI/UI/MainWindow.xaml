@@ -370,7 +370,7 @@
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="KML打包文件"
-                                        Tag="8" />
+                                        Tag="5" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="截图"
