@@ -334,7 +334,7 @@ namespace MapBoard.UI.GpxToolbox
 
         private async void LinkTrackMenuClick(object sender, RoutedEventArgs e)
         {
-            TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().ToArray();
+            TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().OrderBy(p=>p.Track.Points.FirstOrDefault()?.Time??DateTime.MaxValue).ToArray();
             if (tracks.Length <= 1)
             {
                 SnakeBar.ShowError("至少要2个轨迹才能进行连接操作");
