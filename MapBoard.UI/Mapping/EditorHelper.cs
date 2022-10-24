@@ -427,7 +427,7 @@ namespace MapBoard.Mapping
         {
             var position = e.GetPosition(MapView);
             var location = MapView.ScreenToLocation(position);
-            if(location==null)
+            if (location == null)
             {
                 return;
             }
@@ -478,28 +478,31 @@ namespace MapBoard.Mapping
         /// <param name="e"></param>
         private void MapView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
-            {
-                return;
-            }
-            if (!CanCatchNearestPoint())
-            {
-                return;
-            }
+        
 
             var location = MapView.ScreenToLocation(e.GetPosition(MapView)).ToWgs84();
             ContextMenu menu = new ContextMenu();
 
             MenuItem item = new MenuItem()
             {
-                Header = $"经度={location.X:0.000000}{Environment.NewLine}纬度={location.Y:0.000000}",
+                Header=LocationMenuUtility.GetLocationMenuString(location),
             };
             item.Click += (s, e) =>
-              {
-                  Clipboard.SetText($"{location.X:0.000000},{location.Y:0.000000}");
-                  SnakeBar.Show("已复制经纬度到剪贴板");
-              };
+            {
+                Clipboard.SetText(LocationMenuUtility.GetLocationClipboardString(location));
+                SnakeBar.Show("已复制经纬度到剪贴板");
+            };
             menu.Items.Add(item);
+
+
+            menu.IsOpen = true;
+            if (MapView.CurrentTask != BoardTask.Draw 
+                || !SketchEditor.IsEnabled
+                || !SketchEditor.IsVisible
+                || !CanCatchNearestPoint())
+            {
+                return;
+            }
             if (nearestVertex != null)
             {
                 item = new MenuItem() { Header = "捕捉最近的结点" + (Config.Instance.ShowNearestPointSymbol ? "（红色）" : "") };
@@ -512,7 +515,6 @@ namespace MapBoard.Mapping
                 item.Click += (s, e2) => AddPointToSketchEditor(nearestPoint);
                 menu.Items.Add(item);
             }
-            menu.IsOpen = true;
         }
 
         private void MapviewTapped(object sender, GeoViewInputEventArgs e)

@@ -46,7 +46,9 @@
                     </ui:SimpleStackPanel>
                 </GroupBox>
                 <GroupBox Header="界面">
-                    <ui:SimpleStackPanel Spacing="8">
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="16">
                         <ComboBox
                             ui:ControlHelper.Header="主题"
                             SelectedIndex="{Binding Theme}">
@@ -60,8 +62,10 @@
                             IsOn="{Binding Config.SmoothScroll}" />
                     </ui:SimpleStackPanel>
                 </GroupBox>
-                <GroupBox Header="格式">
-                    <ui:SimpleStackPanel Spacing="8">
+                <GroupBox Header="格式关联">
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="16">
                         <CheckBox
                             Click="FileAssociateCheckBox_Click"
                             Content="关联地图包格式"
@@ -73,6 +77,24 @@
                             IsChecked="{Binding FormatGpxAssociated}"
                             Tag="gpx" />
                     </ui:SimpleStackPanel>
+                </GroupBox>
+
+                <GroupBox Header="位置复制格式">
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        IsEditable="True"
+                        Text="{Binding Config.LocationClipboardFormat}">
+                        <ComboBox.ItemsSource>
+                            <x:Array Type="{x:Type system:String}">
+                                <system:String>{经度},{纬度}</system:String>
+                                <system:String>{经度} {纬度}</system:String>
+                                <system:String>{经度}\t{纬度}</system:String>
+                                <system:String>{纬度},{经度}</system:String>
+                                <system:String>{纬度} {经度}</system:String>
+                                <system:String>{纬度}\t{经度}</system:String>
+                            </x:Array>
+                        </ComboBox.ItemsSource>
+                    </ComboBox>
                 </GroupBox>
             </ui:SimpleStackPanel>
         </TabItem>

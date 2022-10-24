@@ -328,21 +328,21 @@ namespace MapBoard.Mapping
                 startRotation = MapRotation;
                 startPosition = e.GetPosition(this);
             }
-            else if (e.RightButton == MouseButtonState.Pressed)
+            else if (e.RightButton == MouseButtonState.Pressed && currentTask != BoardTask.Draw)
             {
-                ContextMenu menu = new ContextMenu();
-                var location = ScreenToLocation(e.GetPosition(this)).ToWgs84();
-                MenuItem item = new MenuItem()
-                {
-                    Header = $"经度={location.X:0.000000}{Environment.NewLine}纬度={location.Y:0.000000}",
-                };
-                item.Click += (s, e) =>
-                {
-                    Clipboard.SetText($"{location.X:0.000000},{location.Y:0.000000}");
-                    SnakeBar.Show("已复制经纬度到剪贴板");
-                };
-                menu.Items.Add(item);
-                menu.IsOpen = true;
+                //ContextMenu menu = new ContextMenu();
+                //var location = ScreenToLocation(e.GetPosition(this)).ToWgs84();
+                //MenuItem item = new MenuItem()
+                //{
+                //    Header = $"经度：{location.X:0.000000}{Environment.NewLine}纬度：{location.Y:0.000000}",
+                //};
+                //item.Click += (s, e) =>
+                //{
+                //    Clipboard.SetText(LocationClipboardUtility.GetLocationString(location));
+                //    SnakeBar.Show("已复制经纬度到剪贴板");
+                //};
+                //menu.Items.Add(item);
+                //menu.IsOpen = true;
             }
         }
 

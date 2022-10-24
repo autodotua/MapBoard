@@ -16,9 +16,8 @@ namespace MapBoard
     public class Config : IJsonSerializable, INotifyPropertyChanged
     {
         public static readonly int WatermarkHeight = 72;
-        private static Config instance;
         private static readonly string path = FolderPaths.ConfigPath;
-
+        private static Config instance;
         private int httpTimeOut = 1000;
 
         private int serverLayerLoadTimeout = 5000;
@@ -55,12 +54,9 @@ namespace MapBoard
 
         public bool BackupWhenReplace { get; set; } = true;
 
-        public List<double> BufferDistances { get; set; } = new List<double>();
-
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
-
         public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;
-
+        public List<double> BufferDistances { get; set; } = new List<double>();
         public int CatchDistance { get; set; } = 12;
 
         public bool CopyShpFileWhenExport { get; set; } = true;
@@ -81,12 +77,27 @@ namespace MapBoard
 
         public bool HideWatermark { get; set; } = true;
 
+        public string HttpProxy { get; set; } = "";
+        public int HttpTimeOut
+        {
+            get => httpTimeOut;
+            set
+            {
+                if (value > 0)
+                {
+                    httpTimeOut = value;
+                }
+            }
+        }
+
+        public string HttpUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
         public string LastFTP { get; set; } = null;
 
         public int LastLayerListGroupType { get; set; } = 0;
 
         public Exception LoadError { get; private set; }
 
+        public string LocationClipboardFormat { get; set; } = "{经度},{纬度}";
         public int MaxBackupCount { get; set; } = 100;
 
         public double MaxScale { get; set; } = 100;
@@ -146,6 +157,8 @@ namespace MapBoard
 
         public string Tile_FormatExtension { get; set; } = "png";
 
+        public string Tile_HttpProxy { get; set; } = "";
+
         public ImageFormat Tile_ImageFormat
         {
             get
@@ -162,32 +175,12 @@ namespace MapBoard
         }
 
         public DownloadInfo Tile_LastDownload { get; set; } = null;
-
-        public int HttpTimeOut
-        {
-            get => httpTimeOut;
-            set
-            {
-                if (value > 0)
-                {
-                    httpTimeOut = value;
-                }
-            }
-        }
-
         public string Tile_ServerFilePathFormat { get; set; } = @"{Download}/{z}/{x}-{y}.{ext}";
 
         public int Tile_ServerPort { get; set; } = 8080;
-        public string Tile_HttpProxy { get; set; } = "";
-
         public (int width, int height) Tile_TileSize { get; set; } = (256, 256);
 
         public TileSourceCollection Tile_Urls { get; set; } = new TileSourceCollection();
-
-        public string HttpUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
-
-        public string HttpProxy { get; set; } = "";
-        
         public bool UseCompactLayerList { get; set; } = false;
 
         public void Save()

@@ -23,6 +23,7 @@ using MapBoard.Model;
 using MapBoard.Mapping.Model;
 using FzLib.Collection;
 using PropertyChanged;
+using System.Windows.Controls;
 
 namespace MapBoard.Mapping
 {
@@ -36,7 +37,26 @@ namespace MapBoard.Mapping
             instances.Add(this);
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
+            PreviewMouseRightButtonDown += GpxMapView_PreviewMouseRightButtonDown;
             this.SetHideWatermark();
+        }
+
+        private async void GpxMapView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var location = (await ScreenToLocationAsync(e.GetPosition(this))).ToWgs84();
+            ContextMenu menu = new ContextMenu();
+
+            MenuItem item = new MenuItem()
+            {
+                Header = LocationMenuUtility.GetLocationMenuString(location),
+            };
+            item.Click += (s, e) =>
+            {
+                Clipboard.SetText(LocationMenuUtility.GetLocationClipboardString(location));
+                SnakeBar.Show("已复制经纬度到剪贴板");
+            };
+            menu.Items.Add(item);
+            menu.IsOpen = true;
         }
 
         private static List<GpxMapView> instances = new List<GpxMapView>();
@@ -306,7 +326,7 @@ namespace MapBoard.Mapping
             Gpx gpx = null;
             await Task.Run(async () =>
              {
-                 gpx =await Gpx.FromFileAsync(filePath);
+                 gpx = await Gpx.FromFileAsync(filePath);
              });
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
