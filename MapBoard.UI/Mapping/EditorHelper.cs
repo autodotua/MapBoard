@@ -427,6 +427,10 @@ namespace MapBoard.Mapping
         {
             var position = e.GetPosition(MapView);
             var location = MapView.ScreenToLocation(position);
+            if(location==null)
+            {
+                return;
+            }
             if (!CanCatchNearestPoint()//没开
                 || MapView.CurrentTask != BoardTask.Draw//没有正在绘制
                 || IsMouseNearSketch(location))//距离正在绘制的图形太近
