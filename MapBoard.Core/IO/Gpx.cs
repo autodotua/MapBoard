@@ -75,7 +75,7 @@ namespace MapBoard.IO
             }
             Feature feature = layer.CreateFeature();
             feature.Geometry = new Polyline(points);
-            ApplyAttributes(track, layer, null, feature);
+            ApplyAttributes(track, layer, null, feature, track.GpxInfo.Time);
             yield return feature;
         }
 
@@ -87,12 +87,12 @@ namespace MapBoard.IO
                 MapPoint mapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
                 Feature feature = layer.CreateFeature();
                 feature.Geometry = mapPoint;
-                ApplyAttributes(track, layer, i++, feature);
+                ApplyAttributes(track, layer, i++, feature,point.Time);
                 yield return feature;
             }
         }
 
-        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature)
+        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature,DateTime time)
         {
             if (layer.HasField(Filed_Name, FieldInfoType.Text))
             {
@@ -116,7 +116,7 @@ namespace MapBoard.IO
             }
             if (layer.HasField(Filed_Time, FieldInfoType.Time))
             {
-                feature.SetAttributeValue(Filed_Time, track.GpxInfo.Time.ToString(Parameters.TimeFormat));
+                feature.SetAttributeValue(Filed_Time, time.ToString(Parameters.TimeFormat));
             }
             if (layer.HasField(Filed_Index, FieldInfoType.Integer))
             {
