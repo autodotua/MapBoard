@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using MapBoard.Mapping.Model;
 using FzLib;
+using System.Windows.Controls;
+using System.Windows.Data;
+using MapBoard.Model;
 
 namespace MapBoard.UI.Dialog
 {
@@ -80,6 +83,11 @@ namespace MapBoard.UI.Dialog
             }
             int index = 0;
             List<FeatureSelectionInfo> featureSelections = null;
+            GridView view = lvw.View as GridView;
+            view.Columns.Clear();
+            view.Columns.Add(new GridViewColumn() { DisplayMemberBinding = new Binding("Index") });
+
+            //处理每个要素的属性
             await Task.Run(() =>
             {
                 featureSelections = Selection.SelectedFeatures
@@ -88,6 +96,18 @@ namespace MapBoard.UI.Dialog
                     .ToList();
                 SelectedFeatures = new ObservableCollection<FeatureSelectionInfo>(featureSelections);
             });
+
+            //设置列
+            var attr = SelectedFeatures.First().Attributes;
+            for (int i = 0; i < attr.Attributes.Count; i++)
+            {
+                var field = attr.Attributes[i];
+                view.Columns.Add(new GridViewColumn()
+                {
+                    Header = field.DisplayName,
+                    DisplayMemberBinding = new Binding($"{nameof(FeatureSelectionInfo.Attributes)}.{nameof(FeatureAttributeCollection.Attributes)}[{i}]")
+                });
+            }
         }
 
 

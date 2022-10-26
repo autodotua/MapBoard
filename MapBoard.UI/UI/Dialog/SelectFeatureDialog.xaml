@@ -22,6 +22,7 @@
             DockPanel.Dock="Top"
             Text="{Binding Message}" />
         <ListView
+            x:Name="lvw"
             Margin="4"
             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             DockPanel.Dock="Left"
@@ -29,20 +30,7 @@
             SelectedItem="{Binding Selected}"
             SelectionMode="Single">
             <ListView.View>
-                <GridView>
-                    <GridViewColumn
-                        DisplayMemberBinding="{Binding Index}"
-                        Header="序号" />
-                    <GridViewColumn
-                        DisplayMemberBinding="{Binding Attributes.Label}"
-                        Header="标签" />
-                    <GridViewColumn
-                        DisplayMemberBinding="{Binding Attributes.Date, StringFormat={}{0:yyyy-MM-dd}}"
-                        Header="日期" />
-                    <GridViewColumn
-                        DisplayMemberBinding="{Binding Attributes.Key}"
-                        Header="分类" />
-                </GridView>
+                <GridView AllowsColumnReorder="False" />
             </ListView.View>
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
