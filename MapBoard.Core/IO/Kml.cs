@@ -115,7 +115,12 @@ namespace MapBoard.IO
             List<Polygon> polygons = new List<Polygon>();
             foreach (var doc in kml.RootNodes.OfType<KmlDocument>())
             {
-                foreach (var node in doc.ChildNodes.OfType<KmlPlacemark>())
+                KmlNodeCollection nodes = doc.ChildNodes;
+                if (nodes.Count==1&& nodes[0] is KmlDocument)
+                {
+                    nodes = (nodes[0] as KmlDocument).ChildNodes;
+                }
+                foreach (var node in nodes.OfType<KmlPlacemark>())
                 {
                     switch (node.GraphicType)
                     {
