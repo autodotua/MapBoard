@@ -21,7 +21,7 @@
         <fzc:ZoomableBorder x:Name="zb">
             <Image
                 RenderOptions.BitmapScalingMode="HighQuality"
-                Source="{Binding ImageUri}" />
+                Source="{Binding ImageUri, IsAsync=True}" />
         </fzc:ZoomableBorder>
     </Grid>
 </dialog:RightBottomFloatDialogBase>
