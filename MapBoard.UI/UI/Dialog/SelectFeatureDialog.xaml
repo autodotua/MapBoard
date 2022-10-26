@@ -1,19 +1,18 @@
-﻿<u:DialogWindowBase
+﻿<dialog:RightBottomFloatDialogBase
     x:Class="MapBoard.UI.Dialog.SelectFeatureDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="选择图形"
-    Width="254"
+    Width="240"
     Height="240"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="Window_Loaded"
     ShowActivated="False"
     mc:Ignorable="d">
     <DockPanel LastChildFill="True">
@@ -52,4 +51,4 @@
             </ListView.ItemsPanel>
         </ListView>
     </DockPanel>
-</u:DialogWindowBase>
+</dialog:RightBottomFloatDialogBase>

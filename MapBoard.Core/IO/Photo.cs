@@ -14,23 +14,26 @@ using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using MetadataExtractor;
 using System.Diagnostics;
+using ImageMagick;
+using Rational = MetadataExtractor.Rational;
 
 namespace MapBoard.IO
 {
     public static class Photo
     {
+        public static readonly string NameField = "name";
+        public static readonly string ImagePathField = "ImagePath";
+        public static readonly string DateField = "Date";
+        public static readonly string TimeField = "Time";
+
         public static async Task ImportImageLocation(IEnumerable<string> files, MapLayerCollection layers)
         {
-            string nameField = "name";
-            string addressField = "address";
-            string dateField = "date";
-            string timeField = "time";
             var fields = new[]
             {
-                      new FieldInfo(nameField,"名称",FieldInfoType.Text),
-                      new FieldInfo(addressField,"路径",FieldInfoType.Text),
-                      new FieldInfo(dateField,"拍摄日期",FieldInfoType.Date),
-                      new FieldInfo(timeField,"拍摄时间",FieldInfoType.Time),
+                new FieldInfo(NameField,"名称",FieldInfoType.Text),
+                new FieldInfo(ImagePathField,"路径",FieldInfoType.Text),
+                new FieldInfo(DateField,"拍摄日期",FieldInfoType.Date),
+                new FieldInfo(TimeField,"拍摄时间",FieldInfoType.Time),
             };
             var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
@@ -47,22 +50,22 @@ namespace MapBoard.IO
                                 Dictionary<string, object> attr = new Dictionary<string, object>();
                                 if (info.Value.time.HasValue)
                                 {
-                                    attr.Add(dateField, info.Value.time.Value);
-                                    attr.Add(timeField, info.Value.time.Value.ToString(Parameters.TimeFormat));
+                                    attr.Add(DateField, info.Value.time.Value);
+                                    attr.Add(TimeField, info.Value.time.Value.ToString(Parameters.TimeFormat));
                                 }
-                                attr.Add(nameField, Path.GetFileName(file));
-                                attr.Add(addressField, file);
+                                attr.Add(NameField, Path.GetFileName(file));
+                                attr.Add(ImagePathField, file);
                                 var feature = layer.CreateFeature(attr, point);
                                 features.Add(feature);
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Debug.WriteLine($"照片{file}解析失败：" + ex.Message);
                         }
                     });
             });
-            if(features.IsEmpty)
+            if (features.IsEmpty)
             {
                 throw new Exception("指定的目录中不存在包含坐标信息的图片");
             }
@@ -112,6 +115,18 @@ namespace MapBoard.IO
                 return (lngDegree, latDegree, time);
             }
             return null;
+        }
+
+        public static async Task<string> GetDisplayableImage(string imagePath,int maxLength)
+        {
+            string tempPath = Path.GetTempFileName() + ".jpg";
+            await Task.Run(() =>
+            {
+                using MagickImage image = new MagickImage(imagePath);
+                image.AdaptiveResize(maxLength, maxLength);
+                image.Write(tempPath);
+            });
+            return tempPath;
         }
     }
 }

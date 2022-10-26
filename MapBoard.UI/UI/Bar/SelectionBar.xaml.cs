@@ -18,6 +18,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using MapBoard.Mapping.Model;
 using FzLib.WPF;
+using MapBoard.IO;
+using System.IO;
 
 namespace MapBoard.UI.Bar
 {
@@ -30,6 +32,7 @@ namespace MapBoard.UI.Bar
         private FeatureAttributeCollection attributes;
 
         private SelectFeatureDialog selectFeatureDialog;
+        private ShowImageDialog imageDialog;
 
         public SelectionBar()
         {
@@ -49,16 +52,22 @@ namespace MapBoard.UI.Bar
         public override void Initialize()
         {
             MapView.BoardTaskChanged += BoardTaskChanged;
-            this.GetWindow().SizeChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
-            this.GetWindow().LocationChanged += (p1, p2) => selectFeatureDialog?.ResetLocation();
+            this.GetWindow().SizeChanged += (p1, p2) => ResetDialogLocation();
+            this.GetWindow().LocationChanged += (p1, p2) => ResetDialogLocation();
             MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
+        }
+
+        private void ResetDialogLocation()
+        {
+            selectFeatureDialog?.ResetLocation();
+            imageDialog?.ResetLocation();
         }
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
             if (e.NewTask == BoardTask.Select)
             {
-                SelectedFeaturesChanged(null, null);
+                //SelectedFeaturesChanged(null, null);
                 Expand();
             }
             else
@@ -71,7 +80,7 @@ namespace MapBoard.UI.Bar
         {
             var layer = Layers.Selected;
             var features = MapView.Selection.SelectedFeatures.ToArray();
-        
+
             FeatureLayerMenuHelper menu = new FeatureLayerMenuHelper(this.GetWindow() as MainWindow, MapView, layer, features);
             OpenMenus(menu.GetExportMenus(header => $"正在{header}"), sender as UIElement);
 
@@ -86,9 +95,9 @@ namespace MapBoard.UI.Bar
                 return;
             }
             var features = MapView.Selection.SelectedFeatures.ToArray();
-            FeatureLayerMenuHelper menu = new FeatureLayerMenuHelper(this.GetWindow() as MainWindow, MapView, layer,  features);
-            OpenMenus(menu.GetEditMenus( header => $"正在进行{header}操作") ,sender as UIElement);
-          
+            FeatureLayerMenuHelper menu = new FeatureLayerMenuHelper(this.GetWindow() as MainWindow, MapView, layer, features);
+            OpenMenus(menu.GetEditMenus(header => $"正在进行{header}操作"), sender as UIElement);
+
         }
 
         private void CancelButtonClick(object sender, RoutedEventArgs e)
@@ -173,6 +182,7 @@ namespace MapBoard.UI.Bar
         {
             if (MapView.CurrentTask != BoardTask.Select)
             {
+                OnSelectingImagePointAsync();
                 return;
             }
             int count = MapView.Selection.SelectedFeatures.Count;
@@ -186,13 +196,23 @@ namespace MapBoard.UI.Bar
             btnMenu.IsEnabled = IsLayerEditable;
             attributes = count != 1 ?
                 null : FeatureAttributeCollection.FromFeature(layer, MapView.Selection.SelectedFeatures.First());
+            LoadSelectFeatureDialog(count);
+            await LoadMessages(count, layer);
+            Debug.WriteLine(count);
+            await OnSelectingImagePointAsync();
+        }
 
+        private void LoadSelectFeatureDialog(int count)
+        {
             if (count > 1 && (selectFeatureDialog == null || selectFeatureDialog.IsClosed))
             {
                 selectFeatureDialog = new SelectFeatureDialog(this.GetWindow(), MapView, MapView.Layers);
                 selectFeatureDialog.Show(); ;
             }
+        }
 
+        private async Task LoadMessages(int count, IMapLayerInfo layer)
+        {
             StringBuilder sb = new StringBuilder($"已选择{MapView.Selection.SelectedFeatures.Count}个图形");
             Message = sb.ToString();
             await Task.Run(() =>
@@ -242,6 +262,32 @@ namespace MapBoard.UI.Bar
             Message = sb.ToString();
 
             this.Notify(nameof(Attributes));
+        }
+
+        private async Task OnSelectingImagePointAsync()
+        {
+            if (MapView.Selection.SelectedFeatures.Count != 1)
+            {
+                if (imageDialog != null && !imageDialog.IsClosed)
+                {
+                    imageDialog.Close();
+                }
+                return;
+            }
+            var feature = MapView.Selection.SelectedFeatures.FirstOrDefault();
+            if (feature.Attributes.ContainsKey(Photo.ImagePathField))
+            {
+                string path = feature.GetAttributeValue(Photo.ImagePathField) as string;
+                if (path != null && File.Exists(path))
+                {
+                    if (imageDialog == null || imageDialog.IsClosed)
+                    {
+                        imageDialog = new ShowImageDialog(this.GetWindow());
+                        imageDialog.Show();
+                    }
+                    await imageDialog.SetImageAsync(path);
+                }
+            }
         }
 
         private void ValueTextBlock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -103,6 +103,7 @@
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop" Version="3.2.0" />
     <PackageReference Include="log4net" Version="2.0.14" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
       <Version>1.1.4</Version>
     </PackageReference>
@@ -179,6 +180,9 @@
     <Page Update="UI\Bar\GetGeometryBar.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
+    <Page Update="UI\Dialog\AddWfsLayerDialog - 复制.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="UI\Dialog\AddWmsLayerDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
@@ -189,6 +193,12 @@
     <Page Update="UI\Dialog\DefinitionExpressionDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Update="UI\Dialog\SelectFeatureDialog - 复制%282%29.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="UI\Dialog\ShowImageDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="UI\Dialog\SmoothDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

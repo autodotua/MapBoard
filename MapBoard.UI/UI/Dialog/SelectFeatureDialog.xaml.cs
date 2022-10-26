@@ -18,7 +18,7 @@ namespace MapBoard.UI.Dialog
     /// <summary>
     /// SelectStyleDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SelectFeatureDialog : DialogWindowBase
+    public partial class SelectFeatureDialog : RightBottomFloatDialogBase
     {
         public const int MaxCount = 100;
         public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; set; }
@@ -90,40 +90,8 @@ namespace MapBoard.UI.Dialog
             });
         }
 
-        public void ResetLocation()
-        {
-            if (IsClosed)
-            {
-                return;
-            }
-            double left = Owner.Left;
-            double top = Owner.Top;
-            if (Owner.WindowState == WindowState.Maximized)
-            {
-                left = top = 0;
-            }
-            Owner.IsVisibleChanged += (p1, p2) =>
-            {
-                if (p2.NewValue.Equals(false))
-                {
-                    Visibility = Visibility.Collapsed;
-                }
-            };
 
-            Left = left + Owner.ActualWidth - ActualWidth;
-            Top = top + Owner.ActualHeight - Height;
-        }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            ResetLocation();
-        }
-
-        protected override void OnContentRendered(EventArgs e)
-        {
-            ResetLocation();
-            base.OnContentRendered(e);
-        }
 
         public class FeatureSelectionInfo
         {

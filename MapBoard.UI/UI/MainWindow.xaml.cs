@@ -33,6 +33,7 @@ using FzLib;
 using FzLib.WPF;
 using System.Windows.Threading;
 using WinRT;
+using ImageMagick;
 
 namespace MapBoard.UI
 {
