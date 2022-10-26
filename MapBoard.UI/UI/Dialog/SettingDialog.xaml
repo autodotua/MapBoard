@@ -423,100 +423,125 @@
                     </Grid>
                 </GroupBox>
 
-                <GroupBox
-                    Grid.Row="2"
-                    Header="界面">
-                    <ui:SimpleStackPanel Spacing="8">
-                        <CheckBox
-                            Click="WatermarkCheckBox_Click"
-                            IsChecked="{Binding Config.HideWatermark}">
-                            <TextBlock>
-                                <Run>尝试隐藏</Run>
-                                <Run FontStyle="Italic">Licensed For Developer Use Only</Run>
-                                <Run>水印</Run>
-                            </TextBlock>
-                        </CheckBox>
-                        <WrapPanel Orientation="Horizontal">
-                            <CheckBox
-                                Content="指北针"
-                                IsChecked="{Binding Config.ShowSideCompass}" />
-                            <CheckBox
-                                Content="底图快速设置"
-                                IsChecked="{Binding Config.ShowSideBaseLayers}" />
-                            <CheckBox
-                                Content="缩放条"
-                                IsChecked="{Binding Config.ShowSideScaleBar}" />
-                            <CheckBox
-                                Content="放大缩小按钮"
-                                IsChecked="{Binding Config.ShowSideScaleButton}" />
-                            <CheckBox
-                                Content="搜索"
-                                IsChecked="{Binding Config.ShowSideSearch}" />
-                            <CheckBox
-                                Content="定位"
-                                IsChecked="{Binding Config.ShowSideLocation}" />
-                        </WrapPanel>
-                    </ui:SimpleStackPanel>
-                </GroupBox>
             </Grid>
         </TabItem>
 
-        <TabItem Header="画板">
-            <ui:SimpleStackPanel Spacing="8">
-                <GroupBox Header="属性">
-                    <CheckBox
-                        Content="在绘制下一个图形时，保留之前的属性"
-                        IsChecked="{Binding Config.RemainAttribute}" />
-                </GroupBox>
-                <GroupBox Header="捕捉">
-                    <ui:SimpleStackPanel
-                        Orientation="Vertical"
-                        Spacing="8">
+        <TabItem Header="地图画板">
+            <ScrollViewer
+                Padding="0,0,24,0"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ui:SimpleStackPanel Spacing="8">
+                    <GroupBox
+                        Grid.Row="2"
+                        Header="界面">
+                        <ui:SimpleStackPanel Spacing="8">
+                            <CheckBox
+                                Click="WatermarkCheckBox_Click"
+                                IsChecked="{Binding Config.HideWatermark}">
+                                <TextBlock>
+                                    <Run>尝试隐藏</Run>
+                                    <Run FontStyle="Italic">Licensed For Developer Use Only</Run>
+                                    <Run>水印</Run>
+                                </TextBlock>
+                            </CheckBox>
+                            <WrapPanel Orientation="Horizontal">
+                                <CheckBox
+                                    Content="指北针"
+                                    IsChecked="{Binding Config.ShowSideCompass}" />
+                                <CheckBox
+                                    Content="底图快速设置"
+                                    IsChecked="{Binding Config.ShowSideBaseLayers}" />
+                                <CheckBox
+                                    Content="缩放条"
+                                    IsChecked="{Binding Config.ShowSideScaleBar}" />
+                                <CheckBox
+                                    Content="放大缩小按钮"
+                                    IsChecked="{Binding Config.ShowSideScaleButton}" />
+                                <CheckBox
+                                    Content="搜索"
+                                    IsChecked="{Binding Config.ShowSideSearch}" />
+                                <CheckBox
+                                    Content="定位"
+                                    IsChecked="{Binding Config.ShowSideLocation}" />
+                            </WrapPanel>
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
 
+                    <GroupBox Header="属性">
                         <CheckBox
-                            Content="绘制时，显示最近的节点和任意点位置"
-                            IsChecked="{Binding Config.ShowNearestPointSymbol}" />
-                        <CheckBox
-                            Content="自动捕捉到最近的节点"
-                            IsChecked="{Binding Config.AutoCatchToNearestVertex}" />
-                        <TextBlock
-                            Opacity="0.7"
-                            Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
-                            绘制时，按住Ctrl+左键可捕捉最近节点，Shift+左键可捕捉最近任意点。
-                        </TextBlock>
-                        <TextBlock
-                            Opacity="0.7"
-                            Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}}">
-                            <Run>绘制时，直接点击即可捕捉最近节点。此时无法捕捉正在编辑的图形。</Run>
-                            <LineBreak />
-                            <Run>按住Ctrl+左键暂时取消捕捉，Shift+左键可捕捉最近任意点。</Run>
-                        </TextBlock>
-                        <ui:NumberBox
-                            ui:ControlHelper.Header="捕捉范围（像素）"
-                            LargeChange="10"
-                            Maximum="100"
-                            Minimum="2"
-                            SmallChange="5"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{Binding Config.CatchDistance}" />
-                    </ui:SimpleStackPanel>
-                </GroupBox>
+                            Content="在绘制下一个图形时，保留之前的属性"
+                            IsChecked="{Binding Config.RemainAttribute}" />
+                    </GroupBox>
+                    <GroupBox Header="捕捉">
+                        <ui:SimpleStackPanel
+                            Orientation="Vertical"
+                            Spacing="8">
 
-                <GroupBox Header="选择">
-                    <ui:SimpleStackPanel
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
-                        <CheckBox
-                            Content="不需要按Ctrl，直接单击以选择"
-                            IsChecked="{Binding Config.TapToSelect}" />
-                        <CheckBox
-                            Content="可以选择全部图层"
-                            IsChecked="{Binding Config.TapToSelect}"
-                            Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
-                    </ui:SimpleStackPanel>
-                </GroupBox>
-            </ui:SimpleStackPanel>
+                            <CheckBox
+                                Content="绘制时，显示最近的节点和任意点位置"
+                                IsChecked="{Binding Config.ShowNearestPointSymbol}" />
+                            <CheckBox
+                                Content="自动捕捉到最近的节点"
+                                IsChecked="{Binding Config.AutoCatchToNearestVertex}" />
+                            <TextBlock
+                                Opacity="0.7"
+                                Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
+                                绘制时，按住Ctrl+左键可捕捉最近节点，Shift+左键可捕捉最近任意点。
+                            </TextBlock>
+                            <TextBlock
+                                Opacity="0.7"
+                                Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}}">
+                                <Run>绘制时，直接点击即可捕捉最近节点。此时无法捕捉正在编辑的图形。</Run>
+                                <LineBreak />
+                                <Run>按住Ctrl+左键暂时取消捕捉，Shift+左键可捕捉最近任意点。</Run>
+                            </TextBlock>
+                            <ui:NumberBox
+                                ui:ControlHelper.Header="捕捉范围（像素）"
+                                LargeChange="10"
+                                Maximum="100"
+                                Minimum="2"
+                                SmallChange="5"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{Binding Config.CatchDistance}" />
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="选择">
+                        <ui:SimpleStackPanel
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
+                            <CheckBox
+                                Content="不需要按Ctrl，直接单击以选择"
+                                IsChecked="{Binding Config.TapToSelect}" />
+                            <CheckBox
+                                Content="可以选择全部图层"
+                                IsChecked="{Binding Config.TapToSelect}"
+                                Visibility="{Binding Config.TapToSelect, Converter={StaticResource Bool2VisibilityConverter}}" />
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="缩略图">
+                        <ui:SimpleStackPanel
+                            Orientation="Vertical"
+                            Spacing="8">
+                            <ui:ToggleSwitch
+                                ui:ControlHelper.Header="缩略图兼容模式"
+                                IsOn="{Binding Config.ThumbnailCompatibilityMode}"
+                                OffContent="无论是否能够显示，均不进行转换"
+                                OnContent="对于较新的格式，将进行转换后显示" />
+                            <TextBlock
+                                Opacity="0.7"
+                                Visibility="{Binding Config.AutoCatchToNearestVertex, Converter={StaticResource Bool2VisibilityConverter}}">
+                                <Run>开启后，若图像为HEIF或AVIF格式，则会生成小尺寸的JPG进行显示</Run>
+                                <LineBreak />
+                                <Run>这能够在没有安装相关插件的计算机中正常显示缩略图，但会稍慢</Run>
+                            </TextBlock>
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+                </ui:SimpleStackPanel>
+            </ScrollViewer>
         </TabItem>
 
         <TabItem Header="GPX工具箱">

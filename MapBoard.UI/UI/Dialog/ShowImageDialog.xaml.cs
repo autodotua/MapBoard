@@ -15,6 +15,7 @@ using FzLib;
 using MapBoard.IO;
 using System.Runtime.CompilerServices;
 using System.IO;
+using System.Windows.Input;
 
 namespace MapBoard.UI.Dialog
 {
@@ -23,19 +24,25 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class ShowImageDialog : RightBottomFloatDialogBase
     {
+        public static readonly string[] needConvertExtensions = new string[] { ".heif", ".heic", ".avif" };
         private static Dictionary<string, string> convertedImages = new Dictionary<string, string>();
-        public Uri ImageUri { get; set; }
-        public bool Loading { get; set; }
-
+        private volatile int version = 0;
         public ShowImageDialog(Window owner) : base(owner)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
+            this.PropertyChanged += ShowImageDialog_PropertyChanged;
         }
 
-        private volatile int version = 0;
+        public Uri ImageUri { get; set; }
+        public bool Loading { get; set; }
+        protected override int OffsetY => 248;
+
+        private string currentImagePath { get; set; }
+
         public async Task SetImageAsync(string imagePath)
         {
+            currentImagePath = imagePath;
             ImageUri = null;
             if (imagePath == null)
             {
@@ -47,25 +54,33 @@ namespace MapBoard.UI.Dialog
             int currentVersion = version;
             try
             {
-                string convertedImagePath = null;
-                //查询缓存
-                if (convertedImages.ContainsKey(imagePath) && File.Exists(convertedImages[imagePath]))
+                if (Config.Instance.ThumbnailCompatibilityMode
+                    && needConvertExtensions.Contains(Path.GetExtension(imagePath).ToLower()))
                 {
-                    convertedImagePath = convertedImages[imagePath];
+                    string convertedImagePath = null;
+                    //查询缓存
+                    if (convertedImages.ContainsKey(imagePath) && File.Exists(convertedImages[imagePath]))
+                    {
+                        convertedImagePath = convertedImages[imagePath];
+                    }
+                    else
+                    {
+                        PresentationSource source = PresentationSource.FromVisual(this);
+                        convertedImagePath = await Photo.GetDisplayableImage(imagePath,
+                           (int)Math.Max(ActualHeight * source.CompositionTarget.TransformToDevice.M22,
+                           ActualWidth * source.CompositionTarget.TransformToDevice.M11));
+                        convertedImages.Add(imagePath, convertedImagePath);
+                    }
+
+                    //由于转换时间比较长，如果在转换时又选择了另一张图片，就会导致问题，所以需要保证没有选择新的突破
+                    if (currentVersion == version)
+                    {
+                        ImageUri = new Uri(convertedImagePath);
+                    }
                 }
                 else
                 {
-                    PresentationSource source = PresentationSource.FromVisual(this);
-                    convertedImagePath = await Photo.GetDisplayableImage(imagePath,
-                       (int)Math.Max(ActualHeight * source.CompositionTarget.TransformToDevice.M22,
-                       ActualWidth * source.CompositionTarget.TransformToDevice.M11));
-                    convertedImages.Add(imagePath, convertedImagePath);
-                }
-
-                //由于转换时间比较长，如果在转换时又选择了另一张图片，就会导致问题，所以需要保证没有选择新的突破
-                if (currentVersion == version)
-                {
-                    ImageUri = new Uri(convertedImagePath);
+                    ImageUri = new Uri(imagePath);
                 }
             }
             catch (Exception ex)
@@ -80,7 +95,21 @@ namespace MapBoard.UI.Dialog
                 }
             }
         }
-        protected override int OffsetY => 248;
+
+        protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseDoubleClick(e);
+            if (currentImagePath != null)
+            {
+                IOUtility.TryOpenInShellAsync(currentImagePath);
+            }
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
+            zb.Reset();
+        }
 
         private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
@@ -90,5 +119,12 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        private void ShowImageDialog_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ImageUri))
+            {
+                zb.Reset();
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@
     Height="240"
     ui:WindowHelper.UseModernWindowStyle="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    ResizeMode="CanResize"
     ShowActivated="False"
     mc:Ignorable="d">
     <DockPanel LastChildFill="True">

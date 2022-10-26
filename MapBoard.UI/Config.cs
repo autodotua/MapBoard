@@ -53,30 +53,19 @@ namespace MapBoard
         public bool BackupWhenExit { get; set; } = false;
 
         public bool BackupWhenReplace { get; set; } = true;
-
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
         public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;
         public List<double> BufferDistances { get; set; } = new List<double>();
         public int CatchDistance { get; set; } = 12;
-
         public bool CopyShpFileWhenExport { get; set; } = true;
-
         public bool Gpx_AutoSmooth { get; set; } = false;
-
         public int Gpx_AutoSmoothLevel { get; set; } = 5;
-
         public bool Gpx_AutoSmoothOnlyZ { get; set; } = false;
-
         public bool Gpx_DrawPoints { get; set; } = false;
-
         public bool Gpx_Height { get; set; } = false;
-
         public int Gpx_HeightExaggeratedMagnification { get; set; } = 5;
-
         public bool Gpx_RelativeHeight { get; set; } = false;
-
         public bool HideWatermark { get; set; } = true;
-
         public string HttpProxy { get; set; } = "";
         public int HttpTimeOut
         {
@@ -92,18 +81,12 @@ namespace MapBoard
 
         public string HttpUserAgent { get; set; } = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; QQWubi 133; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; CIBA; InfoPath.2)";
         public string LastFTP { get; set; } = null;
-
         public int LastLayerListGroupType { get; set; } = 0;
-
         public Exception LoadError { get; private set; }
-
         public string LocationClipboardFormat { get; set; } = "{经度},{纬度}";
         public int MaxBackupCount { get; set; } = 100;
-
         public double MaxScale { get; set; } = 100;
-
         public bool RemainAttribute { get; set; } = false;
-
         public int ServerLayerLoadTimeout
         {
             get => serverLayerLoadTimeout;
@@ -116,27 +99,16 @@ namespace MapBoard
         }
 
         public bool ShowLocation { get; set; } = false;
-
         public bool ShowNearestPointSymbol { get; set; } = true;
-
         public bool ShowSideBaseLayers { get; set; } = true;
-
         public bool ShowSideCompass { get; set; } = true;
-
         public bool ShowSideLocation { get; set; } = true;
-
         public bool ShowSideScaleBar { get; set; } = true;
-
         public bool ShowSideScaleButton { get; set; } = false;
-
         public bool ShowSideSearch { get; set; } = true;
-
         public bool SmoothScroll { get; set; } = true;
-
         public bool TapToSelect { get; set; } = false;
-
         public bool TapToSelectAllLayers { get; set; } = true;
-
         public int Theme
         {
             get => theme;
@@ -147,6 +119,7 @@ namespace MapBoard
             }
         }
 
+        public bool ThumbnailCompatibilityMode { get; set; }
         public BrowseInfo Tile_BrowseInfo { get; set; } = new BrowseInfo();
 
         public bool Tile_CoverFile { get; set; } = false;
