@@ -50,6 +50,58 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
+        public static async Task ImportAsync(string path, MapLayerCollection layers)
+        {
+            KmlDataset kml = new KmlDataset(new Uri(path));
+            await kml.LoadAsync();
+            List<MapPoint> points = new List<MapPoint>();
+            List<Polyline> lines = new List<Polyline>();
+            List<Polygon> polygons = new List<Polygon>();
+            foreach (var node in GetAllKmlPlacemark(kml))
+            {
+                switch (node.GraphicType)
+                {
+                    case KmlGraphicType.None:
+                        break;
+                    case KmlGraphicType.Point:
+                        points.Add(node.Geometry.RemoveZAndM() as MapPoint);
+                        break;
+                    case KmlGraphicType.Polyline:
+                        lines.Add(node.Geometry.RemoveZAndM() as Polyline);
+                        break;
+                    case KmlGraphicType.Polygon:
+                        polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
+                        break;
+                    case KmlGraphicType.ExtrudedPoint:
+                        break;
+                    case KmlGraphicType.ExtrudedPolyline:
+                        break;
+                    case KmlGraphicType.ExtrudedPolygon:
+                        break;
+                    case KmlGraphicType.Model:
+                        break;
+                    case KmlGraphicType.MultiGeometry:
+                        break;
+                }
+            }
+            string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
+            if (points.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name + "（点）");
+                await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
+            }
+            if (lines.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name + "（线）");
+                await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
+            }
+            if (polygons.Count > 0)
+            {
+                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name + "（面）");
+                await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
+            }
+        }
+
         private static async Task AddToKmlAsync(IMapLayerInfo layer, KmlNodeCollection nodes)
         {
             foreach (var feature in await layer.GetAllFeaturesAsync())
@@ -105,64 +157,34 @@ namespace MapBoard.IO
                 }
             }
         }
-
-        public static async Task ImportAsync(string path, MapLayerCollection layers)
+        private static IEnumerable<KmlPlacemark> GetAllKmlPlacemark(KmlDataset dataset)
         {
-            KmlDataset kml = new KmlDataset(new Uri(path));
-            await kml.LoadAsync();
-            List<MapPoint> points = new List<MapPoint>();
-            List<Polyline> lines = new List<Polyline>();
-            List<Polygon> polygons = new List<Polygon>();
-            foreach (var doc in kml.RootNodes.OfType<KmlDocument>())
+            foreach (var node in dataset.RootNodes)
             {
-                KmlNodeCollection nodes = doc.ChildNodes;
-                if (nodes.Count==1&& nodes[0] is KmlDocument)
+                foreach (var childNode in AddAll(node))
                 {
-                    nodes = (nodes[0] as KmlDocument).ChildNodes;
-                }
-                foreach (var node in nodes.OfType<KmlPlacemark>())
+                    yield return childNode;
+                }   
+            }
+            IEnumerable<KmlPlacemark> AddAll(KmlNode parentNode)
+            {
+                switch (parentNode)
                 {
-                    switch (node.GraphicType)
-                    {
-                        case KmlGraphicType.None:
-                            break;
-                        case KmlGraphicType.Point:
-                            points.Add(node.Geometry.RemoveZAndM() as MapPoint);
-                            break;
-                        case KmlGraphicType.Polyline:
-                            lines.Add(node.Geometry.RemoveZAndM() as Polyline);
-                            break;
-                        case KmlGraphicType.Polygon:
-                            polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
-                            break;
-                        case KmlGraphicType.ExtrudedPoint:
-                            break;
-                        case KmlGraphicType.ExtrudedPolyline:
-                            break;
-                        case KmlGraphicType.ExtrudedPolygon:
-                            break;
-                        case KmlGraphicType.Model:
-                            break;
-                        case KmlGraphicType.MultiGeometry:
-                            break;
-                    }
+                    case KmlContainer container:
+                        foreach (var node in container.ChildNodes)
+                        {
+                            foreach (var childNode in AddAll(node))
+                            {
+                                yield return childNode;
+                            } 
+                        }
+                        break;
+                    case KmlPlacemark placemark:
+                        yield return placemark;
+                        break;
+                    default:
+                        break;
                 }
-            }
-            string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
-            if (points.Count > 0)
-            {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name+"（点）");
-                await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
-            }
-            if (lines.Count > 0)
-            {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name + "（线）");
-                await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
-            }
-            if (polygons.Count > 0)
-            {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name + "（面）");
-                await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
         }
     }
