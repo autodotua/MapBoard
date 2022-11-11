@@ -24,6 +24,7 @@ using MapBoard.Mapping.Model;
 using FzLib.Collection;
 using PropertyChanged;
 using System.Windows.Controls;
+using Point = System.Windows.Point;
 
 namespace MapBoard.Mapping
 {
@@ -41,22 +42,62 @@ namespace MapBoard.Mapping
             this.SetHideWatermark();
         }
 
+        //protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        //{
+        //    base.OnPreviewMouseDown(e);
+        //    if(e.MiddleButton == MouseButtonState.Pressed)
+        //    {
+        //        base.OnPreviewMouseRightButtonDown(e);
+        //    }
+        //}
+        Point mouseRightDownPosition;
+
+        protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
+        {
+            mouseRightDownPosition = e.GetPosition(this);
+            base.OnPreviewMouseRightButtonDown(e);
+
+        }
+        protected async override void OnPreviewMouseRightButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseRightButtonUp(e);
+            var distance = Math.Sqrt(Math.Pow(e.GetPosition(this).X - mouseRightDownPosition.X, 2)
+                + Math.Pow(e.GetPosition(this).Y - mouseRightDownPosition.Y, 2));
+            if (distance<5)
+            {
+                var location = (await ScreenToLocationAsync(e.GetPosition(this))).ToWgs84();
+                ContextMenu menu = new ContextMenu();
+
+                MenuItem item = new MenuItem()
+                {
+                    Header = LocationMenuUtility.GetLocationMenuString(location),
+                };
+                item.Click += (s, e) =>
+                {
+                    Clipboard.SetText(LocationMenuUtility.GetLocationClipboardString(location));
+                    SnakeBar.Show("已复制经纬度到剪贴板");
+                };
+                menu.Items.Add(item);
+                menu.IsOpen = true;
+            }
+        }
         private async void GpxMapView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var location = (await ScreenToLocationAsync(e.GetPosition(this))).ToWgs84();
-            ContextMenu menu = new ContextMenu();
+            //e.Handled = true;
+            //var location = (await ScreenToLocationAsync(e.GetPosition(this))).ToWgs84();
+            //ContextMenu menu = new ContextMenu();
 
-            MenuItem item = new MenuItem()
-            {
-                Header = LocationMenuUtility.GetLocationMenuString(location),
-            };
-            item.Click += (s, e) =>
-            {
-                Clipboard.SetText(LocationMenuUtility.GetLocationClipboardString(location));
-                SnakeBar.Show("已复制经纬度到剪贴板");
-            };
-            menu.Items.Add(item);
-            menu.IsOpen = true;
+            //MenuItem item = new MenuItem()
+            //{
+            //    Header = LocationMenuUtility.GetLocationMenuString(location),
+            //};
+            //item.Click += (s, e) =>
+            //{
+            //    Clipboard.SetText(LocationMenuUtility.GetLocationClipboardString(location));
+            //    SnakeBar.Show("已复制经纬度到剪贴板");
+            //};
+            //menu.Items.Add(item);
+            //menu.IsOpen = true;
         }
 
         private static List<GpxMapView> instances = new List<GpxMapView>();
