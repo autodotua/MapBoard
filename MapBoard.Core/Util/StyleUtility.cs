@@ -21,53 +21,35 @@ namespace MapBoard.Util
             layer.ApplyLabel();
         }
 
-        private static void ApplyRenderer(this IMapLayerInfo layer)
+        public static LabelDefinition GetLabelDefinition(this LabelInfo label)
         {
-            switch (layer.Type)
+            var exp = new ArcadeLabelExpression(label.Expression);
+            TextSymbol symbol = new TextSymbol()
             {
-                case MapLayerInfo.Types.Shapefile:
-                case MapLayerInfo.Types.Temp:
-                case null:
-                    {
-                        UniqueValueRenderer renderer = new UniqueValueRenderer();
-                        if (layer.Renderer.HasCustomSymbols)
-                        {
-                            renderer.FieldNames.Add(layer.Renderer.KeyFieldName);
-
-                            foreach (var info in layer.Renderer.Symbols)
-                            {
-                                try
-                                {
-                                    Func<object> func = layer.Fields.First(p => p.Name == layer.Renderer.KeyFieldName).Type switch
-                                    {
-                                        FieldInfoType.Text or FieldInfoType.Time => () => info.Key,
-                                        FieldInfoType.Date => () => DateTime.Parse(info.Key),
-                                        FieldInfoType.Integer => () => int.Parse(info.Key),
-                                        FieldInfoType.Float => () => double.Parse(info.Key),
-                                        _ => throw new NotImplementedException(),
-                                    };
-                                    renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), func()));
-
-                                }
-                                catch(Exception ex)
-                                {
-                                    Debug.WriteLine("转换唯一值渲染器的Key失败："+ex.ToString());
-                                }
-
-                            }
-                        }
-                        renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);
-                        layer.Layer.Renderer = renderer;
-                    }
-                    break;
-
-                case MapLayerInfo.Types.WFS:
-                    layer.Layer.Renderer = new SimpleRenderer((layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType));
-                    break;
-
-                default:
-                    break;
-            }
+                HaloColor = label.HaloColor,
+                Color = label.FontColor,
+                BackgroundColor = label.BackgroundColor,
+                Size = label.FontSize,
+                HaloWidth = label.HaloWidth,
+                OutlineWidth = label.OutlineWidth,
+                OutlineColor = label.OutlineColor,
+                FontWeight = label.Bold ? FontWeight.Bold : FontWeight.Normal,
+                FontStyle = label.Italic ? FontStyle.Italic : FontStyle.Normal,
+                FontFamily = string.IsNullOrWhiteSpace(label.FontFamily) ? null : label.FontFamily
+            };
+            LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
+            {
+                WhereClause = label.WhereClause,
+                MinScale = label.MinScale,
+                TextLayout = (LabelTextLayout)label.Layout,
+                RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,
+                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
+                FeatureInteriorOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
+                FeatureBoundaryOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
+                DeconflictionStrategy = (LabelDeconflictionStrategy)label.DeconflictionStrategy,
+                RepeatDistance = label.RepeatDistance,
+            };
+            return labelDefinition;
         }
 
         public static Symbol ToSymbol(this SymbolInfo symbolInfo, GeometryType geometryType)
@@ -117,33 +99,53 @@ namespace MapBoard.Util
             layer.Layer.LabelsEnabled = layer.Labels.Length > 0;
         }
 
-        public static LabelDefinition GetLabelDefinition(this LabelInfo label)
+        private static void ApplyRenderer(this IMapLayerInfo layer)
         {
-            var exp = new ArcadeLabelExpression(label.Expression);
-            TextSymbol symbol = new TextSymbol()
+            switch (layer.Type)
             {
-                HaloColor = label.HaloColor,
-                Color = label.FontColor,
-                BackgroundColor = label.BackgroundColor,
-                Size = label.FontSize,
-                HaloWidth = label.HaloWidth,
-                OutlineWidth = label.OutlineWidth,
-                OutlineColor = label.OutlineColor,
-                FontWeight = label.Bold ? FontWeight.Bold : FontWeight.Normal,
-                FontStyle = label.Italic ? FontStyle.Italic : FontStyle.Normal,
-                FontFamily = string.IsNullOrWhiteSpace(label.FontFamily) ? null : label.FontFamily
-            };
-            LabelDefinition labelDefinition = new LabelDefinition(exp, symbol)
-            {
-                WhereClause = label.WhereClause,
-                MinScale = label.MinScale,
-                TextLayout = (LabelTextLayout)label.Layout,
-                RepeatStrategy = label.AllowRepeat ? LabelRepeatStrategy.Repeat : LabelRepeatStrategy.None,
-                LabelOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
-                FeatureInteriorOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
-                FeatureBoundaryOverlapStrategy = label.AllowOverlap ? LabelOverlapStrategy.Allow : LabelOverlapStrategy.Exclude,
-            };
-            return labelDefinition;
+                case MapLayerInfo.Types.Shapefile:
+                case MapLayerInfo.Types.Temp:
+                case null:
+                    {
+                        UniqueValueRenderer renderer = new UniqueValueRenderer();
+                        if (layer.Renderer.HasCustomSymbols)
+                        {
+                            renderer.FieldNames.Add(layer.Renderer.KeyFieldName);
+
+                            foreach (var info in layer.Renderer.Symbols)
+                            {
+                                try
+                                {
+                                    Func<object> func = layer.Fields.First(p => p.Name == layer.Renderer.KeyFieldName).Type switch
+                                    {
+                                        FieldInfoType.Text or FieldInfoType.Time => () => info.Key,
+                                        FieldInfoType.Date => () => DateTime.Parse(info.Key),
+                                        FieldInfoType.Integer => () => int.Parse(info.Key),
+                                        FieldInfoType.Float => () => double.Parse(info.Key),
+                                        _ => throw new NotImplementedException(),
+                                    };
+                                    renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), func()));
+
+                                }
+                                catch(Exception ex)
+                                {
+                                    Debug.WriteLine("转换唯一值渲染器的Key失败："+ex.ToString());
+                                }
+
+                            }
+                        }
+                        renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);
+                        layer.Layer.Renderer = renderer;
+                    }
+                    break;
+
+                case MapLayerInfo.Types.WFS:
+                    layer.Layer.Renderer = new SimpleRenderer((layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType));
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 }

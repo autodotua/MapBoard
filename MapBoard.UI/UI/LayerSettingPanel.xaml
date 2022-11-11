@@ -809,6 +809,10 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="8" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.Resources>
                                 <Style TargetType="{x:Type TextBlock}">
@@ -966,8 +970,22 @@
                                 <ComboBoxItem>跟随图形</ComboBoxItem>
                             </ComboBox>
 
-                            <Grid
+                            <TextBlock
                                 Grid.Row="14"
+                                Text="碰撞策略" />
+                            <ComboBox
+                                Grid.Row="14"
+                                Grid.Column="2"
+                                HorizontalAlignment="Stretch"
+                                SelectedIndex="{Binding DeconflictionStrategy}">
+                                <ComboBoxItem>自动</ComboBoxItem>
+                                <ComboBoxItem>动态</ComboBoxItem>
+                                <ComboBoxItem>无</ComboBoxItem>
+                                <ComboBoxItem>静态</ComboBoxItem>
+                                <ComboBoxItem>动态（不移除）</ComboBoxItem>
+                            </ComboBox>
+                            <Grid
+                                Grid.Row="16"
                                 Grid.ColumnSpan="99">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -981,6 +999,19 @@
                                     允许重叠显示
                                 </CheckBox>
                             </Grid>
+                            <TextBlock
+                                Grid.Row="18"
+                                Text="重复间隔" />
+                            <ui:NumberBox
+                                Grid.Row="18"
+                                Grid.Column="2"
+                                MinHeight="10"
+                                HorizontalAlignment="Stretch"
+                                ui:ControlHelper.PlaceholderText="像素"
+                                IsEnabled="{Binding AllowRepeat}"
+                                Maximum="1000"
+                                Value="{Binding RepeatDistance}" />
+
                         </Grid>
                     </StackPanel>
                 </Border>

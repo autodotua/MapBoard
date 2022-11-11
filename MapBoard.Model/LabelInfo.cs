@@ -19,22 +19,22 @@ namespace MapBoard.Model
 
         public bool Bold { get; set; }
 
+        public int DeconflictionStrategy { get; set; } = 1;
         public string Expression { get; set; }
 
         public Color FontColor { get; set; } = Color.Black;
 
         public string FontFamily { get; set; }
 
-        public double FontSize { get; set; } = 12;
+        public double FontSize { get; set; } = 10;
 
         public Color HaloColor { get; set; } = Color.FromArgb(255, 248, 220);
 
-        public double HaloWidth { get; set; } = 3;
+        public double HaloWidth { get; set; } = 1.5;
 
         public bool Italic { get; set; }
 
         public int Layout { get; set; } = 0;
-
         public double MinScale
         {
             get => minScale;
@@ -42,9 +42,8 @@ namespace MapBoard.Model
         }
 
         public Color OutlineColor { get; set; } = Color.Transparent;
-
         public double OutlineWidth { get; set; } = 0;
-
+        public int RepeatDistance { get; set; } = 100;
         public string WhereClause { get; set; } = "";
 
         public object Clone()
