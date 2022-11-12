@@ -113,7 +113,8 @@ namespace MapBoard.Mapping
             {
                 var oldAttributes = Attributes;
                 Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
-                foreach (var attribute in oldAttributes.Attributes)
+                foreach (var attribute in oldAttributes.Attributes
+                    .Where(p=>p.Name is not (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName)))
                 {
                     if (Attributes.Attributes.Any(p => p.Name == attribute.Name))
                     {

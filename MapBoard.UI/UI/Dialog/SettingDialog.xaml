@@ -47,7 +47,7 @@
                 </GroupBox>
                 <GroupBox Header="界面">
                     <ui:SimpleStackPanel
-                        Orientation="Horizontal"
+                        Orientation="Vertical"
                         Spacing="16">
                         <ComboBox
                             ui:ControlHelper.Header="主题"
@@ -60,6 +60,9 @@
                             ui:ControlHelper.Description="开启后，可滚动区域滚动时将启用动画"
                             ui:ControlHelper.Header="平滑滚动"
                             IsOn="{Binding Config.SmoothScroll}" />
+                        <TextBlock Opacity="0.7">
+                            开启后，会大大降低呈现大量数据的表格的性能
+                        </TextBlock>
                     </ui:SimpleStackPanel>
                 </GroupBox>
                 <GroupBox Header="格式关联">

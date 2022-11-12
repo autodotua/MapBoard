@@ -30,6 +30,15 @@
             ItemsSource="{Binding SelectedFeatures}"
             SelectedItem="{Binding Selected}"
             SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style
+                    BasedOn="{StaticResource ResourceKey={x:Static GridView.GridViewItemContainerStyleKey}}"
+                    TargetType="{x:Type ListViewItem}">
+                    <EventSetter
+                        Event="MouseDoubleClick"
+                        Handler="ListViewItem_MouseDoubleClick" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView AllowsColumnReorder="False" />
             </ListView.View>

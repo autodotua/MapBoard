@@ -205,7 +205,7 @@ namespace MapBoard.Mapping
                 {
                     geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
                 }
-                geometry = GeometryEngine.Buffer(geometry, 100);
+                geometry = GeometryEngine.Buffer(geometry, 500);
             }
             var extent = geometry.Extent;
             if (double.IsNaN(extent.Width) || double.IsNaN(extent.Height) || extent.Width == 0 || extent.Height == 0)

@@ -30,7 +30,6 @@
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
-            CanUserSortColumns="False"
             CellEditEnding="Dg_CellEditEnding"
             FrozenColumnCount="1"
             HeadersVisibility="Column"
@@ -65,7 +64,8 @@
                 <DataGridTemplateColumn
                     Width="56"
                     CanUserResize="False"
-                    Header="选择">
+                    Header="选择"
+                    SortMemberPath="IsSelected">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox

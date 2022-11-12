@@ -24,10 +24,23 @@ namespace MapBoard.UI.Dialog
     public partial class SelectFeatureDialog : RightBottomFloatDialogBase
     {
         public const int MaxCount = 100;
-        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; set; }
-
         private FeatureSelectionInfo selected;
+        public SelectFeatureDialog(Window owner, MainMapView mapView, MapLayerCollection layers) : base(owner)
+        {
+            Selection = mapView.Selection;
+            MapView = mapView;
+            Layers = layers;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            InitializeComponent();
+            mapView.Selection.CollectionChanged += SelectedFeaturesChanged;
+            mapView.BoardTaskChanged += MapView_BoardTaskChanged;
 
+            SelectedFeaturesChanged(null, null);
+        }
+
+        public MapLayerCollection Layers { get; }
+        public MainMapView MapView { get; }
+        public string Message { get; set; }
         public FeatureSelectionInfo Selected
         {
             get => selected;
@@ -41,19 +54,15 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; set; }
         public SelectionHelper Selection { get; }
-        public MapLayerCollection Layers { get; }
-
-        public SelectFeatureDialog(Window owner, MainMapView mapView, MapLayerCollection layers) : base(owner)
+        private async void ListViewItem_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            Selection = mapView.Selection;
-            Layers = layers;
-            WindowStartupLocation = WindowStartupLocation.Manual;
-            InitializeComponent();
-            mapView.Selection.CollectionChanged += SelectedFeaturesChanged;
-            mapView.BoardTaskChanged += MapView_BoardTaskChanged;
-
-            SelectedFeaturesChanged(null, null);
+            var feature = (e.Source as FrameworkElement).DataContext as FeatureSelectionInfo;
+            if (feature != null)
+            {
+                await MapView.ZoomToGeometryAsync(feature.Feature.Geometry);
+            }
         }
 
         private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
@@ -63,9 +72,6 @@ namespace MapBoard.UI.Dialog
                 Close();
             }
         }
-
-        public string Message { get; set; }
-
         private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {
             int count = Selection.SelectedFeatures.Count;
@@ -122,9 +128,9 @@ namespace MapBoard.UI.Dialog
                 Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             }
 
+            public FeatureAttributeCollection Attributes { get; set; }
             public Feature Feature { get; }
             public int Index { get; }
-            public FeatureAttributeCollection Attributes { get; set; }
         }
     }
 }
