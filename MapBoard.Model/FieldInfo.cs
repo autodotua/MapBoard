@@ -13,7 +13,7 @@ namespace MapBoard.Model
 
         public FieldInfo(string name, string displayName, FieldInfoType type)
         {
-            this.name = name;
+            Name = name;
             DisplayName = displayName;
             Type = type;
         }

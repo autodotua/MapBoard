@@ -71,16 +71,19 @@ namespace MapBoard.UI
                         AddToMenu(menu, "缩放到图层", () => ZoomToLayerAsync(layer));
                     }
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
-                    AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
-                    AddToMenu(menu, "复制样式到", () => CopyStylesAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
 
                     AddToMenu<IServerBasedLayer>(menu, "下载全部图形", layer, PopulateAllAsync);
                     AddToMenu<ShapefileMapLayerInfo>(menu, "属性", layer, SetShapefileLayerAsync);
                     AddToMenu<WfsMapLayerInfo>(menu, "属性", layer, SetWfsLayerAsync);
                     AddToMenu<TempMapLayerInfo>(menu, "属性", layer, SetTempLayerAsync);
                     AddToMenu<TempMapLayerInfo>(menu, "重置", layer, ResetTempLayerAsync);
+
+                    menu.Items.Add(new Separator());
+                    AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
+                    AddToMenu(menu, "复制样式到", () => CopyStylesAsync(layer));
+                    AddToMenu(menu, "导出到新图层", () => ExportAsync(layer));
 
                     menu.Items.Add(new Separator());
                     AddToMenu(menu, "查询要素", () => QueryAsync(layer));
@@ -305,6 +308,11 @@ namespace MapBoard.UI
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as ShapefileMapLayerInfo);
             }
         }
+        private async Task ExportAsync(IMapLayerInfo layer)
+        {
+            ExportLayerDialog dialog = new ExportLayerDialog(MapView.Layers,layer,MapView.Map.OperationalLayers);
+            await dialog.ShowAsync();
+        }
 
         private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
         {
@@ -331,7 +339,7 @@ namespace MapBoard.UI
             {
                 bool includeFields = check.Any(p => 1.Equals(p.Tag));
                 bool includeFeatures = check.Any(p => 2.Equals(p.Tag));
-                await LayerUtility.CreatCopyAsync(layer, MapView.Layers, includeFeatures, includeFields);
+                await LayerUtility.CreateCopyAsync(layer, MapView.Layers, includeFeatures, includeFields);
             }
         }
 

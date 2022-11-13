@@ -1,0 +1,123 @@
+﻿<commondialog:CommonDialog
+    x:Class="MapBoard.UI.Dialog.ExportLayerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
+    xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
+    xmlns:m="clr-namespace:MapBoard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="导出到新图层"
+    CloseButtonText="取消"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    Loaded="CommonDialog_Loaded"
+    PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
+    <commondialog:CommonDialog.Resources>
+        <ObjectDataProvider
+            x:Key="fieldTypeEnum"
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type Type="{x:Type model:FieldInfoType}" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </commondialog:CommonDialog.Resources>
+    <ui:SimpleStackPanel Spacing="8">
+        <TextBox
+            x:Name="txtName"
+            ui:ControlHelper.Header="新图层名"
+            Text="{Binding LayerName}" />
+
+        <DataGrid
+            x:Name="dg"
+            Grid.Row="2"
+            MaxHeight="200"
+            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CellEditEnding="CellEditEnding"
+            ItemsSource="{Binding Fields}">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{Binding Enable}" />
+                <DataGridTextColumn
+                    Width="128"
+                    Header="旧字段名"
+                    IsReadOnly="True">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding
+                            Mode="OneWay"
+                            StringFormat="{}{0}（{1}）">
+                            <Binding Path="OldField.Name" />
+                            <Binding Path="OldField.DisplayName" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="128"
+                    Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                    Header="新字段名" />
+                <DataGridTextColumn
+                    Width="128"
+                    Binding="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                    Header="新别名" />
+                <DataGridTemplateColumn Header="类型">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Padding="12,0,12,0"
+                                VerticalAlignment="Center"
+                                Text="{Binding Type, Converter={StaticResource DescriptionConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <!--  IsReadOnly绑定不起作用，投机取巧使用IsHitTestVisible  -->
+                            <ComboBox
+                                IsHitTestVisible="{Binding CanEditType}"
+                                IsReadOnly="{Binding CanEditType, Converter={StaticResource InverseBoolConverter}}"
+                                ItemsSource="{Binding Source={StaticResource fieldTypeEnum}, Mode=OneWay}"
+                                SelectedItem="{Binding Type}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource DescriptionConverter}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+        <ui:SimpleStackPanel
+            x:Name="stkAddField"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Click="AddFieldButton_Click"
+                Content="添加字段" />
+            <Button Content="添加默认字段">
+                <ui:FlyoutService.Flyout>
+                    <ui:MenuFlyout>
+                        <MenuItem
+                            Click="CreateTimeMenuItem_Click"
+                            Header="创建时间"
+                            IsEnabled="{Binding CanAddCreateTimeField}" />
+                        <MenuItem
+                            Click="ModifiedTimeMenuItem_Click"
+                            Header="修改时间"
+                            IsEnabled="{Binding CanAddModifiedTimeField}" />
+                    </ui:MenuFlyout>
+                </ui:FlyoutService.Flyout>
+            </Button>
+        </ui:SimpleStackPanel>
+        <TextBlock Text="{Binding Message}" />
+    </ui:SimpleStackPanel>
+</commondialog:CommonDialog>
