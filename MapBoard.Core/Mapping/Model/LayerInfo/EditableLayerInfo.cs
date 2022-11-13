@@ -25,12 +25,15 @@ namespace MapBoard.Mapping.Model
 
         public EditableLayerInfo(ILayerInfo layer) : base(layer)
         {
+            if(Histories.Count>0)
+            {
+                Histories.Clear();
+            }
         }
 
         public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
 
         [JsonIgnore]
-        [IgnoreMap]
         public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
         public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)

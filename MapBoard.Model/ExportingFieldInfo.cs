@@ -16,7 +16,6 @@ namespace MapBoard.Model
         public ExportingFieldInfo()
         {
         }
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public bool Enable { get; set; }
         public FieldInfo OldField { get; set; }

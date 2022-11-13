@@ -12,10 +12,6 @@ namespace MapBoard.IO.Gpx
     {
         public static double GetSpeed(IEnumerable<GpxPoint> points)
         {
-            if (points.Any(p => p.Time == null))
-            {
-                throw new GpxException("其中一个点的时间为空");
-            }
             var sortedPoints = points.OrderBy(p => p.Time);
             TimeSpan totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
             double totalDistance = 0;
@@ -33,10 +29,6 @@ namespace MapBoard.IO.Gpx
 
         public static double GetSpeed(GpxPoint point1, GpxPoint point2)
         {
-            if (point1.Time == null || point2.Time == null)
-            {
-                throw new GpxException("其中一个点的时间为空");
-            }
             return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(), TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time).TotalMilliseconds)));
         }
 

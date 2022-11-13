@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using ModernWpf.Controls;
 using GongSolutions.Wpf.DragDrop;
 using FzLib.WPF;
+using System.Threading.Tasks;
 
 namespace MapBoard.UI
 {
@@ -73,34 +74,35 @@ namespace MapBoard.UI
                 viewType = value;
                 Config.Instance.LastLayerListGroupType = value;
                 dataGrid.GroupStyle.Clear();
+                UpdateView();
+            }
+        }
 
-                CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
-                if (view == null)
-                {
-                    return;
-                }
-                view.GroupDescriptions.Clear();
-                switch (value)
-                {
-                    case 0:
-                        //dataGrid.ItemsSource = Layers;
-                        break;
+        private  void UpdateView()
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+            if (view == null)
+            {
+                throw new Exception();
+            }
+            view.GroupDescriptions.Clear();
+            switch (ViewType)
+            {
+                case 0:
+                    break;
 
-                    case 1:
-                        dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+                case 1:
+                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LayerInfo.Group)));
+                    break;
 
-                        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LayerInfo.Group)));
-                        break;
+                case 2:
+                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MapLayerInfo.GeometryType)));
+                    break;
 
-                    case 2:
-                        dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
-
-                        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MapLayerInfo.GeometryType)));
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -170,6 +172,12 @@ namespace MapBoard.UI
             dataGrid.ItemsSource = mapView.Layers;
             dataGrid.SelectedItem = mapView.Layers.Selected;
             GenerateGroups();
+
+            if (Config.Instance.LastLayerListGroupType is >= 0 and < 3)
+            {
+                ViewType = Config.Instance.LastLayerListGroupType;
+            }
+
             Layers.PropertyChanged += (p1, p2) =>
             {
                 if (p2.PropertyName == nameof(MapLayerCollection.Selected) && !changingSelection)
@@ -243,10 +251,6 @@ namespace MapBoard.UI
 
         private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
         {
-            if (Config.Instance.LastLayerListGroupType is >= 0 and < 3)
-            {
-                ViewType = Config.Instance.LastLayerListGroupType;
-            }
             this.GetWindow().SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
             UpdateLayout(this.GetWindow().ActualHeight);
         }
