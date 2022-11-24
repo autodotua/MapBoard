@@ -512,9 +512,8 @@
 
                     <GroupBox Header="选择">
                         <ui:SimpleStackPanel
-                            Orientation="Horizontal"
+                            Orientation="Vertical"
                             Spacing="8">
-                            <TextBlock VerticalAlignment="Center">点按选择图形方式：</TextBlock>
                             <CheckBox
                                 Content="不需要按Ctrl，直接单击以选择"
                                 IsChecked="{Binding Config.TapToSelect}" />
