@@ -18,6 +18,7 @@ namespace MapBoard
         public static readonly int WatermarkHeight = 72;
         private static readonly string path = FolderPaths.ConfigPath;
         private static Config instance;
+        private int gpx_maxAcceptablePointDistance = 300;
         private int httpTimeOut = 1000;
 
         private int serverLayerLoadTimeout = 5000;
@@ -64,6 +65,19 @@ namespace MapBoard
         public bool Gpx_DrawPoints { get; set; } = false;
         public bool Gpx_Height { get; set; } = false;
         public int Gpx_HeightExaggeratedMagnification { get; set; } = 5;
+        public int Gpx_MaxAcceptablePointDistance
+        {
+            get => gpx_maxAcceptablePointDistance;
+            set
+            {
+                if (value < 30)
+                {
+                    value = 30;
+                }
+                this.SetValueAndNotify(ref gpx_maxAcceptablePointDistance, value, nameof(Gpx_MaxAcceptablePointDistance));
+            }
+        }
+
         public bool Gpx_RelativeHeight { get; set; } = false;
         public bool HideWatermark { get; set; } = true;
         public string HttpProxy { get; set; } = "";

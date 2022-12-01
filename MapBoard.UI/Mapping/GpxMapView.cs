@@ -422,7 +422,10 @@ namespace MapBoard.Mapping
             double minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
             double mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
             // List<MapPoint> points = info.Tracks[0].GetOffsetPoints(OffsetNorth, OffsetEast);
-            List<MapPoint> mapPoints = new List<MapPoint>();
+            List<List<MapPoint>> mapPoints = new List<List<MapPoint>>();
+            List<MapPoint> subMapPoints = new List<MapPoint>();
+            mapPoints.Add(subMapPoints);
+            MapPoint lastPoint = null;
             foreach (var p in trackInfo.Track.Points)
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
@@ -434,7 +437,15 @@ namespace MapBoard.Mapping
                 }
 
                 MapPoint point = new MapPoint(p.X, p.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);
-                mapPoints.Add(point);
+                if(lastPoint!=null&& GeometryUtility.GetDistance(point,lastPoint)>Config.Instance.Gpx_MaxAcceptablePointDistance)
+                {
+                    subMapPoints = new List<MapPoint>();
+                    mapPoints.Add(subMapPoints);
+                }
+                subMapPoints.Add(point);
+                lastPoint = point;
+
+
                 Graphic graphic = new Graphic(point);
                 if (!gpxPointAndGraphics.ContainsKey(p))
                 {

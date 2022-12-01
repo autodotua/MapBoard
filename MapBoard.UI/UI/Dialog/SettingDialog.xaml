@@ -547,64 +547,83 @@
         </TabItem>
 
         <TabItem Header="GPX工具箱">
-            <ui:SimpleStackPanel Spacing="8">
-                <GroupBox Header="高程">
-                    <ui:SimpleStackPanel Spacing="8">
-                        <CheckBox
-                            x:Name="chkGpxHeight"
-                            Content="展示高度"
-                            IsChecked="{Binding Config.Gpx_Height}" />
-                        <ui:SimpleStackPanel
-                            x:Name="stkGpxHeight"
-                            IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}"
-                            Spacing="8">
+            <ScrollViewer
+                Padding="0,0,24,0"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ui:SimpleStackPanel Spacing="8">
+                    <GroupBox Header="高程">
+                        <ui:SimpleStackPanel Spacing="8">
                             <CheckBox
-                                Content="最低高度与地面平齐"
-                                IsChecked="{Binding Config.Gpx_RelativeHeight}" />
-                            <TextBox
+                                x:Name="chkGpxHeight"
+                                Content="展示高度"
+                                IsChecked="{Binding Config.Gpx_Height}" />
+                            <ui:SimpleStackPanel
+                                x:Name="stkGpxHeight"
+                                IsEnabled="{Binding ElementName=chkGpxHeight, Path=IsChecked}"
+                                Spacing="8">
+                                <CheckBox
+                                    Content="最低高度与地面平齐"
+                                    IsChecked="{Binding Config.Gpx_RelativeHeight}" />
+                                <TextBox
+                                    Width="120"
+                                    HorizontalAlignment="Left"
+                                    ui:ControlHelper.Header="夸大倍率"
+                                    Text="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
+                            </ui:SimpleStackPanel>
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+                    <GroupBox Header="平滑">
+                        <ui:SimpleStackPanel Spacing="8">
+                            <CheckBox
+                                x:Name="chkGpxAutoSmooth"
+                                Content="自动进行平滑"
+                                IsChecked="{Binding Config.Gpx_AutoSmooth}" />
+                            <CheckBox
+                                Content="仅平滑垂直方向"
+                                IsChecked="{Binding Config.Gpx_AutoSmoothOnlyZ}"
+                                IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" />
+                            <ui:NumberBox
                                 Width="120"
                                 HorizontalAlignment="Left"
-                                ui:ControlHelper.Header="夸大倍率"
-                                Text="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
+                                ui:ControlHelper.Header="平滑度"
+                                IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"
+                                LargeChange="1"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{Binding Config.Gpx_AutoSmoothLevel}" />
                         </ui:SimpleStackPanel>
-                    </ui:SimpleStackPanel>
-                </GroupBox>
-                <GroupBox Header="平滑">
-                    <ui:SimpleStackPanel Spacing="8">
-                        <CheckBox
-                            x:Name="chkGpxAutoSmooth"
-                            Content="自动进行平滑"
-                            IsChecked="{Binding Config.Gpx_AutoSmooth}" />
-                        <CheckBox
-                            Content="仅平滑垂直方向"
-                            IsChecked="{Binding Config.Gpx_AutoSmoothOnlyZ}"
-                            IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}" />
-                        <ui:NumberBox
-                            Width="120"
-                            HorizontalAlignment="Left"
-                            ui:ControlHelper.Header="平滑度"
-                            IsEnabled="{Binding ElementName=chkGpxAutoSmooth, Path=IsChecked}"
-                            LargeChange="1"
-                            SmallChange="1"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{Binding Config.Gpx_AutoSmoothLevel}" />
-                    </ui:SimpleStackPanel>
-                </GroupBox>
-                <GroupBox Header="图表">
-                    <ui:SimpleStackPanel
-                        Orientation="Vertical"
-                        Spacing="8">
-                        <CheckBox
-                            Content="在图表中绘制速度点"
-                            IsChecked="{Binding Config.Gpx_DrawPoints}" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Opacity="0.7">
-                            在数据量很大的情况下，绘制点将明显影响程序流畅度
-                        </TextBlock>
-                    </ui:SimpleStackPanel>
-                </GroupBox>
-            </ui:SimpleStackPanel>
+                    </GroupBox>
+                    <GroupBox Header="异常点筛选">
+                        <ui:SimpleStackPanel
+                            Orientation="Vertical"
+                            Spacing="8">
+                            <ui:NumberBox
+                                ui:ControlHelper.Header="最大可接受点距（m）"
+                                Value="{Binding Config.Gpx_MaxAcceptablePointDistance}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Opacity="0.7">
+                                当前后两个记录点距离超过该值后，该段被认为是异常数据，将不会显示
+                            </TextBlock>
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+                    <GroupBox Header="图表">
+                        <ui:SimpleStackPanel
+                            Orientation="Vertical"
+                            Spacing="8">
+                            <CheckBox
+                                Content="在图表中绘制速度点"
+                                IsChecked="{Binding Config.Gpx_DrawPoints}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Opacity="0.7">
+                                在数据量很大的情况下，绘制点将明显影响程序流畅度
+                            </TextBlock>
+                        </ui:SimpleStackPanel>
+                    </GroupBox>
+                </ui:SimpleStackPanel>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </u:DialogWindowBase>
