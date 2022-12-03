@@ -295,10 +295,10 @@ namespace MapBoard.UI
 
         private void LayersPanel_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (isLayerPanelOpened && !IsMouseOver)
-            {
-                OpenOrCloseLayersPanelAsync(false);
-            }
+            //if (isLayerPanelOpened && !IsMouseOver)
+            //{
+            //    OpenOrCloseLayersPanelAsync(false);
+            //}
         }
 
         private void LayersPanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
