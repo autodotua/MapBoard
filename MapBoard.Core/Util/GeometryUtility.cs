@@ -56,41 +56,41 @@ namespace MapBoard.Util
         /// </summary>
         /// <param name="geometry"></param>
         /// <returns></returns>
-        public static Geometry RemoveZAndM(this Geometry geometry)
-        {
-            if (!geometry.HasM && !geometry.HasZ)
-            {
-                return geometry;
-            }
-            switch (geometry.GeometryType)
-            {
-                case GeometryType.Point:
-                    var point = geometry as MapPoint;
-                    return new MapPoint(point.X, point.Y, geometry.SpatialReference);
+        //public static Geometry RemoveZAndM(this Geometry geometry)
+        //{
+        //    if (!geometry.HasM && !geometry.HasZ)
+        //    {
+        //        return geometry;
+        //    }
+        //    switch (geometry.GeometryType)
+        //    {
+        //        case GeometryType.Point:
+        //            var point = geometry as MapPoint;
+        //            return new MapPoint(point.X, point.Y, geometry.SpatialReference);
 
-                case GeometryType.Polyline:
-                case GeometryType.Polygon:
-                    List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();
-                    foreach (var part in (geometry as Multipart).Parts)
-                    {
-                        parts.Add(part.Points.Select(p => RemoveZAndM(p) as MapPoint));
-                    }
-                    if (geometry.GeometryType == GeometryType.Polyline)
-                    {
-                        return new Polyline(parts);
-                    }
-                    else
-                    {
-                        return new Polygon(parts);
-                    }
+        //        case GeometryType.Polyline:
+        //        case GeometryType.Polygon:
+        //            List<IEnumerable<MapPoint>> parts = new List<IEnumerable<MapPoint>>();
+        //            foreach (var part in (geometry as Multipart).Parts)
+        //            {
+        //                parts.Add(part.Points.Select(p => RemoveZAndM(p) as MapPoint));
+        //            }
+        //            if (geometry.GeometryType == GeometryType.Polyline)
+        //            {
+        //                return new Polyline(parts);
+        //            }
+        //            else
+        //            {
+        //                return new Polygon(parts);
+        //            }
 
-                case GeometryType.Multipoint:
-                    return new Multipoint((geometry as Multipoint).Points.Select(p => RemoveZAndM(p) as MapPoint));
+        //        case GeometryType.Multipoint:
+        //            return new Multipoint((geometry as Multipoint).Points.Select(p => RemoveZAndM(p) as MapPoint));
 
-                default:
-                    throw new NotSupportedException();
-            }
-        }
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
+        //}
 
         /// <summary>
         /// 获取米为单位的长度

@@ -210,7 +210,7 @@ namespace MapBoard.IO
                     }
                     newAttributes.Add(name, value);
                 }
-                Feature newFeature = layer.CreateFeature(newAttributes, GeometryUtility.RemoveZAndM(feature.Geometry));
+                Feature newFeature = layer.CreateFeature(newAttributes, feature.Geometry.RemoveZAndM());
                 newFeatures.Add(newFeature);
             }
             await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
