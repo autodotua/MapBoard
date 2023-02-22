@@ -10,7 +10,6 @@
     <ApplicationVersion>2.0.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -28,18 +27,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-  </PropertyGroup>
-  <!--<PropertyGroup>
-    <ManifestCertificateThumbprint>945C3C5CCD53FE3EBF451DD8AD3AAAEC964E9F05</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>MapBoard_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>-->
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -72,18 +59,6 @@
     <ProjectReference Include="..\MapBoard.Model\MapBoard.Model.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
@@ -92,9 +67,7 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CsvHelper">
-      <Version>30.0.1</Version>
-    </PackageReference>
+    <PackageReference Include="CsvHelper" Version="30.0.1"/>
     <PackageReference Include="DesktopBridge.Helpers" Version="1.2.2" />
     <PackageReference Include="Esri.ArcGISRuntime.WPF" Version="200.0.0" />
     <PackageReference Include="Fody" Version="6.6.4">
@@ -104,16 +77,10 @@
     <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.2" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
-      <Version>1.1.4</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4"/>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="ModernWpfUI">
-      <Version>0.9.6</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.2</Version>
-    </PackageReference>
+    <PackageReference Include="ModernWpfUI" Version="0.9.6"/>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
@@ -176,82 +143,11 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="UI\Bar\GetGeometryBar.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\AddWfsLayerDialog - 复制.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\AddWmsLayerDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="UI\Dialog\AddWfsLayerDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\ExportLayerDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\DefinitionExpressionDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="UI\Dialog\SelectFeatureDialog - 复制%282%29.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\ShowImageDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\SmoothDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\BufferDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\ItemsOperaionErrorsDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\ImportTableDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\QueryFeaturesDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Dialog\FeatureHistoryDialog.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\Extension\RoutePanel.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="UI\Extension\ReGeoCodePanel.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="UI\GpxToolbox\GpxBrowseWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\GpxToolbox\GpxWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\BrowseSceneWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\LayerListPanel.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\TileDownloader\BoundaryInputTable.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="UI\TileDownloader\TileDownloaderWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>MapBoard</RootNamespace>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

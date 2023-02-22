@@ -118,7 +118,7 @@ namespace MapBoard
                 SplashWindow.EnsureInvisible();
                 Log.Error("找不到C++库", ex);
 
-                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" + Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" +Environment.NewLine+ ex.InnerException?.InnerException?.InnerException?.InnerException.Message+ Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
                 if (result == MessageBoxResult.Yes)
                 {
                     try
