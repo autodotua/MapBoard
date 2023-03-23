@@ -11,5 +11,10 @@
         /// 是否接受和返回GCJ02坐标而不是WGS84坐标
         /// </summary>
         bool IsGcj02 { get; }
+
+        /// <summary>
+        /// API的密钥
+        /// </summary>
+        string Token { get; set; }
     }
 }

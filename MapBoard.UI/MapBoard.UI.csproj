@@ -3,8 +3,6 @@
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>MapBoard</AssemblyName>
-    <SatelliteResourceLanguages>zh-cn</SatelliteResourceLanguages>
-
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>2.0.0.0</ApplicationVersion>

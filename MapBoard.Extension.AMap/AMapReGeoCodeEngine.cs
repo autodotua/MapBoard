@@ -8,10 +8,15 @@ namespace MapBoard.Extension.AMap
     {
         public string Name => "高德";
         public bool IsGcj02 => true;
-
+        private string token;
+        public string Token
+        {
+            get => token ?? throw new ApiException("请先设置Token");
+            set => token = value;
+        }
         public string GetUrl(Location location, double radius)
         {
-            return $"https://restapi.amap.com/v3/geocode/regeo?key={KeyManager.Key}&location={location.Longitude:0.000000},{location.Latitude:0.000000}&poitype=&radius={radius}&extensions=all&batch=false&roadlevel=0";
+            return $"https://restapi.amap.com/v3/geocode/regeo?key={Token}&location={location.Longitude:0.000000},{location.Latitude:0.000000}&poitype=&radius={radius}&extensions=all&batch=false&roadlevel=0";
         }
 
         public LocationInfo ParseLocationInfo(string json)

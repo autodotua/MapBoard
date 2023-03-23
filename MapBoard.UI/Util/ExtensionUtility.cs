@@ -21,7 +21,7 @@ namespace MapBoard.Util
         private static List<IPoiEngine> poiEngines = new List<IPoiEngine>();
         private static List<IRouteEngine> routeEngines = new List<IRouteEngine>();
         private static List<IReGeoCodeEngine> reGeoCodeEngine = new List<IReGeoCodeEngine>();
-
+        private static List<IExtensionEngine> all;
         /// <summary>
         /// 加载到的所有POI引擎
         /// </summary>
@@ -29,6 +29,7 @@ namespace MapBoard.Util
 
         public static IReadOnlyList<IRouteEngine> RouteEngines => routeEngines.AsReadOnly();
         public static IReadOnlyList<IReGeoCodeEngine> ReGeoCodeEngines => reGeoCodeEngine.AsReadOnly();
+        public static IReadOnlyList<IExtensionEngine> All => all.AsReadOnly();
 
         private static bool isLoaded = false;
 
@@ -37,37 +38,41 @@ namespace MapBoard.Util
         /// </summary>
         public static void LoadExtensions()
         {
-            //Regex r = new Regex(@"Extension\.[a-zA-Z0-9]+\.dll");
             var dlls = Directory.EnumerateFiles(FzLib.Program.App.ProgramDirectoryPath, "Extension.*.dll");
             foreach (var dll in dlls)
             {
                 try
                 {
-                    List<Type> tempTypes = Assembly.LoadFile(dll)
-                          .GetTypes()
+                    var types = Assembly.LoadFile(dll).GetTypes();
+                    List<Type> tempTypes = types
                           .Where(p => p.GetInterface(typeof(IPoiEngine).FullName) != null)
                           .ToList();
-                    if (tempTypes.Count > 0)
-                    {
-                        poiEngines.AddRange(tempTypes.Select(t => (IPoiEngine)Activator.CreateInstance(t)));
-                    }
+                    poiEngines.AddRange(tempTypes.Select(t => (IPoiEngine)Activator.CreateInstance(t)));
 
-                    tempTypes = Assembly.LoadFile(dll)
-                         .GetTypes()
+                    tempTypes = types
                          .Where(p => p.GetInterface(typeof(IRouteEngine).FullName) != null)
                          .ToList();
-                    if (tempTypes.Count > 0)
-                    {
-                        routeEngines.AddRange(tempTypes.Select(t => (IRouteEngine)Activator.CreateInstance(t)));
-                    }
+                    routeEngines.AddRange(tempTypes.Select(t => (IRouteEngine)Activator.CreateInstance(t)));
 
-                    tempTypes = Assembly.LoadFile(dll)
-                         .GetTypes()
+                    tempTypes = types
                          .Where(p => p.GetInterface(typeof(IReGeoCodeEngine).FullName) != null)
                          .ToList();
-                    if (tempTypes.Count > 0)
+                    reGeoCodeEngine.AddRange(tempTypes.Select(t => (IReGeoCodeEngine)Activator.CreateInstance(t)));
+
+                    all = poiEngines.Cast<IExtensionEngine>()
+                       .Concat(RouteEngines)
+                       .Concat(reGeoCodeEngine)
+                       .ToList();
+                    foreach (var engine in all)
                     {
-                        reGeoCodeEngine.AddRange(tempTypes.Select(t => (IReGeoCodeEngine)Activator.CreateInstance(t)));
+                        if (Config.Instance.ApiTokens.Any(p=>p.Name== engine.Name))
+                        {
+                            engine.Token = Config.Instance.ApiTokens.First(p => p.Name == engine.Name).Token;
+                        }
+                        else
+                        {
+                            Config.Instance.ApiTokens.Add(new UI.Model.ApiToken(engine.Name, null)) ;
+                        }
                     }
                 }
                 catch

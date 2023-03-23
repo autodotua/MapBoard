@@ -508,5 +508,10 @@ namespace MapBoard.UI.Dialog
                 await CommonDialog.ShowErrorDialogAsync(ex, "获取默认底图失败");
             }
         }
+
+        private void ApiRestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            RestartMainWindow();
+        }
     }
 }

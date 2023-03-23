@@ -99,7 +99,8 @@
                             HorizontalAlignment="Right"
                             Background="Transparent"
                             Click="OpenSettingDialogButton_Click"
-                            Content="设置" />
+                            Content="设置"
+                            Tag="3" />
                         <Button
                             Height="40"
                             HorizontalAlignment="Right"
@@ -274,11 +275,13 @@
                 PreviewMouseLeftButtonDown="SearchPanel_PreviewMouseLeftButtonDown"
                 Visibility="{Binding Source={x:Static m:Config.Instance}, Path=ShowSideSearch, Converter={StaticResource Bool2VisibilityConverter}}">
                 <Grid>
+
                     <ContentControl
                         x:Name="vwSearchIcon"
                         Width="24"
                         Height="24"
                         Content="{StaticResource SearchIcon}" />
+
                     <Grid
                         x:Name="grdSearchPanel"
                         IsHitTestVisible="False"
@@ -308,6 +311,16 @@
                                 Symbol="Back" />
                         </Button>
                     </Grid>
+
+
+                    <Button
+                        Margin="0,5,48,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Click="OpenSettingDialogButton_Click"
+                        Content="设置"
+                        Tag="6" />
                 </Grid>
             </Border>
 

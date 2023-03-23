@@ -8,7 +8,12 @@ namespace MapBoard.Extension.AMap
     {
         public string Name => "高德";
         public bool IsGcj02 => true;
-
+        private string token;
+        public string Token
+        {
+            get => token ?? throw new ApiException("请先设置Token");
+            set => token = value;
+        }
         public string GetUrl(RouteType type, Location origin, Location destination)
         {
             string strOrigin = $"{origin.Longitude:0.000000},{origin.Latitude:0.000000}";
@@ -16,13 +21,13 @@ namespace MapBoard.Extension.AMap
             switch (type)
             {
                 case RouteType.Walk:
-                    return $"https://restapi.amap.com/v3/direction/walking?origin={strOrigin}&destination={strDestination}&key={KeyManager.Key}";
+                    return $"https://restapi.amap.com/v3/direction/walking?origin={strOrigin}&destination={strDestination}&key={Token}";
 
                 case RouteType.Bike:
-                    return $"https://restapi.amap.com/v4/direction/bicycling?origin={strOrigin}&destination={strDestination}&key={KeyManager.Key}";
+                    return $"https://restapi.amap.com/v4/direction/bicycling?origin={strOrigin}&destination={strDestination}&key={Token}";
 
                 case RouteType.Car:
-                    return $"https://restapi.amap.com/v3/direction/driving?strategy=10&origin={strOrigin}&destination={strDestination}&extensions=base&key={KeyManager.Key}";
+                    return $"https://restapi.amap.com/v3/direction/driving?strategy=10&origin={strOrigin}&destination={strDestination}&extensions=base&key={Token}";
 
                 default:
                     break;

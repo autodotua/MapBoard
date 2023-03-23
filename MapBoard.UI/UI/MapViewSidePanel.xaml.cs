@@ -358,8 +358,8 @@ namespace MapBoard.UI
                     return;
                 }
             }
-            OpenOrCloseLayersPanelAsync(false);
-            new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, 3).ShowDialog();
+            int index = int.Parse((sender as FrameworkElement).Tag as string);
+            new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, index).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

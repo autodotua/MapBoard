@@ -2,6 +2,7 @@
 using FzLib.DataStorage.Serialization;
 using MapBoard.IO;
 using MapBoard.Model;
+using MapBoard.UI.Model;
 using Newtonsoft.Json;
 using PropertyChanged;
 using System;
@@ -49,10 +50,10 @@ namespace MapBoard
             }
         }
 
+        public List<ApiToken> ApiTokens { get; set; } = new List<ApiToken>();
         public bool AutoCatchToNearestVertex { get; set; } = true;
 
         public bool BackupWhenExit { get; set; } = false;
-
         public bool BackupWhenReplace { get; set; } = true;
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
         public CoordinateSystem BasemapCoordinateSystem { get; set; } = CoordinateSystem.WGS84;

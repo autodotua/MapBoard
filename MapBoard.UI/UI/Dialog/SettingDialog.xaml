@@ -625,5 +625,41 @@
                 </ui:SimpleStackPanel>
             </ScrollViewer>
         </TabItem>
+        <TabItem Header="API">
+            <ScrollViewer
+                Padding="0,0,24,0"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+
+                <ui:SimpleStackPanel Spacing="16">
+                    <ItemsControl ItemsSource="{Binding Config.ApiTokens}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="64" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Name}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Token}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        Opacity="0.7"
+                        Text="该页设置将在下次启动时应用" />
+                    <Button
+                        Click="ApiRestartButton_Click"
+                        Content="重启应用" />
+                </ui:SimpleStackPanel>
+            </ScrollViewer>
+        </TabItem>
     </TabControl>
 </u:DialogWindowBase>
