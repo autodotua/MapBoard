@@ -41,11 +41,13 @@ try {
     dotnet publish MapBoard.UI -c Release -o Generation/Publish/WPF_SingleFile -r win-x64 --self-contained false /p:PublishSingleFile=true
     Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.runtimes.win10\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF_SingleFile
     Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.wpf\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF_SingleFile
+    Copy-Item Generation/Publish/WPF/Extension.*.dll Generation/Publish/WPF_SingleFile
 
     Write-Output "正在发布WPF（包含框架，单文件）"
     dotnet publish MapBoard.UI -c Release -o Generation/Publish/WPF_Contained_SingleFile -r win-x64 --self-contained true /p:PublishSingleFile=true
     Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.runtimes.win10\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF_Contained_SingleFile
     Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.wpf\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF_Contained_SingleFile
+    Copy-Item Generation/Publish/WPF/Extension.*.dll Generation/Publish/WPF_Contained_SingleFile
 
     Write-Output "正在清理"
     Remove-Item Generation/Release -Recurse
