@@ -34,7 +34,7 @@ namespace MapBoard.Mapping
             GraphicsOverlays.Add(overlay);
             graphic.Geometry = point;
             graphic.IsVisible = false;
-            graphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, Color.FromArgb(0x77, 0xFF, 0x00, 0x00), new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Green, 12));
+            graphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, Color.FromArgb(0x77, 0xFF, 0x00, 0x00), new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Green, 4));
             overlay.Graphics.Add(graphic);
             Map = new Map(SpatialReferences.WebMercator);
 

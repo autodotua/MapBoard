@@ -1,5 +1,12 @@
-﻿OpenStreetMap http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
-谷歌地球 https://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}
-高德地图 http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}
+﻿OpenTopoMap https://tile.opentopomap.org/{z}/{x}/{y}.png
+OpenStreetMap http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
 OpenStreetMap自行车 https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png
 OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
+谷歌卫星 https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}
+谷歌街道 https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}
+谷歌卫星+街道 https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}
+高德地图 http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}
+高德卫星 https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}
+天地图影像 http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=你的Token
+天地图矢量 http://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=你的Token
+天地图注记 http://t5.tianditu.gov.cn/cva_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cva&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=你的Token

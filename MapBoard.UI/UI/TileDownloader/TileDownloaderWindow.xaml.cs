@@ -295,7 +295,7 @@ namespace MapBoard.UI.TileDownloader
         private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
             TileSourceInfo tile = new TileSourceInfo();
-            if (Config.Tile_Urls.SelectedIndex == -1)
+            if (Config.Tile_Urls.Sources.Count == 0 || Config.Tile_Urls.SelectedIndex == -1)
             {
                 Config.Tile_Urls.Sources.Add(tile);
                 Config.Tile_Urls.SelectedIndex = Config.Tile_Urls.Sources.Count - 1;
@@ -445,7 +445,7 @@ namespace MapBoard.UI.TileDownloader
                 {
                     TileInfo tile = enumerator.Current;
 
-                    string path = Path.Combine(Config.Tile_DownloadFolder, tile.Level.ToString(), $"{tile.X}-{tile.Y}.{ Config.Instance.Tile_FormatExtension}");
+                    string path = Path.Combine(Config.Tile_DownloadFolder, tile.Level.ToString(), $"{tile.X}-{tile.Y}.{Config.Instance.Tile_FormatExtension}");
 
                     try
                     {
@@ -454,7 +454,7 @@ namespace MapBoard.UI.TileDownloader
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent,Config.Tile_HttpProxy);
+                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent, Config.Tile_HttpProxy);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
                             LastDownloadingStatus = "下载成功";
 
@@ -475,7 +475,7 @@ namespace MapBoard.UI.TileDownloader
                     }
                     //DownloadingProgressValue = ok + failed + skip;
                     DownloadingProgressPercent = 1.0 * (ok + failed + skip) / CurrentDownload.TileCount;
-                    DownloadingProgressStatus = $"成功{ ok } 失败{ failed} 跳过{ skip } 共{ CurrentDownload.TileCount}";
+                    DownloadingProgressStatus = $"成功{ok} 失败{failed} 跳过{skip} 共{CurrentDownload.TileCount}";
                     //taskBar.ProgressValue = (ok + failed + skip) * 1d / CurrentDownload.TileCount;
                     //处理点击停止按钮后的逻辑
                     if (CurrentDownloadStatus == DownloadStatus.Pausing)
@@ -500,7 +500,7 @@ namespace MapBoard.UI.TileDownloader
                          {
                              foreach (var directory in Directory.EnumerateDirectories(Config.Tile_DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
                              {
-                                 FzLib.IO.WindowsFileSystem.DeleteFileOrFolder(directory, true, false);
+                                 Directory.Delete(directory,true);
                              }
                          }
                          catch (Exception ex)
