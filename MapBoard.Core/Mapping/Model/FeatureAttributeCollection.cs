@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,8 +62,23 @@ namespace MapBoard.Mapping.Model
             {
                 Feature = feature
             };
+            IEnumerable<KeyValuePair<string, object>> featureAttributes = feature.Attributes
+                .Where(p => !FieldExtension.IsIdField(p.Key));
+            try
+            {
+                var layerFieldNames = layer.Fields.Select(p => p.Name).ToList();
+                 featureAttributes = feature.Attributes
+                    .Where(p => !FieldExtension.IsIdField(p.Key))
+                    .OrderBy(p => layerFieldNames.IndexOf(p.Key))
+                    .ToList();
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("Attributes排序失败");
+                Debug.WriteLine(ex);
+            }
 
-            foreach (var attr in feature.Attributes.Where(p => !FieldExtension.IsIdField(p.Key)))
+            foreach (var attr in featureAttributes)
             {
                 FeatureAttribute newAttr = null;
                 if (layer.Fields.Any(p => p.Name == attr.Key))
