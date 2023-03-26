@@ -203,9 +203,9 @@ namespace MapBoard.Mapping
             return method.Invoke(null, null) as Basemap;
         }
 
-        private static XYZTiledLayer AddTiledLayer(string url)
+        private static ImageTiledLayer AddTiledLayer(string url)
         {
-            XYZTiledLayer layer = XYZTiledLayer.Create(url, Config.Instance.HttpUserAgent);
+            XYZTiledLayer layer = XYZTiledLayer.Create(url, Config.Instance.HttpUserAgent,true);
             //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return layer;
         }

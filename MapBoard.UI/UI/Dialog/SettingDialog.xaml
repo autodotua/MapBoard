@@ -12,7 +12,7 @@
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="设置"
-    Width="600"
+    Width="800"
     Height="600"
     ui:WindowHelper.UseModernWindowStyle="True"
     Closing="DialogWindowBase_Closing"
@@ -261,25 +261,22 @@
                 </GroupBox>
             </ui:SimpleStackPanel>
         </TabItem>
-        <TabItem Header="地图">
+        <TabItem Header="底图">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <GroupBox Header="底图">
+                <GroupBox Header="底图列表">
                     <Grid Margin="4">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="8" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <DataGrid
                             x:Name="grd"
-                            Grid.Row="2"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
                             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
@@ -393,7 +390,7 @@
                         </DataGrid>
 
                         <ui:SimpleStackPanel
-                            Grid.Row="4"
+                            Grid.Row="2"
                             Grid.ColumnSpan="5"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
@@ -423,12 +420,26 @@
                         </ui:SimpleStackPanel>
                         <ComboBox
                             x:Name="cbbCoords"
-                            Grid.Row="4"
+                            Grid.Row="2"
                             ui:ControlHelper.Header="底图坐标系"
                             SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
                     </Grid>
                 </GroupBox>
-
+                <GroupBox
+                    Grid.Row="2"
+                    Header="缓存">
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="16">
+                        <ui:ToggleSwitch
+                            Header="启用缓存"
+                            IsOn="{Binding Config.EnableBasemapCache}" />
+                        <Button
+                            VerticalAlignment="Bottom"
+                            Click="DeleteAllBasemapCachesButton_Click"
+                            Content="清除缓存" />
+                    </ui:SimpleStackPanel>
+                </GroupBox>
             </Grid>
         </TabItem>
 

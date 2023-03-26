@@ -52,7 +52,6 @@ namespace MapBoard
 
         public List<ApiToken> ApiTokens { get; set; } = new List<ApiToken>();
         public bool AutoCatchToNearestVertex { get; set; } = true;
-
         public bool BackupWhenExit { get; set; } = false;
         public bool BackupWhenReplace { get; set; } = true;
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
@@ -60,6 +59,7 @@ namespace MapBoard
         public List<double> BufferDistances { get; set; } = new List<double>();
         public int CatchDistance { get; set; } = 12;
         public bool CopyShpFileWhenExport { get; set; } = true;
+        public bool EnableBasemapCache { get; set; } = true;
         public bool Gpx_AutoSmooth { get; set; } = false;
         public int Gpx_AutoSmoothLevel { get; set; } = 5;
         public bool Gpx_AutoSmoothOnlyZ { get; set; } = false;

@@ -27,6 +27,8 @@ namespace MapBoard.IO
 
         public static readonly string TrackHistoryPath;
 
+        public static readonly string TileCachePath;
+
         static FolderPaths()
         {
             string appPath = FzLib.Program.App.ProgramDirectoryPath;
@@ -39,6 +41,7 @@ namespace MapBoard.IO
                 BackupPath = "Backup";
                 RecordsPath = "Record";
                 LogsPath = "Logs";
+                TileCachePath = "Cache/Tiles";
             }
             else if (File.Exists(Path.Combine(appPath, ConfigUp)))
             {
@@ -49,6 +52,7 @@ namespace MapBoard.IO
                 BackupPath = "../Backup";
                 RecordsPath = "../Record";
                 LogsPath = "../Logs";
+                TileCachePath = "../Cache/Tiles";
             }
             else
             {
@@ -60,6 +64,7 @@ namespace MapBoard.IO
                 BackupPath = Path.Combine(folder, AppName, "Backup");
                 RecordsPath = Path.Combine(folder, AppName, "Record");
                 LogsPath = Path.Combine(folder, AppName, "Logs");
+                TileCachePath = Path.Combine(folder, AppName, "Cache/Tiles");
             }
             DataPath = GetCurrentDataPath();
         }

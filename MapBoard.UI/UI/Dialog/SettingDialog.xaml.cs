@@ -26,6 +26,7 @@ using FzLib.DataStorage.Serialization;
 using MapBoard.Util;
 using System.ComponentModel;
 using FzLib.Program;
+using FzLib.IO;
 
 namespace MapBoard.UI.Dialog
 {
@@ -512,6 +513,22 @@ namespace MapBoard.UI.Dialog
         private void ApiRestartButton_Click(object sender, RoutedEventArgs e)
         {
             RestartMainWindow();
+        }
+
+        private void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Directory.Exists(FolderPaths.TileCachePath))
+                {
+                    WindowsFileSystem.DeleteFileOrFolder(FolderPaths.TileCachePath, true, false);
+                }
+                (sender as Button).IsEnabled = false;
+            }
+            catch (Exception ex) 
+            {
+                App.Log.Error("清除缓存",ex);
+            }
         }
     }
 }
