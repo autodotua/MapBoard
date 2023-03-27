@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MapBoard.Mapping;
+using MapBoard.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -16,7 +18,7 @@ namespace MapBoard.Util
 {
     public static class NetUtility
     {
-        public static async Task HttpDownloadAsync(string url, string path, TimeSpan timeOut, string userAgent, string proxyAddress)
+        public static async Task HttpDownloadAsync(string url, string path,BaseLayerInfo layerInfo, TimeSpan timeOut, string userAgent, string proxyAddress)
         {
             string tempPath = Path.Combine(Path.GetDirectoryName(path), "temp");
             Directory.CreateDirectory(tempPath);  //创建临时文件目录
@@ -40,10 +42,9 @@ namespace MapBoard.Util
                         };
                         httpClientHandler.Proxy = proxy;
                     }
-
                     using HttpClient client = new HttpClient(httpClientHandler);
+                    XYZTiledLayer.ApplyHttpClientHeaders(client, layerInfo, userAgent);
                     client.Timeout = timeOut;
-                    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
                     using var responseStream = await client.GetStreamAsync(url);
 
                     byte[] bArr = new byte[1024 * 1024];

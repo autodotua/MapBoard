@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Mapping;
 using FzLib.Collection;
 using MapBoard.IO;
+using MapBoard.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,7 +24,12 @@ namespace MapBoard.Mapping
 
         private readonly static ConcurrentQueue<string> cacheWriterQuque = new ConcurrentQueue<string>();
 
-        private static HttpClient client;
+        /// <summary>
+        /// 瓦片地址的ID
+        /// </summary>
+        private readonly string id;
+
+        private HttpClient client;
 
         static XYZTiledLayer()
         {
@@ -33,7 +39,8 @@ namespace MapBoard.Mapping
                 //同时Dictionary也可以用来检测是否已经提交过相同的任务，防止重复提交
                 while (true)
                 {
-                    try {
+                    try
+                    {
                         while (!cacheWriterQuque.IsEmpty && cacheWriterQuque.TryDequeue(out string cacheFile))
                         {
                             if (cacheQueueFiles.TryGetValue(cacheFile, out byte[] data))
@@ -54,7 +61,7 @@ namespace MapBoard.Mapping
                         }
 
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Debug.WriteLine(ex);
                     }
@@ -62,30 +69,29 @@ namespace MapBoard.Mapping
                 }
             });
         }
-        private XYZTiledLayer(string url, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
+        private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
         {
-            Url = url;
+            Url = layerInfo.Path;
             EnableCache = enableCache;
-            id = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(url))).Replace("-", "");
-            if (client == null)
-            {
-                var socketsHttpHandler = new SocketsHttpHandler()
-                {
-                    PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
-                };
-                client = new HttpClient(socketsHttpHandler);
-                if (!string.IsNullOrEmpty(userAgent))
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-                    client.DefaultRequestHeaders.Add("Connection", "keep-alive");
-                }
+            id = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(layerInfo.Path))).Replace("-", "");
 
-                //client.SendAsync(new HttpRequestMessage
-                //{
-                //    Method = new HttpMethod("HEAD"),
-                //    RequestUri = new Uri(Url)
-                //}).ConfigureAwait(false);
-            }
+            var socketsHttpHandler = new SocketsHttpHandler()
+            {
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+            };
+            client = new HttpClient(socketsHttpHandler);
+            ApplyHttpClientHeaders(client,layerInfo,userAgent);
+
+           
+            //client.DefaultRequestHeaders.Add("Host", "t3.tianditu.gov.cn");
+            //client.DefaultRequestHeaders.Add("Origin", "https://zhejiang.tianditu.gov.cn");
+            //client.DefaultRequestHeaders.Add("Referer", "https://zhejiang.tianditu.gov.cn");
+
+            //client.SendAsync(new HttpRequestMessage
+            //{
+            //    Method = new HttpMethod("HEAD"),
+            //    RequestUri = new Uri(Url)
+            //}).ConfigureAwait(false);
             //client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue(UserAgentName, UserAgentVersion));
         }
 
@@ -99,15 +105,49 @@ namespace MapBoard.Mapping
         /// </summary>
         public string Url { get; }
 
-        /// <summary>
-        /// 瓦片地址的ID
-        /// </summary>
-        private readonly string id;
-
+        public static void ApplyHttpClientHeaders(HttpClient client, BaseLayerInfo layerInfo, string defaultUserAgent)
+        {
+            client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+            if (!string.IsNullOrWhiteSpace(layerInfo.UserAgent))
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", layerInfo.UserAgent);
+            }
+            else if (!string.IsNullOrEmpty(defaultUserAgent))
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", defaultUserAgent);
+            }
+            if (!string.IsNullOrWhiteSpace(layerInfo.Host))
+            {
+                client.DefaultRequestHeaders.Add("Host", layerInfo.Host);
+            }
+            if (!string.IsNullOrWhiteSpace(layerInfo.Origin))
+            {
+                client.DefaultRequestHeaders.Add("Origin", layerInfo.Origin);
+            }
+            if (!string.IsNullOrWhiteSpace(layerInfo.Referer))
+            {
+                client.DefaultRequestHeaders.Add("Referer", layerInfo.Referer);
+            }
+            if (!string.IsNullOrWhiteSpace(layerInfo.OtherHeaders))
+            {
+                foreach (var headerAndValue in layerInfo.OtherHeaders.Split('|').Select(p => p.Split(':')))
+                {
+                    if (headerAndValue.Length >= 2)
+                    {
+                        client.DefaultRequestHeaders.Add(headerAndValue[0], headerAndValue[1]);
+                    }
+                }
+            }
+        }
+        public static XYZTiledLayer Create(BaseLayerInfo layerInfo, string userAgent, bool enableCache = false)
+        {
+            string url = layerInfo.Path;
+            var webTiledLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+            return new XYZTiledLayer(layerInfo, userAgent, webTiledLayer.TileInfo, webTiledLayer.FullExtent, enableCache);
+        }
         public static XYZTiledLayer Create(string url, string userAgent, bool enableCache = false)
         {
-            var webTiledLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-            return new XYZTiledLayer(url, userAgent, webTiledLayer.TileInfo, webTiledLayer.FullExtent, enableCache);
+            return Create(new BaseLayerInfo(BaseLayerType.WebTiledLayer, url), userAgent, enableCache);
         }
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace MapBoard.Model
               {
                   if (p2.NewItems != null)
                   {
-                      (p2.NewItems[0] as TileSourceInfo).PropertyChanged += (p3, p4) =>
+                      (p2.NewItems[0] as BaseLayerInfo).PropertyChanged += (p3, p4) =>
                       {
                           if (p3 == SelectedUrl)
                           {
@@ -32,7 +32,7 @@ namespace MapBoard.Model
         public event PropertyChangedEventHandler PropertyChanged;
 
         public int SelectedIndex { get; set; }
-        public TileSourceInfo SelectedUrl => SelectedIndex == -1 || SelectedIndex >= Sources.Count ? null : Sources[SelectedIndex];
-        public ObservableCollection<TileSourceInfo> Sources { get; set; } = new ObservableCollection<TileSourceInfo>();
+        public BaseLayerInfo SelectedUrl => SelectedIndex == -1 || SelectedIndex >= Sources.Count ? null : Sources[SelectedIndex];
+        public ObservableCollection<BaseLayerInfo> Sources { get; set; } = new ObservableCollection<BaseLayerInfo>();
     }
 }

@@ -5,17 +5,6 @@ using System.ComponentModel;
 
 namespace MapBoard.Model
 {
-    public enum BaseLayerType
-    {
-        WebTiledLayer,
-        RasterLayer,
-        ShapefileLayer,
-        TpkLayer,
-        WmsLayer,
-        Esri,
-        WmtsLayer
-    }
-
     public class BaseLayerInfo : INotifyPropertyChanged, ICloneable
     {
         public BaseLayerInfo()
@@ -71,6 +60,13 @@ namespace MapBoard.Model
         /// 是否显示图层
         /// </summary>
         public bool Visible { get; set; } = true;
+
+        //以下是一些网络参数，不包含UI，仅能在json配置中手动修改
+        public string UserAgent { get; set; } 
+        public string Host { get; set; } 
+        public string Referer { get; set; } 
+        public string Origin { get; set; } 
+        public string OtherHeaders { get; set; }
 
         public BaseLayerInfo Clone()
         {

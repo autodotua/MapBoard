@@ -294,7 +294,7 @@ namespace MapBoard.UI.TileDownloader
 
         private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
         {
-            TileSourceInfo tile = new TileSourceInfo();
+            BaseLayerInfo tile = new BaseLayerInfo();
             if (Config.Tile_Urls.Sources.Count == 0 || Config.Tile_Urls.SelectedIndex == -1)
             {
                 Config.Tile_Urls.Sources.Add(tile);
@@ -436,7 +436,7 @@ namespace MapBoard.UI.TileDownloader
             int ok = 0;
             int failed = 0;
             int skip = lastTile == null ? 0 : lastIndex;
-            string baseUrl = Config.Tile_Urls.SelectedUrl.Url;
+            string baseUrl = Config.Tile_Urls.SelectedUrl.Path;
             arcMap.SketchEditor.IsEnabled = false;
             await Task.Run(async () =>
             {
@@ -454,7 +454,7 @@ namespace MapBoard.UI.TileDownloader
                         {
                             string url = baseUrl.Replace("{x}", tile.X.ToString()).Replace("{y}", tile.Y.ToString()).Replace("{z}", tile.Level.ToString());
                             arcMap.ShowPosition(this, tile);
-                            await NetUtility.HttpDownloadAsync(url, path, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent, Config.Tile_HttpProxy);
+                            await NetUtility.HttpDownloadAsync(url, path, Config.Tile_Urls.SelectedUrl, TimeSpan.FromMilliseconds(Config.HttpTimeOut), Config.Tile_DownloadUserAgent, Config.Tile_HttpProxy);
                             //Dispatcher.Invoke(() => tile.Status = "完成");
                             LastDownloadingStatus = "下载成功";
 
@@ -500,7 +500,7 @@ namespace MapBoard.UI.TileDownloader
                          {
                              foreach (var directory in Directory.EnumerateDirectories(Config.Tile_DownloadFolder, "temp", SearchOption.AllDirectories).ToArray())
                              {
-                                 Directory.Delete(directory,true);
+                                 Directory.Delete(directory, true);
                              }
                          }
                          catch (Exception ex)

@@ -86,12 +86,12 @@ namespace MapBoard.Mapping
                 }
                 else
                 {
-                    if (Config.Instance.Tile_Urls.SelectedUrl == null || Config.Instance.Tile_Urls.SelectedUrl.Url == null)
+                    if (Config.Instance.Tile_Urls.SelectedUrl == null || Config.Instance.Tile_Urls.SelectedUrl.Path == null)
                     {
                         return;
                     }
                     var a = new WebTiledLayer("http://{level}.{col}.{row}");
-                    baseLayer = XYZTiledLayer .Create(Config.Instance.Tile_Urls.SelectedUrl.Url,Config.Instance.HttpUserAgent);
+                    baseLayer = XYZTiledLayer .Create(Config.Instance.Tile_Urls.SelectedUrl, Config.Instance.HttpUserAgent);
                 }
                 Basemap basemap = new Basemap(baseLayer);
 
