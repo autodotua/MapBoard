@@ -8,19 +8,24 @@ namespace MapBoard.UI.Converter
 {
     public class BaseLayerTypeConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public static string GetName(BaseLayerType type)
         {
-            return (BaseLayerType)value switch
+            return type switch
             {
                 BaseLayerType.RasterLayer => "栅格图",
                 BaseLayerType.TpkLayer => "切片包",
-                BaseLayerType.ShapefileLayer => "Shapefile矢量图",
-                BaseLayerType.WebTiledLayer => "网络瓦片图",
-                BaseLayerType.WmsLayer => "网络地图服务",
-                _ => value.ToString()
+                BaseLayerType.ShapefileLayer => "Shapefile",
+                BaseLayerType.WebTiledLayer => "XYZ瓦片图",
+                BaseLayerType.WmsLayer => "WMS",
+                BaseLayerType.WmtsLayer => "WMTS",
+                _ => type.ToString()
             };
         }
 
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return GetName((BaseLayerType)value);
+        }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

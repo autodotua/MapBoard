@@ -81,7 +81,7 @@ namespace MapBoard.Mapping
 
         public async Task LoadAsync()
         {
-            await GeoViewHelper.LoadBaseGeoViewAsync(this);
+            await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Layers = await MapLayerCollection.GetInstanceAsync(Scene.OperationalLayers);
             ZoomToLastExtent().ConfigureAwait(false);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
@@ -180,7 +180,7 @@ namespace MapBoard.Mapping
 
         public async Task LoadAsync()
         {
-            BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this);
+            BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);

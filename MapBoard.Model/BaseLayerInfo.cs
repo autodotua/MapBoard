@@ -12,7 +12,8 @@ namespace MapBoard.Model
         ShapefileLayer,
         TpkLayer,
         WmsLayer,
-        Esri
+        Esri,
+        WmtsLayer
     }
 
     public class BaseLayerInfo : INotifyPropertyChanged, ICloneable

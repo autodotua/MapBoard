@@ -25,12 +25,105 @@ namespace MapBoard.Mapping
 {
     public static class GeoViewHelper
     {
+        public static readonly string[] EsriBasemaps = typeof(Basemap)
+                    .GetMethods(BindingFlags.Static | BindingFlags.Public)
+                    .Where(p => p.Name.StartsWith("Create"))
+                    .Select(p => p.Name[6..])
+                    .ToArray();
+
+        public static async Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
+        {
+            var result = await view.GetImageAsync(cut);
+            result.Save(path, format);
+        }
+
+        public static IEnumerable<BaseLayerInfo> GetDefaultBaseLayers()
+        {
+            string defaultBasemapLayersPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBasemapLayers.txt");
+
+            if (File.Exists(defaultBasemapLayersPath))
+            {
+                return File.ReadAllLines(defaultBasemapLayersPath)
+                    .Select(p => p.Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(p => p.Length == 2 ?
+                    new BaseLayerInfo(BaseLayerType.WebTiledLayer, p[1]) { Name = p[0] }
+                    : throw new FormatException("默认底图文件格式错误"));
+            }
+            return Enumerable.Empty<BaseLayerInfo>();
+        }
+
+        public static async Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
+        {
+            RuntimeImage image = await view.ExportImageAsync();
+            var bitmapSource = await image.ToImageSourceAsync() as BitmapSource;
+            int width = bitmapSource.PixelWidth;
+            int height = bitmapSource.PixelHeight;
+            int stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
+            var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
+            bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
+            Bitmap result = null;
+            PresentationSource source = PresentationSource.FromVisual(view);
+            int cutLeft = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Left);
+            int cutRight = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Right);
+            int cutTop = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Top);
+            int cutBottom = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Bottom);
+            await Task.Run(() =>
+            {
+                Bitmap bitmap = new Bitmap(width, height, stride, PixelFormat.Format32bppPArgb, memoryBlockPointer);
+                if (cut.Equals(new Thickness(0)))
+                {
+                    result = bitmap;
+                }
+                Bitmap newBitmap = new Bitmap(width - cutLeft - cutRight, height - cutTop - cutBottom, PixelFormat.Format32bppPArgb);
+                Graphics graphics = Graphics.FromImage(newBitmap);
+                var rect = new Rectangle(0, 0, newBitmap.Width, newBitmap.Height);
+                graphics.DrawImage(bitmap, rect, cutLeft, cutTop, newBitmap.Width, newBitmap.Height, GraphicsUnit.Pixel);
+                graphics.Save();
+                result = newBitmap;
+            });
+            return result;
+        }
+
+        public static Layer GetLayer(BaseLayerInfo baseLayer, bool cache)
+        {
+            var type = baseLayer.Type;
+            var arg = baseLayer.Path;
+            return type switch
+            {
+                BaseLayerType.WebTiledLayer => AddTiledLayer(arg, cache),
+                BaseLayerType.RasterLayer => AddRasterLayer(arg),
+                BaseLayerType.ShapefileLayer => AddShapefileLayer(arg),
+                BaseLayerType.TpkLayer => AddTpkLayer(arg),
+                BaseLayerType.WmsLayer => AddWmsLayer(arg),
+                BaseLayerType.WmtsLayer => AddWmtsLayer(arg),
+                _ => throw new InvalidEnumArgumentException("未知类型"),
+            };
+        }
+
+        public static Thickness GetMinusWatermarkThickness()
+        {
+            if (!Config.Instance.HideWatermark)
+            {
+                return new Thickness();
+            }
+            return new Thickness(0, -Config.WatermarkHeight, 0, -Config.WatermarkHeight); ;
+        }
+
+        public static Thickness GetWatermarkThickness()
+        {
+            if (!Config.Instance.HideWatermark)
+            {
+                return new Thickness();
+            }
+            return new Thickness(0, Config.WatermarkHeight, 0, Config.WatermarkHeight); ;
+        }
+
         /// <summary>
         /// 为ArcSceneView或ArcMapView加载底图
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public static async Task<ItemsOperationErrorCollection> LoadBaseGeoViewAsync(this GeoView map)
+        public static async Task<ItemsOperationErrorCollection> LoadBaseGeoViewAsync(this GeoView map, bool cache)
         {
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             try
@@ -63,7 +156,7 @@ namespace MapBoard.Mapping
                         {
                             throw new IOException("找不到文件：" + item.Path);
                         }
-                        layer = GetLayer(item);
+                        layer = GetLayer(item, cache);
                         await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                         basemap.BaseLayers.Add(layer);
 
@@ -122,125 +215,10 @@ namespace MapBoard.Mapping
                 throw new Exception("加载底图失败", ex);
             }
         }
-
-        public static IEnumerable<BaseLayerInfo> GetDefaultBaseLayers()
-        {
-            string defaultBasemapLayersPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBasemapLayers.txt");
-
-            if (File.Exists(defaultBasemapLayersPath))
-            {
-                return File.ReadAllLines(defaultBasemapLayersPath)
-                    .Select(p => p.Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(p => p.Length == 2 ?
-                    new BaseLayerInfo(BaseLayerType.WebTiledLayer, p[1]) { Name = p[0] }
-                    : throw new FormatException("默认底图文件格式错误"));
-            }
-            return Enumerable.Empty<BaseLayerInfo>();
-        }
-
         public static void SetHideWatermark(this GeoView map)
         {
             map.Margin = GetMinusWatermarkThickness();
         }
-
-        public static Thickness GetWatermarkThickness()
-        {
-            if (!Config.Instance.HideWatermark)
-            {
-                return new Thickness();
-            }
-            return new Thickness(0, Config.WatermarkHeight, 0, Config.WatermarkHeight); ;
-        }
-
-        public static Thickness GetMinusWatermarkThickness()
-        {
-            if (!Config.Instance.HideWatermark)
-            {
-                return new Thickness();
-            }
-            return new Thickness(0, -Config.WatermarkHeight, 0, -Config.WatermarkHeight); ;
-        }
-
-        public static Layer GetLayer(BaseLayerInfo baseLayer)
-        {
-            var type = baseLayer.Type;
-            var arg = baseLayer.Path;
-            return type switch
-            {
-                BaseLayerType.WebTiledLayer => AddTiledLayer(arg),
-                BaseLayerType.RasterLayer => AddRasterLayer(arg),
-                BaseLayerType.ShapefileLayer => AddShapefileLayer(arg),
-                BaseLayerType.TpkLayer => AddTpkLayer(arg),
-                BaseLayerType.WmsLayer => AddWmsLayer(arg),
-                _ => throw new InvalidEnumArgumentException("未知类型"),
-            };
-        }
-
-        public static readonly string[] EsriBasemaps = typeof(Basemap)
-            .GetMethods(BindingFlags.Static | BindingFlags.Public)
-            .Where(p => p.Name.StartsWith("Create"))
-            .Select(p => p.Name[6..])
-            .ToArray();
-
-        private static Basemap GetBasemap(ItemsOperationErrorCollection errors)
-
-        {
-            var info = Config.Instance.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
-            if (info == null)
-            {
-                return new Basemap();
-            }
-            string type = info.Path;
-            Debug.Assert(type != null);
-            var methods = typeof(Basemap).GetMethods(BindingFlags.Static | BindingFlags.Public);
-            var method = methods.FirstOrDefault(p => p.Name == $"Create{type}");
-            if (method == null)
-            {
-                errors.Add(new ItemsOperationError("Esri底图", $"找不到类型{type}"));
-                return new Basemap();
-            }
-
-            return method.Invoke(null, null) as Basemap;
-        }
-
-        private static ImageTiledLayer AddTiledLayer(string url)
-        {
-            XYZTiledLayer layer = XYZTiledLayer.Create(url, Config.Instance.HttpUserAgent,true);
-            //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
-            return layer;
-        }
-
-        private static WmsLayer AddWmsLayer(string url)
-        {
-            string[] items = url.Split('|');
-            if (items.Length < 2)
-            {
-                throw new ArgumentException("WMS的参数过少");
-            }
-            WmsLayer layer = new WmsLayer(new Uri(items[0]), items.Skip(1));
-            return layer;
-        }
-
-        private static RasterLayer AddRasterLayer(string path)
-        {
-            RasterLayer layer = new RasterLayer(path);
-            return layer;
-        }
-
-        private static ArcGISTiledLayer AddTpkLayer(string path)
-        {
-            TileCache cache = new TileCache(path);
-            ArcGISTiledLayer layer = new ArcGISTiledLayer(cache);
-            return layer;
-        }
-
-        private static FeatureLayer AddShapefileLayer(string path)
-        {
-            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
-            FeatureLayer layer = new FeatureLayer(table);
-            return layer;
-        }
-
         public static Task WaitForRenderCompletedAsync(this GeoView view)
         {
             TaskCompletionSource tcs = new TaskCompletionSource();
@@ -263,42 +241,74 @@ namespace MapBoard.Mapping
             }
         }
 
-        public static async Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
+        private static RasterLayer AddRasterLayer(string path)
         {
-            var result = await view.GetImageAsync(cut);
-            result.Save(path, format);
+            RasterLayer layer = new RasterLayer(path);
+            return layer;
         }
 
-        public static async Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
+        private static FeatureLayer AddShapefileLayer(string path)
         {
-            RuntimeImage image = await view.ExportImageAsync();
-            var bitmapSource = await image.ToImageSourceAsync() as BitmapSource;
-            int width = bitmapSource.PixelWidth;
-            int height = bitmapSource.PixelHeight;
-            int stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
-            var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
-            bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
-            Bitmap result = null;
-            PresentationSource source = PresentationSource.FromVisual(view);
-            int cutLeft = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Left);
-            int cutRight = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Right);
-            int cutTop = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Top);
-            int cutBottom = (int)(source.CompositionTarget.TransformToDevice.M22 * cut.Bottom);
-            await Task.Run(() =>
+            ShapefileFeatureTable table = new ShapefileFeatureTable(path);
+            FeatureLayer layer = new FeatureLayer(table);
+            return layer;
+        }
+
+        private static ImageTiledLayer AddTiledLayer(string url, bool cache)
+        {
+            XYZTiledLayer layer = XYZTiledLayer.Create(url, Config.Instance.HttpUserAgent, cache);
+            //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
+            return layer;
+        }
+
+        private static ArcGISTiledLayer AddTpkLayer(string path)
+        {
+            TileCache cache = new TileCache(path);
+            ArcGISTiledLayer layer = new ArcGISTiledLayer(cache);
+            return layer;
+        }
+
+        private static WmsLayer AddWmsLayer(string url)
+        {
+            string[] items = url.Split('|');
+            if (items.Length < 2)
             {
-                Bitmap bitmap = new Bitmap(width, height, stride, PixelFormat.Format32bppPArgb, memoryBlockPointer);
-                if (cut.Equals(new Thickness(0)))
-                {
-                    result = bitmap;
-                }
-                Bitmap newBitmap = new Bitmap(width - cutLeft - cutRight, height - cutTop - cutBottom, PixelFormat.Format32bppPArgb);
-                Graphics graphics = Graphics.FromImage(newBitmap);
-                var rect = new Rectangle(0, 0, newBitmap.Width, newBitmap.Height);
-                graphics.DrawImage(bitmap, rect, cutLeft, cutTop, newBitmap.Width, newBitmap.Height, GraphicsUnit.Pixel);
-                graphics.Save();
-                result = newBitmap;
-            });
-            return result;
+                throw new ArgumentException("WMS的参数过少");
+            }
+            WmsLayer layer = new WmsLayer(new Uri(items[0]), items.Skip(1));
+            return layer;
+        }
+
+        private static WmtsLayer AddWmtsLayer(string url)
+        {
+            string[] items = url.Split('|');
+            if (items.Length < 2)
+            {
+                throw new ArgumentException("WMS的参数过少");
+            }
+            WmtsLayer layer = new WmtsLayer(new Uri(items[0]), items[1]);
+            return layer;
+        }
+
+        private static Basemap GetBasemap(ItemsOperationErrorCollection errors)
+
+        {
+            var info = Config.Instance.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
+            if (info == null)
+            {
+                return new Basemap();
+            }
+            string type = info.Path;
+            Debug.Assert(type != null);
+            var methods = typeof(Basemap).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            var method = methods.FirstOrDefault(p => p.Name == $"Create{type}");
+            if (method == null)
+            {
+                errors.Add(new ItemsOperationError("Esri底图", $"找不到类型{type}"));
+                return new Basemap();
+            }
+
+            return method.Invoke(null, null) as Basemap;
         }
     }
 }

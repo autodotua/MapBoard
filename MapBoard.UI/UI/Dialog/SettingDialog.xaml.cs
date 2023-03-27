@@ -184,10 +184,26 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private async void AddWmsButtonClick(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddWmsLayerDialog();
+            var dialog = new AddWmsLayerDialog(BaseLayerType.WmsLayer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WmsLayer, $"{dialog.Url}|{dialog.WmsLayerName}");
+                BaseLayers.Add(layerInfo);
+                SelectAndScroll(layerInfo);
+            }
+        }
+
+        /// <summary>
+        /// 点击新增WMTS图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void AddWmtsButtonClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AddWmsLayerDialog(BaseLayerType.WmtsLayer);
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WmtsLayer, $"{dialog.Url}|{dialog.WmsLayerName}");
                 BaseLayers.Add(layerInfo);
                 SelectAndScroll(layerInfo);
             }

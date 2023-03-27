@@ -407,7 +407,10 @@
                                             Header="文件（栅格图、Tpk、Shapefile）" />
                                         <MenuItem
                                             Click="AddWmsButtonClick"
-                                            Header="WMS地图切片服务" />
+                                            Header="WMS图层" />    
+                                        <MenuItem
+                                            Click="AddWmtsButtonClick"
+                                            Header="WMTS图层" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
                             </ui:SplitButton>

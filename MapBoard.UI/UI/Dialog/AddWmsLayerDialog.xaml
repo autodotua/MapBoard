@@ -10,11 +10,13 @@
     xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    Title="新增WMS图层" CloseButtonText="取消"
+    Title="{Binding TypeName, StringFormat=新建{0}图层}"
+    CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
-    PrimaryButtonText="确定" mc:Ignorable="d">
+    PrimaryButtonText="确定"
+    mc:Ignorable="d">
     <commondialog:CommonDialog.Resources>
         <ObjectDataProvider
             x:Key="fieldTypeEnum"
@@ -26,8 +28,12 @@
         </ObjectDataProvider>
     </commondialog:CommonDialog.Resources>
     <ui:SimpleStackPanel Spacing="8">
-        <TextBox ui:ControlHelper.Header="图层名" Text="{Binding LayerName}" />
-        <TextBox ui:ControlHelper.Header="WFS服务链接" Text="{Binding Url}" />
+        <TextBox
+            ui:ControlHelper.Header="图层名"
+            Text="{Binding LayerName}" />
+        <TextBox
+            ui:ControlHelper.Header="服务链接"
+            Text="{Binding Url}" />
         <Button
             HorizontalAlignment="Right"
             Click="QueryLayersButton_Click"
@@ -35,11 +41,9 @@
         <ComboBox
             x:Name="cbbLayers"
             HorizontalAlignment="Stretch"
-            ui:ControlHelper.Description="支持一个或多个图层，多个图层使用“|”号隔开"
-            ui:ControlHelper.Header="WFS图层名"
-            DisplayMemberPath="Name"
+            ui:ControlHelper.Description="WMS支持一个或多个图层，多个图层使用“|”号隔开"
+            ui:ControlHelper.Header="图层名"
             IsEditable="True"
-            ItemsSource="{Binding WmsLayers}"
             Text="{Binding WmsLayerName}" />
 
         <TextBlock Text="{Binding Message}" />

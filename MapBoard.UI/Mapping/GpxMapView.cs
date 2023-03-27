@@ -327,7 +327,7 @@ namespace MapBoard.Mapping
             {
                 Tracks.CollectionChanged += TracksCollectionChanged;
             }
-            await this.LoadBaseGeoViewAsync();
+            await this.LoadBaseGeoViewAsync(Config.Instance.EnableBasemapCache);
         }
 
         private GraphicsOverlay browseOverlay;

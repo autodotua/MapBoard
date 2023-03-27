@@ -22,6 +22,7 @@ using System.Windows.Shapes;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
 using Esri.ArcGISRuntime.Ogc;
+using MapBoard.UI.Converter;
 
 namespace MapBoard.UI.Dialog
 {
@@ -30,23 +31,26 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class AddWmsLayerDialog : CommonDialog
     {
-        public AddWmsLayerDialog()
+        public AddWmsLayerDialog(BaseLayerType layerType)
         {
             InitializeComponent();
 
-            LayerName = "WMS图层";
+            LayerName = "图层";
+            LayerType = layerType;
         }
 
         public bool AutoPopulateAll { get; set; }
         public string LayerName { get; set; }
         public MapLayerCollection Layers { get; }
+        public BaseLayerType LayerType { get; }
         public string Message { get; set; }
+        public string TypeName => BaseLayerTypeConverter.GetName(LayerType);
         public string Url { get; set; }
 
         public string WmsLayerName { get; set; }
 
         public ObservableCollection<WmsLayerInfo> WmsLayers { get; set; }
-
+        public ObservableCollection<WmtsLayerInfo> WmtsLayers { get; set; }
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
         }
@@ -68,39 +72,72 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             try
             {
-                WmsService s = new WmsService(new Uri(Url));
-                await s.LoadAsync();
-                var layers = s.ServiceInfo.LayerInfos;
-                WmsLayers = new ObservableCollection<WmsLayerInfo>();
-                AddLayer(layers);
-                void AddLayer(IReadOnlyList<WmsLayerInfo> layers)
+                switch(LayerType)
                 {
-                    foreach (var layer in layers)
-                    {
-                        if (layer.LayerInfos.Count == 0)
-                        {
-                            WmsLayers.Add(layer);
-                        }
-                        else
-                        {
-                            AddLayer(layer.LayerInfos);
-                        }
-                    }
-                }
-
-                if (WmsLayers.Count > 0)
-                {
-                    cbbLayers.SelectedIndex = 0;
+                    case BaseLayerType.WmsLayer:
+                await QueryWmsLayers();
+                        break;
+                    case BaseLayerType.WmtsLayer:
+                await QueryWmtsLayers();
+                        break;
                 }
             }
             catch (Exception ex)
             {
-                App.Log.Error("查询Wms图层失败", ex);
+                App.Log.Error("查询图层失败", ex);
                 Message = "查询失败：" + ex.Message;
             }
             finally
             {
                 IsEnabled = true;
+            }
+        }
+
+        private async Task QueryWmsLayers()
+        {
+            WmsService s = new WmsService(new Uri(Url));
+            await s.LoadAsync();
+            var layers = s.ServiceInfo.LayerInfos;
+            WmsLayers = new ObservableCollection<WmsLayerInfo>();
+            AddLayer(layers);
+            void AddLayer(IReadOnlyList<WmsLayerInfo> layers)
+            {
+                foreach (var layer in layers)
+                {
+                    if (layer.LayerInfos.Count == 0)
+                    {
+                        WmsLayers.Add(layer);
+                    }
+                    else
+                    {
+                        AddLayer(layer.LayerInfos);
+                    }
+                }
+            }
+
+            cbbLayers.ItemsSource = WmsLayers;
+            cbbLayers.DisplayMemberPath = "Name";
+            if (WmsLayers.Count > 0)
+            {
+                cbbLayers.SelectedIndex = 0;
+            }
+        }
+
+        private async Task QueryWmtsLayers()
+        {
+            WmtsService s = new WmtsService(new Uri(Url));
+            await s.LoadAsync();
+            var layers = s.ServiceInfo.LayerInfos;
+            WmtsLayers = new ObservableCollection<WmtsLayerInfo>();
+            foreach (var layer in layers)
+            {
+                WmtsLayers.Add(layer);
+            }
+            cbbLayers.ItemsSource = WmtsLayers;
+            cbbLayers.DisplayMemberPath = "Id";
+            if (WmtsLayers.Count > 0)
+            {
+                cbbLayers.SelectedIndex = 0;
             }
         }
     }
