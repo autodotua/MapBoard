@@ -360,6 +360,7 @@
                                 <ui:FlyoutService.Flyout>
                                     <ui:Flyout>
                                         <Grid
+                                            Width="320"
                                             Margin="8"
                                             Background="{Binding Background}">
                                             <Grid.RowDefinitions>
@@ -377,15 +378,33 @@
                                                     Content="清除"
                                                     DockPanel.Dock="Right" />
                                                 <ComboBox
+                                                    x:Name="cbbKeyFields"
                                                     HorizontalAlignment="Stretch"
                                                     ui:ControlHelper.Header="分类字段"
-                                                    DisplayMemberPath="DisplayName"
+                                                    ui:ControlHelper.PlaceholderText="{Binding KeyFieldsComboBoxText}"
                                                     ItemsSource="{Binding KeyFields}"
-                                                    SelectedItem="{Binding KeyField}" />
+                                                    SelectionChanged="ComboBox_SelectionChanged">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <CheckBox
+                                                                    Width="300"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    VerticalAlignment="Center"
+                                                                    Checked="KeyFieldCheckBox_CheckedOrUnchecked"
+                                                                    Content="{Binding ObjectData.DisplayName}"
+                                                                    IsChecked="{Binding Path=IsSelected}"
+                                                                    Unchecked="KeyFieldCheckBox_CheckedOrUnchecked" />
+
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </DockPanel>
 
                                             <ListView
                                                 Grid.Row="2"
+                                                MaxHeight="360"
                                                 BorderThickness="0"
                                                 ItemsSource="{Binding Keys}"
                                                 SelectedItem="{Binding SelectedKey}">
@@ -419,17 +438,20 @@
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="4"
+                                                    HorizontalAlignment="Stretch"
                                                     Click="ChangeKeyButtonClick"
                                                     Content="修改"
                                                     IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="6"
+                                                    HorizontalAlignment="Stretch"
                                                     Click="DeleteKeyButtonClick"
                                                     Content="删除"
                                                     IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.ColumnSpan="3"
+                                                    HorizontalAlignment="Stretch"
                                                     Click="GenerateKeyButtonClick"
                                                     Content="自动生成全部"
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />
@@ -437,6 +459,7 @@
                                                     Grid.Row="2"
                                                     Grid.Column="4"
                                                     Grid.ColumnSpan="3"
+                                                    HorizontalAlignment="Stretch"
                                                     Click="GenerateRandomColorButtonClick"
                                                     Content="随机生成颜色"
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />

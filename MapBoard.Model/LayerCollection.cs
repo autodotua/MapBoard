@@ -90,10 +90,12 @@ namespace MapBoard.Model
 
         public void Save(string path)
         {
-            JObject json = new JObject();
-            json.Add(nameof(MapViewExtentJson), MapViewExtentJson);
-            json.Add(nameof(SelectedIndex), SelectedIndex);
-            json.Add("Layers", JArray.FromObject(LayerList));
+            JObject json = new JObject
+            {
+                { nameof(MapViewExtentJson), MapViewExtentJson },
+                { nameof(SelectedIndex), SelectedIndex },
+                { "Layers", JArray.FromObject(LayerList) }
+            };
             string jsonStr = json.ToString(Formatting.Indented);
             string dir = Path.GetDirectoryName(path);
             if (!Directory.Exists(dir))

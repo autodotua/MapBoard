@@ -27,6 +27,7 @@ namespace MapBoard.UI
                 try
                 {
                     await win.InitializeAsync();
+                    win.programInitialized = true;
                 }
                 catch (Exception ex)
                 {

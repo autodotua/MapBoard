@@ -26,9 +26,28 @@ using PropertyChanged;
 using Esri.ArcGISRuntime.Data;
 using FzLib.WPF.Converters;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace MapBoard.UI
 {
+    public class SelectableObject<T> : INotifyPropertyChanged
+    {
+        public bool IsSelected { get; set; }
+        public T ObjectData { get; set; }
+
+        public SelectableObject(T objectData)
+        {
+            ObjectData = objectData;
+        }
+
+        public SelectableObject(T objectData, bool isSelected)
+        {
+            IsSelected = isSelected;
+            ObjectData = objectData;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
     /// <summary>
     /// RendererSettingPanel.xaml 的交互逻辑
     /// </summary>
@@ -37,6 +56,7 @@ namespace MapBoard.UI
         private const string defaultKeyName = "（默认）";
 
         private Random r = new Random();
+        private List<SelectableObject<FieldInfo>> keyFields;
 
         public LayerSettingPanel()
         {
@@ -44,15 +64,35 @@ namespace MapBoard.UI
             Fonts = FontFamily.FamilyNames.Values.ToArray();
         }
 
-        public bool IsChangeOrDeleteKeyButtonEnabled => SelectedKey != null && SelectedKey.Key != defaultKeyName && KeyField != null;
-        public bool IsAddKeyButtonEnabled => KeyField != null;
+        public bool IsChangeOrDeleteKeyButtonEnabled => SelectedKey != null && SelectedKey.Key != defaultKeyName;
+        public bool IsAddKeyButtonEnabled => KeyFields!=null && KeyFields.Any(p => p.IsSelected);
         public string[] Fonts { get; }
 
-        [AlsoNotifyFor(nameof(IsAddKeyButtonEnabled), nameof(IsChangeOrDeleteKeyButtonEnabled))]
-        public FieldInfo KeyField { get; set; } = null;
+        [AlsoNotifyFor(nameof(KeyFieldsComboBoxText))]
+        public List<SelectableObject<FieldInfo>> KeyFields
+        {
+            get => keyFields;
+            private set
+            {
+                keyFields = value;
+                if (value != null)
+                {
+                    foreach (var item in value)
+                    {
+                        item.PropertyChanged += (s, e) =>
+                        {
+                            if (e.PropertyName == nameof(SelectableObject<FieldInfo>.IsSelected))
+                            {
+                                this.Notify(nameof(IsAddKeyButtonEnabled));
+                            }
+                        };
+                    }
+                }
+            }
+        }
 
-        public IEnumerable<FieldInfo> KeyFields => Layers.Selected?.Fields?.Where(p => p.CanBeRendererKey());
         public ObservableCollection<KeySymbolPair> Keys { get; private set; } = new ObservableCollection<KeySymbolPair>();
+
         public LabelInfo Label { get; set; }
 
         public ObservableCollection<LabelInfo> Labels { get; set; }
@@ -61,7 +101,7 @@ namespace MapBoard.UI
 
         public MapLayerCollection Layers => MapView?.Layers;
 
-        [AlsoNotifyFor(nameof(Layers), nameof(KeyFields))]
+        [AlsoNotifyFor(nameof(Layers))]
         public MainMapView MapView { get; set; }
 
         [AlsoNotifyFor(nameof(IsChangeOrDeleteKeyButtonEnabled))]
@@ -75,6 +115,10 @@ namespace MapBoard.UI
             Layers.PropertyChanged += Layers_PropertyChanged;
         }
 
+        /// <summary>
+        /// 初始化所有Key，恢复只有默认Key的初始状态
+        /// </summary>
+        /// <param name="canKeepDefaultKey"></param>
         private void InitializeKeys(bool canKeepDefaultKey)
         {
             Debug.Assert(Layers.Selected != null);
@@ -94,12 +138,15 @@ namespace MapBoard.UI
             SelectedKey = Keys[0];
         }
 
+        /// <summary>
+        /// 配置=>UI
+        /// </summary>
         public void ResetLayerSettingUI()
         {
             IMapLayerInfo layer = Layers.Selected;
-            this.Notify(nameof(KeyFields));
             if (layer == null)
             {
+                KeyFields = null;
                 tab.IsEnabled = false;
                 return;
             }
@@ -117,7 +164,13 @@ namespace MapBoard.UI
                     Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
                 }
                 SelectedKey = Keys.First(p => p.Key == defaultKeyName);
-                KeyField = layer.Fields.FirstOrDefault(p => p.Name == layer.Renderer.KeyFieldName);
+                var keys = layer.Renderer.KeyFieldName?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+                KeyFields = layer?.Fields
+                    ?.Where(p => p.CanBeRendererKey())
+                    ?.Select(p => new SelectableObject<FieldInfo>(p, keys.Contains(p.Name)))
+                    .ToList();
+
                 btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
             }
             try
@@ -139,12 +192,16 @@ namespace MapBoard.UI
             LoadLabelFieldsMenu();
         }
 
+        /// <summary>
+        /// UI=>配置
+        /// </summary>
+        /// <returns></returns>
         public async Task SetStyleFromUI()
         {
             var layer = Layers.Selected;
 
             layer.Renderer.Symbols.Clear();
-            layer.Renderer.KeyFieldName = KeyField?.Name;
+            layer.Renderer.KeyFieldName = string.Join('|', KeyFields.Where(p => p.IsSelected).Select(p => p.ObjectData.Name));
             foreach (var keySymbol in Keys)
             {
                 if (keySymbol.Key == defaultKeyName)
@@ -213,7 +270,9 @@ namespace MapBoard.UI
 
         private async void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
+            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名"
+                + (KeyFields.Count(p => p.IsSelected) > 1 ? "，多个字段的分类名之间使用“|”隔开" : ""),
+                SelectedKey.Key);
             if (key != null)
             {
                 if (Keys.Any(p => p.Key == key))
@@ -228,7 +287,7 @@ namespace MapBoard.UI
 
         private void ClearKeyFieldButton_Click(object sender, RoutedEventArgs e)
         {
-            KeyField = null;
+            KeyFields.ForEach(p => p.IsSelected = false);
             InitializeKeys(true);
         }
 
@@ -239,7 +298,8 @@ namespace MapBoard.UI
 
         private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
         {
-            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名");
+            var key = await CommonDialog.ShowInputDialogAsync("请输入分类名"
+                                + (KeyFields.Count(p => p.IsSelected) > 1 ? "，多个字段的分类名之间使用“|”隔开" : ""));
             if (key != null)
             {
                 if (Keys.Any(p => p.Key == key))
@@ -247,35 +307,35 @@ namespace MapBoard.UI
                     await CommonDialog.ShowErrorDialogAsync("该分类已存在");
                     return;
                 }
-                try
-                {
-                    switch (KeyField.Type)
-                    {
-                        case FieldInfoType.Integer when !int.TryParse(key, out _):
-                        case FieldInfoType.Float when !double.TryParse(key, out _):
-                        case FieldInfoType.Date when !DateTime.TryParse(key, out _):
-                            throw new FormatException();
-                        case FieldInfoType.Time:
-                            //if (DateTime.TryParseExact(key, Parameters.TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime time))
-                            //{
-                            //    key = time.ToString(Parameters.TimeFormat);
-                            //}
-                            //else if (DateTime.TryParse(key, out DateTime time2))
-                            //{
-                            //    key = time2.ToString(Parameters.TimeFormat);
-                            //}
-                            //else
-                            //{
-                            //    throw new FormatException();
-                            //}
-                            throw new Exception("无法使用时间类型作为Key");
-                    }
-                }
-                catch (FormatException)
-                {
-                    await CommonDialog.ShowErrorDialogAsync($"{key} 无法转换为字段 {KeyField.DisplayName} 的类型：{DescriptionConverter.GetDescription(KeyField.Type)}");
-                    return;
-                }
+                //try
+                //{
+                //    switch (KeyField.Type)
+                //    {
+                //        case FieldInfoType.Integer when !int.TryParse(key, out _):
+                //        case FieldInfoType.Float when !double.TryParse(key, out _):
+                //        case FieldInfoType.Date when !DateTime.TryParse(key, out _):
+                //            throw new FormatException();
+                //        case FieldInfoType.Time:
+                //            //if (DateTime.TryParseExact(key, Parameters.TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime time))
+                //            //{
+                //            //    key = time.ToString(Parameters.TimeFormat);
+                //            //}
+                //            //else if (DateTime.TryParse(key, out DateTime time2))
+                //            //{
+                //            //    key = time2.ToString(Parameters.TimeFormat);
+                //            //}
+                //            //else
+                //            //{
+                //            //    throw new FormatException();
+                //            //}
+                //            throw new Exception("无法使用时间类型作为Key");
+                //    }
+                //}
+                //catch (FormatException)
+                //{
+                //    await CommonDialog.ShowErrorDialogAsync($"{key} 无法转换为字段 {KeyField.DisplayName} 的类型：{DescriptionConverter.GetDescription(KeyField.Type)}");
+                //    return;
+                //}
 
                 var keySymbol = new KeySymbolPair(key, MapView.Layers.Selected.GetDefaultSymbol());
                 Keys.Add(keySymbol);
@@ -303,13 +363,67 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 生成多个集合的笛卡尔积，由New Bing编写
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequences"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(IEnumerable<IEnumerable<T>> sequences)
+        {
+            // base case: 
+            IEnumerable<IEnumerable<T>> result = new[] { Enumerable.Empty<T>() };
+            foreach (var sequence in sequences)
+            {
+                // don't close over the loop variable (fixed in C# 5 BTW):
+                var s = sequence;
+                // recursive case: use SelectMany to build the new product out of the old one
+                result =
+                    from seq in result
+                    from item in s
+                    select seq.Concat(new[] { item });
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 自动生成全部
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
         {
             var layer = Layers.Selected;
-            Debug.Assert(KeyField != null);
+            Debug.Assert(KeyFields.Any(p => p.IsSelected));
             InitializeKeys(true);
-            var keys = await layer.GetUniqueAttributeValues(KeyField.Name);
 
+            //生成每个字段的所有出现的属性值
+            List<List<string>> keyses = new List<List<string>>();
+            foreach (var key in KeyFields.Where(p => p.IsSelected))
+            {
+                var keysOfThisField = (await layer.GetUniqueAttributeValues(key.ObjectData.Name))
+                    .Select(p => p.ToString())
+                    .ToList();
+                for (int i = 0; i < keysOfThisField.Count; i++)
+                {
+                    if (keysOfThisField[i] == "")
+                    {
+                        keysOfThisField[i] = "（空）";
+                    }
+                }
+                keyses.Add(keysOfThisField.Select(p => p.ToString()).ToList());
+            }
+
+            //生成笛卡尔积
+            int count = keyses.Aggregate(1, (p, l) => p * l.Count);
+            if (count > 100)
+            {
+                await CommonDialog.ShowErrorDialogAsync("唯一值的组合超过了100项，请手动设置");
+                return;
+            }
+            var keys = CartesianProduct(keyses).Select(x => string.Join("|", x)).ToList();
+
+            //分配Symbol
             foreach (var key in keys)
             {
                 if (!Keys.Any(p => p.Key == key.ToString()))
@@ -391,5 +505,12 @@ namespace MapBoard.UI
                     break;
             }
         }
+
+        private void KeyFieldCheckBox_CheckedOrUnchecked(object sender, RoutedEventArgs e)
+        {
+            this.Notify(nameof(KeyFieldsComboBoxText));
+        }
+
+        public string KeyFieldsComboBoxText => KeyFields == null ? "（未设置）" : string.Join(", ", KeyFields.Where(p => p.IsSelected).Select(p => p.ObjectData.DisplayName));
     }
 }

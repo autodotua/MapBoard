@@ -313,6 +313,7 @@ namespace MapBoard.Util
             var result = await layer.Layer.FeatureTable.QueryStatisticsAsync(parameters);
             return result.Select(p => p.Group[fieldName]).ToArray();
         }
+
         /// <summary>
         /// 建立缓冲区
         /// </summary>
