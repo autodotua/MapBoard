@@ -29,21 +29,29 @@
         <TextBox
             x:Name="txtTop"
             Grid.Column="2"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            MaxLines="2"
+            TextWrapping="Wrap" />
         <TextBox
             x:Name="txtRight"
             Grid.Row="2"
             Grid.Column="4"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            MaxLines="2"
+            TextWrapping="Wrap" />
         <TextBox
             x:Name="txtLeft"
             Grid.Row="2"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            MaxLines="2"
+            TextWrapping="Wrap" />
         <TextBox
             x:Name="txtBottom"
             Grid.Row="4"
             Grid.Column="2"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            MaxLines="2"
+            TextWrapping="Wrap" />
 
         <Rectangle
             x:Name="rect"

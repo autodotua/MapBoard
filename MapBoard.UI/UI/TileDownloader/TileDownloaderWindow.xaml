@@ -173,6 +173,25 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button
+                                    HorizontalAlignment="Stretch"
+                                    Click="NewTileSourceButtonClick">
+                                    新增
+                                </Button>
+                                <Button
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Stretch"
+                                    Click="DeleteTileSourceButtonClick"
+                                    IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource NotNullConverter}}">
+                                    删除
+                                </Button>
+                            </Grid>
 
                             <TextBox
                                 Grid.Row="4"
@@ -196,38 +215,17 @@
                                 ui:ControlHelper.PlaceholderText="请求服务器的地址和端口号"
                                 Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Host}"
                                 TextWrapping="Wrap" />
-                            
+
                             <TextBox
                                 ui:ControlHelper.Header="Referer"
                                 Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Referer}"
                                 TextWrapping="Wrap" />
-                            
+
                             <TextBox
                                 ui:ControlHelper.Header="Origin"
                                 Text="{Binding ElementName=dgrdUrls, Path=SelectedItem.Origin}"
                                 TextWrapping="Wrap" />
 
-                            <Grid
-                                Grid.Row="10"
-                                Grid.ColumnSpan="99">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="4" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Button
-                                    HorizontalAlignment="Stretch"
-                                    Click="NewTileSourceButtonClick">
-                                    新增
-                                </Button>
-                                <Button
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Stretch"
-                                    Click="DeleteTileSourceButtonClick"
-                                    IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource NotNullConverter}}">
-                                    删除
-                                </Button>
-                            </Grid>
                         </ui:SimpleStackPanel>
                     </GroupBox>
 

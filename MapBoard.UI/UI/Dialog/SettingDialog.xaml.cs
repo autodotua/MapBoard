@@ -27,6 +27,8 @@ using MapBoard.Util;
 using System.ComponentModel;
 using FzLib.Program;
 using FzLib.IO;
+using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.UI.Controls;
 
 namespace MapBoard.UI.Dialog
 {
@@ -49,22 +51,18 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         private bool canClose = true;
 
-        public SettingDialog(Window owner, MapLayerCollection layers, int tabIndex = 0) : base(owner)
+        private GeoView mapView;
+
+        public SettingDialog(Window owner, GeoView mapView, MapLayerCollection layers, int tabIndex = 0) : base(owner)
         {
             FormatMbmpkgAssociated = FileFormatAssociationUtility.IsAssociated("mbmpkg", MbmpkgID);
             FormatGpxAssociated = FileFormatAssociationUtility.IsAssociated("gpx", gpxID);
 
-            BaseLayers = new ObservableCollection<BaseLayerInfo>(
-              Config.Instance.BaseLayers.Where(p => p.Type != BaseLayerType.Esri).Select(p => p.Clone()));
-            var esriBaseLayer = Config.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
-            if (esriBaseLayer != null)
-            {
-                EsriBaseLayer = esriBaseLayer.Path;
-            }
-            ResetIndex();
-            BaseLayers.CollectionChanged += (p1, p2) => ResetIndex();
+            BaseLayers = new ObservableCollection<BaseLayerInfo>(Config.Instance.BaseLayers);
+
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
+            this.mapView = mapView;
             Layers = layers;
             tab.SelectedIndex = tabIndex;
 
@@ -92,8 +90,6 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         public int CurrentBackupCount => Directory.EnumerateFiles(FolderPaths.BackupPath, "*.mbmpkg").Count();
 
-        public string EsriBaseLayer { get; set; }
-
         public string[] EsriBasemaps => new string[] { "" }.Concat(GeoViewHelper.EsriBasemaps).ToArray();
 
         /// <summary>
@@ -105,7 +101,6 @@ namespace MapBoard.UI.Dialog
         /// 是否设置了地图画板地图包格式关联
         /// </summary>
         public bool FormatMbmpkgAssociated { get; set; }
-
         /// <summary>
         /// 所有图层
         /// </summary>
@@ -209,6 +204,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        private void ApiRestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            RestartMainWindow();
+        }
+
         /// <summary>
         /// 点击备份按钮
         /// </summary>
@@ -233,6 +233,41 @@ namespace MapBoard.UI.Dialog
             canClose = true;
         }
 
+        private void BaseLayerVisibleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
+            Basemap basemap = null;
+            if (mapView is MapView m)
+            {
+                basemap = m.Map.Basemap;
+            }
+            else if (mapView is SceneView s)
+            {
+                basemap = s.Scene.Basemap;
+            }
+            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
+            if (arcBaseLayer != null)
+            {
+                arcBaseLayer.IsVisible = baseLayer.Visible;
+            }
+        }
+
+        private void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Directory.Exists(FolderPaths.TileCachePath))
+                {
+                    WindowsFileSystem.DeleteFileOrFolder(FolderPaths.TileCachePath, true, false);
+                }
+                (sender as Button).IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("清除缓存", ex);
+            }
+        }
+
         /// <summary>
         /// 点击删除底图按钮
         /// </summary>
@@ -242,7 +277,10 @@ namespace MapBoard.UI.Dialog
         {
             if (grd.SelectedItem != null)
             {
-                BaseLayers.Remove(grd.SelectedItem as BaseLayerInfo);
+                foreach (var layer in grd.SelectedItems.Cast<BaseLayerInfo>().ToList())
+                {
+                    BaseLayers.Remove(layer);
+                }
             }
         }
 
@@ -357,19 +395,7 @@ namespace MapBoard.UI.Dialog
         private void OkButtonClick(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
-            if (string.IsNullOrEmpty(EsriBaseLayer))
-            {
-                Config.Instance.BaseLayers.RemoveAll(p => p.Type == BaseLayerType.Esri);
-            }
-            else
-            {
-                Config.Instance.BaseLayers.Add(new BaseLayerInfo()
-                {
-                    Type = BaseLayerType.Esri,
-                    Path = EsriBaseLayer,
-                    Name = EsriBaseLayer
-                });
-            }
+
             RestartMainWindow();
         }
 
@@ -415,17 +441,6 @@ namespace MapBoard.UI.Dialog
             {
                 App.Log.Error("修改数据位置失败", ex);
                 await CommonDialog.ShowErrorDialogAsync(ex, "修改数据位置失败");
-            }
-        }
-
-        /// <summary>
-        /// 重新为底图序号赋值
-        /// </summary>
-        private void ResetIndex()
-        {
-            for (int i = 0; i < BaseLayers.Count; i++)
-            {
-                BaseLayers[i].Index = i + 1;
             }
         }
 
@@ -523,27 +538,6 @@ namespace MapBoard.UI.Dialog
             {
                 Activate();
                 await CommonDialog.ShowErrorDialogAsync(ex, "获取默认底图失败");
-            }
-        }
-
-        private void ApiRestartButton_Click(object sender, RoutedEventArgs e)
-        {
-            RestartMainWindow();
-        }
-
-        private void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (Directory.Exists(FolderPaths.TileCachePath))
-                {
-                    WindowsFileSystem.DeleteFileOrFolder(FolderPaths.TileCachePath, true, false);
-                }
-                (sender as Button).IsEnabled = false;
-            }
-            catch (Exception ex) 
-            {
-                App.Log.Error("清除缓存",ex);
             }
         }
     }

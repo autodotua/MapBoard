@@ -90,7 +90,6 @@ namespace MapBoard.Mapping
                     {
                         return;
                     }
-                    var a = new WebTiledLayer("http://{level}.{col}.{row}");
                     baseLayer = XYZTiledLayer .Create(Config.Instance.Tile_Urls.SelectedUrl, Config.Instance.HttpUserAgent);
                 }
                 Basemap basemap = new Basemap(baseLayer);

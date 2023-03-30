@@ -20,6 +20,10 @@
                 TargetType="{x:Type TextBox}">
                 <Setter Property="Padding" Value="8,2,6,1" />
             </Style>
+            <Style TargetType="{x:Type ui:ToggleSwitch}">
+                <Setter Property="OnContent" Value="" />
+                <Setter Property="OffContent" Value="" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

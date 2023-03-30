@@ -32,11 +32,15 @@ try {
     
 
     Write-Output "正在发布WPF"
-    dotnet publish MapBoard.UI -c Release -o Generation/Publish/WPF -r win-x64 --self-contained false
-
-    Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.runtimes.win10\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF
-    Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.wpf\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF
-
+    dotnet publish MapBoard.UI -c Release -o Generation/Publish/WPF/bin -r win-x64 --self-contained false
+    Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.runtimes.win10\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF/bin
+    Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.wpf\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF/bin
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut("$PSScriptRoot\Generation\Publish\WPF\MapBoard.lnk")
+    $shortcut.TargetPath = "$PSScriptRoot\Generation\Publish\WPF\bin\MapBoard.exe"
+    $shortcut.Save()
+    
+    
     Write-Output "正在发布WPF（单文件）"
     dotnet publish MapBoard.UI -c Release -o Generation/Publish/WPF_SingleFile -r win-x64 --self-contained false /p:PublishSingleFile=true
     Copy-Item C:\Users\$($env:USERNAME)\.nuget\packages\esri.arcgisruntime.runtimes.win10\200.0.0\runtimes\win10-x64\native\* Generation/Publish/WPF_SingleFile

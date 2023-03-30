@@ -359,7 +359,7 @@ namespace MapBoard.UI
                 }
             }
             int index = int.Parse((sender as FrameworkElement).Tag as string);
-            new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, index).ShowDialog();
+            new SettingDialog(this.GetWindow(), MapView, (MapView as IMapBoardGeoView).Layers, index).ShowDialog();
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

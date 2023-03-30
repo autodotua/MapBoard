@@ -271,126 +271,134 @@
                 <GroupBox Header="底图列表">
                     <Grid Margin="4">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="16" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <DataGrid
+                        <Grid
+                            Margin="0,-4,0,-6"
+                            HorizontalAlignment="Stretch"
+                            TextElement.FontWeight="Bold">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="42" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="96" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="54" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="88" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Text="启用" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Text="名称" />
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="类型" />
+                            <TextBlock
+                                Grid.Column="6"
+                                Text="透明度" />
+                            <TextBlock
+                                Grid.Column="8"
+                                Text="可见性" />
+                        </Grid>
+
+                        <ListView
                             x:Name="grd"
+                            Grid.Row="2"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
                             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="True"
-                            CanUserSortColumns="False"
                             ItemsSource="{Binding BaseLayers}"
-                            ScrollViewer.CanContentScroll="False"
-                            SelectionMode="Single">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Binding="{Binding Index}"
-                                    CanUserSort="False"
-                                    Header="序号"
-                                    IsReadOnly="True"
-                                    SortDirection="Ascending" />
-                                <DataGridTemplateColumn
-                                    Width="52"
-                                    Header="启用">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox
-                                                Margin="16,-2"
-                                                IsChecked="{Binding Enable, UpdateSourceTrigger=PropertyChanged}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn
-                                    Width="52"
-                                    Header="可见">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox
-                                                Margin="16,-2"
-                                                IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
-                                                IsEnabled="{Binding Enable}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn
-                                    Binding="{Binding Name}"
-                                    Header="名称" />
-                                <DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="类型">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Margin="12,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-
-                                    <DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate>
-                                            <ComboBox
-                                                ItemsSource="{Binding Source={StaticResource baseLayerTypes}}"
-                                                SelectedItem="{Binding Type}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding ., Converter={StaticResource BaseLayerTypeConverter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellEditingTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="不透明度">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Margin="12,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Opacity, StringFormat=P0}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-
-                                    <DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate>
-                                            <Slider
-                                                Width="120"
-                                                Margin="12,0"
-                                                LargeChange="0.1"
-                                                Maximum="1"
-                                                Minimum="0"
-                                                SmallChange="0.01"
-                                                Value="{Binding Opacity}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellEditingTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTemplateColumn
-                                    Width="320"
-                                    CanUserSort="False"
-                                    Header="地址">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBox
-                                                BorderThickness="0"
-                                                Text="{Binding Path=Path, UpdateSourceTrigger=PropertyChanged}"
-                                                TextWrapping="Wrap" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
+                            ScrollViewer.CanContentScroll="False">
+                            <ListBox.ItemContainerStyle>
+                                <Style
+                                    BasedOn="{StaticResource DefaultListBoxItemStyle}"
+                                    TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid
+                                        Margin="0,-4,12,-6"
+                                        HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="96" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="54" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="88" />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox
+                                            Grid.RowSpan="99"
+                                            IsChecked="{Binding Enable}" />
+                                        <ui:ToggleSwitch
+                                            Grid.RowSpan="99"
+                                            Grid.Column="99"
+                                            IsEnabled="{Binding Enable}"
+                                            IsOn="{Binding Visible}"
+                                            OffContent="隐藏"
+                                            OnContent="可见"
+                                            Tag="{Binding .}"
+                                            Toggled="BaseLayerVisibleSwitch_Toggled" />
+                                        <TextBox
+                                            Grid.Column="2"
+                                            Margin="0,2,0,0"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Text="{Binding Name}" />
+                                        <TextBlock
+                                            Grid.Column="4"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
+                                        <Button
+                                            Grid.Column="6"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent">
+                                            <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
+                                            <ui:FlyoutService.Flyout>
+                                                <ui:Flyout>
+                                                    <Slider
+                                                        Width="128"
+                                                        LargeChange="0.20"
+                                                        Maximum="1"
+                                                        Minimum="0"
+                                                        SmallChange="0.05"
+                                                        TickFrequency="0.1"
+                                                        TickPlacement="BottomRight"
+                                                        Value="{Binding Opacity}" />
+                                                </ui:Flyout>
+                                            </ui:FlyoutService.Flyout>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <TextBox
+                            Grid.Row="4"
+                            ui:ControlHelper.Header="地址"
+                            IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}"
+                            MaxLines="3"
+                            MinLines="3"
+                            Text="{Binding ElementName=grd, Path=SelectedItem.Path}"
+                            TextWrapping="Wrap" />
                         <ui:SimpleStackPanel
-                            Grid.Row="2"
+                            Grid.Row="6"
                             Grid.ColumnSpan="5"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
@@ -407,7 +415,7 @@
                                             Header="文件（栅格图、Tpk、Shapefile）" />
                                         <MenuItem
                                             Click="AddWmsButtonClick"
-                                            Header="WMS图层" />    
+                                            Header="WMS图层" />
                                         <MenuItem
                                             Click="AddWmtsButtonClick"
                                             Header="WMTS图层" />
@@ -416,14 +424,15 @@
                             </ui:SplitButton>
                             <Button
                                 Click="DeleteButtonClick"
-                                Content="删除" />
+                                Content="删除"
+                                IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}" />
                             <Button
                                 Click="OkButtonClick"
-                                Content="应用" />
+                                Content="应用并重启" />
                         </ui:SimpleStackPanel>
                         <ComboBox
                             x:Name="cbbCoords"
-                            Grid.Row="2"
+                            Grid.Row="6"
                             ui:ControlHelper.Header="底图坐标系"
                             SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
                     </Grid>
