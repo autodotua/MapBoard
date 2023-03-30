@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 用户不可见的空图层，用于在进行几何处理时，临时使用
+    /// </summary>
     public class EmptyMapLayerInfo : MapLayerInfo
     {
         public override string Type => "Empty";

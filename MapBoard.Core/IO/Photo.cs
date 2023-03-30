@@ -21,11 +21,50 @@ namespace MapBoard.IO
 {
     public static class Photo
     {
-        public static readonly string NameField = "name";
-        public static readonly string ImagePathField = "ImagePath";
+        /// <summary>
+        /// 照片日期字段名
+        /// </summary>
         public static readonly string DateField = "Date";
+
+        /// <summary>
+        /// 照片位置字段名
+        /// </summary>
+        public static readonly string ImagePathField = "ImagePath";
+
+        /// <summary>
+        /// 照片名字段名 
+        /// </summary>
+        public static readonly string NameField = "name";
+        /// <summary>
+        /// 照片时间字段名
+        /// </summary>
         public static readonly string TimeField = "Time";
 
+        /// <summary>
+        /// 将照片转换为jpg格式，以确保可以显示
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
+        public static async Task<string> GetDisplayableImage(string imagePath, int maxLength)
+        {
+            string tempPath = Path.GetTempFileName() + ".jpg";
+            await Task.Run(() =>
+            {
+                using MagickImage image = new MagickImage(imagePath);
+                image.AdaptiveResize(maxLength, maxLength);
+                image.Write(tempPath);
+            });
+            return tempPath;
+        }
+
+        /// <summary>
+        /// 导入照片
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="layers"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static async Task ImportImageLocation(IEnumerable<string> files, MapLayerCollection layers)
         {
             var fields = new[]
@@ -72,6 +111,12 @@ namespace MapBoard.IO
             await layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
         }
 
+        /// <summary>
+        /// 从照片元数据提取经纬度信息
+        /// </summary>
+        /// <param name="rationals"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         private static double GetDegree(Rational[] rationals)
         {
             if (rationals == null || rationals.Length != 3)
@@ -85,6 +130,11 @@ namespace MapBoard.IO
             return d + m / 60 + s / 3600;
         }
 
+        /// <summary>
+        /// 获取照片的经纬度和拍摄时间
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private static (double lng, double lat, DateTime? time)? GetImageExifInfo(string path)
         {
             double latDegree = double.NaN;
@@ -115,18 +165,6 @@ namespace MapBoard.IO
                 return (lngDegree, latDegree, time);
             }
             return null;
-        }
-
-        public static async Task<string> GetDisplayableImage(string imagePath, int maxLength)
-        {
-            string tempPath = Path.GetTempFileName() + ".jpg";
-            await Task.Run(() =>
-            {
-                using MagickImage image = new MagickImage(imagePath);
-                image.AdaptiveResize(maxLength, maxLength);
-                image.Write(tempPath);
-            });
-            return tempPath;
         }
     }
 }

@@ -6,6 +6,9 @@ using System.Diagnostics;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 要素改变事件
+    /// </summary>
     public class FeaturesChangedEventArgs : EventArgs, INotifyPropertyChanged
     {
         public FeaturesChangedEventArgs(MapLayerInfo layer,
@@ -37,15 +40,33 @@ namespace MapBoard.Mapping.Model
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        /// <summary>
+        /// 增加的要素集合
+        /// </summary>
         public IReadOnlyList<Feature> AddedFeatures { get; }
-
+        /// <summary>
+        /// 是否允许撤销操作
+        /// </summary>
         public bool CanUndo { get; set; } = true;
-
+        /// <summary>
+        /// 删除的要素集合
+        /// </summary>
         public IReadOnlyList<Feature> DeletedFeatures { get; }
+        /// <summary>
+        /// 要素所属图层
+        /// </summary>
         public MapLayerInfo Layer { get; }
+        /// <summary>
+        /// 要素发生改变的操作源
+        /// </summary>
         public FeaturesChangedSource Source { get; }
+        /// <summary>
+        /// 发生改变的时间
+        /// </summary>
         public DateTime Time { get; }
+        /// <summary>
+        /// 更新的要素集合
+        /// </summary>
         public IReadOnlyList<UpdatedFeature> UpdatedFeatures { get; }
     }
 }

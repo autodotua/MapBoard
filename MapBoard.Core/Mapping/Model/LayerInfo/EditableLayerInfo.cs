@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 可编辑图层基类
+    /// </summary>
     public abstract class EditableLayerInfo : MapLayerInfo, IEditableLayerInfo
     {
         public EditableLayerInfo() : base()
@@ -31,17 +34,36 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        /// <summary>
+        /// 要素集合发生改变，即增删改
+        /// </summary>
         public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
 
+        /// <summary>
+        /// 要素操作历史
+        /// </summary>
         [JsonIgnore]
         public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
 
+        /// <summary>
+        /// 新增要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
             return AddFeatureAsync(feature, source, feature.FeatureTable != table);
         }
 
+        /// <summary>
+        /// 新增要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <param name="rebuildFeature">根据原有要素的图形和属性，创建新的要素，而不是使用旧的要素</param>
+        /// <returns></returns>
         public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source, bool rebuildFeature)
         {
             ThrowIfNotEditable();
@@ -51,6 +73,13 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(new[] { feature }, null, null, source);
         }
 
+        /// <summary>
+        /// 新增一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
@@ -105,18 +134,34 @@ namespace MapBoard.Mapping.Model
             return features;
         }
 
+        /// <summary>
+        /// 根据属性和图形创建要素
+        /// </summary>
+        /// <param name="attributes"></param>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
         public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
         {
             ThrowIfNotEditable();
             return table.CreateFeature(attributes, geometry);
         }
 
+        /// <summary>
+        /// 创建空要素
+        /// </summary>
+        /// <returns></returns>
         public Feature CreateFeature()
         {
             ThrowIfNotEditable();
             return table.CreateFeature();
         }
 
+        /// <summary>
+        /// 删除要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
@@ -124,6 +169,12 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(null, new[] { feature }, null, source);
         }
 
+        /// <summary>
+        /// 删除一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public async Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
@@ -131,6 +182,12 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(null, features, null, source);
         }
 
+        /// <summary>
+        /// 更新要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
@@ -139,6 +196,12 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(null, null, new[] { feature }, source);
         }
 
+        /// <summary>
+        /// 更新一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
         {
             ThrowIfNotEditable();
@@ -147,6 +210,10 @@ namespace MapBoard.Mapping.Model
             NotifyFeaturesChanged(null, null, features, source);
         }
 
+        /// <summary>
+        /// 增加创建时间字段，如果该字段存在
+        /// </summary>
+        /// <param name="feature"></param>
         private void AddCreateTimeAttributeIfExistField(Feature feature)
         {
             if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName)
@@ -160,6 +227,10 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        /// <summary>
+        /// 增加修改时间字段，如果该字段存在
+        /// </summary>
+        /// <param name="feature"></param>
         private void AddModifiedTimeAttributeIfExistField(Feature feature)
         {
             if (table.Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName)
@@ -169,6 +240,13 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        /// <summary>
+        /// 通知要素发生改变
+        /// </summary>
+        /// <param name="added"></param>
+        /// <param name="deleted"></param>
+        /// <param name="updated"></param>
+        /// <param name="source"></param>
         private void NotifyFeaturesChanged(IEnumerable<Feature> added,
             IEnumerable<Feature> deleted,
             IEnumerable<UpdatedFeature> updated,
@@ -180,6 +258,10 @@ namespace MapBoard.Mapping.Model
             Histories.Add(h);
         }
 
+        /// <summary>
+        /// 检测是否允许编辑，若不允许则抛出错误
+        /// </summary>
+        /// <exception cref="NotSupportedException"></exception>
         private void ThrowIfNotEditable()
         {
             if (!Interaction.CanEdit)

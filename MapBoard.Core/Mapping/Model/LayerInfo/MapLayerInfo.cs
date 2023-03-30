@@ -18,6 +18,9 @@ using FieldInfo = MapBoard.Model.FieldInfo;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 包含ArcGIS类型的图层
+    /// </summary>
     public abstract class MapLayerInfo : LayerInfo, IMapLayerInfo
     {
         protected FeatureTable table;

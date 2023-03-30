@@ -19,6 +19,9 @@ using MapBoard.IO;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 包含ArcGIS类型的图层集合
+    /// </summary>
     public class MapLayerCollection : MLayerCollection
     {
         public const string LayersFileName = "layers.json";
@@ -35,28 +38,34 @@ namespace MapBoard.Mapping.Model
             SetLayers(new ObservableCollection<ILayerInfo>());
         }
 
-        public MapLayerInfo Find(FeatureLayer layer)
-        {
-            return LayerList.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
-        }
+        /// <summary>
+        /// 获取其中可编辑的图层
+        /// </summary>
+        public IEnumerable<MapLayerInfo> EditableLayers => this.OfType<MapLayerInfo>().Where(p => p.CanEdit);
 
+        /// <summary>
+        /// 对应的ArcGIS图层
+        /// </summary>
+        public ELayerCollection EsriLayers { get; private set; }
+
+        /// <summary>
+        /// 当前选中的图层
+        /// </summary>
         public IMapLayerInfo Selected
         {
             get => selected;
             set
             {
-                if (value != null)
-                {
-                    SelectedIndex = IndexOf(value);
-                }
-                else
-                {
-                    SelectedIndex = -1;
-                }
+                SelectedIndex = value != null ? IndexOf(value) : -1;
                 selected = value;
             }
         }
 
+        /// <summary>
+        /// 从本地加载配置文件，生成图层
+        /// </summary>
+        /// <param name="esriLayers"></param>
+        /// <returns></returns>
         public static async Task<MapLayerCollection> GetInstanceAsync(ELayerCollection esriLayers)
         {
             string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
@@ -66,16 +75,20 @@ namespace MapBoard.Mapping.Model
             }
             MapLayerCollection instance = null;
 
+            //读取到临时对象
             var tempLayers = FromFile(path);
             instance = new MapLayerCollection(esriLayers);
+            //将临时变量映射到新的对象中
             new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<MLayerCollection, MapLayerCollection>();
             }).CreateMapper().Map(tempLayers, instance);
+            //将临时变量中的图层添加到新的MapLayerCollection对象中
             foreach (var layer in tempLayers)
             {
                 await instance.AddAsync(layer);
             }
+            //如果选定了某个图层，则将其设置为选定图层
             if (instance.SelectedIndex >= 0
                 && instance.SelectedIndex < instance.Count)
             {
@@ -84,34 +97,15 @@ namespace MapBoard.Mapping.Model
             return instance;
         }
 
-        public async Task LoadAsync(ELayerCollection esriLayers)
-        {
-            EsriLayers = esriLayers;
-            SetLayers(new ObservableCollection<ILayerInfo>());
-            string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
-            if (!File.Exists(path))
-            {
-                return;
-            }
-            var tempLayers = FromFile(path);
-            new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
-            }).CreateMapper().Map(tempLayers, this);
-            foreach (var layer in tempLayers)
-            {
-                await AddAsync(layer);
-            }
-            if (SelectedIndex >= 0
-                && SelectedIndex < Count)
-            {
-                Selected = this[SelectedIndex] as MapLayerInfo;
-            }
-        }
-
+        /// <summary>
+        /// 根据图层信息，创建新图层并插入到最后
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         public async Task<ILayerInfo> AddAsync(ILayerInfo layer)
         {
-            if (!(layer is MapLayerInfo))
+            if (layer is not MapLayerInfo)
             {
                 layer = layer.Type switch
                 {
@@ -128,6 +122,36 @@ namespace MapBoard.Mapping.Model
             return layer;
         }
 
+        /// <summary>
+        /// 清空所有图层
+        /// </summary>
+        public void Clear()
+        {
+            foreach (var layer in EsriLayers.ToArray())
+            {
+                EsriLayers.Remove(layer);
+            }
+            foreach (MapLayerInfo layer in LayerList)
+            {
+                layer.Dispose();
+            }
+            LayerList.Clear();
+        }
+
+        /// <summary>
+        /// 根据ArcGIS的图层，找到对应的<see cref="MapLayerInfo"/>
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        public MapLayerInfo Find(FeatureLayer layer)
+        {
+            return LayerList.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
+        }
+
+        /// <summary>
+        /// 获取加载时遇到的错误
+        /// </summary>
+        /// <returns></returns>
         public ItemsOperationErrorCollection GetLoadErrors()
         {
             var c = new ItemsOperationErrorCollection();
@@ -136,6 +160,65 @@ namespace MapBoard.Mapping.Model
                 c.Add(new ItemsOperationError(layer.Name, layer.LoadError));
             }
             return c.Count == 0 ? null : c;
+        }
+
+        /// <summary>
+        /// 插入一个图层到最后
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        public async Task InsertAsync(int index, MapLayerInfo layer)
+        {
+            await AddLayerAsync(layer, Count - index);
+            layer.PropertyChanged += OnLayerPropertyChanged;
+            LayerList.Insert(index, layer);
+        }
+
+        /// <summary>
+        /// 加载所有图层
+        /// </summary>
+        /// <param name="esriLayers"></param>
+        /// <returns></returns>
+        public async Task LoadAsync(ELayerCollection esriLayers)
+        {
+            EsriLayers = esriLayers;
+            //初始化一个新的图层列表
+            SetLayers(new ObservableCollection<ILayerInfo>());
+            //图层配置文件
+            string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
+            if (!File.Exists(path))
+            {
+                return;
+            }
+            //获取临时图层对象，并映射到当前对象。使用临时对象是因为无法将对象反序列化后直接应用到当前对象，对象类型可能不一致，属性可能被覆盖。
+            var tempLayers = FromFile(path);
+            new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
+            }).CreateMapper().Map(tempLayers, this);
+            //将临时对象中所有图层加入当前对象
+            foreach (var layer in tempLayers)
+            {
+                await AddAsync(layer);
+            }
+            //如果选定了某个图层，则将其设置为选定图层
+            if (SelectedIndex >= 0
+                && SelectedIndex < Count)
+            {
+                Selected = this[SelectedIndex] as MapLayerInfo;
+            }
+        }
+
+        /// <summary>
+        /// 交换两个图层的位置
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="toIndex"></param>
+        public void Move(int fromIndex, int toIndex)
+        {
+            EsriLayers.Move(Count - fromIndex - 1, Count - toIndex - 1);
+            LayerList.Move(fromIndex, toIndex);
         }
 
         /// <summary>
@@ -152,33 +235,6 @@ namespace MapBoard.Mapping.Model
             EsriLayers.RemoveAt(index);
             EsriLayers.Insert(index, layer.GetLayerForLayerList());
         }
-
-        public void Clear()
-        {
-            foreach (var layer in EsriLayers.ToArray())
-            {
-                EsriLayers.Remove(layer);
-            }
-            foreach (MapLayerInfo layer in LayerList)
-            {
-                layer.Dispose();
-            }
-            LayerList.Clear();
-        }
-
-        public async Task InsertAsync(int index, MapLayerInfo layer)
-        {
-            await AddLayerAsync(layer, Count - index);
-            layer.PropertyChanged += OnLayerPropertyChanged;
-            LayerList.Insert(index, layer);
-        }
-
-        public void Move(int fromIndex, int toIndex)
-        {
-            EsriLayers.Move(Count - fromIndex - 1, Count - toIndex - 1);
-            LayerList.Move(fromIndex, toIndex);
-        }
-
         public void Remove(MapLayerInfo layer)
         {
             try
@@ -193,22 +249,25 @@ namespace MapBoard.Mapping.Model
             LayerList.Remove(layer);
         }
 
-        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Save();
-        }
-
+        /// <summary>
+        /// 保存图层配置
+        /// </summary>
         public void Save()
         {
             Save(Path.Combine(FolderPaths.DataPath, LayersFileName));
         }
 
-        public ELayerCollection EsriLayers { get; private set; }
-
+        /// <summary>
+        /// 插入图层到指定位置
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         private async Task AddLayerAsync(IMapLayerInfo layer, int index)
         {
             try
             {
+                //加载图层
                 if (!layer.IsLoaded)
                 {
                     try
@@ -220,6 +279,8 @@ namespace MapBoard.Mapping.Model
                         Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
                     }
                 }
+                
+                //添加ArcGIS图层到ArcGIS图层列表
                 Layer fl = layer.GetLayerForLayerList();
                 Debug.Assert(fl != null);
                 if (index == -1)
@@ -248,6 +309,9 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public IEnumerable<MapLayerInfo> EditableLayers => this.OfType<MapLayerInfo>().Where(p => p.CanEdit);
+        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Save();
+        }
     }
 }
