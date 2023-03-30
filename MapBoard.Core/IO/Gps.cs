@@ -15,6 +15,9 @@ using MapBoard.Model;
 
 namespace MapBoard.IO
 {
+    /// <summary>
+    /// GPX文件与ArcGIS的互操作
+    /// </summary>
     public static class Gps
     {
         private const string Filed_Name = "Name";
@@ -25,7 +28,7 @@ namespace MapBoard.IO
         private const string Filed_PointIndex = "PIndex";
 
         /// <summary>
-        /// 导入GPX文件
+        /// 导入GPX文件到新图层中
         /// </summary>
         /// <param name="path"></param>
         /// <param name="type">生成的类型</param>
@@ -66,6 +69,13 @@ namespace MapBoard.IO
             return layer;
         }
 
+        /// <summary>
+        /// 作为折线导入
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="layer"></param>
+        /// <param name="baseCs"></param>
+        /// <returns></returns>
         private static IEnumerable<Feature> ImportAsPolyline(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
         {
             List<MapPoint> points = new List<MapPoint>();
@@ -79,6 +89,13 @@ namespace MapBoard.IO
             yield return feature;
         }
 
+        /// <summary>
+        /// 作为点导入
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="layer"></param>
+        /// <param name="baseCs"></param>
+        /// <returns></returns>
         private static IEnumerable<Feature> ImportAsPoint(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
         {
             int i = 0;
@@ -92,6 +109,14 @@ namespace MapBoard.IO
             }
         }
 
+        /// <summary>
+        /// 应用GPX的属性到<see cref="Feature"/>
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="layer"></param>
+        /// <param name="index"></param>
+        /// <param name="feature"></param>
+        /// <param name="time"></param>
         private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature,DateTime time)
         {
             if (layer.HasField(Filed_Name, FieldInfoType.Text))
@@ -129,6 +154,15 @@ namespace MapBoard.IO
 
         }
 
+        /// <summary>
+        /// 导入多个GPX到新图层中
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="type"></param>
+        /// <param name="layers"></param>
+        /// <param name="baseCS"></param>
+        /// <returns></returns>
+        /// <exception cref="ItemsOperationException"></exception>
         public static async Task ImportAllToNewLayerAsync(IEnumerable<string> paths, GpxImportType type, MapLayerCollection layers, CoordinateSystem baseCS)
         {
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
@@ -159,7 +193,15 @@ namespace MapBoard.IO
             }
         }
 
-        public static async Task ImportToLayersAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
+        /// <summary>
+        /// 将多个GPX导入到现有图层中
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="layer"></param>
+        /// <param name="baseCS"></param>
+        /// <returns></returns>
+        /// <exception cref="ItemsOperationException"></exception>
+        public static async Task ImportMultipleToLayerAsync(IEnumerable<string> paths, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             foreach (var path in paths)
@@ -179,6 +221,14 @@ namespace MapBoard.IO
             }
         }
 
+        /// <summary>
+        /// 将GPX导入到现有图层中
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <param name="baseCS"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         public static async Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
             var gpx = await LibGpx.FromFileAsync(path);

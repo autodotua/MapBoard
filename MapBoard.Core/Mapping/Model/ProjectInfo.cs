@@ -1,5 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using MapBoard.IO.Tile;
+using MapBoard.Util;
 using System;
 
 namespace MapBoard.Mapping.Model
@@ -8,7 +8,7 @@ namespace MapBoard.Mapping.Model
     {
         public ProjectInfo(int level, int x, int y)
         {
-            (double lat, double lng) leftTop = TileLocation.PixelToGeoPoint(0, 0, x, y, level);
+            (double lat, double lng) leftTop = TileLocationUtility.PixelToGeoPoint(0, 0, x, y, level);
 
             XPerPixel = 156543.034 / Math.Pow(2, level);
             YPerPixel = -156543.034 / Math.Pow(2, level);

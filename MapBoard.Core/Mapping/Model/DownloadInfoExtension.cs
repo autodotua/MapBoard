@@ -1,6 +1,6 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using MapBoard.IO.Tile;
 using MapBoard.Model;
+using MapBoard.Util;
 using System.Collections.Generic;
 
 namespace MapBoard.Mapping.Model
@@ -13,8 +13,8 @@ namespace MapBoard.Mapping.Model
             int count = 0;
             for (int level = info.TileMinLevel; level <= info.TileMaxLevel; level++)
             {
-                var (tile1X, tile1Y) = TileLocation.GeoPointToTile(new MapPoint(range.XMin_Left, range.YMax_Top), level);
-                var (tile2X, tile2Y) = TileLocation.GeoPointToTile(new MapPoint(range.XMax_Right, range.YMin_Bottom), level);
+                var (tile1X, tile1Y) = TileLocationUtility.GeoPointToTile(new MapPoint(range.XMin_Left, range.YMax_Top), level);
+                var (tile2X, tile2Y) = TileLocationUtility.GeoPointToTile(new MapPoint(range.XMax_Right, range.YMin_Bottom), level);
 
                 tiles.Add(level, new GeoRect<int>(tile1X, tile2X, tile1Y, tile2Y));
 

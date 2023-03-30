@@ -10,6 +10,9 @@ using System.Xml;
 
 namespace MapBoard.IO.Gpx
 {
+    /// <summary>
+    /// GPX点
+    /// </summary>
     public class GpxPoint : ICloneable, INotifyPropertyChanged
     {
         public GpxPoint(double x, double y, double z, DateTime time)
@@ -22,16 +25,34 @@ namespace MapBoard.IO.Gpx
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 其他属性
+        /// </summary>
         public Dictionary<string, string> OtherProperties { get; internal set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// 速度，需要计算后得出
+        /// </summary>
         public double Speed { get; set; }
 
+        /// <summary>
+        /// 时间
+        /// </summary>
         public DateTime Time { get; set; }
 
+        /// <summary>
+        /// 经度
+        /// </summary>
         public double X { get; set; }
 
+        /// <summary>
+        /// 纬度
+        /// </summary>
         public double Y { get; set; }
 
+        /// <summary>
+        /// 高程
+        /// </summary>
         public double Z { get; set; }
 
         public object Clone()
@@ -42,16 +63,29 @@ namespace MapBoard.IO.Gpx
             };
         }
 
+        /// <summary>
+        /// 转为ArcGIS的点
+        /// </summary>
+        /// <returns></returns>
         public MapPoint ToMapPoint()
         {
             return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
         }
 
+        /// <summary>
+        /// 转为不含高程的ArcGIS的点
+        /// </summary>
+        /// <returns></returns>
         public MapPoint ToXYMapPoint()
         {
             return new MapPoint(X, Y, SpatialReferences.Wgs84);
         }
 
+        /// <summary>
+        /// 从XML进行解析
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <returns></returns>
         internal static GpxPoint FromXml(XmlNode xml)
         {
             double x = 0;
@@ -95,11 +129,18 @@ namespace MapBoard.IO.Gpx
                     }
                 }
             }
-            var point = new GpxPoint(x, y, z, time);
-            point.OtherProperties = otherProperties;
+            var point = new GpxPoint(x, y, z, time)
+            {
+                OtherProperties = otherProperties
+            };
             return point;
         }
 
+        /// <summary>
+        /// 将点转换为XML字符串
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="trkpt"></param>
         internal void WriteGpxXml(XmlDocument doc, XmlElement trkpt)
         {
             trkpt.SetAttribute("lat", Y.ToString());

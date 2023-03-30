@@ -519,7 +519,7 @@ namespace MapBoard.UI
                                          ftp.GotoDirectory(shpDir, false);
 
                                          p.SetMessage("正在准备文件");
-                                         string dir = await MobileGISToolBox.ExportMathToTempDirAsync(arcMap.Layers);
+                                         string dir = await MobileGISToolBox.ExportMapToTempDirAsync(arcMap.Layers);
                                          foreach (var file in Directory.EnumerateFiles(Path.Combine(dir, shpDir)))
                                          {
                                              p.SetMessage("正在上传：" + Path.GetFileName(file));

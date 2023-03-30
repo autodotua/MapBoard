@@ -343,7 +343,7 @@ namespace MapBoard.UI
                     await Gps.ImportAllToNewLayerAsync(files, Gps.GpxImportType.Point, layers, Config.Instance.BasemapCoordinateSystem);
                     break;
                 case 3:
-                    await Gps.ImportToLayersAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
+                    await Gps.ImportMultipleToLayerAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
                     break;
 
             }

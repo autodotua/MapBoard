@@ -117,7 +117,7 @@ namespace MapBoard.IO
             return null;
         }
 
-        public static async Task<string> GetDisplayableImage(string imagePath,int maxLength)
+        public static async Task<string> GetDisplayableImage(string imagePath, int maxLength)
         {
             string tempPath = Path.GetTempFileName() + ".jpg";
             await Task.Run(() =>

@@ -11,6 +11,9 @@ using System.Threading;
 
 namespace MapBoard.IO
 {
+    /// <summary>
+    /// 基于Zip的地图画板工程文件包
+    /// </summary>
     public static class Package
     {
         /// <summary>
@@ -139,7 +142,7 @@ namespace MapBoard.IO
         }
 
         /// <summary>
-        ///
+        /// 导出图层到图层包
         /// </summary>
         /// <param name="path"></param>
         /// <param name="layer"></param>
@@ -169,6 +172,12 @@ namespace MapBoard.IO
             await ZipDirAsync(directory.FullName, path);
         }
 
+        /// <summary>
+        /// 压缩一个目录
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private static async Task ZipDirAsync(string dir, string path)
         {
             if (File.Exists(path))
@@ -181,6 +190,13 @@ namespace MapBoard.IO
             });
         }
 
+        /// <summary>
+        /// 备份
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <param name="maxCount"></param>
+        /// <param name="copyOnly"></param>
+        /// <returns></returns>
         public static async Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
         {
             await ExportMapAsync(Path.Combine(FolderPaths.BackupPath,
@@ -202,6 +218,11 @@ namespace MapBoard.IO
             }
         }
 
+        /// <summary>
+        /// 复制图层文件
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="layer"></param>
         private static void CopyLayerFiles(string directory, IFileBasedLayer layer)
         {
             var files = layer.GetFilePaths();

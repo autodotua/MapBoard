@@ -15,6 +15,20 @@ namespace MapBoard.IO
 {
     public static class GeoJson
     {
+        public async static Task<JObject> ConvertAsync(IMapLayerInfo layer)
+        {
+            var features = await layer.GetAllFeaturesAsync();
+            JObject result = null;
+            await Task.Run(() => result = Convert(features));
+            return result;
+        }
+
+        /// <summary>
+        /// 将要素集合异步导出到GeoJSON
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
         public async static Task<string> ExportAsync(string path, IEnumerable<Feature> features)
         {
             string result = null;
@@ -27,24 +41,28 @@ namespace MapBoard.IO
             return result;
         }
 
+        /// <summary>
+        /// 将图层异步导出到GeoJSON
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         public async static Task ExportAsync(string path, IMapLayerInfo layer)
         {
             var features = await layer.GetAllFeaturesAsync();
             await ExportAsync(path, features);
         }
-
-        public async static Task<JObject> ConvertAsync(IMapLayerInfo layer)
-        {
-            var features = await layer.GetAllFeaturesAsync();
-            JObject result = null;
-            await Task.Run(() => result = Convert(features));
-            return result;
-        }
-
+        /// <summary>
+        /// 将一组Feature对象转换为表示GeoJSON FeatureCollection的JObject
+        /// </summary>
+        /// <param name="features"></param>
+        /// <returns></returns>
         private static JObject Convert(IEnumerable<Feature> features)
         {
-            JObject jRoot = new JObject();
-            jRoot.Add("type", "FeatureCollection");
+            JObject jRoot = new JObject
+            {
+                { "type", "FeatureCollection" }
+            };
             JArray jFeatures = new JArray();
             jRoot.Add("features", jFeatures);
 
@@ -64,54 +82,12 @@ namespace MapBoard.IO
             return jRoot;
         }
 
-        private static JObject GetPropertiesJson(Feature feature)
-        {
-            JObject jProps = new JObject();
-            foreach (var prop in feature.Attributes)
-            {
-                if (prop.Value == null)
-                {
-                    jProps.Add(prop.Key, null);
-                    continue;
-                }
-                switch (prop.Value)
-                {
-                    case string s:
-                        jProps.Add(prop.Key, s);
-                        break;
-
-                    case int i32:
-                        jProps.Add(prop.Key, i32);
-                        break;
-
-                    case long i64:
-                        jProps.Add(prop.Key, i64);
-                        break;
-
-                    case float f:
-                        jProps.Add(prop.Key, f);
-                        break;
-
-                    case double d:
-                        jProps.Add(prop.Key, d);
-                        break;
-
-                    case DateTime dt:
-                        jProps.Add(prop.Key, dt.ToString(Parameters.DateFormat));
-                        break;
-
-                    case DateTimeOffset dto:
-                        jProps.Add(prop.Key, dto.UtcDateTime.ToString(Parameters.DateFormat));
-                        break;
-
-                    default:
-                        jProps.Add(prop.Key, prop.Value.ToString());
-                        break;
-                }
-            }
-            return jProps;
-        }
-
+        /// <summary>
+        /// 将要素中的图形转为Json
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         private static JObject GetGeometryJson(Feature f)
         {
             JObject jGeo = new JObject();
@@ -160,6 +136,61 @@ namespace MapBoard.IO
             return jGeo;
         }
 
+        /// <summary>
+        /// 获取<see cref="Polyline"/>的GeoJson
+        /// </summary>
+        /// <param name="g"></param>
+        /// <returns></returns>
+        private static JArray GetLineStringJson(Polyline g)
+        {
+            Debug.Assert(g.Parts.Count == 1);
+            JArray jLine = new JArray();
+            foreach (var point in g.Parts[0].Points)
+            {
+                var jPoint = new JArray();
+                jPoint.Add(point.X);
+                jPoint.Add(point.Y);
+                jLine.Add(jPoint);
+            }
+            return jLine;
+        }
+
+        /// <summary>
+        /// 获取<see cref="Multipoint"/>的GeoJson
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        private static JArray GetMultiPointJson(Multipoint point)
+        {
+            JArray jPoints = new JArray();
+            foreach (var p in point.Points)
+            {
+                JArray jPoint = new JArray();
+                jPoint.Add(p.X);
+                jPoint.Add(p.Y);
+                jPoints.Add(jPoint);
+            }
+            return jPoints;
+        }
+
+        /// <summary>
+        /// 获取<see cref="MapPoint"/>的GeoJson
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        private static JArray GetPointJson(MapPoint point)
+        {
+            JArray jPoint = new JArray();
+            jPoint.Add(point.X);
+            jPoint.Add(point.Y);
+            return jPoint;
+        }
+
+        /// <summary>
+        /// 获取<see cref="Multipart"/>的GeoJson
+        /// </summary>
+        /// <param name="g"></param>
+        /// <returns></returns>
         private static JArray GetPolygonOrMultiLineStringJson(Multipart g)
         {
             JArray jPolygon = new JArray();
@@ -187,39 +218,57 @@ namespace MapBoard.IO
             return jPolygon;
         }
 
-        private static JArray GetPointJson(MapPoint point)
+        /// <summary>
+        /// 将要素中的属性转为Json
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <returns></returns>
+        private static JObject GetPropertiesJson(Feature feature)
         {
-            JArray jPoint = new JArray();
-            jPoint.Add(point.X);
-            jPoint.Add(point.Y);
-            return jPoint;
-        }
-
-        private static JArray GetMultiPointJson(Multipoint point)
-        {
-            JArray jPoints = new JArray();
-            foreach (var p in point.Points)
+            JObject jProps = new JObject();
+            foreach (var prop in feature.Attributes)
             {
-                JArray jPoint = new JArray();
-                jPoint.Add(p.X);
-                jPoint.Add(p.Y);
-                jPoints.Add(jPoint);
-            }
-            return jPoints;
-        }
+                if (prop.Value == null)
+                {
+                    jProps.Add(prop.Key, null);
+                    continue;
+                }
+                switch (prop.Value)
+                {
+                    case string s:
+                        jProps.Add(prop.Key, s);
+                        break;
 
-        private static JArray GetLineStringJson(Polyline g)
-        {
-            Debug.Assert(g.Parts.Count == 1);
-            JArray jLine = new JArray();
-            foreach (var point in g.Parts[0].Points)
-            {
-                var jPoint = new JArray();
-                jPoint.Add(point.X);
-                jPoint.Add(point.Y);
-                jLine.Add(jPoint);
+                    case int i32:
+                        jProps.Add(prop.Key, i32);
+                        break;
+
+                    case long i64:
+                        jProps.Add(prop.Key, i64);
+                        break;
+
+                    case float f:
+                        jProps.Add(prop.Key, f);
+                        break;
+
+                    case double d:
+                        jProps.Add(prop.Key, d);
+                        break;
+
+                    case DateTime dt:
+                        jProps.Add(prop.Key, dt.ToString(Parameters.DateFormat));
+                        break;
+
+                    case DateTimeOffset dto:
+                        jProps.Add(prop.Key, dto.UtcDateTime.ToString(Parameters.DateFormat));
+                        break;
+
+                    default:
+                        jProps.Add(prop.Key, prop.Value.ToString());
+                        break;
+                }
             }
-            return jLine;
+            return jProps;
         }
     }
 }

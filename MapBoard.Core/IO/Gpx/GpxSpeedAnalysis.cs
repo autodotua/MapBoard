@@ -8,67 +8,13 @@ using System.Threading.Tasks;
 
 namespace MapBoard.IO.Gpx
 {
+    /// <summary>
+    /// GPX速度分析和数据处理
+    /// </summary>
     public class GpxSpeedAnalysis
     {
-        public static double GetSpeed(IEnumerable<GpxPoint> points)
-        {
-            var sortedPoints = points.OrderBy(p => p.Time);
-            TimeSpan totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
-            double totalDistance = 0;
-            GpxPoint last = null;
-            foreach (var point in sortedPoints)
-            {
-                if (last != null)
-                {
-                    totalDistance += GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
-                }
-                last = point;
-            }
-            return totalDistance / totalTime.TotalSeconds;
-        }
-
-        public static double GetSpeed(GpxPoint point1, GpxPoint point2)
-        {
-            return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(), TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time).TotalMilliseconds)));
-        }
-
-        public static double GetSpeed(MapPoint point1, MapPoint point2, TimeSpan time)
-        {
-            double distance = GeometryUtility.GetDistance(point1, point2);
-            return distance / time.TotalSeconds;
-        }
-
-        public async static Task<IEnumerable<SpeedInfo>> GetUsableSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
-        {
-            return (await GetSpeedsAsync(points, sampleCount))
-                .Where(p => !(double.IsNaN(p.Speed) || double.IsInfinity(p.Speed)));
-        }
-
-        public async static Task<IReadOnlyList<SpeedInfo>> GetSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
-        {
-            var speeds = new List<SpeedInfo>();
-            await Task.Run(() =>
-            {
-                Queue<GpxPoint> previousPoints = new Queue<GpxPoint>();
-                foreach (var point in points.TimeOrderedPoints)
-                {
-                    if (previousPoints.Count < sampleCount - 1)
-                    {
-                        previousPoints.Enqueue(point);
-                    }
-                    else
-                    {
-                        previousPoints.Enqueue(point);
-                        speeds.Add(new SpeedInfo(previousPoints));
-                        previousPoints.Dequeue();
-                    }
-                }
-            });
-            return speeds.AsReadOnly();
-        }
-
         /// <summary>
-        /// 获取一组点经过滤波后的速度
+        /// 获取一组点经过均值滤波后的速度
         /// </summary>
         /// <param name="points">点的集合</param>
         /// <param name="sampleCount">每一组采样点的个数</param>
@@ -119,6 +65,16 @@ namespace MapBoard.IO.Gpx
             return speedList.AsReadOnly();
         }
 
+        /// <summary>
+        /// 获取一组点经过中值滤波后的速度
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="sampleCount"></param>
+        /// <param name="jump"></param>
+        /// <param name="maxTimeSpan"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public async static Task<IReadOnlyList<SpeedInfo>> GetMedianFilteredSpeedsAsync(GpxPointCollection points,
             int sampleCount, int jump, TimeSpan? maxTimeSpan = null,
             double min = double.MinValue, double max = double.MaxValue
@@ -149,6 +105,96 @@ namespace MapBoard.IO.Gpx
             return result.AsReadOnly();
         }
 
+        /// <summary>
+        /// 根据点集的总路程和总时间计算速度
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static double GetSpeed(IEnumerable<GpxPoint> points)
+        {
+            var sortedPoints = points.OrderBy(p => p.Time);
+            TimeSpan totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
+            double totalDistance = 0;
+            GpxPoint last = null;
+            foreach (var point in sortedPoints)
+            {
+                if (last != null)
+                {
+                    totalDistance += GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                }
+                last = point;
+            }
+            return totalDistance / totalTime.TotalSeconds;
+        }
+
+        /// <summary>
+        /// 根据带时间信息的两个点计算速度
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <returns></returns>
+        public static double GetSpeed(GpxPoint point1, GpxPoint point2)
+        {
+            return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(), TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time).TotalMilliseconds)));
+        }
+
+        /// <summary>
+        /// 根据两点和时间差计算速度
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public static double GetSpeed(MapPoint point1, MapPoint point2, TimeSpan time)
+        {
+            double distance = GeometryUtility.GetDistance(point1, point2);
+            return distance / time.TotalSeconds;
+        }
+
+        /// <summary>
+        /// 计算点集中每个点的速度
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="sampleCount">采样数</param>
+        /// <returns></returns>
+        public async static Task<IReadOnlyList<SpeedInfo>> GetSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
+        {
+            var speeds = new List<SpeedInfo>();
+            await Task.Run(() =>
+            {
+                Queue<GpxPoint> previousPoints = new Queue<GpxPoint>();
+                foreach (var point in points.TimeOrderedPoints)
+                {
+                    if (previousPoints.Count < sampleCount - 1)
+                    {
+                        previousPoints.Enqueue(point);
+                    }
+                    else
+                    {
+                        previousPoints.Enqueue(point);
+                        speeds.Add(new SpeedInfo(previousPoints));
+                        previousPoints.Dequeue();
+                    }
+                }
+            });
+            return speeds.AsReadOnly();
+        }
+
+        /// <summary>
+        /// 计算点集中每个点的速度，只提供有效值
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="sampleCount">采样数</param>
+        /// <returns></returns>
+        public async static Task<IEnumerable<SpeedInfo>> GetUsableSpeedsAsync(GpxPointCollection points, int sampleCount = 2)
+        {
+            return (await GetSpeedsAsync(points, sampleCount))
+                .Where(p => !(double.IsNaN(p.Speed) || double.IsInfinity(p.Speed)));
+        }
+        
+        /// <summary>
+        /// 速度信息
+        /// </summary>
         public class SpeedInfo
         {
             public SpeedInfo(DateTime centerTime, double speed)
@@ -202,10 +248,25 @@ namespace MapBoard.IO.Gpx
                 }
             }
 
-            public GpxPoint[] RelatedPoints { get; private set; }
-            public TimeSpan TimeSpan { get; private set; }
+            /// <summary>
+            /// 中央时间
+            /// </summary>
             public DateTime CenterTime { get; private set; }
+
+            /// <summary>
+            /// 相关点
+            /// </summary>
+            public GpxPoint[] RelatedPoints { get; private set; }
+
+            /// <summary>
+            /// 平均速度
+            /// </summary>
             public double Speed { get; private set; }
+
+            /// <summary>
+            /// 采样总时长
+            /// </summary>
+            public TimeSpan TimeSpan { get; private set; }
         }
     }
 }

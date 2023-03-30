@@ -17,6 +17,12 @@ namespace MapBoard.IO
 {
     public static class Kml
     {
+        /// <summary>
+        /// 异步导出到KML
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         public static async Task ExportAsync(string path, IMapLayerInfo layer)
         {
             KmlDocument kml = new KmlDocument() { Name = layer.Name };
@@ -31,6 +37,12 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
+        /// <summary>
+        /// 异步导出多个图层到KML
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layers"></param>
+        /// <returns></returns>
         public static async Task ExportAsync(string path, IEnumerable<IMapLayerInfo> layers)
         {
             KmlDocument kml = new KmlDocument();
@@ -50,6 +62,12 @@ namespace MapBoard.IO
             await kml.SaveAsAsync(path);
         }
 
+        /// <summary>
+        /// 异步导入KML到新图层。根据类型，可能建立多个图层
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layers"></param>
+        /// <returns></returns>
         public static async Task ImportAsync(string path, MapLayerCollection layers)
         {
             KmlDataset kml = new KmlDataset(new Uri(path));
@@ -102,6 +120,12 @@ namespace MapBoard.IO
             }
         }
 
+        /// <summary>
+        /// 将<see cref="KmlNode"/>加入到图层中
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="nodes"></param>
+        /// <returns></returns>
         private static async Task AddToKmlAsync(IMapLayerInfo layer, KmlNodeCollection nodes)
         {
             foreach (var feature in await layer.GetAllFeaturesAsync())
@@ -157,6 +181,12 @@ namespace MapBoard.IO
                 }
             }
         }
+
+        /// <summary>
+        /// 获取KML中所有的图形
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <returns></returns>
         private static IEnumerable<KmlPlacemark> GetAllKmlPlacemark(KmlDataset dataset)
         {
             foreach (var node in dataset.RootNodes)

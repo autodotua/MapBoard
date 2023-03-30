@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.IO
 {
+    /// <summary>
+    /// OpenLayers网络GIS
+    /// </summary>
     public class OpenLayers
     {
         public const string JS = @"var map = new ol.Map({
@@ -67,6 +70,10 @@ map.on('click', function(e) {
             Layers = layers;
         }
 
+        /// <summary>
+        /// 导出为OpenLayers网页
+        /// </summary>
+        /// <returns></returns>
         public async Task ExportAsync()
         {
             await PrepareFilesAsync();
@@ -76,6 +83,10 @@ map.on('click', function(e) {
             await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "index.js"), mainJS, Encoding.UTF8);
         }
 
+        /// <summary>
+        /// 准备文件
+        /// </summary>
+        /// <returns></returns>
         private async Task PrepareFilesAsync()
         {
             if (Directory.Exists(ExportFolderPath))
@@ -95,6 +106,9 @@ map.on('click', function(e) {
             await File.WriteAllTextAsync(Path.Combine(ExportFolderPath, "ol.js"), oljs, Encoding.UTF8);
         }
 
+        /// <summary>
+        /// 插入底图
+        /// </summary>
         private void InsertBaseLayers()
         {
             StringBuilder str = new StringBuilder();
@@ -107,6 +121,10 @@ map.on('click', function(e) {
             mainJS = mainJS.Replace("{{base}}", str.ToString());
         }
 
+        /// <summary>
+        /// 插入矢量图层
+        /// </summary>
+        /// <returns></returns>
         private async Task InsertVectorLayersAsync()
         {
             StringBuilder str = new StringBuilder();
@@ -122,6 +140,10 @@ map.on('click', function(e) {
             mainJS = mainJS.Replace("{{vector}}", str.ToString());
         }
 
+        /// <summary>
+        /// 计算图层范围
+        /// </summary>
+        /// <returns></returns>
         private async Task CalculateExtentAsync()
         {
             List<Envelope> extents = new List<Envelope>();

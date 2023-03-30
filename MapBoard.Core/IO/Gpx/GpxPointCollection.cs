@@ -12,44 +12,16 @@ using Esri.ArcGISRuntime.Geometry;
 
 namespace MapBoard.IO.Gpx
 {
+    /// <summary>
+    /// GPX点集合
+    /// </summary>
     public class GpxPointCollection : ObservableCollection<GpxPoint>, ICloneable
     {
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            isOrdered = null;
-            timeOrderedPoints = null;
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        extent.Update(e.NewItems as IEnumerable<Point>);
-            //        break;
-            //    default:
-            //        extent = null;
-            //        break;
-            //}
-            base.OnCollectionChanged(e);
-        }
-
-        private GpxPointCollection timeOrderedPoints = null;
-
-        public GpxPointCollection TimeOrderedPoints
-        {
-            get
-            {
-                if (IsOrdered)
-                {
-                    return this;
-                }
-                if (timeOrderedPoints == null)
-                {
-                    timeOrderedPoints = new GpxPointCollection(this.OrderBy(p => p.Time));
-                    timeOrderedPoints.isOrdered = true;
-                }
-                return timeOrderedPoints;
-            }
-        }
+        private Envelope extent;
 
         private bool? isOrdered = null;
+
+        private GpxPointCollection timeOrderedPoints = null;
 
         public GpxPointCollection()
         {
@@ -63,6 +35,35 @@ namespace MapBoard.IO.Gpx
             }
         }
 
+        /// <summary>
+        /// 点的包围盒范围
+        /// </summary>
+        public Envelope Extent
+        {
+            get
+            {
+                if (extent == null)
+                {
+                    double minX, minY, maxX, maxY;
+                    minX = minY = double.MaxValue;
+                    maxX = maxY = double.MinValue;
+                    foreach (var point in this)
+                    {
+                        minX = Math.Min(point.X, minX);
+                        maxX = Math.Max(point.X, maxX);
+                        minY = Math.Min(point.Y, minY);
+                        maxY = Math.Max(point.Y, maxY);
+                    }
+
+                    return new Envelope(minX, maxY, maxX, minY, SpatialReferences.Wgs84);
+                }
+                return extent;
+            }
+        }
+
+        /// <summary>
+        /// 是否已经按时间顺序排序
+        /// </summary>
         public bool IsOrdered
         {
             get
@@ -90,6 +91,42 @@ namespace MapBoard.IO.Gpx
             }
         }
 
+        /// <summary>
+        /// 保证按时间顺序从早到晚排序的点集
+        /// </summary>
+        public GpxPointCollection TimeOrderedPoints
+        {
+            get
+            {
+                if (IsOrdered)
+                {
+                    return this;
+                }
+                if (timeOrderedPoints == null)
+                {
+                    timeOrderedPoints = new GpxPointCollection(this.OrderBy(p => p.Time));
+                    timeOrderedPoints.isOrdered = true;
+                }
+                return timeOrderedPoints;
+            }
+        }
+
+        public object Clone()
+        {
+            GpxPoint[] points = new GpxPoint[Count];
+            for (int i = 0; i < Count; i++)
+            {
+                points[i] = this[i].Clone() as GpxPoint;
+            }
+            return new GpxPointCollection(points);
+        }
+
+        /// <summary>
+        /// 获取某一点附近的速度
+        /// </summary>
+        /// <param name="point">目标点</param>
+        /// <param name="unilateralSampleCount">采样点数量，单侧</param>
+        /// <returns></returns>
         public double GetSpeed(GpxPoint point, int unilateralSampleCount)
         {
             GpxPointCollection points = this;
@@ -99,7 +136,12 @@ namespace MapBoard.IO.Gpx
             }
             return points.GetSpeed(points.IndexOf(point), unilateralSampleCount);
         }
-
+        /// <summary>
+        /// 获取某一点附近的速度
+        /// </summary>
+        /// <param name="point">目标点在集合中的索引</param>
+        /// <param name="unilateralSampleCount">采样点数量，单侧</param>
+        /// <returns></returns>
         public double GetSpeed(int index, int unilateralSampleCount)
         {
             if (!IsOrdered)
@@ -133,54 +175,11 @@ namespace MapBoard.IO.Gpx
             return totalDistance / totalTime.TotalSeconds;
         }
 
-        public Envelope Extent
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            get
-            {
-                if (extent == null)
-                {
-                    double minX, minY, maxX, maxY;
-                    minX = minY = double.MaxValue;
-                    maxX = maxY = double.MinValue;
-                    foreach (var point in this)
-                    {
-                        minX = Math.Min(point.X, minX);
-                        maxX = Math.Max(point.X, maxX);
-                        minY = Math.Min(point.Y, minY);
-                        maxY = Math.Max(point.Y, maxY);
-                    }
-
-                    return new Envelope(minX, maxY, maxX, minY, SpatialReferences.Wgs84);
-                }
-                return extent;
-            }
-        }
-
-        private Envelope extent;
-
-        public object Clone()
-        {
-            GpxPoint[] points = new GpxPoint[Count];
-            for (int i = 0; i < Count; i++)
-            {
-                points[i] = this[i].Clone() as GpxPoint;
-            }
-            return new GpxPointCollection(points);
-        }
-    }
-
-    public class GpxException : Exception
-    {
-        public GpxException()
-        {
-        }
-
-        public GpxException(string message) : base(message)
-        {
-        }
-
-        public GpxException(string message, Exception innerException) : base(message, innerException)
-        {
+            isOrdered = null;
+            timeOrderedPoints = null;
+            base.OnCollectionChanged(e);
         }
     }
 }

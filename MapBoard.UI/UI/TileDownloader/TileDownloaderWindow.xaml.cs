@@ -1,5 +1,4 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
-using MapBoard.IO.Tile;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -161,7 +160,7 @@ namespace MapBoard.UI.TileDownloader
 
             point = GeometryEngine.Project(point, SpatialReferences.Wgs84) as MapPoint;
             int z = (int)(Math.Log(1e9 / map.MapScale, 2));
-            (int x, int y) = TileLocation.GeoPointToTile(point, z);
+            (int x, int y) = TileLocationUtility.GeoPointToTile(point, z);
             string l = Environment.NewLine;
             tbkTileIndex.Text = $"Z={z}{l}X={x}{l}Y={y}";
             waiting = true;
@@ -196,8 +195,8 @@ namespace MapBoard.UI.TileDownloader
                 CurrentDownload.SetRange(value);
                 DownloadingProgressStatus = "共" + CurrentDownload.TileCount;
 
-                var (tile1X, tile1Y) = TileLocation.PointToTile(value.YMax_Top, value.XMin_Left, cbbLevel.SelectedIndex);
-                var (tile2X, tile2Y) = TileLocation.PointToTile(value.YMin_Bottom, value.XMax_Right, cbbLevel.SelectedIndex);
+                var (tile1X, tile1Y) = TileLocationUtility.PointToTile(value.YMax_Top, value.XMin_Left, cbbLevel.SelectedIndex);
+                var (tile2X, tile2Y) = TileLocationUtility.PointToTile(value.YMin_Bottom, value.XMax_Right, cbbLevel.SelectedIndex);
                 stichBoundary.SetIntValue(tile1X, tile1Y, tile2X, tile2Y);
                 if (save)
                 {

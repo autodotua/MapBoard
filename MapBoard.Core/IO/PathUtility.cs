@@ -2,8 +2,15 @@
 
 namespace MapBoard.IO
 {
+    /// <summary>
+    /// 路径工具
+    /// </summary>
     internal static class PathUtility
     {
+        /// <summary>
+        /// 获取临时目录
+        /// </summary>
+        /// <returns></returns>
         public static DirectoryInfo GetTempDir()
         {
             string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
