@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 包含ArcGIS类型的临时图层，程序退出后自动清空
+    /// </summary>
     public class TempMapLayerInfo : EditableLayerInfo, ICanChangeField, ICanChangeGeometryType
     {
         private FeatureCollectionLayer featureCollectionLayer;
@@ -32,15 +35,17 @@ namespace MapBoard.Mapping.Model
 
         public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
-            this.Name = newName;
+            Name = newName;
             await Task.Yield();
         }
 
         protected override FeatureTable GetTable()
         {
-            GeometryType type = default;
+            //临时图层使用FeatureCollection实现，
+            //FeatureCollection可以包含多个FeatureCollectionTable，
+            //FeatureCollectionTable可以在不存在文件/网络服务数据源的情况下手动创建
             if (ServiceParameters.TryGetValue(nameof(GeometryType), out string typeStr)
-                && Enum.TryParse(typeStr, out type))
+                && Enum.TryParse(typeStr, out GeometryType type))
             {
             }
             else

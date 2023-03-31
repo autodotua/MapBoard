@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 包含ArcGIS类型的Shapefile图层
+    /// </summary>
     public class ShapefileMapLayerInfo : EditableLayerInfo, IFileBasedLayer
     {
         public ShapefileMapLayerInfo() : base()
@@ -28,6 +31,7 @@ namespace MapBoard.Mapping.Model
 
         public ShapefileMapLayerInfo(MapLayerInfo template, string newName, bool includeFields)
         {
+            //需要从模板对象中读取信息，写入到当前对象
             new MapperConfiguration(cfg =>
                {
                    cfg.CreateMap<LayerInfo, ShapefileMapLayerInfo>();
@@ -40,28 +44,7 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public override object Clone()
-        {
-            var layer = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<LayerInfo, ShapefileMapLayerInfo>();
-            }).CreateMapper().Map<ShapefileMapLayerInfo>(this);
-            return layer;
-        }
-
         public override string Type => Types.Shapefile;
-
-        protected override FeatureTable GetTable()
-        {
-            return new ShapefileFeatureTable(GetMainFilePath());
-        }
-
-        public override void Dispose()
-        {
-            (table as ShapefileFeatureTable)?.Close();
-            table = null;
-            base.Dispose();
-        }
 
         public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
@@ -101,6 +84,38 @@ namespace MapBoard.Mapping.Model
             layers[index] = Layer;
         }
 
+        public override object Clone()
+        {
+            var layer = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<LayerInfo, ShapefileMapLayerInfo>();
+            }).CreateMapper().Map<ShapefileMapLayerInfo>(this);
+            return layer;
+        }
+        public override void Dispose()
+        {
+            (table as ShapefileFeatureTable)?.Close();
+            table = null;
+            base.Dispose();
+        }
+
+        public string[] GetFilePaths()
+        {
+            return Shapefile.GetExistShapefiles(FolderPaths.DataPath, Name).ToArray();
+        }
+
+        public string GetMainFilePath()
+        {
+            return Path.Combine(FolderPaths.DataPath, Name + ".shp");
+        }
+
+        /// <summary>
+        /// 通过将要素复制到新建的Shapefile中的方式，修改字段
+        /// </summary>
+        /// <param name="newFields"></param>
+        /// <param name="layers"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task ModifyFieldsAsync(FieldInfo[] newFields, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             //检查图层是否在集合中
@@ -128,19 +143,19 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public string[] GetFilePaths()
-        {
-            return Shapefile.GetExistShapefiles(FolderPaths.DataPath, Name).ToArray();
-        }
-
-        public string GetMainFilePath()
-        {
-            return Path.Combine(FolderPaths.DataPath, Name + ".shp");
-        }
-
+        /// <summary>
+        /// 保存到新的位置
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
         public Task SaveTo(string directory)
         {
             return Shapefile.CloneFeatureToNewShpAsync(directory, this);
+        }
+
+        protected override FeatureTable GetTable()
+        {
+            return new ShapefileFeatureTable(GetMainFilePath());
         }
     }
 }

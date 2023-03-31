@@ -5,8 +5,16 @@ using System.Collections.Generic;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 瓦片下载扩展类
+    /// </summary>
     public static class DownloadInfoExtension
     {
+        /// <summary>
+        /// 根据地理范围设置需要下载的瓦片的信息
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="range"></param>
         public static void SetRange(this DownloadInfo info, GeoRect<double> range)
         {
             Dictionary<int, GeoRect<int>> tiles = new Dictionary<int, GeoRect<int>>();

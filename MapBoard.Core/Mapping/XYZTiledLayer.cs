@@ -17,7 +17,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping
 {
-
+    /// <summary>
+    /// XYZ瓦片图层，WebTiledLayer的更灵活的实现
+    /// </summary>
     public class XYZTiledLayer : ImageTiledLayer
     {
         private readonly static ConcurrentDictionary<string, byte[]> cacheQueueFiles = new ConcurrentDictionary<string, byte[]>();
@@ -105,6 +107,12 @@ namespace MapBoard.Mapping
         /// </summary>
         public string Url { get; }
 
+        /// <summary>
+        /// 应用Http客户端的请求头
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="layerInfo"></param>
+        /// <param name="defaultUserAgent"></param>
         public static void ApplyHttpClientHeaders(HttpClient client, BaseLayerInfo layerInfo, string defaultUserAgent)
         {
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
@@ -139,12 +147,28 @@ namespace MapBoard.Mapping
                 }
             }
         }
+
+        /// <summary>
+        /// 创建图层
+        /// </summary>
+        /// <param name="layerInfo"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="enableCache"></param>
+        /// <returns></returns>
         public static XYZTiledLayer Create(BaseLayerInfo layerInfo, string userAgent, bool enableCache = false)
         {
             string url = layerInfo.Path;
             var webTiledLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return new XYZTiledLayer(layerInfo, userAgent, webTiledLayer.TileInfo, webTiledLayer.FullExtent, enableCache);
         }
+
+        /// <summary>
+        /// 创建图层
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="enableCache"></param>
+        /// <returns></returns>
         public static XYZTiledLayer Create(string url, string userAgent, bool enableCache = false)
         {
             return Create(new BaseLayerInfo(BaseLayerType.WebTiledLayer, url), userAgent, enableCache);

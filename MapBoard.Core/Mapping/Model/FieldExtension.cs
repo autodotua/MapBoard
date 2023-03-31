@@ -10,33 +10,120 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
 {
+    /// <summary>
+    /// 字段扩展方法类
+    /// </summary>
     public static class FieldExtension
     {
+        /// <summary>
+        /// 创建时间字段
+        /// </summary>
+        public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+
+        /// <summary>
+        /// 默认字段
+        /// </summary>
+        public static FieldInfo[] DefaultFields => new[] { CreateTimeField, ModifiedTimeField };
+
+        /// <summary>
+        /// 修改时间字段
+        /// </summary>
+        public static FieldInfo ModifiedTimeField => new FieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
+
+        /// <summary>
+        /// 是否为能够作为符号系统Key的字段
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public static bool CanBeRendererKey(this FieldInfo field)
         {
             return field.Type is FieldInfoType.Text or FieldInfoType.Integer or FieldInfoType.Float;
         }
 
+        /// <summary>
+        /// 从ArcGISRuntime到FiledInfo
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns>从原表字段名到新字段的映射</returns>
+        public static Dictionary<string, FieldInfo> FromEsriFields(this IEnumerable<Field> fields)
+        {
+            Dictionary<string, FieldInfo> result = new Dictionary<string, FieldInfo>();
+            foreach (var field in fields)
+            {
+                if (!field.IsIdField())
+                {
+                    result.Add(field.Name, field.ToFieldInfo());
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取各类型字段的默认长度
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static int GetLength(this FieldInfoType type)
+        {
+            return type switch
+            {
+                FieldInfoType.Integer => 9,
+                FieldInfoType.Float => 13,
+                FieldInfoType.Date => 9,
+                FieldInfoType.Text => 254,
+                FieldInfoType.Time => 20,
+                _ => throw new ArgumentException(),
+            };
+        }
+
+        /// <summary>
+        /// 是否存在某个类型、某个名称的字段
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool HasField(this ILayerInfo layer, string name, FieldInfoType type)
+        {
+            return layer.Fields.Any(p => p.Name == name && p.Type == type);
+        }
+
+        /// <summary>
+        /// 是否为ID字段
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public static bool IsIdField(this Field field)
         {
             return IsIdField(field.Name);
         }
 
+        /// <summary>
+        /// 是否为ID字段
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public static bool IsIdField(this FieldInfo field)
         {
             return IsIdField(field.Name);
         }
 
+        /// <summary>
+        /// 是否为ID字段名
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public static bool IsIdField(string field)
         {
             return field.ToLower() is "fid" or "id" or "objectid";
         }
-
-        public static bool HasField(this ILayerInfo layer, string name,FieldInfoType type)
-        {
-            return layer.Fields.Any(p => p.Name == name && p.Type == type);
-        }
-
+        /// <summary>
+        /// 将字段信息与数据源进行同步
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="table"></param>
+        /// <returns></returns>
         public static IEnumerable<FieldInfo> SyncWithSource(FieldInfo[] fields, FeatureTable table)
         {
             foreach (var esriField in table.Fields.Where(p => !p.IsIdField()))
@@ -55,6 +142,11 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        /// <summary>
+        /// 转为ArcGIS的字段类型
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public static Field ToEsriField(this FieldInfo field)
         {
             FieldType type = default;
@@ -93,6 +185,11 @@ namespace MapBoard.Mapping.Model
             return new Field(type, field.Name, null, length);
         }
 
+        /// <summary>
+        /// 转为ArcGIS的字段类型
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         public static IEnumerable<Field> ToEsriFields(this IEnumerable<FieldInfo> fields)
         {
             foreach (var field in fields)
@@ -100,25 +197,12 @@ namespace MapBoard.Mapping.Model
                 yield return field.ToEsriField();
             }
         }
-
         /// <summary>
-        /// 从ArcGISRuntime到FiledInfo
+        /// 从ArcGIS的字段类型转为应用字段类型
         /// </summary>
-        /// <param name="fields"></param>
-        /// <returns>从原表字段名到新字段的映射</returns>
-        public static Dictionary<string, FieldInfo> FromEsriFields(this IEnumerable<Field> fields)
-        {
-            Dictionary<string, FieldInfo> result = new Dictionary<string, FieldInfo>();
-            foreach (var field in fields)
-            {
-                if (!field.IsIdField())
-                {
-                    result.Add(field.Name, field.ToFieldInfo());
-                }
-            }
-            return result;
-        }
-
+        /// <param name="field"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         public static FieldInfo ToFieldInfo(this Field field)
         {
             var type = (int)field.FieldType switch
@@ -138,33 +222,5 @@ namespace MapBoard.Mapping.Model
             }
             return new FieldInfo(name, field.Name, type);
         }
-
-        public static int GetLength(this FieldInfoType type)
-        {
-            switch (type)
-            {
-                case FieldInfoType.Integer:
-                    return 9;
-
-                case FieldInfoType.Float:
-                    return 13;
-
-                case FieldInfoType.Date:
-                    return 9;
-
-                case FieldInfoType.Text:
-                    return 254;
-
-                case FieldInfoType.Time:
-                    return 20;
-
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        public static FieldInfo[] DefaultFields => new[] { CreateTimeField, ModifiedTimeField };
-        public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
-        public static FieldInfo ModifiedTimeField => new FieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
     }
 }

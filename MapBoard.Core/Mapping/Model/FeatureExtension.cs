@@ -11,6 +11,11 @@ namespace MapBoard.Mapping.Model
 {
     public static class FeatureExtension
     {
+        /// <summary>
+        /// 获取要素的ID，优先级分别为FID、ID、ObjectID，若均不存在，则获取要素的哈希值
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public static long GetID(this Feature feature)
         {
             if (feature.Attributes.ContainsKey("FID"))
@@ -28,12 +33,25 @@ namespace MapBoard.Mapping.Model
             return feature.Geometry.ToJson().GetHashCode();
         }
 
+        /// <summary>
+        /// 克隆要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         public static Feature Clone(this Feature feature, EditableLayerInfo layer)
         {
             IEnumerable<FieldInfo> fields = layer.Fields;
             return feature.Clone(layer, fields.ToDictionary(p => p.Name));
         }
 
+        /// <summary>
+        /// 克隆要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="layer"></param>
+        /// <param name="key2Field"></param>
+        /// <returns></returns>
         public static Feature Clone(this Feature feature, EditableLayerInfo layer, Dictionary<string, FieldInfo> key2Field)
         {
             var dic = new Dictionary<string, object>();
@@ -64,6 +82,7 @@ namespace MapBoard.Mapping.Model
                 }
             }
 
+            //处理创建时间
             if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
                 || feature.Attributes[Parameters.CreateTimeFieldName] == null)
             {

@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 namespace MapBoard.Mapping.Model
 {
     //http://192.168.1.18:8080/geoserver/topp/ows?service=WFS&request=GetCapabilities
+
+    /// <summary>
+    /// 包含ArcGIS类型的WFS图层
+    /// </summary>
     public class WfsMapLayerInfo : MapLayerInfo, IServerBasedLayer
     {
         public WfsMapLayerInfo(ILayerInfo layer) : base(layer)
@@ -39,31 +43,27 @@ namespace MapBoard.Mapping.Model
             Fields = null;
         }
 
-#pragma warning disable CS1998 // 异步方法缺少 "await" 运算符，将以同步方式运行
-
-        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
-#pragma warning restore CS1998 // 异步方法缺少 "await" 运算符，将以同步方式运行
-        {
-            Name = newName;
-        }
-
-        protected override FeatureTable GetTable()
-        {
-            var table = new WfsFeatureTable(new Uri(Url), LayerName) { FeatureRequestMode = FeatureRequestMode.ManualCache };
-            table.Loaded += Table_Loaded;
-            return table;
-        }
-
-        private void Table_Loaded(object sender, EventArgs e)
-        {
-            Fields = table.Fields.FromEsriFields().Values.ToArray();
-        }
+        [JsonIgnore]
+        public bool AutoPopulateAll { get; private set; }
 
         [JsonIgnore]
         public bool HasPopulateAll { get; private set; }
 
         [JsonIgnore]
         public bool IsDownloading { get; set; }
+
+        [JsonIgnore]
+        public string LayerName { get; private set; }
+
+        public override string Type => Types.WFS;
+
+        [JsonIgnore]
+        public string Url { get; private set; }
+
+        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            Name = newName;
+        }
 
         public async Task PopulateAllFromServiceAsync(CancellationToken? cancellationToken = null)
         {
@@ -90,17 +90,12 @@ namespace MapBoard.Mapping.Model
             return result;
         }
 
-        public override string Type => Types.WFS;
-
-        [JsonIgnore]
-        public string Url { get; private set; }
-
-        [JsonIgnore]
-        public string LayerName { get; private set; }
-
-        [JsonIgnore]
-        public bool AutoPopulateAll { get; private set; }
-
+        /// <summary>
+        /// 设置服务属性
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="layerName"></param>
+        /// <param name="autoPopulateAll"></param>
         public void SetService(string url, string layerName, bool autoPopulateAll)
         {
             Url = url;
@@ -117,6 +112,18 @@ namespace MapBoard.Mapping.Model
             {
                 await PopulateAllFromServiceAsync();
             }
+        }
+
+        protected override FeatureTable GetTable()
+        {
+            var table = new WfsFeatureTable(new Uri(Url), LayerName) { FeatureRequestMode = FeatureRequestMode.ManualCache };
+            table.Loaded += Table_Loaded;
+            return table;
+        }
+
+        private void Table_Loaded(object sender, EventArgs e)
+        {
+            Fields = table.Fields.FromEsriFields().Values.ToArray();
         }
     }
 }
