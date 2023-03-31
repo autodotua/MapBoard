@@ -18,6 +18,16 @@ namespace MapBoard.Util
 {
     public static class NetUtility
     {
+        /// <summary>
+        /// 下载文件
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="path"></param>
+        /// <param name="layerInfo"></param>
+        /// <param name="timeOut"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="proxyAddress"></param>
+        /// <returns></returns>
         public static async Task HttpDownloadAsync(string url, string path,BaseLayerInfo layerInfo, TimeSpan timeOut, string userAgent, string proxyAddress)
         {
             string tempPath = Path.Combine(Path.GetDirectoryName(path), "temp");
@@ -199,6 +209,9 @@ namespace MapBoard.Util
             }
         }
 
+        /// <summary>
+        /// 停止HTTP服务器
+        /// </summary>
         public static void StopServer()
         {
             tcpListener.Stop();

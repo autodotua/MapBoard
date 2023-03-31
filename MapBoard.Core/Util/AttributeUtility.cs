@@ -13,6 +13,14 @@ namespace MapBoard.Util
 {
     public static class AttributeUtility
     {
+        /// <summary>
+        /// 将图层中所有要素的   一个字段的属性赋值给另一个字段
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="fieldSource"></param>
+        /// <param name="fieldTarget"></param>
+        /// <param name="dateFormat"></param>
+        /// <returns></returns>
         public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IEditableLayerInfo layer, FieldInfo fieldSource, FieldInfo fieldTarget, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();
@@ -48,11 +56,11 @@ namespace MapBoard.Util
                     {
                         value = dto.UtcDateTime;
                     }
-                    if (fieldTarget.Type == fieldSource.Type)
+                    if (fieldTarget.Type == fieldSource.Type)//同类型
                     {
                         feature.SetAttributeValue(fieldTarget.Name, feature.GetAttributeValue(fieldSource.Name));
                     }
-                    else
+                    else//异类型
                     {
                         object result = null;
                         try
@@ -130,6 +138,15 @@ namespace MapBoard.Util
             return errors;
         }
 
+        /// <summary>
+        /// 为图层所有要素批量设置属性
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="field"></param>
+        /// <param name="text"></param>
+        /// <param name="includeField"></param>
+        /// <param name="dateFormat"></param>
+        /// <returns></returns>
         public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IEditableLayerInfo layer, FieldInfo field, string text, bool includeField, string dateFormat)
         {
             var features = await layer.GetAllFeaturesAsync();

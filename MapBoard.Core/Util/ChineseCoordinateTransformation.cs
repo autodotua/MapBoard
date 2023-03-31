@@ -5,18 +5,18 @@ using System.Text;
 
 namespace MapBoard.Util
 {
+    /// <summary>
+    /// 中国火星坐标系的转换，GCJ01、BD09和WGS84的互转
+    /// </summary>
     public static class ChineseCoordinateTransformation
     {
-        private const double a = 6378245.0;
-
-        private const double ee = 0.0066934216229659433;
-
         public static MapPoint BD09ToWgs84(MapPoint MapPoint)
         {
             var gcj = BD09ToGCJ02(MapPoint);
             var wgs84 = GCJ02ToWGS84(gcj);
             return wgs84;
         }
+
 
         public static MapPoint BD09ToGCJ02(MapPoint MapPoint)
         {

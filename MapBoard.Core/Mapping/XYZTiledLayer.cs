@@ -37,6 +37,7 @@ namespace MapBoard.Mapping
         {
             Task.Run(async () =>
             {
+                //单队列写入缓存
                 //有两个集合，Queue用来确定任务的顺序，然后用Dictionary来获取任务数据。
                 //同时Dictionary也可以用来检测是否已经提交过相同的任务，防止重复提交
                 while (true)
@@ -186,7 +187,7 @@ namespace MapBoard.Mapping
         {
             string cacheFile = Path.Combine(FolderPaths.TileCachePath, id, level.ToString(), row.ToString(), column.ToString());
             byte[] data = null;
-            if (EnableCache && File.Exists(cacheFile))
+            if (EnableCache && File.Exists(cacheFile))//缓存优先
             {
                 data = await File.ReadAllBytesAsync(cacheFile);
             }

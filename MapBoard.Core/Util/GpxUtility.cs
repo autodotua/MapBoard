@@ -7,6 +7,13 @@ namespace MapBoard.Util
 {
     public static class GpxUtility
     {
+        /// <summary>
+        /// 平滑轨迹
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="level"></param>
+        /// <param name="get"></param>
+        /// <param name="set"></param>
         public static void Smooth(GpxPointCollection points, int level, Func<GpxPoint, double> get, Action<GpxPoint, double> set)
         {
             int count = points.Count;
