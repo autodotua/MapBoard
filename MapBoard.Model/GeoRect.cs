@@ -1,5 +1,9 @@
 ﻿namespace MapBoard.Model
 {
+    /// <summary>
+    /// 地理范围，可能为经纬度（<see cref="double"/>）、投影坐标单位（<see cref="double"/>）或瓦片位置（<see cref="int"/>）
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class GeoRect<T>
     {
         public GeoRect()

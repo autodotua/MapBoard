@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 字段信息
+    /// </summary>
     [DebuggerDisplay("Name={Name} Disp={DisplayName} Type={Type}")]
     public class FieldInfo : INotifyPropertyChanged, ICloneable
     {
@@ -24,18 +27,25 @@ namespace MapBoard.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 显示名（别名）
+        /// </summary>
         public string DisplayName { get; set; } = "";
 
+        /// <summary>
+        /// 字段名
+        /// </summary>
         public string Name
         {
             get => name;
             set
             {
+                //为了方便，只支持长度为1-10的英文大小写、数字和下划线组成的字段名
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     name = "";
                 }
-                else if (value != null
+                else if (value != null 
                      && value.Length <= 10
                      && value.Length > 0
                      && Regex.IsMatch(value[0].ToString(), "[a-zA-Z]")
@@ -49,6 +59,9 @@ namespace MapBoard.Model
             }
         }
 
+        /// <summary>
+        /// 字段类型
+        /// </summary>
         public FieldInfoType Type { get; set; }
 
         public object Clone()
@@ -56,6 +69,12 @@ namespace MapBoard.Model
             return MemberwiseClone();
         }
 
+        /// <summary>
+        /// 判断属性值是否与字段类型对应
+        /// </summary>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidEnumArgumentException"></exception>
         public bool IsCorrectType(object propertyValue)
         {
             switch (Type)

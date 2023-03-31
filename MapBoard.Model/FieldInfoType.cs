@@ -2,6 +2,9 @@
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 字段类型
+    /// </summary>
     public enum FieldInfoType
     {
         [Description("整数")]

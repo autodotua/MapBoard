@@ -3,6 +3,9 @@ using System.ComponentModel;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 图层接口
+    /// </summary>
     public interface ILayerInfo : INotifyPropertyChanged
     {
         /// <summary>

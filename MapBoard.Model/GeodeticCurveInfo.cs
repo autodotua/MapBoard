@@ -4,6 +4,9 @@ using System.Text;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 测地线信息
+    /// </summary>
     public class GeodeticCurveInfo
     {
         public GeodeticCurveInfo(double distance, Angle azimuth, Angle reverseAzimuth)

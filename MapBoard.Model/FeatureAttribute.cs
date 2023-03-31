@@ -9,36 +9,130 @@ using System.Globalization;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 单个要素属性
+    /// </summary>
     public class FeatureAttribute : FieldInfo
     {
-        public static string DateFormat { get; set; } = "yyyy-MM-dd";
-        public static string DateTimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
         private object attrValue;
 
+        private DateTime? dateValue;
+
+        private double? floatValue;
+
+        private int? intValue;
+
+        private string textValue;
+
+        private DateTime? timeValue;
 
         public FeatureAttribute()
         {
         }
 
-        public static FeatureAttribute FromFieldAndValue(FieldInfo field, object value = null)
+        /// <summary>
+        /// 日期类型
+        /// </summary>
+        public static string DateFormat { get; set; } = "yyyy-MM-dd";
+
+        /// <summary>
+        /// 事件类型
+        /// </summary>
+        public static string DateTimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
+        /// <summary>
+        /// 日期型值
+        /// </summary>
+        [AlsoNotifyFor(nameof(Value))]
+        public DateTime? DateValue
         {
-            FeatureAttribute attribute = new FeatureAttribute()
+            get => dateValue;
+            set
             {
-                Name = field.Name,
-                DisplayName = field.DisplayName,
-                Type = field.Type,
-            };
-            try
-            {
-                attribute.Value = value;
+                if (Type != FieldInfoType.Date)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                dateValue = value;
             }
-            catch (ArgumentException ex)
-            {
-                Debug.WriteLine(ex);
-            }
-            return attribute;
         }
 
+        /// <summary>
+        /// 浮点型值
+        /// </summary>
+        [AlsoNotifyFor(nameof(Value))]
+        public double? FloatValue
+        {
+            get => floatValue;
+            set
+            {
+                if (Type != FieldInfoType.Float)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                floatValue = value;
+            }
+        }
+
+        /// <summary>
+        /// 整形值
+        /// </summary>
+        [AlsoNotifyFor(nameof(Value))]
+        public int? IntValue
+        {
+            get => intValue;
+            set
+            {
+                if (Type != FieldInfoType.Integer)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                intValue = value;
+                this.Notify(nameof(IntValue), nameof(Value));
+            }
+        }
+
+        /// <summary>
+        /// 文本型值
+        /// </summary>
+        [AlsoNotifyFor(nameof(Value))]
+        public string TextValue
+        {
+            get => textValue;
+            set
+            {
+                if (Type != FieldInfoType.Text)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                textValue = value;
+            }
+        }
+
+        /// <summary>
+        /// 日期时间型值
+        /// </summary>
+        [AlsoNotifyFor(nameof(Value))]
+        public DateTime? TimeValue
+        {
+            get => timeValue;
+            set
+            {
+                if (Type != FieldInfoType.Time)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                timeValue = value;
+            }
+        }
+
+        /// <summary>
+        /// 属性值
+        /// </summary>
         public object Value
         {
             get => attrValue;
@@ -178,7 +272,7 @@ namespace MapBoard.Model
                                     break;
                                 }
                             }
-                            throw new ArgumentException("输入的值无法转换为时间" );
+                            throw new ArgumentException("输入的值无法转换为时间");
                         case FieldInfoType.Text:
                             if (value is string str4)
                             {
@@ -217,91 +311,34 @@ namespace MapBoard.Model
             }
         }
 
-        private int? intValue;
-
-        public int? IntValue
+        /// <summary>
+        /// 根据ArcGIS字段和属性值，创建<see cref="FeatureAttribute"/>
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static FeatureAttribute FromFieldAndValue(FieldInfo field, object value = null)
         {
-            get => intValue;
-            set
+            FeatureAttribute attribute = new FeatureAttribute()
             {
-                if (Type != FieldInfoType.Integer)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                intValue = value;
-                this.Notify(nameof(IntValue), nameof(Value));
-            }
-        }
-
-        private double? floatValue;
-
-        [AlsoNotifyFor(nameof(Value))]
-        public double? FloatValue
-        {
-            get => floatValue;
-            set
+                Name = field.Name,
+                DisplayName = field.DisplayName,
+                Type = field.Type,
+            };
+            try
             {
-                if (Type != FieldInfoType.Float)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                floatValue = value;
+                attribute.Value = value;
             }
-        }
-
-        private string textValue;
-
-        [AlsoNotifyFor(nameof(Value))]
-        public string TextValue
-        {
-            get => textValue;
-            set
+            catch (ArgumentException ex)
             {
-                if (Type != FieldInfoType.Text)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                textValue = value;
+                Debug.WriteLine(ex);
             }
+            return attribute;
         }
-
-        private DateTime? dateValue;
-
-        [AlsoNotifyFor(nameof(Value))]
-        public DateTime? DateValue
-        {
-            get => dateValue;
-            set
-            {
-                if (Type != FieldInfoType.Date)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                dateValue = value;
-            }
-        }
-
-        private DateTime? timeValue;
-
-        [AlsoNotifyFor(nameof(Value))]
-        public DateTime? TimeValue
-        {
-            get => timeValue;
-            set
-            {
-                if (Type != FieldInfoType.Time)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                timeValue = value;
-            }
-        }
-
+        /// <summary>
+        /// 获取属性值的字符串表达
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             if (Value == null)

@@ -9,6 +9,9 @@ using System.Windows;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 瓦片下载信息
+    /// </summary>
     public class DownloadInfo : INotifyPropertyChanged
     {
         public IDictionary<int, GeoRect<int>> tiles = new Dictionary<int, GeoRect<int>>();
@@ -20,9 +23,19 @@ namespace MapBoard.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 选取的地图经纬度范围
+        /// </summary>
         public GeoRect<double> MapRange { get; set; } = new GeoRect<double>();
+
+        /// <summary>
+        /// 瓦片总数量
+        /// </summary>
         public int TileCount { get; private set; }
 
+        /// <summary>
+        /// 最大等级
+        /// </summary>
         public int TileMaxLevel
         {
             get => tileMaxLevel;
@@ -35,6 +48,9 @@ namespace MapBoard.Model
             }
         }
 
+        /// <summary>
+        /// 最小等级
+        /// </summary>
         public int TileMinLevel
         {
             get => tileMinLevel;
@@ -69,6 +85,9 @@ namespace MapBoard.Model
             TileCount = count;
         }
 
+        /// <summary>
+        /// 瓦片枚举器
+        /// </summary>
         public class TileEnumerator : IEnumerator<TileInfo>
         {
             private TileInfo current;
