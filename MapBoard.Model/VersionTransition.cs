@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 版本迁移
+    /// </summary>
     public class VersionTransition
     {
         /// <summary>

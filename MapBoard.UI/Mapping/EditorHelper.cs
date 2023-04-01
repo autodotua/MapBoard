@@ -20,6 +20,9 @@ using FzLib.WPF.Dialog;
 
 namespace MapBoard.Mapping
 {
+    /// <summary>
+    /// 图形编辑器帮助类
+    /// </summary>
     public class EditorHelper : INotifyPropertyChanged
     {
         /// <summary>
@@ -126,7 +129,7 @@ namespace MapBoard.Mapping
             {
                 Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
             }
-            StartDraw(EditMode.Creat);
+            StartDraw(EditMode.Create);
 
             await SketchEditor.StartAsync(mode);
             if (geometry != null)
@@ -308,6 +311,10 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 判断是否能够捕捉最近点
+        /// </summary>
+        /// <returns></returns>
         private bool CanCatchNearestPoint()
         {
             return SketchEditor.CreationMode
@@ -518,6 +525,11 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 地图被触摸或单击事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MapviewTapped(object sender, GeoViewInputEventArgs e)
         {
             if (MapView.CurrentTask != BoardTask.Draw)

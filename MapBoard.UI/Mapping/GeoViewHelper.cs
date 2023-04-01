@@ -23,20 +23,30 @@ using Map = Esri.ArcGISRuntime.Mapping.Map;
 
 namespace MapBoard.Mapping
 {
+    /// <summary>
+    /// 二维或三维地图工具
+    /// </summary>
     public static class GeoViewHelper
     {
-        public static readonly string[] EsriBasemaps = typeof(Basemap)
-                    .GetMethods(BindingFlags.Static | BindingFlags.Public)
-                    .Where(p => p.Name.StartsWith("Create"))
-                    .Select(p => p.Name[6..])
-                    .ToArray();
-
+        /// <summary>
+        /// 导出截图
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="path"></param>
+        /// <param name="format"></param>
+        /// <param name="cut"></param>
+        /// <returns></returns>
         public static async Task ExportImageAsync(this GeoView view, string path, ImageFormat format, Thickness cut)
         {
             var result = await view.GetImageAsync(cut);
             result.Save(path, format);
         }
 
+        /// <summary>
+        /// 从文件读取预设的底图
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="FormatException"></exception>
         public static IEnumerable<BaseLayerInfo> GetDefaultBaseLayers()
         {
             string defaultBasemapLayersPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBasemapLayers.txt");
@@ -52,6 +62,12 @@ namespace MapBoard.Mapping
             return Enumerable.Empty<BaseLayerInfo>();
         }
 
+        /// <summary>
+        /// 获取截图
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="cut"></param>
+        /// <returns></returns>
         public static async Task<Bitmap> GetImageAsync(this GeoView view, Thickness cut)
         {
             RuntimeImage image = await view.ExportImageAsync();
@@ -62,6 +78,7 @@ namespace MapBoard.Mapping
             var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
             bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
             Bitmap result = null;
+            //考虑DPI
             PresentationSource source = PresentationSource.FromVisual(view);
             int cutLeft = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Left);
             int cutRight = (int)(source.CompositionTarget.TransformToDevice.M11 * cut.Right);
@@ -84,6 +101,13 @@ namespace MapBoard.Mapping
             return result;
         }
 
+        /// <summary>
+        /// 根据应用的<see cref="BaseLayerInfo"/>对象，获取ArcGIS的对应图层
+        /// </summary>
+        /// <param name="baseLayer"></param>
+        /// <param name="cache"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidEnumArgumentException"></exception>
         public static Layer GetLayer(BaseLayerInfo baseLayer, bool cache)
         {
             var type = baseLayer.Type;
@@ -100,6 +124,10 @@ namespace MapBoard.Mapping
             };
         }
 
+        /// <summary>
+        /// 获取负值的水印边框
+        /// </summary>
+        /// <returns></returns>
         public static Thickness GetMinusWatermarkThickness()
         {
             if (!Config.Instance.HideWatermark)
@@ -109,6 +137,10 @@ namespace MapBoard.Mapping
             return new Thickness(0, -Config.WatermarkHeight, 0, -Config.WatermarkHeight); ;
         }
 
+        /// <summary>
+        /// 获取正值的水印边框
+        /// </summary>
+        /// <returns></returns>
         public static Thickness GetWatermarkThickness()
         {
             if (!Config.Instance.HideWatermark)
@@ -119,7 +151,7 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 为ArcSceneView或ArcMapView加载底图
+        /// 为<see cref="SceneView"/>或<see cref="MapView"/>加载底图
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
@@ -128,7 +160,7 @@ namespace MapBoard.Mapping
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
             try
             {
-                Basemap basemap = GetBasemap(errors);
+                Basemap basemap = new Basemap();
                 await basemap.LoadAsync();
                 if (Config.Instance.BaseLayers.Count == 0)
                 {
@@ -146,7 +178,7 @@ namespace MapBoard.Mapping
                     }
                 }
                 //加载底图
-                var baseLayers = Config.Instance.BaseLayers.Where(p => p.Enable && p.Type != BaseLayerType.Esri).Reverse();
+                var baseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).Reverse();
                 foreach (var item in baseLayers)
                 {
                     Layer layer = null;
@@ -215,15 +247,26 @@ namespace MapBoard.Mapping
                 throw new Exception("加载底图失败", ex);
             }
         }
+
+        /// <summary>
+        /// 隐藏水印
+        /// </summary>
+        /// <param name="map"></param>
         public static void SetHideWatermark(this GeoView map)
         {
             map.Margin = GetMinusWatermarkThickness();
         }
+
+        /// <summary>
+        /// 等待渲染结束
+        /// </summary>
+        /// <param name="view"></param>
+        /// <returns></returns>
         public static Task WaitForRenderCompletedAsync(this GeoView view)
         {
             TaskCompletionSource tcs = new TaskCompletionSource();
 
-            if (view.DrawStatus == Esri.ArcGISRuntime.UI.DrawStatus.Completed)
+            if (view.DrawStatus == DrawStatus.Completed)
             {
                 tcs.SetResult();
                 return tcs.Task;
@@ -288,27 +331,6 @@ namespace MapBoard.Mapping
             }
             WmtsLayer layer = new WmtsLayer(new Uri(items[0]), items[1]);
             return layer;
-        }
-
-        private static Basemap GetBasemap(ItemsOperationErrorCollection errors)
-
-        {
-            var info = Config.Instance.BaseLayers.FirstOrDefault(p => p.Type == BaseLayerType.Esri);
-            if (info == null)
-            {
-                return new Basemap();
-            }
-            string type = info.Path;
-            Debug.Assert(type != null);
-            var methods = typeof(Basemap).GetMethods(BindingFlags.Static | BindingFlags.Public);
-            var method = methods.FirstOrDefault(p => p.Name == $"Create{type}");
-            if (method == null)
-            {
-                errors.Add(new ItemsOperationError("Esri底图", $"找不到类型{type}"));
-                return new Basemap();
-            }
-
-            return method.Invoke(null, null) as Basemap;
         }
     }
 }

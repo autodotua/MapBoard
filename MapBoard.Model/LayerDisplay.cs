@@ -6,6 +6,9 @@ using System.Text;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 图层显示设置
+    /// </summary>
     public class LayerDisplay : INotifyPropertyChanged
     {
         private double maxScale = 0;

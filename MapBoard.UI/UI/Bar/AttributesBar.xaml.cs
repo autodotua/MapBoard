@@ -46,7 +46,7 @@ namespace MapBoard.UI.Bar
             switch (MapView.CurrentTask)
             {
                 case BoardTask.Draw
-                            when MapView.Editor.Mode == EditMode.Creat
+                            when MapView.Editor.Mode == EditMode.Create
                             || MapView.Editor.Mode == EditMode.Edit:
                     attributes = MapView.Editor.Attributes;
                     dataGrid.Columns[1].IsReadOnly = false;

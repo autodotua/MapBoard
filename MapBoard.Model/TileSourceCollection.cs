@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 瓦片地图下载器的瓦片数据源集合
+    /// </summary>
     public class TileSourceCollection : INotifyPropertyChanged
     {
         public TileSourceCollection()
@@ -31,8 +34,19 @@ namespace MapBoard.Model
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 选择的序号
+        /// </summary>
         public int SelectedIndex { get; set; }
+
+        /// <summary>
+        /// 选择的瓦片源
+        /// </summary>
         public BaseLayerInfo SelectedUrl => SelectedIndex == -1 || SelectedIndex >= Sources.Count ? null : Sources[SelectedIndex];
+        
+        /// <summary>
+        /// 所有源
+        /// </summary>
         public ObservableCollection<BaseLayerInfo> Sources { get; set; } = new ObservableCollection<BaseLayerInfo>();
     }
 }

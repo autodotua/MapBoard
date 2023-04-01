@@ -2,6 +2,9 @@
 
 namespace MapBoard.Model
 {
+    /// <summary>
+    /// 图层交互设置
+    /// </summary>
     public class LayerInteraction : INotifyPropertyChanged
     {
         /// <summary>

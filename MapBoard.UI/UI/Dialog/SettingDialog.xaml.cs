@@ -90,8 +90,6 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         public int CurrentBackupCount => Directory.EnumerateFiles(FolderPaths.BackupPath, "*.mbmpkg").Count();
 
-        public string[] EsriBasemaps => new string[] { "" }.Concat(GeoViewHelper.EsriBasemaps).ToArray();
-
         /// <summary>
         /// 是否设置了GPX格式关联
         /// </summary>

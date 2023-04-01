@@ -276,8 +276,6 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="8" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid
                             Margin="0,-4,0,-6"
@@ -318,87 +316,124 @@
                             dd:DragDrop.IsDropTarget="True"
                             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
                             ItemsSource="{Binding BaseLayers}"
-                            ScrollViewer.CanContentScroll="False">
+                            ScrollViewer.CanContentScroll="False"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListBox.ItemContainerStyle>
                                 <Style
                                     BasedOn="{StaticResource DefaultListBoxItemStyle}"
                                     TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="0" />
                                 </Style>
                             </ListBox.ItemContainerStyle>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid
-                                        Margin="0,-4,12,-6"
-                                        HorizontalAlignment="Stretch">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="24" />
-                                            <ColumnDefinition Width="16" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="96" />
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="54" />
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="88" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox
-                                            Grid.RowSpan="99"
-                                            IsChecked="{Binding Enable}" />
-                                        <ui:ToggleSwitch
-                                            Grid.RowSpan="99"
-                                            Grid.Column="99"
-                                            IsEnabled="{Binding Enable}"
-                                            IsOn="{Binding Visible}"
-                                            OffContent="隐藏"
-                                            OnContent="可见"
-                                            Tag="{Binding .}"
-                                            Toggled="BaseLayerVisibleSwitch_Toggled" />
-                                        <TextBox
-                                            Grid.Column="2"
-                                            Margin="0,2,0,0"
-                                            VerticalAlignment="Center"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Text="{Binding Name}" />
-                                        <TextBlock
-                                            Grid.Column="4"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
-                                        <Button
-                                            Grid.Column="6"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Center"
-                                            Background="Transparent">
-                                            <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
-                                            <ui:FlyoutService.Flyout>
-                                                <ui:Flyout>
-                                                    <Slider
-                                                        Width="128"
-                                                        LargeChange="0.20"
-                                                        Maximum="1"
-                                                        Minimum="0"
-                                                        SmallChange="0.05"
-                                                        TickFrequency="0.1"
-                                                        TickPlacement="BottomRight"
-                                                        Value="{Binding Opacity}" />
-                                                </ui:Flyout>
-                                            </ui:FlyoutService.Flyout>
-                                        </Button>
-                                    </Grid>
+                                    <Border
+                                        BorderBrush="Gray"
+                                        BorderThickness="0,1,0,0">
+                                        <Grid
+                                            Margin="8,4,16,4"
+                                            HorizontalAlignment="Stretch">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="0" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="24" />
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="96" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="54" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="88" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox
+                                                Grid.RowSpan="99"
+                                                IsChecked="{Binding Enable}" />
+                                            <ui:ToggleSwitch
+                                                Grid.RowSpan="99"
+                                                Grid.Column="99"
+                                                IsEnabled="{Binding Enable}"
+                                                IsOn="{Binding Visible}"
+                                                OffContent="隐藏"
+                                                OnContent="可见"
+                                                Tag="{Binding .}"
+                                                Toggled="BaseLayerVisibleSwitch_Toggled" />
+
+                                            <Button
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                HorizontalContentAlignment="Left"
+                                                Background="Transparent"
+                                                Content="{Binding Name}">
+                                                <ui:FlyoutService.Flyout>
+                                                    <ui:Flyout>
+                                                        <TextBox
+                                                            Width="200"
+                                                            ui:ControlHelper.Header="图层名"
+                                                            Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </ui:Flyout>
+                                                </ui:FlyoutService.Flyout>
+                                            </Button>
+                                            <TextBlock
+                                                Grid.Column="4"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
+                                            <Button
+                                                Grid.Column="6"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent">
+                                                <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
+                                                <ui:FlyoutService.Flyout>
+                                                    <ui:Flyout>
+                                                        <Slider
+                                                            Width="128"
+                                                            LargeChange="0.20"
+                                                            Maximum="1"
+                                                            Minimum="0"
+                                                            SmallChange="0.05"
+                                                            TickFrequency="0.1"
+                                                            TickPlacement="BottomRight"
+                                                            Value="{Binding Opacity}" />
+                                                    </ui:Flyout>
+                                                </ui:FlyoutService.Flyout>
+                                            </Button>
+
+                                            <Button
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                Grid.ColumnSpan="5"
+                                                Background="Transparent">
+                                                <TextBlock
+                                                    Text="{Binding Path}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                                <ui:FlyoutService.Flyout>
+                                                    <ui:Flyout>
+                                                        <TextBox
+                                                            Width="360"
+                                                            ui:ControlHelper.Header="地址"
+                                                            IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}"
+                                                            Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
+                                                            TextWrapping="Wrap" />
+                                                    </ui:Flyout>
+                                                </ui:FlyoutService.Flyout>
+                                            </Button>
+
+
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                        <TextBox
-                            Grid.Row="4"
-                            ui:ControlHelper.Header="地址"
-                            IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}"
-                            MaxLines="3"
-                            MinLines="3"
-                            Text="{Binding ElementName=grd, Path=SelectedItem.Path}"
-                            TextWrapping="Wrap" />
+
                         <ui:SimpleStackPanel
-                            Grid.Row="6"
+                            Grid.Row="4"
                             Grid.ColumnSpan="5"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
@@ -432,7 +467,7 @@
                         </ui:SimpleStackPanel>
                         <ComboBox
                             x:Name="cbbCoords"
-                            Grid.Row="6"
+                            Grid.Row="4"
                             ui:ControlHelper.Header="底图坐标系"
                             SelectedItem="{Binding Config.BasemapCoordinateSystem}" />
                     </Grid>

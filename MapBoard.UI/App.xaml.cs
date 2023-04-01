@@ -34,6 +34,11 @@ namespace MapBoard
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// 用于保证同时只运行一个进程的单例检测
+        /// </summary>
+        private SingleInstance singleInstance;
+
         public App()
         {
             try
@@ -45,13 +50,20 @@ namespace MapBoard
             }
         }
 
+        /// <summary>
+        /// 日志系统
+        /// </summary>
         public static ILog Log { get; private set; }
-        private SingleInstance singleInstance;
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Log.Info("程序正常关闭");
+        }
 
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
             InitializeLogs();
 
+            //单例检测
             singleInstance = new SingleInstance(FzLib.Program.App.ProgramName);
             await singleInstance.CheckAndOpenWindow<MainWindow>(this);
             if (singleInstance.ExistAnotherInstance)
@@ -85,9 +97,12 @@ namespace MapBoard
 
 #endif
             System.IO.Directory.SetCurrentDirectory(FzLib.Program.App.ProgramDirectoryPath);
+
+            //设置日期时间格式
             Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
             Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;
 
+            //设置属性
             Config.Instance.ThemeChanged += (p1, p2) =>
                 Theme.SetTheme(Config.Instance.Theme);
             WindowBase.WindowCreated += (p1, p2) =>
@@ -113,6 +128,7 @@ namespace MapBoard
                     MainWindow = await MainWindowBase.CreateAndShowAsync<MainWindow>();
                 }
             }
+            //检测C++库
             catch (TargetInvocationException ex) when (ex.InnerException?.InnerException?.InnerException?.InnerException is DllNotFoundException)
             {
                 SplashWindow.EnsureInvisible();
@@ -134,6 +150,7 @@ namespace MapBoard
                 return;
             }
 
+            //设置UI为压缩模式
             var xcr = Resources.MergedDictionaries.OfType<XamlControlsResources>().FirstOrDefault();
             if (xcr != null)
             {
@@ -141,6 +158,9 @@ namespace MapBoard
             }
         }
 
+        /// <summary>
+        /// 初始化日志系统
+        /// </summary>
         private void InitializeLogs()
         {
             Log = LogManager.GetLogger(GetType());
@@ -159,6 +179,11 @@ namespace MapBoard
             Log.Info("程序启动");
         }
 
+        /// <summary>
+        /// 未捕获异常处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UnhandledException_UnhandledExceptionCatched(object sender, FzLib.Program.Runtime.UnhandledExceptionEventArgs e)
         {
             try
@@ -176,11 +201,6 @@ namespace MapBoard
             catch (Exception ex)
             {
             }
-        }
-
-        private void Application_Exit(object sender, ExitEventArgs e)
-        {
-            Log.Info("程序正常关闭");
         }
     }
 }

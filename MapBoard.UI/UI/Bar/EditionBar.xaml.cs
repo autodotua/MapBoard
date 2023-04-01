@@ -79,11 +79,11 @@ namespace MapBoard.UI.Bar
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
-            if (e.NewTask == BoardTask.Draw && MapView.Editor.Mode is EditMode.Creat or EditMode.Edit)
+            if (e.NewTask == BoardTask.Draw && MapView.Editor.Mode is EditMode.Create or EditMode.Edit)
             {
                 Title = MapView.Editor.Mode switch
                 {
-                    EditMode.Creat => "正在绘制",
+                    EditMode.Create => "正在绘制",
                     EditMode.Edit => "正在编辑",
                     _ => ""
                 };

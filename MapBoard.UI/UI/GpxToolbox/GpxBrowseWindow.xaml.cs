@@ -32,7 +32,7 @@ namespace MapBoard.UI.GpxToolbox
     {
         public GpxBrowseWindow(TrackInfo track)
         {
-            BrowseInfo = Config.Instance.Tile_BrowseInfo;
+            BrowseInfo = Config.Instance.Gpx_BrowseInfo;
             Track = track.Clone();
             Track.Overlay = new GraphicsOverlay() { Renderer = CurrentRenderer };
             InitializeComponent();
