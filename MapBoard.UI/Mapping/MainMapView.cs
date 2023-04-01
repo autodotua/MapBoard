@@ -25,96 +25,9 @@ using System.Windows.Input;
 
 namespace MapBoard.Mapping
 {
-    /// 画板任务类型
-    /// </summary>
-    public enum BoardTask
-    {
-        NotReady,
-        Ready,
-        Draw,
-        Select,
-    }
-
     /// <summary>
-    /// 画板任务改变事件参数
+    /// 主地图画板地图
     /// </summary>
-    public class BoardTaskChangedEventArgs : EventArgs
-    {
-        public BoardTaskChangedEventArgs(BoardTask oldTask, BoardTask newTask)
-        {
-            OldTask = oldTask;
-            NewTask = newTask;
-        }
-
-        /// <summary>
-        /// 新任务
-        /// </summary>
-        public BoardTask NewTask { get; private set; }
-
-        /// <summary>
-        /// 旧任务
-        /// </summary>
-        public BoardTask OldTask { get; private set; }
-    }
-
-    [DoNotNotify]
-    public class BrowseSceneView : SceneView, INotifyPropertyChanged, IMapBoardGeoView
-    {
-        private static List<BrowseSceneView> instances = new List<BrowseSceneView>();
-
-        public BrowseSceneView()
-        {
-            instances.Add(this);
-            IsAttributionTextVisible = false;
-            AllowDrop = false;
-            this.SetHideWatermark();
-        }
-
-        public MapLayerCollection Layers { get; private set; }
-
-        public OverlayHelper Overlay { get; private set; }
-
-        public Task<MapPoint> GetPointAsync()
-        {
-            return SceneEditHelper.CreatePointAsync(this);
-        }
-
-        public async Task LoadAsync()
-        {
-            await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
-            Layers = await MapLayerCollection.GetInstanceAsync(Scene.OperationalLayers);
-            ZoomToLastExtent().ConfigureAwait(false);
-            Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
-        }
-
-        public Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
-        {
-            if (geometry is MapPoint)
-            {
-                if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
-                {
-                    geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
-                }
-                geometry = GeometryEngine.Buffer(geometry, 100);
-            }
-            return SetViewpointAsync(new Viewpoint(geometry));
-        }
-
-        public async Task ZoomToLastExtent()
-        {
-            if (Layers.MapViewExtentJson != null)
-            {
-                try
-                {
-                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
-                }
-                catch
-                {
-                }
-            }
-        }
-    }
-
     [DoNotNotify]
     public class MainMapView : MapView, IMapBoardGeoView
     {
@@ -123,10 +36,29 @@ namespace MapBoard.Mapping
         /// </summary>
         private static BoardTask currentTask = BoardTask.NotReady;
 
+        /// <summary>
+        /// 所有<see cref="MainMapView"/>实例
+        /// </summary>
         private static List<MainMapView> instances = new List<MainMapView>();
+
+        /// <summary>
+        /// 是否允许旋转
+        /// </summary>
         private bool canRotate = true;
+
+        /// <summary>
+        /// WFS图层的取消Token
+        /// </summary>
         private CancellationTokenSource ctsWfs = null;
+
+        /// <summary>
+        /// 鼠标中键按下时起始位置
+        /// </summary>
         private Point startPosition = default;
+
+        /// <summary>
+        /// 旋转开始角度
+        /// </summary>
         private double startRotation = 0;
 
         public MainMapView()
@@ -147,9 +79,19 @@ namespace MapBoard.Mapping
             Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
 
+        /// <summary>
+        /// 画板当前任务改变事件
+        /// </summary>
         public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
+        /// <summary>
+        /// 所有<see cref="MainMapView"/>实例
+        /// </summary>
         public static IReadOnlyList<MainMapView> Instances => instances.AsReadOnly();
+
+        /// <summary>
+        /// 底图加载错误
+        /// </summary>
         public ItemsOperationErrorCollection BaseMapLoadErrors { get; private set; }
 
         /// <summary>
@@ -170,14 +112,30 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 编辑器相关
+        /// </summary>
         public EditorHelper Editor { get; private set; }
 
+        /// <summary>
+        /// 图层
+        /// </summary>
         public MapLayerCollection Layers { get; }
 
+        /// <summary>
+        /// 覆盖层相关
+        /// </summary>
         public OverlayHelper Overlay { get; private set; }
 
+        /// <summary>
+        /// 选择相关
+        /// </summary>
         public SelectionHelper Selection { get; private set; }
 
+        /// <summary>
+        /// 初始化加载
+        /// </summary>
+        /// <returns></returns>
         public async Task LoadAsync()
         {
             BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
@@ -191,12 +149,21 @@ namespace MapBoard.Mapping
             CurrentTask = BoardTask.Ready;
         }
 
+        /// <summary>
+        /// 设置设备位置的显示
+        /// </summary>
         public void SetLocationDisplay()
         {
             LocationDisplay.ShowLocation = Config.Instance.ShowLocation;
             LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
         }
 
+        /// <summary>
+        /// 缩放到指定位置
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <param name="autoExtent"></param>
+        /// <returns></returns>
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
             if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count == 1)
@@ -216,7 +183,11 @@ namespace MapBoard.Mapping
             await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
         }
 
-        public async Task ZoomToLastExtent()
+        /// <summary>
+        /// 缩放到记忆的地图位置
+        /// </summary>
+        /// <returns></returns>
+        private async Task ZoomToLastExtent()
         {
             if (Layers.MapViewExtentJson != null)
             {
@@ -239,6 +210,7 @@ namespace MapBoard.Mapping
             base.OnPreviewKeyDown(e);
             switch (e.Key)
             {
+                //Delete：移除节点、删除要素
                 case Key.Delete when SketchEditor.SelectedVertex != null:
                     SketchEditor.RemoveSelectedVertex();
                     break;
@@ -251,6 +223,7 @@ namespace MapBoard.Mapping
                    }, "正在删除", true);
                     break;
 
+                //空格、回车：开始/结束绘图、选择模式下开始编辑
                 case Key.Space:
                 case Key.Enter:
                     switch (CurrentTask)
@@ -287,6 +260,7 @@ namespace MapBoard.Mapping
                     }
                     break;
 
+                //ESC：退出当前状态，返回就绪状态
                 case Key.Escape
                 when CurrentTask == BoardTask.Draw:
                     Editor.Cancel();
@@ -297,14 +271,15 @@ namespace MapBoard.Mapping
                     Selection.ClearSelection();
                     break;
 
+                //Ctrl Z：撤销
                 case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
                     SketchEditor.UndoCommand.Execute(null);
                     break;
 
+                //Ctrl SHift Z/Ctrl Y：重做
                 case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && SketchEditor.RedoCommand.CanExecute(null):
                     SketchEditor.RedoCommand.Execute(null);
                     break;
-
                 case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.RedoCommand.CanExecute(null):
                     SketchEditor.RedoCommand.Execute(null);
                     break;
@@ -328,24 +303,12 @@ namespace MapBoard.Mapping
                 startRotation = MapRotation;
                 startPosition = e.GetPosition(this);
             }
-            else if (e.RightButton == MouseButtonState.Pressed && currentTask != BoardTask.Draw)
-            {
-                //ContextMenu menu = new ContextMenu();
-                //var location = ScreenToLocation(e.GetPosition(this)).ToWgs84();
-                //MenuItem item = new MenuItem()
-                //{
-                //    Header = $"经度：{location.X:0.000000}{Environment.NewLine}纬度：{location.Y:0.000000}",
-                //};
-                //item.Click += (s, e) =>
-                //{
-                //    Clipboard.SetText(LocationClipboardUtility.GetLocationString(location));
-                //    SnakeBar.Show("已复制经纬度到剪贴板");
-                //};
-                //menu.Items.Add(item);
-                //menu.IsOpen = true;
-            }
         }
 
+        /// <summary>
+        /// 鼠标移动，中键按下时旋转地图
+        /// </summary>
+        /// <param name="e"></param>
         protected override async void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
@@ -366,6 +329,11 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 视角改变时，保存当前地图位置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
         {
             if (Layers != null
@@ -375,6 +343,7 @@ namespace MapBoard.Mapping
             }
         }
 
+
         private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Config.ShowLocation))
@@ -383,6 +352,11 @@ namespace MapBoard.Mapping
             }
         }
 
+        /// <summary>
+        /// 地图“导航”完成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
         {
             //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。

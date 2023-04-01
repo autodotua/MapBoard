@@ -16,25 +16,51 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Mapping
 {
+    /// <summary>
+    /// 覆盖层帮助类
+    /// </summary>
     public class OverlayHelper
     {
-        private GraphicsOverlay headAndTailOverlay = new GraphicsOverlay();
-        private GraphicsOverlay poiOverlay = new GraphicsOverlay();
-        private GraphicsOverlay routeOverlay = new GraphicsOverlay();
-        private GraphicsOverlay locationInfoOverlay = new GraphicsOverlay();
+        private readonly Func<Geometry, Task> zoomAsync;
+
+        /// <summary>
+        /// 用于显示绘制时（最近结点、最近点）的覆盖层
+        /// </summary>
         private GraphicsOverlay drawOverlay = new GraphicsOverlay();
+
+        /// <summary>
+        /// 用于显示折现头尾的覆盖层
+        /// </summary>
+        private GraphicsOverlay headAndTailOverlay = new GraphicsOverlay();
+
+        /// <summary>
+        /// 用于显示位置信息的覆盖层
+        /// </summary>
+        private GraphicsOverlay locationInfoOverlay = new GraphicsOverlay();
+
+        /// <summary>
+        /// 用于显示POI的覆盖层
+        /// </summary>
+        private GraphicsOverlay poiOverlay = new GraphicsOverlay();
+
+        /// <summary>
+        /// 用于显示路线规划的覆盖层
+        /// </summary>
+        private GraphicsOverlay routeOverlay = new GraphicsOverlay();
 
         public OverlayHelper(GraphicsOverlayCollection overlays, Func<Geometry, Task> zoomAsync)
         {
             overlays.Add(headAndTailOverlay);
             overlays.Add(locationInfoOverlay);
 
+            //POI
             var d = new LabelInfo().GetLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
             poiOverlay.LabelDefinitions.Add(d);
             poiOverlay.LabelsEnabled = true;
             overlays.Add(poiOverlay);
 
+            //路线规划
             d = new LabelInfo().GetLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
             d.WhereClause = "Distance is null";
@@ -52,26 +78,7 @@ namespace MapBoard.Mapping
             this.zoomAsync = zoomAsync;
         }
 
-        private readonly Func<Geometry, Task> zoomAsync;
-
         #region 样式
-
-        private Symbol GetTextSymbol(string text, Color outlineColor)
-        {
-            TextSymbol symbol = new TextSymbol()
-            {
-                Text = text,
-                Color = Color.White,
-                Size = 16,
-                HaloColor = outlineColor,
-                HaloWidth = 4,
-                OffsetX = 16,
-                OffsetY = 16,
-                VerticalAlignment = VerticalAlignment.Middle,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            return symbol;
-        }
 
         /// <summary>
         /// 获取点的符号
@@ -109,6 +116,22 @@ namespace MapBoard.Mapping
             };
         }
 
+        private Symbol GetTextSymbol(string text, Color outlineColor)
+        {
+            TextSymbol symbol = new TextSymbol()
+            {
+                Text = text,
+                Color = Color.White,
+                Size = 16,
+                HaloColor = outlineColor,
+                HaloWidth = 4,
+                OffsetX = 16,
+                OffsetY = 16,
+                VerticalAlignment = VerticalAlignment.Middle,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            return symbol;
+        }
         #endregion 样式
 
         #region 折线端点
@@ -143,20 +166,15 @@ namespace MapBoard.Mapping
 
         #region POI
 
-        internal void SelectPoi(PoiInfo poi)
-        {
-            poiOverlay.ClearSelection();
-            if (poi != null)
-            {
-                if (poi2Graphic.ContainsKey(poi))
-                {
-                    poi2Graphic[poi].IsSelected = true;
-                    zoomAsync(poi2Graphic[poi].Geometry.Extent);
-                }
-            }
-        }
-
         public Dictionary<PoiInfo, Graphic> poi2Graphic = new Dictionary<PoiInfo, Graphic>();
+
+        /// <summary>
+        /// 清除POI显示
+        /// </summary>
+        public void ClearPois()
+        {
+            poiOverlay.Graphics.Clear();
+        }
 
         /// <summary>
         /// 显示搜索到的POI的位置
@@ -194,19 +212,86 @@ namespace MapBoard.Mapping
             await zoomAsync(poiOverlay.Extent);
         }
 
-        /// <summary>
-        /// 清除POI显示
-        /// </summary>
-        public void ClearPois()
+        internal void SelectPoi(PoiInfo poi)
         {
-            poiOverlay.Graphics.Clear();
+            poiOverlay.ClearSelection();
+            if (poi != null)
+            {
+                if (poi2Graphic.ContainsKey(poi))
+                {
+                    poi2Graphic[poi].IsSelected = true;
+                    zoomAsync(poi2Graphic[poi].Geometry.Extent);
+                }
+            }
         }
-
         #endregion POI
 
         #region 路径
 
         public Dictionary<RouteStepInfo, Graphic> step2Graphic = new Dictionary<RouteStepInfo, Graphic>();
+
+        public void ClearRoutes()
+        {
+            routeOverlay.Graphics.Clear();
+        }
+
+        public void SelectRoute(RouteInfo route)
+        {
+            routeOverlay.ClearSelection();
+            if (route != null)
+            {
+                foreach (var step in route.Steps)
+                {
+                    if (step2Graphic.ContainsKey(step))
+                    {
+                        step2Graphic[step].IsSelected = true;
+                    }
+                }
+            }
+        }
+
+        public void SelectStep(RouteStepInfo step)
+        {
+            routeOverlay.ClearSelection();
+            if (step != null)
+            {
+                if (step2Graphic.ContainsKey(step))
+                {
+                    step2Graphic[step].IsSelected = true;
+                    zoomAsync(step2Graphic[step].Geometry.Extent);
+                }
+            }
+        }
+
+        public void SetRouteDestination(MapPoint point)
+        {
+            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
+                  .FirstOrDefault(p => p.Attributes["Name"].Equals("终点"));
+            if (graphic != null)
+            {
+                routeOverlay.Graphics.Remove(graphic);
+            }
+            graphic = new Graphic(point);
+            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, Color.Blue, 8)
+            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
+            graphic.Attributes.Add("Name", "终点");
+            routeOverlay.Graphics.Add(graphic);
+        }
+
+        public void SetRouteOrigin(MapPoint point)
+        {
+            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
+                .FirstOrDefault(p => p.Attributes["Name"].Equals("起点"));
+            if (graphic != null)
+            {
+                routeOverlay.Graphics.Remove(graphic);
+            }
+            graphic = new Graphic(point);
+            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Orange, 8)
+            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
+            graphic.Attributes.Add("Name", "起点");
+            routeOverlay.Graphics.Add(graphic);
+        }
 
         public async Task ShowRoutes(IEnumerable<RouteInfo> routes)
         {
@@ -240,73 +325,14 @@ namespace MapBoard.Mapping
             }
             await zoomAsync(routeOverlay.Extent);
         }
-
-        public void SelectStep(RouteStepInfo step)
-        {
-            routeOverlay.ClearSelection();
-            if (step != null)
-            {
-                if (step2Graphic.ContainsKey(step))
-                {
-                    step2Graphic[step].IsSelected = true;
-                    zoomAsync(step2Graphic[step].Geometry.Extent);
-                }
-            }
-        }
-
-        public void SelectRoute(RouteInfo route)
-        {
-            routeOverlay.ClearSelection();
-            if (route != null)
-            {
-                foreach (var step in route.Steps)
-                {
-                    if (step2Graphic.ContainsKey(step))
-                    {
-                        step2Graphic[step].IsSelected = true;
-                    }
-                }
-            }
-        }
-
-        public void SetRouteOrigin(MapPoint point)
-        {
-            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
-                .FirstOrDefault(p => p.Attributes["Name"].Equals("起点"));
-            if (graphic != null)
-            {
-                routeOverlay.Graphics.Remove(graphic);
-            }
-            graphic = new Graphic(point);
-            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Orange, 8)
-            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
-            graphic.Attributes.Add("Name", "起点");
-            routeOverlay.Graphics.Add(graphic);
-        }
-
-        public void SetRouteDestination(MapPoint point)
-        {
-            Graphic graphic = routeOverlay.Graphics.Where(p => p.Geometry is MapPoint)
-                  .FirstOrDefault(p => p.Attributes["Name"].Equals("终点"));
-            if (graphic != null)
-            {
-                routeOverlay.Graphics.Remove(graphic);
-            }
-            graphic = new Graphic(point);
-            graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, Color.Blue, 8)
-            { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
-            graphic.Attributes.Add("Name", "终点");
-            routeOverlay.Graphics.Add(graphic);
-        }
-
-        public void ClearRoutes()
-        {
-            routeOverlay.Graphics.Clear();
-        }
-
         #endregion 路径
 
         #region 地理逆编码
+
+        public void ClearLocation()
+        {
+            locationInfoOverlay.Graphics.Clear();
+        }
 
         public void ShowLocation(MapPoint point)
         {
@@ -316,13 +342,22 @@ namespace MapBoard.Mapping
             { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.White, 2) };
             locationInfoOverlay.Graphics.Add(g);
         }
-
-        public void ClearLocation()
-        {
-            locationInfoOverlay.Graphics.Clear();
-        }
-
         #endregion 地理逆编码
+
+        #region 最近结点
+        public void SetNearestPointPoint(MapPoint point)
+        {
+            if (drawOverlay.Graphics.Any(p => p.Attributes["Type"].Equals(2)))
+            {
+                drawOverlay.Graphics.Remove(drawOverlay.Graphics.First(p => p.Attributes["Type"].Equals(2)));
+            }
+            if (point != null)
+            {
+                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Yellow, 6));
+                g.Attributes.Add("Type", 2);
+                drawOverlay.Graphics.Add(g);
+            }
+        }
 
         public void SetNearestVertexPoint(MapPoint point)
         {
@@ -337,19 +372,6 @@ namespace MapBoard.Mapping
                 drawOverlay.Graphics.Add(g);
             }
         }
-
-        public void SetNearestPointPoint(MapPoint point)
-        {
-            if (drawOverlay.Graphics.Any(p => p.Attributes["Type"].Equals(2)))
-            {
-                drawOverlay.Graphics.Remove(drawOverlay.Graphics.First(p => p.Attributes["Type"].Equals(2)));
-            }
-            if (point != null)
-            {
-                var g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, Color.Yellow, 6));
-                g.Attributes.Add("Type", 2);
-                drawOverlay.Graphics.Add(g);
-            }
-        }
+        #endregion
     }
 }

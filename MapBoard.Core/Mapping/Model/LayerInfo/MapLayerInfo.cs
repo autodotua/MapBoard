@@ -157,7 +157,9 @@ namespace MapBoard.Mapping.Model
                     table.CancelLoad();
                     throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
                 }
+                //应用属性
                 ApplyProperties();
+                //应用符号和标签
                 this.ApplyStyle();
                 IsLoaded = true;
                 this.Notify(nameof(GeometryType));
