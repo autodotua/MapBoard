@@ -10,6 +10,9 @@ using System.Collections.Generic;
 
 namespace MapBoard.Mapping
 {
+    /// <summary>
+    /// 为<see cref="SceneView"/>设计的类似<see cref="SketchEditor"/>的图形编辑器。来自https://github.com/Esri/arcgis-maps-sdk-dotnet-demos/tree/main/src/SceneViewEdit
+    /// </summary>
     public class SceneDrawHelper
     {
         #region 符号
@@ -259,6 +262,9 @@ namespace MapBoard.Mapping
         #endregion Private utility methods
     }
 
+    /// <summary>
+    /// 为<see cref="SceneView"/>设计的类似<see cref="SketchEditor"/>的图形编辑器。由
+    /// </summary>
     public class SceneEditHelper
     {
         private static CancellationTokenSource _drawTaskTokenSource;

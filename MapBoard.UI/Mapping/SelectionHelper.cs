@@ -12,12 +12,23 @@ using System.Windows;
 using System.Windows.Input;
 using MapBoard.UI;
 using MapBoard.Util;
+using System.ComponentModel;
 
 namespace MapBoard.Mapping
 {
+    /// <summary>
+    /// 图形选择帮助类
+    /// </summary>
     public class SelectionHelper
     {
         private bool isClearing = false;
+
+        private bool isSelecting = false;
+
+        /// <summary>
+        /// 选中的要素，以ID为Key
+        /// </summary>
+        private Dictionary<long, Feature> selectedFeatures = new Dictionary<long, Feature>();
 
         public SelectionHelper(MainMapView map)
         {
@@ -27,43 +38,46 @@ namespace MapBoard.Mapping
             Editor.EditorStatusChanged += Editor_EditorStatusChanged;
         }
 
-        public EditorHelper Editor => MapView.Editor;
-
-        public MapLayerCollection Layers => MapView.Layers;
-
-        public MainMapView MapView { get; }
-
-        public Dictionary<long, Feature>.KeyCollection SelectedFeatureIDs => selectedFeatures.Keys;
-        public Dictionary<long, Feature>.ValueCollection SelectedFeatures => selectedFeatures.Values;
-        private Dictionary<long, Feature> selectedFeatures = new Dictionary<long, Feature>();
-
         public event EventHandler<SelectedFeaturesChangedEventArgs> CollectionChanged;
 
+        /// <summary>
+        /// 关联的编辑器
+        /// </summary>
+        public EditorHelper Editor => MapView.Editor;
+
+        /// <summary>
+        /// 图层
+        /// </summary>
+        public MapLayerCollection Layers => MapView.Layers;
+
+        /// <summary>
+        /// 关联的地图
+        /// </summary>
+        public MainMapView MapView { get; }
+
+        /// <summary>
+        /// 选中的要素的ID值
+        /// </summary>
+        public Dictionary<long, Feature>.KeyCollection SelectedFeatureIDs => selectedFeatures.Keys;
+
+        /// <summary>
+        /// 选中的要素
+        /// </summary>
+        public Dictionary<long, Feature>.ValueCollection SelectedFeatures => selectedFeatures.Values;
+        /// <summary>
+        /// 清除选择
+        /// </summary>
         public void ClearSelection()
         {
             ClearSelection(true);
         }
 
-        private void ClearSelection(bool raiseEvent)
-        {
-            isClearing = true;
-            Editor.Cancel();
-            if (selectedFeatures.Count == 0)
-            {
-                return;
-            }
-            var layers = selectedFeatures.Select(p => p.Value.FeatureTable.Layer as FeatureLayer).Distinct().ToList();
-            Debug.Assert(layers.Count == 1);
-            layers[0].ClearSelection();
-            SelectedFeaturesChangedEventArgs e = new SelectedFeaturesChangedEventArgs(Layers.Find(layers[0]), null, selectedFeatures.Values);
-            selectedFeatures.Clear();
-            isClearing = false;
-            if (raiseEvent)
-            {
-                CollectionChanged?.Invoke(this, e);
-            }
-        }
-
+        /// <summary>
+        /// 选择指定的要素
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="clearAll">是否在选择前清除选择</param>
+        /// <returns></returns>
         public bool Select(Feature feature, bool clearAll = false)
         {
             return Select(new[] { feature }, clearAll) == 1;
@@ -73,7 +87,7 @@ namespace MapBoard.Mapping
         /// 选取一些要素
         /// </summary>
         /// <param name="features"></param>
-        /// <param name="clearAll"></param>
+        /// <param name="clearAll">是否在选择前清除选择</param>
         /// <returns>新增选取的个数</returns>
         public int Select(IEnumerable<Feature> features, bool clearAll = false)
         {
@@ -95,6 +109,8 @@ namespace MapBoard.Mapping
             }
             List<Feature> add = new List<Feature>();
             List<Feature> remove = new List<Feature>();
+
+            //清除选择
             if (clearAll && SelectedFeatures.Count > 0)
             {
                 remove.AddRange(SelectedFeatures);
@@ -111,13 +127,27 @@ namespace MapBoard.Mapping
             return add.Count;
         }
 
-        public bool UnSelect(Feature feature)
+        /// <summary>
+        /// 框选
+        /// </summary>
+        /// <returns></returns>
+        public async Task SelectRectangleAsync()
         {
-            if (!selectedFeatures.ContainsKey(feature.GetID()))
+            ClearSelection();
+            var envelope = await Editor.GetRectangleAsync();
+            if (envelope != null)
             {
-                return false;
+                envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
+                bool allLayers = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) //按下Ctrl，则为相交；否则为包含
+                {
+                    await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New, allLayers);
+                }
+                else
+                {
+                    await SelectAsync(envelope, null, SpatialRelationship.Contains, SelectionMode.New, allLayers);
+                }
             }
-            return Unselect(new[] { feature }) == 1;
         }
 
         /// <summary>
@@ -157,28 +187,42 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 框选
+        /// 取消选择一个要素
         /// </summary>
+        /// <param name="feature"></param>
         /// <returns></returns>
-        public async Task SelectRectangleAsync()
+        public bool UnSelect(Feature feature)
         {
-            ClearSelection();
-            var envelope = await Editor.GetRectangleAsync();
-            if (envelope != null)
+            if (!selectedFeatures.ContainsKey(feature.GetID()))
             {
-                envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;
-                bool allLayers = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
-                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                {
-                    await SelectAsync(envelope, null, SpatialRelationship.Intersects, SelectionMode.New, allLayers);
-                }
-                else
-                {
-                    await SelectAsync(envelope, null, SpatialRelationship.Contains, SelectionMode.New, allLayers);
-                }
+                return false;
             }
+            return Unselect(new[] { feature }) == 1;
         }
 
+        /// <summary>
+        /// 清除选择
+        /// </summary>
+        /// <param name="raiseEvent">是否通知选择的要素集合改变<see cref="CollectionChanged"/></param>
+        private void ClearSelection(bool raiseEvent)
+        {
+            isClearing = true;
+            Editor.Cancel();
+            if (selectedFeatures.Count == 0)
+            {
+                return;
+            }
+            var layers = selectedFeatures.Select(p => p.Value.FeatureTable.Layer as FeatureLayer).Distinct().ToList();
+            Debug.Assert(layers.Count == 1);
+            layers[0].ClearSelection();
+            SelectedFeaturesChangedEventArgs e = new SelectedFeaturesChangedEventArgs(Layers.Find(layers[0]), null, selectedFeatures.Values);
+            selectedFeatures.Clear();
+            isClearing = false;
+            if (raiseEvent)
+            {
+                CollectionChanged?.Invoke(this, e);
+            }
+        }
         private void Editor_EditorStatusChanged(object sender, EditorStatusChangedEventArgs e)
         {
             if (!isClearing && !e.IsRunning)
@@ -202,6 +246,7 @@ namespace MapBoard.Mapping
                     && !Config.Instance.TapToSelect
                     )
             {
+                //没有按下任何修饰键，并且未开启单击选择
                 return;
             }
             MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
@@ -225,9 +270,18 @@ namespace MapBoard.Mapping
             bool edit = MapView.CurrentTask != BoardTask.Select && Keyboard.Modifiers == ModifierKeys.Alt;
             await SelectAsync(envelope, e.Position, SpatialRelationship.Intersects, mode, allLayers, edit);
         }
-
-        private bool isSelecting = false;
-
+        /// <summary>
+        /// 根据范围或点，查询要素并选择
+        /// </summary>
+        /// <param name="envelope">提供范围</param>
+        /// <param name="point">提供点</param>
+        /// <param name="relationship">空间查询关系</param>
+        /// <param name="mode">选择模式</param>
+        /// <param name="allLayers">是否从所有图层中查询</param>
+        /// <param name="startEdit">选中后是否直接编辑</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         private async Task SelectAsync(Envelope envelope,
             Point? point,
             SpatialRelationship relationship,
@@ -252,20 +306,20 @@ namespace MapBoard.Mapping
                     Geometry = envelope,
                     SpatialRelationship = relationship
                 };
-                bool first = SelectedFeatures.Count == 0;
+                bool first = SelectedFeatures.Count == 0; //是否为新建选择
                 List<Feature> features = null;
                 IMapLayerInfo layer = null;
-                if (allLayers)
+                if (allLayers) //若从所有图层中查询
                 {
-                    var result = (await MapView.IdentifyLayersAsync(point.Value, 8, false))
-                        .Where(p => p.LayerContent.IsVisible)
+                    var result = (await MapView.IdentifyLayersAsync(point.Value, 8, false))//容差为8像素
+                        .Where(p => p.LayerContent.IsVisible)//仅可见图层
                         .Select(p => new
                         {
-                            Layer = Layers.FindLayer(p.LayerContent),
-                            Elements = p.GeoElements,
-                            SubLayer = p.SublayerResults.Any() ? p.SublayerResults[0] : null
+                            Layer = Layers.FindLayer(p.LayerContent),//图层
+                            Elements = p.GeoElements,//要素
+                            SubLayer = p.SublayerResults.Any() ? p.SublayerResults[0] : null//子图层（仅临时图层）
                         })
-                        .Where(p => p.Layer.Interaction.CanSelect)
+                        .Where(p => p.Layer.Interaction.CanSelect)//筛选支持选择的图层
                         .FirstOrDefault();
 
 
@@ -280,13 +334,13 @@ namespace MapBoard.Mapping
                     features = elements.Cast<Feature>().ToList();
                     layer.Layer.SelectFeatures(features);
                 }
-                else
+                else//仅当前图层
                 {
                     layer = Layers.Selected;
 
                     if (layer == null
                         || !layer.Interaction.CanSelect
-                        || !layer.LayerVisible)
+                        || !layer.LayerVisible)//可见、可选图层
                     {
                         return;
                     }
@@ -307,12 +361,12 @@ namespace MapBoard.Mapping
 
                 if (first)//首次选择
                 {
-                    if (startEdit && layer is IEditableLayerInfo w)
+                    if (startEdit && layer is IEditableLayerInfo w)//直接编辑
                     {
                         ClearSelection();
                         await MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);
                     }
-                    else
+                    else//加入选择
                     {
                         foreach (var feature in features)
                         {
@@ -326,6 +380,7 @@ namespace MapBoard.Mapping
                     switch (mode)
                     {
                         case SelectionMode.Add:
+                            //找到新增部分，加入
                             foreach (var feature in features)
                             {
                                 long fid = feature.GetID();
@@ -338,6 +393,7 @@ namespace MapBoard.Mapping
                             break;
 
                         case SelectionMode.New:
+                            //删除之前的，加入所有新增
                             remove.AddRange(selectedFeatures.Values);
                             selectedFeatures.Clear();
                             foreach (var feature in features)
@@ -347,6 +403,7 @@ namespace MapBoard.Mapping
                             break;
 
                         case SelectionMode.Subtract:
+                            //找到和之前的相交部分，移除
                             foreach (var feature in features)
                             {
                                 long fid = feature.GetID();
@@ -359,7 +416,7 @@ namespace MapBoard.Mapping
                             break;
 
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidEnumArgumentException();
                     }
                 }
                 CollectionChanged?.Invoke(this, new SelectedFeaturesChangedEventArgs(layer, add, remove));
@@ -381,33 +438,5 @@ namespace MapBoard.Mapping
                 MapView.CurrentTask = BoardTask.Select;
             }
         }
-    }
-
-    public class SelectedFeaturesChangedEventArgs : EventArgs
-    {
-        public SelectedFeaturesChangedEventArgs(IMapLayerInfo layer, IEnumerable<Feature> selected, IEnumerable<Feature> unSelected)
-        {
-            if (selected != null)
-            {
-                Selected = selected.ToArray();
-            }
-            else
-            {
-                Selected = Array.Empty<Feature>();
-            }
-            if (unSelected != null)
-            {
-                UnSelected = unSelected.ToArray();
-            }
-            else
-            {
-                UnSelected = Array.Empty<Feature>();
-            }
-            Layer = layer;
-        }
-
-        public Feature[] Selected { get; }
-        public Feature[] UnSelected { get; }
-        public IMapLayerInfo Layer { get; }
     }
 }
