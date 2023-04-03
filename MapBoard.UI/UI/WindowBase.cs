@@ -12,72 +12,15 @@ using System.Windows.Media;
 
 namespace MapBoard.UI
 {
-    public abstract class MainWindowBase : WindowBase
-    {
-        protected bool initialized = false;
-        protected bool programInitialized = false;
 
-        public static async Task<T> CreateAndShowAsync<T>(Action<T> beforeInitialize = null) where T : MainWindowBase, new()
-        {
-            T win = new T();
-            if (SplashWindow.IsShowing)
-            {
-                win.initialized = true;
-                beforeInitialize?.Invoke(win);
-                try
-                {
-                    await win.InitializeAsync();
-                    win.programInitialized = true;
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error("窗口初始化失败", ex);
-                    win.programInitialized = false;
-                    win.Loaded += (s, e) =>
-                    {
-                        CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行").ConfigureAwait(false);
-                    };
-                }
-                win.Show();
-                SplashWindow.EnsureInvisible();
-            }
-            else
-            {
-                win.Show();
-            }
-            return win;
-        }
-
-        /// <summary>
-        /// 用于处理一些窗口在初始化后需要加载的耗时异步操作
-        /// </summary>
-        /// <returns></returns>
-        protected abstract Task InitializeAsync();
-
-        protected override async void OnContentRendered(EventArgs e)
-        {
-            base.OnContentRendered(e);
-            if (initialized)
-            {
-                return;
-            }
-            await DoAsync(async () =>
-            {
-                try
-                {
-                    await InitializeAsync();
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error("窗口初始化失败", ex);
-                    CommonDialog.ShowErrorDialogAsync(ex, "初始化失败，程序将无法正常运行");
-                }
-            }, "正在初始化", delay: 0);
-        }
-    }
-
+    /// <summary>
+    /// 所有窗口的基类
+    /// </summary>
     public abstract class WindowBase : Window, INotifyPropertyChanged
     {
+        /// <summary>
+        /// 窗口的加载覆盖层
+        /// </summary>
         private ProgressRingOverlay loading = null;
 
         public WindowBase()
@@ -86,10 +29,16 @@ namespace MapBoard.UI
             WindowCreated?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// 窗口设置完DataContext、构造函数结束时通知
+        /// </summary>
         public static event EventHandler WindowCreated;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 窗口是否已经被关闭
+        /// </summary>
         public bool IsClosed { get; private set; }
 
         /// <summary>
@@ -133,6 +82,9 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 隐藏Loading遮罩
+        /// </summary>
         protected void HideLoading()
         {
             loading?.Hide();
@@ -144,6 +96,12 @@ namespace MapBoard.UI
             IsClosed = true;
         }
 
+        /// <summary>
+        /// 显示Loading遮罩
+        /// </summary>
+        /// <param name="delay"></param>
+        /// <param name="message"></param>
+        /// <exception cref="NotSupportedException"></exception>
         protected void ShowLoading(int delay, string message)
         {
             if (loading == null)

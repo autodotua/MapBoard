@@ -29,14 +29,18 @@ using System.Globalization;
 using Esri.ArcGISRuntime.Location;
 using Windows.Devices.Enumeration;
 using System.ComponentModel;
+using MapBoard.UI.Model;
 
 namespace MapBoard.UI
 {
     /// <summary>
-    /// MapViewInfoPanel.xaml 的交互逻辑
+    /// 地图侧边工具栏
     /// </summary>
     public partial class MapViewSidePanel : UserControlBase
     {
+        /// <summary>
+        /// 线程锁
+        /// </summary>
         private object lockObj = new object();
         private Action setScaleAction;
         private Action updateScaleAndPositionAction;
@@ -52,8 +56,15 @@ namespace MapBoard.UI
             Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
 
+        /// <summary>
+        /// 地图
+        /// </summary>
         public GeoView MapView { get; private set; }
 
+        /// <summary>
+        /// 初始化，根据设置显示指定内容
+        /// </summary>
+        /// <param name="mapView"></param>
         public void Initialize(GeoView mapView)
         {
             MapView = mapView;
@@ -89,38 +100,35 @@ namespace MapBoard.UI
 
         #region 右下角坐标和比例尺
 
-        private bool dataSourceOn = true;
-
+        /// <summary>
+        /// 鼠标位置
+        /// </summary>
         private MapPoint location;
 
-        public bool DataSourceOn
-        {
-            get => dataSourceOn;
-            set
-            {
-                Debug.Assert(MapView is MapView);
-                if (value != dataSourceOn)
-                {
-                    if (value)
-                    {
-                        (MapView as MapView).LocationDisplay.DataSource.StartAsync();
-                    }
-                    else
-                    {
-                        (MapView as MapView).LocationDisplay.DataSource.StopAsync();
-                    }
-                    dataSourceOn = value;
-                }
-            }
-        }
-
+        /// <summary>
+        /// 鼠标位置纬度
+        /// </summary>
         public string Latitude { get; set; }
 
+        /// <summary>
+        /// 鼠标位置经度
+        /// </summary>
         public string Longitude { get; set; }
 
+        /// <summary>
+        /// 比例尺（1:?）
+        /// </summary>
         public string Scale { get; set; }
+
+        /// <summary>
+        /// 比例尺长度（米）
+        /// </summary>
         public string ScaleBarLength { get; set; }
 
+        /// <summary>
+        /// 更新比例尺和位置
+        /// </summary>
+        /// <param name="position"></param>
         public void UpdateScaleAndPosition(Point? position = null)
         {
             if (!IsLoaded
@@ -131,6 +139,8 @@ namespace MapBoard.UI
                 return;
             }
             var view = MapView as MapView;
+
+            //为了防止执行太频繁，使用定时执行
             updateScaleAndPositionAction = () =>
             {
                 if (position.HasValue)
@@ -160,6 +170,11 @@ namespace MapBoard.UI
             };
         }
 
+        /// <summary>
+        /// 鼠标位置改变，通知需要改变位置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MapView_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (IsLoaded && MapView.IsLoaded && MapView.IsMouseOver)
@@ -168,6 +183,11 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 地图视角改变，通知需要更新缩放和位置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MapView_ViewpointChanged(object sender, EventArgs e)
         {
             if (MapView is SceneView s)
@@ -184,12 +204,46 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 定期更新右下角坐标和比例尺信息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void UserControlBase_Loaded(object sender, RoutedEventArgs e)
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(0.05));
+
+            //在到达指定周期后执行方法
+            while (await timer.WaitForNextTickAsync())
+            {
+                lock (lockObj)
+                {
+                    if (updateScaleAndPositionAction != null)
+                    {
+                        Dispatcher.InvokeAsync(updateScaleAndPositionAction);
+                        updateScaleAndPositionAction = null;
+                    }
+                    if (setScaleAction != null)
+                    {
+                        Dispatcher.InvokeAsync(setScaleAction);
+                        setScaleAction = null;
+                    }
+                }
+            }
+        }
+
         #endregion 右下角坐标和比例尺
 
         #region 缩放按钮和缩放条
 
+        /// <summary>
+        /// 地图缩放的百分比
+        /// </summary>
         private double mapScalePercent = 0;
 
+        /// <summary>
+        /// 地图缩放的百分比
+        /// </summary>
         public double MapScalePercent
         {
             get => mapScalePercent;
@@ -213,8 +267,16 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 地图缩放的百分比字符串
+        /// </summary>
         public string ScaleLevel { get; set; }
 
+        /// <summary>
+        /// 展开或收拢缩放条
+        /// </summary>
+        /// <param name="open"></param>
+        /// <returns></returns>
         private async Task OpenOrCloseScalePanelAsync(bool open)
         {
             Storyboard storyboard = new Storyboard();
@@ -233,16 +295,32 @@ namespace MapBoard.UI
             await storyboard.BeginAsync();
         }
 
+        /// <summary>
+        /// 缩放条鼠标移出
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PanelScale_MouseLeave(object sender, MouseEventArgs e)
         {
             OpenOrCloseScalePanelAsync(false);
         }
 
+        /// <summary>
+        /// 缩放按钮鼠标移入
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScaleButton_MouseEnter(object sender, MouseEventArgs e)
         {
             OpenOrCloseScalePanelAsync(true);
         }
 
+        /// <summary>
+        /// 单击缩放按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="NotSupportedException"></exception>
         private async void ZoomInOutButton_Click(object sender, MouseButtonEventArgs e)
         {
             if (MapView is MapView m)
@@ -260,8 +338,14 @@ namespace MapBoard.UI
 
         #region 底图
 
+        /// <summary>
+        /// 面板是否展开
+        /// </summary>
         private bool isLayerPanelOpened = false;
 
+        /// <summary>
+        /// 底图
+        /// </summary>
         public List<BaseLayerInfo> BaseLayers { get; set; }
 
         /// <summary>
@@ -288,19 +372,21 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 单击关闭底图面板按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseLayerPanelButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseLayersPanelAsync(false);
         }
 
-        private void LayersPanel_LostFocus(object sender, RoutedEventArgs e)
-        {
-            //if (isLayerPanelOpened && !IsMouseOver)
-            //{
-            //    OpenOrCloseLayersPanelAsync(false);
-            //}
-        }
-
+        /// <summary>
+        /// 单机底图按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LayersPanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!isLayerPanelOpened)
@@ -309,6 +395,11 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 展开或收拢底图面板
+        /// </summary>
+        /// <param name="open"></param>
+        /// <returns></returns>
         private async Task OpenOrCloseLayersPanelAsync(bool open)
         {
             isLayerPanelOpened = open;
@@ -348,11 +439,16 @@ namespace MapBoard.UI
             bdLayers.IsHitTestVisible = true;
         }
 
+        /// <summary>
+        /// 单击底图设置按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void OpenSettingDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            if(MapView is MainMapView mapView)
+            if (MapView is MainMapView mapView)
             {
-                if(mapView.CurrentTask!=BoardTask.Ready)
+                if (mapView.CurrentTask != BoardTask.Ready)
                 {
                     await CommonDialog.ShowErrorDialogAsync("当前模式不可进入设置界面");
                     return;
@@ -362,6 +458,11 @@ namespace MapBoard.UI
             new SettingDialog(this.GetWindow(), MapView, (MapView as IMapBoardGeoView).Layers, index).ShowDialog();
         }
 
+        /// <summary>
+        /// 底图透明度的滑动条滑动
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
@@ -385,6 +486,11 @@ namespace MapBoard.UI
 
         #region 指北针
 
+        /// <summary>
+        /// 指北针鼠标单击
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void RotatePanel_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (MapView is MapView m)
@@ -402,13 +508,26 @@ namespace MapBoard.UI
 
         #region 搜索
 
+        /// <summary>
+        /// 搜索面板是否展开
+        /// </summary>
         private bool isSearchPanelOpened = false;
 
+        /// <summary>
+        /// 单击关闭搜索面板按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseSearchPanelButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOrCloseSearchPanelAsync(false);
         }
 
+        /// <summary>
+        /// 展开或收拢搜索面板
+        /// </summary>
+        /// <param name="open"></param>
+        /// <returns></returns>
         private async Task OpenOrCloseSearchPanelAsync(bool open)
         {
             if (isSearchPanelOpened && open || !isSearchPanelOpened && !open)
@@ -444,6 +563,11 @@ namespace MapBoard.UI
             bdSearch.Cursor = open ? Cursors.Arrow : Cursors.Hand;
         }
 
+        /// <summary>
+        /// 单击搜索按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SearchPanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             OpenOrCloseSearchPanelAsync(true);
@@ -453,13 +577,32 @@ namespace MapBoard.UI
 
         #region 定位
 
+        /// <summary>
+        /// 定位面板是否展开
+        /// </summary>
         private bool isLocationPanelOpened = false;
+
+        /// <summary>
+        /// 是否正在更新位置
+        /// </summary>
         private bool isUpdatingLocation = false;
+
+        /// <summary>
+        /// 罗盘类型（<see cref="LocationDisplayAutoPanMode"/>）
+        /// </summary>
         private int panMode = 0;
 
+        /// <summary>
+        /// 位置属性
+        /// </summary>
         public ObservableCollection<PropertyNameValue> LocationProperties { get; } = new ObservableCollection<PropertyNameValue>();
+
+        ///位置状态
         public string LocationStatus { get; set; }
 
+        /// <summary>
+        /// 罗盘类型（<see cref="LocationDisplayAutoPanMode"/>）
+        /// </summary>
         public int PanMode
         {
             get => panMode;
@@ -473,6 +616,11 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 单击关闭位置面板按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseLocationPanelButton_Click(object sender, RoutedEventArgs e)
         {
             if (isLocationPanelOpened)
@@ -481,7 +629,12 @@ namespace MapBoard.UI
             }
         }
 
-        private void iconLocation_MouseDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// 单击位置按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void IconLocation_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!isLocationPanelOpened)
             {
@@ -489,6 +642,9 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 初始化位置信息
+        /// </summary>
         private void InitializeLocationInfos()
         {
             Debug.Assert(MapView is MapView);
@@ -498,11 +654,21 @@ namespace MapBoard.UI
             PanMode = (int)ld.AutoPanMode;
         }
 
+        /// <summary>
+        /// 位置服务的罗盘模式发生改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LocationDisplay_AutoPanModeChanged(object sender, LocationDisplayAutoPanMode e)
         {
             PanMode = (int)e;
         }
 
+        /// <summary>
+        /// 展开或收拢位置面板
+        /// </summary>
+        /// <param name="open"></param>
+        /// <returns></returns>
         private async Task OpenOrCloseLocationPanelAsync(bool open)
         {
             isLocationPanelOpened = open;
@@ -544,6 +710,10 @@ namespace MapBoard.UI
             bdLocation.IsHitTestVisible = true;
         }
 
+        /// <summary>
+        /// 更新当前位置
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
         private void UpdateLocation()
         {
             if (!isLocationPanelOpened || isUpdatingLocation)
@@ -631,46 +801,5 @@ namespace MapBoard.UI
 
         #endregion 定位
 
-        private async void UserControlBase_Loaded(object sender, RoutedEventArgs e)
-        {
-            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(0.05));
-
-            //在到达指定周期后执行方法
-            while (await timer.WaitForNextTickAsync())
-            {
-                lock (lockObj)
-                {
-                    if (updateScaleAndPositionAction != null)
-                    {
-                        Dispatcher.InvokeAsync(updateScaleAndPositionAction);
-                        updateScaleAndPositionAction = null;
-                    }
-                    if (setScaleAction != null)
-                    {
-                        Dispatcher.InvokeAsync(setScaleAction);
-                        setScaleAction = null;
-                    }
-                }
-            }
-        }
-    }
-
-    public class PropertyNameValue : INotifyPropertyChanged
-    {
-        public PropertyNameValue()
-        {
-        }
-
-        public PropertyNameValue(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public string Name { get; set; }
-
-        public string Value { get; set; }
     }
 }

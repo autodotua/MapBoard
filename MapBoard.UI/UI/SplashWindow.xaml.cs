@@ -16,19 +16,27 @@ using System.Windows.Shapes;
 namespace MapBoard.UI
 {
     /// <summary>
-    /// SplashWindow.xaml 的交互逻辑
+    /// 启动窗口
     /// </summary>
     public partial class SplashWindow : Window
     {
+        /// <summary>
+        /// 单例
+        /// </summary>
+        private static SplashWindow instance;
+
         private SplashWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 是否正在显示
+        /// </summary>
         public static bool IsShowing => instance != null;
-
-        private static SplashWindow instance;
-
+        /// <summary>
+        /// 创建并显示
+        /// </summary>
         public static void CreateAndShow()
         {
 #if DEBUG
@@ -36,12 +44,10 @@ namespace MapBoard.UI
             instance.Show();
             //DEBUG下，如果运行下面的代码，暂停程序时，执行行就会变成下面的newWindowThread.Start();
 #else
+            //在新线程中显示SplashWindow，使得SplashWindow的UI不会因为MainWindow的初始化而卡住
             Thread newWindowThread = new Thread(new ThreadStart(() =>
             {
-                if (instance == null)
-                {
-                    instance = new SplashWindow();
-                }
+                instance ??= new SplashWindow();
                 instance.Show();
                 System.Windows.Threading.Dispatcher.Run();
             }));
@@ -51,6 +57,9 @@ namespace MapBoard.UI
 #endif
         }
 
+        /// <summary>
+        /// 关闭或设置为不可见
+        /// </summary>
         public static void EnsureInvisible()
         {
             if (instance == null)

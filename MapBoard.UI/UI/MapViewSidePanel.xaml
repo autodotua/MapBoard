@@ -124,7 +124,6 @@
                             Focusable="True"
                             HeadersVisibility="Column"
                             ItemsSource="{Binding BaseLayers}"
-                            LostFocus="LayersPanel_LostFocus"
                             SelectionMode="Single"
                             SelectionUnit="Cell">
                             <DataGrid.Columns>
@@ -349,7 +348,7 @@
                         x:Name="iconLocation"
                         Width="24"
                         Glyph="&#xE81D;"
-                        MouseDown="iconLocation_MouseDown" />
+                        MouseDown="IconLocation_MouseDown" />
                     <Grid
                         x:Name="grdLocation"
                         Opacity="0"

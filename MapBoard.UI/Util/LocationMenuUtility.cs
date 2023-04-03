@@ -8,8 +8,16 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace MapBoard.Util
 {
+    /// <summary>
+    /// 菜单中光标位置信息工具
+    /// </summary>
     public static class LocationMenuUtility
     {
+        /// <summary>
+        /// 获取显示在菜单中的位置信息的字符串
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public static string GetLocationMenuString(MapPoint location)
         {
             if ((location.SpatialReference?.Wkid ?? 4326) != 4326)
@@ -18,6 +26,12 @@ namespace MapBoard.Util
             }
             return $"经度：{$"{location.X,10:0.000000}"}{Environment.NewLine}纬度：{location.Y,11:0.000000}";
         }
+
+        /// <summary>
+        /// 获取复制到剪贴板中的位置信息字符串
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public static string GetLocationClipboardString(MapPoint location)
         {
             if ((location.SpatialReference?.Wkid ?? 4326) != 4326)

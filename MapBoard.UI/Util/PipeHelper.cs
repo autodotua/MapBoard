@@ -8,10 +8,16 @@ using static FzLib.Program.Runtime.SimplePipe;
 
 namespace MapBoard.Util
 {
+    /// <summary>
+    /// 进程间通信的管道帮助类
+    /// </summary>
     public static class PipeHelper
     {
         private static Clinet clinet;
 
+        /// <summary>
+        /// 注册客户端
+        /// </summary>
         public static void RegistClinet()
         {
             clinet = new Clinet(FzLib.Program.App.ProgramName);
@@ -19,6 +25,11 @@ namespace MapBoard.Util
             clinet.GotMessage += ClinetGotMessage;
         }
 
+        /// <summary>
+        /// 客户端收到其他客户端的信息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void ClinetGotMessage(object sender, PipeMessageEventArgs e)
         {
             if (e.Message.StartsWith("mbmpkg"))
@@ -34,6 +45,11 @@ namespace MapBoard.Util
             }
         }
 
+        /// <summary>
+        /// 发送信息
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static async Task Send(string message)
         {
             var server = new Server(FzLib.Program.App.ProgramName);

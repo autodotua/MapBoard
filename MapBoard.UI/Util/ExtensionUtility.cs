@@ -16,21 +16,39 @@ using System.Threading.Tasks;
 
 namespace MapBoard.Util
 {
+    /// <summary>
+    /// 搜索扩展工具
+    /// </summary>
     public static class ExtensionUtility
     {
         private static List<IPoiEngine> poiEngines = new List<IPoiEngine>();
         private static List<IRouteEngine> routeEngines = new List<IRouteEngine>();
         private static List<IReGeoCodeEngine> reGeoCodeEngine = new List<IReGeoCodeEngine>();
         private static List<IExtensionEngine> all;
+
         /// <summary>
         /// 加载到的所有POI引擎
         /// </summary>
         public static IReadOnlyList<IPoiEngine> PoiEngines => poiEngines.AsReadOnly();
 
+        /// <summary>
+        /// 加载到的路线规划引擎
+        /// </summary>
         public static IReadOnlyList<IRouteEngine> RouteEngines => routeEngines.AsReadOnly();
+
+        /// <summary>
+        /// 加载到的所有地理反编码引擎
+        /// </summary>
         public static IReadOnlyList<IReGeoCodeEngine> ReGeoCodeEngines => reGeoCodeEngine.AsReadOnly();
+
+        /// <summary>
+        /// 加载到的所有引擎
+        /// </summary>
         public static IReadOnlyList<IExtensionEngine> All => all.AsReadOnly();
 
+        /// <summary>
+        /// 是否已经加载
+        /// </summary>
         private static bool isLoaded = false;
 
         /// <summary>
@@ -65,13 +83,13 @@ namespace MapBoard.Util
                        .ToList();
                     foreach (var engine in all)
                     {
-                        if (Config.Instance.ApiTokens.Any(p=>p.Name== engine.Name))
+                        if (Config.Instance.ApiTokens.Any(p => p.Name == engine.Name))
                         {
                             engine.Token = Config.Instance.ApiTokens.First(p => p.Name == engine.Name).Token;
                         }
                         else
                         {
-                            Config.Instance.ApiTokens.Add(new UI.Model.ApiToken(engine.Name, null)) ;
+                            Config.Instance.ApiTokens.Add(new UI.Model.ApiToken(engine.Name, null));
                         }
                     }
                 }
@@ -261,11 +279,21 @@ namespace MapBoard.Util
             return await content.ReadAsStringAsync();
         }
 
+        /// <summary>
+        /// <see cref="Location"/>转<see cref="MapPoint"/>
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public static MapPoint ToMapPoint(this Location location)
         {
             return new MapPoint(location.Longitude, location.Latitude, SpatialReferences.Wgs84);
         }
 
+        /// <summary>
+        /// <see cref="MapPoint"/>转<see cref="Location"/>
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public static Location ToLocation(this MapPoint point)
         {
             return new Location(point.X, point.Y);
