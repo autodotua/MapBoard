@@ -87,7 +87,6 @@ namespace MapBoard.UI.TileDownloader
             arcMap.ViewpointChanged += ArcMapViewpointChanged;
         }
 
-        public Config Config => Config.Instance;
         public bool ControlsEnable { get; set; } = true;
 
         public DownloadInfo CurrentDownload { get; set; }

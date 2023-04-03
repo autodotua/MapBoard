@@ -20,6 +20,11 @@ namespace MapBoard.UI
         protected bool programInitialized = false;
 
         /// <summary>
+        /// 配置
+        /// </summary>
+        public Config Config => Config.Instance;
+
+        /// <summary>
         /// 创建并且显示窗口。如果<see cref="SplashWindow"/>可见，则在后台进行初始化，然后再显示
         /// </summary>
         /// <typeparam name="T"></typeparam>

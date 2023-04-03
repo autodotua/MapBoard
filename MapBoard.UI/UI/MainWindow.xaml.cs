@@ -44,6 +44,9 @@ namespace MapBoard.UI
     {
         #region 属性和字段
 
+        /// <summary>
+        /// 按钮名对应的<see cref="SketchCreationMode"/>编辑模式
+        /// </summary>
         private static readonly TwoWayDictionary<string, SketchCreationMode> ButtonsMode = new TwoWayDictionary<string, SketchCreationMode>()
         {
             { "多段线",SketchCreationMode.Polyline},
@@ -59,9 +62,19 @@ namespace MapBoard.UI
             { "多点",SketchCreationMode.Multipoint},
         };
 
+        /// <summary>
+        /// 窗口是否允许关闭
+        /// </summary>
         private bool canClosing = true;
+
+        /// <summary>
+        /// 窗口是否正在关闭
+        /// </summary>
         private bool closing = false;
-        public Config Config => Config.Instance;
+
+        /// <summary>
+        /// 窗口打开后需要加载的地图包
+        /// </summary>
         public string LoadFile { get; set; } = null;
 
         #endregion 属性和字段
@@ -146,6 +159,10 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 显示配置、底图和图层的加载错误
+        /// </summary>
+        /// <returns></returns>
         private async Task ShowLoadErrorsAsync()
         {
             if (Config.LoadError != null)
@@ -163,6 +180,9 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 地图是否已经初始化完成
+        /// </summary>
         public bool IsReady => arcMap != null && arcMap.CurrentTask == BoardTask.Ready;
 
         /// <summary>
@@ -201,6 +221,26 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 选择全部按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void SelectAllMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (arcMap.Layers.Selected != null)
+            {
+                await DoAsync(async () =>
+                {
+                    arcMap.Selection.Select(await arcMap.Layers.Selected.QueryFeaturesAsync(new QueryParameters()), true);
+                }, "正在全选");
+            }
+        }
+
+        /// <summary>
+        /// 关闭窗口
+        /// </summary>
+        /// <param name="force">是否强制关闭，即使当前被标记为不允许关闭</param>
         public void Close(bool force)
         {
             if (force)
@@ -210,6 +250,11 @@ namespace MapBoard.UI
             Close();
         }
 
+        /// <summary>
+        /// 窗口关闭时，保存配置、图层配置，备份图层
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void WindowClosing(object sender, CancelEventArgs e)
         {
             if (closing)
@@ -313,6 +358,11 @@ namespace MapBoard.UI
         {
         }
 
+        /// <summary>
+        /// 窗口尺寸变化，自动修改图层设置栏高度
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void WindowBase_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (e.NewSize.Height < 1050)
@@ -419,7 +469,7 @@ namespace MapBoard.UI
         #region 样式设置区事件
 
         /// <summary>
-        /// 单击新建图层按钮
+        /// 单击新建WFS图层按钮
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -429,12 +479,22 @@ namespace MapBoard.UI
             arcMap.Layers.Save();
         }
 
+        /// <summary>
+        /// 单击创建临时图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void CreateTempLayerButtonClick(object sender, RoutedEventArgs e)
         {
             await CreateLayerDialog.OpenCreateDialog<TempMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
         }
 
+        /// <summary>
+        /// 单击创建图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void CreateLayerButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await CreateLayerDialog.OpenCreateDialog<ShapefileMapLayerInfo>(arcMap.Layers);
@@ -620,11 +680,20 @@ namespace MapBoard.UI
             await IOUtility.TryOpenInShellAsync(path);
         }
 
+        /// <summary>
+        /// 单击打开目录按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
         {
             OpenFolderButtonClick(sender, (RoutedEventArgs)null);
         }
 
+        /// <summary>
+        /// 加载mbmpkg地图包
+        /// </summary>
+        /// <param name="path"></param>
         public async void LoadMbmpkg(string path)
         {
             if (!File.Exists(path))
@@ -743,15 +812,5 @@ namespace MapBoard.UI
         #endregion 图层列表事件
 
 
-        private async void SelectAllMenu_Click(object sender, RoutedEventArgs e)
-        {
-            if (arcMap.Layers.Selected != null)
-            {
-                await DoAsync(async () =>
-                 {
-                     arcMap.Selection.Select(await arcMap.Layers.Selected.QueryFeaturesAsync(new QueryParameters()), true);
-                 }, "正在全选");
-            }
-        }
     }
 }
