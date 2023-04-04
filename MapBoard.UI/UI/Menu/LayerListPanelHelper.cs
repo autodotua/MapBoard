@@ -20,7 +20,7 @@ using MapBoard.IO;
 using System.IO;
 using FzLib.WPF;
 
-namespace MapBoard.UI
+namespace MapBoard.UI.Menu
 {
     public class LayerListPanelHelper
     {

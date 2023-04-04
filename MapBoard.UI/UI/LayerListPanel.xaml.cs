@@ -16,11 +16,12 @@ using ModernWpf.Controls;
 using GongSolutions.Wpf.DragDrop;
 using FzLib.WPF;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace MapBoard.UI
 {
     /// <summary>
-    /// RendererSettingPanel.xaml 的交互逻辑
+    /// 图层列表
     /// </summary>
     public partial class LayerListPanel : UserControlBase, IDropTarget
     {
@@ -31,15 +32,21 @@ namespace MapBoard.UI
         /// </summary>
         private bool isChangingGroupVisible = false;
 
+        /// <summary>
+        /// 帮助类
+        /// </summary>
         private LayerListPanelHelper layerListHelper;
 
+        /// <summary>
+        /// 图层列表的视图类型
+        /// </summary>
         private int viewType = 0;
 
         public LayerListPanel()
         {
             InitializeComponent();
             SetListDataTemplate();
-            Config.Instance.PropertyChanged += Instance_PropertyChanged;
+            Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
 
         /// <summary>
@@ -62,10 +69,19 @@ namespace MapBoard.UI
         /// </summary>
         public ObservableCollection<GroupInfo> Groups { get; } = new ObservableCollection<GroupInfo>();
 
+        /// <summary>
+        /// 图层
+        /// </summary>
         public MapLayerCollection Layers => MapView.Layers;
 
+        /// <summary>
+        /// 地图
+        /// </summary>
         public MainMapView MapView { get; set; }
 
+        /// <summary>
+        /// 图层视图类型
+        /// </summary>
         public int ViewType
         {
             get => viewType;
@@ -78,47 +94,21 @@ namespace MapBoard.UI
             }
         }
 
-        private  void UpdateView()
-        {
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
-            if (view == null)
-            {
-                throw new Exception();
-            }
-            view.GroupDescriptions.Clear();
-            switch (ViewType)
-            {
-                case 0:
-                    break;
-
-                case 1:
-                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
-                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LayerInfo.Group)));
-                    break;
-
-                case 2:
-                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
-                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MapLayerInfo.GeometryType)));
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
+        /// <summary>
+        /// 拖放以改变图层顺序，在拖放过程中触发
+        /// </summary>
+        /// <param name="dropInfo"></param>
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
-            {
-                return;
-            }
-            if (dropInfo.TargetItem == dropInfo.Data
-                || dropInfo.Data is IList)
+            if (MapView.CurrentTask != BoardTask.Ready //需要在没有选择或绘制时
+                || ViewType != 0                                          //试图类型为顺序
+                || dropInfo.TargetItem == dropInfo.Data    //拖放后顺序发生改变
+                || dropInfo.Data is IList)                               //仅拖放单个图层
             {
                 return;
             }
             int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            if (oldIndex - dropInfo.InsertIndex is 0 or -1)
             {
                 return;
             }
@@ -126,14 +116,14 @@ namespace MapBoard.UI
             dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
         }
 
+        /// <summary>
+        /// 拖放以改变图层顺序，在鼠标释放中触发
+        /// </summary>
+        /// <param name="dropInfo"></param>
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            if (MapView.CurrentTask != BoardTask.Ready || ViewType != 0)
-            {
-                return;
-            }
             int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex < 0 || oldIndex - dropInfo.InsertIndex is < 1 and >= -1)
+            if (oldIndex - dropInfo.InsertIndex is 0 or -1)
             {
                 return;
             }
@@ -205,6 +195,19 @@ namespace MapBoard.UI
         }
 
         /// <summary>
+        /// 视图简洁模式
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.Instance.UseCompactLayerList))
+            {
+                SetListDataTemplate();
+            }
+        }
+
+        /// <summary>
         /// 获取分组可见情况
         /// </summary>
         /// <param name="layers"></param>
@@ -241,14 +244,11 @@ namespace MapBoard.UI
             }
         }
 
-        private void Instance_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Config.Instance.UseCompactLayerList))
-            {
-                SetListDataTemplate();
-            }
-        }
-
+        /// <summary>
+        /// 加载完成后，增加尺寸响应，更新视图
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LayerListPanel_Loaded(object sender, RoutedEventArgs e)
         {
             this.GetWindow().SizeChanged += (s, e) => UpdateLayout(e.NewSize.Height);
@@ -340,6 +340,9 @@ namespace MapBoard.UI
             changingSelection = false;
         }
 
+        /// <summary>
+        /// 设置列表的模板，普通或简洁模式
+        /// </summary>
         private void SetListDataTemplate()
         {
             if (Config.Instance.UseCompactLayerList)
@@ -386,6 +389,10 @@ namespace MapBoard.UI
             txt.SelectAll();
         }
 
+        /// <summary>
+        /// 根据视图高度，更新视图布局
+        /// </summary>
+        /// <param name="height"></param>
         private void UpdateLayout(double height)
         {
             var r = FindResource("bdGroups") as Border;
@@ -406,6 +413,35 @@ namespace MapBoard.UI
                 flyoutGroups.Content = null;
                 groupContent.Content = r;
                 r.SetResourceReference(BackgroundProperty, "SystemControlBackgroundChromeMediumBrush");
+            }
+        }
+
+        /// <summary>
+        /// 更新视图
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private void UpdateView()
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) ?? throw new Exception();
+            view.GroupDescriptions.Clear();
+            switch (ViewType)
+            {
+                case 0://顺序
+                    break;
+
+                case 1://组别
+                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LayerInfo.Group)));
+                    break;
+
+                case 2://类型
+                    dataGrid.GroupStyle.Add(new GroupStyle() { ContainerStyle = FindResource("groupStyle") as Style });
+                    view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MapLayerInfo.GeometryType)));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

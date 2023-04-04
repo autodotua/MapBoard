@@ -7,6 +7,9 @@ using System.Windows.Input;
 
 namespace MapBoard.UI
 {
+    /// <summary>
+    /// 基于<see cref="Window"/>的对话框基类
+    /// </summary>
     public class DialogWindowBase : WindowBase
     {
         public DialogWindowBase(Window owner)

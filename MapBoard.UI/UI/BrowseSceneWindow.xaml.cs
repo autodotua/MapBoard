@@ -29,15 +29,10 @@ using System.Threading;
 namespace MapBoard.UI
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    /// 3D浏览
     /// </summary>
     public partial class BrowseSceneWindow : WindowBase
     {
-        #region 基本方法
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
         public BrowseSceneWindow()
         {
             InitializeComponent();
@@ -49,7 +44,5 @@ namespace MapBoard.UI
         {
             await arcMap.LoadAsync();
         }
-
-        #endregion 基本方法
     }
 }
