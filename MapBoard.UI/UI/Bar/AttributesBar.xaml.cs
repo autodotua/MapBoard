@@ -3,6 +3,7 @@ using FzLib.WPF;
 using FzLib.WPF.Dialog;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
+using MapBoard.Util;
 using System;
 using System.Diagnostics;
 using System.IO;

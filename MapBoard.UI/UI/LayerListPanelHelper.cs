@@ -11,13 +11,11 @@ using ModernWpf.FzExtension.CommonDialog;
 
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using MapBoard.Mapping;
 using ModernWpf.Controls;
 using ListView = System.Windows.Controls.ListView;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using System.Drawing;
 using MapBoard.IO;
 using System.IO;
 using FzLib.WPF;
@@ -26,10 +24,10 @@ namespace MapBoard.UI
 {
     public class LayerListPanelHelper
     {
+        /// <summary>
+        /// 关联的<see cref="ListView"/>
+        /// </summary>
         private readonly ListView list;
-
-        public MainWindow MainWindow { get; }
-        public MainMapView MapView { get; }
 
         public LayerListPanelHelper(ListView list, MainWindow win, MainMapView mapView)
         {
@@ -38,12 +36,25 @@ namespace MapBoard.UI
             MapView = mapView;
         }
 
+        /// <summary>
+        /// 主窗口
+        /// </summary>
+        public MainWindow MainWindow { get; }
+
+        /// <summary>
+        /// 地图
+        /// </summary>
+        public MainMapView MapView { get; }
+
+        /// <summary>
+        /// 显示右键菜单
+        /// </summary>
         public void ShowContextMenu()
         {
             ContextMenu menu = new ContextMenu();
             IMapLayerInfo layer = MapView.Layers.Selected;
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
-            if (list.SelectedItems.Count == 1)
+            if (list.SelectedItems.Count == 1)//单选
             {
                 menu.Items.Add(new MenuItem()
                 {
@@ -168,7 +179,7 @@ namespace MapBoard.UI
                     "正在导出OpenLayers网络地图");
                 }
             }
-            else
+            else//多选
             {
                 if (layers.All(p => p.IsLoaded)
                     && layers.Select(p => p.GeometryType).Distinct().Count() == 1)
@@ -183,58 +194,15 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task ExportOpenLayersLayer(IMapLayerInfo layer, string path)
-        {
-            try
-            {
-                await new OpenLayers(path, Directory.GetFiles("res/openlayers"), Config.Instance.BaseLayers.ToArray(), new[] { layer })
-                 .ExportAsync();
-                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, MainWindow);
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("导出失败", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
-            }
-        }
-
-        private Task PopulateAllAsync(IServerBasedLayer s)
-        {
-            return s.PopulateAllFromServiceAsync();
-        }
-
-        private async Task SetWfsLayerAsync(WfsMapLayerInfo layer)
-        {
-            AddWfsLayerDialog dialog = new AddWfsLayerDialog(MapView.Layers, layer);
-            await dialog.ShowAsync();
-        }
-
-        private async Task ResetTempLayerAsync(TempMapLayerInfo layer)
-        {
-            if (await CommonDialog.ShowYesNoDialogAsync("确认重置？", "该操作将会删除所有图形"))
-            {
-                await layer.ReloadAsync(MapView.Layers);
-            }
-        }
-
-        private async Task QueryAsync(IMapLayerInfo layer)
-        {
-            if (layer.NumberOfFeatures == 0)
-            {
-                await CommonDialog.ShowErrorDialogAsync("该图层没有任何要素");
-                return;
-            }
-            var dialog = new QueryFeaturesDialog(MainWindow, MapView, layer);
-            dialog.BringToFront();
-        }
-
-        private async Task OpenHistoryDialog(IEditableLayerInfo layer)
-        {
-            await Task.Yield();
-            var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
-            dialog.BringToFront();
-        }
-
+        /// <summary>
+        /// 如果<paramref name="layer"/>是类型<typeparamref name="T"/>，那么就新增一个菜单项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="menu"></param>
+        /// <param name="header"></param>
+        /// <param name="layer"></param>
+        /// <param name="func"></param>
+        /// <param name="isChecked"></param>
         private void AddToMenu<T>(ItemsControl menu, string header, IMapLayerInfo layer, Func<T, Task> func, bool? isChecked = null) where T : class
         {
             if (layer is T)
@@ -243,6 +211,13 @@ namespace MapBoard.UI
             }
         }
 
+        /// <summary>
+        /// 新增菜单项
+        /// </summary>
+        /// <param name="menu"></param>
+        /// <param name="header"></param>
+        /// <param name="func"></param>
+        /// <param name="isChecked"></param>
         private void AddToMenu(ItemsControl menu, string header, Func<Task> func, bool? isChecked = null)
         {
             MenuItem item = new MenuItem() { Header = header };
@@ -266,6 +241,14 @@ namespace MapBoard.UI
             menu.Items.Add(item);
         }
 
+        /// <summary>
+        /// 新增子菜单项
+        /// </summary>
+        /// <param name="menu"></param>
+        /// <param name="header"></param>
+        /// <param name="getPath"></param>
+        /// <param name="func"></param>
+        /// <param name="message"></param>
         private void AddToMenu(ItemsControl menu, string header, Func<string> getPath, Func<string, Task> func, string message)
         {
             MenuItem item = new MenuItem() { Header = header };
@@ -288,16 +271,11 @@ namespace MapBoard.UI
             menu.Items.Add(item);
         }
 
-        private async Task CopyStylesAsync(IMapLayerInfo layer)
-        {
-            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, p => true, true);
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                LayerUtility.CopyStyles(layer, dialog.SelectedLayer);
-                dialog.SelectedLayer.ApplyStyle();
-            }
-        }
-
+        /// <summary>
+        /// 复制要素
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         private async Task CopyFeaturesAsync(IMapLayerInfo layer)
         {
             SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers,
@@ -308,24 +286,27 @@ namespace MapBoard.UI
                 await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as ShapefileMapLayerInfo);
             }
         }
-        private async Task ExportAsync(IMapLayerInfo layer)
+
+        /// <summary>
+        /// 复制样式
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task CopyStylesAsync(IMapLayerInfo layer)
         {
-            ExportLayerDialog dialog = new ExportLayerDialog(MapView.Layers,layer,MapView.Map.OperationalLayers);
-            await dialog.ShowAsync();
+            SelectLayerDialog dialog = new SelectLayerDialog(MapView.Layers, p => true, true);
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                LayerUtility.CopyStyles(layer, dialog.SelectedLayer);
+                dialog.SelectedLayer.ApplyStyle();
+            }
         }
 
-        private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
-        {
-            MapView.Selection.ClearSelection();
-            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
-        }
-
-        private async Task SetTempLayerAsync(TempMapLayerInfo layer)
-        {
-            MapView.Selection.ClearSelection();
-            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
-        }
-
+        /// <summary>
+        /// 建立副本
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         private async Task CreateCopyAsync(IMapLayerInfo layer)
         {
             var check = await CommonDialog.ShowCheckBoxDialogAsync("请选择副本类型",
@@ -343,35 +324,11 @@ namespace MapBoard.UI
             }
         }
 
-        private async Task BufferAsync(IMapLayerInfo layer)
-        {
-            var dialog = new BufferDialog(MapView.Layers);
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                await LayerUtility.BufferAsync(layer, MapView.Layers, dialog.ToNewLayer ? null : dialog.TargetLayer, dialog.Distances, dialog.Union);
-            }
-        }
-
-        private async Task ZoomToLayerAsync(IMapLayerInfo layer)
-        {
-            try
-            {
-                await MapView.ZoomToGeometryAsync(await layer.QueryExtentAsync(new QueryParameters()));
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("缩放失败，可能是不构成有面积的图形", ex);
-                await CommonDialog.ShowErrorDialogAsync(ex, "缩放失败，可能是不构成有面积的图形");
-            }
-        }
-
-        private async Task SetDefinitionExpression(IMapLayerInfo layer)
-        {
-            DefinitionExpressionDialog dialog = DefinitionExpressionDialog.Get(MainWindow, layer, MapView);
-            dialog.Show();
-            await Task.Yield();
-        }
-
+        /// <summary>
+        /// 删除图层
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns></returns>
         private async Task DeleteLayersAsync(IList<IMapLayerInfo> layers)
         {
             if (list.SelectedItems.Count == 0)
@@ -386,6 +343,81 @@ namespace MapBoard.UI
             MapView.Layers.Save();
         }
 
+        /// <summary>
+        /// 导出图层
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task ExportAsync(IMapLayerInfo layer)
+        {
+            ExportLayerDialog dialog = new ExportLayerDialog(MapView.Layers, layer, MapView.Map.OperationalLayers);
+            await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// 导出为OpenLayers
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private async Task ExportOpenLayersLayer(IMapLayerInfo layer, string path)
+        {
+            try
+            {
+                await new OpenLayers(path, Directory.GetFiles("res/openlayers"), Config.Instance.BaseLayers.ToArray(), new[] { layer })
+                 .ExportAsync();
+                IOUtility.ShowExportedSnackbarAndClickToOpenFolder(path, MainWindow);
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("导出失败", ex);
+                await CommonDialog.ShowErrorDialogAsync(ex, "导出失败");
+            }
+        }
+
+        /// <summary>
+        /// 打开操作历史记录
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task OpenHistoryDialog(IEditableLayerInfo layer)
+        {
+            await Task.Yield();
+            var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
+            dialog.BringToFront();
+        }
+
+        /// <summary>
+        /// 为网络服务图层下载全部内容
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        private Task PopulateAllAsync(IServerBasedLayer s)
+        {
+            return s.PopulateAllFromServiceAsync();
+        }
+
+        /// <summary>
+        /// 查询图层
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task QueryAsync(IMapLayerInfo layer)
+        {
+            if (layer.NumberOfFeatures == 0)
+            {
+                await CommonDialog.ShowErrorDialogAsync("该图层没有任何要素");
+                return;
+            }
+            var dialog = new QueryFeaturesDialog(MainWindow, MapView, layer);
+            dialog.BringToFront();
+        }
+
+        /// <summary>
+        /// 重新加载图层
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         private async Task ReloadLayerAsync(IMapLayerInfo layer)
         {
             await MainWindow.DoAsync(async () =>
@@ -402,35 +434,69 @@ namespace MapBoard.UI
             }, "正在重新加载图层");
         }
 
-        private async Task CopyAttributesAsync(IEditableLayerInfo layer)
+        /// <summary>
+        /// 重置临时图层
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task ResetTempLayerAsync(TempMapLayerInfo layer)
         {
-            var dialog = new CopyAttributesDialog(layer);
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            if (await CommonDialog.ShowYesNoDialogAsync("确认重置？", "该操作将会删除所有图形"))
             {
-                ItemsOperationErrorCollection errors = null;
-
-                switch (dialog.Type)
-                {
-                    case CopyAttributesType.Field:
-                        errors = await AttributeUtility.CopyAttributesAsync(layer, dialog.SourceField, dialog.TargetField, dialog.DateFormat);
-                        break;
-
-                    case CopyAttributesType.Const:
-                        errors = await AttributeUtility.SetAttributesAsync(layer, dialog.TargetField, dialog.Text, false, dialog.DateFormat);
-
-                        break;
-
-                    case CopyAttributesType.Custom:
-                        errors = await AttributeUtility.SetAttributesAsync(layer, dialog.TargetField, dialog.Text, true, dialog.DateFormat);
-                        break;
-
-                    default:
-                        break;
-                }
-                await ItemsOperaionErrorsDialog.TryShowErrorsAsync("部分属性复制失败", errors);
+                await layer.ReloadAsync(MapView.Layers);
             }
         }
 
+        /// <summary>
+        /// 设置显示内容，定义表达式
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task SetDefinitionExpression(IMapLayerInfo layer)
+        {
+            DefinitionExpressionDialog dialog = DefinitionExpressionDialog.Get(MainWindow, layer, MapView);
+            dialog.Show();
+            await Task.Yield();
+        }
+
+        /// <summary>
+        /// 设置Shapefile图层部分属性
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
+        {
+            MapView.Selection.ClearSelection();
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
+        }
+
+        /// <summary>
+        /// 设置临时图层属性
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task SetTempLayerAsync(TempMapLayerInfo layer)
+        {
+            MapView.Selection.ClearSelection();
+            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
+        }
+
+        /// <summary>
+        /// 设置WFS图层属性
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task SetWfsLayerAsync(WfsMapLayerInfo layer)
+        {
+            AddWfsLayerDialog dialog = new AddWfsLayerDialog(MapView.Layers, layer);
+            await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// 显示属性表
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
         private async Task ShowAttributeTableAsync(IMapLayerInfo layer)
         {
             var dialog = AttributeTableDialog.Get(MainWindow, layer, MapView);
@@ -445,6 +511,24 @@ namespace MapBoard.UI
                 return;
             }
             dialog.BringToFront();
+        }
+
+        /// <summary>
+        /// 缩放到图层
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        private async Task ZoomToLayerAsync(IMapLayerInfo layer)
+        {
+            try
+            {
+                await MapView.ZoomToGeometryAsync(await layer.QueryExtentAsync(new QueryParameters()));
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("缩放失败，可能是不构成有面积的图形", ex);
+                await CommonDialog.ShowErrorDialogAsync(ex, "缩放失败，可能是不构成有面积的图形");
+            }
         }
     }
 }

@@ -798,7 +798,7 @@
                                                 <Button
                                                     Grid.Column="2"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="Button_Click"
+                                                    Click="RemoveLabelButton_Click"
                                                     Content="删除"
                                                     IsEnabled="{Binding Label, Converter={StaticResource NotNullConverter}}" />
                                             </Grid>

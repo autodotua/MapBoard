@@ -16,6 +16,7 @@ using MapBoard.IO;
 using System.Runtime.CompilerServices;
 using System.IO;
 using System.Windows.Input;
+using MapBoard.Util;
 
 namespace MapBoard.UI.Dialog
 {
