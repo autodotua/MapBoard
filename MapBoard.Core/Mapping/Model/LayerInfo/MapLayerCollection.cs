@@ -211,14 +211,69 @@ namespace MapBoard.Mapping.Model
         }
 
         /// <summary>
-        /// 交换两个图层的位置
+        /// 将索引为<paramref name="fromIndex"/>的图层插入到索引为<paramref name="toIndex"/>的项之前
         /// </summary>
         /// <param name="fromIndex"></param>
         /// <param name="toIndex"></param>
         public void Move(int fromIndex, int toIndex)
         {
+            if (fromIndex == toIndex)
+            {
+                return;
+            }
             EsriLayers.Move(Count - fromIndex - 1, Count - toIndex - 1);
             LayerList.Move(fromIndex, toIndex);
+        }
+
+        /// <summary>
+        /// 将一些图层插入到指定位置
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="toIndex"></param>
+        public void Move(IList<int> fromIndexs, int insertBeforeIndex)
+        {
+            //将索引转换为具体的图层
+            List<IMapLayerInfo> fromItems = fromIndexs
+                .OrderBy(p => p)
+                .Select(p => this[p])
+                .Cast<IMapLayerInfo>()
+                .ToList();
+
+            HashSet<IMapLayerInfo> fromItemsSet = fromItems.ToHashSet();
+
+            //需要锁定待插入位置后面那个图层。
+            //如果后面那个图层是需要移动的图层，那么无法作为锚点，于是就需要继续向后寻找。
+            //如果一直找到了最后，那么就设为null
+            while (insertBeforeIndex < Count && fromItemsSet.Contains(this[insertBeforeIndex] as IMapLayerInfo))
+            {
+                insertBeforeIndex++;
+            }
+            IMapLayerInfo insertBeforeItem = insertBeforeIndex >= Count ? null : this[insertBeforeIndex] as IMapLayerInfo;
+           
+            foreach (var item in fromItems)
+            {
+                int nowFromIndex = IndexOf(item);//目前状态下，需要移动的图层的索引
+                int nowToIndex = insertBeforeItem == null ? Count : IndexOf(insertBeforeItem);//目前状态下，目标位置后面的图层的位置
+                if (nowFromIndex <= nowToIndex)
+                {
+                    /*
+                     * 当 nowFromIndex 小于或等于 nowToIndex 时，需要将 nowToIndex 减一，
+                     * 是因为在移动过程中，源位置上的项已经被移走，
+                     * 导致目标位置之前的所有项的索引都减少了1。
+                     * 因此，为了将项正确地移动到目标位置之前，
+                     * 需要将 nowToIndex 减一来抵消这种索引变化。
+
+                     * 举个例子，假设我们有一个列表 [A, B, C, D]，
+                     * 我们想要将 B 和 C 移动到 D 之前。
+                     * 在第一次移动时，B 会被移动到 D 之前，列表变成了 [A, C, B, D]。
+                     * 由于 B 被移走了，所以 C 的索引从2变成了1。
+                     * 因此，在第二次移动时，我们需要将目标位置减一，
+                     * 才能将 C 正确地移动到 D 之前，得到最终的列表 [A, C, B, D]。
+                     */
+                    nowToIndex--;
+                }
+                Move(nowFromIndex, nowToIndex);
+            }
         }
 
         /// <summary>
@@ -279,7 +334,7 @@ namespace MapBoard.Mapping.Model
                         Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
                     }
                 }
-                
+
                 //添加ArcGIS图层到ArcGIS图层列表
                 Layer fl = layer.GetLayerForLayerList();
                 Debug.Assert(fl != null);

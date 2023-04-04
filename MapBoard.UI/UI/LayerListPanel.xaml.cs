@@ -17,6 +17,7 @@ using GongSolutions.Wpf.DragDrop;
 using FzLib.WPF;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using MapBoard.UI.Menu;
 
 namespace MapBoard.UI
 {
@@ -103,15 +104,12 @@ namespace MapBoard.UI
             if (MapView.CurrentTask != BoardTask.Ready //需要在没有选择或绘制时
                 || ViewType != 0                                          //试图类型为顺序
                 || dropInfo.TargetItem == dropInfo.Data    //拖放后顺序发生改变
-                || dropInfo.Data is IList)                               //仅拖放单个图层
+             )                               //仅拖放单个图层
             {
                 return;
             }
-            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex - dropInfo.InsertIndex is 0 or -1)
-            {
-                return;
-            }
+            var item = (dropInfo.Data is IList ? (dropInfo.Data as IList)[0] : dropInfo.Data) as IMapLayerInfo;
+
             dropInfo.Effects = DragDropEffects.Move;
             dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
         }
@@ -122,14 +120,11 @@ namespace MapBoard.UI
         /// <param name="dropInfo"></param>
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            int oldIndex = Layers.IndexOf(dropInfo.Data as IMapLayerInfo);
-            if (oldIndex - dropInfo.InsertIndex is 0 or -1)
-            {
-                return;
-            }
-            int targetIndex = dropInfo.InsertIndex > oldIndex ? dropInfo.InsertIndex - 1 : dropInfo.InsertIndex;
+            List<int> oldIndexs = dropInfo.Data is IMapLayerInfo m ?
+                 new List<int>() { Layers.IndexOf(m) }
+                 : (dropInfo.Data as IList).Cast<IMapLayerInfo>().Select(Layers.IndexOf).ToList();
 
-            Layers.Move(oldIndex, targetIndex);
+            Layers.Move(oldIndexs, dropInfo.InsertIndex);
         }
 
         /// <summary>

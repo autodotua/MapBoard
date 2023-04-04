@@ -20,6 +20,7 @@ using MapBoard.Mapping.Model;
 using FzLib.WPF;
 using MapBoard.IO;
 using System.IO;
+using MapBoard.UI.Menu;
 
 namespace MapBoard.UI.Bar
 {
