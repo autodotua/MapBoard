@@ -14,20 +14,56 @@ using System.Windows.Shapes;
 
 namespace MapBoard.UI.GpxToolbox
 {
+    /// <summary>
+    /// 横坐标为时间的图表，用于显示速度（点和线）和海拔（面）
+    /// </summary>
+    /// <typeparam name="TPoint">点的类型</typeparam>
+    /// <typeparam name="TLine">线的类型</typeparam>
+    /// <typeparam name="TPolygon">面的类型</typeparam>
     public class TimeBasedChartHelper<TPoint, TLine, TPolygon>
         where TPoint : class
         where TLine : class
         where TPolygon : class
     {
+        /// <summary>
+        /// 线程锁
+        /// </summary>
+        private readonly object lockObj = new object();
+
+        /// <summary>
+        /// 绘制定时器
+        /// </summary>
+        private readonly Timer timer;
+
+        /// <summary>
+        /// 全部坐标系
+        /// </summary>
+        private List<CoordinateSystemInfo> coordinateSystems = new List<CoordinateSystemInfo>();
+
+        /// <summary>
+        /// 全局的坐标系横坐标最大值
+        /// </summary>
+        private DateTime globalAxisMaxX = DateTime.MinValue;
+
+        /// <summary>
+        /// 全局的坐标系横坐标最小值
+        /// </summary>
+        private DateTime globalAxisMinX = DateTime.MaxValue;
+
+        /// <summary>
+        /// 全局的坐标系横坐标跨度
+        /// </summary>
+        private TimeSpan globalAxisXSpan = TimeSpan.Zero;
+
+        /// <summary>
+        /// 是否正在绘制
+        /// </summary>
         private bool isDrawing = false;
 
         /// <summary>
         /// 在SizeChanged时设置为True，在下一轮的Timer中重绘
         /// </summary>
         private bool needToDraw = false;
-
-        private Timer timer;
-        private object lockObj = new object();
 
         public TimeBasedChartHelper(Canvas canvas)
         {
@@ -37,6 +73,7 @@ namespace MapBoard.UI.GpxToolbox
             canvas.MouseLeave += SketchpadMouseLeave;
             canvas.Background = Brushes.White;
             canvas.ClipToBounds = true;
+            //初始化绘制定时器
             timer = new Timer(new TimerCallback(p =>
             {
                 bool draw = false;
@@ -54,11 +91,16 @@ namespace MapBoard.UI.GpxToolbox
                 }
             }), null, 1000, 1000);
         }
-
-        private List<BorderInfo> borders = new List<BorderInfo>();
-
+        /// <summary>
+        /// 画板
+        /// </summary>
         public Canvas Sketchpad { get; set; }
 
+        /// <summary>
+        /// 向画板增加元素
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="zIndex"></param>
         private void AddSketchpadChildren(UIElement element, int zIndex)
         {
             Panel.SetZIndex(element, zIndex);
@@ -68,84 +110,75 @@ namespace MapBoard.UI.GpxToolbox
 
         #region 指示性元素
 
-        private ToolTip tip;
+        /// <summary>
+        /// 鼠标位置的纵线
+        /// </summary>
         private Line mouseLine;
+
+        /// <summary>
+        /// 从绘制点的原始数据到UI点的映射
+        /// </summary>
+        private Dictionary<TPoint, EllipseGeometry> point2UiPoint = new Dictionary<TPoint, EllipseGeometry>();
+
+        /// <summary>
+        /// 鼠标位置提示信息
+        /// </summary>
+        private ToolTip tip;
+
+        /// <summary>
+        /// 从UI点到绘制点的原始数据的映射
+        /// </summary>
         private Dictionary<EllipseGeometry, TPoint> UiPoint2Point = new Dictionary<EllipseGeometry, TPoint>();
-        private Dictionary<TPoint, EllipseGeometry> Point2UiPoint = new Dictionary<TPoint, EllipseGeometry>();
 
         #endregion 指示性元素
 
         #region 刷新重绘
 
-        private int sizeChangeCount = 0;
-
-        private async void SketchpadSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (Window.GetWindow(Sketchpad).WindowState == WindowState.Minimized)
-            {
-                return;
-            }
-            try
-            {
-                sizeChangeCount++;
-                await Task.Delay(SizeChangeDelay);
-                sizeChangeCount--;
-                if (sizeChangeCount != 0)
-                {
-                    return;
-                }
-                lock (lockObj)
-                {
-                    needToDraw = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("绘制图表失败", ex);
-                throw;
-            }
-        }
-
-        // string lastAction = "";
-        private void SketchpadMouseLeave(object sender, MouseEventArgs e)
-        {
-            if (lastSelectedPoint != null)
-            {
-                //lastSelectedPoint.Fill = PointBrush;
-                //lastSelectedPoint.Width = lastSelectedPoint.Height = PointSize;
-                lastSelectedPoint = null;
-            }
-            if (tip != null)
-            {
-                tip.IsOpen = false;
-                tip = null;
-            }
-            ClearLine();
-        }
-
-        private EllipseGeometry lastSelectedPoint = null;
-
+        /// <summary>
+        /// 鼠标移动时是否更新UI
+        /// </summary>
         private bool canMouseMoveUpdate = true;
 
-        private async void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            if (!canMouseMoveUpdate
-                || isDrawing
-                || displayedPointsX.Count == 0)
-            {
-                return;
-            }
-            canMouseMoveUpdate = false;
-            var pos = e.GetPosition(Sketchpad);
-            EllipseGeometry point = GetPoint(pos.X);
-            RefreshMouseLine(point);
-            RefreshToolTip(point, pos.X, pos.Y);
-            MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
+        /// <summary>
+        /// 上一个选择的点
+        /// </summary>
+        private EllipseGeometry lastSelectedPoint = null;
 
-            await Task.Delay(100);
-            canMouseMoveUpdate = true;
+        /// <summary>
+        /// 面板尺寸改变计数。当发生改变时，计数+1，然后一段时间后-1。用于持续改变大小时，保证不会频繁刷新
+        /// </summary>
+        private int sizeChangeCount = 0;
+
+        /// <summary>
+        /// 清除鼠标线
+        /// </summary>
+        public void ClearLine()
+        {
+            if (mouseLine != null)
+            {
+                Sketchpad.Children.Remove(mouseLine);
+                mouseLine = null;
+            }
         }
 
+        /// <summary>
+        /// 绘制鼠标线
+        /// </summary>
+        /// <param name="time"></param>
+        public void SetLine(DateTime time)
+        {
+            double percent = 1.0 * (time - globalAxisMinX).Ticks / (globalAxisMaxX - globalAxisMinX).Ticks;
+
+            double width = percent * Sketchpad.ActualWidth;
+            RefreshMouseLine(width);
+            //RefreshToolTip(GetPoint(width));
+        }
+
+        /// <summary>
+        /// 获取指定横坐标下对应的点
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         private EllipseGeometry GetPoint(double x)
         {
             EllipseGeometry point = displayedPointsX.First().Key;
@@ -161,24 +194,10 @@ namespace MapBoard.UI.GpxToolbox
             return point;
         }
 
-        public void SetLine(DateTime time)
-        {
-            double percent = 1.0 * (time - BorderInfo.minBorderTime).Ticks / (BorderInfo.maxBorderTime - BorderInfo.minBorderTime).Ticks;
-
-            double width = percent * Sketchpad.ActualWidth;
-            RefreshMouseLine(width);
-            //RefreshToolTip(GetPoint(width));
-        }
-
-        public void ClearLine()
-        {
-            if (mouseLine != null)
-            {
-                Sketchpad.Children.Remove(mouseLine);
-                mouseLine = null;
-            }
-        }
-
+        /// <summary>
+        /// 绘制鼠标线
+        /// </summary>
+        /// <param name="x"></param>
         private void RefreshMouseLine(double x)
         {
             if (MouseLineEnable)
@@ -198,6 +217,10 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
+        /// <summary>
+        /// 根据点刷新鼠标线
+        /// </summary>
+        /// <param name="point"></param>
         private void RefreshMouseLine(EllipseGeometry point)
         {
             double x = displayedPointsX[point];
@@ -205,6 +228,12 @@ namespace MapBoard.UI.GpxToolbox
             RefreshMouseLine(x);
         }
 
+        /// <summary>
+        /// 刷新鼠标位置信息
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         private void RefreshToolTip(EllipseGeometry point, double x, double y)
         {
             if (ToolTipEnable)
@@ -232,86 +261,91 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
+        /// <summary>
+        /// 鼠标移开
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SketchpadMouseLeave(object sender, MouseEventArgs e)
+        {
+            if (lastSelectedPoint != null)
+            {
+                //lastSelectedPoint.Fill = PointBrush;
+                //lastSelectedPoint.Width = lastSelectedPoint.Height = PointSize;
+                lastSelectedPoint = null;
+            }
+            if (tip != null)
+            {
+                tip.IsOpen = false;
+                tip = null;
+            }
+            ClearLine();
+        }
+
+        /// <summary>
+        /// 鼠标移动，更新鼠标线和提示框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!canMouseMoveUpdate
+                || isDrawing
+                || displayedPointsX.Count == 0)
+            {
+                return;
+            }
+            canMouseMoveUpdate = false;
+            var pos = e.GetPosition(Sketchpad);
+            EllipseGeometry point = GetPoint(pos.X);
+            RefreshMouseLine(point);
+            RefreshToolTip(point, pos.X, pos.Y);
+            MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
+
+            await Task.Delay(100);
+            canMouseMoveUpdate = true;
+        }
+
+        /// <summary>
+        /// 尺寸改变，延时重绘
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void SketchpadSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (Window.GetWindow(Sketchpad).WindowState == WindowState.Minimized)
+            {
+                return;
+            }
+            try
+            {
+                sizeChangeCount++;
+                await Task.Delay(SizeChangeDelay);
+                sizeChangeCount--;
+                if (sizeChangeCount != 0)
+                {
+                    return;
+                }
+                lock (lockObj)
+                {
+                    needToDraw = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("绘制图表失败", ex);
+                throw;
+            }
+        }
         #endregion 刷新重绘
 
         #region 暴露的方法
 
         public Func<Task> DrawActionAsync { private get; set; }
 
-        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int borderIndex, bool draw)
-        {
-            BorderInfo border = borders[borderIndex];
-            await Task.Run(() =>
-            {
-                foreach (var item in items)
-                {
-                    DateTime time = XAxisPointValueConverter(item);
-                    double value = YAxisPointValueConverter(item);
-
-                    TimeSpan currentSpan = time - border.minTime;
-
-                    double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                    double y = Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
-                    AddPoint(x, y, item);
-                }
-            });
-            if (draw)
-            {
-                Path path = new Path()
-                {
-                    Data = new GeometryGroup() { Children = new GeometryCollection(UiPoint2Point.Keys) },
-                    StrokeThickness = PointSize,
-                    Stroke = PointBrush,
-                };
-
-                AddSketchpadChildren(path, 3);
-            }
-            // lastAction = nameof(DrawPoints);
-            // lastPointPoints = items;
-        }
-
-        public async Task DrawLinesAsync(IEnumerable<TLine> items, int borderIndex)
-        {
-            BorderInfo border = borders[borderIndex];
-            TLine last = default;
-            List<LineGeometry> lines = new List<LineGeometry>();
-            await Task.Run(() =>
-            {
-                foreach (var item in items)
-                {
-                    if (last != default && LinePointEnbale(last, item))
-                    {
-                        DateTime time1 = XAxisLineValueConverter(last);
-                        double value1 = YAxisLineValueConverter(last);
-
-                        TimeSpan currentSpan1 = time1 - border.minTime;
-
-                        double x1 = Sketchpad.ActualWidth * (time1 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                        double y1 = Sketchpad.ActualHeight * (value1 - border.minBorderValue) / border.borderValueSpan;
-                        DateTime time2 = XAxisLineValueConverter(item);
-                        double value2 = YAxisLineValueConverter(item);
-
-                        TimeSpan currentSpan2 = time2 - border.minTime;
-
-                        double x2 = Sketchpad.ActualWidth * (time2 - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                        double y2 = Sketchpad.ActualHeight * (value2 - border.minBorderValue) / border.borderValueSpan;
-                        Sketchpad.Dispatcher.Invoke(() =>
-                        lines.Add(GetLine(x1, y1, x2, y2)));
-                    }
-
-                    last = item;
-                }
-            });
-            Path path = new Path()
-            {
-                Data = new GeometryGroup() { Children = new GeometryCollection(lines) },
-                StrokeThickness = 1,
-                Stroke = LineBrush,
-            };
-
-            AddSketchpadChildren(path, 4);
-        }
-
+        /// <summary>
+        /// 开始绘制
+        /// </summary>
         public void BeginDraw()
         {
             if (DrawActionAsync == null)
@@ -345,18 +379,204 @@ namespace MapBoard.UI.GpxToolbox
             });
         }
 
-        public async Task DrawPolygonAsync(IEnumerable<TPolygon> items, int borderIndex)
+        /// <summary>
+        /// 绘制坐标轴和坐标系
+        /// </summary>
+        /// <typeparam name="TBorder"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="draw"></param>
+        /// <param name="setting"></param>
+        /// <returns></returns>
+        public async Task<int> DrawAxisAsync<TBorder>(IEnumerable<TBorder> items, bool draw, CoordinateSystemSetting<TBorder> setting)
         {
-            BorderInfo border = borders[borderIndex];
+            CoordinateSystemInfo axis = new CoordinateSystemInfo();
+            coordinateSystems.Add(axis);
+            TimeSpan gridXSpan = TimeSpan.Zero;
+            await Task.Run(() =>
+            {
+                //更新坐标轴
+                axis.MinX = items.Min(p => setting.XAxisValueConverter(p));
+                axis.MaxX = items.Max(p => setting.XAxisValueConverter(p));
+                axis.MinY = items.Min(p => setting.YAxisValueConverter(p));
+                axis.MaxY = items.Max(p => setting.YAxisValueConverter(p));
+
+                //计算X轴网格的间距
+                foreach (var item in setting.SpanXMapping)
+                {
+                    if (axis.SpanX < item.Key)
+                    {
+                        gridXSpan = item.Value;
+                        break;
+                    }
+                }
+                if (gridXSpan == TimeSpan.Zero)
+                {
+                    gridXSpan = TimeSpan.FromTicks(axis.SpanX.Ticks / 10);
+                }
+
+                //更新X坐标轴
+                var minAxisTime = new DateTime(axis.MinX.Ticks / gridXSpan.Ticks * gridXSpan.Ticks);
+                var maxAxisTime = new DateTime((axis.MaxX.Ticks / gridXSpan.Ticks + 1) * gridXSpan.Ticks);
+
+                //更新全局X坐标轴
+                if (minAxisTime < globalAxisMinX)
+                {
+                    globalAxisMinX = minAxisTime;
+                }
+                if (maxAxisTime > globalAxisMaxX)
+                {
+                    globalAxisMaxX = maxAxisTime;
+                }
+                globalAxisXSpan = globalAxisMaxX - globalAxisMinX;
+            });
+
+            //计算Y轴网格的间距
+            double gridYSpan = 0;
+            foreach (var item in setting.SpanYMapping)
+            {
+                if (axis.SpanY < item.Key)
+                {
+                    gridYSpan = item.Value;
+                    break;
+                }
+            }
+            if (gridYSpan == 0)
+            {
+                gridYSpan = axis.SpanY / 10;
+            }
+
+            //更新X坐标轴
+            axis.AxisMinY = ((int)(axis.MinY / gridYSpan - 1)) * gridYSpan;
+            axis.AxisMaxY = ((int)(axis.MaxY / gridYSpan + 1)) * gridYSpan;
+            if (draw)
+            {
+                int verticleGridCount = (int)(globalAxisXSpan.Ticks / gridXSpan.Ticks); //竖线的数量
+                for (int i = 0; i < verticleGridCount; i++)
+                {
+                    double x = Sketchpad.ActualWidth * i / verticleGridCount;
+                    DrawVerticalLine(x, 1); //绘制竖线
+                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(globalAxisMinX.Ticks + gridXSpan.Ticks * i)),
+                        VerticleTextBrush, true, "xLabel"); //画标签
+                }
+
+                double horizentalBorderCount = (axis.AxisMaxY - axis.AxisMinY) / gridYSpan;
+                for (int i = 0; i < horizentalBorderCount; i++)
+                {
+                    double y = Sketchpad.ActualHeight * i / horizentalBorderCount;
+                    DrawHorizentalLine(y);
+                    DrawText(0, y + FontSize * 1.2, YLabelFormat(axis.AxisMinY + gridYSpan * i), HorizentalTextBrush, false, "yLabel");
+                }
+            }
+
+            //lastBorderPoints = items;
+            return coordinateSystems.Count - 1;
+        }
+
+        /// <summary>
+        /// 绘制线
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="axisIndex"></param>
+        /// <returns></returns>
+        public async Task DrawLinesAsync(IEnumerable<TLine> items, int axisIndex)
+        {
+            CoordinateSystemInfo axis = coordinateSystems[axisIndex];
+            TLine last = default;
+            List<LineGeometry> lines = new List<LineGeometry>();
+            await Task.Run(() =>
+            {
+                foreach (var item in items)
+                {
+                    if (last != default && LinePointEnbale(last, item))
+                    {
+                        DateTime time1 = XAxisLineValueConverter(last);
+                        double value1 = YAxisLineValueConverter(last);
+
+                        TimeSpan currentSpan1 = time1 - axis.MinX;
+
+                        double x1 = Sketchpad.ActualWidth * (time1 - globalAxisMinX).Ticks / globalAxisXSpan.Ticks;
+                        double y1 = Sketchpad.ActualHeight * (value1 - axis.AxisMinY) / axis.AxisSpanY;
+                        DateTime time2 = XAxisLineValueConverter(item);
+                        double value2 = YAxisLineValueConverter(item);
+
+                        TimeSpan currentSpan2 = time2 - axis.MinX;
+
+                        double x2 = Sketchpad.ActualWidth * (time2 - globalAxisMinX).Ticks / globalAxisXSpan.Ticks;
+                        double y2 = Sketchpad.ActualHeight * (value2 - axis.AxisMinY) / axis.AxisSpanY;
+                        Sketchpad.Dispatcher.Invoke(() =>
+                        lines.Add(GetLine(x1, y1, x2, y2)));
+                    }
+
+                    last = item;
+                }
+            });
+            Path path = new Path()
+            {
+                Data = new GeometryGroup() { Children = new GeometryCollection(lines) },
+                StrokeThickness = 1,
+                Stroke = LineBrush,
+            };
+
+            AddSketchpadChildren(path, 4);
+        }
+
+        /// <summary>
+        /// 绘制点
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="axisIndex"></param>
+        /// <param name="draw"></param>
+        /// <returns></returns>
+        public async Task DrawPointsAsync(IEnumerable<TPoint> items, int axisIndex, bool draw)
+        {
+            CoordinateSystemInfo coord = coordinateSystems[axisIndex];
+            await Task.Run(() =>
+            {
+                foreach (var item in items)
+                {
+                    DateTime time = XAxisPointValueConverter(item);
+                    double value = YAxisPointValueConverter(item);
+
+                    TimeSpan currentSpan = time - coord.MinX;
+
+                    double x = Sketchpad.ActualWidth * (time - globalAxisMinX).Ticks / globalAxisXSpan.Ticks;
+                    double y = Sketchpad.ActualHeight * (value - coord.AxisMinY) / coord.AxisSpanY;
+                    AddPoint(x, y, item);
+                }
+            });
+            if (draw)
+            {
+                Path path = new Path()
+                {
+                    Data = new GeometryGroup() { Children = new GeometryCollection(UiPoint2Point.Keys) },
+                    StrokeThickness = PointSize,
+                    Stroke = PointBrush,
+                };
+
+                AddSketchpadChildren(path, 3);
+            }
+            // lastAction = nameof(DrawPoints);
+            // lastPointPoints = items;
+        }
+
+        /// <summary>
+        /// 绘制多边形
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="axisIndex"></param>
+        /// <returns></returns>
+        public async Task DrawPolygonAsync(IEnumerable<TPolygon> items, int axisIndex)
+        {
+            CoordinateSystemInfo axis = coordinateSystems[axisIndex];
             double yZero = Sketchpad.ActualHeight
-                - (-border.minBorderValue) / (border.maxBorderValue - border.minBorderValue)
+                - (-axis.AxisMinY) / (axis.AxisMaxY - axis.AxisMinY)
                 * Sketchpad.ActualHeight;
             List<Point> points = new List<Point>();
 
             await Task.Run(() =>
             {
-                points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
-                points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks, yZero));
+                points.Add(new Point(Sketchpad.ActualWidth * (items.Max(q => XAxisPolygonValueConverter(q)) - globalAxisMinX).Ticks / globalAxisXSpan.Ticks, yZero));
+                points.Add(new Point(Sketchpad.ActualWidth * (items.Min(q => XAxisPolygonValueConverter(q)) - globalAxisMinX).Ticks / globalAxisXSpan.Ticks, yZero));
                 foreach (var item in items)
                 {
                     DateTime time = XAxisPolygonValueConverter(item);
@@ -365,9 +585,9 @@ namespace MapBoard.UI.GpxToolbox
                     {
                         continue;
                     }
-                    TimeSpan currentSpan = time - border.minTime;
-                    double x = Sketchpad.ActualWidth * (time - BorderInfo.minBorderTime).Ticks / BorderInfo.borderTimeSpan.Ticks;
-                    double y = Sketchpad.ActualHeight - Sketchpad.ActualHeight * (value - border.minBorderValue) / border.borderValueSpan;
+                    TimeSpan currentSpan = time - axis.MinX;
+                    double x = Sketchpad.ActualWidth * (time - globalAxisMinX).Ticks / globalAxisXSpan.Ticks;
+                    double y = Sketchpad.ActualHeight - Sketchpad.ActualHeight * (value - axis.AxisMinY) / axis.AxisSpanY;
                     points.Add(new Point(x, y));
                 }
             });
@@ -388,126 +608,48 @@ namespace MapBoard.UI.GpxToolbox
             AddSketchpadChildren(path, 1);
         }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
         public void Initialize()
         {
-            borders.Clear();
+            coordinateSystems.Clear();
             displayedPointsX.Clear();
             Sketchpad.Children.Clear();
             UiPoint2Point.Clear();
-            Point2UiPoint.Clear();
-            BorderInfo.Initialize();
+            point2UiPoint.Clear();
             Sketchpad.RenderTransform = null;
         }
 
-        public async Task<int> DrawBorderAsync<TBorder>(IEnumerable<TBorder> items, bool draw, BorderSetting<TBorder> setting)
-        {
-            BorderInfo border = new BorderInfo();
-            borders.Add(border);
-            TimeSpan lineTimeSpan = TimeSpan.Zero;
-            await Task.Run(() =>
-            {
-                border.minTime = items.Min(p => setting.XAxisBorderValueConverter(p));
-                border.maxTime = items.Max(p => setting.XAxisBorderValueConverter(p));
-                border.minValue = items.Min(p => setting.YAxisBorderValueConverter(p));
-                border.maxValue = items.Max(p => setting.YAxisBorderValueConverter(p));
-                border.valueSpan = border.maxValue - border.minValue;
-                border.timeSpan = border.maxTime - border.minTime;
-
-                foreach (var item in setting.TimeSpanMapping)
-                {
-                    if (border.timeSpan < item.Key)
-                    {
-                        lineTimeSpan = item.Value;
-                        break;
-                    }
-                }
-                if (lineTimeSpan == TimeSpan.Zero)
-                {
-                    lineTimeSpan = TimeSpan.FromTicks(border.timeSpan.Ticks / 10);
-                }
-
-                var minBorderTime = new DateTime(border.minTime.Ticks / lineTimeSpan.Ticks * lineTimeSpan.Ticks);
-                var maxBorderTime = new DateTime((border.maxTime.Ticks / lineTimeSpan.Ticks + 1) * lineTimeSpan.Ticks);
-
-                if (minBorderTime < BorderInfo.minBorderTime)
-                {
-                    BorderInfo.minBorderTime = minBorderTime;
-                }
-                if (maxBorderTime > BorderInfo.maxBorderTime)
-                {
-                    BorderInfo.maxBorderTime = maxBorderTime;
-                }
-                BorderInfo.borderTimeSpan = BorderInfo.maxBorderTime - BorderInfo.minBorderTime;
-            });
-            //border.borderTimeSpan = border.maxBorderTime - border.minBorderTime;
-            if (draw)
-            {
-                int verticleBorderCount = (int)(BorderInfo.borderTimeSpan.Ticks / lineTimeSpan.Ticks);
-                for (int i = 0; i < verticleBorderCount; i++)
-                {
-                    double x = Sketchpad.ActualWidth * i / verticleBorderCount;
-                    DrawVerticalLine(x, 1);
-                    DrawText(x, FontSize * 1.2, XLabelFormat(new DateTime(BorderInfo.minBorderTime.Ticks + lineTimeSpan.Ticks * i)), VerticleTextBrush, true, "xLabel");
-                }
-            }
-
-            double lineValueSpan = 0;
-            foreach (var item in setting.ValueSpanMapping)
-            {
-                if (border.valueSpan < item.Key)
-                {
-                    lineValueSpan = item.Value;
-                    break;
-                }
-            }
-            if (lineValueSpan == 0)
-            {
-                lineValueSpan = border.valueSpan / 10;
-            }
-
-            border.minBorderValue = ((int)(border.minValue / lineValueSpan - 1)) * lineValueSpan;
-            border.maxBorderValue = ((int)(border.maxValue / lineValueSpan + 1)) * lineValueSpan;
-            border.borderValueSpan = border.maxBorderValue - border.minBorderValue;
-            if (draw)
-            {
-                double horizentalBorderCount = (border.maxBorderValue - border.minBorderValue) / lineValueSpan;
-                for (int i = 0; i < horizentalBorderCount; i++)
-                {
-                    double y = Sketchpad.ActualHeight * i / horizentalBorderCount;
-                    DrawHorizentalLine(y);
-                    DrawText(0, y + FontSize * 1.2, YLabelFormat(border.minBorderValue + lineValueSpan * i), HorizentalTextBrush, false, "yLabel");
-                }
-            }
-
-            //lastBorderPoints = items;
-            return borders.Count - 1;
-        }
-
+        /// <summary>
+        /// 拉伸到合适的尺寸
+        /// </summary>
+        /// <returns></returns>
         public async Task StretchToFitAsync()
         {
-            DateTime minTime = default;
-            DateTime maxTime = default;
-            double minTimeToLeft = 0;
+            DateTime minX = default;
+            DateTime maxX = default;
+            double minXMarginLeft = 0;
             double scaleValue = 0;
             await Task.Run(() =>
             {
-                minTime = borders.Min(p => p.minTime);
-                maxTime = borders.Max(p => p.maxTime);
-                minTimeToLeft = 1.0
-                   * (minTime - BorderInfo.minBorderTime).Ticks
-                   / BorderInfo.borderTimeSpan.Ticks
+                minX = coordinateSystems.Min(p => p.MinX);
+                maxX = coordinateSystems.Max(p => p.MaxX);
+                minXMarginLeft = 1.0 //数据源X最左侧到坐标系最左侧的距离
+                   * (minX - globalAxisMinX).Ticks
+                   / globalAxisXSpan.Ticks
                    * Sketchpad.ActualWidth;
-                scaleValue = 1.0 * BorderInfo.borderTimeSpan.Ticks
-                        / (maxTime.Ticks - minTime.Ticks);
+                scaleValue = 1.0 * globalAxisXSpan.Ticks //拉伸比例
+                        / (maxX.Ticks - minX.Ticks);
             });
-            TranslateTransform translate = new TranslateTransform(-minTimeToLeft, 0);
+            TranslateTransform translate = new TranslateTransform(-minXMarginLeft, 0);
 
             ScaleTransform scale = new ScaleTransform(scaleValue, 1);
 
             //重置左侧标签的X坐标
             foreach (var tbk in Sketchpad.Children.OfType<TextBlock>().Where(p => "yLabel".Equals(p.Tag)))
             {
-                Canvas.SetLeft(tbk, minTimeToLeft);
+                Canvas.SetLeft(tbk, minXMarginLeft);
             }
             ScaleTransform scaleTextBlock = new ScaleTransform(1 / scaleValue, 1);
 
@@ -527,36 +669,46 @@ namespace MapBoard.UI.GpxToolbox
 
         #region 可从外部更改的属性
 
-        public Func<TLine, TLine, bool> LinePointEnbale { get; set; } = (p1, p2) => true;
-        public Func<TPoint, DateTime> XAxisPointValueConverter { get; set; } = p => DateTime.MinValue;
-        public Func<TLine, DateTime> XAxisLineValueConverter { get; set; } = p => DateTime.MinValue;
-        public Func<TPolygon, DateTime> XAxisPolygonValueConverter { get; set; } = p => DateTime.MinValue;
-        public Func<TPoint, double> YAxisPointValueConverter { get; set; } = p => 0;
-        public Func<TLine, double> YAxisLineValueConverter { get; set; } = p => 0;
-        public Func<TPolygon, double> YAxisPolygonValueConverter { get; set; } = p => 0;
-        public Func<DateTime, string> XLabelFormat { get; set; } = p => p.ToString();
-        public Func<double, string> YLabelFormat { get; set; } = p => p.ToString();
-        public Brush VerticleGridlinesBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+        public double FontSize { get; set; } = 9;
         public Brush HorizentalGridlinesBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
         public Brush HorizentalTextBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
-        public Brush VerticleTextBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
-        public Brush PointBrush { get; set; } = Brushes.Red;
-        public Brush SelectedPointBrush { get; set; } = Brushes.Green;
         public Brush LineBrush { get; set; } = Brushes.Blue;
-        public Brush PolygonBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0x33, 0x55, 0x55, 0x55));
+        public Func<TLine, TLine, bool> LinePointEnbale { get; set; } = (p1, p2) => true;
         public double LineThickness { get; set; } = 1;
-        public double PointSize { get; set; } = 1;
         public bool MouseLineEnable { get; set; } = true;
-        public bool ToolTipEnable { get; set; } = true;
-        public Func<TPoint, string> ToolTipConverter { get; set; } = p => p.ToString();
+        public Brush PointBrush { get; set; } = Brushes.Red;
+        public double PointSize { get; set; } = 1;
+        public Brush PolygonBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0x33, 0x55, 0x55, 0x55));
+        public Brush SelectedPointBrush { get; set; } = Brushes.Green;
         public TimeSpan SizeChangeDelay { get; set; } = TimeSpan.FromSeconds(1);
-
-        public double FontSize { get; set; } = 9;
-
+        public Func<TPoint, string> ToolTipConverter { get; set; } = p => p.ToString();
+        public bool ToolTipEnable { get; set; } = true;
+        public Brush VerticleGridlinesBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+        public Brush VerticleTextBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+        public Func<TLine, DateTime> XAxisLineValueConverter { get; set; } = p => DateTime.MinValue;
+        public Func<TPoint, DateTime> XAxisPointValueConverter { get; set; } = p => DateTime.MinValue;
+        public Func<TPolygon, DateTime> XAxisPolygonValueConverter { get; set; } = p => DateTime.MinValue;
+        public Func<DateTime, string> XLabelFormat { get; set; } = p => p.ToString();
+        public Func<TLine, double> YAxisLineValueConverter { get; set; } = p => 0;
+        public Func<TPoint, double> YAxisPointValueConverter { get; set; } = p => 0;
+        public Func<TPolygon, double> YAxisPolygonValueConverter { get; set; } = p => 0;
+        public Func<double, string> YLabelFormat { get; set; } = p => p.ToString();
         #endregion 可从外部更改的属性
 
         #region 基础绘制
 
+        /// <summary>
+        /// 显示出来的点对应的横坐标
+        /// </summary>
+        public Dictionary<EllipseGeometry, double> displayedPointsX { get; private set; } = new Dictionary<EllipseGeometry, double>();
+
+        /// <summary>
+        /// 绘制一个点
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="point"></param>
+        /// <returns></returns>
         private EllipseGeometry AddPoint(double x, double y, TPoint point)
         {
             double r = PointSize / 2;
@@ -572,45 +724,14 @@ namespace MapBoard.UI.GpxToolbox
             });
             displayedPointsX.Add(e, x);
             UiPoint2Point.Add(e, point);
-            Point2UiPoint.Add(point, e);
+            point2UiPoint.Add(point, e);
             return e;
         }
 
-        private void DrawVerticalLine(double x, double thickness)
-        {
-            Line line = new Line()
-            {
-                X1 = x,
-                X2 = x,
-                Y1 = 0,
-                Y2 = Sketchpad.ActualHeight,
-                Stroke = VerticleGridlinesBrush,
-                StrokeThickness = thickness,
-            };
-            AddSketchpadChildren(line, 1);
-        }
-
-        private LineGeometry GetLine(double x1, double y1, double x2, double y2)
-        {
-            //Line line = new Line()
-            //{
-            //    X1 = x1,
-            //    X2 = x2,
-            //    Y1 = Sketchpad.ActualHeight - y1,
-            //    Y2 = Sketchpad.ActualHeight - y2,
-            //    StrokeThickness = 1,
-            //    Stroke = LineBrush,
-            //};
-            LineGeometry lg = new LineGeometry()
-            {
-                StartPoint = new Point(x1, Sketchpad.ActualHeight - y1),
-                EndPoint = new Point(x2, Sketchpad.ActualHeight - y2),
-            };
-            return lg;
-        }
-
-        public Dictionary<EllipseGeometry, double> displayedPointsX { get; private set; } = new Dictionary<EllipseGeometry, double>();
-
+        /// <summary>
+        /// 绘制水平线
+        /// </summary>
+        /// <param name="y"></param>
         private void DrawHorizentalLine(double y)
         {
             Line line = new Line()
@@ -625,6 +746,15 @@ namespace MapBoard.UI.GpxToolbox
             AddSketchpadChildren(line, 1);
         }
 
+        /// <summary>
+        /// 绘制标签
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="text"></param>
+        /// <param name="brush"></param>
+        /// <param name="centerX"></param>
+        /// <param name="tag"></param>
         private void DrawText(double x, double y, string text, Brush brush, bool centerX, object tag)
         {
             TextBlock tbk = new TextBlock()
@@ -653,9 +783,47 @@ namespace MapBoard.UI.GpxToolbox
             AddSketchpadChildren(tbk, 5);
         }
 
+        /// <summary>
+        /// 绘制垂直线
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="thickness"></param>
+        private void DrawVerticalLine(double x, double thickness)
+        {
+            Line line = new Line()
+            {
+                X1 = x,
+                X2 = x,
+                Y1 = 0,
+                Y2 = Sketchpad.ActualHeight,
+                Stroke = VerticleGridlinesBrush,
+                StrokeThickness = thickness,
+            };
+            AddSketchpadChildren(line, 1);
+        }
+
+        /// <summary>
+        /// 根据坐标生成一条线
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="y1"></param>
+        /// <param name="x2"></param>
+        /// <param name="y2"></param>
+        /// <returns></returns>
+        private LineGeometry GetLine(double x1, double y1, double x2, double y2)
+        {
+            LineGeometry lg = new LineGeometry()
+            {
+                StartPoint = new Point(x1, Sketchpad.ActualHeight - y1),
+                EndPoint = new Point(x2, Sketchpad.ActualHeight - y2),
+            };
+            return lg;
+        }
         #endregion 基础绘制
 
         #region 事件相关
+
+        public event EventHandler<MouseOverPointChangedEventArgs> MouseOverPoint;
 
         public class MouseOverPointChangedEventArgs : MouseEventArgs
         {
@@ -666,42 +834,15 @@ namespace MapBoard.UI.GpxToolbox
 
             public TPoint Item { get; private set; }
         }
-
-        public delegate void MouseOverPointEventHandler(object sender, MouseOverPointChangedEventArgs e);
-
-        public event MouseOverPointEventHandler MouseOverPoint;
-
         #endregion 事件相关
 
-        private class BorderInfo
+        /// <summary>
+        /// 坐标系相关设置
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public class CoordinateSystemSetting<T>
         {
-            public static void Initialize()
-            {
-                minBorderTime = DateTime.MaxValue;
-                maxBorderTime = DateTime.MinValue;
-                borderTimeSpan = TimeSpan.Zero;
-            }
-
-            public double maxValue { get; set; }
-            public double minValue { get; set; }
-            public double valueSpan { get; set; }
-            public double maxBorderValue { get; set; }
-            public double minBorderValue { get; set; }
-            public double borderValueSpan { get; set; }
-            public DateTime minTime { get; set; }
-            public DateTime maxTime { get; set; }
-            public static DateTime minBorderTime { get; set; }
-            public static DateTime maxBorderTime { get; set; }
-            public static TimeSpan borderTimeSpan { get; set; }
-            public TimeSpan timeSpan { get; set; }
-        }
-
-        public class BorderSetting<TBorder>
-        {
-            public Func<TBorder, DateTime> XAxisBorderValueConverter { get; set; } = p => DateTime.MinValue;
-            public Func<TBorder, double> YAxisBorderValueConverter { get; set; } = p => 0;
-
-            public Dictionary<TimeSpan, TimeSpan> TimeSpanMapping { get; set; } = new Dictionary<TimeSpan, TimeSpan>()
+            public Dictionary<TimeSpan, TimeSpan> SpanXMapping { get; set; } = new Dictionary<TimeSpan, TimeSpan>()
             {
                 { TimeSpan.FromMinutes(1),TimeSpan.FromSeconds(5) },
                 { TimeSpan.FromMinutes(5),TimeSpan.FromSeconds(10) },
@@ -711,7 +852,7 @@ namespace MapBoard.UI.GpxToolbox
                 { TimeSpan.FromHours(60),TimeSpan.FromHours(5) },
             };
 
-            public Dictionary<double, double> ValueSpanMapping { get; set; } = new Dictionary<double, double>()
+            public Dictionary<double, double> SpanYMapping { get; set; } = new Dictionary<double, double>()
             {
                 {1,0.1 },
                 {3,0.5 },
@@ -723,6 +864,67 @@ namespace MapBoard.UI.GpxToolbox
                 {500,50 },
                 {1000,100 },
             };
+
+            /// <summary>
+            /// 从自定义类型转到X坐标所需的<see cref="DateTime"/>
+            /// </summary>
+            public Func<T, DateTime> XAxisValueConverter { get; set; } = p => DateTime.MinValue;
+
+            /// <summary>
+            /// 从自定义类型转到Y坐标所需的<see cref="double"/>
+            /// </summary>
+            public Func<T, double> YAxisValueConverter { get; set; } = p => 0;
+        }
+
+        /// <summary>
+        /// 单一元素（点/线/面）的坐标系信息
+        /// </summary>
+        private class CoordinateSystemInfo
+        {
+            /// <summary>
+            /// 坐标轴的Y最大值
+            /// </summary>
+            public double AxisMaxY { get; set; }
+
+            /// <summary>
+            /// 坐标轴的Y最小值
+            /// </summary>
+            public double AxisMinY { get; set; }
+
+            /// <summary>
+            /// 坐标轴的Y跨度
+            /// </summary>
+            public double AxisSpanY => AxisMaxY - AxisMinY;
+
+            /// <summary>
+            /// 数据源的X最大值
+            /// </summary>
+            public DateTime MaxX { get; set; }
+
+            /// <summary>
+            /// 数据源中的Y最大值
+            /// </summary>
+            public double MaxY { get; set; }
+
+            /// <summary>
+            /// 数据源的X最小值
+            /// </summary>
+            public DateTime MinX { get; set; }
+
+            /// <summary>
+            /// 数据源中的Y最小值
+            /// </summary>
+            public double MinY { get; set; }
+
+            /// <summary>
+            /// 数据源的X跨度
+            /// </summary>
+            public TimeSpan SpanX => MaxX - MinX;
+
+            /// <summary>
+            /// 数据源中的Y跨度
+            /// </summary>
+            public double SpanY =>MaxY - MinY;
         }
     }
 }

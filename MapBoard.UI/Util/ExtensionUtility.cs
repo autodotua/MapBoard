@@ -89,7 +89,7 @@ namespace MapBoard.Util
                         }
                         else
                         {
-                            Config.Instance.ApiTokens.Add(new UI.Model.ApiToken(engine.Name, null));
+                            Config.Instance.ApiTokens.Add(new ApiToken(engine.Name, null));
                         }
                     }
                 }

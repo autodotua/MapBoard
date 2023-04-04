@@ -205,23 +205,23 @@ namespace MapBoard.UI.GpxToolbox
             {
                 chartHelper.Initialize();
                 await Task.WhenAll(
-                 chartHelper.DrawBorderAsync(lines, true,
-                       new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                 chartHelper.DrawAxisAsync(lines, true,
+                       new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<SpeedInfo>()
                        {
-                           XAxisBorderValueConverter = p => p.CenterTime,
-                           YAxisBorderValueConverter = p => p.Speed,
+                           XAxisValueConverter = p => p.CenterTime,
+                           YAxisValueConverter = p => p.Speed,
                        }),
-                 chartHelper.DrawBorderAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
-                    false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<GpxPoint>()
+                 chartHelper.DrawAxisAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
+                    false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                     {
-                        XAxisBorderValueConverter = p => p.Time,
-                        YAxisBorderValueConverter = p => p.Z,
+                        XAxisValueConverter = p => p.Time,
+                        YAxisValueConverter = p => p.Z,
                     }),
-                 chartHelper.DrawBorderAsync(points, false,
-                        new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.BorderSetting<SpeedInfo>()
+                 chartHelper.DrawAxisAsync(points, false,
+                        new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<SpeedInfo>()
                         {
-                            XAxisBorderValueConverter = p => p.CenterTime,
-                            YAxisBorderValueConverter = p => p.Speed,
+                            XAxisValueConverter = p => p.CenterTime,
+                            YAxisValueConverter = p => p.Speed,
                         }));
 
                 await Task.WhenAll(
