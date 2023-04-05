@@ -15,7 +15,7 @@
     Width="1000"
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Closing="WindowClosing"
+    Closing="Window_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Loaded="Window_Loaded"
     WindowStartupLocation="CenterScreen"
@@ -64,7 +64,7 @@
                         Margin="8"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
-                        Click="SelectAreaButtonClick">
+                        Click="SelectAreaButton_Click">
                         <ui:SymbolIcon Symbol="SelectAll" />
                     </Button>
                     <TextBlock
@@ -181,13 +181,13 @@
                                 </Grid.ColumnDefinitions>
                                 <Button
                                     HorizontalAlignment="Stretch"
-                                    Click="NewTileSourceButtonClick">
+                                    Click="NewTileSourceButton_Click">
                                     新增
                                 </Button>
                                 <Button
                                     Grid.Column="2"
                                     HorizontalAlignment="Stretch"
-                                    Click="DeleteTileSourceButtonClick"
+                                    Click="DeleteTileSourceButton_Click"
                                     IsEnabled="{Binding ElementName=dgrdUrls, Path=SelectedItem, Converter={StaticResource NotNullConverter}}">
                                     删除
                                 </Button>
@@ -394,27 +394,27 @@
                 <Button
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
-                    Click="CalculateTileNumberButtonClick"
+                    Click="CalculateTileNumberButton_Click"
                     Content="计算数据"
                     IsEnabled="{Binding ControlsEnable}" />
                 <Button
                     Grid.Column="2"
                     HorizontalAlignment="Stretch"
-                    Click="DownloadButtonClick"
+                    Click="DownloadButton_Click"
                     Content="{Binding Path=CurrentDownloadStatus, Converter={StaticResource StringReplaceConverter}, ConverterParameter=Downloading:暂停下载;Paused:继续下载;Stop:开始下载;Pausing:正在暂停}"
                     IsEnabled="{Binding Path=CurrentDownloadStatus, Converter={StaticResource Enum2BoolConverter}, ConverterParameter=Pausing:false}" />
                 <Button
                     Grid.Row="2"
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
-                    Click="DeleteEmptyFilesButtonClick"
+                    Click="DeleteEmptyFilesButton_Click"
                     Content="删除空文件"
                     ToolTip="删除下载文件夹中文件大小为0的文件" />
                 <Button
                     Grid.Row="2"
                     Grid.Column="2"
                     HorizontalAlignment="Stretch"
-                    Click="OpenFolderButtonClick"
+                    Click="OpenFolderButton_Click"
                     Content="打开目录" />
             </Grid>
         </Grid>
@@ -459,7 +459,7 @@
                         x:Name="cbbLevel"
                         Grid.Column="2"
                         VerticalAlignment="Center"
-                        SelectionChanged="LevelSelectionChanged" />
+                        SelectionChanged="Level_SelectionChanged" />
                 </Grid>
                 <local:BoundaryInputTable
                     x:Name="stichBoundary"
@@ -478,12 +478,12 @@
                         x:Name="btnStich"
                         Grid.Column="0"
                         HorizontalAlignment="Stretch"
-                        Click="StichButtonClick"
+                        Click="StichButton_Click"
                         Content="开始拼接" />
                     <Button
                         Grid.Column="2"
                         HorizontalAlignment="Stretch"
-                        Click="SaveButtonClick"
+                        Click="SaveButton_Click"
                         Content="保存"
                         IsEnabled="{Binding ControlsEnable}" />
                 </Grid>
@@ -528,7 +528,7 @@
                 <Button
                     Grid.Row="99"
                     HorizontalAlignment="Stretch"
-                    Click="ServerButtonClick"
+                    Click="ServerButton_Click"
                     Content="{Binding ServerOn, Converter={StaticResource Bool2StringConverter}, ConverterParameter=关闭服务器:开启服务器}" />
             </Grid>
         </Grid>

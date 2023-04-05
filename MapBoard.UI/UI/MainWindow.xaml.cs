@@ -255,7 +255,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void WindowClosing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (closing)
             {
@@ -473,7 +473,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void AddWfsLayerButtonClick(object sender, RoutedEventArgs e)
+        private async void AddWfsLayerButton_Click(object sender, RoutedEventArgs e)
         {
             await new AddWfsLayerDialog(arcMap.Layers).ShowAsync();
             arcMap.Layers.Save();
@@ -484,7 +484,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void CreateTempLayerButtonClick(object sender, RoutedEventArgs e)
+        private async void CreateTempLayerButton_Click(object sender, RoutedEventArgs e)
         {
             await CreateLayerDialog.OpenCreateDialog<TempMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
@@ -495,7 +495,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void CreateLayerButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
+        private async void CreateLayerButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await CreateLayerDialog.OpenCreateDialog<ShapefileMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
@@ -506,7 +506,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void ApplyStyleButtonClick(object sender, RoutedEventArgs e)
+        private async void ApplyStyleButton_Click(object sender, RoutedEventArgs e)
         {
             await layerSettings.SetStyleFromUI();
             arcMap.Layers.Save();
@@ -517,7 +517,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void BrowseModeButtonClick(object sender, RoutedEventArgs e)
+        private void BrowseModeButton_Click(object sender, RoutedEventArgs e)
         {
             arcMap.Layers.Selected = null;
         }
@@ -667,7 +667,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFolderButton_Click(object sender, RoutedEventArgs e)
         {
             string path = ((sender as FrameworkElement).Tag as string) switch
             {
@@ -685,9 +685,9 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OpenFolderButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
+        private void OpenFolderButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
-            OpenFolderButtonClick(sender, (RoutedEventArgs)null);
+            OpenFolderButton_Click(sender, (RoutedEventArgs)null);
         }
 
         /// <summary>
@@ -719,7 +719,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void DrawButtonsClick(SplitButton sender, SplitButtonClickEventArgs args)
+        private async void DrawButtons_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
             await StartDraw(sender);
         }
@@ -729,7 +729,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void DrawButtonsClick(object sender, RoutedEventArgs e)
+        private async void DrawButtons_Click(object sender, RoutedEventArgs e)
         {
             await StartDraw(sender);
         }
@@ -739,7 +739,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void SelectToggleButtonClick(object sender, RoutedEventArgs e)
+        private async void SelectToggleButton_Click(object sender, RoutedEventArgs e)
         {
             await arcMap.Selection.SelectRectangleAsync();
         }

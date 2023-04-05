@@ -144,7 +144,7 @@ namespace MapBoard.UI.TileDownloader
             base.OnActivated(e);
         }
 
-        private void arcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void ArcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (waiting)
             {
@@ -209,14 +209,14 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void CalculateTileNumberButtonClick(object sender, RoutedEventArgs e)
+        private async void CalculateTileNumberButton_Click(object sender, RoutedEventArgs e)
         {
             await CalculateTileNumberAsync();
             lastTile = null;
             CurrentDownloadStatus = DownloadStatus.Stop;
         }
 
-        private async void DeleteEmptyFilesButtonClick(object sender, RoutedEventArgs e)
+        private async void DeleteEmptyFilesButton_Click(object sender, RoutedEventArgs e)
         {
             await DoAsync(async () =>
             {
@@ -249,12 +249,12 @@ namespace MapBoard.UI.TileDownloader
             }, "正在删除");
         }
 
-        private void DeleteTileSourceButtonClick(object sender, RoutedEventArgs e)
+        private void DeleteTileSourceButton_Click(object sender, RoutedEventArgs e)
         {
             Config.Tile_Urls.Sources.Remove(Config.Tile_Urls.SelectedUrl);
         }
 
-        private async void DownloadButtonClick(object sender, RoutedEventArgs e)
+        private async void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             if (Config.Instance.Tile_Urls.SelectedUrl == null)
             {
@@ -282,7 +282,7 @@ namespace MapBoard.UI.TileDownloader
             tbkStichStatus.Text = "图片显示失败，但文件可能已经保存";
         }
 
-        private async void LevelSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void Level_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (CurrentDownload != null)
             {
@@ -290,7 +290,7 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private void NewTileSourceButtonClick(object sender, RoutedEventArgs e)
+        private void NewTileSourceButton_Click(object sender, RoutedEventArgs e)
         {
             BaseLayerInfo tile = new BaseLayerInfo();
             if (Config.Tile_Urls.Sources.Count == 0 || Config.Tile_Urls.SelectedIndex == -1)
@@ -306,7 +306,7 @@ namespace MapBoard.UI.TileDownloader
             dgrdUrls.ScrollIntoView(tile);
         }
 
-        private async void OpenFolderButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -323,7 +323,7 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void SaveButtonClick(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             if (savedImgPath != null)
             {
@@ -384,12 +384,12 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void SelectAreaButtonClick(object sender, RoutedEventArgs e)
+        private async void SelectAreaButton_Click(object sender, RoutedEventArgs e)
         {
             await arcMap.SelectAsync();
         }
 
-        private async void ServerButtonClick(object sender, RoutedEventArgs e)
+        private async void ServerButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ServerOn)
             {
@@ -516,7 +516,7 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void StichButtonClick(object sender, RoutedEventArgs e)
+        private async void StichButton_Click(object sender, RoutedEventArgs e)
         {
             if (btnStich.Content as string == "开始拼接")
             {
@@ -633,7 +633,7 @@ namespace MapBoard.UI.TileDownloader
             {
                 if (!ServerOn)
                 {
-                    ServerButtonClick(null, null);
+                    ServerButton_Click(null, null);
                 }
                 await arcLocalMap.LoadAsync();
             }
@@ -658,7 +658,7 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
-        private async void WindowClosing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (CurrentDownloadStatus == DownloadStatus.Downloading)
             {

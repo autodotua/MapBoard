@@ -50,8 +50,8 @@ namespace MapBoard.UI.Bar
 
         public override void Initialize()
         {
-            MapView.BoardTaskChanged += BoardTaskChanged;
-            MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertexChanged;
+            MapView.BoardTaskChanged += BoardTask_Changed;
+            MapView.SketchEditor.SelectedVertexChanged += SketchEditorSelectedVertex_Changed;
             MapView.SketchEditor.PropertyChanged += SketchEditor_PropertyChanged;
         }
 
@@ -77,7 +77,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        private void BoardTask_Changed(object sender, BoardTaskChangedEventArgs e)
         {
             if (e.NewTask == BoardTask.Draw && MapView.Editor.Mode is EditMode.Create or EditMode.Edit)
             {
@@ -97,7 +97,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.Cancel();
         }
@@ -132,7 +132,7 @@ namespace MapBoard.UI.Bar
             };
         }
 
-        private void OkButtonClick(object sender, RoutedEventArgs e)
+        private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.StopAndSave();
         }
@@ -162,7 +162,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
+        private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
         }
@@ -177,7 +177,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void SketchEditorSelectedVertexChanged(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
+        private void SketchEditorSelectedVertex_Changed(object sender, Esri.ArcGISRuntime.UI.VertexChangedEventArgs e)
         {
             this.Notify(nameof(CanDeleteSelectedVertex), nameof(CanRemovePart));
         }

@@ -297,7 +297,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SetScaleButtonClick(object sender, RoutedEventArgs e)
+        private void SetScaleButton_Click(object sender, RoutedEventArgs e)
         {
             switch ((sender as Button).Tag as string)
             {
@@ -414,7 +414,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void ChangeKeyButtonClick(object sender, RoutedEventArgs e)
+        private async void ChangeKeyButton_Click(object sender, RoutedEventArgs e)
         {
             var key = await CommonDialog.ShowInputDialogAsync("请输入分类名"
                 + (KeyFields.Count(p => p.IsSelected) > 1 ? "，多个字段的分类名之间使用“|”隔开" : ""),
@@ -457,7 +457,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void CreateKeyButtonClick(object sender, RoutedEventArgs e)
+        private async void CreateKeyButton_Click(object sender, RoutedEventArgs e)
         {
             var key = await CommonDialog.ShowInputDialogAsync("请输入分类名"
                                 + (KeyFields.Count(p => p.IsSelected) > 1 ? "，多个字段的分类名之间使用“|”隔开" : ""));
@@ -509,7 +509,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DeleteKeyButtonClick(object sender, RoutedEventArgs e)
+        private void DeleteKeyButton_Click(object sender, RoutedEventArgs e)
         {
             Keys.Remove(SelectedKey);
             SelectedKey = Keys[0];
@@ -520,7 +520,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void GenerateKeyButtonClick(object sender, RoutedEventArgs e)
+        private async void GenerateKeyButton_Click(object sender, RoutedEventArgs e)
         {
             var layer = Layers.Selected;
             Debug.Assert(KeyFields.Any(p => p.IsSelected));
@@ -568,7 +568,7 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GenerateRandomColorButtonClick(object sender, RoutedEventArgs e)
+        private void GenerateRandomColorButton_Click(object sender, RoutedEventArgs e)
         {
             foreach (var key in Keys)
             {

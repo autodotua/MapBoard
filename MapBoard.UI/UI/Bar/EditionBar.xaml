@@ -105,7 +105,7 @@
 
             <Button
                 Grid.Column="6"
-                Click="RemoveSelectedVertexButtonClick"
+                Click="RemoveSelectedVertexButton_Click"
                 IsEnabled="{Binding CanDeleteSelectedVertex}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
@@ -122,7 +122,7 @@
 
             <Button
                 Grid.Column="12"
-                Click="OkButtonClick"
+                Click="OkButton_Click"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <ContentControl
@@ -138,7 +138,7 @@
 
             <Button
                 Grid.Column="14"
-                Click="CancelButtonClick"
+                Click="CancelButton_Click"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <ContentControl

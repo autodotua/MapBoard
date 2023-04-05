@@ -441,28 +441,28 @@
                             Spacing="8">
                             <ui:SplitButton
                                 x:Name="btnAddBasemapLayer"
-                                Click="AddButtonClick"
+                                Click="AddButton_Click"
                                 Content="新增">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
                                         <MenuItem
-                                            Click="AddFileButtonClick"
+                                            Click="AddFileButton_Click"
                                             Header="文件（栅格图、Tpk、Shapefile）" />
                                         <MenuItem
-                                            Click="AddWmsButtonClick"
+                                            Click="AddWmsButton_Click"
                                             Header="WMS图层" />
                                         <MenuItem
-                                            Click="AddWmtsButtonClick"
+                                            Click="AddWmtsButton_Click"
                                             Header="WMTS图层" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
                             </ui:SplitButton>
                             <Button
-                                Click="DeleteButtonClick"
+                                Click="DeleteButton_Click"
                                 Content="删除"
                                 IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}" />
                             <Button
-                                Click="OkButtonClick"
+                                Click="OkButton_Click"
                                 Content="应用并重启" />
                         </ui:SimpleStackPanel>
                         <ComboBox

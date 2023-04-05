@@ -197,7 +197,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
         {
-            //ZoomToTrackButtonClick(null, null);
+            //ZoomToTrackButton_Click(null, null);
             SetToFirstPoint();
 
             BrowseInfo.PropertyChanged += (p1, p2) =>
@@ -257,7 +257,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
+        private async void RecoverCameraButton_Click(object sender, RoutedEventArgs e)
         {
             Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
@@ -321,7 +321,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void WindowClosing(object sender, CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             Config.Instance.Save();
         }
@@ -331,7 +331,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(Track, false, true, false);
         }

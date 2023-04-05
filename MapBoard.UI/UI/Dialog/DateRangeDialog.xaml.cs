@@ -23,7 +23,7 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
-        private void SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void _SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             IsPrimaryButtonEnabled = To >= From && Field != null;
         }

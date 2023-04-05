@@ -18,7 +18,7 @@
     MinHeight="600"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Closing="WindowClosing"
+    Closing="Window_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     SizeChanged="WindowBase_SizeChanged"
     WindowStartupLocation="CenterScreen"
@@ -259,28 +259,28 @@
                             Orientation="Horizontal">
                             <Button
                                 x:Name="btnBrowseMode"
-                                Click="BrowseModeButtonClick"
+                                Click="BrowseModeButton_Click"
                                 Content="浏览模式"
                                 IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
                             <Button
                                 x:Name="btnApplyStyle"
-                                Click="ApplyStyleButtonClick"
+                                Click="ApplyStyleButton_Click"
                                 Content="应用样式"
                                 IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
                             <ui:SplitButton
                                 x:Name="btnCreateStyle"
-                                Click="CreateLayerButtonClick"
+                                Click="CreateLayerButton_Click"
                                 Content="新建图层"
                                 ToolTip="新建可编辑图层">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
                                         <MenuItem
-                                            Click="AddWfsLayerButtonClick"
+                                            Click="AddWfsLayerButton_Click"
                                             Header="WFS图层" />
                                         <MenuItem
-                                            Click="CreateTempLayerButtonClick"
+                                            Click="CreateTempLayerButton_Click"
                                             Header="临时图层" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
@@ -385,22 +385,22 @@
                         <ui:SplitButton
                             Grid.Column="6"
                             HorizontalAlignment="Stretch"
-                            Click="OpenFolderButtonClick"
+                            Click="OpenFolderButton_Click"
                             Content="目录"
                             Tag="1"
                             ToolTip="打开数据目录">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
                                     <MenuItem
-                                        Click="OpenFolderButtonClick"
+                                        Click="OpenFolderButton_Click"
                                         Header="程序所在目录"
                                         Tag="2" />
                                     <MenuItem
-                                        Click="OpenFolderButtonClick"
+                                        Click="OpenFolderButton_Click"
                                         Header="配置所在目录"
                                         Tag="3" />
                                     <MenuItem
-                                        Click="OpenFolderButtonClick"
+                                        Click="OpenFolderButton_Click"
                                         Header="备份目录"
                                         Tag="4" />
                                 </ui:MenuFlyout>
@@ -435,13 +435,13 @@
                             <ui:SplitButton
                                 x:Name="splBtnPolyline"
                                 HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
+                                Click="DrawButtons_Click"
                                 Content="多段线"
                                 Visibility="Collapsed">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="自由线" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
@@ -449,28 +449,28 @@
                             <ui:SplitButton
                                 x:Name="splBtnPolygon"
                                 HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
+                                Click="DrawButtons_Click"
                                 Content="多边形"
                                 Visibility="Collapsed">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="自由面" />
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="圆" />
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="椭圆" />
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="矩形" />
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="三角形" />
                                         <MenuItem
-                                            Click="DrawButtonsClick"
+                                            Click="DrawButtons_Click"
                                             Header="箭头" />
                                     </ui:MenuFlyout>
                                 </ui:SplitButton.Flyout>
@@ -479,20 +479,20 @@
                             <ui:SplitButton
                                 x:Name="splBtnPoint"
                                 HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
+                                Click="DrawButtons_Click"
                                 Content="点"
                                 Visibility="Collapsed" />
                             <ui:SplitButton
                                 x:Name="splBtnMultiPoint"
                                 HorizontalAlignment="Stretch"
-                                Click="DrawButtonsClick"
+                                Click="DrawButtons_Click"
                                 Content="多点"
                                 Visibility="Collapsed" />
                         </Grid>
                         <Button
                             x:Name="btnSelect"
                             Grid.Column="2"
-                            Click="SelectToggleButtonClick"
+                            Click="SelectToggleButton_Click"
                             FocusVisualStyle="{x:Null}"
                             IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected.Interaction.CanSelect}">
                             <ui:SymbolIcon Symbol="SelectAll" />

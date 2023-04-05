@@ -14,7 +14,7 @@
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
     AllowDrop="True"
-    Closing="WindowClosing"
+    Closing="Window_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -245,7 +245,7 @@
                         CanUserAddRows="False"
                         CanUserDeleteRows="True"
                         ItemsSource="{Binding GpxTrack.Points}"
-                        SelectionChanged="PointsGridSelectionChanged"
+                        SelectionChanged="PointsGrid_SelectionChanged"
                         VerticalScrollBarVisibility="Visible">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
@@ -253,14 +253,14 @@
                                     Click="SpeedMenuItemClick"
                                     Header="计算速度" />
                                 <MenuItem
-                                    Click="DeletePointMenuClick"
+                                    Click="DeletePointMenu_Click"
                                     Header="删除" />
                                 <MenuItem
-                                    Click="InsertPointButtonClick"
+                                    Click="InsertPointButton_Click"
                                     Header="在之前插入"
                                     Tag="Before" />
                                 <MenuItem
-                                    Click="InsertPointButtonClick"
+                                    Click="InsertPointButton_Click"
                                     Header="在之后插入"
                                     Tag="After" />
                             </ContextMenu>
@@ -298,12 +298,12 @@
                         </Grid.ColumnDefinitions>
                         <Button
                             HorizontalAlignment="Stretch"
-                            Click="UpdateTrackButtonClick"
+                            Click="UpdateTrackButton_Click"
                             Content="刷新" />
                         <Button
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
-                            Click="ResetTrackButtonClick"
+                            Click="ResetTrackButton_Click"
                             Content="重置" />
                     </Grid>
                 </Grid>
@@ -325,35 +325,35 @@
 
                     <Button
                         HorizontalAlignment="Stretch"
-                        Click="IdentifyButtonClick"
+                        Click="IdentifyButton_Click"
                         Content="识别点" />
                     <Button
                         Grid.Column="2"
                         HorizontalAlignment="Stretch"
-                        Click="IdentifyAllButtonClick"
+                        Click="IdentifyAllButton_Click"
                         Content="识别轨迹" />
-                    <!--<Button Grid.Column="4" Content="计算速度" Click="SpeedButtonClick" />-->
+                    <!--<Button Grid.Column="4" Content="计算速度" Click="SpeedButton_Click" />-->
                     <Button
                         Grid.Column="4"
                         HorizontalAlignment="Stretch"
-                        Click="CaptureScreenButtonClick"
+                        Click="CaptureScreenButton_Click"
                         Content="截图" />
                     <Button
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
-                        Click="RecoverCameraButtonClick"
+                        Click="RecoverCameraButton_Click"
                         Content="恢复视角" />
                     <Button
                         Grid.Row="2"
                         Grid.Column="2"
                         HorizontalAlignment="Stretch"
-                        Click="OperationButtonClick"
+                        Click="OperationButton_Click"
                         Content="操作" />
                     <Button
                         Grid.Row="2"
                         Grid.Column="4"
                         HorizontalAlignment="Stretch"
-                        Click="SaveFileButtonClick"
+                        Click="SaveFileButton_Click"
                         Content="导出" />
                 </Grid>
             </StackPanel>
@@ -394,11 +394,11 @@
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
                                 <Button
-                                    Click="OpenFilesButtonClick"
+                                    Click="OpenFilesButton_Click"
                                     Content="导入" />
                                 <FrameworkElement Width="8" />
                                 <Button
-                                    Click="ClearFileListButtonClick"
+                                    Click="ClearFileListButton_Click"
                                     Content="清空" />
                             </StackPanel>
                             <ListView
@@ -407,7 +407,7 @@
                                 ItemsSource="{Binding Tracks}"
                                 PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
                                 PreviewMouseRightButtonDown="FilesList_PreviewMouseRightButtonDown"
-                                SelectionChanged="FileSelectionChanged"
+                                SelectionChanged="File_SelectionChanged"
                                 SelectionMode="Extended">
                                 <ListView.View>
                                     <GridView>

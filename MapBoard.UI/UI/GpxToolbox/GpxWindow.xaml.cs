@@ -124,7 +124,7 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        private async void WindowClosing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             await File.WriteAllLinesAsync(FolderPaths.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
             Tracks.Clear();
@@ -202,7 +202,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void CaptureScreenButtonClick(object sender, RoutedEventArgs e)
+        private async void CaptureScreenButton_Click(object sender, RoutedEventArgs e)
         {
             string path = new FileFilterCollection().Add("PNG图片", "png")
                 .CreateSaveFileDialog()
@@ -228,7 +228,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void ElevationOffsetMenuClick(object sender, RoutedEventArgs e)
+        private async void ElevationOffsetMenu_Click(object sender, RoutedEventArgs e)
         {
             double? num = await CommonDialog.ShowDoubleInputDialogAsync("请选择整体移动高度，向上为正（m）");
             if (num.HasValue)
@@ -242,7 +242,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IdentifyAllButtonClick(object sender, RoutedEventArgs e)
+        private void IdentifyAllButton_Click(object sender, RoutedEventArgs e)
         {
             arcMap.MapTapMode = GpxMapView.MapTapModes.AllLayers;
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
@@ -253,7 +253,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IdentifyButtonClick(object sender, RoutedEventArgs e)
+        private void IdentifyButton_Click(object sender, RoutedEventArgs e)
         {
             arcMap.MapTapMode = GpxMapView.MapTapModes.SelectedLayer;
             Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
@@ -264,7 +264,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void OpenFilesButtonClick(object sender, RoutedEventArgs e)
+        private async void OpenFilesButton_Click(object sender, RoutedEventArgs e)
         {
             string[] files = new FileFilterCollection()
                 .Add("GPX轨迹文件", "gpx")
@@ -281,19 +281,19 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OperationButtonClick(object sender, RoutedEventArgs e)
+        private void OperationButton_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuHeightSmooth = new MenuItem() { Header = "高度平滑" };
             menuHeightSmooth.Click += (p1, p2) => SmoothAsync(false, true);
             MenuItem menuSmooth = new MenuItem() { Header = "平滑" };
             menuSmooth.Click += (p1, p2) => SmoothAsync(true, true);
             MenuItem menuHeightOffset = new MenuItem() { Header = "高度整体偏移" };
-            menuHeightOffset.Click += ElevationOffsetMenuClick;
+            menuHeightOffset.Click += ElevationOffsetMenu_Click;
             MenuItem menuSpeed = new MenuItem() { Header = "计算速度" };
-            menuSpeed.Click += SpeedButtonClick;
+            menuSpeed.Click += SpeedButton_Click;
 
             //MenuItem menuDeletePoints = new MenuItem() { "删除一个区域的所有点" };
-            //menuDeletePoints.Click += DeletePointsMenuClick;
+            //menuDeletePoints.Click += DeletePointsMenu_Click;
 
             ContextMenu menu = new ContextMenu()
             {
@@ -309,7 +309,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
+        private async void RecoverCameraButton_Click(object sender, RoutedEventArgs e)
         {
             Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
@@ -320,7 +320,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ResetTrackButtonClick(object sender, RoutedEventArgs e)
+        private void ResetTrackButton_Click(object sender, RoutedEventArgs e)
         {
             if (lvwFiles.SelectedItem is not TrackInfo track)
             {
@@ -411,7 +411,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void SaveFileButtonClick(object sender, RoutedEventArgs e)
+        private async void SaveFileButton_Click(object sender, RoutedEventArgs e)
         {
             string path = new FileFilterCollection()
                 .Add("GPX轨迹文件", "gpx")
@@ -468,7 +468,7 @@ namespace MapBoard.UI.GpxToolbox
                     GpxUtility.Smooth(points, num, p => p.X, (p, v) => p.X = v);
                     GpxUtility.Smooth(points, num, p => p.Y, (p, v) => p.Y = v);
                 }
-                UpdateTrackButtonClick(null, null);
+                UpdateTrackButton_Click(null, null);
             }
         }
 
@@ -477,7 +477,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void SpeedButtonClick(object sender, RoutedEventArgs e)
+        private async void SpeedButton_Click(object sender, RoutedEventArgs e)
         {
             int? num = await CommonDialog.ShowIntInputDialogAsync("请选择单边采样率");
             if (num.HasValue)
@@ -537,7 +537,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ClearFileListButtonClick(object sender, RoutedEventArgs e)
+        private void ClearFileListButton_Click(object sender, RoutedEventArgs e)
         {
             Tracks.Clear();
         }
@@ -547,7 +547,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void FileSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void File_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -612,7 +612,7 @@ namespace MapBoard.UI.GpxToolbox
                 if (lvwFiles.SelectedItems.Count > 1)
                 {
                     var menuLink = new MenuItem() { Header = "连接" };
-                    menuLink.Click += LinkTrackMenuClick;
+                    menuLink.Click += LinkTrackMenu_Click;
                     menu.Items.Add(menuLink);
                 }
             }
@@ -634,7 +634,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void LinkTrackMenuClick(object sender, RoutedEventArgs e)
+        private async void LinkTrackMenu_Click(object sender, RoutedEventArgs e)
         {
             TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().OrderBy(p => p.Track.Points.FirstOrDefault()?.Time ?? DateTime.MaxValue).ToArray();
             if (tracks.Length <= 1)
@@ -765,7 +765,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DeletePointMenuClick(object sender, RoutedEventArgs e)
+        private void DeletePointMenu_Click(object sender, RoutedEventArgs e)
         {
             var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
@@ -784,7 +784,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void InsertPointButtonClick(object sender, RoutedEventArgs e)
+        private void InsertPointButton_Click(object sender, RoutedEventArgs e)
         {
             var points = grdPoints.SelectedItems.Cast<GpxPoint>().ToArray();
             if (points.Length == 0)
@@ -842,7 +842,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PointsGridSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PointsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var points = grdPoints.SelectedItems.Cast<GpxPoint>();
             if (grdPoints.SelectedItem is GpxPoint point && !double.IsNaN(point.Z) && point.Y != 0)
@@ -877,7 +877,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void UpdateTrackButtonClick(object sender, RoutedEventArgs e)
+        private async void UpdateTrackButton_Click(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(arcMap.SelectedTrack, true);
             await UpdateUI();

@@ -260,7 +260,7 @@
                                 Grid.Column="4"
                                 Height="24"
                                 Padding="8,0"
-                                Click="SetScaleButtonClick"
+                                Click="SetScaleButton_Click"
                                 Content="设为当前"
                                 Tag="min" />
                             <Button
@@ -268,7 +268,7 @@
                                 Grid.Column="4"
                                 Height="24"
                                 Padding="8,0"
-                                Click="SetScaleButtonClick"
+                                Click="SetScaleButton_Click"
                                 Content="设为当前"
                                 Tag="max" />
                             <TextBlock
@@ -433,26 +433,26 @@
                                                 <Button
                                                     Grid.ColumnSpan="3"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="CreateKeyButtonClick"
+                                                    Click="CreateKeyButton_Click"
                                                     Content="新建"
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="4"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="ChangeKeyButtonClick"
+                                                    Click="ChangeKeyButton_Click"
                                                     Content="修改"
                                                     IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Column="6"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="DeleteKeyButtonClick"
+                                                    Click="DeleteKeyButton_Click"
                                                     Content="删除"
                                                     IsEnabled="{Binding IsChangeOrDeleteKeyButtonEnabled}" />
                                                 <Button
                                                     Grid.Row="2"
                                                     Grid.ColumnSpan="3"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="GenerateKeyButtonClick"
+                                                    Click="GenerateKeyButton_Click"
                                                     Content="自动生成全部"
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                                 <Button
@@ -460,7 +460,7 @@
                                                     Grid.Column="4"
                                                     Grid.ColumnSpan="3"
                                                     HorizontalAlignment="Stretch"
-                                                    Click="GenerateRandomColorButtonClick"
+                                                    Click="GenerateRandomColorButton_Click"
                                                     Content="随机生成颜色"
                                                     IsEnabled="{Binding IsAddKeyButtonEnabled}" />
                                             </Grid>
@@ -974,7 +974,7 @@
                                     Height="24"
                                     Padding="8,0"
                                     HorizontalAlignment="Right"
-                                    Click="SetScaleButtonClick"
+                                    Click="SetScaleButton_Click"
                                     Content="设为当前"
                                     Tag="label" />
                             </Grid>

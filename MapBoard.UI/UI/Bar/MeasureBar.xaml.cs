@@ -67,7 +67,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.Cancel();
         }
@@ -118,7 +118,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
+        private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
         }

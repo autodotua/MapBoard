@@ -51,21 +51,6 @@ namespace MapBoard.UI
         }
 
         /// <summary>
-        /// 传递SelectionChanged事件
-        /// </summary>
-        public event SelectionChangedEventHandler SelectionChanged
-        {
-            add
-            {
-                dataGrid.SelectionChanged += value;
-            }
-            remove
-            {
-                dataGrid.SelectionChanged -= value;
-            }
-        }
-
-        /// <summary>
         /// 分组
         /// </summary>
         public ObservableCollection<GroupInfo> Groups { get; } = new ObservableCollection<GroupInfo>();
@@ -308,15 +293,15 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SelectedLayerChanged(object sender, SelectionChangedEventArgs e)
+        private void SelectedLayer_Changed(object sender, SelectionChangedEventArgs e)
         {
             if (MapView.CurrentTask != BoardTask.Ready)
             {
-                dataGrid.SelectionChanged -= SelectedLayerChanged;
+                dataGrid.SelectionChanged -= SelectedLayer_Changed;
 
                 dataGrid.SelectedItem = e.RemovedItems[0];
 
-                dataGrid.SelectionChanged += SelectedLayerChanged;
+                dataGrid.SelectionChanged += SelectedLayer_Changed;
             }
 
             changingSelection = true;

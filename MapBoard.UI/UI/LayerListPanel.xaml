@@ -222,7 +222,7 @@
             PreviewMouseRightButtonDown="Lvw_PreviewMouseRightButtonDown"
             PreviewMouseRightButtonUp="ListItemPreviewMouseRightButtonUp"
             ScrollViewer.CanContentScroll="False"
-            SelectionChanged="SelectedLayerChanged"
+            SelectionChanged="SelectedLayer_Changed"
             SelectionMode="Extended" />
         <Grid
             Grid.Row="2"

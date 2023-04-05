@@ -88,7 +88,7 @@ namespace MapBoard.UI.Bar
         }
 
 
-        private void BtnMenuClick(object sender, RoutedEventArgs e)
+        private void BtnMenu_Click(object sender, RoutedEventArgs e)
         {
             var layer = Layers.Selected as IEditableLayerInfo;
             if (layer == null)
@@ -101,12 +101,12 @@ namespace MapBoard.UI.Bar
 
         }
 
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Selection.ClearSelection();
         }
 
-        private async void CopyButtonClick(object sender, RoutedEventArgs e)
+        private async void CopyButton_Click(object sender, RoutedEventArgs e)
         {
             await (this.GetWindow() as MainWindow).DoAsync(async () =>
             {
@@ -125,7 +125,7 @@ namespace MapBoard.UI.Bar
             }, "正在复制图形");
         }
 
-        private async void CutButtonClick(object sender, RoutedEventArgs e)
+        private async void CutButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(Layers.Selected is IEditableLayerInfo);
             var features = MapView.Selection.SelectedFeatures.ToArray();
@@ -142,7 +142,7 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private async void DeleteButtonClick(object sender, RoutedEventArgs e)
+        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(Layers.Selected is IEditableLayerInfo);
             await (this.GetWindow() as MainWindow).DoAsync(async () =>
@@ -152,7 +152,7 @@ namespace MapBoard.UI.Bar
             }, "正在删除", true);
         }
 
-        private async void EditButtonClick(object sender, RoutedEventArgs e)
+        private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
             Debug.Assert(Layers.Selected is IEditableLayerInfo);

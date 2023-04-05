@@ -130,7 +130,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void AddButtonClick(SplitButton sender, SplitButtonClickEventArgs args)
+        private void AddButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
             BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WebTiledLayer, "");
             BaseLayers.Add(layerInfo);
@@ -142,7 +142,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AddFileButtonClick(object sender, RoutedEventArgs e)
+        private void AddFileButton_Click(object sender, RoutedEventArgs e)
         {
             string path = new FileFilterCollection()
                            .Add("JPEG图片", "jpg,jpeg")
@@ -175,7 +175,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void AddWmsButtonClick(object sender, RoutedEventArgs e)
+        private async void AddWmsButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new AddWmsLayerDialog(BaseLayerType.WmsLayer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -191,7 +191,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void AddWmtsButtonClick(object sender, RoutedEventArgs e)
+        private async void AddWmtsButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new AddWmsLayerDialog(BaseLayerType.WmtsLayer);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -271,7 +271,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DeleteButtonClick(object sender, RoutedEventArgs e)
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (grd.SelectedItem != null)
             {
@@ -390,7 +390,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OkButtonClick(object sender, RoutedEventArgs e)
+        private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Config.Instance.BaseLayers = BaseLayers.ToList();
 

@@ -43,17 +43,17 @@ namespace MapBoard.UI.Bar
             }
         }
 
-        private void CancelButtonClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.Cancel();
         }
 
-        private void RemoveSelectedVertexButtonClick(object sender, RoutedEventArgs e)
+        private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();
         }
 
-        private void OkButtonClick(object sender, RoutedEventArgs e)
+        private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.StopAndSave();
         }

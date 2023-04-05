@@ -12,9 +12,9 @@
     Width="1000"
     Height="700"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Closing="WindowClosing"
+    Closing="Window_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="WindowLoaded"
+    Loaded="Window_Loaded"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>

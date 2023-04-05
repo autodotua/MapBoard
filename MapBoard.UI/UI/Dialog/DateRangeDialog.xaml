@@ -34,7 +34,7 @@
             ItemsSource="{Binding Fields}"
             SelectedItem="{Binding Field}"
             DisplayMemberPath="DisplayName"
-            SelectionChanged="SelectionChanged" />
+            SelectionChanged="_SelectionChanged" />
         <DatePicker
             Grid.Row="2"
             HorizontalAlignment="Stretch"
