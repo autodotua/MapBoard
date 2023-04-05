@@ -16,10 +16,17 @@ using MapBoard.Util;
 namespace MapBoard.UI.Extension
 {
     /// <summary>
-    /// SearchPanel.xaml 的交互逻辑
+    /// POI搜索面板
     /// </summary>
     public partial class SearchPanel : ExtensionPanelBase
     {
+        private int radius = 1000;
+
+        /// <summary>
+        /// 选择的POI
+        /// </summary>
+        private PoiInfo selectedPoi;
+
         public SearchPanel()
         {
             if (ExtensionUtility.PoiEngines.Count > 0)
@@ -28,9 +35,6 @@ namespace MapBoard.UI.Extension
             }
             InitializeComponent();
         }
-
-        private int radius = 1000;
-
         /// <summary>
         /// 关键次
         /// </summary>
@@ -62,8 +66,6 @@ namespace MapBoard.UI.Extension
         /// </summary>
         public PoiInfo[] SearchResult { get; set; }
 
-        private PoiInfo selectedPoi;
-
         /// <summary>
         /// 选中的POI
         /// </summary>
@@ -82,12 +84,22 @@ namespace MapBoard.UI.Extension
         /// </summary>
         public IPoiEngine SelectedPoiEngine { get; set; }
 
+        /// <summary>
+        /// 单击清空搜索结果按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
             SearchResult = Array.Empty<PoiInfo>();
             Overlay.ClearPois();
         }
 
+        /// <summary>
+        /// 单击搜索按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedPoiEngine == null)
@@ -137,6 +149,11 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 文本框按Enter进行搜索
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

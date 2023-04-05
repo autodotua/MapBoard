@@ -25,12 +25,18 @@ using Esri.ArcGISRuntime.UI.Controls;
 namespace MapBoard.UI.Extension
 {
     /// <summary>
-    /// SearchPanel.xaml 的交互逻辑
+    /// 路线规划面板
     /// </summary>
     public partial class RoutePanel : ExtensionPanelBase
     {
+        /// <summary>
+        /// 选择的路线
+        /// </summary>
         private RouteInfo selectedRoute;
 
+        /// <summary>
+        /// 路线具体步骤
+        /// </summary>
         private RouteStepInfo selectedStep;
 
         public RoutePanel()
@@ -42,8 +48,14 @@ namespace MapBoard.UI.Extension
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 目的地
+        /// </summary>
         public Location Destination { get; set; }
 
+        /// <summary>
+        /// 出发点
+        /// </summary>
         public Location Origin { get; set; }
 
         /// <summary>
@@ -225,6 +237,11 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 单击设置为当前设备位置点按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LocationPointButton_Click(object sender, RoutedEventArgs e)
         {
             if (MapView is MapView m)
@@ -254,16 +271,15 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 位置文本框如果得到焦点，就需要保证<see cref="Origin"/>和<see cref="Destination"/>不为空
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (Origin == null)
-            {
-                Origin = new Location();
-            }
-            if (Destination == null)
-            {
-                Destination = new Location();
-            }
+            Origin ??= new Location();
+            Destination ??= new Location();
         }
 
         /// <summary>

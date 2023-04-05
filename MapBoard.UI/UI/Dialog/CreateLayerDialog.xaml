@@ -1,4 +1,5 @@
-﻿<commondialog:CommonDialog
+﻿<dialog:AddLayerDialogBase
+    xmlns:dialog="clr-namespace:MapBoard.UI.Dialog"
     x:Class="MapBoard.UI.Dialog.CreateLayerDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,7 +15,6 @@
     Title="新建图层"
     CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="CommonDialog_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
     PrimaryButtonText="确定"
     mc:Ignorable="d">
@@ -132,4 +132,4 @@
         </ui:SimpleStackPanel>
         <TextBlock Text="{Binding Message}" />
     </ui:SimpleStackPanel>
-</commondialog:CommonDialog>
+</dialog:AddLayerDialogBase>

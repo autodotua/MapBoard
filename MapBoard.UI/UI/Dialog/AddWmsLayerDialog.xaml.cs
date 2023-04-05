@@ -27,9 +27,9 @@ using MapBoard.UI.Converter;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// CoordinateTransformationDialog.xaml 的交互逻辑
+    /// 新增WMS或WMTS底图
     /// </summary>
-    public partial class AddWmsLayerDialog : CommonDialog
+    public partial class AddWmsLayerDialog : AddLayerDialogBase
     {
         public AddWmsLayerDialog(BaseLayerType layerType)
         {
@@ -39,34 +39,50 @@ namespace MapBoard.UI.Dialog
             LayerType = layerType;
         }
 
-        public bool AutoPopulateAll { get; set; }
-        public string LayerName { get; set; }
-        public MapLayerCollection Layers { get; }
+        /// <summary>
+        /// 图层类型，WMS或是WMTS
+        /// </summary>
         public BaseLayerType LayerType { get; }
-        public string Message { get; set; }
-        public string TypeName => BaseLayerTypeConverter.GetName(LayerType);
-        public string Url { get; set; }
 
+        /// <summary>
+        /// 图层类型名
+        /// </summary>
+        public string TypeName => BaseLayerTypeConverter.GetName(LayerType);
+
+        /// <summary>
+        /// WMS或WMTS服务的图层名
+        /// </summary>
         public string WmsLayerName { get; set; }
 
+        /// <summary>
+        /// WMS服务中的图层
+        /// </summary>
         public ObservableCollection<WmsLayerInfo> WmsLayers { get; set; }
-        public ObservableCollection<WmtsLayerInfo> WmtsLayers { get; set; }
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
 
+        /// <summary>
+        /// WMTS服务中的图层
+        /// </summary>
+        public ObservableCollection<WmtsLayerInfo> WmtsLayers { get; set; }
+   
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
-            if (Url != null && WmsLayerName != null)
-            {
-            }
-            else
+            if (Url == null || WmsLayerName == null)
             {
                 args.Cancel = true;
                 Message = "请填写图层的完整信息";
             }
         }
 
+        /// <summary>
+        /// 单击查询服务图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void QueryLayersButton_Click(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
@@ -93,6 +109,10 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 查询WMS图层
+        /// </summary>
+        /// <returns></returns>
         private async Task QueryWmsLayers()
         {
             WmsService s = new WmsService(new Uri(Url));
@@ -123,6 +143,10 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 查询WMTS图层
+        /// </summary>
+        /// <returns></returns>
         private async Task QueryWmtsLayers()
         {
             WmtsService s = new WmtsService(new Uri(Url));

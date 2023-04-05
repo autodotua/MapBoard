@@ -17,7 +17,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 namespace MapBoard.UI.Extension
 {
     /// <summary>
-    /// SearchPanel.xaml 的交互逻辑
+    /// 地理逆编码面板
     /// </summary>
     public partial class ReGeoCodePanel : ExtensionPanelBase
     {
@@ -34,6 +34,9 @@ namespace MapBoard.UI.Extension
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 搜索点
+        /// </summary>
         public Location Point { get; set; }
 
         /// <summary>
@@ -79,6 +82,11 @@ namespace MapBoard.UI.Extension
         /// </summary>
         public IReGeoCodeEngine SelectedReGeoCodeEngine { get; set; }
 
+        /// <summary>
+        /// 单击选择点按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ChoosePointButton_Click(object sender, RoutedEventArgs e)
         {
             MapPoint point = await GetPointAsync();
@@ -90,6 +98,11 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 单击清除搜索结果按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
             Overlay.ClearLocation();
@@ -97,6 +110,11 @@ namespace MapBoard.UI.Extension
             SearchResult = null;
         }
 
+        /// <summary>
+        /// 单击设置为当前设备位置点按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LocationPointButton_Click(object sender, RoutedEventArgs e)
         {
             if (MapView is MapView m)
@@ -116,14 +134,21 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 位置文本框如果得到焦点，就需要保证<see cref="Point"/>不为空
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LocationTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (Point == null)
-            {
-                Point = new Location();
-            }
+            Point ??= new Location();
         }
 
+        /// <summary>
+        /// 单击搜索按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedReGeoCodeEngine == null)
@@ -158,6 +183,11 @@ namespace MapBoard.UI.Extension
             }
         }
 
+        /// <summary>
+        /// 文本框按Enter进行搜索
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

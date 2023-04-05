@@ -1,37 +1,35 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using FzLib;
+using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using MapBoard.Mapping;
 using MapBoard.Util;
-using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static MapBoard.Util.CoordinateTransformation;
-using MapBoard.Mapping.Model;
-using Microsoft.WindowsAPICodePack.Dialogs.Controls;
 using EsriLayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 
 namespace MapBoard.UI.Dialog
 {
-    public partial class CreateLayerDialog : CommonDialog
+    /// <summary>
+    /// 创建本地矢量图层对话框
+    /// </summary>
+    public partial class CreateLayerDialog : AddLayerDialogBase
     {
+        /// <summary>
+        /// 正在编辑的已有图层
+        /// </summary>
         public MapLayerInfo editLayer = null;
-        private string layerType;
 
-        private CreateLayerDialog(MapLayerCollection layers, string layerType, MapLayerInfo layer, EsriLayerCollection esriLayers)
+        /// <summary>
+        /// 图层类型
+        /// </summary>
+        private readonly string layerType;
+
+        private CreateLayerDialog(MapLayerCollection layers, string layerType, MapLayerInfo layer, EsriLayerCollection esriLayers):base(layers)
         {
             this.layerType = layerType;
             Fields.CollectionChanged += (s, e) => this.Notify(nameof(CanAddCreateTimeField), nameof(CanAddModifiedTimeField));
@@ -41,7 +39,7 @@ namespace MapBoard.UI.Dialog
                 Title = layer switch
                 {
                     ShapefileMapLayerInfo or TempMapLayerInfo => "编辑图层属性",
-                    _ => throw new ArgumentException()
+                    _ => throw new ArgumentException("图层类型不正确",nameof(layer))
                 };
                 if (layer is TempMapLayerInfo)
                 {
@@ -95,27 +93,51 @@ namespace MapBoard.UI.Dialog
             {
                 LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
             }
-            Layers = layers;
             EsriLayers = esriLayers;
         }
 
+        /// <summary>
+        /// 能否增加创建时间字段
+        /// </summary>
+        public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
+        
+        /// <summary>
+        /// 能否增加修改时间字段
+        /// </summary>
+        public bool CanAddModifiedTimeField => !Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName);
+        
+        /// <summary>
+        /// ArcGIS的图层
+        /// </summary>
+        public EsriLayerCollection EsriLayers { get; }
+
+        /// <summary>
+        /// 字段
+        /// </summary>
         public ObservableCollection<FieldInfo> Fields { get; } = new ObservableCollection<FieldInfo>();
 
-        public string LayerName { get; set; }
-
-        public MapLayerCollection Layers { get; }
-        public EsriLayerCollection EsriLayers { get; }
-        public string Message { get; set; }
-
-        public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
-        public bool CanAddModifiedTimeField => !Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName);
-
+        /// <summary>
+        /// 打开用于创建新图层的对话框
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="layers"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
             return new CreateLayerDialog(layers, GetLayerType<T>(), null, null).ShowAsync();
         }
 
+        /// <summary>
+        /// 打开用于编辑已有图层的对话框
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="layers"></param>
+        /// <param name="esriLayers"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static Task OpenEditDialog<T>(MapLayerCollection layers, EsriLayerCollection esriLayers, T layer) where T : MapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
@@ -123,6 +145,12 @@ namespace MapBoard.UI.Dialog
             return new CreateLayerDialog(layers, GetLayerType<T>(), layer, esriLayers).ShowAsync();
         }
 
+        /// <summary>
+        /// 根据类型<typeparamref name="T"/>获取<see cref="string"/>类型的图层类型名
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         private static string GetLayerType<T>() where T : MapLayerInfo
         {
             if (typeof(T) == typeof(ShapefileMapLayerInfo))
@@ -136,6 +164,21 @@ namespace MapBoard.UI.Dialog
             throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
         }
 
+        /// <summary>
+        /// 单击增加字段按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AddFieldButton_Click(object sender, RoutedEventArgs e)
+        {
+            Fields.Add(new FieldInfo());
+        }
+
+        /// <summary>
+        /// 字段单元格编辑完成，判断目前的字段设置是否合规
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditAction == DataGridEditAction.Commit)
@@ -165,10 +208,12 @@ namespace MapBoard.UI.Dialog
             IsPrimaryButtonEnabled = true;
         }
 
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <exception cref="NotSupportedException"></exception>
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
@@ -180,7 +225,7 @@ namespace MapBoard.UI.Dialog
                 0 when rbtnPolygon.IsChecked == true => GeometryType.Polygon,
                 _ => GeometryType.Polyline,
             };
-            if (editLayer != null)
+            if (editLayer != null)//编辑
             {
                 switch (layerType)
                 {
@@ -202,7 +247,7 @@ namespace MapBoard.UI.Dialog
 
                 Hide();
             }
-            else
+            else//创建
             {
                 var fields = Fields.Where(p => p.Name.Length > 0 && p.DisplayName.Length > 0)
                   .ToList();
@@ -235,6 +280,11 @@ namespace MapBoard.UI.Dialog
             IsEnabled = true;
         }
 
+        /// <summary>
+        /// 单击生成创建时间字段的菜单项
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CreateTimeMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (!Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
@@ -243,17 +293,17 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 单击生成修改时间字段的菜单项
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ModifiedTimeMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (!Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName))
             {
                 Fields.Add(FieldExtension.ModifiedTimeField);
             }
-        }
-
-        private void AddFieldButton_Click(object sender, RoutedEventArgs e)
-        {
-            Fields.Add(new FieldInfo());
         }
     }
 }

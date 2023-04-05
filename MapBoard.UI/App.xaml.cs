@@ -63,6 +63,17 @@ namespace MapBoard
         {
             InitializeLogs();
 
+#if DEBUG
+            var existedProcesses = Process.GetProcessesByName("MapBoard")
+                .Where(p => p.Id != Process.GetCurrentProcess().Id);
+            if (existedProcesses.Any())
+            {
+                foreach (var process in existedProcesses)
+                {
+                    process.Kill(true);
+                }
+            }
+#else
             //单例检测
             singleInstance = new SingleInstance(FzLib.Program.App.ProgramName);
             await singleInstance.CheckAndOpenWindow<MainWindow>(this);
@@ -87,11 +98,8 @@ namespace MapBoard
                 //}
                 Environment.Exit(0);
                 return;
-            }
+        }
 
-#if (DEBUG)
-
-#else
             UnhandledException.RegistAll();
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
 
@@ -134,7 +142,7 @@ namespace MapBoard
                 SplashWindow.EnsureInvisible();
                 Log.Error("找不到C++库", ex);
 
-                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" +Environment.NewLine+ ex.InnerException?.InnerException?.InnerException?.InnerException.Message+ Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" + Environment.NewLine + ex.InnerException?.InnerException?.InnerException?.InnerException.Message + Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
                 if (result == MessageBoxResult.Yes)
                 {
                     try

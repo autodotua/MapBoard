@@ -3,7 +3,6 @@ using FzLib;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Util;
-using ModernWpf.FzExtension.CommonDialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,14 +25,14 @@ using Esri.ArcGISRuntime.Ogc;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// CoordinateTransformationDialog.xaml 的交互逻辑
+    /// 新增WFS图层面板
     /// </summary>
-    public partial class AddWfsLayerDialog : CommonDialog
+    public partial class AddWfsLayerDialog : AddLayerDialogBase
     {
         public WfsMapLayerInfo editLayer = null;
         public bool editMode = false;
 
-        public AddWfsLayerDialog(MapLayerCollection layers, WfsMapLayerInfo layer = null)
+        public AddWfsLayerDialog(MapLayerCollection layers, WfsMapLayerInfo layer = null) : base(layers)
         {
             InitializeComponent();
             if (layer != null)
@@ -50,21 +49,23 @@ namespace MapBoard.UI.Dialog
             {
                 LayerName = "新图层 - " + DateTime.Now.ToString("yyyyMMdd_HHmmss");
             }
-            Layers = layers;
         }
 
-        public bool AutoPopulateAll { get; set; }
-        public string LayerName { get; set; }
-        public MapLayerCollection Layers { get; }
-        public string Message { get; set; }
-        public string Url { get; set; }
+        /// <summary>
+        /// WFS图层名
+        /// </summary>
         public string WfsLayerName { get; set; }
+
+        /// <summary>
+        /// WFS服务所有可用图层
+        /// </summary>
         public IReadOnlyList<WfsLayerInfo> WfsLayers { get; set; }
 
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
@@ -79,26 +80,42 @@ namespace MapBoard.UI.Dialog
                 }
                 catch (Exception ex)
                 {
-                    App.Log.Error("架子啊Wfs失败", ex);
+                    App.Log.Error("加载Wfs失败", ex);
                     Message = "加载失败：" + ex.Message;
                 }
             }
             else
             {
-                try
+                if (string.IsNullOrWhiteSpace(Url))
                 {
-                    await LayerUtility.AddWfsLayerAsync(Layers, LayerName, Url, WfsLayerName, AutoPopulateAll);
-                    Hide();
+                    Message = "请设置服务链接";
                 }
-                catch (Exception ex)
+                else if (string.IsNullOrWhiteSpace(WfsLayerName))
                 {
-                    Message = "创建图层失败：" + ex.Message;
-                    return;
+                    Message = "请设置WFS图层名";
+                }
+                else
+                {
+                    try
+                    {
+                        await LayerUtility.AddWfsLayerAsync(Layers, LayerName, Url, WfsLayerName, AutoPopulateAll);
+                        Hide();
+                    }
+                    catch (Exception ex)
+                    {
+                        Message = "创建图层失败：" + ex.Message;
+                        return;
+                    }
                 }
             }
             IsEnabled = true;
         }
 
+        /// <summary>
+        /// 单击查询图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void QueryLayersButton_Click(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
