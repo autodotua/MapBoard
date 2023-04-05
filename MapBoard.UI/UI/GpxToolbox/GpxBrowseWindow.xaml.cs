@@ -14,7 +14,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using static MapBoard.UI.GpxToolbox.SymbolResources;
+using static MapBoard.UI.GpxToolbox.GpxSymbolResources;
 using FzLib;
 using MapBoard.Model;
 using MapBoard.Mapping;
@@ -26,10 +26,20 @@ using MapBoard.IO;
 namespace MapBoard.UI.GpxToolbox
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    /// GPX游览窗口
     /// </summary>
     public partial class GpxBrowseWindow : WindowBase
     {
+        /// <summary>
+        /// 是否正在停止
+        /// </summary>
+        private bool stopping = false;
+
+        /// <summary>
+        /// 是否正在播放或录制
+        /// </summary>
+        private bool working = false;
+
         public GpxBrowseWindow(TrackInfo track)
         {
             BrowseInfo = Config.Instance.Gpx_BrowseInfo;
@@ -40,48 +50,87 @@ namespace MapBoard.UI.GpxToolbox
             arcMap.InteractionOptions = new SceneViewInteractionOptions() { IsEnabled = false };
         }
 
+        /// <summary>
+        /// 游览信息
+        /// </summary>
         public BrowseInfo BrowseInfo { get; set; } = new BrowseInfo();
 
-        private void WindowClosing(object sender, CancelEventArgs e)
-        {
-            Config.Instance.Save();
-        }
+        /// <summary>
+        /// 当前进度
+        /// </summary>
+        public double Progress { get; set; }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            arcMap.LoadTrack(Track, false, true, false);
-        }
+        /// <summary>
+        /// 轨迹
+        /// </summary>
+        public TrackInfo Track { get; set; }
 
-        private double progress = 0;
-
-        public double Progress
+        /// <summary>
+        /// 录制
+        /// </summary>
+        /// <returns></returns>
+        public async Task Record()
         {
-            get => progress;
-            set
+            working = true;
+            if (!Directory.Exists(GetRecordPath()))
             {
-                progress = value;
-                this.Notify(nameof(Progress));
+                Directory.CreateDirectory(GetRecordPath());
+            }
+            var points = Track.Track.Points;
+            DateTime startTime = points.First().Time;
+            int i = 0;
+            int count = 0;
+            bool useTimeFileName = rbtnFormatTime.IsChecked.Value;
+            for (DateTime time = startTime; ; time = time.AddMilliseconds(BrowseInfo.RecordInterval))
+            {
+                while (i < points.Count - 2 && points[i + 1].Time < time)
+                {
+                    i++;
+                }
+                if (i >= points.Count - 2 || stopping)
+                {
+                    await StopRecordAsync();
+                    return;
+                }
+                MapPoint interPoint = null;
+                Camera camera = null;
+                //计算点位置
+                await Task.Run(() =>
+                {
+                    GpxPoint point = points[i];
+                    GpxPoint nextPoint = points[i + 1];
+                    Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[^1].Time - points[0].Time).Ticks;
+                    var curve = GeometryUtility.CalculateGeodeticCurve(point.ToMapPoint(), nextPoint.ToMapPoint());
+                    double percent = 1.0 * (time - point.Time).Ticks / (nextPoint.Time - point.Time).Ticks;
+                    interPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.Azimuth, curve.Distance * percent);
+                    var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
+                    camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
+                });
+                //设置点的位置
+                arcMap.SetLocation(interPoint);
+                //设置摄像机位置
+                await arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
+                //等待渲染完成
+                await arcMap.WaitForRenderCompletedAsync();
+                //即使已经渲染完成，有时仍然不会立刻显示，需要再等待一段时间
+                await Task.Delay(BrowseInfo.ExtraRecordDelay);
+                //导出图像
+                string filePath = null;
+                if (useTimeFileName)
+                {
+                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
+                }
+                else
+                {
+                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, ++count + ".png");
+                }
+                await arcMap.ExportImageAsync(filePath, ImageFormat.Png, GeoViewHelper.GetWatermarkThickness());
             }
         }
 
-        private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
-        {
-            arcMap.ClearSelection();
-        }
-
-        private bool stopping = false;
-        private bool working = false;
-
-        private void SetToFirstPoint()
-        {
-            var points = Track.Track.Points;
-            var curve = GeometryUtility.CalculateGeodeticCurve(points[0].ToMapPoint(), points[1].ToMapPoint());
-            var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(points[0].ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
-            var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
-            arcMap.SetLocation(points[0].ToMapPoint());
-            arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
-        }
-
+        /// <summary>
+        /// 开始播放
+        /// </summary>
         public void StartPlay()
         {
             working = true;
@@ -114,7 +163,7 @@ namespace MapBoard.UI.GpxToolbox
                  {
                      GpxPoint point = points[i];
                      GpxPoint nextPoint = points[i + 1];
-                     Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[points.Count - 1].Time - points[0].Time).Ticks;
+                     Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[^1].Time - points[0].Time).Ticks;
                      var curve = GeometryUtility.CalculateGeodeticCurve(point.ToMapPoint(), nextPoint.ToMapPoint());
                      double percent =
                      (BrowseInfo.Speed * (now - startTime).Ticks - (point.Time - startGpxTime).Ticks)
@@ -132,90 +181,20 @@ namespace MapBoard.UI.GpxToolbox
             timer.Start();
         }
 
-        public async Task Record()
-        {
-            working = true;
-            if (!Directory.Exists(GetRecordPath()))
-            {
-                Directory.CreateDirectory(GetRecordPath());
-            }
-            var points = Track.Track.Points;
-            DateTime startTime = points.First().Time;
-            int i = 0;
-            int count = 0;
-            bool useTimeFileName = rbtnFormatTime.IsChecked.Value;
-            for (DateTime time = startTime; ; time = time.AddMilliseconds(BrowseInfo.RecordInterval))
-            {
-                while (i < points.Count - 2 && points[i + 1].Time < time)
-                {
-                    i++;
-                }
-                if (i >= points.Count - 2 || stopping)
-                {
-                    await StopRecordAsync();
-                    return;
-                }
-                MapPoint interPoint = null;
-                Camera camera = null;
-                //计算点位置
-                await Task.Run(() =>
-                {
-                    GpxPoint point = points[i];
-                    GpxPoint nextPoint = points[i + 1];
-                    Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[points.Count - 1].Time - points[0].Time).Ticks;
-                    var curve = GeometryUtility.CalculateGeodeticCurve(point.ToMapPoint(), nextPoint.ToMapPoint());
-                    double percent = 1.0 * (time - point.Time).Ticks / (nextPoint.Time - point.Time).Ticks;
-                    interPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.Azimuth, curve.Distance * percent);
-                    var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
-                    camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
-                });
-                //设置点的位置
-                arcMap.SetLocation(interPoint);
-                //设置摄像机位置
-                await arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
-                //等待渲染完成
-                await arcMap.WaitForRenderCompletedAsync();
-                //即使已经渲染完成，有时仍然不会立刻显示，需要再等待一段时间
-                await Task.Delay(BrowseInfo.ExtraRecordDelay);
-                //导出图像
-                string filePath = null;
-                if (useTimeFileName)
-                {
-                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, time.ToString("yyyyMMdd-HHmmss-fff") + ".png");
-                }
-                else
-                {
-                    filePath = Path.Combine(FolderPaths.RecordsPath, Track.FileName, ++count + ".png");
-                }
-                await arcMap.ExportImageAsync(filePath, ImageFormat.Png, GeoViewHelper.GetWatermarkThickness());
-            }
-        }
-
+        /// <summary>
+        /// 获取录制的目标路径
+        /// </summary>
+        /// <returns></returns>
         private string GetRecordPath()
         {
             return Path.Combine(FolderPaths.RecordsPath, Track.FileName);
         }
 
-        private void StopPlay()
-        {
-            stopping = false;
-            working = false;
-            SetUIEnabled(false, false);
-        }
-
-        private async Task StopRecordAsync()
-        {
-            btnRecord.Content = "录制";
-            stopping = false;
-            working = false;
-            SetUIEnabled(false, false);
-            ResizeMode = ResizeMode.CanResize;
-            if (await CommonDialog.ShowYesNoDialogAsync("是否打开目录？") == true)
-            {
-                await IOUtility.TryOpenFolderAsync(GetRecordPath());
-            }
-        }
-
+        /// <summary>
+        /// GPX加载完成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
         {
             //ZoomToTrackButtonClick(null, null);
@@ -231,40 +210,12 @@ namespace MapBoard.UI.GpxToolbox
             };
         }
 
-        public TrackInfo Track { get; set; }
-
-        #region 左下角按钮
-
-        private void IdentifyButtonClick(object sender, RoutedEventArgs e)
-        {
-            arcMap.MapTapMode = GpxMapView.MapTapModes.SelectedLayer;
-            Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
-        }
-
-        private void IdentifyAllButtonClick(object sender, RoutedEventArgs e)
-        {
-            arcMap.MapTapMode = GpxMapView.MapTapModes.AllLayers;
-            Cursor = Cursor == Cursors.Help ? Cursors.Arrow : Cursors.Help;
-        }
-
-        #endregion 左下角按钮
-
-        private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
-        {
-            Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
-            await arcMap.SetViewpointCameraAsync(camera);
-        }
-
-        private void ZoomToTrackButtonClick(object sender, RoutedEventArgs e)
-        {
-            arcMap.SetViewpointAsync(new Viewpoint(Track.Track.Points.Extent), TimeSpan.FromSeconds(1));
-        }
-
-        private void ArcMapTapped(object sender, Esri.ArcGISRuntime.UI.Controls.GeoViewInputEventArgs e)
-        {
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 单击播放按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             if (working)
             {
@@ -279,15 +230,11 @@ namespace MapBoard.UI.GpxToolbox
                 SetUIEnabled(true, false);
             }
         }
-
-        private void SetUIEnabled(bool working, bool record)
-        {
-            grdPlay.IsEnabled = !stopping && (!working || !record);
-            grdRecord.IsEnabled = !stopping && (!working || record);
-            sldSpeed.IsEnabled = !working;
-            grdCommon.IsEnabled = !working && !stopping;
-        }
-
+        /// <summary>
+        /// 单击录制按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RecordButton_Click(object sender, RoutedEventArgs e)
         {
             if (working)
@@ -304,5 +251,90 @@ namespace MapBoard.UI.GpxToolbox
                 ResizeMode = ResizeMode.NoResize;
             }
         }
+
+        /// <summary>
+        /// 单击恢复摄像机按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void RecoverCameraButtonClick(object sender, RoutedEventArgs e)
+        {
+            Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
+            await arcMap.SetViewpointCameraAsync(camera);
+        }
+
+        /// <summary>
+        /// 转到第一个点
+        /// </summary>
+        private void SetToFirstPoint()
+        {
+            var points = Track.Track.Points;
+            var curve = GeometryUtility.CalculateGeodeticCurve(points[0].ToMapPoint(), points[1].ToMapPoint());
+            var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(points[0].ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
+            var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
+            arcMap.SetLocation(points[0].ToMapPoint());
+            arcMap.SetViewpointCameraAsync(camera, TimeSpan.Zero);
+        }
+
+        /// <summary>
+        /// 设置UI的可用性
+        /// </summary>
+        /// <param name="working"></param>
+        /// <param name="record"></param>
+        private void SetUIEnabled(bool working, bool record)
+        {
+            grdPlay.IsEnabled = !stopping && (!working || !record);
+            grdRecord.IsEnabled = !stopping && (!working || record);
+            sldSpeed.IsEnabled = !working;
+            grdCommon.IsEnabled = !working && !stopping;
+        }
+
+        /// <summary>
+        /// 停止播放
+        /// </summary>
+        private void StopPlay()
+        {
+            stopping = false;
+            working = false;
+            SetUIEnabled(false, false);
+        }
+
+        /// <summary>
+        /// 停止录制
+        /// </summary>
+        /// <returns></returns>
+        private async Task StopRecordAsync()
+        {
+            btnRecord.Content = "录制";
+            stopping = false;
+            working = false;
+            SetUIEnabled(false, false);
+            ResizeMode = ResizeMode.CanResize;
+            if (await CommonDialog.ShowYesNoDialogAsync("是否打开目录？") == true)
+            {
+                await IOUtility.TryOpenFolderAsync(GetRecordPath());
+            }
+        }
+
+        /// <summary>
+        /// 窗口关闭
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void WindowClosing(object sender, CancelEventArgs e)
+        {
+            Config.Instance.Save();
+        }
+
+        /// <summary>
+        /// 窗口加载后，加载轨迹
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            arcMap.LoadTrack(Track, false, true, false);
+        }
+
     }
 }

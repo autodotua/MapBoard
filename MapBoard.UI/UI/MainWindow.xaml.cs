@@ -453,7 +453,7 @@ namespace MapBoard.UI
         }
 
         /// <summary>
-        /// 打开场景浏览窗口
+        /// 打开3D浏览窗口
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

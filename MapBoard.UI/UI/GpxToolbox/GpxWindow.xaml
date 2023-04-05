@@ -406,7 +406,7 @@
                                 Grid.Row="2"
                                 ItemsSource="{Binding Tracks}"
                                 PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
-                                PreviewMouseRightButtonDown="lvwFiles_PreviewMouseRightButtonDown"
+                                PreviewMouseRightButtonDown="FilesList_PreviewMouseRightButtonDown"
                                 SelectionChanged="FileSelectionChanged"
                                 SelectionMode="Extended">
                                 <ListView.View>

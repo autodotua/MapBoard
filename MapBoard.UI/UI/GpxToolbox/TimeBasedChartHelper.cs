@@ -43,17 +43,17 @@ namespace MapBoard.UI.GpxToolbox
         /// <summary>
         /// 全局的坐标系横坐标最大值
         /// </summary>
-        private DateTime globalAxisMaxX = DateTime.MinValue;
+        private DateTime globalAxisMaxX;
 
         /// <summary>
         /// 全局的坐标系横坐标最小值
         /// </summary>
-        private DateTime globalAxisMinX = DateTime.MaxValue;
+        private DateTime globalAxisMinX;
 
         /// <summary>
         /// 全局的坐标系横坐标跨度
         /// </summary>
-        private TimeSpan globalAxisXSpan = TimeSpan.Zero;
+        private TimeSpan globalAxisXSpan;
 
         /// <summary>
         /// 是否正在绘制
@@ -72,6 +72,7 @@ namespace MapBoard.UI.GpxToolbox
             canvas.PreviewMouseMove += SketchpadPreviewMouseMove;
             canvas.MouseLeave += SketchpadMouseLeave;
             canvas.Background = Brushes.White;
+            canvas.Cursor = Cursors.None;
             canvas.ClipToBounds = true;
             //初始化绘制定时器
             timer = new Timer(new TimerCallback(p =>
@@ -287,7 +288,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
+        private void SketchpadPreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (!canMouseMoveUpdate
                 || isDrawing
@@ -301,8 +302,6 @@ namespace MapBoard.UI.GpxToolbox
             RefreshMouseLine(point);
             RefreshToolTip(point, pos.X, pos.Y);
             MouseOverPoint?.Invoke(this, new MouseOverPointChangedEventArgs(e, UiPoint2Point[point]));
-
-            await Task.Delay(100);
             canMouseMoveUpdate = true;
         }
 
@@ -487,7 +486,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 foreach (var item in items)
                 {
-                    if (last != default && LinePointEnbale(last, item))
+                    if (last != default && LinePointEnable(last, item))
                     {
                         DateTime time1 = XAxisLineValueConverter(last);
                         double value1 = YAxisLineValueConverter(last);
@@ -618,6 +617,9 @@ namespace MapBoard.UI.GpxToolbox
             Sketchpad.Children.Clear();
             UiPoint2Point.Clear();
             point2UiPoint.Clear();
+            globalAxisMaxX = DateTime.MinValue;
+            globalAxisMinX = DateTime.MaxValue;
+            globalAxisXSpan = TimeSpan.Zero;
             Sketchpad.RenderTransform = null;
         }
 
@@ -669,29 +671,124 @@ namespace MapBoard.UI.GpxToolbox
 
         #region 可从外部更改的属性
 
+        /// <summary>
+        /// 默认字体大小
+        /// </summary>
         public double FontSize { get; set; } = 9;
+
+        /// <summary>
+        /// 水平网格线颜色
+        /// </summary>
         public Brush HorizentalGridlinesBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+
+        /// <summary>
+        /// 水平网格字体颜色
+        /// </summary>
         public Brush HorizentalTextBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+
+        /// <summary>
+        /// 数据线颜色
+        /// </summary>
         public Brush LineBrush { get; set; } = Brushes.Blue;
-        public Func<TLine, TLine, bool> LinePointEnbale { get; set; } = (p1, p2) => true;
+
+        /// <summary>
+        /// 两点之间是否需要连线
+        /// </summary>
+        public Func<TLine, TLine, bool> LinePointEnable { get; set; } = (p1, p2) => true;
+
+        /// <summary>
+        /// 线的粗细
+        /// </summary>
         public double LineThickness { get; set; } = 1;
+
+        /// <summary>
+        /// 是否开启鼠标位置竖线
+        /// </summary>
         public bool MouseLineEnable { get; set; } = true;
+
+        /// <summary>
+        /// 点的颜色
+        /// </summary>
         public Brush PointBrush { get; set; } = Brushes.Red;
+
+        /// <summary>
+        /// 点的大小
+        /// </summary>
         public double PointSize { get; set; } = 1;
+
+        /// <summary>
+        /// 多边形填充颜色
+        /// </summary>
         public Brush PolygonBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0x33, 0x55, 0x55, 0x55));
+
+        /// <summary>
+        /// 选择的点的颜色
+        /// </summary>
         public Brush SelectedPointBrush { get; set; } = Brushes.Green;
+
+        /// <summary>
+        /// 面板尺寸改变后，延时重绘的时间
+        /// </summary>
         public TimeSpan SizeChangeDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        /// 鼠标位置提示框转换器
+        /// </summary>
         public Func<TPoint, string> ToolTipConverter { get; set; } = p => p.ToString();
+
+        /// <summary>
+        /// 是否启用鼠标位置提示框
+        /// </summary>
         public bool ToolTipEnable { get; set; } = true;
+
+        /// <summary>
+        /// 垂直网格线颜色
+        /// </summary>
         public Brush VerticleGridlinesBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+
+        /// <summary>
+        /// 垂直字体颜色
+        /// </summary>
         public Brush VerticleTextBrush { get; set; } = new SolidColorBrush(Color.FromArgb(0xFF, 0xCC, 0xCC, 0xCC));
+
+        /// <summary>
+        /// X轴线的值转换器
+        /// </summary>
         public Func<TLine, DateTime> XAxisLineValueConverter { get; set; } = p => DateTime.MinValue;
+
+        /// <summary>
+        /// X轴点的值转换器
+        /// </summary>
         public Func<TPoint, DateTime> XAxisPointValueConverter { get; set; } = p => DateTime.MinValue;
+
+        /// <summary>
+        /// X轴面的值转换器
+        /// </summary>
         public Func<TPolygon, DateTime> XAxisPolygonValueConverter { get; set; } = p => DateTime.MinValue;
+
+        /// <summary>
+        /// X轴标签格式
+        /// </summary>
         public Func<DateTime, string> XLabelFormat { get; set; } = p => p.ToString();
+
+        /// <summary>
+        /// Y轴线的转换器
+        /// </summary>
         public Func<TLine, double> YAxisLineValueConverter { get; set; } = p => 0;
+
+        /// <summary>
+        /// Y轴点的转换器
+        /// </summary>
         public Func<TPoint, double> YAxisPointValueConverter { get; set; } = p => 0;
+
+        /// <summary>
+        /// Y轴面的转换器
+        /// </summary>
         public Func<TPolygon, double> YAxisPolygonValueConverter { get; set; } = p => 0;
+
+        /// <summary>
+        /// Y轴标签格式
+        /// </summary>
         public Func<double, string> YLabelFormat { get; set; } = p => p.ToString();
         #endregion 可从外部更改的属性
 
@@ -842,6 +939,9 @@ namespace MapBoard.UI.GpxToolbox
         /// <typeparam name="T"></typeparam>
         public class CoordinateSystemSetting<T>
         {
+            /// <summary>
+            /// X轴预设网格宽度
+            /// </summary>
             public Dictionary<TimeSpan, TimeSpan> SpanXMapping { get; set; } = new Dictionary<TimeSpan, TimeSpan>()
             {
                 { TimeSpan.FromMinutes(1),TimeSpan.FromSeconds(5) },
@@ -852,6 +952,9 @@ namespace MapBoard.UI.GpxToolbox
                 { TimeSpan.FromHours(60),TimeSpan.FromHours(5) },
             };
 
+            /// <summary>
+            /// Y轴预设网格宽度
+            /// </summary>
             public Dictionary<double, double> SpanYMapping { get; set; } = new Dictionary<double, double>()
             {
                 {1,0.1 },
@@ -924,7 +1027,7 @@ namespace MapBoard.UI.GpxToolbox
             /// <summary>
             /// 数据源中的Y跨度
             /// </summary>
-            public double SpanY =>MaxY - MinY;
+            public double SpanY => MaxY - MinY;
         }
     }
 }

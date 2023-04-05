@@ -99,7 +99,7 @@
                 <Button
                     x:Name="btnPlay"
                     Grid.Column="99"
-                    Click="Button_Click">
+                    Click="PlayButton_Click">
                     播放
                 </Button>
             </Grid>

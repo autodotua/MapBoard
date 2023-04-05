@@ -18,7 +18,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using static MapBoard.UI.GpxToolbox.SymbolResources;
+using static MapBoard.UI.GpxToolbox.GpxSymbolResources;
 using MapBoard.Model;
 using MapBoard.Mapping.Model;
 using FzLib.Collection;
@@ -42,17 +42,23 @@ namespace MapBoard.Mapping
         private static List<GpxMapView> instances = new List<GpxMapView>();
 
         /// <summary>
-        /// 浏览中的覆盖层
+        /// 游览中的覆盖层
         /// </summary>
         private GraphicsOverlay browseOverlay;
 
         /// <summary>
         /// 鼠标右键按下位置
         /// </summary>
-      private  Point mouseRightDownPosition;
+        private Point mouseRightDownPosition;
 
+        /// <summary>
+        /// 选中的图形
+        /// </summary>
         private HashSet<Graphic> selectedGraphics = new HashSet<Graphic>();
 
+        /// <summary>
+        /// 当前轨迹
+        /// </summary>
         private TrackInfo selectedTrack = null;
 
         public GpxMapView()
@@ -286,7 +292,7 @@ namespace MapBoard.Mapping
             //处理高程
             double minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
             double mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
-            
+
 
             List<List<MapPoint>> mapPoints = new List<List<MapPoint>>();
             List<MapPoint> subMapPoints = new List<MapPoint>();
@@ -326,7 +332,7 @@ namespace MapBoard.Mapping
             //创建Graphic
             Graphic lineGraphic = new Graphic(new Polyline(mapPoints));
             trackInfo.Overlay.Graphics.Insert(0, lineGraphic);
-            trackInfo.Overlay.SceneProperties.SurfacePlacement = 
+            trackInfo.Overlay.SceneProperties.SurfacePlacement =
                 gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height
                 ? SurfacePlacement.Absolute
                 : SurfacePlacement.DrapedFlat;
@@ -495,7 +501,7 @@ namespace MapBoard.Mapping
             base.OnPreviewMouseRightButtonUp(e);
             var distance = Math.Sqrt(Math.Pow(e.GetPosition(this).X - mouseRightDownPosition.X, 2)
                 + Math.Pow(e.GetPosition(this).Y - mouseRightDownPosition.Y, 2));
-            if (distance<5)
+            if (distance < 5)
             {
                 var location = (await ScreenToLocationAsync(e.GetPosition(this))).ToWgs84();
                 ContextMenu menu = new ContextMenu();
