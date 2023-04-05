@@ -9,7 +9,6 @@
     Title="建立缓冲区"
     CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Loaded="Window_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
     PrimaryButtonText="确定"
     mc:Ignorable="d">

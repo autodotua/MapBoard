@@ -19,12 +19,23 @@ using MapBoard.Mapping.Model;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 属性表
     /// </summary>
     public partial class AttributeTableDialog : LayerDialogBase
     {
+        /// <summary>
+        /// 属性表是否已经加载完成
+        /// </summary>
         public bool isLoaded = false;
+
+        /// <summary>
+        /// 编辑过的要素属性
+        /// </summary>
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
+        
+        /// <summary>
+        /// 从要素ID到属性的映射
+        /// </summary>
         private Dictionary<long, FeatureAttributeCollection> feature2Attributes;
 
         private AttributeTableDialog(Window owner, IMapLayerInfo layer, MainMapView mapView) : base(owner, layer, mapView)
@@ -37,10 +48,23 @@ namespace MapBoard.UI.Dialog
             mapView.BoardTaskChanged += MapView_BoardTaskChanged;
         }
 
+        /// <summary>
+        /// 要素属性集合
+        /// </summary>
         public ObservableCollection<FeatureAttributeCollection> Attributes { get; set; }
 
+        /// <summary>
+        /// 编辑过的要素属性
+        /// </summary>
         public int EditedFeaturesCount => editedAttributes.Count;
 
+        /// <summary>
+        /// 创建或获取指定图层的<see cref="AttributeTableDialog"/>对话框
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="layer"></param>
+        /// <param name="mapView"></param>
+        /// <returns></returns>
         public static AttributeTableDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
         {
             return GetInstance(layer, () => new AttributeTableDialog(owner, layer, mapView));
@@ -67,13 +91,16 @@ namespace MapBoard.UI.Dialog
                 feature2Attributes = Attributes.ToDictionary(p => p.Feature.GetID());
             });
             //对已经选择的要素应用到属性表中（理论上，不该存在的吧）
+#if DEBUG
             foreach (var attr in Attributes)
             {
                 if (MapView.Selection.SelectedFeatureIDs.Contains(attr.Feature.GetID()))
                 {
                     attr.IsSelected = true;
+                    throw new Exception("加载属性表时，不该存在已经被选择的要素");
                 }
             }
+#endif
             if (Attributes.Count == 0)
             {
                 throw new Exception("没有任何要素");
@@ -153,12 +180,11 @@ namespace MapBoard.UI.Dialog
             });
         }
 
-        private void AddSelectButton_Click(object sender, RoutedEventArgs e)
-        {
-            var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;
-            MapView.Selection.Select(feature);
-        }
-
+        /// <summary>
+        /// 属性表关闭，检查是否保存
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void AttributeTableDialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (closing)
@@ -176,26 +202,8 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private async void BtnSave_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.Assert(Layer is ShapefileMapLayerInfo);
-
-            btnSave.IsEnabled = false;
-            List<UpdatedFeature> features = new List<UpdatedFeature>();
-            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
-            {
-                var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
-                attr.SaveToFeature();
-                features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
-            }
-            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
-
-            editedAttributes.Clear();
-            this.Notify(nameof(EditedFeaturesCount));
-        }
-
         /// <summary>
-        ///
+        /// 要素选择
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -230,6 +238,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 图层的要素发生改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Layer_FeaturesChanged(object sender, FeaturesChangedEventArgs e)
         {
             if (e.AddedFeatures != null)
@@ -285,6 +298,28 @@ namespace MapBoard.UI.Dialog
             IsEnabled = e.NewTask != BoardTask.Draw;
         }
 
+        /// <summary>
+        /// 单击保存按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(Layer is ShapefileMapLayerInfo);
+
+            btnSave.IsEnabled = false;
+            List<UpdatedFeature> features = new List<UpdatedFeature>();
+            foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
+            {
+                var oldAttrs = new Dictionary<string, object>(attr.Feature.Attributes);
+                attr.SaveToFeature();
+                features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
+            }
+            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
+
+            editedAttributes.Clear();
+            this.Notify(nameof(EditedFeaturesCount));
+        }
         private void SelectButton_Click(object sender, RoutedEventArgs e)
         {
             var feature = ((sender as Button).Tag as FeatureAttributeCollection).Feature;

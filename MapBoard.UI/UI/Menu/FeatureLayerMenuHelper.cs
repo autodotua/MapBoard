@@ -122,16 +122,16 @@ namespace MapBoard.UI.Menu
 
                 switch (dialog.Type)
                 {
-                    case CopyAttributesType.Field:
+                    case FieldAssignmentType.Field:
                         errors = await AttributeUtility.CopyAttributesAsync(editableLayer, features, dialog.SourceField, dialog.TargetField, dialog.DateFormat);
                         break;
 
-                    case CopyAttributesType.Const:
+                    case FieldAssignmentType.Const:
                         errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, false, dialog.DateFormat);
 
                         break;
 
-                    case CopyAttributesType.Custom:
+                    case FieldAssignmentType.Custom:
                         errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, true, dialog.DateFormat);
                         break;
 

@@ -265,7 +265,12 @@ namespace MapBoard.Model
                             }
                             if (value is string str5)
                             {
-                                if (DateTime.TryParse(str5, out DateTime result))
+                                if (string.IsNullOrEmpty(str5))
+                                {
+                                    attrValue = TimeValue = null;
+                                    break;
+                                }
+                                else if (DateTime.TryParse(str5, out DateTime result))
                                 {
                                     timeValue = result;
                                     attrValue = timeValue;

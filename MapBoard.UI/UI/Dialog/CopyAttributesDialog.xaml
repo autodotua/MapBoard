@@ -10,7 +10,6 @@
     Title="为属性赋值" CloseButtonText="取消"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     IsPrimaryButtonEnabled="False"
-    Loaded="Window_Loaded"
     PrimaryButtonClick="CommonDialog_PrimaryButtonClick"
     PrimaryButtonText="确定" mc:Ignorable="d">
     <Grid
@@ -68,7 +67,7 @@
         <TabControl
             x:Name="tab" Grid.Row="2"
             Width="300"
-            SelectionChanged="tab_SelectionChanged">
+            SelectionChanged="Tab_SelectionChanged">
             <TabItem Header="字段赋值">
                 <Grid Margin="0,8">
                     <Grid.ColumnDefinitions>

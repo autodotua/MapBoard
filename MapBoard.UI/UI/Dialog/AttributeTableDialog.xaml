@@ -102,7 +102,7 @@
                 x:Name="btnSave"
                 Grid.Column="99"
                 Padding="16,8"
-                Click="BtnSave_Click"
+                Click="SaveButton_Click"
                 Content="保存" />
         </Grid>
     </Grid>

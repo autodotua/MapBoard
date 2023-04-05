@@ -1,4 +1,5 @@
-﻿using FzLib;
+﻿using Esri.ArcGISRuntime.Data;
+using FzLib;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
 using ModernWpf.FzExtension.CommonDialog;
@@ -8,19 +9,19 @@ using System.Windows;
 
 namespace MapBoard.UI.Dialog
 {
-    public enum CopyAttributesType
-    {
-        Field = 0,
-        Const = 1,
-        Custom = 2
-    }
-
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 字段赋值对话框。由于历史原因，类名与实际作用不完全相同。
     /// </summary>
     public partial class CopyAttributesDialog : CommonDialog
     {
+        /// <summary>
+        /// 源字段
+        /// </summary>
         private FieldInfo fieldSource;
+
+        /// <summary>
+        /// 目标字段
+        /// </summary>
         private FieldInfo fieldTarget;
 
         public CopyAttributesDialog(IEditableLayerInfo layer)
@@ -30,11 +31,29 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
-        public string DateFormat { get; set; } = "yyyy-MM-dd";
+        /// <summary>
+        /// 日期格式
+        /// </summary>
+        public string DateFormat { get; set; } = Parameters.DateFormat;
+
+        /// <summary>
+        /// 所有字段
+        /// </summary>
         public FieldInfo[] Fields { get; }
+
+        /// <summary>
+        /// 图层
+        /// </summary>
         public IEditableLayerInfo Layer { get; }
+
+        /// <summary>
+        /// 提示信息
+        /// </summary>
         public string Message { get; set; }
 
+        /// <summary>
+        /// 源字段
+        /// </summary>
         public FieldInfo SourceField
         {
             get => fieldSource;
@@ -45,6 +64,9 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 目标字段
+        /// </summary>
         public FieldInfo TargetField
         {
             get => fieldTarget;
@@ -55,19 +77,34 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 常量文本
+        /// </summary>
         public string Text { get; set; }
-        public CopyAttributesType Type { get; set; }
+
+        /// <summary>
+        /// 字段赋值的类型
+        /// </summary>
+        public FieldAssignmentType Type { get; set; }
 
         private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
-            Type = (CopyAttributesType)tab.SelectedIndex;
+            Type = (FieldAssignmentType)tab.SelectedIndex;
         }
-
-        private void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        
+        /// <summary>
+        /// 选择的选项卡发生改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             UpdateMessage();
         }
 
+        /// <summary>
+        /// 更新提示信息
+        /// </summary>
         private void UpdateMessage()
         {
             try
@@ -117,8 +154,5 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
     }
 }
