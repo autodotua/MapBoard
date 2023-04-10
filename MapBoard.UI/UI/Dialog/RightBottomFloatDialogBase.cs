@@ -22,6 +22,8 @@ namespace MapBoard.UI.Dialog
                     Visibility = Visibility.Collapsed;
                 }
             };
+            owner.SizeChanged += (s, e) => ResetLocation();
+            owner.LocationChanged += (s, e) => ResetLocation();
         }
 
         /// <summary>

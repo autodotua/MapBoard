@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Windows.Input;
 using MapBoard.Util;
+using System.ComponentModel;
 
 namespace MapBoard.UI.Dialog
 {
@@ -34,20 +35,75 @@ namespace MapBoard.UI.Dialog
         /// 已经经过转换的源文件和转换后文件的映射
         /// </summary>
         private static Dictionary<string, string> convertedImages = new Dictionary<string, string>();
+        /// <summary>
+        /// 当前显示的图片的路径
+        /// </summary>
+        private string currentImagePath;
+
+        /// <summary>
+        /// 一个用于记录当前加载的图片是否为最后一张选择的图片的版本值
+        /// </summary>
         private volatile int version = 0;
-        public ShowImageDialog(Window owner) : base(owner)
+
+        private ShowImageDialog(Window owner, MainMapView mapView) : base(owner)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
-            this.PropertyChanged += ShowImageDialog_PropertyChanged;
+            PropertyChanged += ShowImageDialog_PropertyChanged;
+            MapView = mapView;
+            mapView.BoardTaskChanged += MapView_BoardTaskChanged;
         }
 
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            if (e.NewTask is not BoardTask.Select && Visibility == Visibility.Visible)
+            {
+                Hide();
+            }
+        }
+
+        /// <summary>
+        /// 本窗口为单例模式，以保证窗口大小和位置不变
+        /// </summary>
+        private static ShowImageDialog instance = null;
+        public static ShowImageDialog CreateAndShow(Window owner, MainMapView mapView)
+        {
+            if (instance == null)
+            {
+                instance = new ShowImageDialog(owner, mapView);
+                owner.Closing += (s, e) => instance = null;
+            }
+            instance.Show();
+            return instance;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+        }
+
+        /// <summary>
+        /// 图片URI
+        /// </summary>
         public Uri ImageUri { get; set; }
+
+        /// <summary>
+        /// 是否正在加载
+        /// </summary>
         public bool Loading { get; set; }
+
+        /// <summary>
+        /// 垂直偏移
+        /// </summary>
         protected override int OffsetY => 248;
 
-        private string currentImagePath { get; set; }
+        public MainMapView MapView { get; }
 
+        /// <summary>
+        /// 设置图像路径
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
         public async Task SetImageAsync(string imagePath)
         {
             currentImagePath = imagePath;
@@ -80,7 +136,7 @@ namespace MapBoard.UI.Dialog
                         convertedImages.Add(imagePath, convertedImagePath);
                     }
 
-                    //由于转换时间比较长，如果在转换时又选择了另一张图片，就会导致问题，所以需要保证没有选择新的突破
+                    //由于转换时间比较长，如果在转换时又选择了另一张图片，就会导致问题，所以需要保证没有选择新的图片
                     if (currentVersion == version)
                     {
                         ImageUri = new Uri(convertedImagePath);
@@ -104,6 +160,10 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 鼠标双击打开图片
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDoubleClick(e);
@@ -113,20 +173,23 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 渲染完成，重置缩放
+        /// </summary>
+        /// <param name="sizeInfo"></param>
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
             zb.Reset();
         }
 
-        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
-        {
-            if (e.NewTask is not BoardTask.Select && !IsClosed)
-            {
-                Close();
-            }
-        }
 
+
+        /// <summary>
+        /// 图片改变，重置缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ShowImageDialog_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ImageUri))

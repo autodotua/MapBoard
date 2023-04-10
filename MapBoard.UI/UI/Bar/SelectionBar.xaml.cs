@@ -53,16 +53,9 @@ namespace MapBoard.UI.Bar
         public override void Initialize()
         {
             MapView.BoardTaskChanged += BoardTaskChanged;
-            this.GetWindow().SizeChanged += (p1, p2) => ResetDialogLocation();
-            this.GetWindow().LocationChanged += (p1, p2) => ResetDialogLocation();
             MapView.Selection.CollectionChanged += SelectedFeaturesChanged;
         }
 
-        private void ResetDialogLocation()
-        {
-            selectFeatureDialog?.ResetLocation();
-            imageDialog?.ResetLocation();
-        }
 
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
@@ -269,10 +262,6 @@ namespace MapBoard.UI.Bar
         {
             if (MapView.Selection.SelectedFeatures.Count != 1)
             {
-                if (imageDialog != null && !imageDialog.IsClosed)
-                {
-                    imageDialog.Close();
-                }
                 return;
             }
             var feature = MapView.Selection.SelectedFeatures.FirstOrDefault();
@@ -281,10 +270,9 @@ namespace MapBoard.UI.Bar
                 string path = feature.GetAttributeValue(Photo.ImagePathField) as string;
                 if (path != null && File.Exists(path))
                 {
-                    if (imageDialog == null || imageDialog.IsClosed)
+                    if (imageDialog == null || imageDialog.Visibility!=Visibility.Visible)
                     {
-                        imageDialog = new ShowImageDialog(this.GetWindow());
-                        imageDialog.Show();
+                        imageDialog = ShowImageDialog.CreateAndShow(this.GetWindow(), MapView);
                     }
                     await imageDialog.SetImageAsync(path);
                 }

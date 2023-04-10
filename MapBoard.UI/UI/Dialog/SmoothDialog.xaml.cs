@@ -13,7 +13,7 @@ using System.Windows.Controls;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 图形平滑对话框
     /// </summary>
     public partial class SmoothDialog : CommonDialog
     {
@@ -22,12 +22,36 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 提示信息
+        /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// 每个段新增的点数量
+        /// </summary>
         public int PointsPerSegment { get; set; } = 10;
+
+        /// <summary>
+        /// 平滑级别
+        /// </summary>
         public int Level { get; set; } = 1;
+
+        /// <summary>
+        /// 平滑后简化最大垂距
+        /// </summary>
         public double MaxDeviation { get; set; } = 1;
+
+        /// <summary>
+        /// 是否平滑后简化
+        /// </summary>
         public bool Simplify { get; set; } = true;
 
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             if (PointsPerSegment <= 1)
