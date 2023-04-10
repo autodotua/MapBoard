@@ -52,7 +52,7 @@
         <TabControl
             x:Name="tab"
             Grid.Column="2"
-            SelectionChanged="tab_SelectionChanged"
+            SelectionChanged="Tab_SelectionChanged"
             Style="{StaticResource TabControlPivotStyle}">
             <TabItem Header="动态地图">
                 <Grid ClipToBounds="True">

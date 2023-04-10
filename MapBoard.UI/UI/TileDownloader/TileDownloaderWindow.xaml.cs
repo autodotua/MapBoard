@@ -22,19 +22,12 @@ using MapBoard.Mapping.Model;
 using Microsoft.WindowsAPICodePack.FzExtension;
 using MapBoard.IO;
 using System.Drawing.Imaging;
+using MapBoard.UI.Model;
 
 namespace MapBoard.UI.TileDownloader
 {
-    public enum DownloadStatus
-    {
-        Downloading,
-        Paused,
-        Stop,
-        Pausing
-    }
-
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    /// 瓦片下载器窗口
     /// </summary>
     public partial class TileDownloaderWindow : MainWindowBase
     {
@@ -67,6 +60,9 @@ namespace MapBoard.UI.TileDownloader
         /// </summary>
         private bool stopStich = false;
 
+        /// <summary>
+        /// 鼠标移动更新瓦片信息的等待标志
+        /// </summary>
         private bool waiting = false;
 
         /// <summary>
@@ -87,10 +83,19 @@ namespace MapBoard.UI.TileDownloader
             arcMap.ViewpointChanged += ArcMapViewpointChanged;
         }
 
+        /// <summary>
+        /// 控件可用性
+        /// </summary>
         public bool ControlsEnable { get; set; } = true;
 
+        /// <summary>
+        /// 当前瞎子啊
+        /// </summary>
         public DownloadInfo CurrentDownload { get; set; }
 
+        /// <summary>
+        /// 当前下载状态
+        /// </summary>
         public DownloadStatus CurrentDownloadStatus
         {
             get => currentDownloadStatus;
@@ -117,33 +122,55 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 下载错误信息
+        /// </summary>
         public ObservableCollection<dynamic> DownloadErrors { get; } = new ObservableCollection<dynamic>();
 
+        /// <summary>
+        /// 下载百分比
+        /// </summary>
         public double DownloadingProgressPercent { get; set; }
 
+        /// <summary>
+        /// 下载状态
+        /// </summary>
         public string DownloadingProgressStatus { get; set; } = "准备就绪";
 
-        ///// <summary>
-        ///// 是否正在下载
-        ///// </summary>
-        //private bool downloading = false;
+        /// <summary>
+        /// 支持的格式
+        /// </summary>
         public IReadOnlyList<string> Formats { get; } = new List<string> { "jpg", "png", "bmp", "tiff" }.AsReadOnly();
 
+        /// <summary>
+        /// 上一个瓦片下载状态
+        /// </summary>
         public string LastDownloadingStatus { get; set; } = "准备就绪";
 
+        /// <summary>
+        /// 上一个瓦片序号
+        /// </summary>
         public string LastDownloadingTile { get; set; } = "还未下载";
+
+        /// <summary>
+        /// 服务器是否开启
+        /// </summary>
         public bool ServerOn { get; set; }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <returns></returns>
         protected override async Task InitializeAsync()
         {
             await Task.Yield();
         }
 
-        protected override void OnActivated(EventArgs e)
-        {
-            base.OnActivated(e);
-        }
-
+        /// <summary>
+        /// 鼠标移动事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ArcMap_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (waiting)
@@ -166,7 +193,12 @@ namespace MapBoard.UI.TileDownloader
             Task.Delay(250).ContinueWith(p => waiting = false);
         }
 
-        private void arcMap_SelectBoundaryComplete(object sender, EventArgs e)
+        /// <summary>
+        /// 设置区域完成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ArcMap_SelectBoundaryComplete(object sender, EventArgs e)
         {
             downloadBoundary.SetDoubleValue(arcMap.Boundary.XMin, arcMap.Boundary.YMax, arcMap.Boundary.XMax, arcMap.Boundary.YMin);
         }
@@ -181,6 +213,11 @@ namespace MapBoard.UI.TileDownloader
             // cvs.StopDrawing(false);
         }
 
+        /// <summary>
+        /// 单击计算瓦片序号
+        /// </summary>
+        /// <param name="save"></param>
+        /// <returns></returns>
         private async Task CalculateTileNumberAsync(bool save = true)
         {
             if (CurrentDownload == null)
@@ -209,6 +246,11 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 单击计算瓦片序号按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void CalculateTileNumberButton_Click(object sender, RoutedEventArgs e)
         {
             await CalculateTileNumberAsync();
@@ -216,6 +258,11 @@ namespace MapBoard.UI.TileDownloader
             CurrentDownloadStatus = DownloadStatus.Stop;
         }
 
+        /// <summary>
+        /// 单击删除空文件按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void DeleteEmptyFilesButton_Click(object sender, RoutedEventArgs e)
         {
             await DoAsync(async () =>
@@ -249,11 +296,21 @@ namespace MapBoard.UI.TileDownloader
             }, "正在删除");
         }
 
+        /// <summary>
+        /// 单击删除瓦片源按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteTileSourceButton_Click(object sender, RoutedEventArgs e)
         {
             Config.Tile_Urls.Sources.Remove(Config.Tile_Urls.SelectedUrl);
         }
 
+        /// <summary>
+        /// 单击下载按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             if (Config.Instance.Tile_Urls.SelectedUrl == null)
@@ -277,11 +334,21 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 图像显示失败
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             tbkStichStatus.Text = "图片显示失败，但文件可能已经保存";
         }
 
+        /// <summary>
+        /// 层级改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void Level_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (CurrentDownload != null)
@@ -290,6 +357,11 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 单击新增瓦片源按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NewTileSourceButton_Click(object sender, RoutedEventArgs e)
         {
             BaseLayerInfo tile = new BaseLayerInfo();
@@ -306,6 +378,11 @@ namespace MapBoard.UI.TileDownloader
             dgrdUrls.ScrollIntoView(tile);
         }
 
+        /// <summary>
+        /// 单击打开目录按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void OpenFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -323,6 +400,11 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 单击保存按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             if (savedImgPath != null)
@@ -384,11 +466,21 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 单击选择区域按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SelectAreaButton_Click(object sender, RoutedEventArgs e)
         {
             await arcMap.SelectAsync();
         }
 
+        /// <summary>
+        /// 单击开启服务器按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ServerButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ServerOn)
@@ -426,6 +518,10 @@ namespace MapBoard.UI.TileDownloader
             // tcpListener.Stop();
         }
 
+        /// <summary>
+        /// 开始或继续下载
+        /// </summary>
+        /// <returns></returns>
         private async Task StartOrContinueDowloadingAsync()
         {
             CurrentDownloadStatus = DownloadStatus.Downloading;
@@ -516,6 +612,11 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 单击拼接按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void StichButton_Click(object sender, RoutedEventArgs e)
         {
             if (btnStich.Content as string == "开始拼接")
@@ -622,12 +723,20 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 停止下载
+        /// </summary>
         private void StopDownloading()
         {
             CurrentDownloadStatus = DownloadStatus.Pausing;
         }
 
-        private async void tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        /// <summary>
+        /// TabControl选择改变，加载地图
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void Tab_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (tab.SelectedIndex == 2)
             {
@@ -639,6 +748,32 @@ namespace MapBoard.UI.TileDownloader
             }
         }
 
+        /// <summary>
+        /// 窗口关闭，如果在下载则弹出对话框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (CurrentDownloadStatus == DownloadStatus.Downloading)
+            {
+                e.Cancel = true;
+                if (await CommonDialog.ShowYesNoDialogAsync("正在下载瓦片，是否停止下载后关闭窗口？"))
+                {
+                    closing = true;
+                    StopDownloading();
+                }
+            }
+            Config.Instance.Tile_LastDownload = CurrentDownload;
+
+            Config.Save();
+        }
+
+        /// <summary>
+        /// 窗口加载，恢复
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (Config.Tile_LastDownload != null)
@@ -656,22 +791,6 @@ namespace MapBoard.UI.TileDownloader
             {
                 CurrentDownload = new DownloadInfo();
             }
-        }
-
-        private async void Window_Closing(object sender, CancelEventArgs e)
-        {
-            if (CurrentDownloadStatus == DownloadStatus.Downloading)
-            {
-                e.Cancel = true;
-                if (await CommonDialog.ShowYesNoDialogAsync("正在下载瓦片，是否停止下载后关闭窗口？"))
-                {
-                    closing = true;
-                    StopDownloading();
-                }
-            }
-            Config.Instance.Tile_LastDownload = CurrentDownload;
-
-            Config.Save();
         }
     }
 }
