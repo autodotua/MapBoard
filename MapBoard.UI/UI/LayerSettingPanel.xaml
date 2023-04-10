@@ -75,12 +75,21 @@
                                     </Grid>
                                 </Border>
                                 <ControlTemplate.Triggers>
+                                    <!--  如果直接使用SystemControlBackgroundChromeMediumBrush，会导致在亮色主题下变成黑色，不知道为什么，可能是BUG  -->
                                     <Trigger Property="IsChecked" Value="true">
                                         <Setter TargetName="content" Property="TextElement.FontWeight" Value="Bold" />
-                                        <Setter TargetName="bd" Property="Background" Value="{StaticResource SystemControlBackgroundChromeMediumBrush}" />
+                                        <Setter TargetName="bd" Property="Background">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="{DynamicResource SystemChromeMediumColor}" />
+                                            </Setter.Value>
+                                        </Setter>
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="true">
-                                        <Setter TargetName="bd" Property="Background" Value="{StaticResource SystemControlBackgroundChromeMediumBrush}" />
+                                        <Setter TargetName="bd" Property="Background">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="{DynamicResource SystemChromeMediumColor}" />
+                                            </Setter.Value>
+                                        </Setter>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
