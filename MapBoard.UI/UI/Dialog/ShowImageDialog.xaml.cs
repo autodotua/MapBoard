@@ -21,11 +21,18 @@ using MapBoard.Util;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 显示缩略图对话框
     /// </summary>
     public partial class ShowImageDialog : RightBottomFloatDialogBase
     {
+        /// <summary>
+        /// 可能需要转换才能显示的文件类型
+        /// </summary>
         public static readonly string[] needConvertExtensions = new string[] { ".heif", ".heic", ".avif" };
+
+        /// <summary>
+        /// 已经经过转换的源文件和转换后文件的映射
+        /// </summary>
         private static Dictionary<string, string> convertedImages = new Dictionary<string, string>();
         private volatile int version = 0;
         public ShowImageDialog(Window owner) : base(owner)

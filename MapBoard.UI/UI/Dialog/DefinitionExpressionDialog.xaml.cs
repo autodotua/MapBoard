@@ -18,7 +18,7 @@ using ModernWpf.Controls;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 定义表达式对话框
     /// </summary>
     public partial class DefinitionExpressionDialog : LayerDialogBase
     {
@@ -29,22 +29,55 @@ namespace MapBoard.UI.Dialog
             Expression = layer.DefinitionExpression;
         }
 
+        /// <summary>
+        /// 表达式
+        /// </summary>
         public string Expression { get; set; }
 
+        /// <summary>
+        /// 创建或跳转到指定图层的<see cref="DefinitionExpressionDialog"/>
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="layer"></param>
+        /// <param name="mapView"></param>
+        /// <returns></returns>
         public static DefinitionExpressionDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
         {
             return GetInstance(layer, () => new DefinitionExpressionDialog(owner, layer, mapView));
         }
 
+        /// <summary>
+        /// 单击应用按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            Layer.DefinitionExpression = Expression;
+        }
+
+        /// <summary>
+        /// 地图状态改变，只有在正常状态下才可以设置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ArcMap_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
             IsEnabled = e.NewTask == BoardTask.Ready;
         }
 
-        private void Dialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        //单击清除按钮
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
+            Layer.DefinitionExpression = "";
+            Close();
         }
 
+        /// <summary>
+        /// 单击日期范围按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void DateExtentButton_Click(object sender, RoutedEventArgs e)
         {
             DateRangeDialog dialog = new DateRangeDialog(Layer);
@@ -54,20 +87,14 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        private void ApplyButton_Click(object sender, RoutedEventArgs e)
-        {
-            Layer.DefinitionExpression = Expression;
-        }
-
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Layer.DefinitionExpression = Expression;
-            Close();
-        }
-
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            Layer.DefinitionExpression = "";
             Close();
         }
     }

@@ -29,40 +29,55 @@ using MapBoard.UI.Model;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// CoordinateTransformationDialog.xaml 的交互逻辑
+    /// 导入图层对话框
     /// </summary>
-    public partial class ImportTableDialog : CommonDialog
+    public partial class ImportTableDialog : AddLayerDialogBase
     {
         public MapLayerInfo editLayer = null;
 
-        public ImportTableDialog(MapLayerCollection layers, DataTable table, string defaultName)
+        public ImportTableDialog(MapLayerCollection layers, DataTable table, string defaultName):base(layers)
         {
             LayerName = defaultName;
 
-            Layers = layers;
             Table = table;
             LoadFields();
             InitializeComponent();
         }
 
-        public string DateFormat { get; set; } = "yyyy-MM-dd";
+        /// <summary>
+        /// 日期格式
+        /// </summary>
+        public string DateFormat { get; set; } = Parameters.DateFormat;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public ObservableCollection<ImportTableFieldInfo> Fields { get; } = new ObservableCollection<ImportTableFieldInfo>();
 
+        /// <summary>
+        /// 纬度列序号
+        /// </summary>
         public int LatitudeIndex { get; set; } = -1;
 
-        public string LayerName { get; set; }
-
-        public MapLayerCollection Layers { get; }
-
+        /// <summary>
+        /// 经度列序号
+        /// </summary>
         public int LongitudeIndex { get; set; } = -1;
 
-        public string Message { get; set; }
-
+        /// <summary>
+        /// 导入数据表
+        /// </summary>
         public DataTable Table { get; }
 
-        public string TimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
+        /// <summary>
+        /// 时间格式
+        /// </summary>
+        public string TimeFormat { get; set; } = Parameters.TimeFormat    ;
 
+        /// <summary>
+        /// 检查字段是否合法
+        /// </summary>
+        /// <returns></returns>
         private bool CheckFields()
         {
             HashSet<string> names = new HashSet<string>();
@@ -79,11 +94,21 @@ namespace MapBoard.UI.Dialog
             return true;
         }
 
+        /// <summary>
+        /// 对话框加载，马上检查字段
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
         {
             CheckFields();
         }
 
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
@@ -171,6 +196,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 单元格编辑结束，自动给显示名称赋值
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Grid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditAction == DataGridEditAction.Commit)
@@ -186,6 +216,9 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 加载字段到<see cref="Field"/>
+        /// </summary>
         private void LoadFields()
         {
             int index = 0;
@@ -196,7 +229,7 @@ namespace MapBoard.UI.Dialog
                     ColumnName = column.ColumnName,
                     ColumnIndex = ++index
                 };
-                field.Field.Name = new string(column.ColumnName.Take(10).ToArray());
+                field.Field.Name = new string(column.ColumnName.Take(10).ToArray());//取前10个字符为字段名
                 if(field.Field.Name.Length==0)
                 {
                     field.Field.Name = $"Field{index}";

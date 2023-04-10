@@ -29,11 +29,17 @@ using AutoMapper;
 
 namespace MapBoard.UI.Dialog
 {
-    public partial class ExportLayerDialog : CommonDialog
+    /// <summary>
+    /// 导出到新图层对话框
+    /// </summary>
+    public partial class ExportLayerDialog : AddLayerDialogBase
     {
+        /// <summary>
+        /// 旧图层
+        /// </summary>
         public IMapLayerInfo oldLayer = null;
 
-        public ExportLayerDialog(MapLayerCollection layers, IMapLayerInfo layer, EsriLayerCollection esriLayers)
+        public ExportLayerDialog(MapLayerCollection layers, IMapLayerInfo layer, EsriLayerCollection esriLayers):base(layers)
         {
             Fields.CollectionChanged += (s, e) => this.Notify(nameof(CanAddCreateTimeField), nameof(CanAddModifiedTimeField));
             InitializeComponent();
@@ -50,25 +56,44 @@ namespace MapBoard.UI.Dialog
                 };
                 Fields.Add(exportingFiled);
             }
-            Layers = layers;
             EsriLayers = esriLayers;
         }
 
+        /// <summary>
+        /// 是否能增加创建时间按钮
+        /// </summary>
         public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
+       
+        /// <summary>
+        /// 是否能增加修改时间按钮
+        /// </summary>
         public bool CanAddModifiedTimeField => !Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName);
+      
+        /// <summary>
+        /// 对应的ArcGIS图层
+        /// </summary>
         public EsriLayerCollection EsriLayers { get; }
+
+        /// <summary>
+        /// 字段
+        /// </summary>
         public ObservableCollection<ExportingFieldInfo> Fields { get; } = new ObservableCollection<ExportingFieldInfo>();
 
-        public string LayerName { get; set; }
-
-        public MapLayerCollection Layers { get; }
-        public string Message { get; set; }
-
+        /// <summary>
+        /// 单击新增字段按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AddFieldButton_Click(object sender, RoutedEventArgs e)
         {
             Fields.Add(new ExportingFieldInfo() { Enable = true });
         }
 
+        /// <summary>
+        /// 单元格编辑结束，检查
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditAction == DataGridEditAction.Commit)
@@ -98,10 +123,12 @@ namespace MapBoard.UI.Dialog
             IsPrimaryButtonEnabled = true;
         }
 
-        private void CommonDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
 
+        /// <summary>
+        /// 单击确定按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void CommonDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             args.Cancel = true;
@@ -121,8 +148,21 @@ namespace MapBoard.UI.Dialog
             IsEnabled = true;
         }
 
+        /// <summary>
+        /// 创建时间字段
+        /// </summary>
         public static ExportingFieldInfo CreateTimeField => new ExportingFieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+       
+        /// <summary>
+        /// 修改时间字段
+        /// </summary>
         public static ExportingFieldInfo ModifiedTimeField => new ExportingFieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
+      
+        /// <summary>
+        /// 单击创建时间菜单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CreateTimeMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (!Fields.Any(p => p.Name == Parameters.CreateTimeFieldName))
@@ -131,6 +171,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 单击修改时间菜单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ModifiedTimeMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (!Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName))

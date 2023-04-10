@@ -12,10 +12,13 @@ using System;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 选择图层对话框
     /// </summary>
     public partial class SelectLayerDialog : CommonDialog
     {
+        /// <summary>
+        /// 是否能够选择
+        /// </summary>
         private bool canSelect = false;
 
         public SelectLayerDialog(MapLayerCollection layers, Func<MapLayerInfo, bool> filter, bool excludeSelectedLayer)
@@ -29,7 +32,7 @@ namespace MapBoard.UI.Dialog
                 list = list.Where(p => p != layers.Selected);
             }
 
-            if (list.Count() > 0)
+            if (list.Any())
             {
                 lbx.ItemsSource = list.ToList();
                 lbx.SelectedIndex = 0;
@@ -41,6 +44,9 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 选择的图层
+        /// </summary>
         public MapLayerInfo SelectedLayer { get; set; }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

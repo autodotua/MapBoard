@@ -21,10 +21,12 @@ using MapBoard.Mapping.Model;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 查询要素对话框
     /// </summary>
     public partial class QueryFeaturesDialog : DialogWindowBase
     {
+        private IMapLayerInfo layer;
+
         public QueryFeaturesDialog(Window owner, MainMapView mapView, IMapLayerInfo layer) : base(owner)
         {
             MapView = mapView;
@@ -32,8 +34,9 @@ namespace MapBoard.UI.Dialog
             Layer = layer;
         }
 
-        private IMapLayerInfo layer;
-
+        /// <summary>
+        /// 指定的图层。图层更改后需要更新字段菜单
+        /// </summary>
         public IMapLayerInfo Layer
         {
             get => layer;
@@ -67,6 +70,9 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 地图
+        /// </summary>
         public MainMapView MapView { get; }
 
         /// <summary>
@@ -74,11 +80,49 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         public QueryParameters Parameters { get; } = new QueryParameters();
 
+        /// <summary>
+        /// 用于将显示在组合框中的字符串转换到空间关系枚举
+        /// </summary>
+        public Dictionary<string, SpatialRelationship> Str2SpatialRelationships { get; } = new Dictionary<string, SpatialRelationship>()
+        {
+            ["相交（Intersects）"] = Intersects,
+            ["相关（Relate）"] = Relate,
+            ["相等（Equals）"] = SpatialRelationship.Equals,
+            ["相离（Disjoint）"] = Disjoint,
+            ["外部接触（Touches）"] = Touches,
+            ["相交且交集维度小于最大纬度（Corsses）"] = Crosses,
+            ["被包含（Within）"] = Within,
+            ["包含（Contains）"] = Contains,
+            ["同纬度相交但不相同（Overlaps）"] = Overlaps,
+            ["包围盒相交（EnvelopeIntersects）"] = EnvelopeIntersects,
+        };
+
+        /// <summary>
+        /// 单击清除图形筛选条件按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CancelGeometryButton_Click(object sender, RoutedEventArgs e)
+        {
+            Parameters.Geometry = null;
+            this.Notify(nameof(Parameters));
+        }
+
+        /// <summary>
+        /// 单击选择图形子按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void ChooseGeometryButton_Click(ModernWpf.Controls.SplitButton sender, ModernWpf.Controls.SplitButtonClickEventArgs args)
         {
             ChooseGeometryButton_Click(sender, (RoutedEventArgs)null);
         }
 
+        /// <summary>
+        /// 单击选择图形按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ChooseGeometryButton_Click(object sender, RoutedEventArgs e)
         {
             //隐藏本窗口并激活主窗口
@@ -113,33 +157,16 @@ namespace MapBoard.UI.Dialog
         }
 
         /// <summary>
-        /// 用于将显示在组合框中的字符串转换到空间关系枚举
+        /// 单击查询按钮
         /// </summary>
-        public Dictionary<string, SpatialRelationship> Str2SpatialRelationships { get; } = new Dictionary<string, SpatialRelationship>()
-        {
-            ["相交（Intersects）"] = Intersects,
-            ["相关（Relate）"] = Relate,
-            ["相等（Equals）"] = SpatialRelationship.Equals,
-            ["相离（Disjoint）"] = Disjoint,
-            ["外部接触（Touches）"] = Touches,
-            ["相交且交集维度小于最大纬度（Corsses）"] = Crosses,
-            ["被包含（Within）"] = Within,
-            ["包含（Contains）"] = Contains,
-            ["同纬度相交但不相同（Overlaps）"] = Overlaps,
-            ["包围盒相交（EnvelopeIntersects）"] = EnvelopeIntersects,
-        };
-
-        private void CancelGeometryButton_Click(object sender, RoutedEventArgs e)
-        {
-            Parameters.Geometry = null;
-            this.Notify(nameof(Parameters));
-        }
-
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void QueryButton_Click(object sender, RoutedEventArgs e)
         {
             if (Layer == null)
             {
                 await CommonDialog.ShowErrorDialogAsync("请先选择图层");
+                return;
             }
             Debug.Assert(Owner is MainWindow);
             Layer.LayerVisible = true;

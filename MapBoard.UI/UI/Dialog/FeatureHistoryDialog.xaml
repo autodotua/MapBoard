@@ -15,7 +15,6 @@
     Width="220"
     Height="400"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Closing="Dialog_Closing"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     ResizeMode="CanResize"
     ShowInTaskbar="True"

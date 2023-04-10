@@ -17,6 +17,8 @@ namespace MapBoard.Mapping
     {
         private static List<BrowseSceneView> instances = new List<BrowseSceneView>();
 
+        public static IReadOnlyList<BrowseSceneView> Instances => instances.AsReadOnly();
+
         public BrowseSceneView()
         {
             instances.Add(this);

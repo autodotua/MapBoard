@@ -16,6 +16,16 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public class LayerDialogBase : DialogWindowBase
     {
+        /// <summary>
+        /// 是否正在关闭
+        /// </summary>
+        protected bool closing = false;
+
+        /// <summary>
+        /// 从图层到对话框的映射
+        /// </summary>
+        private static Dictionary<IMapLayerInfo, LayerDialogBase> dialogs = new Dictionary<IMapLayerInfo, LayerDialogBase>();
+
         public LayerDialogBase(Window owner, IMapLayerInfo layer, MainMapView mapView) : base(owner)
         {
             ShowInTaskbar = false;
@@ -29,19 +39,22 @@ namespace MapBoard.UI.Dialog
             };
         }
 
+        /// <summary>
+        /// 图层
+        /// </summary>
         public IMapLayerInfo Layer { get; }
+
+        /// <summary>
+        /// 地图
+        /// </summary>
         protected MainMapView MapView { get; }
-
-        protected bool closing = false;
-        private static Dictionary<IMapLayerInfo, LayerDialogBase> dialogs = new Dictionary<IMapLayerInfo, LayerDialogBase>();
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
-            Debug.Assert(dialogs.ContainsKey(Layer));
-            dialogs.Remove(Layer);
-        }
-
+        /// <summary>
+        /// 获取指定图层的对应实例。若不存在，则创建
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="layer"></param>
+        /// <param name="getInstance"></param>
+        /// <returns></returns>
         protected static T GetInstance<T>(IMapLayerInfo layer, Func<T> getInstance) where T : LayerDialogBase
         {
             if (dialogs.ContainsKey(layer))
@@ -51,6 +64,17 @@ namespace MapBoard.UI.Dialog
             var dialog = getInstance();
             dialogs.Add(layer, dialog);
             return dialog;
+        }
+
+        /// <summary>
+        /// 对话框关闭
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            Debug.Assert(dialogs.ContainsKey(Layer));
+            dialogs.Remove(Layer);
         }
     }
 }

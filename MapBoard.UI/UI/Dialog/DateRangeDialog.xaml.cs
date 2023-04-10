@@ -10,7 +10,7 @@ using System.Windows.Controls;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 定义日期范围字段
     /// </summary>
     public partial class DateRangeDialog : CommonDialog
     {
@@ -23,14 +23,29 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
-        private void _SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// 选取的日期字段
+        /// </summary>
+        public FieldInfo Field { get; set; }
+
+        /// <summary>
+        /// 图层所有字段
+        /// </summary>
+        public IEnumerable<FieldInfo> Fields { get; set; }
+
+        /// <summary>
+        /// 开始时间
+        /// </summary>
+        public DateTime From { get; set; }
+
+        /// <summary>
+        /// 结束时间
+        /// </summary>
+        public DateTime To { get; set; }
+
+        private void DateField_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             IsPrimaryButtonEnabled = To >= From && Field != null;
         }
-
-        public IEnumerable<FieldInfo> Fields { get; set; }
-        public FieldInfo Field { get; set; }
-        public DateTime From { get; set; }
-        public DateTime To { get; set; }
     }
 }

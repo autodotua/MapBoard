@@ -20,6 +20,9 @@ using System.Windows.Shapes;
 
 namespace MapBoard.UI.Dialog
 {
+    /// <summary>
+    /// 加载错误信息对话框
+    /// </summary>
     public partial class ItemsOperaionErrorsDialog : CommonDialog
     {
         public ItemsOperaionErrorsDialog(string title, ICollection<ItemsOperationError> errors)
@@ -29,8 +32,17 @@ namespace MapBoard.UI.Dialog
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 错误信息
+        /// </summary>
         public ICollection<ItemsOperationError> Errors { get; }
 
+        /// <summary>
+        /// 显示对话框
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="errors"></param>
+        /// <returns></returns>
         public async static Task TryShowErrorsAsync(string title, ICollection<ItemsOperationError> errors)
         {
             if (errors == null || errors.Count == 0)

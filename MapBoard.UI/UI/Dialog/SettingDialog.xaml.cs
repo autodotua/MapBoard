@@ -33,7 +33,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 设置对话框
     /// </summary>
     public partial class SettingDialog : DialogWindowBase
     {
@@ -46,14 +46,13 @@ namespace MapBoard.UI.Dialog
         /// 地图画板地图包格式的ID
         /// </summary>
         private const string MbmpkgID = "MapBoard_mpmpkg";
+
         /// <summary>
         /// 是否可以关闭窗口
         /// </summary>
         private bool canClose = true;
 
-        private GeoView mapView;
-
-        public SettingDialog(Window owner, GeoView mapView, MapLayerCollection layers, int tabIndex = 0) : base(owner)
+        public SettingDialog(Window owner, MapLayerCollection layers, int tabIndex = 0) : base(owner)
         {
             FormatMbmpkgAssociated = FileFormatAssociationUtility.IsAssociated("mbmpkg", MbmpkgID);
             FormatGpxAssociated = FileFormatAssociationUtility.IsAssociated("gpx", gpxID);
@@ -62,7 +61,6 @@ namespace MapBoard.UI.Dialog
 
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
-            this.mapView = mapView;
             Layers = layers;
             tab.SelectedIndex = tabIndex;
 
@@ -83,6 +81,9 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         public IEnumerable<BaseLayerType> BaseLayerTypes { get; } = Enum.GetValues(typeof(BaseLayerType)).Cast<BaseLayerType>().ToList();
 
+        /// <summary>
+        /// 配置
+        /// </summary>
         public Config Config => Config.Instance;
 
         /// <summary>
@@ -99,6 +100,7 @@ namespace MapBoard.UI.Dialog
         /// 是否设置了地图画板地图包格式关联
         /// </summary>
         public bool FormatMbmpkgAssociated { get; set; }
+
         /// <summary>
         /// 所有图层
         /// </summary>
@@ -202,6 +204,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 单击网络服务API的重启按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ApiRestartButton_Click(object sender, RoutedEventArgs e)
         {
             RestartMainWindow();
@@ -231,25 +238,39 @@ namespace MapBoard.UI.Dialog
             canClose = true;
         }
 
+        /// <summary>
+        /// 切换底图可见按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BaseLayerVisibleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            Basemap basemap = null;
-            if (mapView is MapView m)
+            foreach (var map in MainMapView.Instances.Cast<GeoView>().Concat(BrowseSceneView.Instances))
             {
-                basemap = m.Map.Basemap;
+                Basemap basemap = null;
+                if (map is MapView m)
+                {
+                    basemap = m.Map.Basemap;
+                }
+                else if (map is SceneView s)
+                {
+                    basemap = s.Scene.Basemap;
+                }
+                var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
+                if (arcBaseLayer != null)
+                {
+                    arcBaseLayer.IsVisible = baseLayer.Visible;
+                }
             }
-            else if (mapView is SceneView s)
-            {
-                basemap = s.Scene.Basemap;
-            }
-            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
-            if (arcBaseLayer != null)
-            {
-                arcBaseLayer.IsVisible = baseLayer.Visible;
-            }
+
         }
 
+        /// <summary>
+        /// 单击删除底图缓存按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
         {
             try

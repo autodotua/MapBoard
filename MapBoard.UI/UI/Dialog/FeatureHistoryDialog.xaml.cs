@@ -17,7 +17,7 @@ using MapBoard.Mapping.Model;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 要素历史对话框
     /// </summary>
     public partial class FeatureHistoryDialog : LayerDialogBase
     {
@@ -29,25 +29,43 @@ namespace MapBoard.UI.Dialog
             arcMap.BoardTaskChanged += ArcMap_BoardTaskChanged;
         }
 
+        /// <summary>
+        /// 创建或打开图层对应的<see cref="FeatureHistoryDialog"/>
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="layer"></param>
+        /// <param name="mapView"></param>
+        /// <returns></returns>
         public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView mapView)
         {
             return GetInstance(layer, () => new FeatureHistoryDialog(owner, layer, mapView));
         }
 
+        /// <summary>
+        /// 仅在普通状态下可编辑
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ArcMap_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
             IsEnabled = e.NewTask == BoardTask.Ready;
         }
 
-        private void Dialog_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-        }
-
+        /// <summary>
+        /// 历史改变，自动移到最下
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Histories_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             scr.ScrollToEnd();
         }
 
+        /// <summary>
+        /// 单击撤销按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void UndoButton_Click(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
@@ -115,6 +133,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 鼠标移到撤销按钮上，显示共撤销几步
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UndoButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             FeaturesChangedEventArgs current = (sender as Button).DataContext as FeaturesChangedEventArgs;

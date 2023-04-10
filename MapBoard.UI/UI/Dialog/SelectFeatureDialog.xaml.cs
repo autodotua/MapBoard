@@ -19,12 +19,21 @@ using MapBoard.Model;
 namespace MapBoard.UI.Dialog
 {
     /// <summary>
-    /// SelectStyleDialog.xaml 的交互逻辑
+    /// 选择要素吸附小窗
     /// </summary>
     public partial class SelectFeatureDialog : RightBottomFloatDialogBase
     {
+        /// <summary>
+        /// 最大显示的要素数量
+        /// </summary>
         public const int MaxCount = 100;
+
+        /// <summary>
+        /// 选择的要素
+        /// </summary>
         private FeatureSelectionInfo selected;
+
+
         public SelectFeatureDialog(Window owner, MainMapView mapView, MapLayerCollection layers) : base(owner)
         {
             Selection = mapView.Selection;
@@ -38,9 +47,24 @@ namespace MapBoard.UI.Dialog
             SelectedFeaturesChanged(null, null);
         }
 
+        /// <summary>
+        /// 所有图层
+        /// </summary>
         public MapLayerCollection Layers { get; }
+
+        /// <summary>
+        /// 地图
+        /// </summary>
         public MainMapView MapView { get; }
+
+        /// <summary>
+        /// 提示信息
+        /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// 在本窗口中选择的要素
+        /// </summary>
         public FeatureSelectionInfo Selected
         {
             get => selected;
@@ -54,7 +78,14 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 所有选择的要素
+        /// </summary>
         public ObservableCollection<FeatureSelectionInfo> SelectedFeatures { get; set; }
+
+        /// <summary>
+        /// 选择帮助类
+        /// </summary>
         public SelectionHelper Selection { get; }
         private async void ListViewItem_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -65,6 +96,11 @@ namespace MapBoard.UI.Dialog
             }
         }
 
+        /// <summary>
+        /// 退出选择要素状态或关闭窗口后，关闭本窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
             if (e.NewTask is not BoardTask.Select && !IsClosed)
@@ -72,6 +108,12 @@ namespace MapBoard.UI.Dialog
                 Close();
             }
         }
+
+        /// <summary>
+        /// 选择的要素如果发生改变
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void SelectedFeaturesChanged(object sender, EventArgs e)
         {
             int count = Selection.SelectedFeatures.Count;
@@ -116,21 +158,5 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-
-
-
-        public class FeatureSelectionInfo
-        {
-            public FeatureSelectionInfo(IMapLayerInfo layer, Feature feature, int index)
-            {
-                Feature = feature;
-                Index = index;
-                Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
-            }
-
-            public FeatureAttributeCollection Attributes { get; set; }
-            public Feature Feature { get; }
-            public int Index { get; }
-        }
     }
 }
