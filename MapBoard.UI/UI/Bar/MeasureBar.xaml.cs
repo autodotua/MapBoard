@@ -10,7 +10,7 @@ using static MapBoard.Mapping.EditorHelper;
 namespace MapBoard.UI.Bar
 {
     /// <summary>
-    /// EditBar.xaml 的交互逻辑
+    /// 测量条
     /// </summary>
     public partial class MeasureBar : BarBase
     {
@@ -19,13 +19,28 @@ namespace MapBoard.UI.Bar
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 面积值
+        /// </summary>
         public string Area { get; set; }
+
+        /// <summary>
+        /// 面积标题
+        /// </summary>
         public string AreaTitle { get; set; }
+
         public override FeatureAttributeCollection Attributes => throw new System.NotImplementedException();
+        
         public override double ExpandDistance => 28;
 
+        /// <summary>
+        /// 长度值
+        /// </summary>
         public string Length { get; set; }
 
+        /// <summary>
+        /// 长度标题
+        /// </summary>
         public string LengthTitle { get; set; }
 
         protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
@@ -36,6 +51,11 @@ namespace MapBoard.UI.Bar
             MapView.Editor.GeometryChanged += Editor_GeometryChanged;
         }
 
+        /// <summary>
+        /// 如果在绘制并且模式为<see cref="EditMode.MeasureArea"/>或<see cref="EditMode.MeasureLength"/>，则展开
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
         {
             if (e.NewTask == BoardTask.Draw)
@@ -67,11 +87,21 @@ namespace MapBoard.UI.Bar
             }
         }
 
+        /// <summary>
+        /// 单击取消按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.Cancel();
         }
 
+        /// <summary>
+        /// 图形改变，更新长度和面积
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Editor_GeometryChanged(object sender, Esri.ArcGISRuntime.UI.GeometryChangedEventArgs e)
         {
             if (IsOpen)
@@ -118,6 +148,11 @@ namespace MapBoard.UI.Bar
             }
         }
 
+        /// <summary>
+        /// 单击移除结点按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.SketchEditor.RemoveSelectedVertex();

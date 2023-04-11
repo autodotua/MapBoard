@@ -31,7 +31,7 @@
             DataGridCell.Selected="DataGridCell_Selected"
             HeadersVisibility="Column"
             ItemsSource="{Binding Attributes.Attributes}"
-            PreviewKeyDown="dataGrid_PreviewKeyDown"
+            PreviewKeyDown="DataGrid_PreviewKeyDown"
             SelectionMode="Single"
             SelectionUnit="Cell">
             <DataGrid.Columns>

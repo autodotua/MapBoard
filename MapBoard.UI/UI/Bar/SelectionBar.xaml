@@ -51,7 +51,7 @@
         <Button
             x:Name="btnMenu"
             Grid.Column="4"
-            Click="BtnMenu_Click"
+            Click="FeatureOperationButton_Click"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <ContentControl

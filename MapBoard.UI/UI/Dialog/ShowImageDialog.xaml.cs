@@ -35,6 +35,12 @@ namespace MapBoard.UI.Dialog
         /// 已经经过转换的源文件和转换后文件的映射
         /// </summary>
         private static Dictionary<string, string> convertedImages = new Dictionary<string, string>();
+
+        /// <summary>
+        /// 本窗口为单例模式，以保证窗口大小和位置不变
+        /// </summary>
+        private static ShowImageDialog instance = null;
+
         /// <summary>
         /// 当前显示的图片的路径
         /// </summary>
@@ -50,36 +56,7 @@ namespace MapBoard.UI.Dialog
             WindowStartupLocation = WindowStartupLocation.Manual;
             InitializeComponent();
             PropertyChanged += ShowImageDialog_PropertyChanged;
-            MapView = mapView;
             mapView.BoardTaskChanged += MapView_BoardTaskChanged;
-        }
-
-        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
-        {
-            if (e.NewTask is not BoardTask.Select && Visibility == Visibility.Visible)
-            {
-                Hide();
-            }
-        }
-
-        /// <summary>
-        /// 本窗口为单例模式，以保证窗口大小和位置不变
-        /// </summary>
-        private static ShowImageDialog instance = null;
-        public static ShowImageDialog CreateAndShow(Window owner, MainMapView mapView)
-        {
-            if (instance == null)
-            {
-                instance = new ShowImageDialog(owner, mapView);
-                owner.Closing += (s, e) => instance = null;
-            }
-            instance.Show();
-            return instance;
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
         }
 
         /// <summary>
@@ -97,7 +74,22 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         protected override int OffsetY => 248;
 
-        public MainMapView MapView { get; }
+        /// <summary>
+        /// 显示窗口，如果还未创建则先创建
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="mapView"></param>
+        /// <returns></returns>
+        public static ShowImageDialog CreateAndShow(Window owner, MainMapView mapView)
+        {
+            if (instance == null)
+            {
+                instance = new ShowImageDialog(owner, mapView);
+                owner.Closing += (s, e) => instance = null;
+            }
+            instance.Show();
+            return instance;
+        }
 
         /// <summary>
         /// 设置图像路径
@@ -183,8 +175,18 @@ namespace MapBoard.UI.Dialog
             zb.Reset();
         }
 
-
-
+        /// <summary>
+        /// 如果不在选择状态，则隐藏窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            if (e.NewTask is not BoardTask.Select && Visibility == Visibility.Visible)
+            {
+                Hide();
+            }
+        }
         /// <summary>
         /// 图片改变，重置缩放
         /// </summary>
