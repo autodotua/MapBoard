@@ -5,6 +5,9 @@ using System.Windows.Data;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// 地理类型的描述转换
+    /// </summary>
     public class GeometryTypeDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -32,7 +35,7 @@ namespace MapBoard.UI.Converter
                         return "未知";
                 }
             }
-            return value ;
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

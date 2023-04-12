@@ -4,6 +4,9 @@ using System.Windows.Data;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// 速度值转换器，从数值转为描述字符串
+    /// </summary>
     public class SpeedValueConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -13,7 +16,7 @@ namespace MapBoard.UI.Converter
                 return "";
             }
             double speed = (double)value;
-            if(speed==0)
+            if (speed == 0)
             {
                 return "";
             }

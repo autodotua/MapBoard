@@ -1,16 +1,12 @@
-﻿using FzLib.WPF;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using DColor = System.Drawing.Color;
-using MColor = System.Windows.Media.Color;
-using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// 地图瓦片下载器的标题转换器
+    /// </summary>
     public class TileDownloaderTitleConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

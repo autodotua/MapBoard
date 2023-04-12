@@ -1,13 +1,13 @@
 ﻿using MapBoard.Mapping.Model;
-using MapBoard.Model;
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Windows;
 using System.Windows.Data;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// 绘制选择按钮可见性转换器
+    /// </summary>
     public class DrawAndSelectButtonVisibleConverter : IMultiValueConverter
     {
         /// <summary>

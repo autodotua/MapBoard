@@ -1,11 +1,13 @@
 ﻿using MapBoard.Model;
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// <see cref="BaseLayerType"/>的描述转换器
+    /// </summary>
     public class BaseLayerTypeConverter : IValueConverter
     {
         public static string GetName(BaseLayerType type)
@@ -26,6 +28,7 @@ namespace MapBoard.UI.Converter
         {
             return GetName((BaseLayerType)value);
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

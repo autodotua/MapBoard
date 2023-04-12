@@ -1,12 +1,14 @@
-﻿using MapBoard.Mapping;
+﻿using MapBoard.Mapping.Model;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Data;
-using MapBoard.Mapping.Model;
 
 namespace MapBoard.UI.Converter
 {
+    /// <summary>
+    /// 要素历史记录的要素操作描述
+    /// </summary>
     public class FeaturesHistoryDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
