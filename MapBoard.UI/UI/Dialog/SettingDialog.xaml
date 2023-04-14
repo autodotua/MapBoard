@@ -8,6 +8,7 @@
     xmlns:fzc="clr-namespace:FzLib.WPF.Controls;assembly=FzCoreLib.Windows"
     xmlns:m="clr-namespace:MapBoard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:u="clr-namespace:MapBoard.UI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -407,7 +408,7 @@
                                             <Button
                                                 Grid.Row="2"
                                                 Grid.Column="2"
-                                                Grid.ColumnSpan="5"
+                                                Grid.ColumnSpan="3"
                                                 Background="Transparent">
                                                 <TextBlock
                                                     Text="{Binding Path}"
@@ -425,7 +426,110 @@
                                                 </ui:FlyoutService.Flyout>
                                             </Button>
 
+                                            <Button
+                                                Grid.Row="2"
+                                                Grid.Column="6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent">
+                                                <ui:SymbolIcon Symbol="More" />
+                                                <ui:FlyoutService.Flyout>
+                                                    <ui:Flyout Placement="Left">
+                                                        <ui:SimpleStackPanel
+                                                            Width="400"
+                                                            Orientation="Vertical"
+                                                            Spacing="16">
+                                                            <GroupBox Header="图像设置">
+                                                                <ui:SimpleStackPanel Spacing="8">
+                                                                    <ui:NumberBox
+                                                                        Header="亮度"
+                                                                        Value="{Binding Brightness}" />
+                                                                    <ui:NumberBox
+                                                                        Header="对比度"
+                                                                        Value="{Binding Contrast}" />
+                                                                    <ui:NumberBox
+                                                                        Header="伽马"
+                                                                        Value="{Binding Gamma}" />
+                                                                    <TextBlock
+                                                                        Opacity="0.5"
+                                                                        Text="以上值范围均为-100 ~ 100，默认值为0" />
+                                                                </ui:SimpleStackPanel>
+                                                            </GroupBox>
+                                                            <GroupBox
+                                                                Header="瓦片设置"
+                                                                Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=WebTiledLayer}">
+                                                                <ui:SimpleStackPanel
+                                                                    Orientation="Horizontal"
+                                                                    Spacing="8">
 
+                                                                    <ui:NumberBox
+                                                                        Width="120"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        Description="-1表示不限制"
+                                                                        Header="瓦片最小级别"
+                                                                        Value="{Binding MinLevel}" />
+                                                                    <ui:NumberBox
+                                                                        Width="120"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        Description="-1表示不限制"
+                                                                        Header="瓦片最大级别"
+                                                                        Value="{Binding MaxLevel}" />
+                                                                </ui:SimpleStackPanel>
+
+                                                            </GroupBox>
+                                                            <GroupBox
+                                                                Header="栅格文件设置"
+                                                                Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=RasterLayer}">
+                                                                <ui:SimpleStackPanel Spacing="8">
+                                                                    <TextBox
+                                                                        ui:ControlHelper.Header="拉伸参数"
+                                                                        Text="{Binding StretchParameters}" />
+                                                                    <TextBlock
+                                                                        Margin="0,-8,0,0"
+                                                                        Opacity="0.5"
+                                                                        TextWrapping="Wrap">
+                                                                        <Run>最大最小值拉伸：m[inmax](波段1最小值|波段2最小值|…,波段1最大值|波段2最大值|…)</Run>
+                                                                        <LineBreak />
+                                                                        <Run>百分比拉伸：p[ercent](起始百分比,终止百分比)</Run>
+                                                                        <LineBreak />
+                                                                        <Run>标准差拉伸：s[td](标准差因子)</Run>
+                                                                        <LineBreak />
+                                                                        <Run>例：m(0|0|12,255|255|20)</Run>
+
+                                                                    </TextBlock>
+                                                                    <TextBox
+                                                                        ui:ControlHelper.Header="渲染器参数"
+                                                                        Text="{Binding Renderer}" />
+                                                                    <TextBlock
+                                                                        Margin="0,-8,0,0"
+                                                                        Opacity="0.5"
+                                                                        TextWrapping="Wrap">
+                                                                        <Run>拉伸渲染器：s[tretch]</Run>
+                                                                        <LineBreak />
+                                                                        <Run>百分比拉伸：r[gb](R对应波段,G对应波段,B对应波段)</Run>
+                                                                        <LineBreak />
+                                                                        <Run>例：r(5,4,3)</Run>
+                                                                    </TextBlock>
+                                                                    <TextBox
+                                                                        ui:ControlHelper.Header="颜色渐变参数（仅当使用拉伸渲染器时）"
+                                                                        Text="{Binding ColorRampParameters}" />
+                                                                    <TextBlock
+                                                                        Margin="0,-8,0,0"
+                                                                        Opacity="0.5"
+                                                                        TextWrapping="Wrap">
+                                                                        <Run>DemScreen 或 DemLight 或 Elevation 或 空</Run></TextBlock>
+                                                                    <TextBlock
+                                                                        Opacity="0.5"
+                                                                        TextWrapping="Wrap">
+                                                                        <Run>中括号表示可省略。</Run>
+                                                                    </TextBlock>
+                                                                </ui:SimpleStackPanel>
+
+                                                            </GroupBox>
+                                                        </ui:SimpleStackPanel>
+                                                    </ui:Flyout>
+                                                </ui:FlyoutService.Flyout>
+                                            </Button>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

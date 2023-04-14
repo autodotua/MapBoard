@@ -23,9 +23,29 @@ namespace MapBoard.Model
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
+        /// 亮度值（-100~100）
+        /// </summary>
+        public double Brightness { get; set; } = 0;
+
+        /// <summary>
+        /// 拉伸颜色参数
+        /// </summary>
+        public string ColorRampParameters { get; set; }
+
+        /// <summary>
+        /// 对比度（-100~100）
+        /// </summary>
+        public double Contrast { get; set; } = 0;
+
+        /// <summary>
         /// 是否加载图层
         /// </summary>
         public bool Enable { get; set; } = true;
+
+        /// <summary>
+        /// 伽马曲线（-100~100）
+        /// </summary>
+        public double Gamma { get; set; }
 
         /// <summary>
         /// HTTP请求头Host
@@ -37,6 +57,16 @@ namespace MapBoard.Model
         /// </summary>
         [JsonIgnore]
         public int Index { get; set; }
+
+        /// <summary>
+        /// 最大缩放比例
+        /// </summary>
+        public int MaxLevel { get; set; } = -1;
+
+        /// <summary>
+        /// 最小缩放比例
+        /// </summary>
+        public int MinLevel { get; set; } = -1;
 
         /// <summary>
         /// 图层名
@@ -68,6 +98,15 @@ namespace MapBoard.Model
         /// </summary>
         public string Referer { get; set; }
 
+        /// <summary>
+        /// 渲染器
+        /// </summary>
+        public string Renderer { get; set; }
+
+        /// <summary>
+        /// 拉伸参数
+        /// </summary>
+        public string StretchParameters { get; set; }
         /// <summary>
         /// 用于识别ArcGIS中图层的ID
         /// </summary>

@@ -83,9 +83,9 @@ namespace MapBoard.Mapping
                 PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
             };
             client = new HttpClient(socketsHttpHandler);
-            ApplyHttpClientHeaders(client,layerInfo,userAgent);
+            ApplyHttpClientHeaders(client, layerInfo, userAgent);
 
-           
+
             //client.DefaultRequestHeaders.Add("Host", "t3.tianditu.gov.cn");
             //client.DefaultRequestHeaders.Add("Origin", "https://zhejiang.tianditu.gov.cn");
             //client.DefaultRequestHeaders.Add("Referer", "https://zhejiang.tianditu.gov.cn");
@@ -107,6 +107,16 @@ namespace MapBoard.Mapping
         /// 瓦片地址的模板链接
         /// </summary>
         public string Url { get; }
+
+        /// <summary>
+        /// 最大缩放比例
+        /// </summary>
+        public int MaxLevel { get; set; } = -1;
+
+        /// <summary>
+        /// 最小缩放比例
+        /// </summary>
+        public int MinLevel { get; set; } = -1;
 
         /// <summary>
         /// 应用Http客户端的请求头
@@ -185,6 +195,10 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         protected override async Task<ImageTileData> GetTileDataAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
+            if (MaxLevel >= 0 && level > MaxLevel || MinLevel >= 0 && level < MinLevel)
+            {
+                return null;
+            }
             string cacheFile = Path.Combine(FolderPaths.TileCachePath, id, level.ToString(), row.ToString(), column.ToString());
             byte[] data = null;
             if (EnableCache && File.Exists(cacheFile))//缓存优先

@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.Rasters;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib;
@@ -16,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -28,6 +30,18 @@ namespace MapBoard.Mapping
     /// </summary>
     public static class GeoViewHelper
     {
+        private static Regex rColorRamp = new Regex(@$"(?<type>{nameof(PresetColorRampType.Elevation)}|{nameof(PresetColorRampType.DemScreen)}|{nameof(PresetColorRampType.DemLight)})(,(?<size>[0-9]+))?");
+
+        private static Regex rMinMaxStretch = new Regex(@"m(inmax)?\((?<min>[0-9\.:]+),(?<max>[0-9\.:]+)\)");
+
+        private static Regex rPercentStretch = new Regex(@"p(ercent)?\((?<min>[0-9\.]+),(?<max>[0-9\.]+)\)");
+
+        private static Regex rRgbRenderer = new Regex(@"r(gb)?\((?<r>[0-9\.]+),(?<g>[0-9\.]+),(?<b>[0-9\.]+)\)");
+
+        private static Regex rStdStretch = new Regex(@"s(td)?\((?<factor>[0-9\.]+)\)");
+
+        private static Regex rStretchRenderer = new Regex(@"s(tretch)?");
+
         /// <summary>
         /// 导出截图
         /// </summary>
@@ -192,9 +206,7 @@ namespace MapBoard.Mapping
                         await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
                         basemap.BaseLayers.Add(layer);
 
-                        layer.Opacity = item.Opacity;
-                        layer.Id = item.TempID.ToString();
-                        layer.IsVisible = item.Visible;
+                        item.ApplyBaseLayerStyles(layer);
                     }
                     catch (TimeoutException ex)
                     {
@@ -331,6 +343,131 @@ namespace MapBoard.Mapping
             }
             WmtsLayer layer = new WmtsLayer(new Uri(items[0]), items[1]);
             return layer;
+        }
+
+        /// <summary>
+        /// 应用底图样式，包括透明度等、亮度等、拉伸、渲染器、缩放等级。
+        /// </summary>
+        /// <param name="baseLayer"></param>
+        /// <param name="arcLayer"></param>
+        private static void ApplyBaseLayerStyles(this BaseLayerInfo baseLayer, Layer arcLayer)
+        {
+            arcLayer.Opacity = baseLayer.Opacity;
+            arcLayer.Id = baseLayer.TempID.ToString();
+            arcLayer.IsVisible = baseLayer.Visible;
+
+            if (arcLayer is ImageAdjustmentLayer i)
+            {
+                i.Gamma = baseLayer.Gamma;
+                i.Brightness = baseLayer.Brightness;
+                i.Contrast = baseLayer.Contrast;
+            }
+
+            if (arcLayer is RasterLayer raster)
+            {
+                if (string.IsNullOrEmpty(baseLayer.Renderer))
+                {
+                    return;
+                }
+                if (string.IsNullOrEmpty(baseLayer.StretchParameters))
+                {
+                    return;
+                }
+                RasterRenderer renderer = null;
+                StretchParameters stretchParameters = null;
+                ColorRamp colorRamp = null;
+                Match match = null;
+
+                if (baseLayer.ColorRampParameters != null)
+                {
+                    try
+                    {
+                        if (rColorRamp.IsMatch(baseLayer.ColorRampParameters))
+                        {
+                            match = rColorRamp.Match(baseLayer.ColorRampParameters);
+                            var type = Enum.Parse<PresetColorRampType>(match.Groups["type"].Value);
+                            uint size = 256;
+                            if (match.Groups.ContainsKey("size") && match.Groups["size"].Value != "")
+                            {
+                                size = uint.Parse(match.Groups["size"].Value);
+                            }
+                            colorRamp = ColorRamp.Create(type, size);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("颜色渐变参数错误");
+                    }
+                }
+                try
+                {
+                    if (rMinMaxStretch.IsMatch(baseLayer.StretchParameters))
+                    {
+                        match = rMinMaxStretch.Match(baseLayer.StretchParameters);
+                        var mins = match.Groups["min"].Value.Split(':').Select(double.Parse);
+                        var maxs = match.Groups["max"].Value.Split(':').Select(double.Parse);
+                        stretchParameters = new MinMaxStretchParameters(mins, maxs);
+                    }
+                    else if (rPercentStretch.IsMatch(baseLayer.StretchParameters))
+                    {
+                        match = rPercentStretch.Match(baseLayer.StretchParameters);
+                        var factor = double.Parse(match.Groups["factor"].Value);
+                        stretchParameters = new StandardDeviationStretchParameters(factor);
+                    }
+                    else if (rStdStretch.IsMatch(baseLayer.StretchParameters))
+                    {
+                        match = rStdStretch.Match(baseLayer.StretchParameters);
+                        var min = double.Parse(match.Groups["min"].Value);
+                        var max = double.Parse(match.Groups["max"].Value);
+                        stretchParameters = new PercentClipStretchParameters(min, max);
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("拉伸参数错误");
+                }
+
+
+                try
+                {
+                    if (rRgbRenderer.IsMatch(baseLayer.Renderer))
+                    {
+                        match = rRgbRenderer.Match(baseLayer.Renderer);
+                        int r = int.Parse(match.Groups["r"].Value);
+                        int g = int.Parse(match.Groups["g"].Value);
+                        int b = int.Parse(match.Groups["b"].Value);
+                        renderer = new RgbRenderer(stretchParameters, new[] { r, g, b }, null, true);
+                    }
+                    else if (rStretchRenderer.IsMatch(baseLayer.Renderer))
+                    {
+                        match = rStretchRenderer.Match(baseLayer.Renderer);
+                        renderer = new StretchRenderer(stretchParameters, null, true, colorRamp);
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("渲染器参数错误");
+                }
+
+                raster.Renderer = renderer;
+
+
+            }
+
+            if (arcLayer is XYZTiledLayer xyz)
+            {
+                xyz.MinLevel = baseLayer.MinLevel;
+                xyz.MaxLevel = baseLayer.MaxLevel;
+            }
+
         }
     }
 }
