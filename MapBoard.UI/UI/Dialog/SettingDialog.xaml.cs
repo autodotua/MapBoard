@@ -57,8 +57,6 @@ namespace MapBoard.UI.Dialog
             FormatMbmpkgAssociated = FileFormatAssociationUtility.IsAssociated("mbmpkg", MbmpkgID);
             FormatGpxAssociated = FileFormatAssociationUtility.IsAssociated("gpx", gpxID);
 
-            BaseLayers = new ObservableCollection<BaseLayerInfo>(Config.Instance.BaseLayers);
-
             InitializeComponent();
             cbbCoords.ItemsSource = Enum.GetValues(typeof(CoordinateSystem)).Cast<CoordinateSystem>();
             Layers = layers;
@@ -71,10 +69,6 @@ namespace MapBoard.UI.Dialog
             }
         }
 
-        /// <summary>
-        /// 所有底图图层
-        /// </summary>
-        public ObservableCollection<BaseLayerInfo> BaseLayers { get; }
 
         /// <summary>
         /// 底图类型
@@ -135,7 +129,7 @@ namespace MapBoard.UI.Dialog
         private void AddButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
         {
             BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WebTiledLayer, "");
-            BaseLayers.Add(layerInfo);
+            baseLayers.BaseLayers.Add(layerInfo);
             SelectAndScroll(layerInfo);
         }
 
@@ -168,7 +162,7 @@ namespace MapBoard.UI.Dialog
                 ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
                 _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
             };
-            BaseLayers.Add(layerInfo);
+            baseLayers.BaseLayers.Add(layerInfo);
             SelectAndScroll(layerInfo);
         }
 
@@ -183,7 +177,7 @@ namespace MapBoard.UI.Dialog
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WmsLayer, $"{dialog.Url}|{dialog.WmsLayerName}");
-                BaseLayers.Add(layerInfo);
+                baseLayers.BaseLayers.Add(layerInfo);
                 SelectAndScroll(layerInfo);
             }
         }
@@ -199,7 +193,7 @@ namespace MapBoard.UI.Dialog
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 BaseLayerInfo layerInfo = new BaseLayerInfo(BaseLayerType.WmtsLayer, $"{dialog.Url}|{dialog.WmsLayerName}");
-                BaseLayers.Add(layerInfo);
+                baseLayers.BaseLayers.Add(layerInfo);
                 SelectAndScroll(layerInfo);
             }
         }
@@ -238,33 +232,7 @@ namespace MapBoard.UI.Dialog
             canClose = true;
         }
 
-        /// <summary>
-        /// 切换底图可见按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BaseLayerVisibleSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            foreach (var map in MainMapView.Instances.Cast<GeoView>().Concat(BrowseSceneView.Instances))
-            {
-                Basemap basemap = null;
-                if (map is MapView m)
-                {
-                    basemap = m.Map.Basemap;
-                }
-                else if (map is SceneView s)
-                {
-                    basemap = s.Scene.Basemap;
-                }
-                var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
-                if (arcBaseLayer != null)
-                {
-                    arcBaseLayer.IsVisible = baseLayer.Visible;
-                }
-            }
 
-        }
 
         /// <summary>
         /// 单击删除底图缓存按钮
@@ -294,11 +262,11 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (grd.SelectedItem != null)
+            if (baseLayers.SelectedItem != null)
             {
-                foreach (var layer in grd.SelectedItems.Cast<BaseLayerInfo>().ToList())
+                foreach (var layer in baseLayers.SelectedItems.Cast<BaseLayerInfo>().ToList())
                 {
-                    BaseLayers.Remove(layer);
+                    baseLayers.BaseLayers.Remove(layer);
                 }
             }
         }
@@ -413,7 +381,7 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            Config.Instance.BaseLayers = BaseLayers.ToList();
+            Config.Instance.BaseLayers = baseLayers.BaseLayers.ToList();
 
             RestartMainWindow();
         }
@@ -485,10 +453,10 @@ namespace MapBoard.UI.Dialog
         /// 选择并定位
         /// </summary>
         /// <param name="item"></param>
-        private void SelectAndScroll(object item)
+        private void SelectAndScroll(BaseLayerInfo item)
         {
-            grd.SelectedItem = item;
-            grd.ScrollIntoView(item);
+            baseLayers.SelectedItem = item;
+            baseLayers.ScrollIntoView(item);
         }
 
         /// <summary>
@@ -547,7 +515,7 @@ namespace MapBoard.UI.Dialog
                         };
                         menuItem.Click += (s, e) =>
                         {
-                            BaseLayers.Add(layer);
+                            baseLayers.BaseLayers.Add(layer);
                         };
                         menu.Items.Add(menuItem);
                     }

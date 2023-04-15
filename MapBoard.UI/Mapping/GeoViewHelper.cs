@@ -408,15 +408,15 @@ namespace MapBoard.Mapping
                         var maxs = match.Groups["max"].Value.Split(':').Select(double.Parse);
                         stretchParameters = new MinMaxStretchParameters(mins, maxs);
                     }
-                    else if (rPercentStretch.IsMatch(baseLayer.StretchParameters))
-                    {
-                        match = rPercentStretch.Match(baseLayer.StretchParameters);
-                        var factor = double.Parse(match.Groups["factor"].Value);
-                        stretchParameters = new StandardDeviationStretchParameters(factor);
-                    }
                     else if (rStdStretch.IsMatch(baseLayer.StretchParameters))
                     {
                         match = rStdStretch.Match(baseLayer.StretchParameters);
+                        var factor = double.Parse(match.Groups["factor"].Value);
+                        stretchParameters = new StandardDeviationStretchParameters(factor);
+                    }
+                    else if (rPercentStretch.IsMatch(baseLayer.StretchParameters))
+                    {
+                        match = rPercentStretch.Match(baseLayer.StretchParameters);
                         var min = double.Parse(match.Groups["min"].Value);
                         var max = double.Parse(match.Groups["max"].Value);
                         stretchParameters = new PercentClipStretchParameters(min, max);
