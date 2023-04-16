@@ -350,7 +350,7 @@ namespace MapBoard.Mapping
         /// </summary>
         /// <param name="baseLayer"></param>
         /// <param name="arcLayer"></param>
-        private static void ApplyBaseLayerStyles(this BaseLayerInfo baseLayer, Layer arcLayer)
+        public static void ApplyBaseLayerStyles(this BaseLayerInfo baseLayer, Layer arcLayer)
         {
             arcLayer.Opacity = baseLayer.Opacity;
             arcLayer.Id = baseLayer.TempID.ToString();

@@ -13,4 +13,5 @@
     <converter:IndexConverter x:Key="IndexConverter" />
     <converter:SpeedValueConverter x:Key="SpeedValueConverter" />
     <converter:TileDownloaderTitleConverter x:Key="TileDownloaderTitleConverter" />
+    <converter:Bool2GridLengthConverter x:Key="Bool2GridLengthConverter" />
 </ResourceDictionary>

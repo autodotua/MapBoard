@@ -273,7 +273,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <m:BaseLayersPanel x:Name="baseLayers" />
+                        <u:BaseLayersPanel x:Name="baseLayers" />
                         <ui:SimpleStackPanel
                             Grid.Row="4"
                             Grid.ColumnSpan="5"

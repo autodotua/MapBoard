@@ -1,5 +1,5 @@
 ﻿<mui:UserControlBase
-    x:Class="MapBoard.BaseLayersPanel"
+    x:Class="MapBoard.UI.BaseLayersPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,7 +22,8 @@
         <Grid
             Margin="0,-4,0,-6"
             HorizontalAlignment="Stretch"
-            TextElement.FontWeight="Bold">
+            TextElement.FontWeight="Bold"
+            Visibility="{Binding SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="42" />
                 <ColumnDefinition Width="16" />
@@ -54,8 +55,8 @@
         <ListView
             x:Name="grd"
             Grid.Row="2"
-            dd:DragDrop.IsDragSource="True"
-            dd:DragDrop.IsDropTarget="True"
+            dd:DragDrop.IsDragSource="{Binding SimpleMode, Converter={StaticResource InverseBoolConverter}}"
+            dd:DragDrop.IsDropTarget="{Binding SimpleMode, Converter={StaticResource InverseBoolConverter}}"
             fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
             ItemsSource="{Binding BaseLayers}"
             ScrollViewer.CanContentScroll="False"
@@ -82,26 +83,25 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24" />
-                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,24'}" />
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,16'}" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="96" />
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,96'}" />
                                 <ColumnDefinition Width="8" />
                                 <ColumnDefinition Width="54" />
                                 <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="88" />
+                                <ColumnDefinition Width="48" />
                             </Grid.ColumnDefinitions>
                             <CheckBox
                                 Grid.RowSpan="99"
-                                IsChecked="{Binding Enable}" />
+                                IsChecked="{Binding Enable}"
+                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}" />
                             <ui:ToggleSwitch
                                 Grid.RowSpan="99"
                                 Grid.Column="99"
                                 IsEnabled="{Binding Enable}"
                                 IsOn="{Binding Visible}"
-                                OffContent="隐藏"
-                                OnContent="可见"
                                 Tag="{Binding .}"
                                 Toggled="BaseLayerVisibleSwitch_Toggled" />
 
@@ -111,7 +111,8 @@
                                 VerticalAlignment="Center"
                                 HorizontalContentAlignment="Left"
                                 Background="Transparent"
-                                Content="{Binding Name}">
+                                Content="{Binding Name}"
+                                IsHitTestVisible="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource InverseBoolConverter}}">
                                 <ui:FlyoutService.Flyout>
                                     <ui:Flyout>
                                         <TextBox
@@ -124,7 +125,8 @@
                             <TextBlock
                                 Grid.Column="4"
                                 VerticalAlignment="Center"
-                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
+                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}"
+                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}" />
                             <Button
                                 Grid.Column="6"
                                 HorizontalAlignment="Stretch"
@@ -141,6 +143,7 @@
                                             SmallChange="0.05"
                                             TickFrequency="0.1"
                                             TickPlacement="BottomRight"
+                                            ValueChanged="Slider_ValueChanged"
                                             Value="{Binding Opacity}" />
                                     </ui:Flyout>
                                 </ui:FlyoutService.Flyout>
@@ -150,7 +153,8 @@
                                 Grid.Row="2"
                                 Grid.Column="2"
                                 Grid.ColumnSpan="3"
-                                Background="Transparent">
+                                Background="Transparent"
+                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
                                 <TextBlock
                                     Text="{Binding Path}"
                                     TextTrimming="CharacterEllipsis"
@@ -172,14 +176,16 @@
                                 Grid.Column="6"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Background="Transparent">
+                                Background="Transparent"
+                                Click="AdvancedLayerPropertiesButton_Click"
+                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
                                 <ui:SymbolIcon Symbol="More" />
                                 <ui:FlyoutService.Flyout>
                                     <ui:Flyout Placement="Left">
                                         <ui:SimpleStackPanel
                                             Width="400"
                                             Orientation="Vertical"
-                                            Spacing="16">
+                                            Spacing="8">
                                             <GroupBox Header="图像设置">
                                                 <ui:SimpleStackPanel Spacing="8">
                                                     <ui:NumberBox
@@ -267,6 +273,13 @@
                                                 </ui:SimpleStackPanel>
 
                                             </GroupBox>
+                                            <TextBlock
+                                                Foreground="Red"
+                                                Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ErrorMessage}" />
+                                            <Button
+                                                HorizontalAlignment="Right"
+                                                Click="ApplyLayerPropertiesButton_Click"
+                                                Content="立即应用" />
                                         </ui:SimpleStackPanel>
                                     </ui:Flyout>
                                 </ui:FlyoutService.Flyout>

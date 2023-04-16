@@ -83,6 +83,7 @@
                         ToolTip="点击打开图层列表" />
                     <Grid
                         x:Name="grdLayers"
+                        Background="{DynamicResource backgroundBrush}"
                         Opacity="0"
                         Visibility="Collapsed">
                         <Grid.RowDefinitions>
@@ -111,77 +112,10 @@
                                 wpf:EasyTransform.EasyRotate="180"
                                 Symbol="Back" />
                         </Button>
-                        <DataGrid
-                            x:Name="dgLayers"
+                        <local:BaseLayersPanel
                             Grid.Row="2"
-                            fzc:SmoothScrollViewerHelper.SmoothScroll="{Binding Source={x:Static m:Config.Instance}, Path=SmoothScroll}"
-                            AutoGenerateColumns="False"
-                            Background="{DynamicResource SystemControlForegroundChromeMediumBrush}"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="True"
-                            CanUserResizeColumns="False"
-                            CanUserSortColumns="False"
-                            Focusable="True"
-                            HeadersVisibility="Column"
-                            ItemsSource="{Binding BaseLayers}"
-                            SelectionMode="Single"
-                            SelectionUnit="Cell">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Width="8"
-                                    Binding="{Binding Index}"
-                                    CanUserSort="False"
-                                    Header="序号"
-                                    IsReadOnly="True"
-                                    SortDirection="Ascending" />
-                                <DataGridTemplateColumn
-                                    Width="56"
-                                    Header="可见">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox
-                                                Margin="16,-2,0,-2"
-                                                Click="CheckBox_Click"
-                                                Focusable="False"
-                                                IsChecked="{Binding Visible, UpdateSourceTrigger=PropertyChanged}"
-                                                Tag="{Binding .}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn
-                                    Width="180"
-                                    Binding="{Binding Name}"
-                                    Header="名称"
-                                    IsReadOnly="True" />
-
-                                <DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="不透明度">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock
-                                                Margin="8,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Opacity, StringFormat=P0}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-
-                                    <DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate>
-                                            <Slider
-                                                Width="120"
-                                                LargeChange="0.1"
-                                                Maximum="1"
-                                                Minimum="0"
-                                                SmallChange="0.01"
-                                                Tag="{Binding .}"
-                                                ValueChanged="Slider_ValueChanged"
-                                                Value="{Binding Opacity, UpdateSourceTrigger=PropertyChanged}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellEditingTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                            Cursor=""
+                            SimpleMode="True" />
                     </Grid>
                 </Grid>
             </Border>

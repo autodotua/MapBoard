@@ -47,11 +47,6 @@ namespace MapBoard.UI
 
         public MapViewSidePanel()
         {
-            BaseLayers = Config.Instance.BaseLayers.Where(p => p.Enable).ToList();
-            for (int i = 0; i < BaseLayers.Count; i++)
-            {
-                BaseLayers[i].Index = i + 1;
-            }
             InitializeComponent();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
@@ -94,7 +89,6 @@ namespace MapBoard.UI
         {
             if (e.PropertyName == nameof(Config.BaseLayers))
             {
-                BaseLayers = Config.Instance.BaseLayers;
             }
         }
 
@@ -344,35 +338,6 @@ namespace MapBoard.UI
         private bool isLayerPanelOpened = false;
 
         /// <summary>
-        /// 底图
-        /// </summary>
-        public List<BaseLayerInfo> BaseLayers { get; set; }
-
-        /// <summary>
-        /// 单击底图的可见单选框
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            Basemap basemap = null;
-            if (MapView is MapView m)
-            {
-                basemap = m.Map.Basemap;
-            }
-            else if (MapView is SceneView s)
-            {
-                basemap = s.Scene.Basemap;
-            }
-            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
-            if (arcBaseLayer != null)
-            {
-                arcBaseLayer.IsVisible = baseLayer.Visible;
-            }
-        }
-
-        /// <summary>
         /// 单击关闭底图面板按钮
         /// </summary>
         /// <param name="sender"></param>
@@ -427,7 +392,7 @@ namespace MapBoard.UI
             {
                 grdLayers.Visibility = Visibility.Visible;
                 bdLayers.Cursor = Cursors.Arrow;
-                dgLayers.Focus();
+                //dgLayers.Focus();
                 await storyboard.BeginAsync();
             }
             else
@@ -456,30 +421,6 @@ namespace MapBoard.UI
             }
             int index = int.Parse((sender as FrameworkElement).Tag as string);
             new SettingDialog(this.GetWindow(), (MapView as IMapBoardGeoView).Layers, index).ShowDialog();
-        }
-
-        /// <summary>
-        /// 底图透明度的滑动条滑动
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            var baseLayer = (sender as FrameworkElement).Tag as BaseLayerInfo;
-            Basemap basemap = null;
-            if (MapView is MapView m)
-            {
-                basemap = m.Map.Basemap;
-            }
-            else if (MapView is SceneView s)
-            {
-                basemap = s.Scene.Basemap;
-            }
-            var arcBaseLayer = basemap.BaseLayers.FirstOrDefault(p => p.Id == baseLayer.TempID.ToString());
-            if (arcBaseLayer != null)
-            {
-                arcBaseLayer.Opacity = baseLayer.Opacity;
-            }
         }
 
         #endregion 底图
