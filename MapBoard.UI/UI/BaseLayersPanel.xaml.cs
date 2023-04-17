@@ -8,6 +8,7 @@ using MapBoard.UI.Component;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -91,6 +92,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void AdvancedLayerPropertiesButton_Click(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("click");
             ErrorMessage = null;
         }
 

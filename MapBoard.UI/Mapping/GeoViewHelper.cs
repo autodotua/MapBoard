@@ -440,6 +440,7 @@ namespace MapBoard.Mapping
                         int r = int.Parse(match.Groups["r"].Value);
                         int g = int.Parse(match.Groups["g"].Value);
                         int b = int.Parse(match.Groups["b"].Value);
+                        (r, g, b) = (r - 1, g - 1, b - 1);
                         renderer = new RgbRenderer(stretchParameters, new[] { r, g, b }, null, true);
                     }
                     else if (rStretchRenderer.IsMatch(baseLayer.Renderer))

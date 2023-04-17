@@ -16,6 +16,7 @@ namespace MapBoard.Model
 
         public BaseLayerInfo(BaseLayerType type, string path)
         {
+            Name = "未命名";
             Type = type;
             Path = path ?? throw new ArgumentNullException(nameof(path));
         }

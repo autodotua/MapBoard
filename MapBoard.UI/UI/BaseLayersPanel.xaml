@@ -13,6 +13,112 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <ui:Flyout
+            x:Key="rasterAdvancedSettingsFlyout"
+            Placement="Left">
+            <ui:SimpleStackPanel
+                Width="400"
+                Orientation="Vertical"
+                Spacing="8">
+                <GroupBox Header="图像设置">
+                    <ui:SimpleStackPanel Spacing="8">
+                        <ui:NumberBox
+                            Header="亮度"
+                            Value="{Binding Brightness}" />
+                        <ui:NumberBox
+                            Header="对比度"
+                            Value="{Binding Contrast}" />
+                        <ui:NumberBox
+                            Header="伽马"
+                            Value="{Binding Gamma}" />
+                        <TextBlock
+                            Opacity="0.5"
+                            Text="以上值范围均为-100 ~ 100，默认值为0" />
+                    </ui:SimpleStackPanel>
+                </GroupBox>
+                <GroupBox
+                    Header="瓦片设置"
+                    Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=WebTiledLayer}">
+                    <ui:SimpleStackPanel
+                        Orientation="Horizontal"
+                        Spacing="8">
+
+                        <ui:NumberBox
+                            Width="120"
+                            HorizontalAlignment="Stretch"
+                            Description="-1表示不限制"
+                            Header="瓦片最小级别"
+                            Value="{Binding MinLevel}" />
+                        <ui:NumberBox
+                            Width="120"
+                            HorizontalAlignment="Stretch"
+                            Description="-1表示不限制"
+                            Header="瓦片最大级别"
+                            Value="{Binding MaxLevel}" />
+                    </ui:SimpleStackPanel>
+
+                </GroupBox>
+                <GroupBox
+                    Header="栅格文件设置"
+                    Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=RasterLayer}">
+                    <ui:SimpleStackPanel Spacing="8">
+                        <TextBox
+                            ui:ControlHelper.Header="拉伸参数"
+                            Text="{Binding StretchParameters}" />
+                        <TextBlock
+                            Margin="0,-8,0,0"
+                            Opacity="0.5"
+                            TextWrapping="Wrap">
+                            <Run>最大最小值拉伸：m[inmax](波段1最小值|波段2最小值|…,波段1最大值|波段2最大值|…)</Run>
+                            <LineBreak />
+                            <Run>百分比拉伸：p[ercent](起始百分比,终止百分比)</Run>
+                            <LineBreak />
+                            <Run>标准差拉伸：s[td](标准差因子)</Run>
+                            <LineBreak />
+                            <Run>例：m(0|0|12,255|255|20)</Run>
+
+                        </TextBlock>
+                        <TextBox
+                            ui:ControlHelper.Header="渲染器参数"
+                            Text="{Binding Renderer}" />
+                        <TextBlock
+                            Margin="0,-8,0,0"
+                            Opacity="0.5"
+                            TextWrapping="Wrap">
+                            <Run>拉伸渲染器：s[tretch]</Run>
+                            <LineBreak />
+                            <Run>百分比拉伸：r[gb](R对应波段,G对应波段,B对应波段)</Run>
+                            <LineBreak />
+                            <Run>例：r(5,4,3)</Run>
+                        </TextBlock>
+                        <TextBox
+                            ui:ControlHelper.Header="颜色渐变参数（仅当使用拉伸渲染器时）"
+                            Text="{Binding ColorRampParameters}" />
+                        <TextBlock
+                            Margin="0,-8,0,0"
+                            Opacity="0.5"
+                            TextWrapping="Wrap">
+                            <Run>DemScreen 或 DemLight 或 Elevation 或 空</Run></TextBlock>
+                        <TextBlock
+                            Opacity="0.5"
+                            TextWrapping="Wrap">
+                            <Run>中括号表示可省略。</Run>
+                        </TextBlock>
+                    </ui:SimpleStackPanel>
+
+                </GroupBox>
+                <TextBlock
+                    Foreground="Red"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.ErrorMessage}" />
+                <Button
+                    HorizontalAlignment="Right"
+                    Click="ApplyLayerPropertiesButton_Click"
+                    Content="立即应用" />
+            </ui:SimpleStackPanel>
+        </ui:Flyout>
+
+    </UserControl.Resources>
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -67,223 +173,173 @@
                     TargetType="{x:Type ListBoxItem}">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="Padding" Value="0" />
+                    <!--  为了使上下边框重叠  -->
+                    <Setter Property="Margin" Value="0,0,0,-1" />
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border
                         BorderBrush="Gray"
-                        BorderThickness="0,1,0,0">
-                        <Grid
-                            Margin="8,4,16,4"
-                            HorizontalAlignment="Stretch">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="0" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,24'}" />
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,16'}" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2GridLengthConverter}, ConverterParameter='0,96'}" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="54" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="48" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                Grid.RowSpan="99"
-                                IsChecked="{Binding Enable}"
-                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}" />
-                            <ui:ToggleSwitch
-                                Grid.RowSpan="99"
-                                Grid.Column="99"
-                                IsEnabled="{Binding Enable}"
-                                IsOn="{Binding Visible}"
-                                Tag="{Binding .}"
-                                Toggled="BaseLayerVisibleSwitch_Toggled" />
+                        BorderThickness="0,1">
+                        <Grid>
+                            <Grid
+                                Margin="8,2,16,2"
+                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="54" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                            <Button
-                                Grid.Column="2"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                HorizontalContentAlignment="Left"
-                                Background="Transparent"
-                                Content="{Binding Name}"
-                                IsHitTestVisible="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource InverseBoolConverter}}">
-                                <ui:FlyoutService.Flyout>
-                                    <ui:Flyout>
-                                        <TextBox
-                                            Width="200"
-                                            ui:ControlHelper.Header="图层名"
-                                            Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-                                    </ui:Flyout>
-                                </ui:FlyoutService.Flyout>
-                            </Button>
-                            <TextBlock
-                                Grid.Column="4"
-                                VerticalAlignment="Center"
-                                Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}"
-                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}" />
-                            <Button
-                                Grid.Column="6"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Background="Transparent">
-                                <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
-                                <ui:FlyoutService.Flyout>
-                                    <ui:Flyout>
-                                        <Slider
-                                            Width="128"
-                                            LargeChange="0.20"
-                                            Maximum="1"
-                                            Minimum="0"
-                                            SmallChange="0.05"
-                                            TickFrequency="0.1"
-                                            TickPlacement="BottomRight"
-                                            ValueChanged="Slider_ValueChanged"
-                                            Value="{Binding Opacity}" />
-                                    </ui:Flyout>
-                                </ui:FlyoutService.Flyout>
-                            </Button>
+                                <CheckBox IsChecked="{Binding Visible}" />
 
-                            <Button
-                                Grid.Row="2"
-                                Grid.Column="2"
-                                Grid.ColumnSpan="3"
-                                Background="Transparent"
-                                Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
                                 <TextBlock
-                                    Text="{Binding Path}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextWrapping="NoWrap" />
-                                <ui:FlyoutService.Flyout>
-                                    <ui:Flyout>
-                                        <TextBox
-                                            Width="360"
-                                            ui:ControlHelper.Header="地址"
-                                            IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}"
-                                            Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
-                                            TextWrapping="Wrap" />
-                                    </ui:Flyout>
-                                </ui:FlyoutService.Flyout>
-                            </Button>
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Name}" />
 
-                            <Button
-                                Grid.Row="2"
-                                Grid.Column="6"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                Click="AdvancedLayerPropertiesButton_Click"
+                                <Button
+                                    Grid.Column="4"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                    <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
+                                    <ui:FlyoutService.Flyout>
+                                        <ui:Flyout>
+                                            <Slider
+                                                Width="128"
+                                                LargeChange="0.20"
+                                                Maximum="1"
+                                                Minimum="0"
+                                                SmallChange="0.05"
+                                                TickFrequency="0.1"
+                                                TickPlacement="BottomRight"
+                                                ValueChanged="Slider_ValueChanged"
+                                                Value="{Binding Opacity}" />
+                                        </ui:Flyout>
+                                    </ui:FlyoutService.Flyout>
+                                </Button>
+
+                                <Button
+                                    Grid.Column="6"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    ui:FlyoutService.Flyout="{StaticResource rasterAdvancedSettingsFlyout}"
+                                    Background="Transparent"
+                                    Click="AdvancedLayerPropertiesButton_Click">
+                                    <ui:SymbolIcon Symbol="More" />
+                                </Button>
+                            </Grid>
+                            <Grid
+                                Margin="8,4,16,4"
+                                HorizontalAlignment="Stretch"
                                 Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.SimpleMode, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
-                                <ui:SymbolIcon Symbol="More" />
-                                <ui:FlyoutService.Flyout>
-                                    <ui:Flyout Placement="Left">
-                                        <ui:SimpleStackPanel
-                                            Width="400"
-                                            Orientation="Vertical"
-                                            Spacing="8">
-                                            <GroupBox Header="图像设置">
-                                                <ui:SimpleStackPanel Spacing="8">
-                                                    <ui:NumberBox
-                                                        Header="亮度"
-                                                        Value="{Binding Brightness}" />
-                                                    <ui:NumberBox
-                                                        Header="对比度"
-                                                        Value="{Binding Contrast}" />
-                                                    <ui:NumberBox
-                                                        Header="伽马"
-                                                        Value="{Binding Gamma}" />
-                                                    <TextBlock
-                                                        Opacity="0.5"
-                                                        Text="以上值范围均为-100 ~ 100，默认值为0" />
-                                                </ui:SimpleStackPanel>
-                                            </GroupBox>
-                                            <GroupBox
-                                                Header="瓦片设置"
-                                                Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=WebTiledLayer}">
-                                                <ui:SimpleStackPanel
-                                                    Orientation="Horizontal"
-                                                    Spacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="0" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="96" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="54" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="48" />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox
+                                    Grid.RowSpan="99"
+                                    IsChecked="{Binding Enable}" />
+                                <ui:ToggleSwitch
+                                    Grid.RowSpan="99"
+                                    Grid.Column="99"
+                                    IsEnabled="{Binding Enable}"
+                                    IsOn="{Binding Visible}"
+                                    Tag="{Binding .}"
+                                    Toggled="BaseLayerVisibleSwitch_Toggled" />
 
-                                                    <ui:NumberBox
-                                                        Width="120"
-                                                        HorizontalAlignment="Stretch"
-                                                        Description="-1表示不限制"
-                                                        Header="瓦片最小级别"
-                                                        Value="{Binding MinLevel}" />
-                                                    <ui:NumberBox
-                                                        Width="120"
-                                                        HorizontalAlignment="Stretch"
-                                                        Description="-1表示不限制"
-                                                        Header="瓦片最大级别"
-                                                        Value="{Binding MaxLevel}" />
-                                                </ui:SimpleStackPanel>
+                                <Button
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Left"
+                                    Background="Transparent"
+                                    Content="{Binding Name}">
+                                    <ui:FlyoutService.Flyout>
+                                        <ui:Flyout>
+                                            <TextBox
+                                                Width="200"
+                                                ui:ControlHelper.Header="图层名"
+                                                Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                        </ui:Flyout>
+                                    </ui:FlyoutService.Flyout>
+                                </Button>
+                                <TextBlock
+                                    Grid.Column="4"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Type, Converter={StaticResource BaseLayerTypeConverter}}" />
+                                <Button
+                                    Grid.Column="6"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                    <TextBlock Text="{Binding Opacity, StringFormat=P0}" />
+                                    <ui:FlyoutService.Flyout>
+                                        <ui:Flyout>
+                                            <Slider
+                                                Width="128"
+                                                LargeChange="0.20"
+                                                Maximum="1"
+                                                Minimum="0"
+                                                SmallChange="0.05"
+                                                TickFrequency="0.1"
+                                                TickPlacement="BottomRight"
+                                                ValueChanged="Slider_ValueChanged"
+                                                Value="{Binding Opacity}" />
+                                        </ui:Flyout>
+                                    </ui:FlyoutService.Flyout>
+                                </Button>
 
-                                            </GroupBox>
-                                            <GroupBox
-                                                Header="栅格文件设置"
-                                                Visibility="{Binding Type, Converter={StaticResource EqualConverter}, ConverterParameter=RasterLayer}">
-                                                <ui:SimpleStackPanel Spacing="8">
-                                                    <TextBox
-                                                        ui:ControlHelper.Header="拉伸参数"
-                                                        Text="{Binding StretchParameters}" />
-                                                    <TextBlock
-                                                        Margin="0,-8,0,0"
-                                                        Opacity="0.5"
-                                                        TextWrapping="Wrap">
-                                                        <Run>最大最小值拉伸：m[inmax](波段1最小值|波段2最小值|…,波段1最大值|波段2最大值|…)</Run>
-                                                        <LineBreak />
-                                                        <Run>百分比拉伸：p[ercent](起始百分比,终止百分比)</Run>
-                                                        <LineBreak />
-                                                        <Run>标准差拉伸：s[td](标准差因子)</Run>
-                                                        <LineBreak />
-                                                        <Run>例：m(0|0|12,255|255|20)</Run>
+                                <Button
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Grid.ColumnSpan="3"
+                                    Background="Transparent">
+                                    <TextBlock
+                                        Text="{Binding Path}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <ui:FlyoutService.Flyout>
+                                        <ui:Flyout>
+                                            <TextBox
+                                                Width="360"
+                                                ui:ControlHelper.Header="地址"
+                                                IsEnabled="{Binding ElementName=grd, Path=SelectedItem, Converter={StaticResource NotNullConverter}}"
+                                                Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
+                                                TextWrapping="Wrap" />
+                                        </ui:Flyout>
+                                    </ui:FlyoutService.Flyout>
+                                </Button>
 
-                                                    </TextBlock>
-                                                    <TextBox
-                                                        ui:ControlHelper.Header="渲染器参数"
-                                                        Text="{Binding Renderer}" />
-                                                    <TextBlock
-                                                        Margin="0,-8,0,0"
-                                                        Opacity="0.5"
-                                                        TextWrapping="Wrap">
-                                                        <Run>拉伸渲染器：s[tretch]</Run>
-                                                        <LineBreak />
-                                                        <Run>百分比拉伸：r[gb](R对应波段,G对应波段,B对应波段)</Run>
-                                                        <LineBreak />
-                                                        <Run>例：r(5,4,3)</Run>
-                                                    </TextBlock>
-                                                    <TextBox
-                                                        ui:ControlHelper.Header="颜色渐变参数（仅当使用拉伸渲染器时）"
-                                                        Text="{Binding ColorRampParameters}" />
-                                                    <TextBlock
-                                                        Margin="0,-8,0,0"
-                                                        Opacity="0.5"
-                                                        TextWrapping="Wrap">
-                                                        <Run>DemScreen 或 DemLight 或 Elevation 或 空</Run></TextBlock>
-                                                    <TextBlock
-                                                        Opacity="0.5"
-                                                        TextWrapping="Wrap">
-                                                        <Run>中括号表示可省略。</Run>
-                                                    </TextBlock>
-                                                </ui:SimpleStackPanel>
-
-                                            </GroupBox>
-                                            <TextBlock
-                                                Foreground="Red"
-                                                Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Path=DataContext.ErrorMessage}" />
-                                            <Button
-                                                HorizontalAlignment="Right"
-                                                Click="ApplyLayerPropertiesButton_Click"
-                                                Content="立即应用" />
-                                        </ui:SimpleStackPanel>
-                                    </ui:Flyout>
-                                </ui:FlyoutService.Flyout>
-                            </Button>
+                                <Button
+                                    Grid.Row="2"
+                                    Grid.Column="6"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    ui:FlyoutService.Flyout="{StaticResource rasterAdvancedSettingsFlyout}"
+                                    Background="Transparent"
+                                    Click="AdvancedLayerPropertiesButton_Click">
+                                    <ui:SymbolIcon Symbol="More" />
+                                </Button>
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>
