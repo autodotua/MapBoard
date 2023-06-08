@@ -85,6 +85,7 @@ namespace MapBoard.UI.Menu
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
 
                     AddToMenu<IServerBasedLayer>(menu, "下载全部图形", layer, PopulateAllAsync);
+                    AddToMenu<ShapefileMapLayerInfo>(menu, "重新计算范围", layer, UpdateShapefileExtentAsync);
                     AddToMenu<ShapefileMapLayerInfo>(menu, "属性", layer, SetShapefileLayerAsync);
                     AddToMenu<WfsMapLayerInfo>(menu, "属性", layer, SetWfsLayerAsync);
                     AddToMenu<TempMapLayerInfo>(menu, "属性", layer, SetTempLayerAsync);
@@ -395,6 +396,11 @@ namespace MapBoard.UI.Menu
         private Task PopulateAllAsync(IServerBasedLayer s)
         {
             return s.PopulateAllFromServiceAsync();
+        }     
+        
+        private Task UpdateShapefileExtentAsync(ShapefileMapLayerInfo l)
+        {
+            return l.UpdateExtent(MapView.Map.OperationalLayers);
         }
 
         /// <summary>

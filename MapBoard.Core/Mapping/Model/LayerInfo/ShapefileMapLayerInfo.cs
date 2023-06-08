@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace MapBoard.Mapping.Model
@@ -156,6 +157,16 @@ namespace MapBoard.Mapping.Model
         protected override FeatureTable GetTable()
         {
             return new ShapefileFeatureTable(GetMainFilePath());
+        }
+
+        public async Task UpdateExtent(Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        {
+            int index = layers.IndexOf(Layer);
+            var extent = await QueryExtentAsync(new QueryParameters());
+            (table as ShapefileFeatureTable).Close();
+            await Shapefile.UpdateExtentAsync(GetMainFilePath(), extent);
+            await LoadAsync();
+            layers[index] = Layer;
         }
     }
 }

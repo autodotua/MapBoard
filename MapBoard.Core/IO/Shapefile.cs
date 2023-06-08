@@ -59,7 +59,10 @@ namespace MapBoard.IO
                 throw;
             }
             await table.AddFeaturesAsync(newFeatures);
+            var extent = await table.QueryExtentAsync(new QueryParameters());
+            string path = table.Path;
             table.Close();
+            UpdateExtentAsync(path, extent);
         }
 
         /// <summary>
@@ -167,6 +170,25 @@ namespace MapBoard.IO
             await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
 
             layer.LayerVisible = true;
+        }
+
+        /// <summary>
+        /// 重新计算并更新Shapefile的空间范围
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="extent"></param>
+        /// <returns></returns>
+        public static async Task UpdateExtentAsync(string path, Envelope extent)
+        {
+            using FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
+            fileStream.Seek(36, SeekOrigin.Begin);
+            byte[] extentBytes = new byte[32];
+            BitConverter.GetBytes(extent.XMin).CopyTo(extentBytes, 0);
+            BitConverter.GetBytes(extent.YMin).CopyTo(extentBytes, 8);
+            BitConverter.GetBytes(extent.XMax).CopyTo(extentBytes, 16);
+            BitConverter.GetBytes(extent.YMax).CopyTo(extentBytes, 24);
+            await fileStream.WriteAsync(extentBytes.AsMemory(0, 32));
+            fileStream.Close();
         }
 
         /// <summary>
