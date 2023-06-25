@@ -58,8 +58,8 @@
                 <Grid ClipToBounds="True">
                     <mapping:TileDownloaderMapView
                         x:Name="arcMap"
-                        PreviewMouseMove="arcMap_PreviewMouseMove"
-                        SelectBoundaryComplete="arcMap_SelectBoundaryComplete" />
+                        PreviewMouseMove="ArcMap_PreviewMouseMove"
+                        SelectBoundaryComplete="ArcMap_SelectBoundaryComplete" />
                     <Button
                         Margin="8"
                         HorizontalAlignment="Right"
@@ -109,7 +109,7 @@
                     <mapping:TileDownloaderMapView
                         x:Name="arcLocalMap"
                         IsLocal="True"
-                        PreviewMouseMove="arcMap_PreviewMouseMove" />
+                        PreviewMouseMove="ArcMap_PreviewMouseMove" />
                     <TextBlock
                         Grid.Column="2"
                         Margin="8"
