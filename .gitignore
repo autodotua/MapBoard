@@ -268,3 +268,6 @@ OldVersions
 packages
 /Generation/
 /libs/CopyFromFzLib.bat
+/MapBoard.UI/runtimecore.dll
+/MapBoard.UI/runtimecoreAssembly.manifest
+/MapBoard.UI/RuntimeCoreNet*.dll
