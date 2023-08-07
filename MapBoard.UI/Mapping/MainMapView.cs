@@ -166,7 +166,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
         {
-            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count == 1)
+            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count == 1 || geometry.Extent.Width == 0 || geometry.Extent.Height == 0)
             {
                 if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
                 {
