@@ -235,18 +235,7 @@ namespace MapBoard.Mapping
                         case BoardTask.Ready
                         when Layers.Selected?.LayerVisible == true
                         && Layers.Selected?.Interaction?.CanEdit == true:
-                            SketchCreationMode? type = Layers.Selected.GeometryType switch
-                            {
-                                GeometryType.Point => SketchCreationMode.Point,
-                                GeometryType.Multipoint => SketchCreationMode.Multipoint,
-                                GeometryType.Polyline => SketchCreationMode.Polyline,
-                                GeometryType.Polygon => SketchCreationMode.Polygon,
-                                _ => null
-                            };
-                            if (type.HasValue)
-                            {
-                                await Editor.DrawAsync(type.Value);
-                            }
+                            await Editor.DrawAsync(Layers.Selected.GeometryType, null);
                             break;
 
                         case BoardTask.Select

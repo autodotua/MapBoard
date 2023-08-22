@@ -102,11 +102,11 @@ namespace MapBoard.UI.Bar
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Editor_GeometryChanged(object sender, Esri.ArcGISRuntime.UI.GeometryChangedEventArgs e)
+        private void Editor_GeometryChanged(object sender, GeometryUpdatedEventArgs e)
         {
             if (IsOpen)
             {
-                if (e.NewGeometry is Polyline line)
+                if (e.Geometry is Polyline line)
                 {
                     var length = line.GetLength();
                     if (length < 10000)
@@ -118,7 +118,7 @@ namespace MapBoard.UI.Bar
                         Length = string.Format("{0:0.000}千米", length / 1000);
                     }
                 }
-                else if (e.NewGeometry is Polygon polygon)
+                else if (e.Geometry is Polygon polygon)
                 {
                     var length = polygon.GetLength();
                     var area = polygon.GetArea();

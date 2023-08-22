@@ -34,6 +34,8 @@ using FzLib.WPF;
 using System.Windows.Threading;
 using WinRT;
 using ImageMagick;
+using EGIS.ShapeFileLib;
+using Esri.ArcGISRuntime.UI.Editing;
 
 namespace MapBoard.UI
 {
@@ -47,19 +49,18 @@ namespace MapBoard.UI
         /// <summary>
         /// 按钮名对应的<see cref="SketchCreationMode"/>编辑模式
         /// </summary>
-        private static readonly TwoWayDictionary<string, SketchCreationMode> ButtonsMode = new TwoWayDictionary<string, SketchCreationMode>()
+        private static readonly Dictionary<string, (GeometryType geometryType,GeometryEditorTool tool)> ButtonsMode = new Dictionary<string, (GeometryType, GeometryEditorTool)>()
         {
-            { "多段线",SketchCreationMode.Polyline},
-            { "自由线", SketchCreationMode.FreehandLine},
-            { "多边形",SketchCreationMode.Polygon},
-            { "自由面",SketchCreationMode.FreehandPolygon},
-            { "圆",SketchCreationMode.Circle},
-            { "椭圆",SketchCreationMode.Ellipse},
-            { "箭头",SketchCreationMode.Arrow},
-            { "矩形", SketchCreationMode.Rectangle},
-            { "三角形",SketchCreationMode.Triangle},
-            { "点",SketchCreationMode.Point},
-            { "多点",SketchCreationMode.Multipoint},
+            { "折线",(GeometryType.Polyline,null)},
+            { "自由线", (GeometryType.Polyline,new FreehandTool())},
+            { "多边形",(GeometryType.Polygon,null)},
+            { "自由面",(GeometryType.Polygon,new FreehandTool())},
+            { "圆",(GeometryType.Polygon,ShapeTool.Create(ShapeToolType.Ellipse))},
+            { "箭头",(GeometryType.Polygon,ShapeTool.Create(ShapeToolType.Arrow))},
+            { "矩形",(GeometryType.Polygon,ShapeTool.Create(ShapeToolType.Rectangle))},
+            { "三角形",(GeometryType.Polygon,ShapeTool.Create(ShapeToolType.Triangle))},
+            { "点",(GeometryType.Point,null)},
+            { "多点",(GeometryType.Multipoint,null)}
         };
 
         /// <summary>
@@ -766,7 +767,7 @@ namespace MapBoard.UI
             }
 
             var mode = ButtonsMode[text];
-            await arcMap.Editor.DrawAsync(mode);
+            await arcMap.Editor.DrawAsync(mode.geometryType, mode.tool);
         }
 
         #endregion 绘制区域事件
