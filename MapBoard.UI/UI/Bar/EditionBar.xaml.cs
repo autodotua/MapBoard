@@ -6,12 +6,9 @@ using MapBoard.Mapping.Model;
 using MapBoard.Util;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using static MapBoard.Mapping.EditorHelper;
-using SCM = Esri.ArcGISRuntime.UI.SketchCreationMode;
 
 namespace MapBoard.UI.Bar
 {
@@ -20,6 +17,8 @@ namespace MapBoard.UI.Bar
     /// </summary>
     public partial class EditionBar : BarBase
     {
+        private bool requestNewPart = false;
+
         public EditionBar()
         {
             InitializeComponent();
@@ -61,9 +60,6 @@ namespace MapBoard.UI.Bar
         /// 标题
         /// </summary>
         public string Title { get; set; }
-
-        private bool requestNewPart = false;
-
         protected override ExpandDirection ExpandDirection => ExpandDirection.Down;
 
         public override void Initialize()
@@ -194,6 +190,15 @@ namespace MapBoard.UI.Bar
             {
                 geometry = GeometryEngine.Project(pp, SpatialReferences.Wgs84);
             }
+            double la = 0; //Length or Area
+            if (geometry is Polyline line)
+            {
+                la = GeometryUtility.GetLength(line);
+            }
+            else if (geometry is Polygon gon)
+            {
+                la = GeometryUtility.GetArea(gon);
+            }
             return geometry switch
             {
                 MapPoint p => $"，经度 ={p.X:0.0000000}，纬度 ={p.Y:0.0000000}",
@@ -202,12 +207,12 @@ namespace MapBoard.UI.Bar
                 when l.Parts.Count > 0
                 && l.Parts[0].PointCount > 0
                 && l.Parts.Sum(p => p.PointCount) <= 100
-                => $"共{l.Parts.Count}个部分，总长度{NumberConverter.MeterToFitString(GeometryUtility.GetLength(l))}",
+                => $"共{l.Parts.Count}个部分，总长度{(la < 10000 ? $"{la:0.000}米" : $"{la / 1000:0.000}千米")}",
                 Polygon p
                  when p.Parts.Count > 0
                  && p.Parts[0].PointCount > 0
                  && p.Parts.Sum(p => p.PointCount) <= 100
-                 => $"共{p.Parts.Count}个部分，总面积{NumberConverter.SquareMeterToFitString(GeometryUtility.GetArea(p))}",
+                 => $"共{p.Parts.Count}个部分，总面积{(la < 1_000_000 ? $"{la:0.000}平方米" : $"{la / 1_000_000:0.000}平方千米")}",
                 Multipart m
                 when m.Parts.Count > 0
                 && m.Parts[0].PointCount > 0
@@ -225,6 +230,14 @@ namespace MapBoard.UI.Bar
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             MapView.Editor.StopAndSave();
+        }
+
+        private void RedoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MapView.GeometryEditor.CanRedo)
+            {
+                MapView.GeometryEditor.Redo();
+            }
         }
 
         /// <summary>
@@ -277,7 +290,7 @@ namespace MapBoard.UI.Bar
         private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedElement = MapView.GeometryEditor.SelectedElement;
-            if (selectedElement is GeometryEditorVertex v)
+            if (selectedElement is GeometryEditorVertex)
             {
                 MapView.GeometryEditor.DeleteSelectedElement();
             }
@@ -287,12 +300,19 @@ namespace MapBoard.UI.Bar
             }
         }
 
+        private void UndoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MapView.GeometryEditor.CanUndo)
+            {
+                MapView.GeometryEditor.Undo();
+            }
+        }
+
         private void UpdateButtonAndMessage()
         {
             this.Notify(nameof(CanDeleteSelectedVertex), nameof(CanAddPart), nameof(CanAddPart), nameof(CanRemovePart));
 
             Message = (!IsOpen || MapView.GeometryEditor.Geometry == null) ? "" : GetMessage();
         }
-
     }
 }

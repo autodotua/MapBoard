@@ -273,7 +273,6 @@ namespace MapBoard.Mapping
             ShapeTool st = ShapeTool.Create(ShapeToolType.Rectangle);
             GeometryEditor.Tool = st;
             await WaitForStopAsync();
-            var geom = GeometryEditor.Geometry;
             StopAndSave();
             if (geometry is Polygon rect)
             {
@@ -286,7 +285,7 @@ namespace MapBoard.Mapping
         /// 测量面积
         /// </summary>
         /// <returns></returns>
-        public async Task MeasureArea()
+        public void MeasureArea()
         {
             PrepareToDraw(EditMode.MeasureArea);
             StartDraw(GeometryType.Polygon);
@@ -296,7 +295,7 @@ namespace MapBoard.Mapping
         /// 测量长度
         /// </summary>
         /// <returns></returns>
-        public async Task MeasureLength()
+        public void MeasureLength()
         {
             PrepareToDraw(EditMode.MeasureLength);
             StartDraw(GeometryType.Polyline);
@@ -355,15 +354,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         private bool CanCatchNearestPoint()
         {
-            return true;
-            //return GeometryEditor.CreationMode
-            //           is not (SketchCreationMode.Arrow
-            //           or SketchCreationMode.Circle
-            //           or SketchCreationMode.Ellipse
-            //           or SketchCreationMode.Rectangle
-            //           or SketchCreationMode.Triangle
-            //           or SketchCreationMode.FreehandLine
-            //           or SketchCreationMode.FreehandPolygon);
+            return GeometryEditor.Tool is VertexTool;
         }
 
         /// <summary>

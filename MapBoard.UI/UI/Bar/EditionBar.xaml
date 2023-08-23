@@ -74,7 +74,8 @@
             </Button>
 
             <Button
-                Command="{Binding MapView.SketchEditor.UndoCommand}"
+                Click="UndoButton_Click"
+                IsEnabled="{Binding MapView.GeometryEditor.CanUndo}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <ContentControl
@@ -89,7 +90,8 @@
             </Button>
             <Button
                 Grid.Column="2"
-                Command="{Binding MapView.SketchEditor.RedoCommand}"
+                Click="RedoButton_Click"
+                IsEnabled="{Binding MapView.GeometryEditor.CanRedo}"
                 Style="{StaticResource barButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <ContentControl

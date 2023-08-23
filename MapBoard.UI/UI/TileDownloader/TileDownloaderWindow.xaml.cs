@@ -23,6 +23,7 @@ using Microsoft.WindowsAPICodePack.FzExtension;
 using MapBoard.IO;
 using System.Drawing.Imaging;
 using MapBoard.UI.Model;
+using Esri.ArcGISRuntime.UI.Editing;
 
 namespace MapBoard.UI.TileDownloader
 {
@@ -518,6 +519,21 @@ namespace MapBoard.UI.TileDownloader
             // tcpListener.Stop();
         }
 
+        private void EnableOrDisableGeometryEditor(bool enable)
+        {
+            var config = (arcMap.GeometryEditor.Tool as ShapeTool).Configuration;
+            config.AllowDeletingSelectedElement = enable;
+            config.AllowGeometrySelection = enable;
+            config.AllowMidVertexSelection = enable;
+            config.AllowMovingSelectedElement = enable;
+            config.AllowMovingSelectedElement = enable;
+            config.AllowPartCreation = enable;
+            config.AllowPartSelection = enable;
+            config.AllowScalingSelectedElement = enable;
+            config.AllowVertexCreation = enable;
+            config.AllowVertexSelection = enable;
+        }
+
         /// <summary>
         /// 开始或继续下载
         /// </summary>
@@ -531,7 +547,7 @@ namespace MapBoard.UI.TileDownloader
             int failed = 0;
             int skip = lastTile == null ? 0 : lastIndex;
             string baseUrl = Config.Tile_Urls.SelectedUrl.Path;
-            arcMap.SketchEditor.IsEnabled = false;
+            EnableOrDisableGeometryEditor(false);
             await Task.Run(async () =>
             {
                 IEnumerator<TileInfo> enumerator = CurrentDownload.GetEnumerator(lastTile);
@@ -584,7 +600,7 @@ namespace MapBoard.UI.TileDownloader
             LastDownloadingStatus = "下载结束";
             CurrentDownloadStatus = lastTile == null ? DownloadStatus.Stop : DownloadStatus.Paused;
             arcMap.ShowPosition(this, null);
-            arcMap.SketchEditor.IsEnabled = true;
+            EnableOrDisableGeometryEditor(true);
 
             if (await CommonDialog.ShowYesNoDialogAsync("下载完成，是否删除临时文件夹？") == true)
             {

@@ -66,15 +66,5 @@ namespace MapBoard.UI.Bar
         {
             MapView.Editor.StopAndSave();
         }
-
-        /// <summary>
-        /// 单击移除节点按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
-        {
-            MapView.SketchEditor.RemoveSelectedVertex();
-        }
     }
 }
