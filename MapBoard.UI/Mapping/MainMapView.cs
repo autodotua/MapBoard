@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using Esri.ArcGISRuntime.UI.Editing;
 using FzLib;
 using FzLib.WPF;
 using FzLib.WPF.Dialog;
@@ -67,7 +68,6 @@ namespace MapBoard.Mapping
             Layers = new MapLayerCollection();
             AllowDrop = true;
             IsAttributionTextVisible = false;
-            SketchEditor = new SketchEditor();
             this.SetHideWatermark();
 
             InteractionOptions = new MapViewInteractionOptions()
@@ -144,7 +144,7 @@ namespace MapBoard.Mapping
             ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);
             Selection = new SelectionHelper(this);
-            Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
+            Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));
             Selection.CollectionChanged += Selection_CollectionChanged;
             CurrentTask = BoardTask.Ready;
         }
@@ -159,31 +159,6 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 缩放到指定位置
-        /// </summary>
-        /// <param name="geometry"></param>
-        /// <param name="autoExtent"></param>
-        /// <returns></returns>
-        public async Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
-        {
-            if (geometry is MapPoint || geometry is Multipoint m && m.Points.Count == 1 || geometry.Extent.Width == 0 || geometry.Extent.Height == 0)
-            {
-                if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
-                {
-                    geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
-                }
-                geometry = GeometryEngine.Buffer(geometry, 500);
-            }
-            var extent = geometry.Extent;
-            if (double.IsNaN(extent.Width) || double.IsNaN(extent.Height) || extent.Width == 0 || extent.Height == 0)
-            {
-                SnakeBar.ShowError("图形为空");
-                return;
-            }
-            await SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
-        }
-
-        /// <summary>
         /// 缩放到记忆的地图位置
         /// </summary>
         /// <returns></returns>
@@ -193,7 +168,7 @@ namespace MapBoard.Mapping
             {
                 try
                 {
-                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
+                    await this.ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
                 }
                 catch
                 {
@@ -211,8 +186,8 @@ namespace MapBoard.Mapping
             switch (e.Key)
             {
                 //Delete：移除节点、删除要素
-                case Key.Delete when SketchEditor.SelectedVertex != null:
-                    SketchEditor.RemoveSelectedVertex();
+                case Key.Delete when GeometryEditor.SelectedElement is GeometryEditorVertex:
+                    GeometryEditor.DeleteSelectedElement();
                     break;
 
                 case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IEditableLayerInfo w:
@@ -235,18 +210,7 @@ namespace MapBoard.Mapping
                         case BoardTask.Ready
                         when Layers.Selected?.LayerVisible == true
                         && Layers.Selected?.Interaction?.CanEdit == true:
-                            SketchCreationMode? type = Layers.Selected.GeometryType switch
-                            {
-                                GeometryType.Point => SketchCreationMode.Point,
-                                GeometryType.Multipoint => SketchCreationMode.Multipoint,
-                                GeometryType.Polyline => SketchCreationMode.Polyline,
-                                GeometryType.Polygon => SketchCreationMode.Polygon,
-                                _ => null
-                            };
-                            if (type.HasValue)
-                            {
-                                await Editor.DrawAsync(type.Value);
-                            }
+                            await Editor.DrawAsync(Layers.Selected.GeometryType, null);
                             break;
 
                         case BoardTask.Select
@@ -272,16 +236,16 @@ namespace MapBoard.Mapping
                     break;
 
                 //Ctrl Z：撤销
-                case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.UndoCommand.CanExecute(null):
-                    SketchEditor.UndoCommand.Execute(null);
+                case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && GeometryEditor.CanUndo:
+                    GeometryEditor.Undo();
                     break;
 
                 //Ctrl SHift Z/Ctrl Y：重做
-                case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && SketchEditor.RedoCommand.CanExecute(null):
-                    SketchEditor.RedoCommand.Execute(null);
+                case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && GeometryEditor.CanRedo:
+                    GeometryEditor.Redo();
                     break;
-                case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && SketchEditor.RedoCommand.CanExecute(null):
-                    SketchEditor.RedoCommand.Execute(null);
+                case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && GeometryEditor.CanRedo:
+                    GeometryEditor.Redo();
                     break;
             }
         }

@@ -1,8 +1,10 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.UI.Editing;
 using FzLib;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
 using MapBoard.Util;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using static MapBoard.Mapping.EditorHelper;
@@ -30,7 +32,7 @@ namespace MapBoard.UI.Bar
         public string AreaTitle { get; set; }
 
         public override FeatureAttributeCollection Attributes => throw new System.NotImplementedException();
-        
+
         public override double ExpandDistance => 28;
 
         /// <summary>
@@ -102,43 +104,22 @@ namespace MapBoard.UI.Bar
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Editor_GeometryChanged(object sender, Esri.ArcGISRuntime.UI.GeometryChangedEventArgs e)
+        private void Editor_GeometryChanged(object sender, GeometryUpdatedEventArgs e)
         {
             if (IsOpen)
             {
-                if (e.NewGeometry is Polyline line)
+                if (e.Geometry is Polyline line)
                 {
                     var length = line.GetLength();
-                    if (length < 10000)
-                    {
-                        Length = string.Format("{0:0.000}米", length);
-                    }
-                    else
-                    {
-                        Length = string.Format("{0:0.000}千米", length / 1000);
-                    }
+                    Length = length < 10000 ? $"{length:0.000}米" : $"{length / 1000:0.000}千米";
                 }
-                else if (e.NewGeometry is Polygon polygon)
+                else if (e.Geometry is Polygon polygon)
                 {
                     var length = polygon.GetLength();
                     var area = polygon.GetArea();
 
-                    if (length < 10000)
-                    {
-                        Length = string.Format("{0:0.000}米", length);
-                    }
-                    else
-                    {
-                        Length = string.Format("{0:0.000}千米", length / 1000);
-                    }
-                    if (area < 1_000_000)
-                    {
-                        Area = string.Format("{0:0.000}平方米", area);
-                    }
-                    else
-                    {
-                        Area = string.Format("{0:0.000}平方千米", area / 1_000_000);
-                    }
+                    Length = length < 10000 ? $"{length:0.000}米" : $"{length / 1000:0.000}千米";
+                    Area = area < 1_000_000 ? $"{area:0.000}平方米" : $"{area / 1_000_000:0.000}平方千米";
                 }
                 else
                 {
@@ -146,16 +127,6 @@ namespace MapBoard.UI.Bar
                     Area = "";
                 }
             }
-        }
-
-        /// <summary>
-        /// 单击移除结点按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RemoveSelectedVertexButton_Click(object sender, RoutedEventArgs e)
-        {
-            MapView.SketchEditor.RemoveSelectedVertex();
         }
     }
 }

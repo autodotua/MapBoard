@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.Ogc;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
+using Esri.ArcGISRuntime.UI.Editing;
 using FzLib.WPF.Dialog;
 using MapBoard.Model;
 using ModernWpf.FzExtension.CommonDialog;
@@ -16,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using static MapBoard.Mapping.Model.TileInfoExtension;
+using static MapBoard.Util.GeometryUtility;
 
 namespace MapBoard.Mapping
 {
@@ -130,7 +132,12 @@ namespace MapBoard.Mapping
                 return;
             }
         }
-
+        private GeometryEditorTool GetGeometryEditorTool()
+        {
+            var tool = ShapeTool.Create(ShapeToolType.Rectangle);
+            tool.Configuration.AllowRotatingSelectedElement = false;
+            return tool;
+        }
         /// <summary>
         /// 选择下载范围
         /// </summary>
@@ -142,11 +149,12 @@ namespace MapBoard.Mapping
                 SnakeBar.Show("开始框选");
 
                 isSelecting = true;
-                await SketchEditor.StartAsync(SketchCreationMode.Rectangle, GetSketchEditConfiguration());
+                GeometryEditor.Start(GeometryType.Polygon);
+                GeometryEditor.Tool = GetGeometryEditorTool();
             }
             else
             {
-                SketchEditor.Stop();
+                GeometryEditor.Stop();
                 SnakeBar.Show("终止框选");
                 isSelecting = false;
             }
@@ -160,10 +168,11 @@ namespace MapBoard.Mapping
         {
             Polygon polygon = RangeToPolygon(range);
             Geometry geometry = GeometryEngine.Project(polygon, SpatialReference);
-            SketchEditor.StartAsync(geometry, SketchCreationMode.Rectangle, GetSketchEditConfiguration());
+            GeometryEditor.Start(geometry);
+            GeometryEditor.Tool = GetGeometryEditorTool();
             isSelecting = true;
+            this.ZoomToGeometryAsync(polygon);
         }
-
         /// <summary>
         /// 设置当前下载位置
         /// </summary>
@@ -198,10 +207,10 @@ namespace MapBoard.Mapping
         {
             base.OnPreviewMouseLeftButtonUp(e);
 
-            if (SketchEditor != null && SketchEditor.Geometry != null)
+            if (GeometryEditor.Geometry != null)
             {
                 await Task.Delay(500);
-                Boundary = GeometryEngine.Project(SketchEditor.Geometry, SpatialReferences.Wgs84).Extent;
+                Boundary = GeometryEditor.Geometry.ToWgs84().Extent;
                 SelectBoundaryComplete?.Invoke(this, new EventArgs());
             }
         }
@@ -218,19 +227,6 @@ namespace MapBoard.Mapping
             }
         }
 
-        /// <summary>
-        /// 获取选择框编辑器的配置
-        /// </summary>
-        /// <returns></returns>
-        private SketchEditConfiguration GetSketchEditConfiguration()
-        {
-            return new SketchEditConfiguration()
-            {
-                AllowRotate = false,
-                ResizeMode = SketchResizeMode.Stretch,
-                AllowVertexEditing = false
-            };
-        }
 
         /// <summary>
         /// 将选择范围转换为多边形

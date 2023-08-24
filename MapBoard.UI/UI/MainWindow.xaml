@@ -436,7 +436,7 @@
                                 x:Name="splBtnPolyline"
                                 HorizontalAlignment="Stretch"
                                 Click="DrawButtons_Click"
-                                Content="多段线"
+                                Content="折线"
                                 Visibility="Collapsed">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
@@ -460,9 +460,6 @@
                                         <MenuItem
                                             Click="DrawButtons_Click"
                                             Header="圆" />
-                                        <MenuItem
-                                            Click="DrawButtons_Click"
-                                            Header="椭圆" />
                                         <MenuItem
                                             Click="DrawButtons_Click"
                                             Header="矩形" />

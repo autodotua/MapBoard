@@ -17,6 +17,7 @@ using System.Windows;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.WPF.Dialog;
+using Esri.ArcGISRuntime.UI.Editing;
 
 namespace MapBoard.Mapping
 {
@@ -50,10 +51,29 @@ namespace MapBoard.Mapping
         /// </summary>
         private MapPoint nearestVertex;
 
+        private TaskCompletionSource tcs;
+
+        private bool oneTapPoint = false;
+
         public EditorHelper(MainMapView mapView)
         {
             MapView = mapView;
-            SketchEditor.GeometryChanged += (s, e) => GeometryChanged?.Invoke(s, e);
+            GeometryEditor.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(GeometryEditor.Geometry))
+                {
+                    GeometryChanged?.Invoke(s, new GeometryUpdatedEventArgs(GeometryEditor.Geometry));
+                    if (oneTapPoint && GeometryEditor.Geometry is MapPoint p && !double.IsNaN(p.X))
+                    {
+                        oneTapPoint = false;
+                        StopAndSave();
+                    }
+                }
+                else if (e.PropertyName == nameof(GeometryEditor.SelectedElement))
+                {
+                    SelectedVertexChanged?.Invoke(s, new EventArgs());
+                }
+            };
             MapView.PreviewMouseRightButtonDown += MapView_PreviewMouseRightButtonDown;
             mapView.PreviewMouseMove += MapView_PreviewMouseMove;
             mapView.GeoViewTapped += MapviewTapped;
@@ -67,7 +87,12 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 编辑时图形发生改变
         /// </summary>
-        public event EventHandler<GeometryChangedEventArgs> GeometryChanged;
+        public event EventHandler<GeometryUpdatedEventArgs> GeometryChanged;
+
+        /// <summary>
+        /// 选择的结点发生改变
+        /// </summary>
+        public event EventHandler SelectedVertexChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -76,6 +101,7 @@ namespace MapBoard.Mapping
         /// </summary>
         public FeatureAttributeCollection Attributes { get; set; }
 
+        public GeometryEditor GeometryEditor => MapView.GeometryEditor;
         public MapLayerCollection Layers => MapView.Layers;
 
         public MainMapView MapView { get; }
@@ -84,9 +110,6 @@ namespace MapBoard.Mapping
         /// 当前正在进行的绘制操作的类型
         /// </summary>
         public EditMode Mode { get; private set; }
-
-        public SketchEditor SketchEditor => MapView.SketchEditor;
-
         /// <summary>
         /// 停止并不保存
         /// </summary>
@@ -100,12 +123,17 @@ namespace MapBoard.Mapping
             Stop();
         }
 
+        private void StartDraw(GeometryType type, GeometryEditorTool tool = null)
+        {
+            GeometryEditor.Start(type);
+            GeometryEditor.Tool = tool ?? new VertexTool();
+        }
         /// <summary>
         /// 绘制新的图形
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public async Task DrawAsync(SketchCreationMode mode)
+        public async Task DrawAsync(GeometryType type, GeometryEditorTool tool)
         {
             if (Layers.Selected is not IEditableLayerInfo)
             {
@@ -117,7 +145,7 @@ namespace MapBoard.Mapping
                 var oldAttributes = Attributes;
                 Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
                 foreach (var attribute in oldAttributes.Attributes
-                    .Where(p=>p.Name is not (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName)))
+                    .Where(p => p.Name is not (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName)))
                 {
                     if (Attributes.Attributes.Any(p => p.Name == attribute.Name))
                     {
@@ -129,9 +157,9 @@ namespace MapBoard.Mapping
             {
                 Attributes = FeatureAttributeCollection.Empty(Layers.Selected);
             }
-            StartDraw(EditMode.Create);
-
-            await SketchEditor.StartAsync(mode);
+            PrepareToDraw(EditMode.Create);
+            StartDraw(type, tool ?? new VertexTool());
+            await WaitForStopAsync();
             if (geometry != null)
             {
                 Feature feature = layer.CreateFeature();
@@ -148,10 +176,11 @@ namespace MapBoard.Mapping
         public async Task EditAsync(IEditableLayerInfo layer, Feature feature)
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
-            StartDraw(EditMode.Edit);
+            PrepareToDraw(EditMode.Edit);
             editingFeature = feature;
-            await SketchEditor.StartAsync(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
-                GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
+            GeometryEditor.Start(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
+               GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
+            await WaitForStopAsync();
             editingFeature = null;
             if (geometry != null)
             {
@@ -167,10 +196,11 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<Multipoint> GetMultiPointAsync()
         {
-            StartDraw(EditMode.GetGeometry);
-            var geom = await SketchEditor.StartAsync(SketchCreationMode.Multipoint, false);
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Multipoint);
+            await WaitForStopAsync();
             Cancel();
-            if (geom is Multipoint point)
+            if (geometry is Multipoint point)
             {
                 return point;
             }
@@ -183,10 +213,12 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<MapPoint> GetPointAsync()
         {
-            StartDraw(EditMode.GetGeometry);
-            var geom = await SketchEditor.StartAsync(SketchCreationMode.Point, false);
-            Cancel();
-            if (geom is MapPoint point)
+            oneTapPoint = true;
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Point);
+            await WaitForStopAsync();
+            oneTapPoint = false;
+            if (geometry is MapPoint point)
             {
                 return point;
             }
@@ -199,8 +231,9 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<Polygon> GetPolygonAsync()
         {
-            StartDraw(EditMode.GetGeometry);
-            var geometry = await SketchEditor.StartAsync(SketchCreationMode.Polygon, false);
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Polygon);
+            await WaitForStopAsync();
             StopAndSave();
             if (geometry is Polygon rect)
             {
@@ -215,8 +248,9 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<Polyline> GetPolylineAsync()
         {
-            StartDraw(EditMode.GetGeometry);
-            await SketchEditor.StartAsync(SketchCreationMode.Polyline);
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Polyline);
+            await WaitForStopAsync();
             if (geometry is Polyline line)
             {
                 if (line.Parts[0].PointCount > 1)
@@ -234,8 +268,11 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<Envelope> GetRectangleAsync()
         {
-            StartDraw(EditMode.GetGeometry);
-            var geometry = await SketchEditor.StartAsync(SketchCreationMode.Rectangle, false);
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Multipoint);
+            ShapeTool st = ShapeTool.Create(ShapeToolType.Rectangle);
+            GeometryEditor.Tool = st;
+            await WaitForStopAsync();
             StopAndSave();
             if (geometry is Polygon rect)
             {
@@ -248,20 +285,20 @@ namespace MapBoard.Mapping
         /// 测量面积
         /// </summary>
         /// <returns></returns>
-        public async Task MeasureArea()
+        public void MeasureArea()
         {
-            StartDraw(EditMode.MeasureArea);
-            await SketchEditor.StartAsync(SketchCreationMode.Polygon);
+            PrepareToDraw(EditMode.MeasureArea);
+            StartDraw(GeometryType.Polygon);
         }
 
         /// <summary>
         /// 测量长度
         /// </summary>
         /// <returns></returns>
-        public async Task MeasureLength()
+        public void MeasureLength()
         {
-            StartDraw(EditMode.MeasureLength);
-            await SketchEditor.StartAsync(SketchCreationMode.Polyline);
+            PrepareToDraw(EditMode.MeasureLength);
+            StartDraw(GeometryType.Polyline);
         }
 
         /// <summary>
@@ -273,7 +310,7 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-            geometry = SketchEditor.Geometry?.EnsureValid();
+            geometry = GeometryEditor.Geometry?.EnsureValid();
             Stop();
         }
 
@@ -285,29 +322,29 @@ namespace MapBoard.Mapping
         {
             if (point != null)
             {
-                if (SketchEditor.Geometry == null)
+                if (GeometryEditor.Geometry == null)
                 {
-                    switch (SketchEditor.CreationMode)
+                    switch (GeometryEditor.Geometry.GeometryType)
                     {
-                        case SketchCreationMode.Point:
-                            SketchEditor.ReplaceGeometry(point);
+                        case GeometryType.Point:
+                            GeometryEditor.ReplaceGeometry(point);
                             break;
 
-                        case SketchCreationMode.Multipoint:
-                            SketchEditor.ReplaceGeometry(new Multipoint(new[] { point }));
+                        case GeometryType.Multipoint:
+                            GeometryEditor.ReplaceGeometry(new Multipoint(new[] { point }));
                             break;
 
-                        case SketchCreationMode.Polyline:
-                            SketchEditor.ReplaceGeometry(new Polyline(new[] { point }));
+                        case GeometryType.Polyline:
+                            GeometryEditor.ReplaceGeometry(new Polyline(new[] { point }));
                             break;
 
-                        case SketchCreationMode.Polygon:
-                            SketchEditor.ReplaceGeometry(new Polygon(new[] { point }));
+                        case GeometryType.Polygon:
+                            GeometryEditor.ReplaceGeometry(new Polygon(new[] { point }));
                             break;
                     }
                     return;
                 }
-                SketchEditor.InsertVertexAfterSelectedVertex(GeometryEngine.Project(point, SpatialReferences.WebMercator) as MapPoint);
+                GeometryEditor.InsertVertex(point.ToWebMercator());
             }
         }
 
@@ -317,14 +354,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         private bool CanCatchNearestPoint()
         {
-            return SketchEditor.CreationMode
-                       is not (SketchCreationMode.Arrow
-                       or SketchCreationMode.Circle
-                       or SketchCreationMode.Ellipse
-                       or SketchCreationMode.Rectangle
-                       or SketchCreationMode.Triangle
-                       or SketchCreationMode.FreehandLine
-                       or SketchCreationMode.FreehandPolygon);
+            return GeometryEditor.Tool is VertexTool;
         }
 
         /// <summary>
@@ -405,7 +435,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         private bool IsMouseNearSketch(MapPoint location)
         {
-            Geometry geometry = SketchEditor.Geometry;
+            Geometry geometry = GeometryEditor.Geometry;
             if (geometry == null || geometry.IsEmpty)
             {
                 return false;
@@ -455,7 +485,7 @@ namespace MapBoard.Mapping
                 (nearestVertex, nearestPoint) = await GetNearestVertexAndPointAsync(position, Config.Instance.AutoCatchToNearestVertex);
                 isSearchingNearestPoint = false;
                 //因为查询需要一定时间，结束以后可能就不在绘制状态了，所以需要再次判断
-                if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
+                if (MapView.CurrentTask != BoardTask.Draw || !GeometryEditor.IsStarted || !GeometryEditor.IsVisible)
                 {
                     return;
                 }
@@ -486,14 +516,12 @@ namespace MapBoard.Mapping
         /// <param name="e"></param>
         private void MapView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-        
-
             var location = MapView.ScreenToLocation(e.GetPosition(MapView)).ToWgs84();
             ContextMenu menu = new ContextMenu();
 
             MenuItem item = new MenuItem()
             {
-                Header=LocationMenuUtility.GetLocationMenuString(location),
+                Header = LocationMenuUtility.GetLocationMenuString(location),
             };
             item.Click += (s, e) =>
             {
@@ -504,9 +532,9 @@ namespace MapBoard.Mapping
 
 
             menu.IsOpen = true;
-            if (MapView.CurrentTask != BoardTask.Draw 
-                || !SketchEditor.IsEnabled
-                || !SketchEditor.IsVisible
+            if (MapView.CurrentTask != BoardTask.Draw
+                || !GeometryEditor.IsStarted
+                || !GeometryEditor.IsVisible
                 || !CanCatchNearestPoint())
             {
                 return;
@@ -536,7 +564,7 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-            if (MapView.CurrentTask != BoardTask.Draw || !SketchEditor.IsEnabled || !SketchEditor.IsVisible)
+            if (MapView.CurrentTask != BoardTask.Draw || !GeometryEditor.IsStarted || !GeometryEditor.IsVisible)
             {
                 return;
             }
@@ -568,7 +596,7 @@ namespace MapBoard.Mapping
         /// 开始绘制
         /// </summary>
         /// <param name="mode"></param>
-        private void StartDraw(EditMode mode)
+        private void PrepareToDraw(EditMode mode)
         {
             Mode = mode;
             MapView.CurrentTask = BoardTask.Draw;
@@ -581,11 +609,18 @@ namespace MapBoard.Mapping
         private void Stop()
         {
             Mode = EditMode.None;
-            SketchEditor.Stop();
+            GeometryEditor.Stop();
+            tcs?.SetResult();
+            tcs = null;
             EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(false));
             MapView.CurrentTask = BoardTask.Ready;
             MapView.Overlay.SetNearestVertexPoint(null);
             MapView.Overlay.SetNearestPointPoint(null);
+        }
+        private Task WaitForStopAsync()
+        {
+            tcs = new TaskCompletionSource();
+            return tcs.Task;
         }
     }
 }

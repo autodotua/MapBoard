@@ -227,15 +227,15 @@ namespace MapBoard.UI.Bar
 
                         case GeometryType.Polyline:
                             double length = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
-                            sb.Append("，长度：" + NumberConverter.MeterToFitString(length));
+                            sb.Append("，长度：" + (length < 10000 ? $"{length:0.000}米" : $"{length / 1000:0.000}千米"));
 
                             break;
 
                         case GeometryType.Polygon:
                             double length2 = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetLength());
                             double area = MapView.Selection.SelectedFeatures.Sum(p => p.Geometry.GetArea());
-                            sb.Append("，周长：" + NumberConverter.MeterToFitString(length2));
-                            sb.Append("，面积：" + NumberConverter.SquareMeterToFitString(area));
+                            sb.Append("，周长：" + (length2 < 10000 ? $"{length2:0.000}米" : $"{length2 / 1000:0.000}千米"));
+                            sb.Append("，面积：" + (area < 1_000_000 ? $"{area:0.000}平方米" : $"{area / 1_000_000:0.000}平方千米"));
 
                             break;
 
