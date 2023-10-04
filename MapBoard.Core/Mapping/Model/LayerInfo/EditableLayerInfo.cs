@@ -107,7 +107,7 @@ namespace MapBoard.Mapping.Model
                 List<Feature> newFeatures = new List<Feature>();
                 foreach (var feature in features)
                 {
-                    Feature newFeature = feature.Clone(this, key2Field);
+                    Feature newFeature = feature.Clone(table, key2Field);
                     newFeatures.Add(newFeature);
                 }
                 await table.AddFeaturesAsync(newFeatures);

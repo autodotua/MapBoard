@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Esri.ArcGISRuntime.Data;
+using System.Threading.Tasks;
 using Esri.ArcGISRuntime.Geometry;
+using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using AutoMapper.Features;
+using static MapBoard.Util.GeometryUtility.CentripetalCatmullRom;
+using System.Diagnostics;
 
 namespace MapBoard.Util
 {
@@ -99,7 +105,7 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static double GetLength(this Geometry geometry)
         {
-            return GeometryEngine.LengthGeodetic(geometry, null, GeodeticCurveType.NormalSection);
+            return GeometryEngine.LengthGeodetic(geometry, null, GeodeticCurveType.Geodesic);
         }
 
         /// <summary>
@@ -109,7 +115,7 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static double GetArea(this Geometry geometry)
         {
-            return GeometryEngine.AreaGeodetic(geometry, null, GeodeticCurveType.NormalSection);
+            return GeometryEngine.AreaGeodetic(geometry, null, GeodeticCurveType.Geodesic);
         }
 
         /// <summary>
@@ -120,7 +126,7 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static double GetDistance(MapPoint p1, MapPoint p2)
         {
-            return GeometryEngine.DistanceGeodetic(p1, p2, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.NormalSection).Distance;
+            return GeometryEngine.DistanceGeodetic(p1, p2, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.Geodesic).Distance;
         }
 
         /// <summary>
@@ -465,6 +471,37 @@ namespace MapBoard.Util
         }
 
         /// <summary>
+        /// 将3857的点的X坐标正规化到[-20037508.34,20037508.34]
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static MapPoint RegularizeWebMercatorPoint(this MapPoint point)
+        {
+            if (point.SpatialReference != null && point.SpatialReference.Wkid != 3857)
+            {
+                throw new ArgumentException("输入点的坐标系错误，必须为3857");
+            }
+            double a = 20037508.34;
+            double x = point.X;
+            if (x <= a && x >= -a)
+            {
+                return point;
+            }
+            x += a;
+            if (x > 2 * a)
+            {
+                x %= (2 * a);
+                x = x - a;
+            }
+            else //<0
+            {
+                x = x % (2 * a) + a;
+            }
+            Debug.Assert(x >= -a && x <= a);
+            return new MapPoint(x, point.Y, SpatialReferences.WebMercator);
+        }
+
+        /// <summary>
         /// 创建图形的副本
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -552,6 +589,117 @@ namespace MapBoard.Util
         }
 
         /// <summary>
+        /// 平滑
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="features"></param>
+        /// <param name="pointsPerSegment">两个节点之间生成多少新点</param>
+        /// <param name="level">平滑等级，0最拟合，1一般，2最平滑</param>
+        /// <param name="minSmoothAngle">最小需要平滑的角度。若某三个节点组成的角小于该角度，那么会对中间点左右两侧分别进行平滑然后拼接</param>
+        /// <returns></returns>
+        public static Geometry Smooth(Geometry geometry, int pointsPerSegment, int level, double minSmoothAngle)
+        {
+            if (level < 0 || level > 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(level));
+            }
+            if (pointsPerSegment <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pointsPerSegment));
+            }
+
+            //CentripetalCatmullRom中数量是算上头尾的
+            pointsPerSegment += 2;
+            var levelType = (CatmullRomType)level;
+
+            if (geometry is Multipart m)
+            {
+                List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
+                foreach (var part in m.Parts)
+                {
+                    if (part.PointCount <= 2)
+                    {
+                        newParts.Add(part.Points);
+                        continue;
+                    }
+                    var partPoints = part.Points.ToArray();
+                    double[] angles1 = new double[part.PointCount - 1]; //第1个点到第22个点与{x=0,y>0}形成的夹角
+                    double[] angles2 = new double[part.PointCount - 1]; //第2个点到第1个点与{x=0,y>0}形成的夹角
+                    double[] angles = new double[part.PointCount - 1]; //第1-2个点、2-3个点的线端形成的夹角
+                    //计算两点之间形成的线与{x=0,y>0}形成的夹角
+                    for (int i = 1; i < part.PointCount; i++)
+                    {
+                        var info = GeometryEngine.DistanceGeodetic(partPoints[i - 1], partPoints[i], null, AngularUnits.Degrees, GeodeticCurveType.Geodesic);
+                        angles1[i - 1] = info.Azimuth1; //-180~180
+                        angles2[i - 1] = info.Azimuth2; //-180~180
+                    }
+                    bool hasAngleSmallerThanMin = false;
+                    //计算每两条线之间形成的夹角
+                    for (int i = 1; i < angles1.Length; i++)
+                    {
+                        double angle = angles2[i] - angles1[i - 1];
+                        if (angle < 0)
+                        {
+                            angle = -angle;
+                        }
+                        if (angle > 180)
+                        {
+                            angle = 360 - angle;
+                        }
+                        angles[i] = angle;
+                        if (angle < minSmoothAngle)
+                        {
+                            hasAngleSmallerThanMin = true;
+                        }
+                    }
+
+                    if (hasAngleSmallerThanMin)
+                    {
+                        List<MapPoint> points = new List<MapPoint>
+                        {
+                            partPoints[0]
+                        };
+                        int startIndex = 0;
+                        for (int i = 1; i < part.PointCount; i++)
+                        {
+                            if (i < angles.Length && angles[i] >= minSmoothAngle) //不是最后一个点，且角度大于阈值
+                            {
+                                continue;
+                            }
+                            if (i - startIndex == 1)//只有两个点
+                            {
+                                points.Add(partPoints[i]);
+                                startIndex = i;
+                            }
+                            else
+                            {
+                                var tmpPoints = Interpolate(partPoints[startIndex..(i + 1)], pointsPerSegment, levelType);
+                                points.AddRange(tmpPoints.Skip(1));
+                                startIndex = i;
+                            }
+                        }
+                        newParts.Add(points);
+                    }
+                    else
+                    {
+                        newParts.Add(Interpolate(part.Points.ToList(), pointsPerSegment, levelType));
+                    }
+                }
+
+
+
+                switch (geometry)
+                {
+                    case Polyline:
+                        return new Polyline(newParts);
+
+                    case Polygon:
+                        return new Polygon(newParts);
+                }
+            }
+            throw new NotSupportedException("仅支持折线和多边形");
+        }
+        /// <summary>
         /// Catmull–Rom样条
         /// </summary>
         /// <remarks>
@@ -559,7 +707,7 @@ namespace MapBoard.Util
         /// </remarks>
         internal class CentripetalCatmullRom
         {
-            public static List<MapPoint> Interpolate(List<MapPoint> coordinates, int pointsPerSegment, CatmullRomType curveType)
+            public static List<MapPoint> Interpolate(IList<MapPoint> coordinates, int pointsPerSegment, CatmullRomType curveType)
             {
                 List<MapPoint> vertices = new List<MapPoint>();
                 foreach (MapPoint c in coordinates)
@@ -574,11 +722,11 @@ namespace MapBoard.Util
                 {
                     return vertices;
                 }
-                bool isClosed = GeometryEngine.Intersects(vertices[0], vertices[vertices.Count - 1]);
+                bool isClosed = GeometryEngine.Intersects(vertices[0], vertices[^1]);
                 if (isClosed)
                 {
                     MapPoint p2 = vertices[1].Clone();
-                    MapPoint pn1 = vertices[vertices.Count - 2].Clone();
+                    MapPoint pn1 = vertices[^2].Clone();
 
                     vertices.Insert(0, pn1);
                     vertices.Add(p2);
@@ -588,17 +736,13 @@ namespace MapBoard.Util
                     double dx = vertices[1].X - vertices[0].X;
                     double dy = vertices[1].Y - vertices[0].Y;
 
-                    double x1 = vertices[0].X - dx;
-                    double y1 = vertices[0].Y - dy;
 
-                    MapPoint start = new MapPoint(x1, y1, vertices[0].Z);
+                    MapPoint start = new MapPoint(vertices[0].X - dx, vertices[0].Y - dy);
 
                     int n = vertices.Count - 1;
                     dx = vertices[n].X - vertices[n - 1].X;
                     dy = vertices[n].Y - vertices[n - 1].Y;
-                    double xn = vertices[n].X + dx;
-                    double yn = vertices[n].Y + dy;
-                    MapPoint end = new MapPoint(xn, yn, vertices[n].Z);
+                    MapPoint end = new MapPoint(vertices[n].X + dx, vertices[n].Y + dy);
 
                     vertices.Insert(0, start);
 
@@ -637,7 +781,7 @@ namespace MapBoard.Util
                 Chordal = 2,
             }
 
-            private static List<MapPoint> Interpolate(List<MapPoint> points, int index, int pointsPerSegment, CatmullRomType curveType)
+            private static List<MapPoint> Interpolate(IList<MapPoint> points, int index, int pointsPerSegment, CatmullRomType curveType)
             {
                 List<MapPoint> result = new List<MapPoint>();
                 double[] x = new double[4];
@@ -672,25 +816,13 @@ namespace MapBoard.Util
                     tstart = time[1];
                     tend = time[2];
                 }
-                double z1 = 0.0;
-                double z2 = 0.0;
-                if (!double.IsNaN(points[index + 1].Z))
-                {
-                    z1 = points[index + 1].Z;
-                }
-                if (!double.IsNaN(points[index + 2].Z))
-                {
-                    z2 = points[index + 2].Z;
-                }
-                double dz = z2 - z1;
                 int segments = pointsPerSegment - 1;
                 result.Add(points[index + 1]);
                 for (int i = 1; i < segments; i++)
                 {
-                    double xi = Interpolate(x, time, tstart + (i * (tend - tstart)) / segments);
-                    double yi = Interpolate(y, time, tstart + (i * (tend - tstart)) / segments);
-                    double zi = z1 + (dz * i) / segments;
-                    result.Add(new MapPoint(xi, yi, zi));
+                    double xi = Interpolate(x, time, tstart + i * (tend - tstart) / segments);
+                    double yi = Interpolate(y, time, tstart + i * (tend - tstart) / segments);
+                    result.Add(new MapPoint(xi, yi));
                 }
                 result.Add(points[index + 2]);
                 return result;
