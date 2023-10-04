@@ -92,7 +92,6 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void AdvancedLayerPropertiesButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("click");
             ErrorMessage = null;
         }
 

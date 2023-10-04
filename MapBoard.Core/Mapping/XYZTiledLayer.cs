@@ -55,7 +55,7 @@ namespace MapBoard.Mapping
                                 }
                                 File.WriteAllBytes(cacheFile, data);
                                 cacheQueueFiles.TryRemove(cacheFile, out _);
-                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
+                                //Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
                             }
                             else
                             {

@@ -14,6 +14,7 @@ using Esri.ArcGISRuntime.Symbology;
 using MapBoard.Model;
 using System.Collections.Concurrent;
 using FzLib.Collection;
+using static MapBoard.Util.GeometryUtility.CentripetalCatmullRom;
 
 namespace MapBoard.Util
 {
@@ -397,7 +398,7 @@ namespace MapBoard.Util
         private static double GetVerticleDistance(Polyline line, MapPoint pc)
         {
             var nearestPoint = GeometryEngine.NearestCoordinate(line, pc);
-            var dist = GeometryEngine.DistanceGeodetic(pc, nearestPoint.Coordinate, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.NormalSection);
+            var dist = GeometryEngine.DistanceGeodetic(pc, nearestPoint.Coordinate, LinearUnits.Meters, AngularUnits.Degrees, GeodeticCurveType.Geodesic);
             return dist.Distance;
         }
 
@@ -702,8 +703,9 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="pointsPerSegment">两个节点之间生成多少新点</param>
         /// <param name="level">平滑等级，0最拟合，1一般，2最平滑</param>
+        /// <param name="minSmoothAngle">最小需要平滑的角度。若某三个节点组成的角小于该角度，那么会对中间点左右两侧分别进行平滑然后拼接</param>
         /// <returns></returns>
-        public static async Task Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment, int level)
+        public static async Task<IEnumerable<Feature>> Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment, int level, bool deleteOldFeature = false, double minSmoothAngle = 45)
         {
             if (level < 0 || level > 2)
             {
@@ -713,56 +715,45 @@ namespace MapBoard.Util
             {
                 throw new ArgumentOutOfRangeException(nameof(pointsPerSegment));
             }
-            //CentripetalCatmullRom中数量是算上头尾的
-            pointsPerSegment += 2;
-            ConcurrentBag<UpdatedFeature> updatedFeatures = new ConcurrentBag<UpdatedFeature>();
+            ConcurrentBag<UpdatedFeature> updatedFeatures = null;
+            ConcurrentBag<Feature> addedFeatures = null;
+            if (deleteOldFeature)
+            {
+                updatedFeatures = new ConcurrentBag<UpdatedFeature>();
+            }
+            else
+            {
+                addedFeatures = new ConcurrentBag<Feature>();
+            }
             await Task.Run(() =>
             {
                 Parallel.ForEach(features, feature =>
                 {
-                    Geometry oldGeometry = feature.Geometry;
-                    Geometry newGeometry = null;
-                    if (feature.Geometry is Multipart m)
+                    var oldGeometry = feature.Geometry;
+                    var newGeometry = GeometryUtility.Smooth(oldGeometry, pointsPerSegment, level, minSmoothAngle); ;
+                    if (deleteOldFeature)
                     {
-                        List<IEnumerable<MapPoint>> newParts = new List<IEnumerable<MapPoint>>();
-                        foreach (var part in m.Parts)
-                        {
-                            if (part.PointCount <= 2)
-                            {
-                                newParts.Add(part.Points);
-                            }
-                            else
-                            {
-                                newParts.Add(CentripetalCatmullRom.Interpolate(part.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
-                            }
-                        }
-                        switch (feature.Geometry)
-                        {
-                            case Polyline line:
-                                newGeometry = new Polyline(newParts);
-                                break;
-
-                            case Polygon polygon:
-                                newGeometry = new Polygon(newParts);
-                                break;
-                        }
-                    }
-                    else if (feature.Geometry is Multipoint mp)
-                    {
-                        if (mp.Points.Count > 2)
-                        {
-                            newGeometry = new Multipoint(CentripetalCatmullRom.Interpolate(mp.Points.ToList(), pointsPerSegment, (CentripetalCatmullRom.CatmullRomType)level));
-                        }
+                        feature.Geometry = newGeometry;
+                        updatedFeatures.Add(new UpdatedFeature(feature, oldGeometry, feature.Attributes));
                     }
                     else
                     {
-                        throw new NotSupportedException("仅支持多点、折线和多边形");
+                        var newFeature = feature.Clone(layer);
+                        newFeature.Geometry = newGeometry;
+                        addedFeatures.Add(newFeature);
                     }
-                    feature.Geometry = newGeometry;
-                    updatedFeatures.Add(new UpdatedFeature(feature, oldGeometry, feature.Attributes));
                 });
             });
-            await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
+
+            if (deleteOldFeature)
+            {
+                await layer.UpdateFeaturesAsync(updatedFeatures, FeatureOperation);
+                return updatedFeatures.Select(p => p.Feature);
+            }
+            else
+            {
+                return await layer.AddFeaturesAsync(addedFeatures, FeatureOperation);
+            }
         }
 
         /// <summary>

@@ -39,10 +39,10 @@ namespace MapBoard.Mapping.Model
         /// <param name="feature"></param>
         /// <param name="layer"></param>
         /// <returns></returns>
-        public static Feature Clone(this Feature feature, EditableLayerInfo layer)
+        public static Feature Clone(this Feature feature, IEditableLayerInfo layer)
         {
             IEnumerable<FieldInfo> fields = layer.Fields;
-            return feature.Clone(layer, fields.ToDictionary(p => p.Name));
+            return feature.Clone(layer.Layer.FeatureTable, fields.ToDictionary(p => p.Name));
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace MapBoard.Mapping.Model
         /// <param name="layer"></param>
         /// <param name="key2Field"></param>
         /// <returns></returns>
-        public static Feature Clone(this Feature feature, EditableLayerInfo layer, Dictionary<string, FieldInfo> key2Field)
+        public static Feature Clone(this Feature feature, FeatureTable table, Dictionary<string, FieldInfo> key2Field)
         {
             var dic = new Dictionary<string, object>();
             foreach (var attr in feature.Attributes)
@@ -88,7 +88,7 @@ namespace MapBoard.Mapping.Model
             {
                 dic.AddOrSetValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
             }
-            var newFeature = layer.CreateFeature(dic, feature.Geometry);
+            var newFeature = table.CreateFeature(dic, feature.Geometry);
             return newFeature;
         }
     }

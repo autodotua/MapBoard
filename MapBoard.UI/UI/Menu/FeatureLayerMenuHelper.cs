@@ -412,10 +412,11 @@ namespace MapBoard.UI.Menu
             var dialog = new SmoothDialog();
             if (await dialog.ShowAsync(ContentDialogPlacement.InPlace) == ContentDialogResult.Primary)
             {
-                await FeatureUtility.Smooth(editableLayer, features, dialog.PointsPerSegment, dialog.Level);
+                var newFeatures = (await FeatureUtility.Smooth(editableLayer, features, dialog.PointsPerSegment, dialog.Level, dialog.DeleteOldFeature, dialog.MinSmoothAngle)).ToArray();
+                mapView.Selection.ClearSelection();
                 if (dialog.Simplify)
                 {
-                    await FeatureUtility.GeneralizeSimplifyAsync(editableLayer, features, dialog.MaxDeviation);
+                    await FeatureUtility.GeneralizeSimplifyAsync(editableLayer, newFeatures, dialog.MaxDeviation);
                 }
             }
         }

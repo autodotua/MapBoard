@@ -5,6 +5,7 @@
     xmlns:commondialog="clr-namespace:ModernWpf.FzExtension.CommonDialog;assembly=ModernWpf.FzExtension"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=netstandard"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="平滑"
     CloseButtonText="取消"
@@ -13,7 +14,7 @@
     PrimaryButtonText="确定"
     mc:Ignorable="d">
     <ui:SimpleStackPanel
-        Width="268"
+        Width="300"
         Margin="8"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
@@ -32,8 +33,34 @@
             <ComboBoxItem>一般</ComboBoxItem>
             <ComboBoxItem>最平滑</ComboBoxItem>
         </ComboBox>
+        <CheckBox
+            Content="删除原有图形"
+            IsChecked="{Binding DeleteOldFeature}" />
+        <ui:NumberBox
+            HorizontalAlignment="Stretch"
+            ui:ControlHelper.Header="最小平滑角度（0-180°）"
+            Maximum="100"
+            Minimum="1"
+            Value="{Binding MinSmoothAngle}">
+            <ui:ControlHelper.Description>
+                <TextBlock>
+                    <Run>
+                        当一个结点引出的两条线角度小于这一角度时，
+                    </Run>
+                    <LineBreak />
+                    <Run>
+                        将不处理这个角的平滑。
+                    </Run>
+                    <LineBreak />
+                    <Run>
+                        这可以避免一些小角度意外平滑问题。
+                    </Run>
+                </TextBlock>
+            </ui:ControlHelper.Description>
+        </ui:NumberBox>
 
         <CheckBox
+            Margin="0,24,0,0"
             Content="同时进行简化"
             IsChecked="{Binding Simplify}" />
         <ui:NumberBox

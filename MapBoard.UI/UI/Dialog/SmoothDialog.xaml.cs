@@ -48,6 +48,16 @@ namespace MapBoard.UI.Dialog
         public bool Simplify { get; set; } = true;
 
         /// <summary>
+        /// 是否删除原有图形
+        /// </summary>
+        public bool DeleteOldFeature { get; set; } = false;
+
+        /// <summary>
+        /// 需要平滑的最小角度
+        /// </summary>
+        public double MinSmoothAngle { get; set; } = 45d;
+
+        /// <summary>
         /// 单击确定按钮
         /// </summary>
         /// <param name="sender"></param>

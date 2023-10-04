@@ -54,45 +54,8 @@ namespace MapBoard.Mapping
         {
             await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Layers = await MapLayerCollection.GetInstanceAsync(Scene.OperationalLayers);
-            ZoomToLastExtent().ConfigureAwait(false);
-            Overlay = new OverlayHelper(GraphicsOverlays, async p => await ZoomToGeometryAsync(p));
-        }
-
-        /// <summary>
-        /// 缩放到指定范围
-        /// </summary>
-        /// <param name="geometry"></param>
-        /// <param name="autoExtent"></param>
-        /// <returns></returns>
-        public Task ZoomToGeometryAsync(Geometry geometry, bool autoExtent = true)
-        {
-            if (geometry is MapPoint)
-            {
-                if (geometry.SpatialReference.Wkid != SpatialReferences.WebMercator.Wkid)
-                {
-                    geometry = GeometryEngine.Project(geometry, SpatialReferences.WebMercator);
-                }
-                geometry = GeometryEngine.Buffer(geometry, 100);
-            }
-            return SetViewpointAsync(new Viewpoint(geometry));
-        }
-
-        /// <summary>
-        /// 缩放到记忆的地图范围
-        /// </summary>
-        /// <returns></returns>
-        private async Task ZoomToLastExtent()
-        {
-            if (Layers.MapViewExtentJson != null)
-            {
-                try
-                {
-                    await ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
-                }
-                catch
-                {
-                }
-            }
+            this.TryZoomToLastExtent().ConfigureAwait(false);
+            Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));
         }
     }
 }

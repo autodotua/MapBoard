@@ -141,7 +141,7 @@ namespace MapBoard.Mapping
             BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-            ZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
+           this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);
             Selection = new SelectionHelper(this);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));
@@ -158,23 +158,6 @@ namespace MapBoard.Mapping
             LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
         }
 
-        /// <summary>
-        /// 缩放到记忆的地图位置
-        /// </summary>
-        /// <returns></returns>
-        private async Task ZoomToLastExtent()
-        {
-            if (Layers.MapViewExtentJson != null)
-            {
-                try
-                {
-                    await this.ZoomToGeometryAsync(Envelope.FromJson(Layers.MapViewExtentJson), false);
-                }
-                catch
-                {
-                }
-            }
-        }
 
         /// <summary>
         /// 键盘按下事件
