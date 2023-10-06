@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Esri.ArcGISRuntime.Maui;
+using Microsoft.Extensions.Logging;
 
 namespace MapBoard.MAUI
 {
@@ -14,7 +15,7 @@ namespace MapBoard.MAUI
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-
+            builder.UseArcGISRuntime();
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif

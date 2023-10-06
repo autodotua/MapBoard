@@ -1,4 +1,6 @@
-﻿namespace MapBoard.MAUI
+﻿using Esri.ArcGISRuntime.Mapping;
+
+namespace MapBoard.MAUI
 {
     public partial class MainPage : ContentPage
     {
@@ -7,18 +9,16 @@
         public MainPage()
         {
             InitializeComponent();
+            map.Map = new Esri.ArcGISRuntime.Mapping.Map();
+
+            map.Map.Basemap = new Esri.ArcGISRuntime.Mapping.Basemap(new WebTiledLayer(""));
         }
 
         private void OnCounterClicked(object sender, EventArgs e)
         {
-            count++;
+           
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce(CounterBtn.Text);
+            //SemanticScreenReader.Announce(CounterBtn.Text);
         }
     }
 
