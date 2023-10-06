@@ -2,7 +2,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using System;
 
-namespace MapBoard.MAUI
+namespace MapBoard
 {
     internal class Program : MauiApplication
     {

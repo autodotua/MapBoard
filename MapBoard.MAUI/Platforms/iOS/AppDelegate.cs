@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace MapBoard.MAUI
+namespace MapBoard
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

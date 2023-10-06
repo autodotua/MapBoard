@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace MapBoard.MAUI
+namespace MapBoard
 {
     public class Program
     {

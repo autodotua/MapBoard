@@ -1,4 +1,4 @@
-﻿namespace MapBoard.MAUI
+﻿namespace MapBoard
 {
     public partial class AppShell : Shell
     {

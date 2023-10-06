@@ -1,8 +1,8 @@
 ﻿<maui:MauiWinUIApplication
-    x:Class="MapBoard.MAUI.WinUI.App"
+    x:Class="MapBoard.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:MapBoard.MAUI.WinUI">
+    xmlns:local="using:MapBoard.WinUI">
 
 </maui:MauiWinUIApplication>

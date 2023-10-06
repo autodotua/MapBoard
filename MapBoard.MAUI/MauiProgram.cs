@@ -1,7 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Maui;
 using Microsoft.Extensions.Logging;
 
-namespace MapBoard.MAUI
+namespace MapBoard
 {
     public static class MauiProgram
     {

@@ -107,7 +107,7 @@ namespace MapBoard.Model
         /// <returns></returns>
         public IEnumerator<ILayerInfo> GetEnumerator()
         {
-            return LayerList.GetEnumerator();
+            return LayerList?.GetEnumerator();
         }
 
         /// <summary>
@@ -116,12 +116,12 @@ namespace MapBoard.Model
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return LayerList.GetEnumerator();
+            return LayerList?.GetEnumerator();
         }
 
         public int IndexOf(ILayerInfo layer)
         {
-            return LayerList.IndexOf(layer);
+            return LayerList?.IndexOf(layer) ?? -1;
         }
 
         /// <summary>
