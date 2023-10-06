@@ -4,6 +4,7 @@
     {
         public App()
         {
+            Parameters.AppType = AppType.MAUI;
             InitializeComponent();
 
             MainPage = new AppShell();

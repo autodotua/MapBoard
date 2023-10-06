@@ -24,7 +24,6 @@ namespace MapBoard.Mapping
                 Path="https://autodotua.top/map/google/{z}/{x}-{y}.jpg"
             }
         };
-        private static double WatermarkHeight = 72;
         private static Regex rColorRamp = new Regex(@$"(?<type>{nameof(PresetColorRampType.Elevation)}|{nameof(PresetColorRampType.DemScreen)}|{nameof(PresetColorRampType.DemLight)})(,(?<size>[0-9]+))?");
 
         private static Regex rMinMaxStretch = new Regex(@"m(inmax)?\((?<min>[0-9\.:]+),(?<max>[0-9\.:]+)\)");

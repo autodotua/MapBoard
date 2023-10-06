@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MapBoard.Pages.FtpPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:base="clr-namespace:MapBoard"
+    Title="FtpPage">
+    <Grid
+        Margin="16"
+        RowDefinitions="Auto,*,Auto">
+        <Grid ColumnDefinitions="Auto,8,*">
+            <Label
+                FontAttributes="Bold"
+                Text="IP地址："
+                VerticalOptions="Center" />
+            <Label
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                Text="{Binding IP}"
+                VerticalOptions="Center" />
+        </Grid>
+
+        <!--  IsVisible="{Binding IsOn, Converter={StaticResource base:InverseBoolConverter}, Mode=OneWay}"  -->
+        <Button
+            Grid.Row="2"
+            Margin="8"
+            Clicked="StartStopFtpButton_Clicked"
+            Text="打开FTP" />
+        <!--<Button
+            Grid.Row="2"
+            Margin="8"
+            Clicked="StopFtpButton_Clicked"
+            Text="关闭FTP" />-->
+
+        <!--  IsVisible="{Binding IsOn, Mode=OneWay}"  -->
+    </Grid>
+</ContentPage>

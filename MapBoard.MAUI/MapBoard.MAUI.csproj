@@ -60,6 +60,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="200.2.0" />
+		<PackageReference Include="FubarDev.FtpServer" Version="3.1.2" />
+		<PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23419.4" />
@@ -77,6 +79,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Pages\FtpPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\LayerPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

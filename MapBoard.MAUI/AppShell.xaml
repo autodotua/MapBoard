@@ -5,18 +5,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MapBoard"
     xmlns:pages="clr-namespace:MapBoard.Pages"
-    FlyoutBehavior="Disabled"  FlyoutWidth="68"
-    Title="MapBoard">
+    Title="MapBoard"
+    FlyoutBehavior="Disabled"
+    FlyoutWidth="68">
     <Shell.Resources>
-        <Style TargetType="FlyoutItem" x:Key="HomeFlyout">
+        <Style
+            x:Key="HomeFlyout"
+            TargetType="FlyoutItem">
             <Style.Triggers>
-                <Trigger TargetType="FlyoutItem"
-                        Property="IsChecked" Value="False">
-                    <Setter Property="FlyoutIcon" Value="tab_home.png"/>
+                <Trigger TargetType="FlyoutItem" Property="IsChecked" Value="False">
+                    <Setter Property="FlyoutIcon" Value="tab_home.png" />
                 </Trigger>
-                <Trigger TargetType="FlyoutItem"
-                        Property="IsChecked" Value="True">
-                    <Setter Property="FlyoutIcon" Value="tab_map.png"/>
+                <Trigger TargetType="FlyoutItem" Property="IsChecked" Value="True">
+                    <Setter Property="FlyoutIcon" Value="tab_map.png" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -45,32 +46,29 @@ ContentTemplate="{DataTemplate local:MainPage}"
 Route="MainPage" />
     </FlyoutItem>-->
 
-    
+
     <TabBar x:Name="tab">
-        <Tab Title="地图" Icon="tab_map.png">
+        <Tab
+            Title="地图"
+            Icon="tab_map.png">
             <ShellContent
-        ContentTemplate="{DataTemplate pages:MainPage}"
-        Route="MainPage" />
+                ContentTemplate="{DataTemplate pages:MainPage}"
+                Route="MainPage" />
         </Tab>
-        <Tab Title="图层" Icon="tab_map.png">
+        <Tab
+            Title="图层"
+            Icon="tab_map.png">
             <ShellContent
-        ContentTemplate="{DataTemplate pages:LayerPage}"
-        Route="LayerPage" />
+                ContentTemplate="{DataTemplate pages:LayerPage}"
+                Route="LayerPage" />
+        </Tab>  
+        <Tab
+            Title="FTP"
+            Icon="tab_map.png">
+            <ShellContent
+                ContentTemplate="{DataTemplate pages:FtpPage}"
+                Route="FtpPage" />
         </Tab>
     </TabBar>
-    <!--<Shell.ItemTemplate>
-        <DataTemplate>
-            <Grid WidthRequest="44" HeightRequest="68"
-                  ColumnDefinitions="44" RowDefinitions="68">
-                <Image Source="{Binding FlyoutIcon}"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center"                               
-                       HeightRequest="38"
-                       WidthRequest="38"
-                       />
-            </Grid>
-        </DataTemplate>
-
-    </Shell.ItemTemplate>-->
 
 </Shell>

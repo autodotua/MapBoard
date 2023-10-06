@@ -23,28 +23,18 @@ using System.Windows;
 using Map = Esri.ArcGISRuntime.Mapping.Map;
 using Esri.ArcGISRuntime.UI;
 using static MapBoard.Util.GeometryUtility;
+using FubarDev.FtpServer.FileSystem.DotNet;
+using FubarDev.FtpServer;
+using MapBoard.Services;
 
 namespace MapBoard.Pages
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
-            map.Map = new Esri.ArcGISRuntime.Mapping.Map();
-
-            map.Map.Basemap = new Esri.ArcGISRuntime.Mapping.Basemap(new WebTiledLayer(""));
-            map.Margin = new Thickness(-72);
             map.LoadAsync();
-        }
-
-        private void OnCounterClicked(object sender, EventArgs e)
-        {
-
-
-            //SemanticScreenReader.Announce(CounterBtn.Text);
         }
 
 

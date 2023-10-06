@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -67,42 +68,59 @@ namespace MapBoard.IO
 
         static FolderPaths()
         {
-            string appPath = FzLib.Program.App.ProgramDirectoryPath;
-            if (File.Exists(Path.Combine(appPath, ConfigHere)))
+            switch (Parameters.AppType)
             {
-                ConfigPath = "config.json";
-                TrackHistoryPath = "tracks.txt";
-                RootDataPath = "Data";
-                TileDownloadPath = "Download";
-                BackupPath = "Backup";
-                RecordsPath = "Record";
-                LogsPath = "Logs";
-                TileCachePath = "Cache/Tiles";
+                case AppType.WPF:
+                    string appPath = FzLib.Program.App.ProgramDirectoryPath;
+                    if (File.Exists(Path.Combine(appPath, ConfigHere)))
+                    {
+                        ConfigPath = "config.json";
+                        TrackHistoryPath = "tracks.txt";
+                        RootDataPath = "Data";
+                        TileDownloadPath = "Download";
+                        BackupPath = "Backup";
+                        RecordsPath = "Record";
+                        LogsPath = "Logs";
+                        TileCachePath = "Cache/Tiles";
+                    }
+                    else if (File.Exists(Path.Combine(appPath, ConfigUp)))
+                    {
+                        ConfigPath = "config.json";
+                        TrackHistoryPath = "tracks.txt";
+                        RootDataPath = "../Data";
+                        TileDownloadPath = "../Download";
+                        BackupPath = "../Backup";
+                        RecordsPath = "../Record";
+                        LogsPath = "../Logs";
+                        TileCachePath = "../Cache/Tiles";
+                    }
+                    else
+                    {
+                        string folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); //等同于FileSystem.Current.AppDataDirectory 
+                        ConfigPath = Path.Combine(folder, AppName, "config.json");
+                        TrackHistoryPath = Path.Combine(folder, AppName, "tracks.txt");
+                        RootDataPath = Path.Combine(folder, AppName, "Data");
+                        TileDownloadPath = Path.Combine(folder, AppName, "Download");
+                        BackupPath = Path.Combine(folder, AppName, "Backup");
+                        RecordsPath = Path.Combine(folder, AppName, "Record");
+                        LogsPath = Path.Combine(folder, AppName, "Logs");
+                        TileCachePath = Path.Combine(folder, AppName, "Cache/Tiles");
+                    }
+                    DataPath = GetCurrentDataPath();
+                    break;
+
+                case AppType.MAUI:
+                    string mauiFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); //等同于FileSystem.Current.AppDataDirectory 
+                    ConfigPath = Path.Combine(mauiFolder, "config.json");
+                    BackupPath = Path.Combine(mauiFolder, AppName, "Backup");
+                    LogsPath = Path.Combine(mauiFolder, "Logs");
+                    TileCachePath = Path.Combine(Path.GetTempPath(), "Tiles");//等同于FileSystem.Current.CacheDirectory 
+                    DataPath = Path.Combine(mauiFolder, "Data");
+                    break;
+
+                default:
+                    throw new InvalidEnumArgumentException();
             }
-            else if (File.Exists(Path.Combine(appPath, ConfigUp)))
-            {
-                ConfigPath = "config.json";
-                TrackHistoryPath = "tracks.txt";
-                RootDataPath = "../Data";
-                TileDownloadPath = "../Download";
-                BackupPath = "../Backup";
-                RecordsPath = "../Record";
-                LogsPath = "../Logs";
-                TileCachePath = "../Cache/Tiles";
-            }
-            else
-            {
-                string folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                ConfigPath = Path.Combine(folder, AppName, "config.json");
-                TrackHistoryPath = Path.Combine(folder, AppName, "tracks.txt");
-                RootDataPath = Path.Combine(folder, AppName, "Data");
-                TileDownloadPath = Path.Combine(folder, AppName, "Download");
-                BackupPath = Path.Combine(folder, AppName, "Backup");
-                RecordsPath = Path.Combine(folder, AppName, "Record");
-                LogsPath = Path.Combine(folder, AppName, "Logs");
-                TileCachePath = Path.Combine(folder, AppName, "Cache/Tiles");
-            }
-            DataPath = GetCurrentDataPath();
         }
 
         public static string DataPath { get; internal set; }
