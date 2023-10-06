@@ -5,6 +5,11 @@
         public AppShell()
         {
             InitializeComponent();
+
+            if (true||DeviceInfo.Idiom == DeviceIdiom.Phone)
+            {
+                CurrentItem = tab;
+            }
         }
     }
 }

@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
              xmlns:map="clr-namespace:MapBoard.Mapping"
-             x:Class="MapBoard.MainPage">
+             x:Class="MapBoard.Pages.MainPage">
 
-    <Grid IsClippedToBounds="True">
-        <map:MainMapView x:Name="map" />
+    <Grid IsClippedToBounds="True" >
+        <map:MainMapView x:Name="map"  />
     </Grid>
 
 </ContentPage>

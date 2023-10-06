@@ -4,11 +4,73 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MapBoard"
-    Shell.FlyoutBehavior="Disabled"
+    xmlns:pages="clr-namespace:MapBoard.Pages"
+    FlyoutBehavior="Disabled"  FlyoutWidth="68"
     Title="MapBoard">
+    <Shell.Resources>
+        <Style TargetType="FlyoutItem" x:Key="HomeFlyout">
+            <Style.Triggers>
+                <Trigger TargetType="FlyoutItem"
+                        Property="IsChecked" Value="False">
+                    <Setter Property="FlyoutIcon" Value="tab_home.png"/>
+                </Trigger>
+                <Trigger TargetType="FlyoutItem"
+                        Property="IsChecked" Value="True">
+                    <Setter Property="FlyoutIcon" Value="tab_map.png"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
-    <ShellContent
-        ContentTemplate="{DataTemplate local:MainPage}"
+    </Shell.Resources>
+    <Shell.FlyoutFooterTemplate>
+        <DataTemplate>
+            <Grid RowDefinitions="68">
+                <Grid.GestureRecognizers>
+                    <!--<TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>-->
+                </Grid.GestureRecognizers>
+                <!--<Image Source="tab_settings.png"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"
+                               WidthRequest="40"
+                               HeightRequest="40"
+                        />-->
+
+            </Grid>
+        </DataTemplate>
+
+    </Shell.FlyoutFooterTemplate>
+    <!--<FlyoutItem Title="Home" FlyoutIcon="tab_map.png" >
+        <ShellContent
+ContentTemplate="{DataTemplate local:MainPage}"
+Route="MainPage" />
+    </FlyoutItem>-->
+
+    
+    <TabBar x:Name="tab">
+        <Tab Title="地图" Icon="tab_map.png">
+            <ShellContent
+        ContentTemplate="{DataTemplate pages:MainPage}"
         Route="MainPage" />
+        </Tab>
+        <Tab Title="图层" Icon="tab_map.png">
+            <ShellContent
+        ContentTemplate="{DataTemplate pages:LayerPage}"
+        Route="LayerPage" />
+        </Tab>
+    </TabBar>
+    <!--<Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid WidthRequest="44" HeightRequest="68"
+                  ColumnDefinitions="44" RowDefinitions="68">
+                <Image Source="{Binding FlyoutIcon}"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"                               
+                       HeightRequest="38"
+                       WidthRequest="38"
+                       />
+            </Grid>
+        </DataTemplate>
+
+    </Shell.ItemTemplate>-->
 
 </Shell>
