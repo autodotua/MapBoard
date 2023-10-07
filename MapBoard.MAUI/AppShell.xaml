@@ -7,7 +7,8 @@
     xmlns:pages="clr-namespace:MapBoard.Pages"
     Title="MapBoard"
     FlyoutBehavior="Disabled"
-    FlyoutWidth="68">
+    FlyoutWidth="68"
+    Loaded="Shell_Loaded">
     <Shell.Resources>
         <Style
             x:Key="HomeFlyout"
@@ -56,11 +57,11 @@ Route="MainPage" />
                 Route="MainPage" />
         </Tab>
         <Tab
-            Title="图层"
-            Icon="tab_layers.png">
+            Title="轨迹"
+            Icon="tab_track.png">
             <ShellContent
-                ContentTemplate="{DataTemplate pages:LayerPage}"
-                Route="LayerPage" />
+                ContentTemplate="{DataTemplate pages:TrackPage}"
+                Route="TrackPage" />
         </Tab>
         <Tab
             Title="FTP"
