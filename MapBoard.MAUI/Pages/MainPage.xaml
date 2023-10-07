@@ -1,12 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
-             xmlns:map="clr-namespace:MapBoard.Mapping"
-             x:Class="MapBoard.Pages.MainPage">
-
-    <Grid IsClippedToBounds="True" >
-        <map:MainMapView x:Name="map"  />
+<ContentPage
+    x:Class="MapBoard.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
+    xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:v="clr-namespace:MapBoard.Views"
+    Loaded="ContentPage_Loaded">
+    <Grid ColumnDefinitions="300,*">
+        <v:LayerListView x:Name="layerList" />
+        <Grid
+            Grid.Column="99"
+            IsClippedToBounds="True">
+            <map:MainMapView x:Name="map" />
+        </Grid>
     </Grid>
-
 </ContentPage>

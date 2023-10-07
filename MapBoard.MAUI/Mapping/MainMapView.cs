@@ -37,6 +37,7 @@ namespace MapBoard.Mapping
         /// </summary>
         private static List<MainMapView> instances = new List<MainMapView>();
 
+        public static MainMapView Current => instances[0];
         /// <summary>
         /// 是否允许旋转
         /// </summary>
@@ -59,6 +60,10 @@ namespace MapBoard.Mapping
         private readonly double watermarkHeight = 72;
         public MainMapView()
         {
+            if (instances.Count > 1)
+            {
+                throw new Exception("该类仅支持单例");
+            }
             instances.Add(this);
             Layers = new MapLayerCollection();
 
@@ -134,7 +139,7 @@ namespace MapBoard.Mapping
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-           this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
+            this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             //Editor = new EditorHelper(this);
             //Selection = new SelectionHelper(this);
             //Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));

@@ -1,7 +1,103 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MapBoard.Views.LayerListView">
-    <ListView>
-</ListView>
+<ContentView
+    x:Class="MapBoard.Views.LayerListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mmm="clr-namespace:MapBoard.Mapping.Model;assembly=MapBoard.Core"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:LayerViewViewModel}">
+    <Grid
+        Margin="8"
+        RowDefinitions="Auto,8,*">
+        <HorizontalStackLayout>
+            <RadioButton
+                x:Name="rbtnByLevel"
+                CheckedChanged="ViewTypeRadioButton_CheckChanged"
+                Content="按层序" />
+            <RadioButton
+                x:Name="rbtnByGroup"
+                CheckedChanged="ViewTypeRadioButton_CheckChanged"
+                Content="按分组" />
+        </HorizontalStackLayout>
+        <!--<CollectionView
+            ItemsSource="{Binding ViewTypes}"
+            SelectionMode="Single">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label
+                        Margin="8"
+                        Text="{Binding .}">
+        -->
+        <!--<Label.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Label.FontAttributes" Value="Bold" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Label.Triggers>-->
+        <!--
+
+                    </Label>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" />
+            </CollectionView.ItemsLayout>
+        </CollectionView>-->
+        <ListView
+            x:Name="lvwGroup"
+            Grid.Row="2"
+            GroupDisplayBinding="{Binding Name}"
+            IsGroupingEnabled="True"
+            ItemsSource="{Binding Groups}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
+                    <ViewCell>
+                        <Grid Margin="0,4">
+                            <Label
+                                Margin="32,0,0,0"
+                                FontAttributes="Bold"
+                                Text="{Binding Name}"
+                                VerticalOptions="Center" />
+                            <CheckBox
+                                HorizontalOptions="Fill"
+                                IsChecked="{Binding LayerVisible}" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ListView
+            x:Name="lvwLevel"
+            Grid.Row="2"
+            GroupDisplayBinding="{Binding Name}"
+            IsGroupingEnabled="True"
+            IsVisible="False"
+            ItemsSource="{Binding Groups}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
+                    <ViewCell>
+                        <Grid
+                            Margin="0,4"
+                            ColumnDefinitions="Auto,8,*"
+                            RowDefinitions="Auto,4,Auto">
+                            <CheckBox
+                                Grid.RowSpan="99"
+                                IsChecked="{Binding LayerVisible}" />
+                            <Label
+                                Grid.Column="2"
+                                FontAttributes="Bold"
+                                Text="{Binding Name}"
+                                VerticalOptions="End" />
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                Text="{Binding Group}"
+                                VerticalOptions="Start" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </ContentView>

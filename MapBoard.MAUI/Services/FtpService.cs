@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net;
+using MapBoard.IO;
 
 namespace MapBoard.Services
 {
@@ -19,8 +21,12 @@ namespace MapBoard.Services
         public FtpService()
         {
             var services = new ServiceCollection();
-
-            services.Configure<DotNetFileSystemOptions>(opt => opt.RootPath = FileSystem.Current.AppDataDirectory);
+            string dir = FolderPaths.DataPath;
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            services.Configure<DotNetFileSystemOptions>(opt => opt.RootPath = dir);
 
             services.AddFtpServer(builder => builder
                 .UseDotNetFileSystem()
@@ -40,10 +46,7 @@ namespace MapBoard.Services
         IFtpServerHost ftpServerHost;
         public Task StartServerAsync()
         {
-
-
             return ftpServerHost.StartAsync();
-
         }
 
         public Task StopServerAsync()
@@ -64,6 +67,12 @@ namespace MapBoard.Services
                 }
             }
 #elif WINDOWS
+            string hostName = Dns.GetHostName(); 
+            foreach(var address in Dns.GetHostByName(hostName).AddressList)
+            {
+                yield return address.ToString();
+            }
+#else
             return null;
 #endif
         }

@@ -55,6 +55,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\tab_ftp.svg" />
+	  <None Remove="Resources\Images\tab_layers.svg" />
 	  <None Remove="Resources\Images\tab_map.svg" />
 	</ItemGroup>
 
@@ -76,6 +78,21 @@
 	  <Reference Include="FzStandardLib">
 	    <HintPath>..\libs\FzStandardLib.dll</HintPath>
 	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Properties\Resources.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Resources.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Properties\Resources.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -103,6 +120,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
     <ApplicationId>com.autod.mapboard.maui</ApplicationId>
+    <AndroidKeyStore>False</AndroidKeyStore>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-ios|AnyCPU'">
@@ -119,6 +137,8 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
     <ApplicationId>com.autod.mapboard.maui</ApplicationId>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidKeyStore>False</AndroidKeyStore>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">

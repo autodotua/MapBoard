@@ -10,23 +10,23 @@ public partial class FtpPage : ContentPage
     FtpService ftpService = new FtpService();
     public FtpPage()
     {
-        BindingContext = new FtpPageViewModels()
+        var ip = FtpService.GetIpAddress();
+        if (ip == null || !ip.Any())
         {
-            IP = string.Join(Environment.NewLine, FtpService.GetIpAddress()),
+            ip = null;
+        }
+        BindingContext = new FtpPageViewModel()
+        {
+            IP = ip == null ? "未知" : string.Join(Environment.NewLine, ip),
             IsOn = false,
         };
         InitializeComponent();
 
     }
 
-    private void Button_Clicked(object sender, EventArgs e)
-    {
-
-    }
-
     private void StartStopFtpButton_Clicked(object sender, EventArgs e)
     {
-        if ((BindingContext as FtpPageViewModels).IsOn)
+        if ((BindingContext as FtpPageViewModel).IsOn)
         {
             ftpService.StopServerAsync();
             (sender as Button).Text = "打开FTP";
@@ -36,6 +36,6 @@ public partial class FtpPage : ContentPage
             ftpService.StartServerAsync();
             (sender as Button).Text = "关闭FTP";
         }
-        (BindingContext as FtpPageViewModels).IsOn = !(BindingContext as FtpPageViewModels).IsOn;
+        (BindingContext as FtpPageViewModel).IsOn = !(BindingContext as FtpPageViewModel).IsOn;
     }
 }

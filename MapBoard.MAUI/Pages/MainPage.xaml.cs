@@ -34,10 +34,19 @@ namespace MapBoard.Pages
         public MainPage()
         {
             InitializeComponent();
-            map.LoadAsync();
         }
 
 
+        public async Task InitializeAsync()
+        {
+            await map.LoadAsync();
+            layerList.Initialize();
+        }
+
+        private async void ContentPage_Loaded(object sender, EventArgs e)
+        {
+            await InitializeAsync();
+        }
     }
 
 }

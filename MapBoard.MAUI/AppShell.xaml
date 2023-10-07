@@ -57,14 +57,14 @@ Route="MainPage" />
         </Tab>
         <Tab
             Title="图层"
-            Icon="tab_map.png">
+            Icon="tab_layers.png">
             <ShellContent
                 ContentTemplate="{DataTemplate pages:LayerPage}"
                 Route="LayerPage" />
-        </Tab>  
+        </Tab>
         <Tab
             Title="FTP"
-            Icon="tab_map.png">
+            Icon="tab_ftp.png">
             <ShellContent
                 ContentTemplate="{DataTemplate pages:FtpPage}"
                 Route="FtpPage" />
