@@ -74,7 +74,30 @@ namespace MapBoard.Mapping
             {
                 IsRotateEnabled = true
             };
+            PropertyChanged += MainMapView_PropertyChanged;
             //NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        LocationDisplay locationDisplay = null;
+        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LocationDisplay) && locationDisplay == null)
+            {
+                locationDisplay = LocationDisplay;
+                locationDisplay.IsEnabled = true;
+            }
+        }
+
+        public void MoveToLocation()
+        {
+            if(locationDisplay!=null && locationDisplay.IsEnabled )
+            {
+                var point = locationDisplay.MapLocation;
+                if(point != null)
+                {
+                    SetViewpointCenterAsync(point);
+                }
+            }
         }
 
         /// <summary>
@@ -139,13 +162,9 @@ namespace MapBoard.Mapping
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-            this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
-            //Editor = new EditorHelper(this);
-            //Selection = new SelectionHelper(this);
-            //Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));
-            //Selection.CollectionChanged += Selection_CollectionChanged;
+            await this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged).ConfigureAwait(false);
+
             CurrentTask = BoardTask.Ready;
-            //SetLocationDisplay();
         }
 
         /// <summary>

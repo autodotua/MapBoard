@@ -77,6 +77,11 @@ namespace MapBoard.Pages
             var map = MainMapView.Current;
             await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
+
+        private void LocationButton_Click(object sender, EventArgs e)
+        {
+            MainMapView.Current.MoveToLocation();
+        }
     }
 
 }
