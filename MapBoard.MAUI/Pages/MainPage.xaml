@@ -7,12 +7,75 @@
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
-    <Grid ColumnDefinitions="300,*">
-        <v:LayerListView x:Name="layerList" />
-        <Grid
-            Grid.Column="99"
-            IsClippedToBounds="True">
+    <ContentPage.Resources>
+        <Style
+            x:Key="SideButtonStyle"
+            TargetType="{x:Type Button}">
+            <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
+            <Setter Property="WidthRequest" Value="42" />
+            <Setter Property="Padding" Value="{OnPlatform Default=6, Android=12}" />
+            <Setter Property="HeightRequest" Value="42" />
+        </Style>
+    </ContentPage.Resources>
+    <Grid>
+        <!--  地图  -->
+        <Grid IsClippedToBounds="True">
             <map:MainMapView x:Name="map" />
         </Grid>
+
+        <!--  图层面板  -->
+        <Grid
+            x:Name="grdLayer"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
+                                              Dark={DynamicResource Black}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*"
+            TranslationX="-300"
+            WidthRequest="300">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="图层" />
+            <ImageButton
+                Grid.RowSpan="99"
+                Margin="12"
+                Clicked="CloseLayerPanelButton_Click"
+                HeightRequest="18"
+                HorizontalOptions="End"
+                Opacity="0.8"
+                Scale="{OnPlatform Default=1,WinUI=0.5}"
+                Source="btn_close.png"
+                VerticalOptions="Start"
+                WidthRequest="18" />
+            <v:LayerListView
+                x:Name="layerList"
+                Grid.Row="2" />
+        </Grid>
+
+        <!--  右侧按钮  -->
+        <VerticalStackLayout
+            x:Name="grdSide"
+            Margin="8"
+            HorizontalOptions="End"
+            Spacing="8"
+            VerticalOptions="Center">
+            <ImageButton
+                Clicked="ZoomInButton_Click"
+                CornerRadius="4"
+                Source="btn_zoom_in.png"
+                Style="{StaticResource SideButtonStyle}" />
+            <ImageButton
+                Clicked="ZoomOutButton_Click"
+                CornerRadius="4"
+                Source="btn_zoom_out.png"
+                Style="{StaticResource SideButtonStyle}" />
+            <ImageButton
+                Clicked="LayerButton_Click"
+                CornerRadius="4"
+                Source="btn_layers.png"
+                Style="{StaticResource SideButtonStyle}" />
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

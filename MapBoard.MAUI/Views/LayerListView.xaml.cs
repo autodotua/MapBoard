@@ -1,4 +1,5 @@
 using MapBoard.Mapping;
+using MapBoard.Mapping.Model;
 using MapBoard.ViewModels;
 
 namespace MapBoard.Views;
@@ -17,6 +18,14 @@ public partial class LayerListView : ContentView
             Layers = MainMapView.Current.Layers
         };
         (BindingContext as LayerViewViewModel).GenerateGroups();
+        if (Config.Instance.LastLayerListGroupType == 0)
+        {
+            rbtnByLevel.IsChecked = true;
+        }
+        else
+        {
+            rbtnByGroup.IsChecked = true;
+        }
     }
 
     private void ViewTypeRadioButton_CheckChanged(object sender, CheckedChangedEventArgs e)
@@ -34,5 +43,11 @@ public partial class LayerListView : ContentView
                 lvwLevel.IsVisible = true;
             }
         }
+    }
+
+    private void LvwGroup_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var layer = e.Item as MapLayerInfo;
+        layer.LayerVisible = !layer.LayerVisible;
     }
 }

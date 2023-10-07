@@ -9,78 +9,65 @@
     <Grid
         Margin="8"
         RowDefinitions="Auto,8,*">
-        <HorizontalStackLayout>
+        <HorizontalStackLayout Spacing="16">
             <RadioButton
                 x:Name="rbtnByLevel"
                 CheckedChanged="ViewTypeRadioButton_CheckChanged"
-                Content="按层序" />
+                Content="按层序"
+                GroupName="ViewType" />
             <RadioButton
                 x:Name="rbtnByGroup"
                 CheckedChanged="ViewTypeRadioButton_CheckChanged"
-                Content="按分组" />
+                Content="按分组"
+                GroupName="ViewType" />
         </HorizontalStackLayout>
-        <!--<CollectionView
-            ItemsSource="{Binding ViewTypes}"
-            SelectionMode="Single">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Label
-                        Margin="8"
-                        Text="{Binding .}">
-        -->
-        <!--<Label.Triggers>
-                            <DataTrigger Binding="{Binding IsSelected}">
-                                <DataTrigger.Setters>
-                                    <Setter Property="Label.FontAttributes" Value="Bold" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Label.Triggers>-->
-        <!--
 
-                    </Label>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" />
-            </CollectionView.ItemsLayout>
-        </CollectionView>-->
         <ListView
             x:Name="lvwGroup"
             Grid.Row="2"
             GroupDisplayBinding="{Binding Name}"
             IsGroupingEnabled="True"
-            ItemsSource="{Binding Groups}">
+            IsVisible="False"
+            ItemTapped="LvwGroup_ItemTapped"
+            ItemsSource="{Binding Groups}"
+            SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
                     <ViewCell>
-                        <Grid Margin="0,4">
-                            <Label
-                                Margin="32,0,0,0"
-                                FontAttributes="Bold"
-                                Text="{Binding Name}"
-                                VerticalOptions="Center" />
+                        <Grid
+                            Margin="0,4"
+                            ColumnDefinitions="Auto,4,*">
                             <CheckBox
                                 HorizontalOptions="Fill"
                                 IsChecked="{Binding LayerVisible}" />
+                            <Label
+                                Grid.Column="2"
+                                FontAttributes="Bold"
+                                InputTransparent="True"
+                                Text="{Binding Name}"
+                                VerticalOptions="Center" />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
         <ListView
             x:Name="lvwLevel"
             Grid.Row="2"
-            GroupDisplayBinding="{Binding Name}"
-            IsGroupingEnabled="True"
             IsVisible="False"
-            ItemsSource="{Binding Groups}">
+            ItemTapped="LvwGroup_ItemTapped"
+            ItemsSource="{Binding Layers}"
+            RowHeight="64"
+            SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
                     <ViewCell>
                         <Grid
                             Margin="0,4"
                             ColumnDefinitions="Auto,8,*"
-                            RowDefinitions="Auto,4,Auto">
+                            RowDefinitions="Auto,4,Auto"
+                            VerticalOptions="Center">
                             <CheckBox
                                 Grid.RowSpan="99"
                                 IsChecked="{Binding LayerVisible}" />

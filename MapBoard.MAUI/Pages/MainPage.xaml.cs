@@ -36,7 +36,6 @@ namespace MapBoard.Pages
             InitializeComponent();
         }
 
-
         public async Task InitializeAsync()
         {
             await map.LoadAsync();
@@ -46,6 +45,37 @@ namespace MapBoard.Pages
         private async void ContentPage_Loaded(object sender, EventArgs e)
         {
             await InitializeAsync();
+        }
+
+        private void CloseLayerPanelButton_Click(object sender, EventArgs e)
+        {
+            grdLayer.TranslateTo(-300, 0);
+            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+            {
+                grdSide.TranslateTo(0, 0);
+            }
+        }
+
+        private void LayerButton_Click(object sender, EventArgs e)
+        {
+            grdLayer.TranslateTo(0, 0);
+            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+            {
+                grdSide.TranslateTo(100, 0);
+            }
+        }
+
+
+        private async void ZoomInButton_Click(object sender, EventArgs e)
+        {
+            var map = MainMapView.Current;
+            await map.SetViewpointScaleAsync(map.MapScale / 3);
+        }
+
+        private async void ZoomOutButton_Click(object sender, EventArgs e)
+        {
+            var map = MainMapView.Current;
+            await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
     }
 

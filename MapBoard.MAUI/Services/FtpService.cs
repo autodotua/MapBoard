@@ -63,7 +63,7 @@ namespace MapBoard.Services
                 var link = m.GetLinkProperties(m.ActiveNetwork);
                 foreach (var address in link.LinkAddresses)
                 {
-                    yield return address.ToString().Split('/')[0];
+                    yield return address.Address.HostAddress;
                 }
             }
 #elif WINDOWS

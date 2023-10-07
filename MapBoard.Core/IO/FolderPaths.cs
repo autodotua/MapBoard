@@ -110,9 +110,19 @@ namespace MapBoard.IO
                     break;
 
                 case AppType.MAUI:
+
                     string mauiFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData); //等同于FileSystem.Current.AppDataDirectory 
+                    var system = System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier;
+                    if (system.StartsWith("android"))
+                    {
+
+                    }
+                    else
+                    {
+                        mauiFolder = Path.Combine(mauiFolder, AppName);
+                    }
                     ConfigPath = Path.Combine(mauiFolder, "config.json");
-                    BackupPath = Path.Combine(mauiFolder, AppName, "Backup");
+                    BackupPath = Path.Combine(mauiFolder, "Backup");
                     LogsPath = Path.Combine(mauiFolder, "Logs");
                     TileCachePath = Path.Combine(Path.GetTempPath(), "Tiles");//等同于FileSystem.Current.CacheDirectory 
                     DataPath = Path.Combine(mauiFolder, "Data");

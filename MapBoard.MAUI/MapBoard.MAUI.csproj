@@ -55,6 +55,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\btn_close.svg" />
+	  <None Remove="Resources\Images\btn_layers.svg" />
+	  <None Remove="Resources\Images\btn_zoom_in.svg" />
+	  <None Remove="Resources\Images\btn_zoom_out.svg" />
 	  <None Remove="Resources\Images\tab_ftp.svg" />
 	  <None Remove="Resources\Images\tab_layers.svg" />
 	  <None Remove="Resources\Images\tab_map.svg" />
