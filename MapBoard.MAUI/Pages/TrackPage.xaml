@@ -9,6 +9,10 @@
             Clicked="StartTrackButton_Click"
             HorizontalOptions="Center"
             Text="开始记录轨迹"
+            VerticalOptions="Center" />     
+        <Button Margin="0,48,0,0"
+            HorizontalOptions="Center"
+            Text="开始记录轨迹"
             VerticalOptions="Center" />
     </Grid>
 </ContentPage>
