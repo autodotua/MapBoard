@@ -21,9 +21,12 @@ namespace MapBoard.IO.Gpx
 
         private TimeSpan? totalTime = null;
 
-        internal GpxTrack(XmlNode xml, Gpx parent)
+        internal GpxTrack(Gpx parent)
         {
             GpxInfo = parent;
+        }
+        internal GpxTrack(XmlNode xml, Gpx parent):this(parent)
+        {
             LoadGpxTrackInfoProperties(this, xml);
         }
 

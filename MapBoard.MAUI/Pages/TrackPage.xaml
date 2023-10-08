@@ -6,13 +6,17 @@
     xmlns:base="clr-namespace:MapBoard">
     <Grid>
         <Button
+            x:Name="btnStart"
             Clicked="StartTrackButton_Click"
             HorizontalOptions="Center"
             Text="开始记录轨迹"
-            VerticalOptions="Center" />     
-        <Button Margin="0,48,0,0"
+            VerticalOptions="Center" />
+        <Button
+            x:Name="btnStop"
+            Clicked="StopButton_Clicked"
             HorizontalOptions="Center"
-            Text="开始记录轨迹"
+            IsVisible="False"
+            Text="停止记录轨迹"
             VerticalOptions="Center" />
     </Grid>
 </ContentPage>

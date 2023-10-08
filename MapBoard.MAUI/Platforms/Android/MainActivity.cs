@@ -15,6 +15,11 @@ namespace MapBoard
         public MainActivity()
         {
         }
+        public void StopTrackService()
+        {
+            UnbindService(trackServiceConnection);
+            StopService(new Intent(this, typeof(AndroidTrackService)));
+        }
         public void StartTrackService()
         {
             if (IsServiceRunning(nameof(AndroidTrackService)))
@@ -46,7 +51,16 @@ namespace MapBoard
             }
             return false;
         }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (IsServiceRunning(nameof(AndroidTrackService)))
+            {
+                UnbindService(trackServiceConnection);
+            }
+        }
     }
+
 
     public class AndroidServiceConnection : Java.Lang.Object, IServiceConnection
     {

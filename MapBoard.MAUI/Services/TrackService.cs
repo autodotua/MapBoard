@@ -1,6 +1,8 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
+using MapBoard.IO;
+using MapBoard.IO.Gpx;
 using MapBoard.Mapping;
 using System;
 using System.Collections.Generic;
@@ -14,20 +16,31 @@ namespace MapBoard.Services
     public class TrackService
     {
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
-        private PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private Gpx gpx = new Gpx();
+        private GpxTrack gpxTrack;
+        private DateTime startTime;
         private bool running = false;
+        private Location lastLocation;
+        public const double MinDistance = 2;
         public TrackService()
         {
             Overlay.Graphics.Clear();
+            gpxTrack = gpx.CreateTrack();
         }
 
         public async void Start()
         {
+            startTime = DateTime.Now;
+            gpx.Time = startTime;
+            gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
+            gpx.Description = AppInfo.Name;
             running = true;
             Overlay.Graphics.Clear();
+            PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
             while (running)
             {
-                var location =await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
+                var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
                 if (running == false)
                 {
                     break;
@@ -38,10 +51,13 @@ namespace MapBoard.Services
                 }
                 Debug.WriteLine(location);
                 LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
-                trackLocations.Add(location);
                 trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
-                UpdateMap();
-                UpdateGpx();
+                UpdateMap(trackLineBuilder);
+                if (lastLocation != null && Location.CalculateDistance(location, lastLocation, DistanceUnits.Kilometers) > MinDistance * 1000)
+                {
+                    UpdateGpx(location);
+                    lastLocation = location;
+                }
             }
 
         }
@@ -49,23 +65,39 @@ namespace MapBoard.Services
         public void Stop()
         {
             running = false;
+            SaveGpx();
         }
 
-        public List<MapPoint> trackPoints = new List<MapPoint>();
-        public List<Location> trackLocations = new List<Location>();
-        PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
-
-
-        private void UpdateMap()
+        private void UpdateMap(PolylineBuilder builder)
         {
             Overlay.Graphics.Clear();
-            Overlay.Graphics.Add(new Graphic(trackLineBuilder.ToGeometry()));
+            Overlay.Graphics.Add(new Graphic(builder.ToGeometry()));
         }
-        private void UpdateGpx()
+        private void UpdateGpx(Location location)
         {
-
+            try
+            {
+                GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude ?? 0, location.Timestamp.LocalDateTime);
+                point.OtherProperties.Add("Accuracy", location.Accuracy.ToString());
+                point.OtherProperties.Add("VerticalAccuracy", location.VerticalAccuracy?.ToString() ?? "");
+                point.OtherProperties.Add("Course", location.Course?.ToString() ?? "");
+                gpxTrack.Points.Add(point);
+                Debug.WriteLine("add to gpx");
+                if (gpxTrack.Points.Count % 10 == 0)
+                {
+                    SaveGpx();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
+        private void SaveGpx()
+        {
+            File.WriteAllText(Path.Combine(FolderPaths.TrackPath, $"{startTime:yyyyMMdd-HHmmss}.gpx"), gpx.ToGpxXml());
+        }
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
     }

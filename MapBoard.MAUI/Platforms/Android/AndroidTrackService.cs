@@ -79,28 +79,13 @@ public class AndroidTrackService : Service
     public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
     {
         StartForegroundService();
-        StartTimer();
         return StartCommandResult.NotSticky;
     }
 
-    private void StartTimer()
+    public override void OnDestroy()
     {
-        var timer = Dispatcher.GetForCurrentThread().CreateTimer();
-        timer.Interval = TimeSpan.FromSeconds(1);
-        timer.Tick += Timer_Tick;
-        timer.Start();
-    }
-
-    private async void Timer_Tick(object sender, EventArgs e)
-    {
-        notificationBuilder.SetContentText(DateTime.Now.ToString());
-
-        var notifcationManager = GetSystemService(Context.NotificationService) as NotificationManager;
-        notifcationManager.Notify(NotificationID, notificationBuilder.Build());
-        //await MainThread.InvokeOnMainThreadAsync(() =>
-        //   {
-        //       notificationBuilder.NotifyAll();
-        //   });
+        base.OnDestroy();
+        TrackService.Stop();
     }
 }
 

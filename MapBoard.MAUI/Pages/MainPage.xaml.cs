@@ -31,6 +31,8 @@ namespace MapBoard.Pages
 {
     public partial class MainPage : ContentPage
     {
+        private bool loaded = false;
+
         public MainPage()
         {
             InitializeComponent();
@@ -38,15 +40,12 @@ namespace MapBoard.Pages
 
         public async Task InitializeAsync()
         {
-            await map.LoadAsync();
+            if (!map.HasLoadedMap)
+            {
+                await map.LoadAsync();
+            }
             layerList.Initialize();
         }
-        private bool loaded = false;
-        private async void ContentPage_Loaded(object sender, EventArgs e)
-        {
-            await InitializeAsync();
-        }
-
         private void CloseLayerPanelButton_Click(object sender, EventArgs e)
         {
             grdLayer.TranslateTo(-300, 0);
@@ -56,6 +55,10 @@ namespace MapBoard.Pages
             }
         }
 
+        private async void ContentPage_Loaded(object sender, EventArgs e)
+        {
+            await InitializeAsync();
+        }
         private void LayerButton_Click(object sender, EventArgs e)
         {
             grdLayer.TranslateTo(0, 0);
@@ -65,18 +68,6 @@ namespace MapBoard.Pages
             }
         }
 
-
-        private async void ZoomInButton_Click(object sender, EventArgs e)
-        {
-            var map = MainMapView.Current;
-            await map.SetViewpointScaleAsync(map.MapScale / 3);
-        }
-
-        private async void ZoomOutButton_Click(object sender, EventArgs e)
-        {
-            var map = MainMapView.Current;
-            await map.SetViewpointScaleAsync(map.MapScale * 3);
-        }
 
         private void LocationButton_Click(object sender, EventArgs e)
         {
@@ -88,6 +79,18 @@ namespace MapBoard.Pages
 #if ANDROID
             Platform.CurrentActivity.Finish();
 #endif
+        }
+
+        private async void ZoomInButton_Click(object sender, EventArgs e)
+        {
+            var map = MainMapView.Current;
+            await map.SetViewpointScaleAsync(map.MapScale / 3);
+        }
+
+        private async void ZoomOutButton_Click(object sender, EventArgs e)
+        {
+            var map = MainMapView.Current;
+            await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
     }
 

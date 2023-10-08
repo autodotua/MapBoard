@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Esri.ArcGISRuntime.Symbology;
+using NGettext.Loaders;
 
 namespace MapBoard.Mapping
 {
@@ -38,7 +39,7 @@ namespace MapBoard.Mapping
         /// </summary>
         private static List<MainMapView> instances = new List<MainMapView>();
 
-        public static MainMapView Current => instances[0];
+        private readonly double watermarkHeight = 72;
         /// <summary>
         /// 是否允许旋转
         /// </summary>
@@ -49,6 +50,8 @@ namespace MapBoard.Mapping
         /// </summary>
         private CancellationTokenSource ctsWfs = null;
 
+        private bool loaded = false;
+        LocationDisplay locationDisplay = null;
         /// <summary>
         /// 鼠标中键按下时起始位置
         /// </summary>
@@ -58,7 +61,7 @@ namespace MapBoard.Mapping
         /// 旋转开始角度
         /// </summary>
         private double startRotation = 0;
-        private readonly double watermarkHeight = 72;
+
         public MainMapView()
         {
             if (instances.Count > 1)
@@ -79,38 +82,12 @@ namespace MapBoard.Mapping
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
-        LocationDisplay locationDisplay = null;
-        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(LocationDisplay))
-            {
-                locationDisplay = LocationDisplay;
-                if (locationDisplay != null)
-                {
-                    locationDisplay.NavigationPointHeightFactor = 0.4;
-                    locationDisplay.WanderExtentFactor = 0;
-                    locationDisplay.IsEnabled = true;
-                }
-            }
-        }
-
-        public void MoveToLocation()
-        {
-            if (locationDisplay != null && locationDisplay.IsEnabled)
-            {
-                var point = locationDisplay.MapLocation;
-                if (point != null)
-                {
-                    SetViewpointCenterAsync(point);
-                }
-            }
-        }
-
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
         public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
+        public static MainMapView Current => instances[0];
         /// <summary>
         /// 所有<see cref="MainMapView"/>实例
         /// </summary>
@@ -140,33 +117,29 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 编辑器相关
-        /// </summary>
-        //public EditorHelper Editor { get; private set; }
-
-        /// <summary>
         /// 图层
         /// </summary>
         public MapLayerCollection Layers { get; }
 
+        /// <summary>
+        /// 编辑器相关
+        /// </summary>
+        //public EditorHelper Editor { get; private set; }
         public GraphicsOverlay TrackOverlay { get; } = new GraphicsOverlay();
 
-        /// <summary>
-        /// 覆盖层相关
-        /// </summary>
-        //public OverlayHelper Overlay { get; private set; }
+        public bool HasLoadedMap => loaded;
 
         /// <summary>
         /// 选择相关
         /// </summary>
         //public SelectionHelper Selection { get; private set; }
-
         /// <summary>
         /// 初始化加载
         /// </summary>
         /// <returns></returns>
         public async Task LoadAsync()
         {
+            loaded = true;
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
@@ -181,6 +154,22 @@ namespace MapBoard.Mapping
             }
         }
 
+        public void MoveToLocation()
+        {
+            if (locationDisplay != null && locationDisplay.IsEnabled)
+            {
+                var point = locationDisplay.MapLocation;
+                if (point != null)
+                {
+                    SetViewpointCenterAsync(point);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 覆盖层相关
+        /// </summary>
+        //public OverlayHelper Overlay { get; private set; }
         /// <summary>
         /// 设置设备位置的显示
         /// </summary>
@@ -191,7 +180,64 @@ namespace MapBoard.Mapping
             LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
         }
 
+        /// <summary>
+        /// 视角改变时，保存当前地图位置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
+        {
+            if (Layers != null
+                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                Layers.MapViewExtentJson = envelope.ToJson();
+            }
+        }
 
+        ///// <summary>
+        ///// 鼠标移动，中键按下时旋转地图
+        ///// </summary>
+        ///// <param name="e"></param>
+        //protected override async void OnPreviewMouseMove(MouseEventArgs e)
+        //{
+        //    base.OnPreviewMouseMove(e);
+        //    if (e.MiddleButton == MouseButtonState.Pressed && canRotate)
+        //    {
+        //        Point position = e.GetPosition(this);
+        //        double distance = position.X - startPosition.X;
+        //        if (Math.Abs(distance) < 10)
+        //        {
+        //            return;
+        //        }
+        //        Debug.WriteLine(distance);
+        //        canRotate = false;
+        //        SetViewpointRotationAsync(startRotation + distance / 5);
+        //        await Task.Delay(100);
+        //        canRotate = true;
+        //        //防止旋转过快造成卡顿
+        //    }
+        //}
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Config.ShowLocation))
+            {
+                SetLocationDisplay();
+            }
+        }
+
+        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LocationDisplay))
+            {
+                locationDisplay = LocationDisplay;
+                if (locationDisplay != null)
+                {
+                    locationDisplay.NavigationPointHeightFactor = 0.4;
+                    locationDisplay.WanderExtentFactor = 0;
+                    locationDisplay.IsEnabled = true;
+                }
+            }
+        }
         /// <summary>
         /// 键盘按下事件
         /// </summary>
@@ -284,55 +330,6 @@ namespace MapBoard.Mapping
         //        startPosition = e.GetPosition(this);
         //    }
         //}
-
-        ///// <summary>
-        ///// 鼠标移动，中键按下时旋转地图
-        ///// </summary>
-        ///// <param name="e"></param>
-        //protected override async void OnPreviewMouseMove(MouseEventArgs e)
-        //{
-        //    base.OnPreviewMouseMove(e);
-        //    if (e.MiddleButton == MouseButtonState.Pressed && canRotate)
-        //    {
-        //        Point position = e.GetPosition(this);
-        //        double distance = position.X - startPosition.X;
-        //        if (Math.Abs(distance) < 10)
-        //        {
-        //            return;
-        //        }
-        //        Debug.WriteLine(distance);
-        //        canRotate = false;
-        //        SetViewpointRotationAsync(startRotation + distance / 5);
-        //        await Task.Delay(100);
-        //        canRotate = true;
-        //        //防止旋转过快造成卡顿
-        //    }
-        //}
-
-        /// <summary>
-        /// 视角改变时，保存当前地图位置
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
-        {
-            if (Layers != null
-                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-            {
-                Layers.MapViewExtentJson = envelope.ToJson();
-            }
-        }
-
-
-        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Config.ShowLocation))
-            {
-                SetLocationDisplay();
-            }
-        }
-
-
         private void Selection_CollectionChanged(object sender, EventArgs e)
         {
             //if (Selection.SelectedFeatures.Count > 0)

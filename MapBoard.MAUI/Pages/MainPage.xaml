@@ -88,7 +88,6 @@
                 Source="btn_zoom_in.png"
                 Style="{StaticResource SideButtonStyle}">
                 <!--  有BUG，放到资源中提示错误	XFC0040	Cannot convert value "BackgroundColor" to "Microsoft.Maui.Controls.BindableProperty".	MapBoard.MAUI	C:\Users\autod\source\repos\MapBoard\MapBoard.MAUI\Pages\MainPage.xaml	26  -->
-
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroup>
                         <VisualState x:Name="Normal">

@@ -62,6 +62,11 @@ namespace MapBoard.IO
         public static readonly string TrackHistoryPath;
 
         /// <summary>
+        /// 轨迹文件目录
+        /// </summary>
+        public static readonly string TrackPath;
+
+        /// <summary>
         /// 瓦片缓存目录
         /// </summary>
         public static readonly string TileCachePath;
@@ -126,10 +131,19 @@ namespace MapBoard.IO
                     LogsPath = Path.Combine(mauiFolder, "Logs");
                     TileCachePath = Path.Combine(Path.GetTempPath(), "Tiles");//等同于FileSystem.Current.CacheDirectory 
                     DataPath = Path.Combine(mauiFolder, "Data");
+                    TrackPath = Path.Combine(mauiFolder, "Track");
                     break;
 
                 default:
                     throw new InvalidEnumArgumentException();
+            }
+
+            foreach (var dir in new[] { BackupPath, LogsPath, TileCachePath, DataPath, TrackPath })
+            {
+                if (dir != null && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
             }
         }
 
