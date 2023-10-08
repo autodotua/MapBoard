@@ -30,7 +30,6 @@ public class AndroidTrackService : Service
         }
 
         TrackService = trackService;
-        trackService.Initialize();
         trackService.Start();
     }
     private IBinder binder;

@@ -13,36 +13,48 @@ namespace MapBoard.Services
 {
     public class TrackService
     {
-        public TrackService() { }
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
-        public void Initialize()
+        private PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private bool running = false;
+        public TrackService()
         {
-            Geolocation.Default.LocationChanged += Default_LocationChanged;
             Overlay.Graphics.Clear();
         }
 
-        public void Start()
+        public async void Start()
         {
-            GeolocationListeningRequest request = new GeolocationListeningRequest(GeolocationAccuracy.Best);
-            Geolocation.Default.StartListeningForegroundAsync(request);
+            running = true;
+            Overlay.Graphics.Clear();
+            while (running)
+            {
+                var location =await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
+                if (running == false)
+                {
+                    break;
+                }
+                if (location == null)
+                {
+                    throw new Exception("无法获取位置");
+                }
+                Debug.WriteLine(location);
+                LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
+                trackLocations.Add(location);
+                trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
+                UpdateMap();
+                UpdateGpx();
+            }
+
         }
 
         public void Stop()
         {
-            Geolocation.Default.StopListeningForeground();
+            running = false;
         }
 
         public List<MapPoint> trackPoints = new List<MapPoint>();
         public List<Location> trackLocations = new List<Location>();
         PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
-        private void Default_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
-        {
-            Debug.WriteLine(e.Location);
-            trackLocations.Add(e.Location);
-            trackLineBuilder.AddPoint(e.Location.Longitude, e.Location.Latitude);
-            UpdateMap();
-            UpdateGpx();
-        }
+
 
         private void UpdateMap()
         {
@@ -55,6 +67,6 @@ namespace MapBoard.Services
         }
 
 
-        public event EventHandler LocationChanged;
+        public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
     }
 }

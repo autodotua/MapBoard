@@ -25,7 +25,6 @@ public partial class TrackPage : ContentPage
         (Platform.CurrentActivity as MainActivity).StartTrackService();
 #else
         TrackService trackService = new TrackService();
-        trackService.Initialize();
         trackService.Start();
 #endif
     }

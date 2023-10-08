@@ -87,6 +87,8 @@ namespace MapBoard.Mapping
                 locationDisplay = LocationDisplay;
                 if (locationDisplay != null)
                 {
+                    locationDisplay.NavigationPointHeightFactor = 0.4;
+                    locationDisplay.WanderExtentFactor = 0;
                     locationDisplay.IsEnabled = true;
                 }
             }

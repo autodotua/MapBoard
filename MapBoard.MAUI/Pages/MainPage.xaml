@@ -83,7 +83,9 @@
                 CornerRadius="4"
                 Source="btn_location.png"
                 Style="{StaticResource SideButtonStyle}" />
-            <Button Text="Test" Clicked="TestButton_Click"/>
+            <Button
+                Clicked="TestButton_Click"
+                Text="T" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>
