@@ -15,29 +15,35 @@ namespace MapBoard.Services
 {
     public class TrackService
     {
-        private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
+        public const double MinDistance = 2;
         private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
-        private DateTime startTime;
-        private bool running = false;
         private Location lastLocation;
-        public const double MinDistance = 2;
+        private bool running = false;
         public TrackService()
         {
             Overlay.Graphics.Clear();
             gpxTrack = gpx.CreateTrack();
         }
 
+        public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
+
+        public DateTime StartTime { get; private set; }
+        private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
+
+        public double TotalDistance { get; private set; }
+
         public async void Start()
         {
-            startTime = DateTime.Now;
-            gpx.Time = startTime;
+            StartTime = DateTime.Now;
+            gpx.Time = StartTime;
             gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
-            gpx.Description = AppInfo.Name;
+            gpx.Creator = AppInfo.Name;
             running = true;
             Overlay.Graphics.Clear();
             PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
+            double distance = 0;
             while (running)
             {
                 var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
@@ -52,12 +58,23 @@ namespace MapBoard.Services
                 Debug.WriteLine(location);
                 LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
                 trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
-                UpdateMap(trackLineBuilder);
-                if (lastLocation != null && Location.CalculateDistance(location, lastLocation, DistanceUnits.Kilometers) > MinDistance * 1000)
+
+                if (lastLocation == null)
                 {
-                    UpdateGpx(location);
                     lastLocation = location;
                 }
+                else
+                {
+                    distance = Location.CalculateDistance(location, lastLocation, DistanceUnits.Kilometers) * 1000;
+                    if (distance > MinDistance)
+                    {
+                        TotalDistance += distance;
+                        UpdateMap(trackLineBuilder);
+                        UpdateGpx(location);
+                        lastLocation = location;
+                    }
+                }
+                await timer.WaitForNextTickAsync();
             }
 
         }
@@ -68,11 +85,14 @@ namespace MapBoard.Services
             SaveGpx();
         }
 
-        private void UpdateMap(PolylineBuilder builder)
+        private void SaveGpx()
         {
-            Overlay.Graphics.Clear();
-            Overlay.Graphics.Add(new Graphic(builder.ToGeometry()));
+            if (gpxTrack.Points.Count >= 3)
+            {
+                File.WriteAllText(Path.Combine(FolderPaths.TrackPath, $"{StartTime:yyyyMMdd-HHmmss}.gpx"), gpx.ToGpxXml());
+            }
         }
+
         private void UpdateGpx(Location location)
         {
             try
@@ -94,11 +114,10 @@ namespace MapBoard.Services
             }
         }
 
-        private void SaveGpx()
+        private void UpdateMap(PolylineBuilder builder)
         {
-            File.WriteAllText(Path.Combine(FolderPaths.TrackPath, $"{startTime:yyyyMMdd-HHmmss}.gpx"), gpx.ToGpxXml());
+            Overlay.Graphics.Clear();
+            Overlay.Graphics.Add(new Graphic(builder.ToGeometry()));
         }
-
-        public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
     }
 }

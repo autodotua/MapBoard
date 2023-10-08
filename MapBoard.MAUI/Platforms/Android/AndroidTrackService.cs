@@ -17,10 +17,36 @@ namespace MapBoard.Platforms.Android;
 public class AndroidTrackService : Service
 {
     private readonly string NotificationChannelID = "MapBoard.Track";
-    private readonly int NotificationID = 1;
     private readonly string NotificationChannelName = "track";
+    private readonly int NotificationID = 1;
+    private IBinder binder;
     NotificationCompat.Builder notificationBuilder;
+    private bool pausing = false;
+
+    public AndroidTrackService()
+    {
+        binder = new AndroidTrackServiceBinder(this);
+    }
+
     public TrackService TrackService { get; private set; }
+
+    public override IBinder OnBind(Intent intent)
+    {
+        return binder;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        TrackService.Stop();
+        TrackService.LocationChanged -= TrackService_LocationChanged;
+    }
+
+    public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
+    {
+        StartForegroundService();
+        return StartCommandResult.NotSticky;
+    }
 
     public void SetTrackServiceAndStart(TrackService trackService)
     {
@@ -30,29 +56,26 @@ public class AndroidTrackService : Service
         }
 
         TrackService = trackService;
+        TrackService.LocationChanged += TrackService_LocationChanged;
         trackService.Start();
     }
-    private IBinder binder;
-
-    public AndroidTrackService()
-    {
-        binder = new AndroidTrackServiceBinder(this);
-    }
-
     private void StartForegroundService()
     {
-        var notifcationManager = GetSystemService(Context.NotificationService) as NotificationManager;
+        var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
 
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-        {
+        Intent intent = new Intent(this, typeof(MainActivity));
 
-        }
-        notificationBuilder = new NotificationCompat.Builder(this, NotificationChannelID);
-        notificationBuilder.SetAutoCancel(false);
-        notificationBuilder.SetOngoing(true);
-        notificationBuilder.SetSmallIcon(Resource.Drawable.tab_track);
-        notificationBuilder.SetContentTitle("正在记录轨迹");
-        notificationBuilder.SetContentText("正在记录轨迹");
+        const int pendingIntentId = 0;
+        PendingIntent pendingIntent =
+            PendingIntent.GetActivity(this, pendingIntentId, intent, PendingIntentFlags.Immutable);
+
+        notificationBuilder = new NotificationCompat.Builder(this, NotificationChannelID)
+            .SetAutoCancel(false)
+            .SetOngoing(true)
+            .SetContentIntent(pendingIntent)
+            .SetSmallIcon(Resource.Drawable.tab_track)
+            .SetContentTitle("正在记录轨迹")
+            .SetContentText("等待定位");
         if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
         {
             NotificationChannel notificationChannel = new NotificationChannel(NotificationChannelID,
@@ -60,7 +83,7 @@ public class AndroidTrackService : Service
             notificationChannel.EnableLights(false);
             notificationChannel.SetShowBadge(true);
             notificationChannel.LockscreenVisibility = NotificationVisibility.Public;
-            notifcationManager.CreateNotificationChannel(notificationChannel);
+            notificationManager.CreateNotificationChannel(notificationChannel);
             notificationBuilder.SetChannelId(NotificationChannelID);
             StartForeground(NotificationID, notificationBuilder.Build(), ForegroundService.TypeLocation);
         }
@@ -68,24 +91,20 @@ public class AndroidTrackService : Service
         {
             StartForeground(NotificationID, notificationBuilder.Build());
         }
+        notificationManager.Notify(NotificationID, notificationBuilder.Build());
     }
 
-    public override IBinder OnBind(Intent intent)
+    private void TrackService_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
     {
-        return binder;
-    }
+        notificationBuilder.SetContentTitle(pausing ? "暂停记录轨迹" : "正在记录轨迹");
 
+        notificationBuilder.SetContentText($"用时{DateTime.Now - TrackService.StartTime:hh':'mm':'ss}，总长度{TrackService.TotalDistance:0}米");
 
-    public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
-    {
-        StartForegroundService();
-        return StartCommandResult.NotSticky;
-    }
+        if (GetSystemService(Context.NotificationService) is NotificationManager notificationManager)
+        {
+            notificationManager.Notify(NotificationID, notificationBuilder.Build());
+        }
 
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
-        TrackService.Stop();
     }
 }
 

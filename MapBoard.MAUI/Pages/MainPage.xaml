@@ -78,7 +78,7 @@
         <!--  右侧按钮  -->
         <VerticalStackLayout
             x:Name="grdSide"
-            Margin="8,0,8,80"
+            Margin="8,0,8,56"
             HorizontalOptions="End"
             Spacing="8"
             VerticalOptions="End">
