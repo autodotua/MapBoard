@@ -167,10 +167,17 @@ namespace MapBoard.IO.Gpx
             double totalDistance = 0;
             TimeSpan totalTime = TimeSpan.Zero;
 
-            for (int i = min; i < max; i++)
+            try
             {
-                totalDistance += GeometryUtility.GetDistance(this[i].ToMapPoint(), this[i + 1].ToMapPoint());
-                totalTime += this[i + 1].Time - this[i].Time;
+                for (int i = min; i < max; i++)
+                {
+                    totalDistance += GeometryUtility.GetDistance(this[i].ToMapPoint(), this[i + 1].ToMapPoint());
+                    totalTime += this[i + 1].Time.Value - this[i].Time.Value;
+                }
+            }
+            catch(InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
             }
             return totalDistance / totalTime.TotalSeconds;
         }

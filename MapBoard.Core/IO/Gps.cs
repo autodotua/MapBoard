@@ -117,7 +117,7 @@ namespace MapBoard.IO
         /// <param name="index"></param>
         /// <param name="feature"></param>
         /// <param name="time"></param>
-        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature,DateTime time)
+        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature,DateTime? time)
         {
             if (layer.HasField(Filed_Name, FieldInfoType.Text))
             {
@@ -141,7 +141,7 @@ namespace MapBoard.IO
             }
             if (layer.HasField(Filed_Time, FieldInfoType.Time))
             {
-                feature.SetAttributeValue(Filed_Time, time.ToString(Parameters.TimeFormat));
+                feature.SetAttributeValue(Filed_Time, time?.ToString(Parameters.TimeFormat)??"");
             }
             if (layer.HasField(Filed_Index, FieldInfoType.Integer))
             {

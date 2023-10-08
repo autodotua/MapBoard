@@ -21,6 +21,7 @@ namespace MapBoard.Services
         private GpxTrack gpxTrack;
         private Location lastLocation;
         private bool running = false;
+        private double tolerableAccuracy=20;
         public TrackService()
         {
             Overlay.Graphics.Clear();
@@ -44,6 +45,8 @@ namespace MapBoard.Services
             Overlay.Graphics.Clear();
             PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
             double distance = 0;
+            //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
+            await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
             while (running)
             {
                 var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
@@ -55,7 +58,10 @@ namespace MapBoard.Services
                 {
                     throw new Exception("无法获取位置");
                 }
-                Debug.WriteLine(location);
+                if(location.Accuracy> tolerableAccuracy || location.Altitude==null) //通常是基站和WIFI定位结果，排除
+                {
+                    continue;
+                }
                 LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
                 trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
 
@@ -82,6 +88,7 @@ namespace MapBoard.Services
         public void Stop()
         {
             running = false;
+            Geolocation.Default.StopListeningForeground();
             SaveGpx();
         }
 
@@ -97,12 +104,13 @@ namespace MapBoard.Services
         {
             try
             {
-                GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude ?? 0, location.Timestamp.LocalDateTime);
+                GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude, location.Timestamp.LocalDateTime);
                 point.OtherProperties.Add("Accuracy", location.Accuracy.ToString());
                 point.OtherProperties.Add("VerticalAccuracy", location.VerticalAccuracy?.ToString() ?? "");
                 point.OtherProperties.Add("Course", location.Course?.ToString() ?? "");
+                point.OtherProperties.Add("Speed", location.Speed?.ToString() ?? "");
                 gpxTrack.Points.Add(point);
-                Debug.WriteLine("add to gpx");
+
                 if (gpxTrack.Points.Count % 10 == 0)
                 {
                     SaveGpx();

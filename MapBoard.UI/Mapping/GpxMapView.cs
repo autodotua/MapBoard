@@ -276,23 +276,31 @@ namespace MapBoard.Mapping
                 }
                 trackInfo.Overlay.Graphics.Clear();
             }
-
-            //处理自动平滑
-            if (Config.Instance.Gpx_AutoSmooth)
+            double minZ = 0;
+            double mag = 0;
+            try
             {
-                GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Z, (p, v) => p.Z = v);
-                if (!Config.Instance.Gpx_AutoSmoothOnlyZ)
+                //处理自动平滑
+                if (Config.Instance.Gpx_AutoSmooth)
                 {
-                    GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
-                    GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                    GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
+                    if (!Config.Instance.Gpx_AutoSmoothOnlyZ)
+                    {
+                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
+                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                    }
+                    trackInfo.Smoothed = true;
                 }
-                trackInfo.Smoothed = true;
+
+                //处理高程
+                minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z.Value) : 0;
+                mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
+
             }
-
-            //处理高程
-            double minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z) : 0;
-            double mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
-
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有高程信息的点", ex);
+            }
 
             List<List<MapPoint>> mapPoints = new List<List<MapPoint>>();
             List<MapPoint> subMapPoints = new List<MapPoint>();
@@ -308,7 +316,7 @@ namespace MapBoard.Mapping
                     p.Z = newP.Z;
                 }
 
-                MapPoint point = new MapPoint(p.X, p.Y, (p.Z - minZ) * mag, SpatialReferences.Wgs84);
+                MapPoint point = new MapPoint(p.X, p.Y, (p.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
 
                 //如果前后两个点离得太远了，那么久不连接
                 if (lastPoint != null && GeometryUtility.GetDistance(point, lastPoint) > Config.Instance.Gpx_MaxAcceptablePointDistance)

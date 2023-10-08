@@ -15,7 +15,7 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class GpxPoint : ICloneable, INotifyPropertyChanged
     {
-        public GpxPoint(double x, double y, double z, DateTime time)
+        public GpxPoint(double x, double y, double? z, DateTime? time)
         {
             X = x;
             Y = y;
@@ -38,7 +38,7 @@ namespace MapBoard.IO.Gpx
         /// <summary>
         /// 时间
         /// </summary>
-        public DateTime Time { get; set; }
+        public DateTime? Time { get; set; }
 
         /// <summary>
         /// 经度
@@ -53,7 +53,7 @@ namespace MapBoard.IO.Gpx
         /// <summary>
         /// 高程
         /// </summary>
-        public double Z { get; set; }
+        public double? Z { get; set; }
 
         public object Clone()
         {
@@ -69,7 +69,11 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public MapPoint ToMapPoint()
         {
-            return new MapPoint(X, Y, Z, SpatialReferences.Wgs84);
+            if(!Z.HasValue)
+            {
+                throw new InvalidOperationException("指定的" + nameof(GpxPoint) + "没有高度信息");
+            }
+            return new MapPoint(X, Y, Z.Value, SpatialReferences.Wgs84);
         }
 
         /// <summary>
@@ -90,8 +94,8 @@ namespace MapBoard.IO.Gpx
         {
             double x = 0;
             double y = 0;
-            double z = 0;
-            DateTime time = default;
+            double? z = null;
+            DateTime? time = null;
             Dictionary<string, string> otherProperties = new Dictionary<string, string>();
             foreach (var nodes in new IEnumerable<XmlNode>[] {
                 xml.Attributes.Cast<XmlAttribute>(),
@@ -145,13 +149,19 @@ namespace MapBoard.IO.Gpx
         {
             trkpt.SetAttribute("lat", Y.ToString());
             trkpt.SetAttribute("lon", X.ToString());
-            AppendChildNode("ele", Z.ToString());
-            //foreach (var item in OtherProperties)
-            //{
-            //    AppendChildNode(item.Key, item.Value);
-            //}
+            if (Z.HasValue)
+            {
+                AppendChildNode("ele", Z.ToString());
+            }
+            if (Time.HasValue)
+            {
+                AppendChildNode("time", Time.Value.ToString(Gpx.GpxTimeFormat));
+            }
+            foreach (var item in OtherProperties)
+            {
+                AppendChildNode(item.Key, item.Value);
+            }
 
-            AppendChildNode("time", Time.ToString(Gpx.GpxTimeFormat));
 
             void AppendChildNode(string name, string value)
             {

@@ -25,7 +25,7 @@ namespace MapBoard.IO.Gpx
         {
             GpxInfo = parent;
         }
-        internal GpxTrack(XmlNode xml, Gpx parent):this(parent)
+        internal GpxTrack(XmlNode xml, Gpx parent) : this(parent)
         {
             LoadGpxTrackInfoProperties(this, xml);
         }
@@ -158,20 +158,27 @@ namespace MapBoard.IO.Gpx
             double totalDistance = 0;
             double totalSeconds = 0;
             GpxPoint last = null;
-            foreach (var point in Points.TimeOrderedPoints)
+            try
             {
-                if (last != null)
+                foreach (var point in Points.TimeOrderedPoints)
                 {
-                    double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
-                    double second = (point.Time - last.Time).TotalSeconds;
-                    double speed = distance / second;
-                    if (speed > speedDevaluation)
+                    if (last != null)
                     {
-                        totalDistance += distance;
-                        totalSeconds += second;
+                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double second = (point.Time - last.Time).Value.TotalSeconds;
+                        double speed = distance / second;
+                        if (speed > speedDevaluation)
+                        {
+                            totalDistance += distance;
+                            totalSeconds += second;
+                        }
                     }
+                    last = point;
                 }
-                last = point;
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
             }
             return totalDistance / totalSeconds;
         }
@@ -186,20 +193,27 @@ namespace MapBoard.IO.Gpx
             double totalDistance = 0;
             double totalSeconds = 0;
             GpxPoint last = null;
-            foreach (var point in Points.TimeOrderedPoints)
+            try
             {
-                if (last != null)
+                foreach (var point in Points.TimeOrderedPoints)
                 {
-                    double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
-                    double second = (point.Time - last.Time).TotalSeconds;
-                    double speed = distance / second;
-                    if (speed > speedDevaluation)
+                    if (last != null)
                     {
-                        totalDistance += distance;
-                        totalSeconds += second;
+                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double second = (point.Time - last.Time).Value.TotalSeconds;
+                        double speed = distance / second;
+                        if (speed > speedDevaluation)
+                        {
+                            totalDistance += distance;
+                            totalSeconds += second;
+                        }
                     }
+                    last = point;
                 }
-                last = point;
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
             }
             return TimeSpan.FromSeconds(totalSeconds);
         }
