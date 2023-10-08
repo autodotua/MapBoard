@@ -41,7 +41,7 @@ namespace MapBoard.Pages
             await map.LoadAsync();
             layerList.Initialize();
         }
-
+        private bool loaded = false;
         private async void ContentPage_Loaded(object sender, EventArgs e)
         {
             await InitializeAsync();
@@ -80,7 +80,14 @@ namespace MapBoard.Pages
 
         private void LocationButton_Click(object sender, EventArgs e)
         {
-            MainMapView.Current.MoveToLocation();
+            map.LocationDisplay.AutoPanMode = LocationDisplayAutoPanMode.Recenter;
+        }
+
+        private void TestButton_Click(object sender, EventArgs e)
+        {
+#if ANDROID
+            Platform.CurrentActivity.Finish();
+#endif
         }
     }
 

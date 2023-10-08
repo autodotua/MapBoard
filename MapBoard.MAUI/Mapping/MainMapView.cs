@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Esri.ArcGISRuntime.Symbology;
 
 namespace MapBoard.Mapping
 {
@@ -81,19 +82,22 @@ namespace MapBoard.Mapping
         LocationDisplay locationDisplay = null;
         private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(LocationDisplay) && locationDisplay == null)
+            if (e.PropertyName == nameof(LocationDisplay))
             {
                 locationDisplay = LocationDisplay;
-                locationDisplay.IsEnabled = true;
+                if (locationDisplay != null)
+                {
+                    locationDisplay.IsEnabled = true;
+                }
             }
         }
 
         public void MoveToLocation()
         {
-            if(locationDisplay!=null && locationDisplay.IsEnabled )
+            if (locationDisplay != null && locationDisplay.IsEnabled)
             {
                 var point = locationDisplay.MapLocation;
-                if(point != null)
+                if (point != null)
                 {
                     SetViewpointCenterAsync(point);
                 }
@@ -143,6 +147,8 @@ namespace MapBoard.Mapping
         /// </summary>
         public MapLayerCollection Layers { get; }
 
+        public GraphicsOverlay TrackOverlay { get; } = new GraphicsOverlay();
+
         /// <summary>
         /// 覆盖层相关
         /// </summary>
@@ -163,8 +169,14 @@ namespace MapBoard.Mapping
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
             await this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged).ConfigureAwait(false);
-
             CurrentTask = BoardTask.Ready;
+
+            if (!GraphicsOverlays.Contains(TrackOverlay))
+            {
+                TrackOverlay.Renderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.FromArgb(0x54, 0xA5, 0xF6), 6));
+                GraphicsOverlays.Add(TrackOverlay);
+
+            }
         }
 
         /// <summary>

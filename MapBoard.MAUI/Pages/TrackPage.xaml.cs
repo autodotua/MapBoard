@@ -17,14 +17,16 @@ public partial class TrackPage : ContentPage
     public TrackPage()
     {
         InitializeComponent();
-
     }
 
     private void StartTrackButton_Click(object sender, EventArgs e)
     {
 #if ANDROID
-        Intent intent = new Intent(Application.Context, typeof(AndroidTrackService));
-        Application.Context.StartForegroundService(intent);
+        (Platform.CurrentActivity as MainActivity).StartTrackService();
+#else
+        TrackService trackService = new TrackService();
+        trackService.Initialize();
+        trackService.Start();
 #endif
     }
 }
