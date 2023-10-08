@@ -14,39 +14,48 @@ namespace MapBoard.Platforms.Android
     [Service(ForegroundServiceType = ForegroundService.TypeLocation)]
     class AndroidTrackService : Service
     {
-        private readonly string NOTIFICATION_CHANNEL_ID = "mapboard.track";
-        private readonly int NOTIFICATION_ID = 1;
-        private readonly string NOTIFICATION_CHANNEL_NAME = "track";
-
+        private readonly string NotificationChannelID = "MapBoard.Track";
+        private readonly int NotificationID = 1;
+        private readonly string NotificationChannelName = "track";
+        NotificationCompat.Builder notificationBuilder;
         private void StartForegroundService()
         {
             var notifcationManager = GetSystemService(Context.NotificationService) as NotificationManager;
 
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
-                CreateNotificationChannel(notifcationManager);
+
             }
-            var notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-            notification.SetAutoCancel(false);
-            notification.SetOngoing(true);
-            notification.SetSmallIcon(Resource.Mipmap.appicon);
-            notification.SetContentTitle("ForegroundService");
-            notification.SetContentText("Foreground Service is running");
-            if ((int)Build.VERSION.SdkInt < 29)
+            notificationBuilder = new NotificationCompat.Builder(this, NotificationChannelID);
+            notificationBuilder.SetAutoCancel(false);
+            notificationBuilder.SetOngoing(true);
+            notificationBuilder.SetSmallIcon(Resource.Drawable.tab_track);
+            notificationBuilder.SetContentTitle("正在记录轨迹");
+            notificationBuilder.SetContentText("正在记录轨迹");
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
-                StartForeground(NOTIFICATION_ID, notification.Build());
+                NotificationChannel notificationChannel = new NotificationChannel(NotificationChannelID,
+                        NotificationChannelName, NotificationImportance.Low);
+                notificationChannel.EnableLights(false);
+                notificationChannel.SetShowBadge(true);
+                notificationChannel.LockscreenVisibility = NotificationVisibility.Public;
+                notifcationManager.CreateNotificationChannel(notificationChannel);
+                notificationBuilder.SetChannelId(NotificationChannelID);
+                StartForeground(NotificationID, notificationBuilder.Build(), ForegroundService.TypeLocation);
             }
             else
             {
-                StartForeground(NOTIFICATION_ID, notification.Build(), ForegroundService.TypeLocation);
+                StartForeground(NotificationID, notificationBuilder.Build());
             }
         }
 
         private void CreateNotificationChannel(NotificationManager notificationMnaManager)
         {
-            var channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME,
+            var channel = new NotificationChannel(NotificationChannelID, NotificationChannelName,
             NotificationImportance.Low);
             notificationMnaManager.CreateNotificationChannel(channel);
+
+
         }
 
         public override IBinder OnBind(Intent intent)
@@ -58,7 +67,28 @@ namespace MapBoard.Platforms.Android
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             StartForegroundService();
+            StartTimer();
             return StartCommandResult.NotSticky;
+        }
+
+        private void StartTimer()
+        {
+            var timer = Dispatcher.GetForCurrentThread().CreateTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+            timer.Start();
+        }
+
+        private async void Timer_Tick(object sender, EventArgs e)
+        {
+            notificationBuilder.SetContentText(DateTime.Now.ToString());
+
+            var notifcationManager = GetSystemService(Context.NotificationService) as NotificationManager;
+            notifcationManager.Notify(NotificationID, notificationBuilder.Build());
+            //await MainThread.InvokeOnMainThreadAsync(() =>
+            //   {
+            //       notificationBuilder.NotifyAll();
+            //   });
         }
     }
 }

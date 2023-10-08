@@ -55,6 +55,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Platforms\Android\Resources\values\styles.xml" />
 	  <None Remove="Resources\Images\btn_close.svg" />
 	  <None Remove="Resources\Images\btn_layers.svg" />
 	  <None Remove="Resources\Images\btn_location.svg" />

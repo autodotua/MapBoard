@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <style name="MyAppTheme" parent="Maui.SplashTheme">
+    <item name="android:windowSplashScreenBackground">@color/colorPrimary</item>
+    <item name="android:windowLightStatusBar">true</item>
+  </style>
+</resources>
