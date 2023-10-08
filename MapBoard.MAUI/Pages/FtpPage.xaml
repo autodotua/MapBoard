@@ -6,8 +6,11 @@
     xmlns:base="clr-namespace:MapBoard">
     <Grid
         Margin="16"
-        RowDefinitions="Auto,*,Auto">
-        <Grid ColumnDefinitions="Auto,8,*">
+        Padding="0,32,0,0"
+        RowDefinitions="Auto,*,Auto,8,Auto">
+        <Grid
+            ColumnDefinitions="Auto,8,*"
+            RowDefinitions="Auto,4,Auto">
             <Label
                 FontAttributes="Bold"
                 Text="IP地址："
@@ -18,20 +21,46 @@
                 HorizontalTextAlignment="Center"
                 Text="{Binding IP}"
                 VerticalOptions="Center" />
+            <Label
+                Grid.Row="2"
+                FontAttributes="Bold"
+                Text="端口："
+                VerticalOptions="Center" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                Text="2222"
+                VerticalOptions="Center" />
         </Grid>
 
-        <!--  IsVisible="{Binding IsOn, Converter={StaticResource base:InverseBoolConverter}, Mode=OneWay}"  -->
+        <VerticalStackLayout
+            x:Name="stkFtpDirs"
+            Grid.Row="2">
+            <RadioButton
+                x:Name="rbtnDataDir"
+                Content="地图数据目录"
+                GroupName="FtpDir"
+                IsChecked="True" />
+            <RadioButton
+                x:Name="rbtnTrackDir"
+                Content="轨迹目录"
+                GroupName="FtpDir" />
+            <RadioButton
+                x:Name="rbtnLogDir"
+                Content="日志目录"
+                GroupName="FtpDir" />
+            <RadioButton
+                x:Name="rbtnRootDir"
+                Content="根目录"
+                GroupName="FtpDir" />
+        </VerticalStackLayout>
+
         <Button
-            Grid.Row="2"
+            Grid.Row="44"
             Margin="8"
             Clicked="StartStopFtpButton_Clicked"
             Text="打开FTP" />
-        <!--<Button
-            Grid.Row="2"
-            Margin="8"
-            Clicked="StopFtpButton_Clicked"
-            Text="关闭FTP" />-->
-
-        <!--  IsVisible="{Binding IsOn, Mode=OneWay}"  -->
     </Grid>
 </ContentPage>

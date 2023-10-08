@@ -17,7 +17,7 @@ namespace MapBoard.Platforms.Android;
 public class AndroidTrackService : Service
 {
     private readonly string NotificationChannelID = "MapBoard.Track";
-    private readonly string NotificationChannelName = "track";
+    private readonly string NotificationChannelName = "轨迹记录";
     private readonly int NotificationID = 1;
     private IBinder binder;
     NotificationCompat.Builder notificationBuilder;

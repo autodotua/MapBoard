@@ -64,7 +64,7 @@ Route="MainPage" />
                 Route="TrackPage" />
         </Tab>
         <Tab
-            Title="FTP"
+            Title="文件"
             Icon="tab_ftp.png">
             <ShellContent
                 ContentTemplate="{DataTemplate pages:FtpPage}"

@@ -18,20 +18,17 @@ namespace MapBoard.Services
 {
     public class FtpService
     {
-        public FtpService()
+        IFtpServerHost ftpServerHost;
+        private ServiceCollection services;
+        public FtpService(string dir)
         {
-            var services = new ServiceCollection();
-            string dir = FolderPaths.DataPath;
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-            services.Configure<DotNetFileSystemOptions>(opt => opt.RootPath = dir);
+            services = new ServiceCollection();
 
             services.AddFtpServer(builder => builder
                 .UseDotNetFileSystem()
                 .EnableAnonymousAuthentication());
 
+            services.Configure<DotNetFileSystemOptions>(opt => opt.RootPath = dir);
             services.Configure<FtpServerOptions>(opt =>
             {
                 opt.ServerAddress = "0.0.0.0";
@@ -42,18 +39,6 @@ namespace MapBoard.Services
 
             ftpServerHost = serviceProvider.GetRequiredService<IFtpServerHost>();
         }
-
-        IFtpServerHost ftpServerHost;
-        public Task StartServerAsync()
-        {
-            return ftpServerHost.StartAsync();
-        }
-
-        public Task StopServerAsync()
-        {
-            return ftpServerHost.StopAsync();
-        }
-
         public static IEnumerable<string> GetIpAddress()
         {
 #if ANDROID
@@ -75,6 +60,16 @@ namespace MapBoard.Services
 #else
             return null;
 #endif
+        }
+
+        public Task StartServerAsync()
+        {
+            return ftpServerHost.StartAsync();
+        }
+
+        public Task StopServerAsync()
+        {
+            return ftpServerHost.StopAsync();
         }
     }
 }

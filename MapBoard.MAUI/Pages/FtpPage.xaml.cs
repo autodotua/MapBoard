@@ -1,3 +1,4 @@
+using MapBoard.IO;
 using MapBoard.Services;
 using MapBoard.ViewModels;
 using System.Globalization;
@@ -7,7 +8,7 @@ namespace MapBoard.Pages;
 
 public partial class FtpPage : ContentPage
 {
-    FtpService ftpService = new FtpService();
+    FtpService ftpService;
     public FtpPage()
     {
         var ip = FtpService.GetIpAddress();
@@ -28,11 +29,32 @@ public partial class FtpPage : ContentPage
     {
         if ((BindingContext as FtpPageViewModel).IsOn)
         {
+            stkFtpDirs.IsEnabled= true;
             ftpService.StopServerAsync();
+            ftpService = null;
             (sender as Button).Text = "´ò¿ªFTP";
         }
         else
         {
+            stkFtpDirs.IsEnabled = false;
+            string dir = null;
+            if(rbtnDataDir.IsChecked)
+            {
+                dir = FolderPaths.DataPath;
+            }
+            else if(rbtnLogDir.IsChecked)
+            {
+                dir = FolderPaths.LogsPath;
+            }
+            else if (rbtnTrackDir.IsChecked)
+            {
+                dir = FolderPaths.TrackPath;
+            }
+            else if (rbtnRootDir.IsChecked)
+            {
+                dir = FileSystem.AppDataDirectory;
+            }
+            ftpService = new FtpService(dir);
             ftpService.StartServerAsync();
             (sender as Button).Text = "¹Ø±ÕFTP";
         }
