@@ -20,7 +20,8 @@ public class AndroidTrackService : Service
     private readonly string NotificationChannelName = "轨迹记录";
     private readonly int NotificationID = 1;
     private IBinder binder;
-    NotificationCompat.Builder notificationBuilder;
+    private NotificationCompat.Builder notificationBuilder;
+    private AndroidGnssHelper gnss;
     private bool pausing = false;
 
     public AndroidTrackService()
@@ -39,6 +40,8 @@ public class AndroidTrackService : Service
     {
         base.OnDestroy();
         TrackService.Stop();
+        gnss.Stop();
+        gnss.GnssStatusChanged -= Gnss_GnssStatusChanged;
         TrackService.LocationChanged -= TrackService_LocationChanged;
     }
 
@@ -55,10 +58,19 @@ public class AndroidTrackService : Service
             throw new Exception("不可重复设置");
         }
 
+        gnss = new AndroidGnssHelper(this);
         TrackService = trackService;
         TrackService.LocationChanged += TrackService_LocationChanged;
+        gnss.GnssStatusChanged += Gnss_GnssStatusChanged;
+        gnss.Start();
         trackService.Start();
     }
+
+    private void Gnss_GnssStatusChanged(object sender, EventArgs e)
+    {
+        TrackService.UpdateGnssStatus(gnss.LastStatus);
+    }
+
     private void StartForegroundService()
     {
         var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;

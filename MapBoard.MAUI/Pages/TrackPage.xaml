@@ -3,16 +3,125 @@
     x:Class="MapBoard.Pages.TrackPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:base="clr-namespace:MapBoard">
-    <Grid>
+    xmlns:base="clr-namespace:MapBoard"
+    xmlns:s="clr-namespace:MapBoard.Services"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:TrackPageViewModel}">
+    <Grid RowDefinitions="*,8,Auto">
+        <Grid
+            ColumnDefinitions="Auto,24,Auto"
+            HorizontalOptions="Center"
+            IsVisible="{Binding TrackService, Converter={StaticResource NotNullConverter}}"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+            VerticalOptions="Center">
+            <Grid.Resources>
+                <Style TargetType="{x:Type Label}" x:Key="KeyLabel">
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="HorizontalOptions" Value="End" />
+                </Style>
+            </Grid.Resources>
+            <Label
+                Grid.Row="0"
+                Style="{StaticResource KeyLabel}"
+                Text="时间" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="1"
+                Text="记录点" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="2"
+                Text="里程" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="3"
+                Text="经纬度" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="4"
+                Text="海拔" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="5"
+                Text="速度" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="6"
+                Text="方向" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="7"
+                Text="精度" />
+            <Label
+                Style="{StaticResource KeyLabel}"
+                Grid.Row="8"
+                Text="卫星数量" />
+
+            <Label
+                Grid.Row="0"
+                Grid.Column="2"
+                Text="{Binding TrackService.UpdateTime, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="2"
+                Text="{Binding TrackService.PointsCount, StringFormat='{0}'}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="2"
+                Text="{Binding TrackService.TotalDistance, StringFormat='{0:0}m'}" />
+            <Label
+                Grid.Row="3"
+                Grid.Column="2">
+                <Label.Text>
+                    <MultiBinding StringFormat="{}{0:0.00000}° {1:0.00000}°">
+                        <Binding Path="TrackService.LastLocation.Longitude" />
+                        <Binding Path="TrackService.LastLocation.Latitude" />
+                    </MultiBinding>
+                </Label.Text>
+            </Label>
+            <Label
+                Grid.Row="4"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation.Altitude, StringFormat='{0:0}m'}" />
+            <Label
+                Grid.Row="5"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation.Speed, StringFormat='{0:0}m/s'}" />
+            <Label
+                Grid.Row="6"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation.Course, StringFormat='{0:0}°'}" />
+            <Label
+                Grid.Row="7"
+                Grid.Column="2">
+                <Label.Text>
+                    <MultiBinding StringFormat="{}{0:0}m（水平） {1:0}m（垂直）">
+                        <Binding Path="TrackService.LastLocation.Accuracy" />
+                        <Binding Path="TrackService.LastLocation.VerticalAccuracy" />
+                    </MultiBinding>
+                </Label.Text>
+            </Label>
+            <Label
+                Grid.Row="8"
+                Grid.Column="2">
+                <Label.Text>
+                    <MultiBinding StringFormat="{}{0:0} / {1:0}">
+                        <Binding Path="TrackService.GnssStatus.Fixed" />
+                        <Binding Path="TrackService.GnssStatus.Total" />
+                    </MultiBinding>
+                </Label.Text>
+            </Label>
+        </Grid>
         <Button
             x:Name="btnStart"
+            Grid.Row="2"
             Clicked="StartTrackButton_Click"
             HorizontalOptions="Center"
             Text="开始记录轨迹"
             VerticalOptions="Center" />
         <Button
             x:Name="btnStop"
+            Grid.Row="2"
             Clicked="StopButton_Clicked"
             HorizontalOptions="Center"
             IsVisible="False"

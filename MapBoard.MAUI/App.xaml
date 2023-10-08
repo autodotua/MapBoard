@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <c:NotNullConverter x:Key="NotNullConverter" />
             <Style TargetType="{x:Type Button}">
                 <!--  规避临时BUG：https://github.com/dotnet/maui/issues/17642  -->
                 <Setter Property="BackgroundColor" Value="{x:Null}" />

@@ -18,6 +18,7 @@ public partial class TrackPage : ContentPage
     public TrackPage()
     {
         InitializeComponent();
+        BindingContext = new TrackPageViewModel();
     }
 
     private void StartTrackButton_Click(object sender, EventArgs e)
@@ -30,8 +31,13 @@ public partial class TrackPage : ContentPage
 #endif
         btnStart.IsVisible = false;
         btnStop.IsVisible = true;
+        //TrackService.Current.LocationChanged += Current_LocationChanged;
     }
 
+    private void Current_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
 
     private void StopButton_Clicked(object sender, EventArgs e)
     {
@@ -42,5 +48,6 @@ public partial class TrackPage : ContentPage
 #endif
         btnStart.IsVisible = true;
         btnStop.IsVisible = false;
+        //TrackService.Current.LocationChanged -= Current_LocationChanged;
     }
 }

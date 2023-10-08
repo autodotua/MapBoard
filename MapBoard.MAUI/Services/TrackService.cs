@@ -1,42 +1,101 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
+using FzLib;
 using MapBoard.IO;
 using MapBoard.IO.Gpx;
 using MapBoard.Mapping;
+using MapBoard.Model;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using XmpCore.Impl;
 
 namespace MapBoard.Services
 {
-    public class TrackService
+    public class TrackService : INotifyPropertyChanged
     {
         public const double MinDistance = 2;
+        private static TrackService current;
         private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private GnssStatusInfo gnssStatus;
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
         private bool running = false;
-        private double tolerableAccuracy=20;
+        private bool started = false;
+        private DateTime startTime = DateTime.Now;
+        private double tolerableAccuracy = 20;
+        private double totalDistance;
+
+        private DateTime updateTime = DateTime.Now;
+
         public TrackService()
         {
             Overlay.Graphics.Clear();
             gpxTrack = gpx.CreateTrack();
         }
 
+        public static event PropertyChangedEventHandler StaticPropertyChanged;
+
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+        public static TrackService Current
+        {
+            get => current;
+            set
+            {
+                current = value;
+                StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(nameof(Current)));
+            }
+        }
+        private int pointsCount;
+        public int PointsCount
+        {
+            get => pointsCount;
+            set => this.SetValueAndNotify(ref pointsCount, value, nameof(PointsCount));
+        }
 
-        public DateTime StartTime { get; private set; }
+        public string Test => "dsad";
+        public GnssStatusInfo GnssStatus
+        {
+            get => gnssStatus;
+            private set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
+        }
+        public Location LastLocation
+        {
+            get => lastLocation;
+            private set => this.SetValueAndNotify(ref lastLocation, value, nameof(LastLocation));
+        }
+        public DateTime StartTime
+        {
+            get => startTime;
+            private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
+        }
+        public double TotalDistance
+        {
+            get => totalDistance;
+            private set => this.SetValueAndNotify(ref totalDistance, value, nameof(TotalDistance));
+        }
+        public DateTime UpdateTime
+        {
+            get => updateTime;
+            private set => this.SetValueAndNotify(ref updateTime, value, nameof(UpdateTime));
+        }
+
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
-
-        public double TotalDistance { get; private set; }
-
         public async void Start()
         {
+            if (started)
+            {
+                throw new Exception("单个实例不可多次开始记录轨迹");
+            }
+            Current = this;
+            started = true;
             StartTime = DateTime.Now;
             gpx.Time = StartTime;
             gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
@@ -58,28 +117,27 @@ namespace MapBoard.Services
                 {
                     throw new Exception("无法获取位置");
                 }
-                if(location.Accuracy> tolerableAccuracy || location.Altitude==null) //通常是基站和WIFI定位结果，排除
+                if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
                 {
                     continue;
                 }
                 LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
                 trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
 
-                if (lastLocation == null)
+                if (LastLocation == null)
                 {
-                    lastLocation = location;
+                    LastLocation = location;
                 }
-                else
+                distance = Location.CalculateDistance(location, LastLocation, DistanceUnits.Kilometers) * 1000;
+                if (PointsCount == 0 || distance > MinDistance)
                 {
-                    distance = Location.CalculateDistance(location, lastLocation, DistanceUnits.Kilometers) * 1000;
-                    if (distance > MinDistance)
-                    {
-                        TotalDistance += distance;
-                        UpdateMap(trackLineBuilder);
-                        UpdateGpx(location);
-                        lastLocation = location;
-                    }
+                    TotalDistance += distance;
+                    UpdateMap(trackLineBuilder);
+                    UpdateGpx(location);
+                    LastLocation = location;
+                    PointsCount++;
                 }
+                UpdateTime = location.Timestamp.LocalDateTime;
                 await timer.WaitForNextTickAsync();
             }
 
@@ -88,8 +146,15 @@ namespace MapBoard.Services
         public void Stop()
         {
             running = false;
+            Current = null;
             Geolocation.Default.StopListeningForeground();
             SaveGpx();
+        }
+
+
+        public void UpdateGnssStatus(GnssStatusInfo gpsStatus)
+        {
+            GnssStatus = gpsStatus;
         }
 
         private void SaveGpx()
@@ -105,10 +170,22 @@ namespace MapBoard.Services
             try
             {
                 GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude, location.Timestamp.LocalDateTime);
-                point.OtherProperties.Add("Accuracy", location.Accuracy.ToString());
-                point.OtherProperties.Add("VerticalAccuracy", location.VerticalAccuracy?.ToString() ?? "");
-                point.OtherProperties.Add("Course", location.Course?.ToString() ?? "");
-                point.OtherProperties.Add("Speed", location.Speed?.ToString() ?? "");
+                if (location.Accuracy.HasValue)
+                {
+                    point.OtherProperties.Add("Accuracy", location.Accuracy.ToString());
+                }
+                if (location.VerticalAccuracy.HasValue)
+                {
+                    point.OtherProperties.Add("VerticalAccuracy", location.VerticalAccuracy.ToString());
+                }
+                if (location.Course.HasValue)
+                {
+                    point.OtherProperties.Add("Course", location.Course.ToString());
+                }
+                if (location.Speed.HasValue)
+                {
+                    point.OtherProperties.Add("Speed", location.Speed.ToString());
+                }
                 gpxTrack.Points.Add(point);
 
                 if (gpxTrack.Points.Count % 10 == 0)
