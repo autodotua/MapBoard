@@ -2,7 +2,7 @@
 using Android.Content;
 using Android.App;
 using MapBoard.Platforms.Android;
-using Application=Android.App.Application;
+using Application = Android.App.Application;
 #endif
 using MapBoard.Services;
 using MapBoard.ViewModels;
@@ -11,6 +11,8 @@ using System.Linq;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using MapBoard.IO;
 using MapBoard.Mapping;
+using MapBoard.IO.Gpx;
+using Esri.ArcGISRuntime.Geometry;
 
 namespace MapBoard.Pages;
 
@@ -20,10 +22,25 @@ public partial class TrackPage : ContentPage
     {
         InitializeComponent();
         BindingContext = new TrackPageViewModel();
+        TrackService.ExceptionThrown += TrackService_ExceptionThrown;
+    }
+
+    private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (Shell.Current.IsVisible)
+            {
+                Shell.Current.DisplayAlert("轨迹记录失败", e.Exception.Message, "确定");
+                StopTrack(false);
+                UpdateButtonsVisible(false, false);
+            }
+        });
     }
 
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
+        UpdateButtonsVisible(TrackService.Current != null, false);
         if (TrackService.Current == null && Config.Instance.IsTracking)
         {
             var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
@@ -79,11 +96,18 @@ public partial class TrackPage : ContentPage
 #endif
     }
 
-    private void StartTrackButton_Click(object sender, EventArgs e)
+    private async void StartTrackButton_Click(object sender, EventArgs e)
     {
-        Config.Instance.IsTracking = true;
-        StartTrack();
-        UpdateButtonsVisible(true, false);
+        try
+        {
+            Config.Instance.IsTracking = true;
+            StartTrack();
+            UpdateButtonsVisible(true, false);
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
+        }
     }
     private void StopButton_Clicked(object sender, EventArgs e)
     {
@@ -110,12 +134,40 @@ public partial class TrackPage : ContentPage
         TrackService.Current.Stop();
 #endif
     }
-    private void UpdateButtonsVisible(bool running,bool pausing)
+    private void UpdateButtonsVisible(bool running, bool pausing)
     {
         btnStart.IsVisible = !running;
         grdStopAndPause.IsVisible = running;
-        btnPause.IsVisible = !pausing;   
-        btnResume.IsVisible = pausing;   
+        btnPause.IsVisible = !pausing;
+        btnResume.IsVisible = pausing;
         lblPausing.IsVisible = pausing;
+        grdDetail.IsVisible = running;
+        lvwGpxList.IsVisible = !running;
+    }
+
+    private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        try
+        {
+            var file = e.Item as FileInfo;
+            Gpx gpx = await Gpx.FromFileAsync(file.FullName);
+
+            var overlay = MainMapView.Current.TrackOverlay;
+            overlay.Graphics.Clear();
+            var points = gpx.Tracks.Select(p => p.Points.Select(q => new MapPoint(q.X, q.Y)));
+            var line = new Polyline(points, SpatialReferences.Wgs84);
+            overlay.Graphics.Add(new Esri.ArcGISRuntime.UI.Graphic(line));
+            var a = 1 / new List<int>().Count;
+            await Shell.Current.GoToAsync("//MainPage");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("加载失败", ex.Message, "确定");
+        }
+    }
+
+    private void DeleteSwipeItem_Invoked(object sender, EventArgs e)
+    {
+
     }
 }

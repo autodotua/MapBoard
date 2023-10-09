@@ -4,6 +4,8 @@ namespace MapBoard;
 
 public partial class AppShell : Shell
 {
+    private bool loaded = false;
+
     public AppShell()
     {
         InitializeComponent();
@@ -29,7 +31,21 @@ public partial class AppShell : Shell
                 return;
             }
             await RequestAsync<LocationAlways>();
+        }
 
+        while ((await CheckStatusAsync<LocationWhenInUse>()) != PermissionStatus.Granted)
+        {
+            if (ShouldShowRationale<LocationWhenInUse>())
+            {
+                await Shell.Current.DisplayAlert("需要权限", "该应用需要定位权限，否则无法正常工作", "确定");
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("需要权限", "该应用需要定位权限，否则无法正常工作", "进入设置");
+                AppInfo.ShowSettingsUI();
+                return;
+            }
+            await RequestAsync<LocationWhenInUse>();
         }
 
 #if ANDROID
@@ -39,8 +55,6 @@ public partial class AppShell : Shell
         }
 #endif
     }
-
-    private bool loaded = false;
     private async void Shell_Loaded(object sender, EventArgs e)
     {
         if (!loaded)
@@ -54,6 +68,7 @@ public partial class AppShell : Shell
         await CheckAndRequestLocationPermission();
     }
 }
+
 #if ANDROID
 public class NotificationPermission : BasePlatformPermission
 {

@@ -11,6 +11,7 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <c:KbConverter x:Key="KbConverter" />
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
             <c:NotNullConverter x:Key="NotNullConverter" />
             <Style TargetType="{x:Type Button}">

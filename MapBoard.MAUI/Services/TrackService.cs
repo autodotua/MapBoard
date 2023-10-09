@@ -45,6 +45,8 @@ namespace MapBoard.Services
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
+        public static event ThreadExceptionEventHandler ExceptionThrown;
+
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -122,7 +124,6 @@ namespace MapBoard.Services
         }
 
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
-
         public void PutPausingFlag()
         {
             pausingFlag = true;
@@ -163,41 +164,48 @@ namespace MapBoard.Services
                 gpx.Creator = AppInfo.Name;
             }
 
-            while (running)
+            try
             {
-                var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-                if (running == false)
+                while (running)
                 {
-                    break;
-                }
-                if (location == null)
-                {
-                    throw new Exception("无法获取位置");
-                }
-                if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
-                {
-                    continue;
-                }
-                LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
-                trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
+                    Location location =  await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
 
-                if (LastLocation == null)
-                {
-                    LastLocation = location;
+                    if (running == false)
+                    {
+                        break;
+                    }
+                    if (location == null)
+                    {
+                        throw new Exception("无法获取位置");
+                    }
+                    if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
+                    {
+                        continue;
+                    }
+                    LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
+                    trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
+
+                    if (LastLocation == null)
+                    {
+                        LastLocation = location;
+                    }
+                    distance = Location.CalculateDistance(location, LastLocation, DistanceUnits.Kilometers) * 1000;
+                    if (PointsCount == 0 || distance > MinDistance)
+                    {
+                        TotalDistance += distance;
+                        UpdateMap(trackLineBuilder);
+                        UpdateGpx(location);
+                        LastLocation = location;
+                        PointsCount++;
+                    }
+                    UpdateTime = location.Timestamp.LocalDateTime;
+                    await Task.Delay(2000);
                 }
-                distance = Location.CalculateDistance(location, LastLocation, DistanceUnits.Kilometers) * 1000;
-                if (PointsCount == 0 || distance > MinDistance)
-                {
-                    TotalDistance += distance;
-                    UpdateMap(trackLineBuilder);
-                    UpdateGpx(location);
-                    LastLocation = location;
-                    PointsCount++;
-                }
-                UpdateTime = location.Timestamp.LocalDateTime;
-                await timer.WaitForNextTickAsync();
             }
-
+            catch (Exception ex)
+            {
+                ExceptionThrown?.Invoke(this, new ThreadExceptionEventArgs(ex));
+            }
         }
 
 

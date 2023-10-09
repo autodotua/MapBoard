@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:base="clr-namespace:MapBoard"
     xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem"
     xmlns:s="clr-namespace:MapBoard.Services"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:TrackPageViewModel}"
@@ -14,12 +15,37 @@
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
     </ContentPage.Resources>
     <Grid
-        Margin="8"
+        Margin="8,24,8,8"
         RowDefinitions="*,8,Auto,8,Auto">
+        <ListView
+            x:Name="lvwGpxList"
+            IsVisible="{Binding TrackService}"
+            ItemTapped="GpxList_ItemTapped"
+            ItemsSource="{Binding GpxFiles}"
+            SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid
+                            x:DataType="{x:Type io:FileInfo}"
+                            ColumnDefinitions="*,8,Auto,8">
+                            <Label
+                                FontSize="Medium"
+                                Text="{Binding Name}"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="2"
+                                Text="{Binding Length, Converter={StaticResource KbConverter}, StringFormat='{0:0.0} KB'}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
         <Grid
+            x:Name="grdDetail"
             ColumnDefinitions="Auto,24,Auto"
             HorizontalOptions="Center"
-            IsVisible="{Binding TrackService, Converter={StaticResource NotNullConverter}}"
             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
             VerticalOptions="Center">
             <Grid.Resources>
