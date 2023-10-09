@@ -4,10 +4,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:base="clr-namespace:MapBoard"
+    xmlns:c="clr-namespace:MapBoard.Converters"
     xmlns:s="clr-namespace:MapBoard.Services"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:TrackPageViewModel}">
-    <Grid RowDefinitions="*,8,Auto">
+    <ContentPage.Resources>
+        <c:TrackDetailConverter x:Key="TrackDetailConverter" />
+    </ContentPage.Resources>
+    <Grid
+        Margin="8"
+        RowDefinitions="*,8,Auto">
         <Grid
             ColumnDefinitions="Auto,24,Auto"
             HorizontalOptions="Center"
@@ -15,7 +21,9 @@
             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
             VerticalOptions="Center">
             <Grid.Resources>
-                <Style TargetType="{x:Type Label}" x:Key="KeyLabel">
+                <Style
+                    x:Key="KeyLabel"
+                    TargetType="{x:Type Label}">
                     <Setter Property="FontAttributes" Value="Bold" />
                     <Setter Property="HorizontalOptions" Value="End" />
                 </Style>
@@ -25,92 +33,74 @@
                 Style="{StaticResource KeyLabel}"
                 Text="时间" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="1"
+                Style="{StaticResource KeyLabel}"
                 Text="记录点" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="2"
+                Style="{StaticResource KeyLabel}"
                 Text="里程" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="3"
+                Style="{StaticResource KeyLabel}"
                 Text="经纬度" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="4"
+                Style="{StaticResource KeyLabel}"
                 Text="海拔" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="5"
+                Style="{StaticResource KeyLabel}"
                 Text="速度" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="6"
+                Style="{StaticResource KeyLabel}"
                 Text="方向" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="7"
+                Style="{StaticResource KeyLabel}"
                 Text="精度" />
             <Label
-                Style="{StaticResource KeyLabel}"
                 Grid.Row="8"
+                Style="{StaticResource KeyLabel}"
                 Text="卫星数量" />
 
             <Label
                 Grid.Row="0"
                 Grid.Column="2"
-                Text="{Binding TrackService.UpdateTime, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" />
+                Text="{Binding TrackService.UpdateTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
             <Label
                 Grid.Row="1"
                 Grid.Column="2"
-                Text="{Binding TrackService.PointsCount, StringFormat='{0}'}" />
+                Text="{Binding TrackService.PointsCount}" />
             <Label
                 Grid.Row="2"
                 Grid.Column="2"
-                Text="{Binding TrackService.TotalDistance, StringFormat='{0:0}m'}" />
+                Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
             <Label
                 Grid.Row="3"
-                Grid.Column="2">
-                <Label.Text>
-                    <MultiBinding StringFormat="{}{0:0.00000}° {1:0.00000}°">
-                        <Binding Path="TrackService.LastLocation.Longitude" />
-                        <Binding Path="TrackService.LastLocation.Latitude" />
-                    </MultiBinding>
-                </Label.Text>
-            </Label>
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=3}" />
             <Label
                 Grid.Row="4"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation.Altitude, StringFormat='{0:0}m'}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
             <Label
                 Grid.Row="5"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation.Speed, StringFormat='{0:0}m/s'}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
             <Label
                 Grid.Row="6"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation.Course, StringFormat='{0:0}°'}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=6}" />
             <Label
                 Grid.Row="7"
-                Grid.Column="2">
-                <Label.Text>
-                    <MultiBinding StringFormat="{}{0:0}m（水平） {1:0}m（垂直）">
-                        <Binding Path="TrackService.LastLocation.Accuracy" />
-                        <Binding Path="TrackService.LastLocation.VerticalAccuracy" />
-                    </MultiBinding>
-                </Label.Text>
-            </Label>
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=7}" />
             <Label
                 Grid.Row="8"
-                Grid.Column="2">
-                <Label.Text>
-                    <MultiBinding StringFormat="{}{0:0} / {1:0}">
-                        <Binding Path="TrackService.GnssStatus.Fixed" />
-                        <Binding Path="TrackService.GnssStatus.Total" />
-                    </MultiBinding>
-                </Label.Text>
-            </Label>
+                Grid.Column="2"
+                Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
         </Grid>
         <Button
             x:Name="btnStart"

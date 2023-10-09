@@ -26,6 +26,7 @@ namespace MapBoard.Services
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
+        private int pointsCount;
         private bool running = false;
         private bool started = false;
         private DateTime startTime = DateTime.Now;
@@ -44,6 +45,10 @@ namespace MapBoard.Services
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
         public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// 当前实例
+        /// </summary>
         public static TrackService Current
         {
             get => current;
@@ -53,34 +58,54 @@ namespace MapBoard.Services
                 StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(nameof(Current)));
             }
         }
-        private int pointsCount;
+        /// <summary>
+        /// GNSS状态信息
+        /// </summary>
+        public GnssStatusInfo GnssStatus
+        {
+            get => gnssStatus;
+            private set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
+        }
+
+        /// <summary>
+        /// 最后一个采集的位置
+        /// </summary>
+        public Location LastLocation
+        {
+            get => lastLocation;
+            private set => this.SetValueAndNotify(ref lastLocation, value, nameof(LastLocation));
+        }
+
+        /// <summary>
+        /// 已经记录的点数量
+        /// </summary>
         public int PointsCount
         {
             get => pointsCount;
             set => this.SetValueAndNotify(ref pointsCount, value, nameof(PointsCount));
         }
 
-        public string Test => "dsad";
-        public GnssStatusInfo GnssStatus
-        {
-            get => gnssStatus;
-            private set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
-        }
-        public Location LastLocation
-        {
-            get => lastLocation;
-            private set => this.SetValueAndNotify(ref lastLocation, value, nameof(LastLocation));
-        }
+        /// <summary>
+        /// 开始记录的时间
+        /// </summary>
         public DateTime StartTime
         {
             get => startTime;
             private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
         }
+
+        public string Test => "dsad";
+        /// <summary>
+        /// 总里程
+        /// </summary>
         public double TotalDistance
         {
             get => totalDistance;
             private set => this.SetValueAndNotify(ref totalDistance, value, nameof(TotalDistance));
         }
+        /// <summary>
+        /// 位置更新时间
+        /// </summary>
         public DateTime UpdateTime
         {
             get => updateTime;
