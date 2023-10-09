@@ -45,12 +45,7 @@ namespace MapBoard.Mapping
         /// </summary>
         private bool canRotate = true;
 
-        /// <summary>
-        /// WFS图层的取消Token
-        /// </summary>
-        private CancellationTokenSource ctsWfs = null;
 
-        private bool loaded = false;
         LocationDisplay locationDisplay = null;
         /// <summary>
         /// 鼠标中键按下时起始位置
@@ -79,9 +74,36 @@ namespace MapBoard.Mapping
                 IsRotateEnabled = true
             };
             PropertyChanged += MainMapView_PropertyChanged;
+
+            //启动时恢复到原来的视角，并定时保存
+            Loaded += MainMapView_Loaded;
+            Unloaded += MainMapView_Unloaded;
+            Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
+            {
+                if (canSaveExtent
+                    && Layers != null
+                 && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+                {
+                    Layers.MapViewExtentJson = envelope.ToJson();
+                }
+                return true;
+            });
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
+        private void MainMapView_Unloaded(object sender, EventArgs e)
+        {
+            canSaveExtent = false;
+            Config.Instance.Save();
+            Layers.Save();
+        }
+
+        private bool canSaveExtent = false;
+        private async void MainMapView_Loaded(object sender, EventArgs e)
+        {
+            await this.TryZoomToLastExtent();
+            canSaveExtent = true;
+        }
 
         /// <summary>
         /// 画板当前任务改变事件
@@ -128,7 +150,6 @@ namespace MapBoard.Mapping
         //public EditorHelper Editor { get; private set; }
         public GraphicsOverlay TrackOverlay { get; } = new GraphicsOverlay();
 
-        public bool HasLoadedMap => loaded;
 
         /// <summary>
         /// 选择相关
@@ -140,12 +161,9 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task LoadAsync()
         {
-            loaded = true;
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-            ;
-            await this.TryZoomToLastExtent().ContinueWith(t => DrawStatusChanged += MainMapView_DrawStatusChanged).ConfigureAwait(false);
             CurrentTask = BoardTask.Ready;
 
             if (!GraphicsOverlays.Contains(TrackOverlay))
@@ -156,15 +174,7 @@ namespace MapBoard.Mapping
             }
         }
 
-        private void MainMapView_DrawStatusChanged(object sender, DrawStatusChangedEventArgs e)
-        {
-            if (e.Status==DrawStatus.Completed 
-                && Layers != null
-                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-            {
-                Layers.MapViewExtentJson = envelope.ToJson();
-            }
-        }
+
 
         public void MoveToLocation()
         {
@@ -185,7 +195,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 设置设备位置的显示
         /// </summary>
- 
+
 
         ///// <summary>
         ///// 鼠标移动，中键按下时旋转地图
@@ -210,7 +220,7 @@ namespace MapBoard.Mapping
         //        //防止旋转过快造成卡顿
         //    }
         //}
-     
+
 
         private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {

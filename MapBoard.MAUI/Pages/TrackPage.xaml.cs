@@ -22,9 +22,47 @@ public partial class TrackPage : ContentPage
         BindingContext = new TrackPageViewModel();
     }
 
-    private void StartTrackButton_Click(object sender, EventArgs e)
+    private async void ContentPage_Loaded(object sender, EventArgs e)
+    {
+        if (TrackService.Current == null && Config.Instance.IsTracking)
+        {
+            var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
+            if (gpxFiles.Any())
+            {
+                if (await DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
+                {
+                    StartTrack(gpxFiles.First());
+                    UpdateButtonsVisible(true, false);
+                }
+                else
+                {
+                    Config.Instance.IsTracking = false;
+                }
+            }
+        }
+    }
+
+    private void ContentPage_Unloaded(object sender, EventArgs e)
+    {
+        Config.Instance.Save();
+        MainMapView.Current.Layers.Save();
+    }
+
+    private void Current_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PauseButton_Clicked(object sender, EventArgs e)
+    {
+        StopTrack(true);
+        UpdateButtonsVisible(true, true);
+    }
+
+    private void ResumeButton_Clicked(object sender, EventArgs e)
     {
         StartTrack();
+        UpdateButtonsVisible(true, false);
     }
 
     private void StartTrack(string resume = null)
@@ -39,49 +77,45 @@ public partial class TrackPage : ContentPage
         var trackService = new TrackService();
         trackService.Start();
 #endif
-        btnStart.IsVisible = false;
-        btnStop.IsVisible = true;
     }
 
-    private void Current_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
+    private void StartTrackButton_Click(object sender, EventArgs e)
     {
-        throw new NotImplementedException();
+        Config.Instance.IsTracking = true;
+        StartTrack();
+        UpdateButtonsVisible(true, false);
     }
-
     private void StopButton_Clicked(object sender, EventArgs e)
     {
+        if (TrackService.Current == null) //暂停后停止
+        {
+            Config.Instance.IsTracking = false;
+        }
+        else //直接停止
+        {
+            StopTrack(false);
+        }
+        UpdateButtonsVisible(false, false);
+    }
+
+    private void StopTrack(bool pause)
+    {
+        if (pause)
+        {
+            TrackService.Current.PutPausingFlag();
+        }
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StopTrackService();
 #else
         TrackService.Current.Stop();
 #endif
-        btnStart.IsVisible = true;
-        btnStop.IsVisible = false;
-        //TrackService.Current.LocationChanged -= Current_LocationChanged;
     }
-
-    private async void ContentPage_Loaded(object sender, EventArgs e)
+    private void UpdateButtonsVisible(bool running,bool pausing)
     {
-        if (TrackService.Current == null && Config.Instance.IsTracking)
-        {
-            var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
-            if (gpxFiles.Any())
-            {
-                if (await DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
-                {
-                    StartTrack(gpxFiles.First());
-                }
-                else
-                {
-                    Config.Instance.IsTracking = false;
-                }
-            }
-        }
-    }
-
-    private void ContentPage_Unloaded(object sender, EventArgs e)
-    {
-        Config.Instance.Save();
-        MainMapView.Current.Layers.Save();
+        btnStart.IsVisible = !running;
+        grdStopAndPause.IsVisible = running;
+        btnPause.IsVisible = !pausing;   
+        btnResume.IsVisible = pausing;   
+        lblPausing.IsVisible = pausing;
     }
 }

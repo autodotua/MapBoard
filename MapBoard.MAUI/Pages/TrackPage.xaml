@@ -15,7 +15,7 @@
     </ContentPage.Resources>
     <Grid
         Margin="8"
-        RowDefinitions="*,8,Auto">
+        RowDefinitions="*,8,Auto,8,Auto">
         <Grid
             ColumnDefinitions="Auto,24,Auto"
             HorizontalOptions="Center"
@@ -104,20 +104,52 @@
                 Grid.Column="2"
                 Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
         </Grid>
+        <Label
+            x:Name="lblPausing"
+            Grid.Row="2"
+            HorizontalTextAlignment="Center"
+            IsVisible="False"
+            Text="轨迹记录暂停"
+            TextColor="Orange" />
         <Button
             x:Name="btnStart"
-            Grid.Row="2"
+            Grid.Row="4"
             Clicked="StartTrackButton_Click"
-            HorizontalOptions="Center"
+            HorizontalOptions="Fill"
+            MaximumWidthRequest="200"
             Text="开始记录轨迹"
             VerticalOptions="Center" />
-        <Button
-            x:Name="btnStop"
-            Grid.Row="2"
-            Clicked="StopButton_Clicked"
-            HorizontalOptions="Center"
-            IsVisible="False"
-            Text="停止记录轨迹"
-            VerticalOptions="Center" />
+        <Grid
+            x:Name="grdStopAndPause"
+            Grid.Row="4"
+            ColumnDefinitions="*,16,*"
+            IsVisible="False">
+            <Button
+                x:Name="btnPause"
+                BackgroundColor="Orange"
+                Clicked="PauseButton_Clicked"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="暂停"
+                VerticalOptions="Center" />
+            <Button
+                x:Name="btnResume"
+                BackgroundColor="Orange"
+                Clicked="ResumeButton_Clicked"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="继续"
+                VerticalOptions="Center" />
+            <Button
+                x:Name="btnStop"
+                Grid.Column="2"
+                BackgroundColor="Red"
+                Clicked="StopButton_Clicked"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="停止"
+                VerticalOptions="Center" />
+        </Grid>
+
     </Grid>
 </ContentPage>

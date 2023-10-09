@@ -1,6 +1,4 @@
-﻿using MapBoard.Pages;
-using NGettext.Loaders;
-using static Microsoft.Maui.ApplicationModel.Permissions;
+﻿using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace MapBoard;
 
@@ -9,7 +7,6 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
-        Routing.RegisterRoute("LayerPage", typeof(LayerPage));
         if (true || DeviceInfo.Idiom == DeviceIdiom.Phone)
         {
             CurrentItem = tab;

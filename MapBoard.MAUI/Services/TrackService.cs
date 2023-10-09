@@ -26,25 +26,27 @@ namespace MapBoard.Services
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
+        /// <summary>
+        /// 暂停标志。若置改标志为true然后Stop，那么下一次启动时，会继续本次轨迹。
+        /// </summary>
+        private bool pausingFlag = false;
+
         private int pointsCount;
         private bool running = false;
         private DateTime startTime = DateTime.Now;
         private double tolerableAccuracy = 20;
         private double totalDistance;
-
         private DateTime updateTime = DateTime.Now;
 
         public TrackService()
         {
             Overlay.Graphics.Clear();
         }
-        /// <summary>
-        /// 设置恢复记录的轨迹文件，当调用Start方法时，若该值非null，则会读取该文件然后继续记录
-        /// </summary>
-        public static string ResumeGpx { get; set; } = null;
+
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -59,6 +61,12 @@ namespace MapBoard.Services
                 StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(nameof(Current)));
             }
         }
+
+        /// <summary>
+        /// 设置恢复记录的轨迹文件，当调用Start方法时，若该值非null，则会读取该文件然后继续记录
+        /// </summary>
+        public static string ResumeGpx { get; set; } = null;
+
         /// <summary>
         /// GNSS状态信息
         /// </summary>
@@ -103,6 +111,7 @@ namespace MapBoard.Services
             get => totalDistance;
             private set => this.SetValueAndNotify(ref totalDistance, value, nameof(TotalDistance));
         }
+
         /// <summary>
         /// 位置更新时间
         /// </summary>
@@ -113,6 +122,11 @@ namespace MapBoard.Services
         }
 
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
+
+        public void PutPausingFlag()
+        {
+            pausingFlag = true;
+        }
         public async void Start()
         {
             if (running)
@@ -121,8 +135,6 @@ namespace MapBoard.Services
             }
             running = true;
             Current = this;
-            Config.Instance.IsTracking = true;
-            Config.Instance.Save();
 
             Overlay.Graphics.Clear();
             PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
@@ -193,8 +205,13 @@ namespace MapBoard.Services
         {
             running = false;
             Current = null;
-            Config.Instance.IsTracking = false;
-            Config.Instance.Save();
+            if (pausingFlag) //如果时暂停，那么保存当前GPX文件路径，供下次启动时读取
+            {
+                if (File.Exists(GetGpxFilePath()))
+                {
+                    ResumeGpx = GetGpxFilePath();
+                }
+            }
             Geolocation.Default.StopListeningForeground();
             SaveGpx();
         }
@@ -205,14 +222,18 @@ namespace MapBoard.Services
             GnssStatus = gpsStatus;
         }
 
+        private string GetGpxFilePath()
+        {
+            return Path.Combine(FolderPaths.TrackPath, $"{StartTime:yyyyMMdd-HHmmss}.gpx");
+        }
+
         private void SaveGpx()
         {
             if (gpxTrack.Points.Count >= 3)
             {
-                File.WriteAllText(Path.Combine(FolderPaths.TrackPath, $"{StartTime:yyyyMMdd-HHmmss}.gpx"), gpx.ToGpxXml());
+                File.WriteAllText(GetGpxFilePath(), gpx.ToGpxXml());
             }
         }
-
         private void UpdateGpx(Location location)
         {
             try

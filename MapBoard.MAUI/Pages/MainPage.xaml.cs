@@ -31,8 +31,6 @@ namespace MapBoard.Pages
 {
     public partial class MainPage : ContentPage
     {
-        private bool loaded = false;
-
         public MainPage()
         {
             InitializeComponent();
@@ -40,11 +38,10 @@ namespace MapBoard.Pages
 
         public async Task InitializeAsync()
         {
-            if (!map.HasLoadedMap)
+            if (map.Map == null)
             {
                 await map.LoadAsync();
             }
-            //await map.LoadAsync();
             layerList.Initialize();
         }
         private void CloseLayerPanelButton_Click(object sender, EventArgs e)
@@ -60,6 +57,7 @@ namespace MapBoard.Pages
         {
             await InitializeAsync();
         }
+
         private void LayerButton_Click(object sender, EventArgs e)
         {
             grdLayer.TranslateTo(0, 0);
@@ -93,6 +91,8 @@ namespace MapBoard.Pages
             var map = MainMapView.Current;
             await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
+
+
     }
 
 }
