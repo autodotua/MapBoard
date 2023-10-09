@@ -19,10 +19,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<!-- Display name -->
-		<ApplicationTitle>MapBoard</ApplicationTitle>
+		<ApplicationTitle>地图画板</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.mapboard.maui</ApplicationId>
+		<ApplicationId>com.autod.mapboard</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -37,10 +37,10 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+    <None Remove="Resources\Splash\splash.svg" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -65,6 +65,10 @@
 	  <None Remove="Resources\Images\tab_layers.svg" />
 	  <None Remove="Resources\Images\tab_map.svg" />
 	  <None Remove="Resources\Images\tab_track.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

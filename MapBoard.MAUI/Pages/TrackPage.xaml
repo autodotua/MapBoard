@@ -15,7 +15,7 @@
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
     </ContentPage.Resources>
     <Grid
-        Margin="8,24,8,8"
+        Margin="8,32,8,8"
         RowDefinitions="*,8,Auto,8,Auto">
         <ListView
             x:Name="lvwGpxList"
@@ -30,7 +30,6 @@
                             x:DataType="{x:Type io:FileInfo}"
                             ColumnDefinitions="*,8,Auto,8">
                             <Label
-                                FontSize="Medium"
                                 Text="{Binding Name}"
                                 VerticalOptions="Center" />
                             <Label

@@ -65,11 +65,6 @@ public partial class TrackPage : ContentPage
         MainMapView.Current.Layers.Save();
     }
 
-    private void Current_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
     private void PauseButton_Clicked(object sender, EventArgs e)
     {
         StopTrack(true);
@@ -157,8 +152,9 @@ public partial class TrackPage : ContentPage
             var points = gpx.Tracks.Select(p => p.Points.Select(q => new MapPoint(q.X, q.Y)));
             var line = new Polyline(points, SpatialReferences.Wgs84);
             overlay.Graphics.Add(new Esri.ArcGISRuntime.UI.Graphic(line));
-            var a = 1 / new List<int>().Count;
             await Shell.Current.GoToAsync("//MainPage");
+            await Task.Delay(500);//会首先调用缩放到记忆的位置，需要避开
+            await MainMapView.Current.ZoomToGeometryAsync(line);
         }
         catch (Exception ex)
         {
@@ -166,8 +162,4 @@ public partial class TrackPage : ContentPage
         }
     }
 
-    private void DeleteSwipeItem_Invoked(object sender, EventArgs e)
-    {
-
-    }
 }

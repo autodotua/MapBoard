@@ -16,13 +16,22 @@ namespace MapBoard.ViewModels
         public TrackPageViewModel()
         {
             TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
-            foreach (var file in Directory
-                .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
-                .OrderDescending()
-                .Take(50))
-            {
-                GpxFiles.Add(new FileInfo(file));
-            }
+            List<FileInfo> files = new List<FileInfo>();
+            Task.Run(() =>
+           {
+               foreach (var file in Directory
+                   .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
+                   .OrderDescending()
+                   .Take(50))
+               {
+                   var fileInfo = new FileInfo(file);
+                   files.Add(fileInfo);
+               }
+           }).ContinueWith(a =>
+           {
+               GpxFiles = new ObservableCollection<FileInfo>(files);
+           });
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
