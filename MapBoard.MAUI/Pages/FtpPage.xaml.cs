@@ -54,6 +54,10 @@ public partial class FtpPage : ContentPage
             {
                 dir = FileSystem.AppDataDirectory;
             }
+            else if (rbtnCacheDir.IsChecked)
+            {
+                dir = FileSystem.CacheDirectory;
+            }
             ftpService = new FtpService(dir);
             ftpService.StartServerAsync();
             (sender as Button).Text = "¹Ø±ÕFTP";

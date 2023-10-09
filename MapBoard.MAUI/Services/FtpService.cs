@@ -20,6 +20,7 @@ namespace MapBoard.Services
     {
         IFtpServerHost ftpServerHost;
         private ServiceCollection services;
+        ServiceProvider serviceProvider;
         public FtpService(string dir)
         {
             services = new ServiceCollection();
@@ -35,7 +36,7 @@ namespace MapBoard.Services
                 opt.Port = 2222;
             });
 
-            var serviceProvider = services.BuildServiceProvider();
+            serviceProvider = services.BuildServiceProvider();
 
             ftpServerHost = serviceProvider.GetRequiredService<IFtpServerHost>();
         }
@@ -52,8 +53,8 @@ namespace MapBoard.Services
                 }
             }
 #elif WINDOWS
-            string hostName = Dns.GetHostName(); 
-            foreach(var address in Dns.GetHostByName(hostName).AddressList)
+            string hostName = Dns.GetHostName();
+            foreach (var address in Dns.GetHostByName(hostName).AddressList)
             {
                 yield return address.ToString();
             }
@@ -67,9 +68,10 @@ namespace MapBoard.Services
             return ftpServerHost.StartAsync();
         }
 
-        public Task StopServerAsync()
+        public async Task StopServerAsync()
         {
-            return ftpServerHost.StopAsync();
+            await ftpServerHost.StopAsync();
+            serviceProvider.Dispose();
         }
     }
 }

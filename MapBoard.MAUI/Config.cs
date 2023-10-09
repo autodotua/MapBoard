@@ -18,7 +18,7 @@ namespace MapBoard
         public static readonly int WatermarkHeight = 72;
         private static readonly string path = FolderPaths.ConfigPath;
         private static Config instance;
-       
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -43,8 +43,8 @@ namespace MapBoard
                 return instance;
             }
         }
-        public bool EnableBasemapCache {  get; set; }
-        public int LastLayerListGroupType {  get; set; }
+        public bool EnableBasemapCache { get; set; } = true;
+        public int LastLayerListGroupType { get; set; }
         public double MaxScale { get; set; } = 100;
         public bool IsTracking { get; set; }
         /// <summary>
