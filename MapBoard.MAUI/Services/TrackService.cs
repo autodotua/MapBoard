@@ -28,7 +28,6 @@ namespace MapBoard.Services
         private Location lastLocation;
         private int pointsCount;
         private bool running = false;
-        private bool started = false;
         private DateTime startTime = DateTime.Now;
         private double tolerableAccuracy = 20;
         private double totalDistance;
@@ -38,9 +37,11 @@ namespace MapBoard.Services
         public TrackService()
         {
             Overlay.Graphics.Clear();
-            gpxTrack = gpx.CreateTrack();
         }
-
+        /// <summary>
+        /// 设置恢复记录的轨迹文件，当调用Start方法时，若该值非null，则会读取该文件然后继续记录
+        /// </summary>
+        public static string ResumeGpx { get; set; } = null;
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
@@ -94,7 +95,6 @@ namespace MapBoard.Services
             private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
         }
 
-        public string Test => "dsad";
         /// <summary>
         /// 总里程
         /// </summary>
@@ -115,22 +115,42 @@ namespace MapBoard.Services
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
         public async void Start()
         {
-            if (started)
+            if (running)
             {
                 throw new Exception("单个实例不可多次开始记录轨迹");
             }
-            Current = this;
-            started = true;
-            StartTime = DateTime.Now;
-            gpx.Time = StartTime;
-            gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
-            gpx.Creator = AppInfo.Name;
             running = true;
+            Current = this;
+            Config.Instance.IsTracking = true;
+            Config.Instance.Save();
+
             Overlay.Graphics.Clear();
             PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
             double distance = 0;
             //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
             await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
+
+            if (ResumeGpx != null)
+            {
+                gpx = await Gpx.FromFileAsync(ResumeGpx);
+                ResumeGpx = null;
+                gpxTrack = gpx.Tracks[0];
+                StartTime = gpx.Time;
+                PointsCount = gpxTrack.Points.Count;
+                foreach (var point in gpxTrack.Points)
+                {
+                    trackLineBuilder.AddPoint(new MapPoint(point.X, point.Y));
+                }
+                UpdateMap(trackLineBuilder);
+            }
+            else
+            {
+                gpxTrack = gpx.CreateTrack();
+                gpx.Time = StartTime = DateTime.Now;
+                gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
+                gpx.Creator = AppInfo.Name;
+            }
+
             while (running)
             {
                 var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
@@ -168,10 +188,13 @@ namespace MapBoard.Services
 
         }
 
+
         public void Stop()
         {
             running = false;
             Current = null;
+            Config.Instance.IsTracking = false;
+            Config.Instance.Save();
             Geolocation.Default.StopListeningForeground();
             SaveGpx();
         }

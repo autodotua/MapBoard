@@ -44,6 +44,7 @@ namespace MapBoard.Pages
             {
                 await map.LoadAsync();
             }
+            //await map.LoadAsync();
             layerList.Initialize();
         }
         private void CloseLayerPanelButton_Click(object sender, EventArgs e)

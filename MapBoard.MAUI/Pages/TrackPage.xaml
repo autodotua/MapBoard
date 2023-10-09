@@ -7,7 +7,9 @@
     xmlns:c="clr-namespace:MapBoard.Converters"
     xmlns:s="clr-namespace:MapBoard.Services"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
-    x:DataType="{x:Type vm:TrackPageViewModel}">
+    x:DataType="{x:Type vm:TrackPageViewModel}"
+    Loaded="ContentPage_Loaded"
+    Unloaded="ContentPage_Unloaded">
     <ContentPage.Resources>
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
     </ContentPage.Resources>

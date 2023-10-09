@@ -1,4 +1,5 @@
 ﻿using MapBoard.Pages;
+using NGettext.Loaders;
 using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace MapBoard;
@@ -42,9 +43,17 @@ public partial class AppShell : Shell
 #endif
     }
 
-
+    private bool loaded = false;
     private async void Shell_Loaded(object sender, EventArgs e)
     {
+        if (!loaded)
+        {
+            if (Config.Instance.IsTracking)
+            {
+                await GoToAsync("//TrackPage");
+            }
+        }
+        loaded = true;
         await CheckAndRequestLocationPermission();
     }
 }

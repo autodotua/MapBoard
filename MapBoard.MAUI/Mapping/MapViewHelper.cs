@@ -404,7 +404,7 @@ namespace MapBoard.Mapping
             }
             if (mapView is MapView mv)
             {
-                await mv.SetViewpointGeometryAsync(geometry, Config.Instance.HideWatermark && autoExtent ? Config.WatermarkHeight : 0);
+                await mv.SetViewpointGeometryAsync(geometry,  autoExtent ? Config.WatermarkHeight : 0);
             }
             else if (mapView is SceneView sv)
             {

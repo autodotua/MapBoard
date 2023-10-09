@@ -82,6 +82,7 @@ namespace MapBoard.Mapping
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
+
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
@@ -143,7 +144,8 @@ namespace MapBoard.Mapping
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-            await this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged).ConfigureAwait(false);
+            ;
+            await this.TryZoomToLastExtent().ContinueWith(t => DrawStatusChanged += MainMapView_DrawStatusChanged).ConfigureAwait(false);
             CurrentTask = BoardTask.Ready;
 
             if (!GraphicsOverlays.Contains(TrackOverlay))
@@ -151,6 +153,16 @@ namespace MapBoard.Mapping
                 TrackOverlay.Renderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.FromArgb(0x54, 0xA5, 0xF6), 6));
                 GraphicsOverlays.Add(TrackOverlay);
 
+            }
+        }
+
+        private void MainMapView_DrawStatusChanged(object sender, DrawStatusChangedEventArgs e)
+        {
+            if (e.Status==DrawStatus.Completed 
+                && Layers != null
+                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                Layers.MapViewExtentJson = envelope.ToJson();
             }
         }
 
@@ -173,26 +185,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 设置设备位置的显示
         /// </summary>
-        public void SetLocationDisplay()
-        {
-
-            LocationDisplay.ShowLocation = Config.Instance.ShowLocation;
-            LocationDisplay.IsEnabled = Config.Instance.ShowLocation;
-        }
-
-        /// <summary>
-        /// 视角改变时，保存当前地图位置
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ArcMapView_ViewpointChanged(object sender, EventArgs e)
-        {
-            if (Layers != null
-                && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-            {
-                Layers.MapViewExtentJson = envelope.ToJson();
-            }
-        }
+ 
 
         ///// <summary>
         ///// 鼠标移动，中键按下时旋转地图
@@ -217,13 +210,7 @@ namespace MapBoard.Mapping
         //        //防止旋转过快造成卡顿
         //    }
         //}
-        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Config.ShowLocation))
-            {
-                SetLocationDisplay();
-            }
-        }
+     
 
         private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
