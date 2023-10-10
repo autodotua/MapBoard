@@ -53,10 +53,7 @@ public partial class TrackView : ContentView
             Gpx gpx = await Gpx.FromFileAsync(file.FullName);
 
             var overlay = MainMapView.Current.TrackOverlay;
-            overlay.Graphics.Clear();
-            var points = gpx.Tracks.Select(p => p.Points.Select(q => new MapPoint(q.X, q.Y)));
-            var line = new Polyline(points, SpatialReferences.Wgs84);
-            overlay.Graphics.Add(new Esri.ArcGISRuntime.UI.Graphic(line));
+            var line = overlay.LoadLine(gpx.Tracks[0].Points.Select(q => new MapPoint(q.X, q.Y)));
             await Shell.Current.GoToAsync("//MainPage");
             await Task.Delay(500);//会首先调用缩放到记忆的位置，需要避开
             await MainMapView.Current.ZoomToGeometryAsync(line);
@@ -91,6 +88,7 @@ public partial class TrackView : ContentView
         var trackService = new TrackService();
         trackService.Start();
 #endif
+        MainPage.Current.ClosePanel<TrackView>();
     }
 
     private async void StartTrackButton_Click(object sender, EventArgs e)

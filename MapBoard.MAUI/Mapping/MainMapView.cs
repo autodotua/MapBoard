@@ -135,7 +135,7 @@ namespace MapBoard.Mapping
         /// 编辑器相关
         /// </summary>
         //public EditorHelper Editor { get; private set; }
-        public GraphicsOverlay TrackOverlay { get; } = new GraphicsOverlay();
+        public TrackOverlayHelper TrackOverlay { get; private set; }
 
         /// <summary>
         /// 选择相关
@@ -152,11 +152,14 @@ namespace MapBoard.Mapping
             await Layers.LoadAsync(Map.OperationalLayers);
             CurrentTask = BoardTask.Ready;
 
-            if (!GraphicsOverlays.Contains(TrackOverlay))
+            if (TrackOverlay == null)
             {
-                TrackOverlay.Renderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.FromArgb(0x54, 0xA5, 0xF6), 6));
-                GraphicsOverlays.Add(TrackOverlay);
-
+                var overlay = new GraphicsOverlay()
+                {
+                    Renderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.FromArgb(0x54, 0xA5, 0xF6), 6))
+                };
+                GraphicsOverlays.Add(overlay);
+                TrackOverlay = new TrackOverlayHelper(overlay);
             }
         }
 

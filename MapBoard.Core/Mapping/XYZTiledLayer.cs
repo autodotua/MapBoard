@@ -35,7 +35,7 @@ namespace MapBoard.Mapping
 
         static XYZTiledLayer()
         {
-            Task.Run(async () =>
+            Task.Factory.StartNew(async () =>
             {
                 //单队列写入缓存
                 //有两个集合，Queue用来确定任务的顺序，然后用Dictionary来获取任务数据。
@@ -55,14 +55,13 @@ namespace MapBoard.Mapping
                                 }
                                 File.WriteAllBytes(cacheFile, data);
                                 cacheQueueFiles.TryRemove(cacheFile, out _);
-                                //Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
+                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
                             }
                             else
                             {
                                 Debug.WriteLine("待写入的缓存文件不在Dictionary中");
                             }
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -70,7 +69,8 @@ namespace MapBoard.Mapping
                     }
                     await Task.Delay(1000);
                 }
-            });
+            },TaskCreationOptions.LongRunning);
+            //原来的代码中，用的是Task.Run，导致在MAUI的Android下异常卡顿，快速滑动后甚至完全卡死界面。
         }
         private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
         {
@@ -83,20 +83,7 @@ namespace MapBoard.Mapping
                 PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
             };
             client = new HttpClient(socketsHttpHandler);
-            ApplyHttpClientHeaders(client, layerInfo, userAgent);
-
-
-            //client.DefaultRequestHeaders.Add("Host", "t3.tianditu.gov.cn");
-            //client.DefaultRequestHeaders.Add("Origin", "https://zhejiang.tianditu.gov.cn");
-            //client.DefaultRequestHeaders.Add("Referer", "https://zhejiang.tianditu.gov.cn");
-
-            //client.SendAsync(new HttpRequestMessage
-            //{
-            //    Method = new HttpMethod("HEAD"),
-            //    RequestUri = new Uri(Url)
-            //}).ConfigureAwait(false);
-            //client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue(UserAgentName, UserAgentVersion));
-        }
+            ApplyHttpClientHeaders(client, layerInfo, userAgent);        }
 
         /// <summary>
         /// 是否启用缓存机制
@@ -195,6 +182,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         protected override async Task<ImageTileData> GetTileDataAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
+            Debug.WriteLine("Thread ID::::::::::::::::::" + Thread.CurrentThread.ManagedThreadId);
             if (MaxLevel >= 0 && level > MaxLevel || MinLevel >= 0 && level < MinLevel)
             {
                 return null;

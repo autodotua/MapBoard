@@ -57,7 +57,7 @@ namespace MapBoard.Services
 
         public TrackService()
         {
-            Overlay.Graphics.Clear();
+            Overlay.Clear();
         }
 
         public static event ThreadExceptionEventHandler ExceptionThrown;
@@ -141,7 +141,7 @@ namespace MapBoard.Services
             private set => this.SetValueAndNotify(ref updateTime, value, nameof(UpdateTime));
         }
 
-        private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
+        private TrackOverlayHelper Overlay => MainMapView.Current.TrackOverlay;
         public async void Start()
         {
             if (running)
@@ -151,35 +151,32 @@ namespace MapBoard.Services
             running = true;
             Current = this;
 
-            Overlay.Graphics.Clear();
-            PolylineBuilder trackLineBuilder = new PolylineBuilder(SpatialReferences.Wgs84);
-            double distance = 0;
-            //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
-            await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
-
-            if (ResumeGpx != null)
-            {
-                gpx = await Gpx.FromFileAsync(ResumeGpx);
-                ResumeGpx = null;
-                gpxTrack = gpx.Tracks[0];
-                StartTime = gpx.Time;
-                PointsCount = gpxTrack.Points.Count;
-                foreach (var point in gpxTrack.Points)
-                {
-                    trackLineBuilder.AddPoint(new MapPoint(point.X, point.Y));
-                }
-                UpdateMap(trackLineBuilder);
-            }
-            else
-            {
-                gpxTrack = gpx.CreateTrack();
-                gpx.Time = StartTime = DateTime.Now;
-                gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
-                gpx.Creator = AppInfo.Name;
-            }
-
             try
             {
+                Overlay.Clear();
+                double distance = 0;
+
+
+                //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
+                await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
+
+                if (ResumeGpx != null)
+                {
+                    gpx = await Gpx.FromFileAsync(ResumeGpx);
+                    ResumeGpx = null;
+                    gpxTrack = gpx.Tracks[0];
+                    StartTime = gpx.Time;
+                    PointsCount = gpxTrack.Points.Count;
+                    Overlay.LoadLine(gpxTrack.Points.Select(p => new MapPoint(p.X, p.Y)));
+                }
+                else
+                {
+                    gpxTrack = gpx.CreateTrack();
+                    gpx.Time = StartTime = DateTime.Now;
+                    gpx.Name = DateTime.Today.ToString("yyyyMMdd") + "轨迹";
+                    gpx.Creator = AppInfo.Name;
+                }
+
                 while (running)
                 {
                     Location location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
@@ -197,7 +194,7 @@ namespace MapBoard.Services
                         continue;
                     }
                     LocationChanged?.Invoke(this, new GeolocationLocationChangedEventArgs(location));
-                    trackLineBuilder.AddPoint(location.Longitude, location.Latitude);
+
 
                     if (LastLocation == null)
                     {
@@ -207,7 +204,7 @@ namespace MapBoard.Services
                     if (PointsCount == 0 || distance > MinDistance)
                     {
                         TotalDistance += distance;
-                        UpdateMap(trackLineBuilder);
+                        Overlay.AddPoint(location.Longitude, location.Latitude);
                         UpdateGpx(location);
                         LastLocation = location;
                         PointsCount++;
@@ -231,7 +228,7 @@ namespace MapBoard.Services
             Geolocation.Default.StopListeningForeground();
             if (SaveGpx())
             {
-                GpxSaved?.Invoke(this,new GpxSavedEventArgs(GetGpxFilePath()));
+                GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath()));
             }
         }
         public void UpdateGnssStatus(GnssStatusInfo gpsStatus)
@@ -286,12 +283,6 @@ namespace MapBoard.Services
             {
                 throw;
             }
-        }
-
-        private void UpdateMap(PolylineBuilder builder)
-        {
-            Overlay.Graphics.Clear();
-            Overlay.Graphics.Add(new Graphic(builder.ToGeometry()));
         }
 
         public class GpxSavedEventArgs : EventArgs

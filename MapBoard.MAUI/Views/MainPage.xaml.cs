@@ -122,7 +122,7 @@ namespace MapBoard.Views
 
 #if ANDROID
             var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
-            height /= DeviceDisplay.MainDisplayInfo.Density;
+            height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
             if (height > 0)
             {
                 bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + height);
