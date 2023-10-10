@@ -75,6 +75,12 @@
                     </Style>
                 </Grid.Resources>
                 <ImageButton
+                    Grid.Column="0"
+                    Clicked="FtpButton_Clicked"
+                    Source="btn_ftp.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />    
+                <ImageButton
+                    Grid.Column="2"
                     Clicked="TrackButton_Clicked"
                     Source="btn_track.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
@@ -83,11 +89,7 @@
                     Clicked="RefreshButton_Clicked"
                     Source="btn_refresh.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
-                <ImageButton
-                    Grid.Column="2"
-                    Clicked="FtpButton_Clicked"
-                    Source="btn_ftp.png"
-                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+
 
             </Grid>
         </Border>

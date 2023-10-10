@@ -16,22 +16,6 @@ namespace MapBoard.ViewModels
         public TrackViewViewModel()
         {
             TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
-            List<FileInfo> files = new List<FileInfo>();
-            Task.Run(() =>
-           {
-               foreach (var file in Directory
-                   .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
-                   .OrderDescending()
-                   .Take(50))
-               {
-                   var fileInfo = new FileInfo(file);
-                   files.Add(fileInfo);
-               }
-           }).ContinueWith(a =>
-           {
-               GpxFiles = new ObservableCollection<FileInfo>(files);
-           });
-
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -54,6 +38,22 @@ namespace MapBoard.ViewModels
             set => this.SetValueAndNotify(ref trackService, value, nameof(TrackService));
         }
 
+        public async Task LoadGpxFilesAsync()
+        {
+            List<FileInfo> files = new List<FileInfo>();
+            await Task.Run(() =>
+            {
+                foreach (var file in Directory
+                    .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
+                    .OrderDescending()
+                    .Take(50))
+                {
+                    var fileInfo = new FileInfo(file);
+                    files.Add(fileInfo);
+                }
+            });
+            GpxFiles = new ObservableCollection<FileInfo>(files);
+        }
         private void TrackService_StaticPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(TrackService.Current))

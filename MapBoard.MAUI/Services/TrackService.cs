@@ -17,6 +17,27 @@ using XmpCore.Impl;
 
 namespace MapBoard.Services
 {
+    /**
+     * 对于没有各种限制的Windows来说，只要使用这个类，调用Start开始，Stop结束即可
+     * 但是Android需要把这个类挂在Service下面才合理。
+     * 用JAVA写的时候，挂在Activity下面一会就被杀了，或者关屏后不再记录，所以需要在Service下面处理。
+     * 虽然不清楚MAUI如何，但也用了相同的方法。
+     * 对于Android，要开始记录轨迹时，调用MainActivity下的StartTrackService()，
+     * 来启动AndroidTrackService前台服务，并绑定服务。
+     * 通过AndroidServiceConnection类来实现Service和Activity的交互。
+     * 绑定成功后，AndroidServiceConnection下的OnServiceConnected方法会被调用，
+     * 这个方法会从AndroidTrackServiceBinder对象中拿到AndroidTrackService服务对象，
+     * 如果AndroidTrackService中的TrackService对象为空，说明是第一次绑定，那么就建立这个对象，
+     * 然后调用TrackService.Start()来开始记录轨迹。
+     * 如果不为空，那么说明时Activity被杀后重新和Servcice建立联系。
+     * 需要停止记录时，调用MainActivity下的StopTrackService()来实现。
+     * StopTrackService做了两件事，解绑和停止服务。
+     * 在AndroidTrackService的OnDestroy()方法下，调用了TrackService.Stop()，实现轨迹记录的停止。
+     * AndroidTrackService开始后，还会初始化AndroidGnssHelper类，
+     * 这个类拥抱LocationManager来读取卫星详细信息。
+     * 然后在卫星信息改变时，调用TrackService.UpdateGnssStatus进行更新。
+     */
+
     public class TrackService : INotifyPropertyChanged
     {
         public const double MinDistance = 2;
@@ -26,10 +47,6 @@ namespace MapBoard.Services
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
-        /// <summary>
-        /// 暂停标志。若置改标志为true然后Stop，那么下一次启动时，会继续本次轨迹。
-        /// </summary>
-        private bool pausingFlag = false;
 
         private int pointsCount;
         private bool running = false;
@@ -43,9 +60,10 @@ namespace MapBoard.Services
             Overlay.Graphics.Clear();
         }
 
-        public static event PropertyChangedEventHandler StaticPropertyChanged;
-
         public static event ThreadExceptionEventHandler ExceptionThrown;
+
+        public static event PropertyChangedEventHandler StaticPropertyChanged;
+        public static event EventHandler<GpxSavedEventArgs> GpxSaved;
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
 
@@ -124,10 +142,6 @@ namespace MapBoard.Services
         }
 
         private GraphicsOverlay Overlay => MainMapView.Current.TrackOverlay;
-        public void PutPausingFlag()
-        {
-            pausingFlag = true;
-        }
         public async void Start()
         {
             if (running)
@@ -168,7 +182,7 @@ namespace MapBoard.Services
             {
                 while (running)
                 {
-                    Location location =  await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
+                    Location location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
 
                     if (running == false)
                     {
@@ -213,18 +227,13 @@ namespace MapBoard.Services
         {
             running = false;
             Current = null;
-            if (pausingFlag) //如果时暂停，那么保存当前GPX文件路径，供下次启动时读取
-            {
-                if (File.Exists(GetGpxFilePath()))
-                {
-                    ResumeGpx = GetGpxFilePath();
-                }
-            }
+
             Geolocation.Default.StopListeningForeground();
-            SaveGpx();
+            if (SaveGpx())
+            {
+                GpxSaved?.Invoke(this,new GpxSavedEventArgs(GetGpxFilePath()));
+            }
         }
-
-
         public void UpdateGnssStatus(GnssStatusInfo gpsStatus)
         {
             GnssStatus = gpsStatus;
@@ -235,13 +244,16 @@ namespace MapBoard.Services
             return Path.Combine(FolderPaths.TrackPath, $"{StartTime:yyyyMMdd-HHmmss}.gpx");
         }
 
-        private void SaveGpx()
+        private bool SaveGpx()
         {
-            if (gpxTrack.Points.Count >= 3)
+            if (gpxTrack.Points.Count >= 2)
             {
                 File.WriteAllText(GetGpxFilePath(), gpx.ToGpxXml());
+                return true;
             }
+            return false;
         }
+
         private void UpdateGpx(Location location)
         {
             try
@@ -280,6 +292,15 @@ namespace MapBoard.Services
         {
             Overlay.Graphics.Clear();
             Overlay.Graphics.Add(new Graphic(builder.ToGeometry()));
+        }
+
+        public class GpxSavedEventArgs : EventArgs
+        {
+            public GpxSavedEventArgs(string path)
+            {
+                FilePath = path;
+            }
+            public string FilePath { get; init; }
         }
     }
 }

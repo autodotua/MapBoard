@@ -11,12 +11,12 @@
     x:DataType="{x:Type vm:TrackViewViewModel}"
     Loaded="ContentPage_Loaded"
     Unloaded="ContentPage_Unloaded">
-    <ContentPage.Resources>
+    <ContentView.Resources>
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
-    </ContentPage.Resources>
+    </ContentView.Resources>
     <Grid
         Margin="8,32,8,8"
-        RowDefinitions="*,8,Auto,8,Auto">
+        RowDefinitions="*,8,Auto">
         <ListView
             x:Name="lvwGpxList"
             IsVisible="{Binding TrackService}"
@@ -129,33 +129,16 @@
                 Grid.Column="2"
                 Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
         </Grid>
-        <Label
-            x:Name="lblPausing"
-            Grid.Row="2"
-            HorizontalTextAlignment="Center"
-            IsVisible="False"
-            Text="轨迹记录暂停"
-            TextColor="Orange" />
-        <Button
-            x:Name="btnStart"
-            Grid.Row="4"
-            Clicked="StartTrackButton_Click"
-            HorizontalOptions="Fill"
-            MaximumWidthRequest="200"
-            Text="开始记录轨迹"
-            VerticalOptions="Center" />
         <Grid
-            x:Name="grdStopAndPause"
-            Grid.Row="4"
-            ColumnDefinitions="*,16,*"
-            IsVisible="False">
+            Grid.Row="99"
+            ColumnDefinitions="*,16,*">
             <Button
-                x:Name="btnPause"
-                BackgroundColor="Orange"
-                Clicked="PauseButton_Clicked"
+                x:Name="btnStart"
+                Grid.Column="2"
+                Clicked="StartTrackButton_Click"
                 HorizontalOptions="Fill"
                 MaximumWidthRequest="200"
-                Text="暂停"
+                Text="开始记录轨迹"
                 VerticalOptions="Center" />
             <Button
                 x:Name="btnResume"
@@ -163,16 +146,16 @@
                 Clicked="ResumeButton_Clicked"
                 HorizontalOptions="Fill"
                 MaximumWidthRequest="200"
-                Text="继续"
+                Text="继续上次"
                 VerticalOptions="Center" />
             <Button
                 x:Name="btnStop"
-                Grid.Column="2"
+                Grid.ColumnSpan="99"
                 BackgroundColor="Red"
                 Clicked="StopButton_Clicked"
                 HorizontalOptions="Fill"
                 MaximumWidthRequest="200"
-                Text="停止"
+                Text="停止/暂停"
                 VerticalOptions="Center" />
         </Grid>
 

@@ -19,7 +19,7 @@ public class TrackDetailConverter : IValueConverter
             "3" => $"{GetLongitudeString(value as Location)} {GetLatitudeString(value as Location)}",
             "4" => (value as Location).Altitude.HasValue ? $"{(value as Location).Altitude.Value:0.0} m" : "未知",
             "5" => (value as Location).Speed.HasValue ? $"{(value as Location).Speed:0.0} m/s   {(value as Location).Speed / 3.6:0.0} km/h" : "未知",
-            "6" => (value as Location).Course.HasValue ? $"{(value as Location).Course}°  {Angle2Direction((value as Location).Course.Value)}" : "未知",
+            "6" => (value as Location).Course.HasValue ? $"{(value as Location).Course:0.0}°  {Angle2Direction((value as Location).Course.Value)}" : "未知",
             "7" => (value as Location).Accuracy.HasValue && (value as Location).VerticalAccuracy.HasValue ? $"{(value as Location).Accuracy:0.0} m (H)  {(value as Location).VerticalAccuracy:0.0} m (V)" : "未知",
             "8" => $"{(value as GnssStatusInfo).Fixed} / {(value as GnssStatusInfo).Total}",
             _ => throw new NotImplementedException(),

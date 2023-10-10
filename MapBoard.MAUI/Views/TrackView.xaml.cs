@@ -22,122 +22,27 @@ public partial class TrackView : ContentView
     {
         InitializeComponent();
         BindingContext = new TrackViewViewModel();
-        TrackService.ExceptionThrown += TrackService_ExceptionThrown;
-    }
 
-    private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            if (MainPage.Current.IsVisible)
-            {
-                MainPage.Current.DisplayAlert("轨迹记录失败", e.Exception.Message, "确定");
-                StopTrack(false);
-                UpdateButtonsVisible(false, false);
-            }
-        });
+        //轨迹记录有异常，在此处处理
+        TrackService.ExceptionThrown += TrackService_ExceptionThrown;
+
+        //处理TrackService.Current发生改变，即轨迹记录的开始和停止事件
+        TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
+
+        //轨迹记录结束、GPX保存后，更新GPX文件列表
+        TrackService.GpxSaved += TrackService_GpxSaved;
     }
 
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
-        UpdateButtonsVisible(TrackService.Current != null, false);
-        if (TrackService.Current == null && Config.Instance.IsTracking)
-        {
-            var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
-            if (gpxFiles.Any())
-            {
-                if (await MainPage.Current.DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
-                {
-                    StartTrack(gpxFiles.First());
-                    UpdateButtonsVisible(true, false);
-                }
-                else
-                {
-                    Config.Instance.IsTracking = false;
-                }
-            }
-        }
+        await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+        UpdateButtonsVisible(TrackService.Current != null);
     }
 
     private void ContentPage_Unloaded(object sender, EventArgs e)
     {
         Config.Instance.Save();
         MainMapView.Current.Layers.Save();
-    }
-
-    private void PauseButton_Clicked(object sender, EventArgs e)
-    {
-        StopTrack(true);
-        UpdateButtonsVisible(true, true);
-    }
-
-    private void ResumeButton_Clicked(object sender, EventArgs e)
-    {
-        StartTrack();
-        UpdateButtonsVisible(true, false);
-    }
-
-    private void StartTrack(string resume = null)
-    {
-        if (resume != null)
-        {
-            TrackService.ResumeGpx = resume;
-        }
-#if ANDROID
-        (Platform.CurrentActivity as MainActivity).StartTrackService();
-#else
-        var trackService = new TrackService();
-        trackService.Start();
-#endif
-    }
-
-    private async void StartTrackButton_Click(object sender, EventArgs e)
-    {
-        try
-        {
-            Config.Instance.IsTracking = true;
-            StartTrack();
-            UpdateButtonsVisible(true, false);
-        }
-        catch (Exception ex)
-        {
-            await MainPage.Current.DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
-        }
-    }
-    private void StopButton_Clicked(object sender, EventArgs e)
-    {
-        if (TrackService.Current == null) //暂停后停止
-        {
-            Config.Instance.IsTracking = false;
-        }
-        else //直接停止
-        {
-            StopTrack(false);
-        }
-        UpdateButtonsVisible(false, false);
-    }
-
-    private void StopTrack(bool pause)
-    {
-        if (pause)
-        {
-            TrackService.Current.PutPausingFlag();
-        }
-#if ANDROID
-        (Platform.CurrentActivity as MainActivity).StopTrackService();
-#else
-        TrackService.Current.Stop();
-#endif
-    }
-    private void UpdateButtonsVisible(bool running, bool pausing)
-    {
-        btnStart.IsVisible = !running;
-        grdStopAndPause.IsVisible = running;
-        btnPause.IsVisible = !pausing;
-        btnResume.IsVisible = pausing;
-        lblPausing.IsVisible = pausing;
-        grdDetail.IsVisible = running;
-        lvwGpxList.IsVisible = !running;
     }
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
@@ -162,4 +67,97 @@ public partial class TrackView : ContentView
         }
     }
 
+    private async void ResumeButton_Clicked(object sender, EventArgs e)
+    {
+        var gpxs = (BindingContext as TrackViewViewModel).GpxFiles;
+        if (!gpxs.Any())
+        {
+            await MainPage.Current.DisplayAlert("无法继续", "不存在现有的轨迹", "确定");
+            return;
+        }
+        StartTrack(gpxs[0].FullName);
+        //UpdateButtonsVisible(true);
+    }
+
+    private void StartTrack(string resume = null)
+    {
+        if (resume != null)
+        {
+            TrackService.ResumeGpx = resume;
+        }
+#if ANDROID
+        (Platform.CurrentActivity as MainActivity).StartTrackService();
+#else
+        var trackService = new TrackService();
+        trackService.Start();
+#endif
+    }
+
+    private async void StartTrackButton_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            Config.Instance.IsTracking = true;
+            StartTrack();
+            //UpdateButtonsVisible(true);
+        }
+        catch (Exception ex)
+        {
+            await MainPage.Current.DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
+        }
+    }
+
+    private void StopButton_Clicked(object sender, EventArgs e)
+    {
+        StopTrack();
+        //UpdateButtonsVisible(false);
+    }
+
+    private void StopTrack()
+    {
+#if ANDROID
+        (Platform.CurrentActivity as MainActivity).StopTrackService();
+#else
+        TrackService.Current.Stop();
+#endif
+    }
+
+    private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (MainPage.Current.IsVisible)
+            {
+                MainPage.Current.DisplayAlert("轨迹记录失败", e.Exception.Message, "确定");
+                StopTrack();
+                UpdateButtonsVisible(false);
+            }
+        });
+    }
+
+    private void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
+    {
+        var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
+        if (gpxs != null && (gpxs.Count == 0 || gpxs[0].FullName != e.FilePath))
+        {
+            gpxs.Insert(0, new FileInfo(e.FilePath));
+        }
+    }
+
+    private void TrackService_StaticPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TrackService.Current))
+        {
+            UpdateButtonsVisible(TrackService.Current != null);
+        }
+    }
+    private void UpdateButtonsVisible(bool running)
+    {
+        btnStart.IsVisible = !running;
+        btnStop.IsVisible = running;
+        btnResume.IsVisible = !running;
+        btnResume.IsEnabled = (BindingContext as TrackViewViewModel).GpxFiles.Count > 0;
+        grdDetail.IsVisible = running;
+        lvwGpxList.IsVisible = !running;
+    }
 }
