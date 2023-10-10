@@ -18,9 +18,9 @@ namespace MapBoard.Services
 {
     public class FtpService
     {
-        IFtpServerHost ftpServerHost;
+        private IFtpServerHost ftpServerHost;
         private ServiceCollection services;
-        ServiceProvider serviceProvider;
+        private ServiceProvider serviceProvider;
         public FtpService(string dir)
         {
             services = new ServiceCollection();
@@ -54,7 +54,7 @@ namespace MapBoard.Services
             }
 #elif WINDOWS
             string hostName = Dns.GetHostName();
-            foreach (var address in Dns.GetHostByName(hostName).AddressList)
+            foreach (var address in Dns.GetHostEntry(hostName).AddressList)
             {
                 yield return address.ToString();
             }

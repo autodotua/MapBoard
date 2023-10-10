@@ -28,7 +28,7 @@ using FubarDev.FtpServer;
 using MapBoard.Services;
 using MapBoard.Views;
 
-namespace MapBoard.Pages
+namespace MapBoard.Views
 {
     public partial class MapPage : ContentView
     {
@@ -38,18 +38,13 @@ namespace MapBoard.Pages
         }
 
 
-        private void CloseLayerPanelButton_Click(object sender, EventArgs e)
-        {
-            MainPage.Current.OpenPanel<LayerListView>();
-        }
-
         private void ContentPage_Loaded(object sender, EventArgs e)
         {
         }
 
         private void LayerButton_Click(object sender, EventArgs e)
         {
-            MainPage.Current.OpenPanel<LayerListView>();
+            MainPage.Current.OpenOrClosePanel<LayerListView>();
         }
 
 

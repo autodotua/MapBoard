@@ -1,4 +1,4 @@
-﻿using MapBoard.Pages;
+﻿using MapBoard.Views;
 
 namespace MapBoard
 {

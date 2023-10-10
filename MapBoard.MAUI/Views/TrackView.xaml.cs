@@ -14,14 +14,14 @@ using MapBoard.Mapping;
 using MapBoard.IO.Gpx;
 using Esri.ArcGISRuntime.Geometry;
 
-namespace MapBoard.Pages;
+namespace MapBoard.Views;
 
-public partial class TrackPage : ContentView
+public partial class TrackView : ContentView
 {
-    public TrackPage()
+    public TrackView()
     {
         InitializeComponent();
-        BindingContext = new TrackPageViewModel();
+        BindingContext = new TrackViewViewModel();
         TrackService.ExceptionThrown += TrackService_ExceptionThrown;
     }
 
@@ -29,9 +29,9 @@ public partial class TrackPage : ContentView
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            if (Shell.Current.IsVisible)
+            if (MainPage.Current.IsVisible)
             {
-                Shell.Current.DisplayAlert("¹ì¼£¼ÇÂ¼Ê§°Ü", e.Exception.Message, "È·¶¨");
+                MainPage.Current.DisplayAlert("¹ì¼£¼ÇÂ¼Ê§°Ü", e.Exception.Message, "È·¶¨");
                 StopTrack(false);
                 UpdateButtonsVisible(false, false);
             }

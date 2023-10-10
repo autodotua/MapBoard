@@ -6,14 +6,14 @@ using System.ComponentModel;
 
 namespace MapBoard.ViewModels
 {
-    public class TrackPageViewModel : INotifyPropertyChanged
+    public class TrackViewViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<FileInfo> gpxFiles = new ObservableCollection<FileInfo>();
         private string status;
 
         private TrackService trackService;
 
-        public TrackPageViewModel()
+        public TrackViewViewModel()
         {
             TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
             List<FileInfo> files = new List<FileInfo>();

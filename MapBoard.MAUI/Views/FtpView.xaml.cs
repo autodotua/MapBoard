@@ -4,19 +4,19 @@ using MapBoard.ViewModels;
 using System.Globalization;
 using System.Linq;
 
-namespace MapBoard.Pages;
+namespace MapBoard.Views;
 
-public partial class FtpPage : ContentView
+public partial class FtpView : ContentView
 {
     FtpService ftpService;
-    public FtpPage()
+    public FtpView()
     {
         var ip = FtpService.GetIpAddress();
         if (ip == null || !ip.Any())
         {
             ip = null;
         }
-        BindingContext = new FtpPageViewModel()
+        BindingContext = new FtpViewViewModel()
         {
             IP = ip == null ? "Î´Öª" : string.Join(Environment.NewLine, ip),
             IsOn = false,
@@ -27,7 +27,7 @@ public partial class FtpPage : ContentView
 
     private void StartStopFtpButton_Clicked(object sender, EventArgs e)
     {
-        if ((BindingContext as FtpPageViewModel).IsOn)
+        if ((BindingContext as FtpViewViewModel).IsOn)
         {
             stkFtpDirs.IsEnabled= true;
             ftpService.StopServerAsync();
@@ -62,6 +62,6 @@ public partial class FtpPage : ContentView
             ftpService.StartServerAsync();
             (sender as Button).Text = "¹Ø±ÕFTP";
         }
-        (BindingContext as FtpPageViewModel).IsOn = !(BindingContext as FtpPageViewModel).IsOn;
+        (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
     }
 }

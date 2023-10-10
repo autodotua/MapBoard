@@ -91,11 +91,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Pages\MapPage.xaml.cs">
+	  <Compile Update="Views\FtpView.xaml.cs">
+	    <DependentUpon>FtpView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\MapPage.xaml.cs">
 	    <DependentUpon>MapPage.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Pages\TrackPage.xaml.cs">
-	    <DependentUpon>TrackPage.xaml</DependentUpon>
+	  <Compile Update="Views\TrackView.xaml.cs">
+	    <DependentUpon>TrackView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\TrackView.xaml.cs">
+	    <DependentUpon>TrackView.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Properties\Resources.Designer.cs">
 	    <DesignTime>True</DesignTime>
@@ -112,13 +118,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Pages\MapPage.xaml">
+	  <MauiXaml Update="Views\MapPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Pages\TrackPage.xaml">
+	  <MauiXaml Update="Views\TrackView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Pages\FtpPage.xaml">
+	  <MauiXaml Update="Views\FtpView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\LayerListView.xaml">

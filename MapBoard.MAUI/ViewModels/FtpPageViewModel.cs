@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.ViewModels
 {
-    public class FtpPageViewModel : INotifyPropertyChanged
+    public class FtpViewViewModel : INotifyPropertyChanged
     {
         private string ip;
         private bool on = false;

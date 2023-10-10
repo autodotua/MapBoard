@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView
-    x:Class="MapBoard.Pages.TrackPage"
+    x:Class="MapBoard.Views.TrackView"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:base="clr-namespace:MapBoard"
@@ -8,7 +8,7 @@
     xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem"
     xmlns:s="clr-namespace:MapBoard.Services"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
-    x:DataType="{x:Type vm:TrackPageViewModel}"
+    x:DataType="{x:Type vm:TrackViewViewModel}"
     Loaded="ContentPage_Loaded"
     Unloaded="ContentPage_Unloaded">
     <ContentPage.Resources>
