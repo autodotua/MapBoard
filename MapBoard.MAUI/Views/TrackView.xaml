@@ -16,7 +16,7 @@
     </ContentView.Resources>
     <Grid
         Margin="8,32,8,8"
-        RowDefinitions="*,8,Auto">
+        RowDefinitions="*,8,Auto,8,Auto">
         <ListView
             x:Name="lvwGpxList"
             IsVisible="{Binding TrackService}"
@@ -130,7 +130,7 @@
                 Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
         </Grid>
         <Grid
-            Grid.Row="99"
+            Grid.Row="2"
             ColumnDefinitions="*,16,*">
             <Button
                 x:Name="btnStart"
@@ -138,7 +138,7 @@
                 Clicked="StartTrackButton_Click"
                 HorizontalOptions="Fill"
                 MaximumWidthRequest="200"
-                Text="开始记录轨迹"
+                Text="开始记录"
                 VerticalOptions="Center" />
             <Button
                 x:Name="btnResume"
@@ -158,6 +158,13 @@
                 Text="停止/暂停"
                 VerticalOptions="Center" />
         </Grid>
-
+        <Label
+            Grid.Row="4"
+            HorizontalOptions="Center"
+            Text="加载其他GPX文件">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+            </Label.GestureRecognizers>
+        </Label>
     </Grid>
 </ContentView>

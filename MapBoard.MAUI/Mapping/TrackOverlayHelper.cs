@@ -1,10 +1,13 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
+using MapBoard.IO.Gpx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Color = System.Drawing.Color;
 
 namespace MapBoard.Mapping
 {
@@ -55,6 +58,59 @@ namespace MapBoard.Mapping
             Polyline line = new Polyline(points, SpatialReferences.Wgs84);
             Overlay.Graphics.Add(new Graphic(line));
             return line;
+        }
+
+        public async Task<Envelope> LoadColoredLineAsync(GpxTrack gpx)
+        {
+            Clear();
+            //var maxSpeed = gpx.GetMaxSpeedAsync();
+            var points = gpx.Points;
+            var speeds = await GpxSpeedAnalysis.GetSpeedsAsync(points, 3);
+            var orderedSpeeds = speeds.Select(p => p.Speed).OrderBy(p => p).ToList();
+            int speedsCount = speeds.Count;
+            int maxIndex = Math.Max(1, (int)(speedsCount * 0.95));
+            int minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.05));
+            double maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
+            for (int i = 2; i < points.Count; i++)
+            {
+                MapPoint p1 = new MapPoint(points[i - 2].X, points[i - 2].Y);
+                MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y);
+                MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y);
+                var speed = speeds[i - 2].Speed;
+                Polyline line = new Polyline(new MapPoint[] { p1, p2, p3 }, SpatialReferences.Wgs84);
+                double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
+                var color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
+                Graphic graphic = new Graphic(line)
+                {
+                    Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, color, 6)
+                };
+                Overlay.Graphics.Add(graphic);
+            }
+            return Overlay.Extent;
+        }
+
+        private Color InterpolateColors(Color[] colors, double p)
+        {
+            if (colors.Length < 2 || p <= 0)
+            {
+                return colors[0];
+            }
+            else if (p >= 1)
+            {
+                return colors[^1];
+            }
+            double segmentLength = 1f / (colors.Length - 1);
+            int segmentIndex = (int)(p / segmentLength);
+            double segmentProgress = (p - segmentIndex * segmentLength) / segmentLength;
+
+            Color startColor = colors[segmentIndex];
+            Color endColor = colors[segmentIndex + 1];
+
+            int r = (int)(startColor.R + (endColor.R - startColor.R) * segmentProgress);
+            int g = (int)(startColor.G + (endColor.G - startColor.G) * segmentProgress);
+            int b = (int)(startColor.B + (endColor.B - startColor.B) * segmentProgress);
+
+            return Color.FromArgb(r, g, b);
         }
     }
 }

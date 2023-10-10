@@ -62,7 +62,7 @@ namespace MapBoard.Services
 
         public static event ThreadExceptionEventHandler ExceptionThrown;
 
-        public static event PropertyChangedEventHandler StaticPropertyChanged;
+        public static event EventHandler CurrentChanged;
         public static event EventHandler<GpxSavedEventArgs> GpxSaved;
 
         public event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged;
@@ -77,8 +77,12 @@ namespace MapBoard.Services
             get => current;
             set
             {
+                if (current == null && value == null || current != null && value != null)
+                {
+                    throw new ArgumentException("设置Current时，若当前为null，必须提供值；若当前非null，必须设置为null");
+                }
                 current = value;
-                StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(nameof(Current)));
+                CurrentChanged?.Invoke(null, EventArgs.Empty);
             }
         }
 

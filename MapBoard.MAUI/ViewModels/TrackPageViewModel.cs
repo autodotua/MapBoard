@@ -15,7 +15,7 @@ namespace MapBoard.ViewModels
 
         public TrackViewViewModel()
         {
-            TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
+            TrackService.CurrentChanged += TrackService_StaticPropertyChanged;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -54,12 +54,9 @@ namespace MapBoard.ViewModels
             });
             GpxFiles = new ObservableCollection<FileInfo>(files);
         }
-        private void TrackService_StaticPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
         {
-            if (e.PropertyName == nameof(TrackService.Current))
-            {
-                TrackService = TrackService.Current;
-            }
+            TrackService = TrackService.Current;
         }
     }
 }

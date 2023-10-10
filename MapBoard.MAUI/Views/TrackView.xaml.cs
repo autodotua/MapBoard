@@ -27,7 +27,7 @@ public partial class TrackView : ContentView
         TrackService.ExceptionThrown += TrackService_ExceptionThrown;
 
         //处理TrackService.Current发生改变，即轨迹记录的开始和停止事件
-        TrackService.StaticPropertyChanged += TrackService_StaticPropertyChanged;
+        TrackService.CurrentChanged += TrackService_StaticPropertyChanged;
 
         //轨迹记录结束、GPX保存后，更新GPX文件列表
         TrackService.GpxSaved += TrackService_GpxSaved;
@@ -45,23 +45,27 @@ public partial class TrackView : ContentView
         MainMapView.Current.Layers.Save();
     }
 
-    private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
+    private async Task LoadGpxAsync(string path)
     {
         try
         {
-            var file = e.Item as FileInfo;
-            Gpx gpx = await Gpx.FromFileAsync(file.FullName);
+            Gpx gpx = await Gpx.FromFileAsync(path);
 
             var overlay = MainMapView.Current.TrackOverlay;
-            var line = overlay.LoadLine(gpx.Tracks[0].Points.Select(q => new MapPoint(q.X, q.Y)));
-            await Shell.Current.GoToAsync("//MainPage");
-            await Task.Delay(500);//会首先调用缩放到记忆的位置，需要避开
-            await MainMapView.Current.ZoomToGeometryAsync(line);
+            var extent = await overlay.LoadColoredLineAsync(gpx.Tracks[0]);
+            MainPage.Current.ClosePanel<TrackView>();
+            await MainMapView.Current.ZoomToGeometryAsync(extent);
         }
         catch (Exception ex)
         {
             await MainPage.Current.DisplayAlert("加载失败", ex.Message, "确定");
         }
+    }
+
+    private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var file = e.Item as FileInfo;
+        await LoadGpxAsync(file.FullName);
     }
 
     private async void ResumeButton_Clicked(object sender, EventArgs e)
@@ -133,21 +137,22 @@ public partial class TrackView : ContentView
         });
     }
 
-    private void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
+    private async void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
     {
         var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
         if (gpxs != null && (gpxs.Count == 0 || gpxs[0].FullName != e.FilePath))
         {
             gpxs.Insert(0, new FileInfo(e.FilePath));
         }
+        if (TrackService.Current == null)
+        {
+            await LoadGpxAsync(e.FilePath);
+        }
     }
 
-    private void TrackService_StaticPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
     {
-        if (e.PropertyName == nameof(TrackService.Current))
-        {
-            UpdateButtonsVisible(TrackService.Current != null);
-        }
+        UpdateButtonsVisible(TrackService.Current != null);
     }
     private void UpdateButtonsVisible(bool running)
     {
@@ -157,5 +162,23 @@ public partial class TrackView : ContentView
         btnResume.IsEnabled = (BindingContext as TrackViewViewModel).GpxFiles.Count > 0;
         grdDetail.IsVisible = running;
         lvwGpxList.IsVisible = !running;
+    }
+
+    private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    {
+        PickOptions options = new PickOptions()
+        {
+            PickerTitle = "选取GPX轨迹文件",
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
+            {
+                [DevicePlatform.Android] = new[] { "application/gpx", "application/gpx+xml", "application/octet-stream" },
+                [DevicePlatform.WinUI] = new[] { "*.gpx" }
+            })
+        };
+        var file = await FilePicker.Default.PickAsync(options);
+        if (file != null)
+        {
+            await LoadGpxAsync(file.FullPath);
+        }
     }
 }
