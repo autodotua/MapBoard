@@ -404,7 +404,7 @@ namespace MapBoard.Mapping
             }
             if (mapView is MapView mv)
             {
-                await mv.SetViewpointGeometryAsync(geometry,  autoExtent ? Config.WatermarkHeight : 0);
+                await mv.SetViewpointGeometryAsync(geometry, autoExtent ? Config.WatermarkHeight : 0);
             }
             else if (mapView is SceneView sv)
             {
@@ -424,16 +424,23 @@ namespace MapBoard.Mapping
         {
             if (mapView.Layers.MapViewExtentJson != null)
             {
-                try
+                if (!mapView.Layers.MapViewExtentJson.Equals(mapView.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry?.ToJson()))
                 {
-                    Envelope envelope = Geometry.FromJson(mapView.Layers.MapViewExtentJson) as Envelope;
-                    var point1 = new MapPoint(envelope.XMin, envelope.YMin);
-                    var point2 = new MapPoint(envelope.XMax, envelope.YMax);
-                    envelope = new Envelope(point1.RegularizeWebMercatorPoint(), point2.RegularizeWebMercatorPoint());
-                    await mapView.ZoomToGeometryAsync(envelope, false);
+                    try
+                    {
+                        Envelope envelope = Geometry.FromJson(mapView.Layers.MapViewExtentJson) as Envelope;
+                        var point1 = new MapPoint(envelope.XMin, envelope.YMin);
+                        var point2 = new MapPoint(envelope.XMax, envelope.YMax);
+                        envelope = new Envelope(point1.RegularizeWebMercatorPoint(), point2.RegularizeWebMercatorPoint());
+                        await mapView.ZoomToGeometryAsync(envelope, false);
+                    }
+                    catch
+                    {
+                    }
                 }
-                catch
+                else
                 {
+
                 }
             }
         }

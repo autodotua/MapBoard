@@ -46,7 +46,7 @@ namespace MapBoard.Mapping
         private bool canRotate = true;
 
 
-        LocationDisplay locationDisplay = null;
+        private bool isZoomingToLastExtent = false;
         /// <summary>
         /// 鼠标中键按下时起始位置
         /// </summary>
@@ -80,7 +80,7 @@ namespace MapBoard.Mapping
             Unloaded += MainMapView_Unloaded;
             Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
             {
-                if (canSaveExtent
+                if (IsLoaded
                     && Layers != null
                  && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
                 {
@@ -91,26 +91,13 @@ namespace MapBoard.Mapping
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
-        private void MainMapView_Unloaded(object sender, EventArgs e)
-        {
-            canSaveExtent = false;
-            Config.Instance.Save();
-            Layers.Save();
-        }
-
-        private bool canSaveExtent = false;
-        private async void MainMapView_Loaded(object sender, EventArgs e)
-        {
-            await this.TryZoomToLastExtent();
-            canSaveExtent = true;
-        }
-
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
         public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
         public static MainMapView Current => instances[0];
+
         /// <summary>
         /// 所有<see cref="MainMapView"/>实例
         /// </summary>
@@ -150,7 +137,6 @@ namespace MapBoard.Mapping
         //public EditorHelper Editor { get; private set; }
         public GraphicsOverlay TrackOverlay { get; } = new GraphicsOverlay();
 
-
         /// <summary>
         /// 选择相关
         /// </summary>
@@ -174,20 +160,49 @@ namespace MapBoard.Mapping
             }
         }
 
-
-
         public void MoveToLocation()
         {
-            if (locationDisplay != null && locationDisplay.IsEnabled)
+            if (LocationDisplay != null && LocationDisplay.IsEnabled)
             {
-                var point = locationDisplay.MapLocation;
+                var point = LocationDisplay.MapLocation;
                 if (point != null)
                 {
                     SetViewpointCenterAsync(point);
                 }
             }
         }
+        private async void MainMapView_Loaded(object sender, EventArgs e)
+        {
+            if (Map == null)
+            {
+                await LoadAsync();
+            }
+            if (!isZoomingToLastExtent)
+            {
+                isZoomingToLastExtent = true;
+                await this.TryZoomToLastExtent();
+                isZoomingToLastExtent = false;
+            }
+        }
 
+        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LocationDisplay))
+            {
+                if (LocationDisplay != null)
+                {
+                    LocationDisplay.NavigationPointHeightFactor = 0.4;
+                    LocationDisplay.WanderExtentFactor = 0;
+                    LocationDisplay.IsEnabled = true;
+                }
+            }
+        }
+
+        private void MainMapView_Unloaded(object sender, EventArgs e)
+        {
+            Config.Instance.Save();
+            Layers.Save();
+        }
         /// <summary>
         /// 覆盖层相关
         /// </summary>
@@ -220,21 +235,6 @@ namespace MapBoard.Mapping
         //        //防止旋转过快造成卡顿
         //    }
         //}
-
-
-        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(LocationDisplay))
-            {
-                locationDisplay = LocationDisplay;
-                if (locationDisplay != null)
-                {
-                    locationDisplay.NavigationPointHeightFactor = 0.4;
-                    locationDisplay.WanderExtentFactor = 0;
-                    locationDisplay.IsEnabled = true;
-                }
-            }
-        }
         /// <summary>
         /// 键盘按下事件
         /// </summary>

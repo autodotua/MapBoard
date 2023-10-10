@@ -11,23 +11,6 @@ public partial class LayerListView : ContentView
         InitializeComponent();
     }
 
-    public void Initialize()
-    {
-        BindingContext = new LayerViewViewModel()
-        {
-            Layers = MainMapView.Current.Layers
-        };
-        (BindingContext as LayerViewViewModel).GenerateGroups();
-        if (Config.Instance.LastLayerListGroupType == 0)
-        {
-            rbtnByLevel.IsChecked = true;
-        }
-        else
-        {
-            rbtnByGroup.IsChecked = true;
-        }
-    }
-
     private void ViewTypeRadioButton_CheckChanged(object sender, CheckedChangedEventArgs e)
     {
         if (e.Value)
@@ -49,5 +32,25 @@ public partial class LayerListView : ContentView
     {
         var layer = e.Item as MapLayerInfo;
         layer.LayerVisible = !layer.LayerVisible;
+    }
+
+    private void ContentView_Loaded(object sender, EventArgs e)
+    {
+        if (BindingContext == null)
+        {
+            BindingContext = new LayerViewViewModel()
+            {
+                Layers = MainMapView.Current.Layers
+            };
+            (BindingContext as LayerViewViewModel).GenerateGroups();
+            if (Config.Instance.LastLayerListGroupType == 0)
+            {
+                rbtnByLevel.IsChecked = true;
+            }
+            else
+            {
+                rbtnByGroup.IsChecked = true;
+            }
+        }
     }
 }

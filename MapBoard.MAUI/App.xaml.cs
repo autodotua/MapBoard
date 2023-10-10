@@ -1,4 +1,6 @@
-﻿namespace MapBoard
+﻿using MapBoard.Pages;
+
+namespace MapBoard
 {
     public partial class App : Application
     {
@@ -7,7 +9,7 @@
             Parameters.AppType = AppType.MAUI;
             InitializeComponent();
 
-            MainPage = new AppShell();
+            MainPage = new MainPage();
         }
     }
 }

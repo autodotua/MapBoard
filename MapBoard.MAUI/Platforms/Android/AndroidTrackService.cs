@@ -85,7 +85,7 @@ public class AndroidTrackService : Service
             .SetAutoCancel(false)
             .SetOngoing(true)
             .SetContentIntent(pendingIntent)
-            .SetSmallIcon(Resource.Drawable.tab_track)
+            .SetSmallIcon(Resource.Drawable.btn_track)
             .SetContentTitle("正在记录轨迹")
             .SetContentText("等待定位");
         if (Build.VERSION.SdkInt >= BuildVersionCodes.O)

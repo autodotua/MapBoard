@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MapBoard.Pages;
 
-public partial class FtpPage : ContentPage
+public partial class FtpPage : ContentView
 {
     FtpService ftpService;
     public FtpPage()

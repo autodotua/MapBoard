@@ -5,54 +5,30 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
     xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:p="clr-namespace:MapBoard.Pages"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
-    <ContentPage.Resources>
-
-
-        <Style
-            x:Key="SideButtonStyle"
-            TargetType="{x:Type Button}">
-            <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
-            <Setter Property="WidthRequest" Value="42" />
-            <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
-            <Setter Property="HeightRequest" Value="42" />
-            <!--<Setter Property="VisualStateManager.VisualStateGroups">
-                <Setter.Value>
-                    <VisualStateGroupList>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource Gray100}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource Gray500}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateGroupList>
-                </Setter.Value>
-            </Setter>-->
-        </Style>
-    </ContentPage.Resources>
-    <Grid>
-        <!--  地图  -->
-        <Grid IsClippedToBounds="True">
-            <map:MainMapView x:Name="map" />
-        </Grid>
-
-        <!--  图层面板  -->
+    <Grid RowDefinitions="*,Auto">
+        <p:MapPage x:Name="map" />
         <Grid
-            x:Name="grdLayer"
+            x:Name="track"
+            BackgroundColor="{DynamicResource White}"
+            HorizontalOptions="Start">
+            <p:TrackPage />
+        </Grid>
+        <p:FtpView
+            x:Name="ftp"
+            BackgroundColor="{DynamicResource White}"
+            HorizontalOptions="Start"
+            IsVisible="False" />
+
+        <Grid
+            x:Name="layer"
             Padding="0,24,0,0"
             BackgroundColor="{AppThemeBinding Light={DynamicResource White},
                                               Dark={DynamicResource Black}}"
             HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*"
-            TranslationX="-300"
-            WidthRequest="300">
+            RowDefinitions="Auto,8,*">
             <Label
                 Margin="8,8,0,0"
                 FontAttributes="Bold"
@@ -74,119 +50,27 @@
                 x:Name="layerList"
                 Grid.Row="2" />
         </Grid>
+        <Grid
+            Grid.Row="99"
+            Padding="0,4"
+            BackgroundColor="{DynamicResource Gray200}"
+            ColumnDefinitions="*,*,*"
+            HeightRequest="40">
+            <Grid.Resources>
 
-        <!--  右侧按钮  -->
-        <VerticalStackLayout
-            x:Name="grdSide"
-            Margin="8,0,8,56"
-            HorizontalOptions="End"
-            Spacing="8"
-            VerticalOptions="End">
+                <Style TargetType="{x:Type ImageButton}">
+                    <Setter Property="CornerRadius" Value="0" />
+                </Style>
+            </Grid.Resources>
             <ImageButton
-                Clicked="ZoomInButton_Click"
-                CornerRadius="4"
-                Source="btn_zoom_in.png"
-                Style="{StaticResource SideButtonStyle}">
-                <!--  有BUG，放到资源中提示错误	XFC0040	Cannot convert value "BackgroundColor" to "Microsoft.Maui.Controls.BindableProperty".	MapBoard.MAUI	C:\Users\autod\source\repos\MapBoard\MapBoard.MAUI\Pages\MainPage.xaml	26  -->
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray400}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray300}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
+                Clicked="TrackButton_Clicked"
+                Source="btn_track.png"
+                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
             <ImageButton
-                Clicked="ZoomOutButton_Click"
-                CornerRadius="4"
-                Source="btn_zoom_out.png"
-                Style="{StaticResource SideButtonStyle}">
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray400}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray300}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
-            <ImageButton
-                Clicked="LayerButton_Click"
-                CornerRadius="4"
-                Source="btn_layers.png"
-                Style="{StaticResource SideButtonStyle}">
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray400}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray300}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
-            <ImageButton
-                Margin="0,96,0,0"
-                Clicked="LocationButton_Click"
-                CornerRadius="4"
-                Source="btn_location.png"
-                Style="{StaticResource SideButtonStyle}">
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray400}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{DynamicResource Gray300}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
-            <Button
-                Clicked="TestButton_Click"
-                Text="T" />
-        </VerticalStackLayout>
+                Clicked="FtpButton_Clicked"
+                Source="tab_ftp.png"
+                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+
+        </Grid>
     </Grid>
 </ContentPage>

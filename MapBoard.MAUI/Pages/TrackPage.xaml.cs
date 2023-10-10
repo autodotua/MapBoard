@@ -16,7 +16,7 @@ using Esri.ArcGISRuntime.Geometry;
 
 namespace MapBoard.Pages;
 
-public partial class TrackPage : ContentPage
+public partial class TrackPage : ContentView
 {
     public TrackPage()
     {
@@ -46,7 +46,7 @@ public partial class TrackPage : ContentPage
             var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
             if (gpxFiles.Any())
             {
-                if (await DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
+                if (await (Parent as Page).DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
                 {
                     StartTrack(gpxFiles.First());
                     UpdateButtonsVisible(true, false);
@@ -101,7 +101,7 @@ public partial class TrackPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
+            await (Parent as Page).DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
         }
     }
     private void StopButton_Clicked(object sender, EventArgs e)
@@ -158,7 +158,7 @@ public partial class TrackPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("加载失败", ex.Message, "确定");
+            await (Parent as Page).DisplayAlert("加载失败", ex.Message, "确定");
         }
     }
 

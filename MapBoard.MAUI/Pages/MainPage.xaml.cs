@@ -26,6 +26,7 @@ using static MapBoard.Util.GeometryUtility;
 using FubarDev.FtpServer.FileSystem.DotNet;
 using FubarDev.FtpServer;
 using MapBoard.Services;
+using MapBoard.Views;
 
 namespace MapBoard.Pages
 {
@@ -33,66 +34,64 @@ namespace MapBoard.Pages
     {
         public MainPage()
         {
+            if (Current != null)
+            {
+                throw new Exception("仅允许一个实例");
+            }
+            Current = this;
             InitializeComponent();
+
+            layer.TranslationX = -300;
+            layer.WidthRequest = 300;
+
+            track.TranslationX = -300;
+            track.WidthRequest = 300;
         }
 
-        public async Task InitializeAsync()
+
+        private void ContentPage_Loaded(object sender, EventArgs e)
         {
-            if (map.Map == null)
+        }
+
+        public static MainPage Current { get; private set; }
+
+        public void OpenPanel<T>()
+        {
+            if (typeof(T) == typeof(LayerListView))
             {
-                await map.LoadAsync();
+                layer.TranslateTo(0, 0);
             }
-            layerList.Initialize();
-        } 
+            else if (typeof(T) == typeof(TrackPage))
+            {
+                track.TranslateTo(0, 0);
+            }
+        }
+        public void ClosePanel<T>()
+        {
+            if (typeof(T) == typeof(LayerListView))
+            {
+                layer.TranslateTo(-300, 0);
+            }
+            else if (typeof(T) == typeof(TrackPage))
+            {
+                track.TranslateTo(-300, 0);
+            }
+        }
+
         private void CloseLayerPanelButton_Click(object sender, EventArgs e)
         {
-            grdLayer.TranslateTo(-300, 0);
-            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
-            {
-                grdSide.TranslateTo(0, 0);
-            }
+            ClosePanel<LayerListView>();
         }
 
-        private async void ContentPage_Loaded(object sender, EventArgs e)
+        private void TrackButton_Clicked(object sender, EventArgs e)
         {
-            await InitializeAsync();
+            OpenPanel<TrackPage>();
         }
 
-        private void LayerButton_Click(object sender, EventArgs e)
+        private void FtpButton_Clicked(object sender, EventArgs e)
         {
-            grdLayer.TranslateTo(0, 0);
-            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
-            {
-                grdSide.TranslateTo(100, 0);
-            }
+            OpenPanel<FtpPage>();
         }
-
-
-        private void LocationButton_Click(object sender, EventArgs e)
-        {
-            map.LocationDisplay.AutoPanMode = LocationDisplayAutoPanMode.Recenter;
-        }
-
-        private void TestButton_Click(object sender, EventArgs e)
-        {
-#if ANDROID
-            Platform.CurrentActivity.Finish();
-#endif
-        }
-
-        private async void ZoomInButton_Click(object sender, EventArgs e)
-        {
-            var map = MainMapView.Current;
-            await map.SetViewpointScaleAsync(map.MapScale / 3);
-        }
-
-        private async void ZoomOutButton_Click(object sender, EventArgs e)
-        {
-            var map = MainMapView.Current;
-            await map.SetViewpointScaleAsync(map.MapScale * 3);
-        }
-
-
     }
 
 }

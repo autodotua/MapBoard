@@ -64,7 +64,6 @@
 	  <None Remove="Resources\Images\tab_ftp.svg" />
 	  <None Remove="Resources\Images\tab_layers.svg" />
 	  <None Remove="Resources\Images\tab_map.svg" />
-	  <None Remove="Resources\Images\tab_track.svg" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -92,6 +91,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Pages\MapPage.xaml.cs">
+	    <DependentUpon>MapPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Pages\TrackPage.xaml.cs">
 	    <DependentUpon>TrackPage.xaml</DependentUpon>
 	  </Compile>
@@ -110,13 +112,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Pages\MapPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\TrackPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\FtpPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Pages\LayerPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\LayerListView.xaml">
