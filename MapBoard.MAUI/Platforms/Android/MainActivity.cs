@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 using Android.OS;
 using MapBoard.Platforms.Android;
 
@@ -65,6 +66,16 @@ namespace MapBoard
             {
                 UnbindService(trackServiceConnection);
             }
+        }
+
+        public double GetNavBarHeight()
+        {
+            int resourceId = Resources.GetIdentifier("navigation_bar_height", "dimen", "android");
+            if (resourceId > 0)
+            {
+                return Resources.GetDimensionPixelSize(resourceId);
+            }
+            return 0;
         }
     }
 }

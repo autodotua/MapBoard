@@ -7,6 +7,7 @@
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:p="clr-namespace:MapBoard.Views"
     xmlns:v="clr-namespace:MapBoard.Views"
+    Title="地图画板"
     Loaded="ContentPage_Loaded">
     <Grid
         x:Name="grdMain"
@@ -56,14 +57,15 @@
         <Border
             x:Name="bdBottom"
             Grid.Row="99"
-            Stroke="Transparent">
+            BackgroundColor="{DynamicResource Gray200}"
+            Stroke="Transparent"
+            StrokeThickness="0">
             <Border.Shadow>
-                <Shadow Opacity="0" />
+                <Shadow Opacity="0.8" />
             </Border.Shadow>
             <Grid
                 x:Name="grdBottom"
                 Padding="0,4"
-                BackgroundColor="{DynamicResource Gray200}"
                 ColumnDefinitions="*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
@@ -78,8 +80,13 @@
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
                 <ImageButton
                     Grid.Column="1"
+                    Clicked="RefreshButton_Clicked"
+                    Source="btn_refresh.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                <ImageButton
+                    Grid.Column="2"
                     Clicked="FtpButton_Clicked"
-                    Source="tab_ftp.png"
+                    Source="btn_ftp.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
 
             </Grid>

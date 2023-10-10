@@ -2,6 +2,6 @@
 <resources>
   <style name="MyAppTheme" parent="Maui.SplashTheme">
     <item name="android:windowSplashScreenBackground">@color/colorPrimary</item>
-    <item name="android:windowLightStatusBar">true</item>
+    <!--<item name="android:windowLightStatusBar">true</item>-->
   </style>
 </resources>

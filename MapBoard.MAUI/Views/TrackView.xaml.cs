@@ -46,7 +46,7 @@ public partial class TrackView : ContentView
             var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").OrderDescending();
             if (gpxFiles.Any())
             {
-                if (await (Parent as Page).DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
+                if (await MainPage.Current.DisplayAlert("继续记录轨迹", "轨迹记录意外退出，是否继续？", "继续", "取消"))
                 {
                     StartTrack(gpxFiles.First());
                     UpdateButtonsVisible(true, false);
@@ -101,7 +101,7 @@ public partial class TrackView : ContentView
         }
         catch (Exception ex)
         {
-            await (Parent as Page).DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
+            await MainPage.Current.DisplayAlert("开始记录轨迹失败", ex.Message, "确定");
         }
     }
     private void StopButton_Clicked(object sender, EventArgs e)
@@ -158,7 +158,7 @@ public partial class TrackView : ContentView
         }
         catch (Exception ex)
         {
-            await (Parent as Page).DisplayAlert("加载失败", ex.Message, "确定");
+            await MainPage.Current.DisplayAlert("加载失败", ex.Message, "确定");
         }
     }
 

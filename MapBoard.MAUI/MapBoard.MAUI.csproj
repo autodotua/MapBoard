@@ -38,13 +38,14 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+		<None Remove="Resources\Images\btn_ftp.svg" />
+		<None Remove="Resources\Images\btn_refresh.svg" />
 
 		<!-- Splash Screen -->
     <None Remove="Resources\Splash\splash.svg" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -61,9 +62,6 @@
 	  <None Remove="Resources\Images\btn_track.svg" />
 	  <None Remove="Resources\Images\btn_zoom_in.svg" />
 	  <None Remove="Resources\Images\btn_zoom_out.svg" />
-	  <None Remove="Resources\Images\tab_ftp.svg" />
-	  <None Remove="Resources\Images\tab_layers.svg" />
-	  <None Remove="Resources\Images\tab_map.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

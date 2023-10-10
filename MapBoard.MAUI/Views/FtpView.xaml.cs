@@ -1,6 +1,7 @@
 using MapBoard.IO;
 using MapBoard.Services;
 using MapBoard.ViewModels;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
@@ -22,46 +23,68 @@ public partial class FtpView : ContentView
             IsOn = false,
         };
         InitializeComponent();
-
+        if (DeviceInfo.Platform == DevicePlatform.WinUI)
+        {
+            btnFtp.IsVisible = false;
+            btnOpenDir.IsVisible = true;
+            grdFtpInfo.IsVisible = false;
+        }
     }
 
-    private void StartStopFtpButton_Clicked(object sender, EventArgs e)
+    private async void StartStopFtpButton_Clicked(object sender, EventArgs e)
     {
         if ((BindingContext as FtpViewViewModel).IsOn)
         {
-            stkFtpDirs.IsEnabled= true;
-            ftpService.StopServerAsync();
+            stkFtpDirs.IsEnabled = true;
             ftpService = null;
             (sender as Button).Text = "打开FTP";
+            await ftpService.StopServerAsync();
         }
         else
         {
             stkFtpDirs.IsEnabled = false;
-            string dir = null;
-            if(rbtnDataDir.IsChecked)
-            {
-                dir = FolderPaths.DataPath;
-            }
-            else if(rbtnLogDir.IsChecked)
-            {
-                dir = FolderPaths.LogsPath;
-            }
-            else if (rbtnTrackDir.IsChecked)
-            {
-                dir = FolderPaths.TrackPath;
-            }
-            else if (rbtnRootDir.IsChecked)
-            {
-                dir = FileSystem.AppDataDirectory;
-            }
-            else if (rbtnCacheDir.IsChecked)
-            {
-                dir = FileSystem.CacheDirectory;
-            }
+            string dir = GetSelectedDir();
             ftpService = new FtpService(dir);
-            ftpService.StartServerAsync();
+            await ftpService.StartServerAsync();
             (sender as Button).Text = "关闭FTP";
         }
         (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
+    }
+
+    private string GetSelectedDir()
+    {
+        string dir = null;
+        if (rbtnDataDir.IsChecked)
+        {
+            dir = FolderPaths.DataPath;
+        }
+        else if (rbtnLogDir.IsChecked)
+        {
+            dir = FolderPaths.LogsPath;
+        }
+        else if (rbtnTrackDir.IsChecked)
+        {
+            dir = FolderPaths.TrackPath;
+        }
+        else if (rbtnRootDir.IsChecked)
+        {
+            dir = FileSystem.AppDataDirectory;
+        }
+        else if (rbtnCacheDir.IsChecked)
+        {
+            dir = FileSystem.CacheDirectory;
+        }
+
+        return dir;
+    }
+
+    private void OpenDirButton_Clicked(object sender, EventArgs e)
+    {
+        if(DeviceInfo.Platform!=DevicePlatform.WinUI)
+        {
+            throw new NotSupportedException("仅支持Windows");
+        }
+        string dir = GetSelectedDir();
+        Process.Start("explorer.exe", dir);
     }
 }

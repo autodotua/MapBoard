@@ -9,6 +9,7 @@
         Padding="0,32,0,0"
         RowDefinitions="Auto,*,Auto,8,Auto">
         <Grid
+            x:Name="grdFtpInfo"
             ColumnDefinitions="Auto,8,*"
             RowDefinitions="Auto,4,Auto">
             <Label
@@ -62,9 +63,17 @@
         </VerticalStackLayout>
 
         <Button
-            Grid.Row="44"
+            x:Name="btnFtp"
+            Grid.Row="99"
             Margin="8"
             Clicked="StartStopFtpButton_Clicked"
             Text="打开FTP" />
+        <Button
+            x:Name="btnOpenDir"
+            Grid.Row="99"
+            Margin="8"
+            Clicked="OpenDirButton_Clicked"
+            IsVisible="False"
+            Text="打开目录" />
     </Grid>
 </ContentView>
