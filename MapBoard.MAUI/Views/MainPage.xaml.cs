@@ -29,6 +29,7 @@ using MapBoard.Services;
 using MapBoard.Views;
 using static Microsoft.Maui.ApplicationModel.Permissions;
 using Microsoft.Maui.Controls.Shapes;
+
 #if ANDROID
 using MapBoard.Platforms.Android;
 #endif
@@ -68,6 +69,13 @@ namespace MapBoard.Views
                     Type = typeof(FtpView),
                     Direction = SwipeDirection.Left,
                     Instance = ftp,
+                    Length = 300,
+                },
+                new SidePanelInfo
+                {
+                    Type = typeof(ImportView),
+                    Direction = SwipeDirection.Left,
+                    Instance = import,
                     Length = 300,
                 },
                 new SidePanelInfo
@@ -113,7 +121,7 @@ namespace MapBoard.Views
                 bdBottom.Margin = new Thickness(16, 16);
                 bdBottom.HorizontalOptions = LayoutOptions.End;
                 bdBottom.VerticalOptions = LayoutOptions.End;
-                bdBottom.WidthRequest = 240;
+                bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
             }
 
@@ -122,7 +130,7 @@ namespace MapBoard.Views
 
         private void TrackService_CurrentChanged(object sender, EventArgs e)
         {
-            if(TrackService.Current==null)
+            if (TrackService.Current == null)
             {
                 ClosePanel<TrackingBar>();
             }
@@ -176,7 +184,7 @@ namespace MapBoard.Views
             {
                 foreach (var panel in sidePanels.Where(p => p.IsOpened && !p.Standalone))
                 {
-                    ClosePanel(panel.Instance);
+                    ClosePanel(panel.Type);
                     panel.IsOpened = false;
                 }
             }
@@ -186,14 +194,27 @@ namespace MapBoard.Views
 
         public void ClosePanel<T>()
         {
-            var type = typeof(T);
-            ClosePanel(type2SidePanels[type].Instance);
-            type2SidePanels[type].IsOpened = false;
+            ClosePanel(typeof(T));
         }
-
-        private void ClosePanel(VisualElement element)
+        private void ClosePanel(Type type)
         {
-            element.TranslateTo(-300, 0);
+            var panel = type2SidePanels[type];
+            switch (panel.Direction)
+            {
+                case SwipeDirection.Right:
+                    panel.Instance.TranslateTo(panel.Length, 0);
+                    break;
+                case SwipeDirection.Left:
+                    panel.Instance.TranslateTo(-panel.Length, 0);
+                    break;
+                case SwipeDirection.Up:
+                    panel.Instance.TranslateTo(0, -panel.Length);
+                    break;
+                case SwipeDirection.Down:
+                    panel.Instance.TranslateTo(0, panel.Length);
+                    break;
+            }
+            type2SidePanels[type].IsOpened = false;
         }
 
         private void TrackButton_Clicked(object sender, EventArgs e)
@@ -205,6 +226,7 @@ namespace MapBoard.Views
         {
             OpenOrClosePanel<FtpView>();
         }
+
         public async Task CheckAndRequestLocationPermission()
         {
             while ((await CheckStatusAsync<LocationAlways>()) != PermissionStatus.Granted)
@@ -253,6 +275,25 @@ namespace MapBoard.Views
         private void LayerButton_Click(object sender, EventArgs e)
         {
             OpenOrClosePanel<LayerListView>();
+        }
+
+        private void ImportButton_Clicked(object sender, EventArgs e)
+        {
+            OpenOrClosePanel<ImportView>();
+        }
+
+        private async void ZoomToLayerButton_Click(object sender, EventArgs e)
+        {
+            var layer = MainMapView.Current?.Layers?.Selected;
+            if (layer != null)
+            {
+                try
+                {
+                    var extent = await layer.QueryExtentAsync(new QueryParameters());
+                    await MainMapView.Current.ZoomToGeometryAsync(extent);
+                }
+               catch { }
+            }
         }
     }
 

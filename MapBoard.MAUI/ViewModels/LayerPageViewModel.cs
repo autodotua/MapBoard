@@ -9,14 +9,15 @@ namespace MapBoard.ViewModels
     public class LayerViewViewModel : INotifyPropertyChanged
     {
         private MapLayerCollection layers;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public ObservableCollection<LayerGroupList> Groups { get; } = new ObservableCollection<LayerGroupList>();
+
         public MapLayerCollection Layers
         {
             get => layers;
             set => this.SetValueAndNotify(ref layers, value, nameof(Layers));
         }
-
-        public ObservableCollection<LayerGroupList> Groups { get; } = new ObservableCollection<LayerGroupList>();
-
         public string[] ViewTypes { get; } = { "按层序", "按分组" };
         /// <summary>
         /// 生成分组多选框
@@ -38,11 +39,12 @@ namespace MapBoard.ViewModels
                 Groups.Add(new LayerGroupList(layers.Key, GetGroupVisible(layers), false,
                     layers.Cast<IMapLayerInfo>()));
             }
-        }  /// <summary>
-           /// 获取分组可见情况
-           /// </summary>
-           /// <param name="layers"></param>
-           /// <returns>true为可见，false为不可见，null为部分可见</returns>
+        }
+        /// <summary>
+        /// 获取分组可见情况
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <returns>true为可见，false为不可见，null为部分可见</returns>
         private bool? GetGroupVisible(IEnumerable<ILayerInfo> layers)
         {
             int count = layers.Count();
@@ -57,8 +59,6 @@ namespace MapBoard.ViewModels
             }
             return null;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
 

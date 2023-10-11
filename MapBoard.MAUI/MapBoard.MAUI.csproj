@@ -39,7 +39,9 @@
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
+		<None Remove="Resources\Images\btn_import.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
+		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
 
 		<!-- Splash Screen -->
     <None Remove="Resources\Splash\splash.svg" />
@@ -89,6 +91,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\ImportView.xaml.cs">
+	    <DependentUpon>ImportView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\FtpView.xaml.cs">
 	    <DependentUpon>FtpView.xaml</DependentUpon>
 	  </Compile>
@@ -116,6 +121,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\ImportView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\MapPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

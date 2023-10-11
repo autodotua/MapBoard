@@ -46,6 +46,10 @@
                 GroupName="FtpDir"
                 IsChecked="True" />
             <RadioButton
+                x:Name="rbtnPackageDir"
+                Content="地图包目录"
+                GroupName="FtpDir"/>
+            <RadioButton
                 x:Name="rbtnTrackDir"
                 Content="轨迹目录"
                 GroupName="FtpDir" />

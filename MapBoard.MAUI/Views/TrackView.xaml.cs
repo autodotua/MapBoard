@@ -45,6 +45,12 @@ public partial class TrackView : ContentView
         MainMapView.Current.Layers.Save();
     }
 
+    private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var file = e.Item as FileInfo;
+        await LoadGpxAsync(file.FullName);
+    }
+
     private async Task LoadGpxAsync(string path)
     {
         try
@@ -61,13 +67,6 @@ public partial class TrackView : ContentView
             await MainPage.Current.DisplayAlert("加载失败", ex.Message, "确定");
         }
     }
-
-    private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
-    {
-        var file = e.Item as FileInfo;
-        await LoadGpxAsync(file.FullName);
-    }
-
     private async void ResumeButton_Clicked(object sender, EventArgs e)
     {
         var gpxs = (BindingContext as TrackViewViewModel).GpxFiles;
@@ -124,46 +123,6 @@ public partial class TrackView : ContentView
 #endif
     }
 
-    private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            if (MainPage.Current.IsVisible)
-            {
-                MainPage.Current.DisplayAlert("轨迹记录失败", e.Exception.Message, "确定");
-                StopTrack();
-                UpdateButtonsVisible(false);
-            }
-        });
-    }
-
-    private async void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
-    {
-        var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
-        if (gpxs != null && (gpxs.Count == 0 || gpxs[0].FullName != e.FilePath))
-        {
-            gpxs.Insert(0, new FileInfo(e.FilePath));
-        }
-        if (TrackService.Current == null)
-        {
-            await LoadGpxAsync(e.FilePath);
-        }
-    }
-
-    private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
-    {
-        UpdateButtonsVisible(TrackService.Current != null);
-    }
-    private void UpdateButtonsVisible(bool running)
-    {
-        btnStart.IsVisible = !running;
-        btnStop.IsVisible = running;
-        btnResume.IsVisible = !running;
-        btnResume.IsEnabled = (BindingContext as TrackViewViewModel).GpxFiles.Count > 0;
-        grdDetail.IsVisible = running;
-        lvwGpxList.IsVisible = !running;
-    }
-
     private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
     {
         PickOptions options = new PickOptions()
@@ -180,5 +139,47 @@ public partial class TrackView : ContentView
         {
             await LoadGpxAsync(file.FullPath);
         }
+    }
+
+    private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (MainPage.Current.IsVisible)
+            {
+                MainPage.Current.DisplayAlert("轨迹记录失败", e.Exception.Message, "确定");
+                UpdateButtonsVisible(false);
+            }
+        });
+    }
+
+    private async void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
+    {
+        var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
+        if (gpxs != null && (gpxs.Count == 0 || gpxs[0].FullName != e.FilePath))
+        {
+            gpxs.Insert(0, new Models.SimpleFile(e.FilePath));
+        }
+        if (TrackService.Current == null)
+        {
+            await LoadGpxAsync(e.FilePath);
+        }
+    }
+
+    private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
+    {
+        MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            UpdateButtonsVisible(TrackService.Current != null);
+        });
+    }
+    private void UpdateButtonsVisible(bool running)
+    {
+        btnStart.IsVisible = !running;
+        btnStop.IsVisible = running;
+        btnResume.IsVisible = !running;
+        btnResume.IsEnabled = (BindingContext as TrackViewViewModel).GpxFiles.Count > 0;
+        grdDetail.IsVisible = running;
+        lvwGpxList.IsVisible = !running;
     }
 }

@@ -10,6 +10,7 @@
     Loaded="ContentPage_Loaded">
     <Grid
         x:Name="grdMain"
+        IsClippedToBounds="True"
         RowDefinitions="*,Auto">
         <v:MapPage x:Name="map" />
         <v:TrackingBar
@@ -62,6 +63,22 @@
                 x:Name="layerList"
                 Grid.Row="2" />
         </Grid>
+        <Grid
+            x:Name="import"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
+                                              Dark={DynamicResource Black}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="加载地图包" />
+
+            <v:ImportView
+                Grid.Row="2" />
+        </Grid>
 
 
         <Border
@@ -76,7 +93,7 @@
             <Grid
                 x:Name="grdBottom"
                 Padding="0,4"
-                ColumnDefinitions="*,*,*,*"
+                ColumnDefinitions="*,*,*,*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
 
@@ -86,21 +103,31 @@
                 </Grid.Resources>
                 <ImageButton
                     Grid.Column="0"
+                    Clicked="ImportButton_Clicked"
+                    Source="btn_import.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                <ImageButton
+                    Grid.Column="1"
                     Clicked="FtpButton_Clicked"
                     Source="btn_ftp.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
                 <ImageButton
-                    Grid.Column="1"
+                    Grid.Column="2"
                     Clicked="RefreshButton_Clicked"
                     Source="btn_refresh.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
                 <ImageButton
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Clicked="TrackButton_Clicked"
                     Source="btn_track.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
                 <ImageButton
-                    Grid.Column="3"
+                    Grid.Column="4"
+                    Clicked="ZoomToLayerButton_Click"
+                    Source="btn_zoom_to_layer.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                <ImageButton
+                    Grid.Column="5"
                     Clicked="LayerButton_Click"
                     Source="btn_layers.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />

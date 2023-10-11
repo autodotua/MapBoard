@@ -20,7 +20,7 @@
 
     </ContentView.Resources>
     <VerticalStackLayout
-        Margin="8,32,8,8"
+        Margin="8,32,8,0"
         Spacing="8">
         <Label
             Grid.ColumnSpan="99"

@@ -35,14 +35,20 @@ public class AndroidTrackService : Service
     {
         return binder;
     }
-
+    private bool isStopping = false;
     public override void OnDestroy()
     {
+        isStopping = true;
         base.OnDestroy();
-        TrackService.Stop();
+        if (TrackService.Current != null)
+        {
+            TrackService.Stop();
+        }
         gnss.Stop();
         gnss.GnssStatusChanged -= Gnss_GnssStatusChanged;
         TrackService.LocationChanged -= TrackService_LocationChanged;
+        TrackService.CurrentChanged -= TrackService_CurrentChanged;
+        TrackService = null;
     }
 
     public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
@@ -61,9 +67,18 @@ public class AndroidTrackService : Service
         gnss = new AndroidGnssHelper(this);
         TrackService = trackService;
         TrackService.LocationChanged += TrackService_LocationChanged;
+        TrackService.CurrentChanged += TrackService_CurrentChanged;
         gnss.GnssStatusChanged += Gnss_GnssStatusChanged;
         gnss.Start();
         trackService.Start();
+    }
+
+    private void TrackService_CurrentChanged(object sender, EventArgs e)
+    {
+        if (TrackService.Current == null && !isStopping)
+        {
+            StopSelf();
+        }
     }
 
     private void Gnss_GnssStatusChanged(object sender, EventArgs e)

@@ -96,6 +96,8 @@ namespace MapBoard.Mapping
         /// </summary>
         public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
 
+        public event EventHandler MapLoaded;
+
         public static MainMapView Current => instances[0];
 
         /// <summary>
@@ -149,8 +151,10 @@ namespace MapBoard.Mapping
         {
             BaseMapLoadErrors = await MapViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
+            Map.OperationalLayers.Clear();
             await Layers.LoadAsync(Map.OperationalLayers);
             CurrentTask = BoardTask.Ready;
+            MapLoaded?.Invoke(this, EventArgs.Empty);
 
             if (TrackOverlay == null)
             {
@@ -162,7 +166,6 @@ namespace MapBoard.Mapping
                 TrackOverlay = new TrackOverlayHelper(overlay);
             }
         }
-
         public void MoveToLocation()
         {
             if (LocationDisplay != null && LocationDisplay.IsEnabled)
@@ -174,6 +177,7 @@ namespace MapBoard.Mapping
                 }
             }
         }
+
         private async void MainMapView_Loaded(object sender, EventArgs e)
         {
             if (Map == null)

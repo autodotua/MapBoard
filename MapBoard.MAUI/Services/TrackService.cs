@@ -224,6 +224,7 @@ namespace MapBoard.Services
             }
             catch (Exception ex)
             {
+                Stop();
                 ExceptionThrown?.Invoke(this, new ThreadExceptionEventArgs(ex));
             }
         }
@@ -231,13 +232,23 @@ namespace MapBoard.Services
 
         public void Stop()
         {
+            if(!running)
+            {
+                return;
+            }
             running = false;
             Current = null;
-
-            Geolocation.Default.StopListeningForeground();
-            if (SaveGpx())
+            try
             {
-                GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath()));
+                Geolocation.Default.StopListeningForeground();
+                if (SaveGpx())
+                {
+                    GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath()));
+                }
+            }
+            catch(Exception ex)
+            {
+
             }
         }
         public void UpdateGnssStatus(GnssStatusInfo gpsStatus)

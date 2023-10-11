@@ -74,6 +74,10 @@ public partial class FtpView : ContentView
         {
             dir = FileSystem.CacheDirectory;
         }
+        else if (rbtnPackageDir.IsChecked)
+        {
+            dir = FolderPaths.PackagePath;
+        }
 
         return dir;
     }

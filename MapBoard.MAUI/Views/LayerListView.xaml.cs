@@ -9,6 +9,7 @@ public partial class LayerListView : ContentView
     public LayerListView()
     {
         InitializeComponent();
+
     }
 
     private void ViewTypeRadioButton_CheckChanged(object sender, CheckedChangedEventArgs e)
@@ -36,21 +37,34 @@ public partial class LayerListView : ContentView
 
     private void ContentView_Loaded(object sender, EventArgs e)
     {
-        if (BindingContext == null)
+        if (BindingContext != null)
         {
-            BindingContext = new LayerViewViewModel()
-            {
-                Layers = MainMapView.Current.Layers
-            };
-            (BindingContext as LayerViewViewModel).GenerateGroups();
-            if (Config.Instance.LastLayerListGroupType == 0)
-            {
-                rbtnByLevel.IsChecked = true;
-            }
-            else
-            {
-                rbtnByGroup.IsChecked = true;
-            }
+            return;
         }
+        MainMapView.Current.MapLoaded += MapView_MapLoaded;
+        MainMapView.Current.Layers.CollectionChanged += Layers_CollectionChanged;
+        MapView_MapLoaded(sender, e);
+    }
+
+    private void MapView_MapLoaded(object sender, EventArgs e)
+    {
+        BindingContext = new LayerViewViewModel()
+        {
+            Layers = MainMapView.Current.Layers
+        };
+        (BindingContext as LayerViewViewModel).GenerateGroups();
+        if (Config.Instance.LastLayerListGroupType == 0)
+        {
+            rbtnByLevel.IsChecked = true;
+        }
+        else
+        {
+            rbtnByGroup.IsChecked = true;
+        }
+    }
+
+    private void Layers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        (BindingContext as LayerViewViewModel).GenerateGroups();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FzLib;
 using MapBoard.IO;
+using MapBoard.Models;
 using MapBoard.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,7 +9,7 @@ namespace MapBoard.ViewModels
 {
     public class TrackViewViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<FileInfo> gpxFiles = new ObservableCollection<FileInfo>();
+        private ObservableCollection<SimpleFile> gpxFiles = new ObservableCollection<SimpleFile>();
         private string status;
 
         private TrackService trackService;
@@ -20,7 +21,7 @@ namespace MapBoard.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<FileInfo> GpxFiles
+        public ObservableCollection<SimpleFile> GpxFiles
         {
             get => gpxFiles;
             set => this.SetValueAndNotify(ref gpxFiles, value, nameof(GpxFiles));
@@ -40,7 +41,7 @@ namespace MapBoard.ViewModels
 
         public async Task LoadGpxFilesAsync()
         {
-            List<FileInfo> files = new List<FileInfo>();
+            List<SimpleFile> files = new List<SimpleFile>();
             await Task.Run(() =>
             {
                 foreach (var file in Directory
@@ -48,11 +49,10 @@ namespace MapBoard.ViewModels
                     .OrderDescending()
                     .Take(50))
                 {
-                    var fileInfo = new FileInfo(file);
-                    files.Add(fileInfo);
+                    files.Add(new SimpleFile(file));
                 }
             });
-            GpxFiles = new ObservableCollection<FileInfo>(files);
+            GpxFiles = new ObservableCollection<SimpleFile>(files);
         }
         private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
         {
