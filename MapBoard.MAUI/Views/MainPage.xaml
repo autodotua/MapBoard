@@ -5,26 +5,45 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
     xmlns:map="clr-namespace:MapBoard.Mapping"
-    xmlns:p="clr-namespace:MapBoard.Views"
     xmlns:v="clr-namespace:MapBoard.Views"
     Title="地图画板"
     Loaded="ContentPage_Loaded">
     <Grid
         x:Name="grdMain"
         RowDefinitions="*,Auto">
-        <p:MapPage x:Name="map" />
+        <v:MapPage x:Name="map" />
+        <v:TrackingBar
+            x:Name="tbar"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start" />
         <Grid
             x:Name="track"
+            Padding="0,24,0,0"
             BackgroundColor="{AppThemeBinding Light={DynamicResource White},
                                               Dark={DynamicResource Black}}"
-            HorizontalOptions="Start">
-            <p:TrackView />
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="轨迹记录" />
+            <v:TrackView Grid.Row="2" />
         </Grid>
-        <p:FtpView
+        <Grid
             x:Name="ftp"
+            Padding="0,24,0,0"
             BackgroundColor="{AppThemeBinding Light={DynamicResource White},
                                               Dark={DynamicResource Black}}"
-            HorizontalOptions="Start" />
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="文件管理" />
+            <v:FtpView Grid.Row="2" />
+        </Grid>
 
         <Grid
             x:Name="layer"
@@ -38,22 +57,13 @@
                 FontAttributes="Bold"
                 FontSize="Title"
                 Text="图层" />
-            <ImageButton
-                Grid.RowSpan="99"
-                Margin="12"
-                Clicked="CloseLayerPanelButton_Click"
-                HeightRequest="18"
-                HorizontalOptions="End"
-                Opacity="0.8"
-                Scale="{OnPlatform Default=1,
-                                   WinUI=0.5}"
-                Source="btn_close.png"
-                VerticalOptions="Start"
-                WidthRequest="18" />
+
             <v:LayerListView
                 x:Name="layerList"
                 Grid.Row="2" />
         </Grid>
+
+
         <Border
             x:Name="bdBottom"
             Grid.Row="99"
@@ -66,7 +76,7 @@
             <Grid
                 x:Name="grdBottom"
                 Padding="0,4"
-                ColumnDefinitions="*,*,*"
+                ColumnDefinitions="*,*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
 
@@ -78,18 +88,22 @@
                     Grid.Column="0"
                     Clicked="FtpButton_Clicked"
                     Source="btn_ftp.png"
-                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />    
-                <ImageButton
-                    Grid.Column="2"
-                    Clicked="TrackButton_Clicked"
-                    Source="btn_track.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
                 <ImageButton
                     Grid.Column="1"
                     Clicked="RefreshButton_Clicked"
                     Source="btn_refresh.png"
                     VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
-
+                <ImageButton
+                    Grid.Column="2"
+                    Clicked="TrackButton_Clicked"
+                    Source="btn_track.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                <ImageButton
+                    Grid.Column="3"
+                    Clicked="LayerButton_Click"
+                    Source="btn_layers.png"
+                    VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
 
             </Grid>
         </Border>

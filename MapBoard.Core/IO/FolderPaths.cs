@@ -90,7 +90,7 @@ namespace MapBoard.IO
                     }
                     else if (File.Exists(Path.Combine(appPath, ConfigUp)))
                     {
-                        ConfigPath = "config.json";
+                        ConfigPath = "maui_config.json";
                         TrackHistoryPath = "tracks.txt";
                         RootDataPath = "../Data";
                         TileDownloadPath = "../Download";

@@ -1,32 +1,5 @@
-﻿using Esri.ArcGISRuntime.Data;
-using Esri.ArcGISRuntime.Geometry;
-using Esri.ArcGISRuntime.Mapping;
-using Esri.ArcGISRuntime.Rasters;
-using Esri.ArcGISRuntime.Maui;
+﻿using Esri.ArcGISRuntime.UI;
 using MapBoard.Mapping;
-using MapBoard.Model;
-using System.ComponentModel;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using FzLib;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
-using Map = Esri.ArcGISRuntime.Mapping.Map;
-using Esri.ArcGISRuntime.UI;
-using static MapBoard.Util.GeometryUtility;
-using FubarDev.FtpServer.FileSystem.DotNet;
-using FubarDev.FtpServer;
-using MapBoard.Services;
-using MapBoard.Views;
 
 namespace MapBoard.Views
 {
@@ -35,18 +8,45 @@ namespace MapBoard.Views
         public MapPage()
         {
             InitializeComponent();
+            HandleLongPress();
         }
-
 
         private void ContentPage_Loaded(object sender, EventArgs e)
         {
         }
 
-        private void LayerButton_Click(object sender, EventArgs e)
+        private void HandleLongPress()
         {
-            MainPage.Current.OpenOrClosePanel<LayerListView>();
-        }
+            Microsoft.Maui.Handlers.ImageButtonHandler.Mapper.AppendToMapping("MapPageImageButtonHandler", (handler, view) =>
+            {
 
+#if WINDOWS
+                handler.PlatformView.Holding += (s,e)=>
+                {
+                };
+#endif
+#if ANDROID
+                handler.PlatformView.LongClick += async (s, e) =>
+                {
+                    if (view == btnZoomIn)
+                    {
+                        var map = MainMapView.Current;
+                        await map.SetViewpointScaleAsync(map.MapScale / 10);
+                    }
+                    else if (view == btnZoomOut)
+                    {
+                        var map = MainMapView.Current;
+                        await map.SetViewpointScaleAsync(map.MapScale * 10);
+                    }
+                };
+#endif
+#if IOS
+			handler.PlatformView.UserInteractionEnabled = true;  
+			handler.PlatformView.AddGestureRecognizer(new UILongPressGestureRecognizer(HandleLongClick));  
+#endif
+
+            });
+        }
 
         private void LocationButton_Click(object sender, EventArgs e)
         {

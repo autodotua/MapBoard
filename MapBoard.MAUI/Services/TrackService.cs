@@ -127,6 +127,8 @@ namespace MapBoard.Services
             private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
         }
 
+        public TimeSpan Duration => UpdateTime - StartTime;
+
         /// <summary>
         /// 总里程
         /// </summary>
@@ -142,7 +144,7 @@ namespace MapBoard.Services
         public DateTime UpdateTime
         {
             get => updateTime;
-            private set => this.SetValueAndNotify(ref updateTime, value, nameof(UpdateTime));
+            private set => this.SetValueAndNotify(ref updateTime, value, nameof(UpdateTime), nameof(Duration));
         }
 
         private TrackOverlayHelper Overlay => MainMapView.Current.TrackOverlay;
@@ -183,8 +185,11 @@ namespace MapBoard.Services
 
                 while (running)
                 {
-                    Location location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-
+                    Location location = null;
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                       {
+                           location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
+                       });
                     if (running == false)
                     {
                         break;
@@ -247,7 +252,7 @@ namespace MapBoard.Services
 
         private bool SaveGpx()
         {
-            if (gpxTrack.Points.Count >= 2)
+            if (gpxTrack != null && gpxTrack.Points.Count >= 2)
             {
                 File.WriteAllText(GetGpxFilePath(), gpx.ToGpxXml());
                 return true;

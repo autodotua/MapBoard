@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.TrackingBar"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:TrackViewViewModel}"
+    BackgroundColor="{DynamicResource Primary}">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <c:TrackDetailConverter x:Key="TrackDetailConverter" />
+
+            <Style
+                x:Key="WhiteLabel"
+                TargetType="{x:Type Label}">
+                <Setter Property="TextColor" Value="White" />
+            </Style>
+        </ResourceDictionary>
+
+    </ContentView.Resources>
+    <VerticalStackLayout
+        Margin="8,32,8,8"
+        Spacing="8">
+        <Label
+            Grid.ColumnSpan="99"
+            FontAttributes="Bold"
+            FontSize="Subtitle"
+            HorizontalOptions="Center"
+            Style="{StaticResource WhiteLabel}"
+            Text="正在记录轨迹"
+            VerticalOptions="Center" />
+        <Label
+            Grid.Row="2"
+            Grid.Column="2"
+            Style="{StaticResource WhiteLabel}">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="{Binding TrackService.Duration, Converter={StaticResource TrackDetailConverter}, ConverterParameter=1}" />
+
+                    <Span Text="   D=" />
+                    <Span Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
+
+                    <Span Text="   A=" />
+                    <Span Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
+
+                    <Span Text="   V=" />
+                    <Span Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
+
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+    </VerticalStackLayout>
+</ContentView>

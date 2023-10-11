@@ -14,7 +14,8 @@ public class TrackDetailConverter : IValueConverter
         }
         return parameter.ToString() switch
         {
-            "0" => ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss"),
+            "0" => ((DateTime)value).ToString("HH:mm:ss"),
+            "1" => ((TimeSpan)value).ToString("hh':'mm':'ss"),
             "2" => (double)value > 1000 ? $"{(double)value / 1000:0.00} km" : $"{(double)value:0} m",
             "3" => $"{GetLongitudeString(value as Location)} {GetLatitudeString(value as Location)}",
             "4" => (value as Location).Altitude.HasValue ? $"{(value as Location).Altitude.Value:0.0} m" : "未知",

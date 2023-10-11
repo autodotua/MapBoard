@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
     xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
     <ContentView.Resources>
@@ -63,25 +64,21 @@
             Spacing="8"
             VerticalOptions="End">
             <ImageButton
+                x:Name="btnZoomIn"
                 Clicked="ZoomInButton_Click"
                 CornerRadius="4"
                 Source="btn_zoom_in.png"
                 Style="{StaticResource SideButtonStyle}"
                 VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
             <ImageButton
+                x:Name="btnZoomOut"
                 Clicked="ZoomOutButton_Click"
                 CornerRadius="4"
                 Source="btn_zoom_out.png"
                 Style="{StaticResource SideButtonStyle}"
                 VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+         
             <ImageButton
-                Clicked="LayerButton_Click"
-                CornerRadius="4"
-                Source="btn_layers.png"
-                Style="{StaticResource SideButtonStyle}"
-                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
-            <ImageButton
-                Margin="0,96,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
                 Source="btn_location.png"

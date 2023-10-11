@@ -70,6 +70,14 @@ namespace MapBoard.Views
                     Instance = ftp,
                     Length = 300,
                 },
+                new SidePanelInfo
+                {
+                    Type = typeof(TrackingBar),
+                    Direction = SwipeDirection.Up,
+                    Instance = tbar,
+                    Length = 88,
+                    Standalone = true,
+                },
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
@@ -105,8 +113,22 @@ namespace MapBoard.Views
                 bdBottom.Margin = new Thickness(16, 16);
                 bdBottom.HorizontalOptions = LayoutOptions.End;
                 bdBottom.VerticalOptions = LayoutOptions.End;
-                bdBottom.WidthRequest = 200;
+                bdBottom.WidthRequest = 240;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
+            }
+
+            TrackService.CurrentChanged += TrackService_CurrentChanged;
+        }
+
+        private void TrackService_CurrentChanged(object sender, EventArgs e)
+        {
+            if(TrackService.Current==null)
+            {
+                ClosePanel<TrackingBar>();
+            }
+            else
+            {
+                OpenPanel<TrackingBar>();
             }
         }
 
@@ -146,6 +168,7 @@ namespace MapBoard.Views
                 OpenPanel<T>();
             }
         }
+
         public void OpenPanel<T>()
         {
             var type = typeof(T);
@@ -160,6 +183,7 @@ namespace MapBoard.Views
             type2SidePanels[type].Instance.TranslateTo(0, 0);
             type2SidePanels[type].IsOpened = true;
         }
+
         public void ClosePanel<T>()
         {
             var type = typeof(T);
@@ -170,11 +194,6 @@ namespace MapBoard.Views
         private void ClosePanel(VisualElement element)
         {
             element.TranslateTo(-300, 0);
-        }
-
-        private void CloseLayerPanelButton_Click(object sender, EventArgs e)
-        {
-            ClosePanel<LayerListView>();
         }
 
         private void TrackButton_Clicked(object sender, EventArgs e)
@@ -229,6 +248,11 @@ namespace MapBoard.Views
         private async void RefreshButton_Clicked(object sender, EventArgs e)
         {
             await MainMapView.Current.LoadAsync();
+        }
+
+        private void LayerButton_Click(object sender, EventArgs e)
+        {
+            OpenOrClosePanel<LayerListView>();
         }
     }
 

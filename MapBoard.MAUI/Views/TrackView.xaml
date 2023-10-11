@@ -45,7 +45,7 @@
             x:Name="grdDetail"
             ColumnDefinitions="Auto,24,Auto"
             HorizontalOptions="Center"
-            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
             VerticalOptions="Center">
             <Grid.Resources>
                 <Style
@@ -58,74 +58,89 @@
             <Label
                 Grid.Row="0"
                 Style="{StaticResource KeyLabel}"
-                Text="时间" />
+                Text="开始/更新" />
             <Label
                 Grid.Row="1"
                 Style="{StaticResource KeyLabel}"
-                Text="记录点" />
+                Text="历时" />
             <Label
                 Grid.Row="2"
                 Style="{StaticResource KeyLabel}"
-                Text="里程" />
+                Text="记录点" />
             <Label
                 Grid.Row="3"
                 Style="{StaticResource KeyLabel}"
-                Text="经纬度" />
+                Text="里程" />
             <Label
                 Grid.Row="4"
                 Style="{StaticResource KeyLabel}"
-                Text="海拔" />
+                Text="经纬度" />
             <Label
                 Grid.Row="5"
                 Style="{StaticResource KeyLabel}"
-                Text="速度" />
+                Text="海拔" />
             <Label
                 Grid.Row="6"
                 Style="{StaticResource KeyLabel}"
-                Text="方向" />
+                Text="速度" />
             <Label
                 Grid.Row="7"
                 Style="{StaticResource KeyLabel}"
-                Text="精度" />
+                Text="方向" />
             <Label
                 Grid.Row="8"
+                Style="{StaticResource KeyLabel}"
+                Text="精度" />
+            <Label
+                Grid.Row="9"
                 Style="{StaticResource KeyLabel}"
                 Text="卫星数量" />
 
             <Label
                 Grid.Row="0"
-                Grid.Column="2"
-                Text="{Binding TrackService.UpdateTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
+                Grid.Column="2">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding TrackService.StartTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
+                        <Span Text="  " />
+                        <Span Text="{Binding TrackService.UpdateTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
             <Label
                 Grid.Row="1"
                 Grid.Column="2"
-                Text="{Binding TrackService.PointsCount}" />
+                Text="{Binding TrackService.Duration, Converter={StaticResource TrackDetailConverter}, ConverterParameter=1}" />
             <Label
                 Grid.Row="2"
                 Grid.Column="2"
-                Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
+                Text="{Binding TrackService.PointsCount}" />
             <Label
                 Grid.Row="3"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=3}" />
+                Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
             <Label
                 Grid.Row="4"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=3}" />
             <Label
                 Grid.Row="5"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
             <Label
                 Grid.Row="6"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=6}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
             <Label
                 Grid.Row="7"
                 Grid.Column="2"
-                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=7}" />
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=6}" />
             <Label
                 Grid.Row="8"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=7}" />
+            <Label
+                Grid.Row="9"
                 Grid.Column="2"
                 Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
         </Grid>

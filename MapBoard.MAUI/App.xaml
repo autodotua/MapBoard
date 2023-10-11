@@ -14,17 +14,18 @@
             <c:KbConverter x:Key="KbConverter" />
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
             <c:NotNullConverter x:Key="NotNullConverter" />
-            
+
             <Style TargetType="{x:Type Button}">
                 <!--  规避临时BUG：https://github.com/dotnet/maui/issues/17642  -->
                 <Setter Property="BackgroundColor" Value="{x:Null}" />
             </Style>
-            
+
             <Style TargetType="{x:Type ImageButton}">
                 <Setter Property="BackgroundColor" Value="{x:Null}" />
             </Style>
-            
-            <VisualStateGroup x:Key="GrayButtonVisualState" x:DataType="{x:Type Button}">
+            <VisualStateGroup
+                x:Key="GrayButtonVisualState"
+                x:DataType="{x:Type Button}">
                 <VisualState x:Name="Normal">
                     <VisualState.Setters>
                         <Setter Property="Button.BackgroundColor" Value="{DynamicResource Gray200}" />
