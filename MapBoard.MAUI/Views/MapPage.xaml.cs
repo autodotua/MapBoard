@@ -55,6 +55,7 @@ namespace MapBoard.Views
 
         private void TestButton_Click(object sender, EventArgs e)
         {
+            
 #if ANDROID
             Platform.CurrentActivity.Finish();
 #endif

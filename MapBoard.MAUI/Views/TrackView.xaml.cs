@@ -13,6 +13,7 @@ using MapBoard.IO;
 using MapBoard.Mapping;
 using MapBoard.IO.Gpx;
 using Esri.ArcGISRuntime.Geometry;
+using MapBoard.Models;
 
 namespace MapBoard.Views;
 
@@ -47,12 +48,13 @@ public partial class TrackView : ContentView
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        var file = e.Item as FileInfo;
+        var file = e.Item as SimpleFile;
         await LoadGpxAsync(file.FullName);
     }
 
     private async Task LoadGpxAsync(string path)
     {
+        IsEnabled = false;
         try
         {
             Gpx gpx = await Gpx.FromFileAsync(path);
@@ -65,6 +67,10 @@ public partial class TrackView : ContentView
         catch (Exception ex)
         {
             await MainPage.Current.DisplayAlert("¼ÓÔØÊ§°Ü", ex.Message, "È·¶¨");
+        }
+        finally
+        {
+            IsEnabled = true;
         }
     }
     private async void ResumeButton_Clicked(object sender, EventArgs e)
@@ -181,5 +187,6 @@ public partial class TrackView : ContentView
         btnResume.IsEnabled = (BindingContext as TrackViewViewModel).GpxFiles.Count > 0;
         grdDetail.IsVisible = running;
         lvwGpxList.IsVisible = !running;
+        lblLoadGpx.IsVisible = !running;
     }
 }

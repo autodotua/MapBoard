@@ -6,6 +6,7 @@
     xmlns:base="clr-namespace:MapBoard"
     xmlns:c="clr-namespace:MapBoard.Converters"
     xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem"
+    xmlns:m="clr-namespace:MapBoard.Models"
     xmlns:s="clr-namespace:MapBoard.Services"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:TrackViewViewModel}"
@@ -27,7 +28,7 @@
                 <DataTemplate>
                     <ViewCell>
                         <Grid
-                            x:DataType="{x:Type io:FileInfo}"
+                            x:DataType="{x:Type m:SimpleFile}"
                             ColumnDefinitions="*,8,Auto,8">
                             <Label
                                 Text="{Binding Name}"
@@ -174,6 +175,7 @@
                 VerticalOptions="Center" />
         </Grid>
         <Label
+            x:Name="lblLoadGpx"
             Grid.Row="4"
             HorizontalOptions="Center"
             Text="加载其他GPX文件">

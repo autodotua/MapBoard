@@ -52,7 +52,7 @@ namespace MapBoard.Platforms.Android
             update(new GnssStatusInfo()
             {
                 Total = status.SatelliteCount,
-                Fixed = Enumerable.Range(0, status.SatelliteCount - 1).Where(status.UsedInFix).Count()
+                Fixed = Enumerable.Range(0, status.SatelliteCount).Where(status.UsedInFix).Count()
             });
         }
     }

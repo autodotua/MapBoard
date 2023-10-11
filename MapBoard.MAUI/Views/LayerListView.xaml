@@ -7,6 +7,26 @@
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:LayerViewViewModel}"
     Loaded="ContentView_Loaded">
+    <ContentView.Resources>
+
+        <DataTemplate
+            x:Key="LayerListDataTemplate"
+            x:DataType="{x:Type mmm:MapLayerInfo}">
+            <ViewCell>
+                <Grid
+                    Margin="8"
+                    ColumnDefinitions="*,8,Auto">
+                    <Label
+                        Text="{Binding Name}"
+                        TextColor="{AppThemeBinding Dark=White,
+                                                    Light=Black}" />
+                    <Switch
+                        Grid.Column="2"
+                        IsToggled="{Binding LayerVisible}" />
+                </Grid>
+            </ViewCell>
+        </DataTemplate>
+    </ContentView.Resources>
     <Grid
         Margin="8"
         RowDefinitions="Auto,8,*">
@@ -24,68 +44,35 @@
         </HorizontalStackLayout>
 
         <ListView
+            x:Name="lvwLevel"
+            Grid.Row="2"
+            ItemSelected="lvwGroup_ItemSelected"
+            ItemTemplate="{StaticResource LayerListDataTemplate}"
+            ItemsSource="{Binding Layers}"
+            SelectionMode="Single">
+            <ListView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="{x:Type mmm:GroupInfo}">
+                    <ViewCell>
+                        <Label
+                            Margin="8"
+                            FontAttributes="Bold"
+                            Text="{Binding Name}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.GroupHeaderTemplate>
+        </ListView>
+
+        <!--<ListView
             x:Name="lvwGroup"
             Grid.Row="2"
             GroupDisplayBinding="{Binding Name}"
             IsGroupingEnabled="True"
             IsVisible="False"
-            ItemTapped="LvwGroup_ItemTapped"
+            ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Groups}"
-            SelectionMode="None">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
-                    <ViewCell>
-                        <Grid
-                            Margin="0,4"
-                            ColumnDefinitions="Auto,4,*">
-                            <CheckBox
-                                HorizontalOptions="Fill"
-                                IsChecked="{Binding LayerVisible}" />
-                            <Label
-                                Grid.Column="2"
-                                FontAttributes="Bold"
-                                InputTransparent="True"
-                                Text="{Binding Name}"
-                                VerticalOptions="Center" />
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            SelectionMode="Single" />-->
 
-        <ListView
-            x:Name="lvwLevel"
-            Grid.Row="2"
-            IsVisible="False"
-            ItemTapped="LvwGroup_ItemTapped"
-            ItemsSource="{Binding Layers}"
-            RowHeight="64"
-            SelectionMode="None">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="{x:Type mmm:MapLayerInfo}">
-                    <ViewCell>
-                        <Grid
-                            Margin="0,4"
-                            ColumnDefinitions="Auto,8,*"
-                            RowDefinitions="Auto,4,Auto"
-                            VerticalOptions="Center">
-                            <CheckBox
-                                Grid.RowSpan="99"
-                                IsChecked="{Binding LayerVisible}" />
-                            <Label
-                                Grid.Column="2"
-                                FontAttributes="Bold"
-                                Text="{Binding Name}"
-                                VerticalOptions="End" />
-                            <Label
-                                Grid.Row="2"
-                                Grid.Column="2"
-                                Text="{Binding Group}"
-                                VerticalOptions="Start" />
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
     </Grid>
 </ContentView>

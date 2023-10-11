@@ -20,8 +20,8 @@
         <Grid
             x:Name="track"
             Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
-                                              Dark={DynamicResource Black}}"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
             <Label
@@ -34,8 +34,8 @@
         <Grid
             x:Name="ftp"
             Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
-                                              Dark={DynamicResource Black}}"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
             <Label
@@ -49,8 +49,8 @@
         <Grid
             x:Name="layer"
             Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
-                                              Dark={DynamicResource Black}}"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
             <Label
@@ -66,8 +66,8 @@
         <Grid
             x:Name="import"
             Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
-                                              Dark={DynamicResource Black}}"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
             <Label
@@ -76,15 +76,15 @@
                 FontSize="Title"
                 Text="加载地图包" />
 
-            <v:ImportView
-                Grid.Row="2" />
+            <v:ImportView Grid.Row="2" />
         </Grid>
 
 
         <Border
             x:Name="bdBottom"
             Grid.Row="99"
-            BackgroundColor="{DynamicResource Gray200}"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray400}}"
             Stroke="Transparent"
             StrokeThickness="0">
             <Border.Shadow>

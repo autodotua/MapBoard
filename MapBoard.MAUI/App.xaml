@@ -25,20 +25,21 @@
             </Style>
             <VisualStateGroup
                 x:Key="GrayButtonVisualState"
-                x:DataType="{x:Type Button}">
+                x:DataType="{x:Type Button}"
+                x:Shared="False">
                 <VisualState x:Name="Normal">
                     <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{DynamicResource Gray200}" />
+                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Pressed">
                     <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{DynamicResource Gray400}" />
+                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="PointerOver">
                     <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{DynamicResource Gray300}" />
+                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

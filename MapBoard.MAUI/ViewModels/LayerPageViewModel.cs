@@ -22,22 +22,31 @@ namespace MapBoard.ViewModels
         /// <summary>
         /// 生成分组多选框
         /// </summary>
-        public void GenerateGroups()
+        public void Update()
         {
-            Groups.Clear();
-            if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
+            try
             {
-                Groups.Add(new LayerGroupList("（无）",
-                    GetGroupVisible(Layers.Where(p => string.IsNullOrEmpty(p.Group))),
-                    true,
-                    Layers.Where(p => string.IsNullOrEmpty(p.Group)).Cast<IMapLayerInfo>()));
+                this.Notify(nameof(Layers));
+                Groups.Clear();
+                if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
+                {
+                    Groups.Add(new LayerGroupList("（无）",
+                        GetGroupVisible(Layers.Where(p => string.IsNullOrEmpty(p.Group))),
+                        true,
+                        Layers.Where(p => string.IsNullOrEmpty(p.Group)).Cast<IMapLayerInfo>()));
+                }
+                foreach (var layers in Layers
+                    .Where(p => !string.IsNullOrEmpty(p.Group))
+                   .GroupBy(p => p.Group))
+                {
+                    Groups.Add(new LayerGroupList(layers.Key, GetGroupVisible(layers), false,
+                        layers.Cast<IMapLayerInfo>()));
+                }
             }
-            foreach (var layers in Layers
-                .Where(p => !string.IsNullOrEmpty(p.Group))
-               .GroupBy(p => p.Group))
+            catch(Exception ex)
             {
-                Groups.Add(new LayerGroupList(layers.Key, GetGroupVisible(layers), false,
-                    layers.Cast<IMapLayerInfo>()));
+
+
             }
         }
         /// <summary>

@@ -17,10 +17,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 using Esri.ArcGISRuntime.Symbology;
 using NGettext.Loaders;
+using Esri.ArcGISRuntime.Mapping.Popups;
+using System.Text;
 
 namespace MapBoard.Mapping
 {
@@ -78,6 +78,8 @@ namespace MapBoard.Mapping
             //启动时恢复到原来的视角，并定时保存
             Loaded += MainMapView_Loaded;
             Unloaded += MainMapView_Unloaded;
+            GeoViewTapped += MainMapView_GeoViewTapped;
+
             Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
             {
                 if (IsLoaded
@@ -89,6 +91,113 @@ namespace MapBoard.Mapping
                 return true;
             });
             //NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
+        {
+            MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
+            double tolerance = MapScale / 1e8;
+            Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
+
+            if (Layers.Selected != null)
+            {
+                var result = await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false);
+                if (result != null && result.GeoElements.Count > 0)
+                {
+                    var layer = result.LayerContent as FeatureLayer;
+                    layer.ClearSelection();
+                    Feature feature = result.GeoElements[0] as Feature;
+                    layer.SelectFeature(feature);
+                    CalloutDefinition cd = new CalloutDefinition(feature);
+                    cd.DetailText =BuildCalloutText(feature); 
+                    cd.Text = layer.Name;
+
+                    ShowCalloutForGeoElement(feature, e.Position, cd);
+                }
+                else
+                {
+                    DismissCallout();
+                }
+            }
+        }
+
+        private string BuildCalloutText(Feature feature)
+        {
+            var attrStr = new StringBuilder();
+
+            switch (feature.Geometry.GeometryType)
+            {
+                case GeometryType.Point:
+                    break;
+                case GeometryType.Envelope:
+                    break;
+                case GeometryType.Polyline:
+                    double length=(feature.Geometry as Polyline).GetLength();
+                    if(length<1000)
+                    {
+                        attrStr.AppendLine($"{length:0.0} m");
+                    }
+                    else
+                    {
+                        attrStr.AppendLine($"{length/1000:0.00} km");
+                    }
+                    break;
+                case GeometryType.Polygon:
+                    //double perimeter = (feature.Geometry as Polygon).GetLength();
+                    //if (perimeter < 1000)
+                    //{
+                    //    attrStr.Append($"{perimeter:0.0} m");
+                    //}
+                    //else
+                    //{
+                    //    attrStr.Append($"{perimeter / 1000:0.00} km");
+                    //}
+                    //attrStr.Append("  ");
+                    double area = (feature.Geometry as Polygon).GetLength();
+                    if (area < 1_000_000)
+                    {
+                        attrStr.AppendLine($"{area:0.0} m²");
+                    }
+                    else
+                    {
+                        attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
+                    }
+                    break;
+                case GeometryType.Multipoint:
+                    break;
+                case GeometryType.Unknown:
+                    break;
+            }
+
+            Dictionary<string, string> key2Desc = Layers.Selected.Fields.ToDictionary(p => p.Name, p => p.DisplayName);
+            foreach (var kv in feature.Attributes)
+            {
+
+                if (FieldExtension.IsIdField(kv.Key))
+                {
+                    continue;
+                }
+                if (key2Desc.TryGetValue(kv.Key, out var value))
+                {
+                    attrStr.Append(value);
+                }
+                else
+                {
+                    attrStr.Append(kv.Key);
+                }
+
+                attrStr.Append('：');
+                if (kv.Value is DateTimeOffset dto)
+                {
+                    attrStr.AppendLine(dto.DateTime.ToString("yyyy-MM-dd"));
+                }
+                else
+                {
+                    attrStr.AppendLine(kv.Value.ToString());
+                }
+            }
+
+            return attrStr.ToString();
         }
 
         /// <summary>

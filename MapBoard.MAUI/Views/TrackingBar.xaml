@@ -41,9 +41,6 @@
                     <Span Text="   D=" />
                     <Span Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
 
-                    <Span Text="   A=" />
-                    <Span Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
-
                     <Span Text="   V=" />
                     <Span Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
 

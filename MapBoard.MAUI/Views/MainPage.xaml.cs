@@ -19,7 +19,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
 using Map = Esri.ArcGISRuntime.Mapping.Map;
 using Esri.ArcGISRuntime.UI;
 using static MapBoard.Util.GeometryUtility;
@@ -38,6 +37,10 @@ namespace MapBoard.Views
 {
     public partial class MainPage : ContentPage
     {
+        private SidePanelInfo[] sidePanels;
+
+        private Dictionary<Type, SidePanelInfo> type2SidePanels;
+
         public MainPage()
         {
             if (Current != null)
@@ -83,7 +86,7 @@ namespace MapBoard.Views
                     Type = typeof(TrackingBar),
                     Direction = SwipeDirection.Up,
                     Instance = tbar,
-                    Length = 88,
+                    Length = 96,
                     Standalone = true,
                 },
             ];
@@ -128,104 +131,7 @@ namespace MapBoard.Views
             TrackService.CurrentChanged += TrackService_CurrentChanged;
         }
 
-        private void TrackService_CurrentChanged(object sender, EventArgs e)
-        {
-            if (TrackService.Current == null)
-            {
-                ClosePanel<TrackingBar>();
-            }
-            else
-            {
-                OpenPanel<TrackingBar>();
-            }
-        }
-
-        private SidePanelInfo[] sidePanels;
-        private Dictionary<Type, SidePanelInfo> type2SidePanels;
-
-        private async void ContentPage_Loaded(object sender, EventArgs e)
-        {
-            if (Window != null)
-            {
-                Window.Title = "地图画板";
-            }
-
-#if ANDROID
-            var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
-            height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
-            if (height > 0)
-            {
-                bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + height);
-            }
-#endif
-
-            await CheckAndRequestLocationPermission();
-        }
-
         public static MainPage Current { get; private set; }
-
-        public void OpenOrClosePanel<T>()
-        {
-            Type type = typeof(T);
-            if (type2SidePanels[type].IsOpened)
-            {
-                ClosePanel<T>();
-            }
-            else
-            {
-                OpenPanel<T>();
-            }
-        }
-
-        public void OpenPanel<T>()
-        {
-            var type = typeof(T);
-            if (sidePanels.Any(p => p.IsOpened && !p.Standalone))
-            {
-                foreach (var panel in sidePanels.Where(p => p.IsOpened && !p.Standalone))
-                {
-                    ClosePanel(panel.Type);
-                    panel.IsOpened = false;
-                }
-            }
-            type2SidePanels[type].Instance.TranslateTo(0, 0);
-            type2SidePanels[type].IsOpened = true;
-        }
-
-        public void ClosePanel<T>()
-        {
-            ClosePanel(typeof(T));
-        }
-        private void ClosePanel(Type type)
-        {
-            var panel = type2SidePanels[type];
-            switch (panel.Direction)
-            {
-                case SwipeDirection.Right:
-                    panel.Instance.TranslateTo(panel.Length, 0);
-                    break;
-                case SwipeDirection.Left:
-                    panel.Instance.TranslateTo(-panel.Length, 0);
-                    break;
-                case SwipeDirection.Up:
-                    panel.Instance.TranslateTo(0, -panel.Length);
-                    break;
-                case SwipeDirection.Down:
-                    panel.Instance.TranslateTo(0, panel.Length);
-                    break;
-            }
-            type2SidePanels[type].IsOpened = false;
-        }
-
-        private void TrackButton_Clicked(object sender, EventArgs e)
-        {
-            OpenOrClosePanel<TrackView>();
-        }
-
-        private void FtpButton_Clicked(object sender, EventArgs e)
-        {
-            OpenOrClosePanel<FtpView>();
-        }
 
         public async Task CheckAndRequestLocationPermission()
         {
@@ -267,14 +173,90 @@ namespace MapBoard.Views
 #endif
         }
 
-        private async void RefreshButton_Clicked(object sender, EventArgs e)
+        public void ClosePanel<T>()
         {
-            await MainMapView.Current.LoadAsync();
+            ClosePanel(typeof(T));
         }
 
-        private void LayerButton_Click(object sender, EventArgs e)
+        public void OpenOrClosePanel<T>()
         {
-            OpenOrClosePanel<LayerListView>();
+            Type type = typeof(T);
+            if (type2SidePanels[type].IsOpened)
+            {
+                ClosePanel<T>();
+            }
+            else
+            {
+                OpenPanel<T>();
+            }
+        }
+
+        public void OpenPanel<T>()
+        {
+            var type = typeof(T);
+            CloseAllPanel();
+            type2SidePanels[type].Instance.TranslateTo(0, 0);
+            type2SidePanels[type].IsOpened = true;
+        }
+
+        private void CloseAllPanel()
+        {
+            if (sidePanels.Any(p => p.IsOpened && !p.Standalone))
+            {
+                foreach (var panel in sidePanels.Where(p => p.IsOpened && !p.Standalone))
+                {
+                    ClosePanel(panel.Type);
+                    panel.IsOpened = false;
+                }
+            }
+        }
+
+        private void ClosePanel(Type type)
+        {
+            var panel = type2SidePanels[type];
+            switch (panel.Direction)
+            {
+                case SwipeDirection.Right:
+                    panel.Instance.TranslateTo(panel.Length, 0);
+                    break;
+                case SwipeDirection.Left:
+                    panel.Instance.TranslateTo(-panel.Length, 0);
+                    break;
+                case SwipeDirection.Up:
+                    panel.Instance.TranslateTo(0, -panel.Length);
+                    break;
+                case SwipeDirection.Down:
+                    panel.Instance.TranslateTo(0, panel.Length);
+                    break;
+            }
+            type2SidePanels[type].IsOpened = false;
+        }
+
+        private async void ContentPage_Loaded(object sender, EventArgs e)
+        {
+            if (Window != null)
+            {
+                Window.Title = "地图画板";
+            }
+            MainMapView.Current.GeoViewTapped += (s, e) =>
+            {
+                CloseAllPanel();
+            };
+#if ANDROID
+            var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
+            height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
+            if (height > 0)
+            {
+                bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + height);
+            }
+#endif
+
+            await CheckAndRequestLocationPermission();
+        }
+
+        private void FtpButton_Clicked(object sender, EventArgs e)
+        {
+            OpenOrClosePanel<FtpView>();
         }
 
         private void ImportButton_Clicked(object sender, EventArgs e)
@@ -282,6 +264,32 @@ namespace MapBoard.Views
             OpenOrClosePanel<ImportView>();
         }
 
+        private void LayerButton_Click(object sender, EventArgs e)
+        {
+            OpenOrClosePanel<LayerListView>();
+        }
+
+        private async void RefreshButton_Clicked(object sender, EventArgs e)
+        {
+            await MainMapView.Current.LoadAsync();
+        }
+
+        private void TrackButton_Clicked(object sender, EventArgs e)
+        {
+            OpenOrClosePanel<TrackView>();
+        }
+
+        private void TrackService_CurrentChanged(object sender, EventArgs e)
+        {
+            if (TrackService.Current == null)
+            {
+                ClosePanel<TrackingBar>();
+            }
+            else
+            {
+                OpenPanel<TrackingBar>();
+            }
+        }
         private async void ZoomToLayerButton_Click(object sender, EventArgs e)
         {
             var layer = MainMapView.Current?.Layers?.Selected;

@@ -4,15 +4,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
+    xmlns:esri="http://schemas.esri.com/arcgis/runtime/2013"
     xmlns:map="clr-namespace:MapBoard.Mapping"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
     <ContentView.Resources>
         <Style
             x:Key="SideButtonStyle"
+            x:Shared="False"
             TargetType="{x:Type Button}">
-            <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
             <Setter Property="WidthRequest" Value="42" />
             <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
             <Setter Property="HeightRequest" Value="42" />
@@ -24,37 +25,7 @@
             <map:MainMapView x:Name="map" />
         </Grid>
 
-        <!--  图层面板  -->
-        <!--<Grid
-            x:Name="grdLayer"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource White},
-                                              Dark={DynamicResource Black}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*"
-            TranslationX="-300"
-            WidthRequest="300">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="图层" />
-            <ImageButton
-                Grid.RowSpan="99"
-                Margin="12"
-                Clicked="CloseLayerPanelButton_Click"
-                HeightRequest="18"
-                HorizontalOptions="End"
-                Opacity="0.8"
-                Scale="{OnPlatform Default=1,
-                                   WinUI=0.5}"
-                Source="btn_close.png"
-                VerticalOptions="Start"
-                WidthRequest="18" />
-            <v:LayerListView
-                x:Name="layerList"
-                Grid.Row="2" />
-        </Grid>-->
+
 
         <!--  右侧按钮  -->
         <VerticalStackLayout
@@ -68,22 +39,79 @@
                 Clicked="ZoomInButton_Click"
                 CornerRadius="4"
                 Source="btn_zoom_in.png"
-                Style="{StaticResource SideButtonStyle}"
-                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                Style="{StaticResource SideButtonStyle}">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup>
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </ImageButton>
             <ImageButton
                 x:Name="btnZoomOut"
                 Clicked="ZoomOutButton_Click"
                 CornerRadius="4"
                 Source="btn_zoom_out.png"
-                Style="{StaticResource SideButtonStyle}"
-                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
-         
+                Style="{StaticResource SideButtonStyle}">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup>
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </ImageButton>
+
             <ImageButton
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
                 Source="btn_location.png"
-                Style="{StaticResource SideButtonStyle}"
-                VisualStateManager.VisualStateGroups="{StaticResource GrayButtonVisualState}" />
+                Style="{StaticResource SideButtonStyle}">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup>
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </ImageButton>
             <Button
                 Clicked="TestButton_Click"
                 Text="T" />
