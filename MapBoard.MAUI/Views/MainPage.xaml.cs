@@ -29,6 +29,7 @@ using MapBoard.Views;
 using static Microsoft.Maui.ApplicationModel.Permissions;
 using Microsoft.Maui.Controls.Shapes;
 
+
 #if ANDROID
 using MapBoard.Platforms.Android;
 #endif
@@ -40,6 +41,23 @@ namespace MapBoard.Views
         private SidePanelInfo[] sidePanels;
 
         private Dictionary<Type, SidePanelInfo> type2SidePanels;
+        private void HandleRippleBug()
+        {
+#if ANDROID
+            //Microsoft.Maui.Handlers.ImageButtonHandler.Mapper.AppendToMapping("WhiteBackground", (handler, view) =>
+            //{
+            //    var button = view.Handler.PlatformView as Google.Android.Material.ImageView.ShapeableImageView;
+            //    //button.SetBackgroundColor(Android.Graphics.Color.White);
+            //    button.SetBackgroundDrawable(new RippleDrawable(ColorStateList.ValueOf(Android.Graphics.Color.Gray), null, null));
+            //});    
+            //Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("WhiteBackgroundButton", (handler, view) =>
+            //{
+            //    var button = view.Handler.PlatformView as AndroidX.AppCompat.Widget.AppCompatButton;
+            //    //button.SetBackgroundColor(Android.Graphics.Color.White);
+            //    button.SetBackgroundColor(Android.Graphics.Color.White);
+            //});
+#endif
+        }
 
         public MainPage()
         {
@@ -49,7 +67,7 @@ namespace MapBoard.Views
             }
             Current = this;
             InitializeComponent();
-
+            HandleRippleBug();
 
             sidePanels =
             [

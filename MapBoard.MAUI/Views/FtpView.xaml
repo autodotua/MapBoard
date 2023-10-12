@@ -6,7 +6,6 @@
     xmlns:base="clr-namespace:MapBoard">
     <Grid
         Margin="16"
-        Padding="0,32,0,0"
         RowDefinitions="Auto,*,Auto,8,Auto">
         <Grid
             x:Name="grdFtpInfo"

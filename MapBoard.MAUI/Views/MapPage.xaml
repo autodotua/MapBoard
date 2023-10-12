@@ -40,6 +40,7 @@
                 CornerRadius="4"
                 Source="btn_zoom_in.png"
                 Style="{StaticResource SideButtonStyle}">
+                <!--  有BUG不能使用Resource，否则会报错KeyNotFoundException：The given key 'Microsoft.Maui.Controls.SetterSpecificity' was not present in the dictionary.'  -->
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroup>
                         <VisualState x:Name="Normal">

@@ -8,7 +8,6 @@
     x:DataType="{x:Type vm:LayerViewViewModel}"
     Loaded="ContentView_Loaded">
     <ContentView.Resources>
-
         <DataTemplate
             x:Key="LayerListDataTemplate"
             x:DataType="{x:Type mmm:MapLayerInfo}">
@@ -29,8 +28,10 @@
     </ContentView.Resources>
     <Grid
         Margin="8"
-        RowDefinitions="Auto,8,*">
-        <HorizontalStackLayout Spacing="16">
+        RowDefinitions="0,8,*">
+        <HorizontalStackLayout
+            IsClippedToBounds="True"
+            Spacing="16">
             <RadioButton
                 x:Name="rbtnByLevel"
                 CheckedChanged="ViewTypeRadioButton_CheckChanged"
@@ -46,6 +47,9 @@
         <ListView
             x:Name="lvwLevel"
             Grid.Row="2"
+            CachingStrategy="RetainElement"
+            GroupDisplayBinding="{Binding Name}"
+            GroupShortNameBinding="{Binding Name}"
             ItemSelected="lvwGroup_ItemSelected"
             ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Layers}"
@@ -57,8 +61,7 @@
                             Margin="8"
                             FontAttributes="Bold"
                             Text="{Binding Name}"
-                            TextColor="{AppThemeBinding Dark=White,
-                                                        Light=Black}" />
+                            TextColor="{DynamicResource Gray500}" />
                     </ViewCell>
                 </DataTemplate>
             </ListView.GroupHeaderTemplate>

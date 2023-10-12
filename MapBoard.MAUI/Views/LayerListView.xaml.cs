@@ -12,15 +12,17 @@ public partial class LayerListView : ContentView
     public LayerListView()
     {
         InitializeComponent();
+        BindingContext = new LayerViewViewModel();
 
     }
-
+    private bool isLoaded = false;
     private void ContentView_Loaded(object sender, EventArgs e)
     {
-        if (BindingContext != null)
+        if (isLoaded)
         {
             return;
         }
+        isLoaded = true;
         MainMapView.Current.MapLoaded += MapView_MapLoaded;
         MainMapView.Current.Layers.CollectionChanged += Layers_CollectionChanged;
         MainMapView.Current.Layers.PropertyChanged += Layers_PropertyChanged;
@@ -55,12 +57,9 @@ public partial class LayerListView : ContentView
     private void MapView_MapLoaded(object sender, EventArgs e)
     {
         var layers = MainMapView.Current.Layers;
-        BindingContext = new LayerViewViewModel()
-        {
-            Layers = layers
-        };
+        (BindingContext as LayerViewViewModel).Layers = layers;
         (BindingContext as LayerViewViewModel).Update();
-        if (Config.Instance.LastLayerListGroupType == 0)
+        if (false&&Config.Instance.LastLayerListGroupType == 0)
         {
             rbtnByLevel.IsChecked = true;
         }
@@ -77,18 +76,15 @@ public partial class LayerListView : ContentView
         lvwLevel.SelectedItem = MainMapView.Current.Layers.Selected;
     }
 
-    private void UpdateListType(bool group)
+    private  void UpdateListType(bool group)
     {
-        if (group)
-        {
-            lvwLevel.IsGroupingEnabled = true;
-            lvwLevel.SetBinding(ListView.ItemsSourceProperty, nameof(LayerViewViewModel.Groups));
-        }
-        else
-        {
-            lvwLevel.IsGroupingEnabled = false;
-            lvwLevel.SetBinding(ListView.ItemsSourceProperty, nameof(LayerViewViewModel.Layers));
-        }
+        //¥Ê‘⁄‰÷»æŒ Ã‚
+        //https://github.com/dotnet/maui/issues/16031
+        lvwLevel.BeginRefresh();
+        lvwLevel.RemoveBinding(ListView.ItemsSourceProperty);
+        lvwLevel.SetBinding(ListView.ItemsSourceProperty, group ? nameof(LayerViewViewModel.Groups) : nameof(LayerViewViewModel.Layers));
+        lvwLevel.IsGroupingEnabled = group;
+        lvwLevel.EndRefresh();
         UpdateListSelectedItem();
         if (lvwLevel.SelectedItem != null)
         {
@@ -100,6 +96,8 @@ public partial class LayerListView : ContentView
     {
         if (e.Value)
         {
+            UpdateListType(sender == rbtnByGroup);
+            UpdateListType(sender != rbtnByGroup);
             UpdateListType(sender == rbtnByGroup);
             int id = sender == rbtnByGroup ? 1 : 0;
             if (Config.Instance.LastLayerListGroupType != id)

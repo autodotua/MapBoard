@@ -10,7 +10,6 @@
     Loaded="ContentView_Loaded">
     <Grid
         Margin="16"
-        Padding="0,32,0,0"
         RowDefinitions="*,8,Auto">
         <ListView
             ItemTapped="ListView_ItemTapped"

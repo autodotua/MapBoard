@@ -16,7 +16,7 @@
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
     </ContentView.Resources>
     <Grid
-        Margin="8,32,8,8"
+        Margin="8"
         RowDefinitions="*,8,Auto,8,Auto">
         <ListView
             x:Name="lvwGpxList"

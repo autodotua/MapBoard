@@ -26,7 +26,6 @@ namespace MapBoard.ViewModels
         {
             try
             {
-                this.Notify(nameof(Layers));
                 Groups.Clear();
                 if (Layers.Any(p => string.IsNullOrEmpty(p.Group)))
                 {
@@ -48,6 +47,7 @@ namespace MapBoard.ViewModels
 
 
             }
+            this.Notify(nameof(Layers));
         }
         /// <summary>
         /// 获取分组可见情况
