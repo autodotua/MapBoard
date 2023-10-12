@@ -15,15 +15,21 @@ namespace MapBoard.Mapping
 {
     public static class MapViewHelper
     {
-        public static List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>()
-        {
-            new BaseLayerInfo()
-            {
-                Name="xyz",
-                Type=BaseLayerType.WebTiledLayer,
-                Path="https://autodotua.top/map/google/{z}/{x}-{y}.jpg"
-            }
-        };
+        private static readonly List<BaseLayerInfo> DefaultBaseLayers = @"ESRI影像 https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
+OpenTopoMap https://tile.opentopomap.org/{z}/{x}/{y}.png
+OpenStreetMap http://a.tile.openstreetmap.org/{z}/{x}/{y}.png
+OpenStreetMap自行车 https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png
+OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
+谷歌卫星 https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}
+谷歌街道 https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}
+谷歌卫星+街道 https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}
+高德地图 http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&scl=1&style=8&x={x}&y={y}&z={z}
+高德卫星 https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}"
+            .Split(Environment.NewLine)
+            .Select(p => p.Split(' '))
+            .Select(p => new BaseLayerInfo(BaseLayerType.WebTiledLayer, p[1]) { Name = p[0] })
+            .ToList();
+
         private static Regex rColorRamp = new Regex(@$"(?<type>{nameof(PresetColorRampType.Elevation)}|{nameof(PresetColorRampType.DemScreen)}|{nameof(PresetColorRampType.DemLight)})(,(?<size>[0-9]+))?");
 
         private static Regex rMinMaxStretch = new Regex(@"m(inmax)?\((?<min>[0-9\.:]+),(?<max>[0-9\.:]+)\)");
@@ -35,27 +41,6 @@ namespace MapBoard.Mapping
         private static Regex rStdStretch = new Regex(@"s(td)?\((?<factor>[0-9\.]+)\)");
 
         private static Regex rStretchRenderer = new Regex(@"s(tretch)?");
-
-
-        /// <summary>
-        /// 从文件读取预设的底图
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="FormatException"></exception>
-        public static IEnumerable<BaseLayerInfo> GetDefaultBaseLayers()
-        {
-            string defaultBasemapLayersPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBasemapLayers.txt");
-
-            if (File.Exists(defaultBasemapLayersPath))
-            {
-                return File.ReadAllLines(defaultBasemapLayersPath)
-                    .Select(p => p.Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(p => p.Length == 2 ?
-                    new BaseLayerInfo(BaseLayerType.WebTiledLayer, p[1]) { Name = p[0] }
-                    : throw new FormatException("默认底图文件格式错误"));
-            }
-            return Enumerable.Empty<BaseLayerInfo>();
-        }
 
 
         /// <summary>
@@ -94,23 +79,20 @@ namespace MapBoard.Mapping
             {
                 Basemap basemap = new Basemap();
                 await basemap.LoadAsync();
-                if (BaseLayers.Count == 0)
+                if (Config.Instance.BaseLayers.Count == 0)
                 {
                     //如果没有底图，一般是首次打开软件的时候，那么从默认瓦片底图的文件中读取第一条加载
                     try
                     {
-                        var defaultBaseLayers = GetDefaultBaseLayers();
-                        if (defaultBaseLayers.Any())
-                        {
-                            BaseLayers.Add(defaultBaseLayers.First());
-                        }
+                        Config.Instance.BaseLayers.Add(DefaultBaseLayers[0]);
                     }
                     catch
                     {
                     }
                 }
                 //加载底图
-                var baseLayers = BaseLayers.Where(p => p.Enable).Reverse();
+                var baseLayers = Config.Instance.BaseLayers;
+                baseLayers.Reverse();
                 foreach (var item in baseLayers)
                 {
                     Layer layer = null;
@@ -138,12 +120,7 @@ namespace MapBoard.Mapping
                         errors.Add($"加载底图{item.Name}({item.Path})失败", ex);
                     }
                 }
-                //如果还是没有底图，那么加载单张世界地图
-                if (basemap.BaseLayers.Count == 0)
-                {
-                    string defaultBaseMapPath = Path.Combine(FzLib.Program.App.ProgramDirectoryPath, "res", "DefaultBaseMap.jpg");
-                    basemap = new Basemap(new RasterLayer(defaultBaseMapPath));
-                }
+
                 await basemap.LoadAsync();
                 if (map is SceneView s)
                 {

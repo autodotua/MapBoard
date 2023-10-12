@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.BaseLayerView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:m="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:mmm="clr-namespace:MapBoard.Mapping.Model;assembly=MapBoard.Core"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:BaseLayerViewViewModel}"
+    Loaded="ContentView_Loaded">
+
+    <Grid
+        Margin="8"
+        RowDefinitions="*,8,Auto">
+        <ListView
+            ItemsSource="{Binding BaseLayers}"
+            RowHeight="72"
+            SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type m:BaseLayerInfo}">
+                    <ViewCell>
+                        <SwipeView>
+                            <SwipeView.LeftItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItem
+                                        BackgroundColor="Red"
+                                        Clicked="DeleteSwipeItem_Clicked"
+                                        Text="删除" />
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+                            <Grid
+                                Padding="8"
+                                ColumnDefinitions="*,8,Auto"
+                                RowDefinitions="Auto,8,Auto">
+                                <Label
+                                    FontAttributes="Bold"
+                                    Text="{Binding Name}" />
+                                <Label
+                                    Grid.Row="2"
+                                    LineBreakMode="TailTruncation"
+                                    Text="{Binding Path}" />
+                                <Switch
+                                    Grid.RowSpan="3"
+                                    Grid.Column="2"
+                                    IsToggled="{Binding Visible}" />
+                            </Grid>
+                        </SwipeView>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button
+            Grid.Row="2"
+            Clicked="AddNewBaseLayerButton_Clicked"
+            MaximumWidthRequest="200"
+            Text="新增" />
+    </Grid>
+</ContentView>

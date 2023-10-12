@@ -98,6 +98,9 @@
 	  <Compile Update="Views\FtpView.xaml.cs">
 	    <DependentUpon>FtpView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\BaseLayerView.xaml.cs">
+	    <DependentUpon>BaseLayerView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\MapPage.xaml.cs">
 	    <DependentUpon>MapPage.xaml</DependentUpon>
 	  </Compile>
@@ -123,6 +126,9 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\ImportView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\BaseLayerView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\MapPage.xaml">

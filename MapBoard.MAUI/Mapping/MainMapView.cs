@@ -22,6 +22,7 @@ using NGettext.Loaders;
 using Esri.ArcGISRuntime.Mapping.Popups;
 using System.Text;
 using MapBoard.Views;
+using System.Reflection;
 
 namespace MapBoard.Mapping
 {
@@ -82,7 +83,6 @@ namespace MapBoard.Mapping
             });
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
-
 
         /// <summary>
         /// 画板当前任务改变事件
@@ -270,14 +270,25 @@ namespace MapBoard.Mapping
                 }
                 else
                 {
-                    var results = await IdentifyLayersAsync(e.Position, 10, false, 1);
+                    IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
                     if (results.Any())
                     {
-                        //下面三条语句用于寻找各图层中最近的那个
-                        var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
-                        var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
-                        var nearestFeatureIndex = distances.IndexOf(distances.Min());
-                        SelectFeature(features[nearestFeatureIndex], e.Position);
+                        if (results.Select(p => p.LayerContent)
+                            .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
+                            .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
+                        {
+                            results = results
+                            .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
+                            //下面三条语句用于寻找各图层中最近的那个
+                            var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
+                            var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
+                            var index = distances.IndexOf(distances.Min());
+                            SelectFeature(features[index], e.Position);
+                        }
+                        else //如果只有面，那么随便选
+                        {
+                            SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
+                        }
                     }
                 }
             }

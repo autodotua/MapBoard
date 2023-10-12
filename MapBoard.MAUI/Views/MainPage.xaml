@@ -53,15 +53,38 @@
                                               Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="图层" />
+            <HorizontalStackLayout Margin="8,8,0,0">
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Text="图层" />
+                <Label
+                    Margin="24,0,0,0"
+                    Text="设置底图"
+                    VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="SetBaseLayersTapGestureRecognizer_Tapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
 
             <v:LayerListView
                 x:Name="layerList"
                 Grid.Row="2" />
+        </Grid>
+        <Grid
+            x:Name="baseLayer"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="底图" />
+            <v:BaseLayerView Grid.Row="2" />
         </Grid>
         <Grid
             x:Name="import"

@@ -94,6 +94,13 @@ namespace MapBoard.Views
                 },
                 new SidePanelInfo
                 {
+                    Type = typeof(BaseLayerView),
+                    Direction = SwipeDirection.Left,
+                    Instance = baseLayer,
+                    Length = 300,
+                },
+                new SidePanelInfo
+                {
                     Type = typeof(ImportView),
                     Direction = SwipeDirection.Left,
                     Instance = import,
@@ -318,8 +325,13 @@ namespace MapBoard.Views
                     var extent = await layer.QueryExtentAsync(new QueryParameters());
                     await MainMapView.Current.ZoomToGeometryAsync(extent);
                 }
-               catch { }
+                catch { }
             }
+        }
+
+        private void SetBaseLayersTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        {
+            OpenPanel<BaseLayerView>();
         }
     }
 
