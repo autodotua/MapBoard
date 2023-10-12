@@ -24,6 +24,38 @@
         <Grid IsClippedToBounds="True">
             <map:MainMapView x:Name="map" />
         </Grid>
+        <!--<ImageButton
+            x:Name="btnClearSelection"
+            Margin="8,56,8,8"
+            Clicked="ClearSelectionButton_Click"
+            CornerRadius="4"
+            HorizontalOptions="End"
+            Source="btn_clear.png"
+            Style="{StaticResource SideButtonStyle}"
+            VerticalOptions="Start">
+        -->
+        <!--  有BUG不能使用Resource，否则会报错KeyNotFoundException：The given key 'Microsoft.Maui.Controls.SetterSpecificity' was not present in the dictionary.'  -->
+        <!--
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </ImageButton>-->
 
 
 
@@ -89,6 +121,7 @@
             </ImageButton>
 
             <ImageButton
+                Margin="0,60,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
                 Source="btn_location.png"

@@ -73,7 +73,10 @@ namespace MapBoard.Views
             await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
 
-
+        //private void ClearSelectionButton_Click(object sender, EventArgs e)
+        //{
+        //    map.ClearSelection();
+        //}
     }
 
 }

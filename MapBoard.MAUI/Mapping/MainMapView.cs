@@ -21,6 +21,7 @@ using Esri.ArcGISRuntime.Symbology;
 using NGettext.Loaders;
 using Esri.ArcGISRuntime.Mapping.Popups;
 using System.Text;
+using MapBoard.Views;
 
 namespace MapBoard.Mapping
 {
@@ -40,22 +41,11 @@ namespace MapBoard.Mapping
         private static List<MainMapView> instances = new List<MainMapView>();
 
         private readonly double watermarkHeight = 72;
-        /// <summary>
-        /// 是否允许旋转
-        /// </summary>
-        private bool canRotate = true;
 
 
         private bool isZoomingToLastExtent = false;
-        /// <summary>
-        /// 鼠标中键按下时起始位置
-        /// </summary>
-        private Point startPosition = default;
 
-        /// <summary>
-        /// 旋转开始角度
-        /// </summary>
-        private double startRotation = 0;
+        private Feature selectedFeature = null;
 
         public MainMapView()
         {
@@ -93,112 +83,6 @@ namespace MapBoard.Mapping
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
-        private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
-        {
-            MapPoint point = GeometryEngine.Project(e.Location, SpatialReferences.Wgs84) as MapPoint;
-            double tolerance = MapScale / 1e8;
-            Envelope envelope = new Envelope(point.X - tolerance, point.Y - tolerance, point.X + tolerance, point.Y + tolerance, SpatialReferences.Wgs84);
-
-            if (Layers.Selected != null)
-            {
-                var result = await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false);
-                if (result != null && result.GeoElements.Count > 0)
-                {
-                    var layer = result.LayerContent as FeatureLayer;
-                    layer.ClearSelection();
-                    Feature feature = result.GeoElements[0] as Feature;
-                    layer.SelectFeature(feature);
-                    CalloutDefinition cd = new CalloutDefinition(feature);
-                    cd.DetailText =BuildCalloutText(feature); 
-                    cd.Text = layer.Name;
-
-                    ShowCalloutForGeoElement(feature, e.Position, cd);
-                }
-                else
-                {
-                    DismissCallout();
-                }
-            }
-        }
-
-        private string BuildCalloutText(Feature feature)
-        {
-            var attrStr = new StringBuilder();
-
-            switch (feature.Geometry.GeometryType)
-            {
-                case GeometryType.Point:
-                    break;
-                case GeometryType.Envelope:
-                    break;
-                case GeometryType.Polyline:
-                    double length=(feature.Geometry as Polyline).GetLength();
-                    if(length<1000)
-                    {
-                        attrStr.AppendLine($"{length:0.0} m");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{length/1000:0.00} km");
-                    }
-                    break;
-                case GeometryType.Polygon:
-                    //double perimeter = (feature.Geometry as Polygon).GetLength();
-                    //if (perimeter < 1000)
-                    //{
-                    //    attrStr.Append($"{perimeter:0.0} m");
-                    //}
-                    //else
-                    //{
-                    //    attrStr.Append($"{perimeter / 1000:0.00} km");
-                    //}
-                    //attrStr.Append("  ");
-                    double area = (feature.Geometry as Polygon).GetLength();
-                    if (area < 1_000_000)
-                    {
-                        attrStr.AppendLine($"{area:0.0} m²");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
-                    }
-                    break;
-                case GeometryType.Multipoint:
-                    break;
-                case GeometryType.Unknown:
-                    break;
-            }
-
-            Dictionary<string, string> key2Desc = Layers.Selected.Fields.ToDictionary(p => p.Name, p => p.DisplayName);
-            foreach (var kv in feature.Attributes)
-            {
-
-                if (FieldExtension.IsIdField(kv.Key))
-                {
-                    continue;
-                }
-                if (key2Desc.TryGetValue(kv.Key, out var value))
-                {
-                    attrStr.Append(value);
-                }
-                else
-                {
-                    attrStr.Append(kv.Key);
-                }
-
-                attrStr.Append('：');
-                if (kv.Value is DateTimeOffset dto)
-                {
-                    attrStr.AppendLine(dto.DateTime.ToString("yyyy-MM-dd"));
-                }
-                else
-                {
-                    attrStr.AppendLine(kv.Value.ToString());
-                }
-            }
-
-            return attrStr.ToString();
-        }
 
         /// <summary>
         /// 画板当前任务改变事件
@@ -275,6 +159,7 @@ namespace MapBoard.Mapping
                 TrackOverlay = new TrackOverlayHelper(overlay);
             }
         }
+
         public void MoveToLocation()
         {
             if (LocationDisplay != null && LocationDisplay.IsEnabled)
@@ -284,6 +169,121 @@ namespace MapBoard.Mapping
                 {
                     SetViewpointCenterAsync(point);
                 }
+            }
+        }
+
+        private string BuildCalloutText(Feature feature)
+        {
+            var attrStr = new StringBuilder();
+
+            switch (feature.Geometry.GeometryType)
+            {
+                case GeometryType.Point:
+                    break;
+                case GeometryType.Envelope:
+                    break;
+                case GeometryType.Polyline:
+                    double length = (feature.Geometry as Polyline).GetLength();
+                    if (length < 1000)
+                    {
+                        attrStr.AppendLine($"{length:0.0} m");
+                    }
+                    else
+                    {
+                        attrStr.AppendLine($"{length / 1000:0.00} km");
+                    }
+                    break;
+                case GeometryType.Polygon:
+                    double area = (feature.Geometry as Polygon).GetLength();
+                    if (area < 1_000_000)
+                    {
+                        attrStr.AppendLine($"{area:0.0} m²");
+                    }
+                    else
+                    {
+                        attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
+                    }
+                    break;
+                case GeometryType.Multipoint:
+                    break;
+                case GeometryType.Unknown:
+                    break;
+            }
+
+            Dictionary<string, string> key2Desc = Layers
+                .First(p => (p as MapLayerInfo).Layer == feature.FeatureTable.Layer)
+                .Fields
+                .ToDictionary(p => p.Name, p => p.DisplayName);
+            foreach (var kv in feature.Attributes)
+            {
+
+                if (FieldExtension.IsIdField(kv.Key) || kv.Key is (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName))
+                {
+                    continue;
+                }
+
+                if (kv.Value is not (null or ""))
+                {
+                    if (key2Desc.TryGetValue(kv.Key, out var value))
+                    {
+                        attrStr.Append(value);
+                    }
+                    else
+                    {
+                        attrStr.Append(kv.Key);
+                    }
+
+                    attrStr.Append('：');
+                    if (kv.Value is DateTimeOffset dto)
+                    {
+                        attrStr.AppendLine(dto.DateTime.ToString("yyyy-MM-dd"));
+                    }
+                    else
+                    {
+                        attrStr.AppendLine(kv.Value.ToString());
+                    }
+                }
+            }
+
+            return attrStr.ToString().Trim();
+        }
+
+        public void ClearSelection()
+        {
+            DismissCallout();
+            if (selectedFeature != null)
+            {
+                (selectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(selectedFeature);
+                selectedFeature = null;
+            }
+        }
+
+        private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
+        {
+            ClearSelection();
+            try
+            {
+                var result = Layers.Selected == null ? null : await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false, 1);
+                if (result != null && result.GeoElements.Count > 0)
+                {
+                    SelectFeature(result.GeoElements[0] as Feature, e.Position);
+                }
+                else
+                {
+                    var results = await IdentifyLayersAsync(e.Position, 10, false, 1);
+                    if (results.Any())
+                    {
+                        //下面三条语句用于寻找各图层中最近的那个
+                        var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
+                        var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
+                        var nearestFeatureIndex = distances.IndexOf(distances.Min());
+                        SelectFeature(features[nearestFeatureIndex], e.Position);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await MainPage.Current.DisplayAlert("选取失败", ex.Message, "确定");
             }
         }
 
@@ -319,140 +319,31 @@ namespace MapBoard.Mapping
             Config.Instance.Save();
             Layers.Save();
         }
-        /// <summary>
-        /// 覆盖层相关
-        /// </summary>
-        //public OverlayHelper Overlay { get; private set; }
-        /// <summary>
-        /// 设置设备位置的显示
-        /// </summary>
 
-
-        ///// <summary>
-        ///// 鼠标移动，中键按下时旋转地图
-        ///// </summary>
-        ///// <param name="e"></param>
-        //protected override async void OnPreviewMouseMove(MouseEventArgs e)
-        //{
-        //    base.OnPreviewMouseMove(e);
-        //    if (e.MiddleButton == MouseButtonState.Pressed && canRotate)
-        //    {
-        //        Point position = e.GetPosition(this);
-        //        double distance = position.X - startPosition.X;
-        //        if (Math.Abs(distance) < 10)
-        //        {
-        //            return;
-        //        }
-        //        Debug.WriteLine(distance);
-        //        canRotate = false;
-        //        SetViewpointRotationAsync(startRotation + distance / 5);
-        //        await Task.Delay(100);
-        //        canRotate = true;
-        //        //防止旋转过快造成卡顿
-        //    }
-        //}
-        /// <summary>
-        /// 键盘按下事件
-        /// </summary>
-        /// <param name="e"></param>
-        //protected override async void OnPreviewKeyDown(KeyEventArgs e)
-        //{
-        //    base.OnPreviewKeyDown(e);
-        //    switch (e.Key)
-        //    {
-        //        //Delete：移除节点、删除要素
-        //        case Key.Delete when GeometryEditor.SelectedElement is GeometryEditorVertex:
-        //            GeometryEditor.DeleteSelectedElement();
-        //            break;
-
-        //        case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IEditableLayerInfo w:
-        //            await (this.GetWindow() as MainWindow).DoAsync(async () =>
-        //           {
-        //               await FeatureUtility.DeleteAsync(w, Selection.SelectedFeatures.ToArray());
-        //               Selection.ClearSelection();
-        //           }, "正在删除", true);
-        //            break;
-
-        //        //空格、回车：开始/结束绘图、选择模式下开始编辑
-        //        case Key.Space:
-        //        case Key.Enter:
-        //            switch (CurrentTask)
-        //            {
-        //                case BoardTask.Draw:
-        //                    Editor.StopAndSave();
-        //                    break;
-
-        //                case BoardTask.Ready
-        //                when Layers.Selected?.LayerVisible == true
-        //                && Layers.Selected?.Interaction?.CanEdit == true:
-        //                    await Editor.DrawAsync(Layers.Selected.GeometryType, null);
-        //                    break;
-
-        //                case BoardTask.Select
-        //                when Selection.SelectedFeatures.Count == 1
-        //                    && Layers.Selected?.LayerVisible == true
-        //                    && Layers.Selected?.CanEdit == true:
-        //                    var feature = Selection.SelectedFeatures.Single();
-        //                    Selection.ClearSelection();
-        //                    Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
-        //                    break;
-        //            }
-        //            break;
-
-        //        //ESC：退出当前状态，返回就绪状态
-        //        case Key.Escape
-        //        when CurrentTask == BoardTask.Draw:
-        //            Editor.Cancel();
-        //            break;
-
-        //        case Key.Escape
-        //        when Selection.SelectedFeatures.Count > 0:
-        //            Selection.ClearSelection();
-        //            break;
-
-        //        //Ctrl Z：撤销
-        //        case Key.Z when Keyboard.Modifiers == ModifierKeys.Control && GeometryEditor.CanUndo:
-        //            GeometryEditor.Undo();
-        //            break;
-
-        //        //Ctrl SHift Z/Ctrl Y：重做
-        //        case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && GeometryEditor.CanRedo:
-        //            GeometryEditor.Redo();
-        //            break;
-        //        case Key.Y when Keyboard.Modifiers == ModifierKeys.Control && GeometryEditor.CanRedo:
-        //            GeometryEditor.Redo();
-        //            break;
-        //    }
-        //}
-
-        //protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
-        //{
-        //    base.OnPreviewMouseDoubleClick(e);
-        //    if (e.ChangedButton.HasFlag(MouseButton.Middle))
-        //    {
-        //        SetViewpointRotationAsync(0);
-        //    }
-        //}
-
-        //protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
-        //{
-        //    base.OnPreviewMouseDown(e);
-        //    if (e.MiddleButton == MouseButtonState.Pressed)
-        //    {
-        //        startRotation = MapRotation;
-        //        startPosition = e.GetPosition(this);
-        //    }
-        //}
-        private void Selection_CollectionChanged(object sender, EventArgs e)
+        private readonly byte[] closeImage = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEU" +
+            "gAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAL" +
+            "9JREFUaIHt10sOgzAQA1CrJ/WNyk3LDdpNs0G0JDMOZVQ/iRXEYyS+" +
+            "gJmZmZmNWgA8AVCQxXfWXZDVpZVvGxNZ3GQtyW5d1s3Q6ElwJ2e" +
+            "VNAwMHj0JRUZKpkBmrVSkSGTNVCOFRo49FXFcrOeYnyI+F/y271KI/aIlyj" +
+            "dE4fINcWL5mzqwOqLwJUQUvomJwo9RovCLjCj8KREpFFkzRaZIZq2EooAiI" +
+            "2zmL+VD0nBwMC+SFRqsGKjMMjMzM/srL6TW4v8zOk00AAAAAElFTkSuQmCC");
+        private void SelectFeature(Feature feature, Point point)
         {
-            //if (Selection.SelectedFeatures.Count > 0)
-            //{
-            //    Layer selectionLayer = Selection.SelectedFeatures.First().FeatureTable.Layer;
-            //    if (selectionLayer != Layers.Selected.Layer)
-            //    {
-            //        Layers.Selected = Layers.FirstOrDefault(p => (p as MapLayerInfo).Layer == selectionLayer) as MapLayerInfo;
-            //    }
-            //}
+            (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
+            (feature.FeatureTable.Layer as FeatureLayer).SelectFeature(feature);
+            CalloutDefinition cd = new CalloutDefinition(feature)
+            {
+                DetailText = BuildCalloutText(feature),
+                Text = feature.FeatureTable.Layer.Name,
+                ButtonImage = new RuntimeImage(closeImage)
+            };
+            cd.OnButtonClick = a =>
+            {
+                ClearSelection();
+            };
+            ShowCalloutForGeoElement(feature, point, cd);
+            selectedFeature = feature;
         }
+
     }
 }

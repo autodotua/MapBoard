@@ -38,6 +38,7 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+		<None Remove="Resources\Images\btn_clear.svg" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
