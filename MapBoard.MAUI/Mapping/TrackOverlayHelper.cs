@@ -52,15 +52,7 @@ namespace MapBoard.Mapping
             firstPoint = null;
         }
 
-        public Polyline LoadLine(IEnumerable<MapPoint> points)
-        {
-            Clear();
-            Polyline line = new Polyline(points, SpatialReferences.Wgs84);
-            Overlay.Graphics.Add(new Graphic(line));
-            return line;
-        }
-
-        public async Task<Envelope> LoadColoredLineAsync(GpxTrack gpx)
+        public async Task<Envelope> LoadColoredGpxAsync(GpxTrack gpx)
         {
             Clear();
             //var maxSpeed = gpx.GetMaxSpeedAsync();
@@ -68,8 +60,8 @@ namespace MapBoard.Mapping
             var speeds = await GpxSpeedAnalysis.GetSpeedsAsync(points, 3);
             var orderedSpeeds = speeds.Select(p => p.Speed).OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
-            int maxIndex = Math.Max(1, (int)(speedsCount * 0.95));
-            int minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.05));
+            int maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上线
+            int minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下线
             double maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
             for (int i = 2; i < points.Count; i++)
             {
@@ -87,6 +79,14 @@ namespace MapBoard.Mapping
                 Overlay.Graphics.Add(graphic);
             }
             return Overlay.Extent;
+        }
+
+        public Polyline LoadLine(IEnumerable<MapPoint> points)
+        {
+            Clear();
+            Polyline line = new Polyline(points, SpatialReferences.Wgs84);
+            Overlay.Graphics.Add(new Graphic(line));
+            return line;
         }
 
         private Color InterpolateColors(Color[] colors, double p)

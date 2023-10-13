@@ -68,7 +68,7 @@ public partial class TrackView : ContentView, ISidePanel
             Gpx gpx = await Gpx.FromFileAsync(path);
 
             var overlay = MainMapView.Current.TrackOverlay;
-            var extent = await overlay.LoadColoredLineAsync(gpx.Tracks[0]);
+            var extent = await overlay.LoadColoredGpxAsync(gpx.Tracks[0]);
             MainPage.Current.ClosePanel<TrackView>();
             await MainMapView.Current.ZoomToGeometryAsync(extent);
         }

@@ -13,6 +13,7 @@ using MapBoard.ViewModels;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using Application = Microsoft.Maui.Controls.Application;
+using Switch = Microsoft.Maui.Controls.Switch;
 
 namespace MapBoard.Views;
 
@@ -21,11 +22,11 @@ public partial class BaseLayerView : ContentView, ISidePanel
     public BaseLayerView()
     {
         InitializeComponent();
-
     }
 
     public void OnPanelClosed()
     {
+        (BindingContext as BaseLayerViewViewModel).Save();
     }
 
     public void OnPanelOpening()
@@ -111,7 +112,6 @@ public partial class BaseLayerView : ContentView, ISidePanel
                 Type = BaseLayerType.WebTiledLayer
             };
             (BindingContext as BaseLayerViewViewModel).BaseLayers.Insert(0, baseLayer);
-            (BindingContext as BaseLayerViewViewModel).Save();
             await MapViewHelper.AddLayerAsync(MainMapView.Current.Map.Basemap, baseLayer, true);
         }
         catch (Exception ex)
@@ -129,17 +129,6 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     }
 
-    private void DeleteSwipeItem_Clicked(object sender, EventArgs e)
-    {
-        var view = sender as SwipeItem;
-        if (view.BindingContext is BaseLayerInfo baseLayer)
-        {
-            (BindingContext as BaseLayerViewViewModel).BaseLayers.Remove(baseLayer);
-            (BindingContext as BaseLayerViewViewModel).Save();
-            var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.First(p => p.Name == baseLayer.Name);
-            MainMapView.Current.Map.Basemap.BaseLayers.Remove(esriBaseLayer);
-        }
-    }
 
     private async Task ModifyLayerAsync(BaseLayerInfo baseLayer, string name, string url)
     {
@@ -165,10 +154,32 @@ public partial class BaseLayerView : ContentView, ISidePanel
         }
     }
 
-    private void ModifySwipeItem_Clicked(object sender, EventArgs e)
+
+    private void LayerVisibleSwitch_Toggled(object sender, ToggledEventArgs e)
     {
-        var view = sender as SwipeItem;
+        var view = sender as Switch;
         if (view.BindingContext is BaseLayerInfo baseLayer)
+        {
+            var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.First(p => p.Name == baseLayer.Name);
+            esriBaseLayer.IsVisible = baseLayer.Visible;
+        }
+
+    }
+
+    private async void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var baseLayer = e.Item as BaseLayerInfo;
+
+        string deleteText = "删除";
+        string modifyText = "修改";
+        var result = await MainPage.Current.DisplayActionSheet("底图操作", "取消", null,deleteText, modifyText);
+        if(result== deleteText)
+        {
+            (BindingContext as BaseLayerViewViewModel).BaseLayers.Remove(baseLayer);
+            var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.First(p => p.Name == baseLayer.Name);
+            MainMapView.Current.Map.Basemap.BaseLayers.Remove(esriBaseLayer);
+        }
+        else if(result== modifyText)
         {
 #if ANDROID
             ShowAndroidDialog(true, baseLayer);

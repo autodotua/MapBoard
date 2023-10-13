@@ -264,7 +264,7 @@ namespace MapBoard.Views
                     break;
             }
             type2SidePanels[type].IsOpened = false;
-            if (type2SidePanels[type].Container is ISidePanel s)
+            if (type2SidePanels[type].Content is ISidePanel s)
             {
                 s.OnPanelClosed();
             }

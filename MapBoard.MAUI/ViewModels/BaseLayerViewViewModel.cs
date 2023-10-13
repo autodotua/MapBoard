@@ -17,7 +17,7 @@ namespace MapBoard.ViewModels
             Config.Instance.Save();
         }
 
-        public ObservableCollection<BaseLayerInfo> BaseLayers { get; set; } = new ObservableCollection<BaseLayerInfo>();
+        public ObservableCollection<BaseLayerInfo> BaseLayers { get; set; } 
 
         public event PropertyChangedEventHandler PropertyChanged;
     }
