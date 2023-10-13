@@ -263,38 +263,75 @@ namespace MapBoard.Mapping
             ClearSelection();
             try
             {
-                var result = Layers.Selected == null ? null : await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false, 1);
-                if (result != null && result.GeoElements.Count > 0)
+                if (!await TapToSelectOverlayAsync(e))
                 {
-                    SelectFeature(result.GeoElements[0] as Feature, e.Position);
-                }
-                else
-                {
-                    IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
-                    if (results.Any())
-                    {
-                        if (results.Select(p => p.LayerContent)
-                            .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
-                            .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
-                        {
-                            results = results
-                            .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
-                            //下面三条语句用于寻找各图层中最近的那个
-                            var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
-                            var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
-                            var index = distances.IndexOf(distances.Min());
-                            SelectFeature(features[index], e.Position);
-                        }
-                        else //如果只有面，那么随便选
-                        {
-                            SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
-                        }
-                    }
+                    await TapToSelectFeatureAsync(e);
                 }
             }
             catch (Exception ex)
             {
                 await MainPage.Current.DisplayAlert("选取失败", ex.Message, "确定");
+            }
+        }
+
+        private async Task<bool> TapToSelectOverlayAsync(GeoViewInputEventArgs e)
+        {
+            var result = await IdentifyGraphicsOverlayAsync(TrackOverlay.Overlay, e.Position, 10, false, 1);
+            if (result != null && result.Graphics.Count > 0)
+            {
+                var graphic = result.Graphics[0];
+                if (graphic.Attributes.Count == 0)
+                {
+                    return false;
+                }
+                var time = (DateTime)graphic.Attributes["Time"];
+                var speed = (double)graphic.Attributes["Speed"];
+                var timeString = time.ToString("HH:mm:ss");
+                var speedString = $"{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
+                CalloutDefinition cd = new CalloutDefinition(graphic)
+                {
+                    Text = timeString,
+                    DetailText = speedString,
+                    ButtonImage = new RuntimeImage(closeImage)
+                };
+                cd.OnButtonClick = a =>
+                {
+                    ClearSelection();
+                };
+                ShowCalloutForGeoElement(graphic, e.Position, cd);
+                return true;
+            }
+            return false;
+        }
+        private async Task TapToSelectFeatureAsync(GeoViewInputEventArgs e)
+        {
+            var result = Layers.Selected == null ? null : await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false, 1);
+            if (result != null && result.GeoElements.Count > 0)
+            {
+                SelectFeature(result.GeoElements[0] as Feature, e.Position);
+            }
+            else
+            {
+                IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
+                if (results.Any())
+                {
+                    if (results.Select(p => p.LayerContent)
+                        .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
+                        .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
+                    {
+                        results = results
+                        .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
+                        //下面三条语句用于寻找各图层中最近的那个
+                        var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
+                        var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
+                        var index = distances.IndexOf(distances.Min());
+                        SelectFeature(features[index], e.Position);
+                    }
+                    else //如果只有面，那么随便选
+                    {
+                        SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
+                    }
+                }
             }
         }
 

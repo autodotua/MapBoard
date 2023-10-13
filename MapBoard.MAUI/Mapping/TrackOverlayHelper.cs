@@ -23,17 +23,18 @@ namespace MapBoard.Mapping
 
         public GraphicsOverlay Overlay { get; }
 
-        public void AddPoint(double x, double y)
+        public void AddPoint(double x, double y, DateTime time, double speed)
         {
             MapPoint thisPoint = new MapPoint(x, y);
+            Polyline line = null;
             if (firstPoint == null) //第一个点
             {
                 firstPoint = thisPoint;
+                return;
             }
             else if (Overlay.Graphics.Count == 0) //第二个点
             {
-                Polyline line = new Polyline(new MapPoint[] { firstPoint, thisPoint }, SpatialReferences.Wgs84);
-                Overlay.Graphics.Add(new Graphic(line));
+                line = new Polyline(new MapPoint[] { firstPoint, thisPoint }, SpatialReferences.Wgs84);
             }
             else //第三个及以上的点
             {
@@ -42,9 +43,12 @@ namespace MapBoard.Mapping
                 var lastLine = Overlay.Graphics[^1].Geometry as Polyline;
                 var lastPoint = lastLine.Parts[0].Points[^1];
                 var lastLastPoint = lastLine.Parts[0].Points[^2];
-                Polyline line = new Polyline(new MapPoint[] { lastLastPoint, lastPoint, thisPoint }, SpatialReferences.Wgs84);
-                Overlay.Graphics.Add(new Graphic(line));
+                line = new Polyline(new MapPoint[] { lastLastPoint, lastPoint, thisPoint }, SpatialReferences.Wgs84);
             }
+            Graphic graphic = new Graphic(line);
+            graphic.Attributes.Add("Speed", speed);
+            graphic.Attributes.Add("Time", time);
+            Overlay.Graphics.Add(graphic);
         }
 
         public void Clear()
@@ -53,11 +57,13 @@ namespace MapBoard.Mapping
             firstPoint = null;
         }
 
-        public async Task<Envelope> LoadColoredGpxAsync(GpxTrack gpx)
+        public string GpxFile { get; private set; }
+
+        public async Task<Envelope> LoadColoredGpxAsync(Gpx gpx)
         {
             Clear();
-            //var maxSpeed = gpx.GetMaxSpeedAsync();
-            var points = gpx.Points;
+            GpxFile = gpx.FilePath;
+            var points = gpx.Tracks[0].Points;
             var speeds = (await GpxSpeedAnalysis.GetSpeedsAsync(points, 3)).ToList();
             var orderedSpeeds = speeds.Select(p => p.Speed).OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
@@ -72,10 +78,10 @@ namespace MapBoard.Mapping
 
                 //如果两个点距离>300m，速度>1m/s，那么认为信号断连，p1p2之间的连线不显示
                 double p1p2Distance = GeometryUtility.GetDistance(p1, p2);
-                if(p1p2Distance>300 && (points[i - 1].Time.Value - points[i - 1].Time.Value).TotalSeconds < 300)
+                if (p1p2Distance > 300 && (points[i - 1].Time.Value - points[i - 1].Time.Value).TotalSeconds < 300)
                 {
                     //还需要删去上一条线
-                    if(Overlay.Graphics.Count>0)
+                    if (Overlay.Graphics.Count > 0)
                     {
                         Overlay.Graphics.RemoveAt(Overlay.Graphics.Count - 1);
                     }
@@ -88,13 +94,15 @@ namespace MapBoard.Mapping
                     continue;
                 }
                 var speed = speeds[i - 2].Speed;
-                Polyline line = new Polyline([p1, p2, p3 ]);
+                Polyline line = new Polyline([p1, p2, p3]);
                 double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
                 var color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
                 Graphic graphic = new Graphic(line)
                 {
                     Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, color, 6)
                 };
+                graphic.Attributes.Add("Speed", speed);
+                graphic.Attributes.Add("Time", points[i - 1].Time);
                 Overlay.Graphics.Add(graphic);
             }
 

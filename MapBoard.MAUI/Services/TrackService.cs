@@ -213,7 +213,7 @@ namespace MapBoard.Services
                     if (PointsCount == 0 || distance > MinDistance)
                     {
                         TotalDistance += distance;
-                        Overlay.AddPoint(location.Longitude, location.Latitude);
+                        Overlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d);
                         UpdateGpx(location);
                         LastLocation = location;
                         PointsCount++;
@@ -232,7 +232,7 @@ namespace MapBoard.Services
 
         public void Stop()
         {
-            if(!running)
+            if (!running)
             {
                 return;
             }
@@ -246,7 +246,7 @@ namespace MapBoard.Services
                     GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath()));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
