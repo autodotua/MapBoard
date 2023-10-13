@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
     xmlns:esri="http://schemas.esri.com/arcgis/runtime/2013"
+    xmlns:et="clr-namespace:Esri.ArcGISRuntime.Toolkit.Maui;assembly=Esri.ArcGISRuntime.Toolkit.Maui"
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
@@ -13,11 +14,31 @@
         <Grid IsClippedToBounds="True">
             <map:MainMapView x:Name="map" />
         </Grid>
+        <et:Compass
+            Margin="8,42"
+            GeoView="{Binding Source={x:Reference map}, Path=.}"
+            HorizontalOptions="End"
+            VerticalOptions="Start" />
+        <et:ScaleLine
+            Margin="24,8"
+            HorizontalOptions="End"
+            MapView="{Binding Source={x:Reference map}, Path=.}"
+            TargetWidth="48"
+            VerticalOptions="End"
+            Color="White">
+            <et:ScaleLine.Shadow>
+                <Shadow
+                    Brush="Black"
+                    Opacity="1"
+                    Radius="5" />
+            </et:ScaleLine.Shadow>
+
+        </et:ScaleLine>
 
         <!--  右侧按钮  -->
         <VerticalStackLayout
             x:Name="grdSide"
-            Margin="8,0,8,56"
+            Margin="8,0,8,72"
             HorizontalOptions="End"
             Spacing="8"
             VerticalOptions="End">
@@ -31,6 +52,9 @@
                     <Setter Property="HeightRequest" Value="42" />
                 </Style>
             </VerticalStackLayout.Resources>
+            <!--<Button
+                Clicked="TestButton_Click"
+                Text="T" />-->
             <ImageButton
                 x:Name="btnZoomIn"
                 Clicked="ZoomInButton_Click"
@@ -47,9 +71,6 @@
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
                 Source="btn_location.png" />
-            <Button
-                Clicked="TestButton_Click"
-                Text="T" />
         </VerticalStackLayout>
     </Grid>
 </ContentView>
