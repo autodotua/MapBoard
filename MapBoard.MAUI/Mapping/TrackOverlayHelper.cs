@@ -2,6 +2,7 @@
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using MapBoard.IO.Gpx;
+using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace MapBoard.Mapping
             Clear();
             //var maxSpeed = gpx.GetMaxSpeedAsync();
             var points = gpx.Points;
-            var speeds = await GpxSpeedAnalysis.GetSpeedsAsync(points, 3);
+            var speeds = (await GpxSpeedAnalysis.GetSpeedsAsync(points, 3)).ToList();
             var orderedSpeeds = speeds.Select(p => p.Speed).OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
             int maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上线
@@ -65,11 +66,29 @@ namespace MapBoard.Mapping
             double maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
             for (int i = 2; i < points.Count; i++)
             {
-                MapPoint p1 = new MapPoint(points[i - 2].X, points[i - 2].Y);
-                MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y);
-                MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y);
+                MapPoint p1 = new MapPoint(points[i - 2].X, points[i - 2].Y, SpatialReferences.Wgs84);
+                MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y, SpatialReferences.Wgs84);
+                MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y, SpatialReferences.Wgs84);
+
+                //如果两个点距离>300m，速度>1m/s，那么认为信号断连，p1p2之间的连线不显示
+                double p1p2Distance = GeometryUtility.GetDistance(p1, p2);
+                if(p1p2Distance>300 && (points[i - 1].Time.Value - points[i - 1].Time.Value).TotalSeconds < 300)
+                {
+                    //还需要删去上一条线
+                    if(Overlay.Graphics.Count>0)
+                    {
+                        Overlay.Graphics.RemoveAt(Overlay.Graphics.Count - 1);
+                    }
+                    Polyline dashLine = new Polyline([p1, p2]);
+                    Graphic dashGraphic = new Graphic(dashLine)
+                    {
+                        Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.LightGray, 6)
+                    };
+                    Overlay.Graphics.Add(dashGraphic);
+                    continue;
+                }
                 var speed = speeds[i - 2].Speed;
-                Polyline line = new Polyline(new MapPoint[] { p1, p2, p3 }, SpatialReferences.Wgs84);
+                Polyline line = new Polyline([p1, p2, p3 ]);
                 double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
                 var color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
                 Graphic graphic = new Graphic(line)
@@ -78,6 +97,28 @@ namespace MapBoard.Mapping
                 };
                 Overlay.Graphics.Add(graphic);
             }
+
+
+            //把速度值进行首尾填充，使其数量和点数相同
+            //speeds.Insert(0, speeds[0]);
+            //speeds.Add(speeds[^1]);
+            //for (int i=1;i<points.Count;i++)
+            //{
+            //    MapPoint p1 = new MapPoint(points[i - 1].X, points[i - 1].Y,SpatialReferences.Wgs84);
+            //    MapPoint p2 = new MapPoint(points[i - 0].X, points[i - 0].Y, SpatialReferences.Wgs84);
+            //    var speed = 0.5 * (speeds[i].Speed + speeds[i - 1].Speed);
+            //    Polyline line = new Polyline(new MapPoint[] { p1, p2 }, SpatialReferences.Wgs84);
+            //    double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
+            //    var color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
+            //    Graphic graphic = new Graphic(line)
+            //    {
+            //        Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, color, 6)
+            //    };
+            //    Overlay.Graphics.Add(graphic);
+
+
+
+            //}
             return Overlay.Extent;
         }
 

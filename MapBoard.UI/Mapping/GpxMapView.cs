@@ -318,7 +318,7 @@ namespace MapBoard.Mapping
 
                 MapPoint point = new MapPoint(p.X, p.Y, (p.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
 
-                //如果前后两个点离得太远了，那么久不连接
+                //如果前后两个点离得太远了，那么就不连接
                 if (lastPoint != null && GeometryUtility.GetDistance(point, lastPoint) > Config.Instance.Gpx_MaxAcceptablePointDistance)
                 {
                     subMapPoints = new List<MapPoint>();
