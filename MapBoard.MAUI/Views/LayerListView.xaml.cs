@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
@@ -39,10 +40,10 @@ public partial class LayerListView : ContentView, ISidePanel
 
     private void Layers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        //if (!MainMapView.Current.Layers.IsBatchLoading)
-        //{
-        //    (BindingContext as LayerViewViewModel).Update();
-        //}
+        if (!MainMapView.Current.Layers.IsBatchLoading)
+        {
+            (BindingContext as LayerViewViewModel).Update();
+        }
     }
 
     private void MapView_MapLoaded(object sender, EventArgs e)
@@ -96,11 +97,7 @@ public partial class LayerListView : ContentView, ISidePanel
     private async void lvwLevel_ItemTapped(object sender, ItemTappedEventArgs e)
     {
         var layer = e.Item as IMapLayerInfo;
-        string deleteString = "ÒÆ³ý";
-        string result = await MainPage.Current.DisplayActionSheet("Í¼²ã²Ù×÷", "È¡Ïû", null, deleteString);
-        if (result == deleteString)
-        {
-            MainMapView.Current.Layers.Remove(layer);
-        }
+        LayerStylePopup p = new LayerStylePopup(layer);
+        await MainPage.Current.ShowPopupAsync(p);
     }
 }

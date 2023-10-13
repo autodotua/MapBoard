@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Maui;
+﻿using CommunityToolkit.Maui;
+using Esri.ArcGISRuntime.Maui;
 using Esri.ArcGISRuntime.Toolkit.Maui;
 using FubarDev.FtpServer;
 using FubarDev.FtpServer.FileSystem.DotNet;
@@ -14,9 +15,9 @@ namespace MapBoard
     {
         public static MauiApp CreateMauiApp()
         {
-            var builder = MauiApp.CreateBuilder();
-            builder
+            var builder = MauiApp.CreateBuilder()
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureLifecycleEvents(events =>
                 {
 #if ANDROID
@@ -36,6 +37,12 @@ namespace MapBoard
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .UseMauiCommunityToolkit(options =>
+                {
+                    options.SetShouldSuppressExceptionsInConverters(false);
+                    options.SetShouldSuppressExceptionsInBehaviors(false);
+                    options.SetShouldSuppressExceptionsInAnimations(false);
                 })
                 .UseArcGISRuntime()
                 .UseArcGISToolkit();
