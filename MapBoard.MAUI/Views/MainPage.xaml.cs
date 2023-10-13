@@ -75,42 +75,47 @@ namespace MapBoard.Views
                 {
                     Type = typeof(LayerListView),
                     Direction = SwipeDirection.Left,
-                    Instance = layer,
+                    Container = layer,
+                    Content=layerView,
                     Length = 300,
                 },
                 new SidePanelInfo
                 {
                     Type = typeof(TrackView),
                     Direction = SwipeDirection.Left,
-                    Instance = track,
+                    Container = track,
+                    Content=trackView,
                     Length = 300,
                 },
                 new SidePanelInfo
                 {
                     Type = typeof(FtpView),
                     Direction = SwipeDirection.Left,
-                    Instance = ftp,
+                    Container = ftp,
+                    Content=ftpView,
                     Length = 300,
                 },
                 new SidePanelInfo
                 {
                     Type = typeof(BaseLayerView),
                     Direction = SwipeDirection.Left,
-                    Instance = baseLayer,
+                    Container = baseLayer,
+                    Content = baseLayerView,
                     Length = 300,
                 },
                 new SidePanelInfo
                 {
                     Type = typeof(ImportView),
                     Direction = SwipeDirection.Left,
-                    Instance = import,
+                    Container = import,
+                    Content= importView,
                     Length = 300,
                 },
                 new SidePanelInfo
                 {
                     Type = typeof(TrackingBar),
                     Direction = SwipeDirection.Up,
-                    Instance = tbar,
+                    Container = tbar,
                     Length = 96,
                     Standalone = true,
                 },
@@ -122,20 +127,20 @@ namespace MapBoard.Views
                 switch (panel.Direction)
                 {
                     case SwipeDirection.Right:
-                        panel.Instance.WidthRequest = panel.Length;
-                        panel.Instance.TranslationX = panel.Length;
+                        panel.Container.WidthRequest = panel.Length;
+                        panel.Container.TranslationX = panel.Length;
                         break;
                     case SwipeDirection.Left:
-                        panel.Instance.WidthRequest = panel.Length;
-                        panel.Instance.TranslationX = -panel.Length;
+                        panel.Container.WidthRequest = panel.Length;
+                        panel.Container.TranslationX = -panel.Length;
                         break;
                     case SwipeDirection.Up:
-                        panel.Instance.HeightRequest = panel.Length;
-                        panel.Instance.TranslationY = -panel.Length;
+                        panel.Container.HeightRequest = panel.Length;
+                        panel.Container.TranslationY = -panel.Length;
                         break;
                     case SwipeDirection.Down:
-                        panel.Instance.HeightRequest = panel.Length;
-                        panel.Instance.TranslationY = panel.Length;
+                        panel.Container.HeightRequest = panel.Length;
+                        panel.Container.TranslationY = panel.Length;
                         break;
                     default:
                         break;
@@ -220,7 +225,11 @@ namespace MapBoard.Views
         {
             var type = typeof(T);
             CloseAllPanel();
-            type2SidePanels[type].Instance.TranslateTo(0, 0);
+            if (type2SidePanels[type].Content is ISidePanel s)
+            {
+                s.OnPanelOpening();
+            }
+            type2SidePanels[type].Container.TranslateTo(0, 0);
             type2SidePanels[type].IsOpened = true;
         }
 
@@ -242,19 +251,23 @@ namespace MapBoard.Views
             switch (panel.Direction)
             {
                 case SwipeDirection.Right:
-                    panel.Instance.TranslateTo(panel.Length, 0);
+                    panel.Container.TranslateTo(panel.Length, 0);
                     break;
                 case SwipeDirection.Left:
-                    panel.Instance.TranslateTo(-panel.Length, 0);
+                    panel.Container.TranslateTo(-panel.Length, 0);
                     break;
                 case SwipeDirection.Up:
-                    panel.Instance.TranslateTo(0, -panel.Length);
+                    panel.Container.TranslateTo(0, -panel.Length);
                     break;
                 case SwipeDirection.Down:
-                    panel.Instance.TranslateTo(0, panel.Length);
+                    panel.Container.TranslateTo(0, panel.Length);
                     break;
             }
             type2SidePanels[type].IsOpened = false;
+            if (type2SidePanels[type].Container is ISidePanel s)
+            {
+                s.OnPanelClosed();
+            }
         }
 
         private async void ContentPage_Loaded(object sender, EventArgs e)

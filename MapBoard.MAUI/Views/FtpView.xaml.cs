@@ -7,21 +7,12 @@ using System.Linq;
 
 namespace MapBoard.Views;
 
-public partial class FtpView : ContentView
+public partial class FtpView : ContentView, ISidePanel
 {
     FtpService ftpService;
     public FtpView()
     {
-        var ip = FtpService.GetIpAddress();
-        if (ip == null || !ip.Any())
-        {
-            ip = null;
-        }
-        BindingContext = new FtpViewViewModel()
-        {
-            IP = ip == null ? "δ֪" : string.Join(Environment.NewLine, ip),
-            IsOn = false,
-        };
+        BindingContext = new FtpViewViewModel();
         InitializeComponent();
         if (DeviceInfo.Platform == DevicePlatform.WinUI)
         {
@@ -90,5 +81,19 @@ public partial class FtpView : ContentView
         }
         string dir = GetSelectedDir();
         Process.Start("explorer.exe", dir);
+    }
+
+    public void OnPanelOpening()
+    {
+        var ip = FtpService.GetIpAddress();
+        if (ip == null || !ip.Any())
+        {
+            ip = null;
+        }
+        (BindingContext as FtpViewViewModel).IP = ip == null ? "δ֪" : string.Join(Environment.NewLine, ip);
+    }
+
+    public void OnPanelClosed()
+    {
     }
 }

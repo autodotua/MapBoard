@@ -194,7 +194,7 @@ namespace MapBoard.Mapping
                     }
                     break;
                 case GeometryType.Polygon:
-                    double area = (feature.Geometry as Polygon).GetLength();
+                    double area = (feature.Geometry as Polygon).GetArea();
                     if (area < 1_000_000)
                     {
                         attrStr.AppendLine($"{area:0.0} m²");

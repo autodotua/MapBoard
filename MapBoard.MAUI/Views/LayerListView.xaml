@@ -68,15 +68,6 @@
             </ListView.GroupHeaderTemplate>
         </ListView>
 
-        <!--<ListView
-            x:Name="lvwGroup"
-            Grid.Row="2"
-            GroupDisplayBinding="{Binding Name}"
-            IsGroupingEnabled="True"
-            IsVisible="False"
-            ItemTemplate="{StaticResource LayerListDataTemplate}"
-            ItemsSource="{Binding Groups}"
-            SelectionMode="Single" />-->
 
     </Grid>
 </ContentView>

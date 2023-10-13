@@ -8,7 +8,7 @@ namespace MapBoard.ViewModels
     {
         public BaseLayerViewViewModel()
         {
-            BaseLayers = new ObservableCollection<BaseLayerInfo>(Config.Instance.BaseLayers); ;
+            BaseLayers = new ObservableCollection<BaseLayerInfo>(Config.Instance.BaseLayers); 
         }
 
         public void Save()

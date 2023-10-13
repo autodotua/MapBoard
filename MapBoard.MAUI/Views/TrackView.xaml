@@ -178,6 +178,7 @@
             x:Name="lblLoadGpx"
             Grid.Row="4"
             HorizontalOptions="Center"
+            Style="{StaticResource LinkedLabelStyle}"
             Text="加载其他GPX文件">
             <Label.GestureRecognizers>
                 <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />

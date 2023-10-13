@@ -8,56 +8,11 @@
     xmlns:map="clr-namespace:MapBoard.Mapping"
     xmlns:v="clr-namespace:MapBoard.Views"
     Loaded="ContentPage_Loaded">
-    <ContentView.Resources>
-        <Style
-            x:Key="SideButtonStyle"
-            x:Shared="False"
-            TargetType="{x:Type Button}">
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-            <Setter Property="WidthRequest" Value="42" />
-            <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
-            <Setter Property="HeightRequest" Value="42" />
-        </Style>
-    </ContentView.Resources>
     <Grid x:Name="grdMain">
         <!--  地图  -->
         <Grid IsClippedToBounds="True">
             <map:MainMapView x:Name="map" />
         </Grid>
-        <!--<ImageButton
-            x:Name="btnClearSelection"
-            Margin="8,56,8,8"
-            Clicked="ClearSelectionButton_Click"
-            CornerRadius="4"
-            HorizontalOptions="End"
-            Source="btn_clear.png"
-            Style="{StaticResource SideButtonStyle}"
-            VerticalOptions="Start">
-        -->
-        <!--  有BUG不能使用Resource，否则会报错KeyNotFoundException：The given key 'Microsoft.Maui.Controls.SetterSpecificity' was not present in the dictionary.'  -->
-        <!--
-            <VisualStateManager.VisualStateGroups>
-                <VisualStateGroup>
-                    <VisualState x:Name="Normal">
-                        <VisualState.Setters>
-                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                        <VisualState.Setters>
-                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="PointerOver">
-                        <VisualState.Setters>
-                            <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
-        </ImageButton>-->
-
-
 
         <!--  右侧按钮  -->
         <VerticalStackLayout
@@ -66,86 +21,32 @@
             HorizontalOptions="End"
             Spacing="8"
             VerticalOptions="End">
+            <VerticalStackLayout.Resources>
+                <Style
+                    BasedOn="{StaticResource DefaultImageButtonStyle}"
+                    TargetType="{x:Type ImageButton}">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                    <Setter Property="WidthRequest" Value="42" />
+                    <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
+                    <Setter Property="HeightRequest" Value="42" />
+                </Style>
+            </VerticalStackLayout.Resources>
             <ImageButton
                 x:Name="btnZoomIn"
                 Clicked="ZoomInButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_in.png"
-                Style="{StaticResource SideButtonStyle}">
-                <!--  有BUG不能使用Resource，否则会报错KeyNotFoundException：The given key 'Microsoft.Maui.Controls.SetterSpecificity' was not present in the dictionary.'  -->
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
+                Source="btn_zoom_in.png" />
             <ImageButton
                 x:Name="btnZoomOut"
                 Clicked="ZoomOutButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_out.png"
-                Style="{StaticResource SideButtonStyle}">
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
+                Source="btn_zoom_out.png" />
 
             <ImageButton
                 Margin="0,60,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
-                Source="btn_location.png"
-                Style="{StaticResource SideButtonStyle}">
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ImageButton>
+                Source="btn_location.png" />
             <Button
                 Clicked="TestButton_Click"
                 Text="T" />

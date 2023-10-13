@@ -9,27 +9,26 @@ using System.Linq;
 
 namespace MapBoard.Views;
 
-public partial class ImportView : ContentView
+public partial class ImportView : ContentView, ISidePanel
 {
     public ImportView()
     {
-        BindingContext = new ImportViewVideModel()
-        {
-
-        };
+        BindingContext = new ImportViewVideModel();
         InitializeComponent();
 
     }
 
-    private async void ContentView_Loaded(object sender, EventArgs e)
+    public void OnPanelClosed()
+    {
+    }
+
+    public async void OnPanelOpening()
     {
         await (BindingContext as ImportViewVideModel).LoadFilesAsync();
     }
 
-    private async void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
+    private void ContentView_Loaded(object sender, EventArgs e)
     {
-        var file = e.Item as SimpleFile;
-        await ImportAsync(file.FullName);
     }
 
     private async Task ImportAsync(string file)
@@ -66,5 +65,11 @@ public partial class ImportView : ContentView
         {
             await ImportAsync(file.FullPath);
         }
+    }
+
+    private async void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var file = e.Item as SimpleFile;
+        await ImportAsync(file.FullName);
     }
 }

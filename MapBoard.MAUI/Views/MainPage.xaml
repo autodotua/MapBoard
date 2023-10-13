@@ -29,7 +29,9 @@
                 FontAttributes="Bold"
                 FontSize="Title"
                 Text="轨迹记录" />
-            <v:TrackView Grid.Row="2" />
+            <v:TrackView
+                x:Name="trackView"
+                Grid.Row="2" />
         </Grid>
         <Grid
             x:Name="ftp"
@@ -43,7 +45,9 @@
                 FontAttributes="Bold"
                 FontSize="Title"
                 Text="文件管理" />
-            <v:FtpView Grid.Row="2" />
+            <v:FtpView
+                x:Name="ftpView"
+                Grid.Row="2" />
         </Grid>
 
         <Grid
@@ -60,6 +64,7 @@
                     Text="图层" />
                 <Label
                     Margin="24,0,0,0"
+                    Style="{StaticResource LinkedLabelStyle}"
                     Text="设置底图"
                     VerticalOptions="Center">
                     <Label.GestureRecognizers>
@@ -69,7 +74,7 @@
             </HorizontalStackLayout>
 
             <v:LayerListView
-                x:Name="layerList"
+                x:Name="layerView"
                 Grid.Row="2" />
         </Grid>
         <Grid
@@ -84,7 +89,9 @@
                 FontAttributes="Bold"
                 FontSize="Title"
                 Text="底图" />
-            <v:BaseLayerView Grid.Row="2" />
+            <v:BaseLayerView
+                x:Name="baseLayerView"
+                Grid.Row="2" />
         </Grid>
         <Grid
             x:Name="import"
@@ -99,7 +106,9 @@
                 FontSize="Title"
                 Text="加载地图包" />
 
-            <v:ImportView Grid.Row="2" />
+            <v:ImportView
+                x:Name="importView"
+                Grid.Row="2" />
         </Grid>
 
 
@@ -119,157 +128,37 @@
                 ColumnDefinitions="*,*,*,*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
-
-                    <Style TargetType="{x:Type ImageButton}">
+                    <Style
+                        BasedOn="{StaticResource DefaultImageButtonStyle}"
+                        TargetType="{x:Type ImageButton}">
                         <Setter Property="CornerRadius" Value="2" />
-                        <!--  设置了Padding后，一点击，又回到原样了  -->
-                        <!--<Setter Property="Padding" Value="8" />-->
                     </Style>
                 </Grid.Resources>
                 <ImageButton
                     Grid.Column="0"
                     Clicked="ImportButton_Clicked"
-                    Source="btn_import.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_import.png" />
                 <ImageButton
                     Grid.Column="1"
+                    Padding="4"
                     Clicked="FtpButton_Clicked"
-                    Source="btn_ftp.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_ftp.png" />
                 <ImageButton
                     Grid.Column="2"
                     Clicked="RefreshButton_Clicked"
-                    Source="btn_refresh.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_refresh.png" />
                 <ImageButton
                     Grid.Column="3"
                     Clicked="TrackButton_Clicked"
-                    Source="btn_track.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_track.png" />
                 <ImageButton
                     Grid.Column="4"
                     Clicked="ZoomToLayerButton_Click"
-                    Source="btn_zoom_to_layer.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_zoom_to_layer.png" />
                 <ImageButton
                     Grid.Column="5"
                     Clicked="LayerButton_Click"
-                    Source="btn_layers.png">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup>
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ImageButton>
+                    Source="btn_layers.png" />
 
             </Grid>
         </Border>

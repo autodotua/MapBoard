@@ -14,35 +14,6 @@
             <c:KbConverter x:Key="KbConverter" />
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
             <c:NotNullConverter x:Key="NotNullConverter" />
-
-            <Style TargetType="{x:Type Button}">
-                <!--  规避临时BUG：https://github.com/dotnet/maui/issues/17642  -->
-                <Setter Property="BackgroundColor" Value="{x:Null}" />
-            </Style>
-
-            <Style TargetType="{x:Type ImageButton}">
-                <Setter Property="BackgroundColor" Value="{x:Null}" />
-            </Style>
-            <VisualStateGroup
-                x:Key="GrayButtonVisualState"
-                x:DataType="{x:Type Button}"
-                x:Shared="False">
-                <VisualState x:Name="Normal">
-                    <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Pressed">
-                    <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray400}, Dark={DynamicResource Gray600}}" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="PointerOver">
-                    <VisualState.Setters>
-                        <Setter Property="Button.BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray300}, Dark={DynamicResource Gray500}}" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

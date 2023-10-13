@@ -7,15 +7,24 @@ using System.Diagnostics;
 
 namespace MapBoard.Views;
 
-public partial class LayerListView : ContentView
+public partial class LayerListView : ContentView, ISidePanel
 {
+    private bool isLoaded = false;
+
     public LayerListView()
     {
         InitializeComponent();
         BindingContext = new LayerViewViewModel();
 
     }
-    private bool isLoaded = false;
+    public void OnPanelClosed()
+    {
+    }
+
+    public void OnPanelOpening()
+    {
+    }
+
     private void ContentView_Loaded(object sender, EventArgs e)
     {
         if (isLoaded)
@@ -59,7 +68,7 @@ public partial class LayerListView : ContentView
         var layers = MainMapView.Current.Layers;
         (BindingContext as LayerViewViewModel).Layers = layers;
         (BindingContext as LayerViewViewModel).Update();
-        if (false&&Config.Instance.LastLayerListGroupType == 0)
+        if (false && Config.Instance.LastLayerListGroupType == 0)
         {
             rbtnByLevel.IsChecked = true;
         }
@@ -76,7 +85,7 @@ public partial class LayerListView : ContentView
         lvwLevel.SelectedItem = MainMapView.Current.Layers.Selected;
     }
 
-    private  void UpdateListType(bool group)
+    private void UpdateListType(bool group)
     {
         //¥Ê‘⁄‰÷»æŒ Ã‚
         //https://github.com/dotnet/maui/issues/16031

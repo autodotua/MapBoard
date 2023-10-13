@@ -17,7 +17,7 @@ using MapBoard.Models;
 
 namespace MapBoard.Views;
 
-public partial class TrackView : ContentView
+public partial class TrackView : ContentView, ISidePanel
 {
     public TrackView()
     {
@@ -34,9 +34,17 @@ public partial class TrackView : ContentView
         TrackService.GpxSaved += TrackService_GpxSaved;
     }
 
-    private async void ContentPage_Loaded(object sender, EventArgs e)
+    public void OnPanelClosed()
+    {
+    }
+
+    public async void OnPanelOpening()
     {
         await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+    }
+
+    private void ContentPage_Loaded(object sender, EventArgs e)
+    {
         UpdateButtonsVisible(TrackService.Current != null);
     }
 
@@ -73,6 +81,7 @@ public partial class TrackView : ContentView
             IsEnabled = true;
         }
     }
+
     private async void ResumeButton_Clicked(object sender, EventArgs e)
     {
         var gpxs = (BindingContext as TrackViewViewModel).GpxFiles;
@@ -179,6 +188,7 @@ public partial class TrackView : ContentView
             UpdateButtonsVisible(TrackService.Current != null);
         });
     }
+
     private void UpdateButtonsVisible(bool running)
     {
         btnStart.IsVisible = !running;
