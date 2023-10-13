@@ -14,7 +14,7 @@
         RowDefinitions="*,8,Auto">
         <ListView
             ItemsSource="{Binding BaseLayers}"
-            RowHeight="72"
+            RowHeight="72"  
             SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="{x:Type m:BaseLayerInfo}">
@@ -26,6 +26,10 @@
                                         BackgroundColor="Red"
                                         Clicked="DeleteSwipeItem_Clicked"
                                         Text="删除" />
+                                    <SwipeItem
+                                        BackgroundColor="Green"
+                                        Clicked="ModifySwipeItem_Clicked"
+                                        Text="修改" />
                                 </SwipeItems>
                             </SwipeView.LeftItems>
                             <Grid

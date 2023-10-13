@@ -50,11 +50,11 @@ OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
         /// <param name="cache"></param>
         /// <returns></returns>
         /// <exception cref="InvalidEnumArgumentException"></exception>
-        public static Layer GetLayer(BaseLayerInfo baseLayer, bool cache)
+        public static async Task<Layer> AddLayerAsync(Basemap basemap, BaseLayerInfo baseLayer, bool cache = true, int index = -1)
         {
             var type = baseLayer.Type;
             var arg = baseLayer.Path;
-            return type switch
+            Layer layer = type switch
             {
                 BaseLayerType.WebTiledLayer => AddTiledLayer(arg, cache),
                 BaseLayerType.RasterLayer => AddRasterLayer(arg),
@@ -64,6 +64,18 @@ OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
                 BaseLayerType.WmtsLayer => AddWmtsLayer(arg),
                 _ => throw new InvalidEnumArgumentException("未知类型"),
             };
+            layer.Name = baseLayer.Name;
+            await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
+            if (index < 0)
+            {
+                basemap.BaseLayers.Add(layer);
+            }
+            else
+            {
+                basemap.BaseLayers.Insert(index, layer);
+            }
+            baseLayer.ApplyBaseLayerStyles(layer);
+            return layer;
         }
 
 
@@ -102,11 +114,7 @@ OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
                         {
                             throw new IOException("找不到文件：" + item.Path);
                         }
-                        layer = GetLayer(item, cache);
-                        await layer.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
-                        basemap.BaseLayers.Add(layer);
-
-                        item.ApplyBaseLayerStyles(layer);
+                        layer = await AddLayerAsync(basemap, item, cache);
                     }
                     catch (TimeoutException ex)
                     {

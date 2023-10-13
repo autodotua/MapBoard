@@ -53,7 +53,8 @@
             ItemSelected="lvwGroup_ItemSelected"
             ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Layers}"
-            SelectionMode="Single">
+            SelectionMode="Single"
+            SeparatorVisibility="Default">
             <ListView.GroupHeaderTemplate>
                 <DataTemplate x:DataType="{x:Type mmm:GroupInfo}">
                     <ViewCell>
