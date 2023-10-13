@@ -50,11 +50,10 @@
             CachingStrategy="RetainElement"
             GroupDisplayBinding="{Binding Name}"
             GroupShortNameBinding="{Binding Name}"
-            ItemSelected="lvwGroup_ItemSelected"
+            ItemTapped="lvwLevel_ItemTapped"
             ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Layers}"
-            SelectionMode="Single"
-            SeparatorVisibility="Default">
+            SelectionMode="None">
             <ListView.GroupHeaderTemplate>
                 <DataTemplate x:DataType="{x:Type mmm:GroupInfo}">
                     <ViewCell>

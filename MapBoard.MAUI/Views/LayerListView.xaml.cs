@@ -34,33 +34,15 @@ public partial class LayerListView : ContentView, ISidePanel
         isLoaded = true;
         MainMapView.Current.MapLoaded += MapView_MapLoaded;
         MainMapView.Current.Layers.CollectionChanged += Layers_CollectionChanged;
-        MainMapView.Current.Layers.PropertyChanged += Layers_PropertyChanged;
         MapView_MapLoaded(sender, e);
     }
 
     private void Layers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        if (!MainMapView.Current.Layers.IsBatchLoading)
-        {
-            (BindingContext as LayerViewViewModel).Update();
-        }
-    }
-
-    private void Layers_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        //绑定有点问题，只能手动同步Selected
-        if (e.PropertyName == nameof(MapLayerCollection.Selected))
-        {
-            UpdateListSelectedItem();
-        }
-    }
-
-    private void lvwGroup_ItemSelected(object sender, SelectedItemChangedEventArgs e)
-    {
-        if (e.SelectedItemIndex >= 0)
-        {
-            MainMapView.Current.Layers.Selected = e.SelectedItem as IMapLayerInfo;
-        }
+        //if (!MainMapView.Current.Layers.IsBatchLoading)
+        //{
+        //    (BindingContext as LayerViewViewModel).Update();
+        //}
     }
 
     private void MapView_MapLoaded(object sender, EventArgs e)
@@ -76,14 +58,8 @@ public partial class LayerListView : ContentView, ISidePanel
         {
             rbtnByGroup.IsChecked = true;
         }
-        UpdateListSelectedItem();
     }
 
-    private void UpdateListSelectedItem()
-    {
-        lvwLevel.SelectedItem = null;
-        lvwLevel.SelectedItem = MainMapView.Current.Layers.Selected;
-    }
 
     private void UpdateListType(bool group)
     {
@@ -94,7 +70,7 @@ public partial class LayerListView : ContentView, ISidePanel
         lvwLevel.SetBinding(ListView.ItemsSourceProperty, group ? nameof(LayerViewViewModel.Groups) : nameof(LayerViewViewModel.Layers));
         lvwLevel.IsGroupingEnabled = group;
         lvwLevel.EndRefresh();
-        UpdateListSelectedItem();
+        //UpdateListSelectedItem();
         if (lvwLevel.SelectedItem != null)
         {
             lvwLevel.ScrollTo(lvwLevel.SelectedItem, ScrollToPosition.MakeVisible, true);
@@ -114,6 +90,17 @@ public partial class LayerListView : ContentView, ISidePanel
                 Config.Instance.LastLayerListGroupType = id;
             }
 
+        }
+    }
+
+    private async void lvwLevel_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var layer = e.Item as IMapLayerInfo;
+        string deleteString = "移除";
+        string result = await MainPage.Current.DisplayActionSheet("图层操作", "取消", null, deleteString);
+        if (result == deleteString)
+        {
+            MainMapView.Current.Layers.Remove(layer);
         }
     }
 }

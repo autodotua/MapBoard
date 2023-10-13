@@ -288,21 +288,27 @@ namespace MapBoard.Mapping
                 var speed = (double)graphic.Attributes["Speed"];
                 var timeString = time.ToString("HH:mm:ss");
                 var speedString = $"{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
-                CalloutDefinition cd = new CalloutDefinition(graphic)
-                {
-                    Text = timeString,
-                    DetailText = speedString,
-                    ButtonImage = new RuntimeImage(closeImage)
-                };
-                cd.OnButtonClick = a =>
-                {
-                    ClearSelection();
-                };
-                ShowCalloutForGeoElement(graphic, e.Position, cd);
+                ShowCallout(e.Position, graphic, timeString, speedString);
                 return true;
             }
             return false;
         }
+
+        private void ShowCallout(Point point, GeoElement graphic, string text, string detail)
+        {
+            CalloutDefinition cd = new CalloutDefinition(graphic)
+            {
+                Text = text,
+                DetailText = detail,
+                ButtonImage = new RuntimeImage(closeImage),
+                OnButtonClick = a =>
+                {
+                    ClearSelection();
+                }
+            };
+            ShowCalloutForGeoElement(graphic, point, cd);
+        }
+
         private async Task TapToSelectFeatureAsync(GeoViewInputEventArgs e)
         {
             var result = Layers.Selected == null ? null : await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false, 1);
@@ -379,17 +385,7 @@ namespace MapBoard.Mapping
         {
             (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
             (feature.FeatureTable.Layer as FeatureLayer).SelectFeature(feature);
-            CalloutDefinition cd = new CalloutDefinition(feature)
-            {
-                DetailText = BuildCalloutText(feature),
-                Text = feature.FeatureTable.Layer.Name,
-                ButtonImage = new RuntimeImage(closeImage)
-            };
-            cd.OnButtonClick = a =>
-            {
-                ClearSelection();
-            };
-            ShowCalloutForGeoElement(feature, point, cd);
+            ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature));
             selectedFeature = feature;
         }
 

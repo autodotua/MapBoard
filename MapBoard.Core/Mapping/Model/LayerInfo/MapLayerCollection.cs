@@ -308,7 +308,7 @@ namespace MapBoard.Mapping.Model
             EsriLayers.RemoveAt(index);
             EsriLayers.Insert(index, layer.GetLayerForLayerList());
         }
-        public void Remove(MapLayerInfo layer)
+        public void Remove(IMapLayerInfo layer)
         {
             try
             {
