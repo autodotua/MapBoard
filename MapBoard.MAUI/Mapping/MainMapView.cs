@@ -62,7 +62,7 @@ namespace MapBoard.Mapping
 
             InteractionOptions = new MapViewInteractionOptions()
             {
-                IsRotateEnabled = true
+                IsRotateEnabled = Config.Instance.CanRotate
             };
             PropertyChanged += MainMapView_PropertyChanged;
 

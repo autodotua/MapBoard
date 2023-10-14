@@ -45,8 +45,8 @@ public class AndroidTrackService : Service
             TrackService.Stop();
         }
         gnss.Stop();
+        timer.Stop();
         gnss.GnssStatusChanged -= Gnss_GnssStatusChanged;
-        TrackService.LocationChanged -= TrackService_LocationChanged;
         TrackService.CurrentChanged -= TrackService_CurrentChanged;
         TrackService = null;
     }
@@ -57,6 +57,8 @@ public class AndroidTrackService : Service
         return StartCommandResult.NotSticky;
     }
 
+
+
     public void SetTrackServiceAndStart(TrackService trackService)
     {
         if (TrackService != null)
@@ -66,11 +68,29 @@ public class AndroidTrackService : Service
 
         gnss = new AndroidGnssHelper(this);
         TrackService = trackService;
-        TrackService.LocationChanged += TrackService_LocationChanged;
         TrackService.CurrentChanged += TrackService_CurrentChanged;
         gnss.GnssStatusChanged += Gnss_GnssStatusChanged;
         gnss.Start();
         trackService.Start();
+
+        timer = App.Current.Dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += Timer_Tick;
+        timer.Start();
+    }
+
+    IDispatcherTimer timer;
+
+    private void Timer_Tick(object sender, EventArgs e)
+    {
+        notificationBuilder.SetContentTitle(pausing ? "暂停记录轨迹" : "正在记录轨迹");
+
+        notificationBuilder.SetContentText($"用时{DateTime.Now - TrackService.StartTime:hh':'mm':'ss}，总长度{TrackService.TotalDistance:0}米");
+
+        if (GetSystemService(Context.NotificationService) is NotificationManager notificationManager)
+        {
+            notificationManager.Notify(NotificationID, notificationBuilder.Build());
+        }
     }
 
     private void TrackService_CurrentChanged(object sender, EventArgs e)
@@ -121,18 +141,6 @@ public class AndroidTrackService : Service
         notificationManager.Notify(NotificationID, notificationBuilder.Build());
     }
 
-    private void TrackService_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
-    {
-        notificationBuilder.SetContentTitle(pausing ? "暂停记录轨迹" : "正在记录轨迹");
-
-        notificationBuilder.SetContentText($"用时{DateTime.Now - TrackService.StartTime:hh':'mm':'ss}，总长度{TrackService.TotalDistance:0}米");
-
-        if (GetSystemService(Context.NotificationService) is NotificationManager notificationManager)
-        {
-            notificationManager.Notify(NotificationID, notificationBuilder.Build());
-        }
-
-    }
 }
 
 public class AndroidTrackServiceBinder : Binder

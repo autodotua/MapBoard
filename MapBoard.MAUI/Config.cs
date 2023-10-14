@@ -47,6 +47,7 @@ namespace MapBoard
         public bool IsTracking { get; set; }
         public int LastLayerListGroupType { get; set; }
         public double MaxScale { get; set; } = 100;
+        public bool CanRotate { get; set; } = false;
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>
