@@ -27,9 +27,9 @@ public partial class FtpView : ContentView, ISidePanel
         if ((BindingContext as FtpViewViewModel).IsOn)
         {
             stkFtpDirs.IsEnabled = true;
-            ftpService = null;
             (sender as Button).Text = "´ò¿ªFTP";
             await ftpService.StopServerAsync();
+            ftpService = null;
         }
         else
         {
