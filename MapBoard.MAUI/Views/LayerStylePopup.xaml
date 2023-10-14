@@ -10,27 +10,37 @@
     Size="300,500"
     VerticalOptions="Fill">
     <Grid
-        Padding="8,8,16,8"
         BackgroundColor="{AppThemeBinding Dark={DynamicResource Gray900},
                                           Light={DynamicResource Gray100}}"
         RowDefinitions="*,8,Auto">
-        <ScrollView Orientation="Vertical">
+        <Grid.Resources>
+            <Style TargetType="{x:Type Line}">
+                <Setter Property="HorizontalOptions" Value="Fill" />
+                <Setter Property="Stroke" Value="Gray" />
+                <Setter Property="StrokeThickness" Value="2" />
+                <Setter Property="X1" Value="0" />
+                <Setter Property="X2" Value="1000" />
+                <Setter Property="Margin" Value="16,0" />
+                <Setter Property="Opacity" Value="0.5" />
+            </Style>
+            <Style
+                x:Key="KeyLabelStyle"
+                BasedOn="{StaticResource DefaultLabelStyle}"
+                TargetType="{x:Type Label}">
+                <Setter Property="Margin" Value="14,0,0,0" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
+            </Style>
+            <ColumnDefinitionCollection x:Key="GridColumns">
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" />
+            </ColumnDefinitionCollection>
+        </Grid.Resources>
+        <ScrollView
+            Padding="8"
+            Orientation="Vertical">
             <VerticalStackLayout Spacing="16">
-                <VerticalStackLayout.Resources>
-                    <Style
-                        x:Key="KeyLabelStyle"
-                        BasedOn="{StaticResource DefaultLabelStyle}"
-                        TargetType="{x:Type Label}">
-                        <Setter Property="Margin" Value="14,0,0,0" />
-                        <Setter Property="VerticalOptions" Value="Center" />
-                        <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
-                    </Style>
-                    <ColumnDefinitionCollection x:Key="GridColumns">
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                    </ColumnDefinitionCollection>
-                </VerticalStackLayout.Resources>
                 <Label
                     FontSize="Title"
                     Text="显示" />
@@ -70,6 +80,7 @@
                         </Picker.ItemsSource>
                     </Picker>
                 </Grid>
+                <Line />
 
 
                 <Label
@@ -91,10 +102,20 @@
                         Grid.Column="2"
                         IsToggled="{Binding Interaction.CanEdit}" />
                 </Grid>
+                <Line />
+                <Label
+                    FontSize="Title"
+                    Text="符号系统" />
+                <Label Text="请在MapBoard桌面端完成" />
+                <Line />
+                <Label
+                    FontSize="Title"
+                    Text="标注" />
+                <Label Text="请在MapBoard桌面端完成" />
+                <Line />
                 <Label
                     FontSize="Title"
                     Text="操作" />
-
                 <Button
                     BackgroundColor="Red"
                     Clicked="DeleteButton_Click"
@@ -105,77 +126,10 @@
 
             </VerticalStackLayout>
         </ScrollView>
-        <!--<TableView HasUnevenRows="False"
-            Intent="Menu"
-            RowHeight="64">
-            <TableView.Resources>
-                <Style
-                    BasedOn="{StaticResource DefaultLabelStyle}"
-                    TargetType="{x:Type Label}">
-                    <Setter Property="Margin" Value="14,0,0,0" />
-                    <Setter Property="VerticalOptions" Value="Center" />
-                    <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
-                </Style>
-            </TableView.Resources>
-            <TableRoot>
-                <TableSection
-                    Title="显示"
-                    TextColor="{DynamicResource Primary}">
-                    <ViewCell>
-                        <Grid ColumnDefinitions="Auto,8,*">
-                            <Label Text="透明度" />
-                            <Slider
-                                Grid.Column="2"
-                                Value="{Binding Display.Opacity}" />
-                        </Grid>
-                    </ViewCell>
-                    <EntryCell
-                        Label="最小缩放比例"
-                        Text="{Binding Display.MinScale}" />
-                    <EntryCell
-                        Label="最大缩放比例"
-                        Text="{Binding Display.MinScale}" />
-                    <ViewCell>
-                        <Grid ColumnDefinitions="Auto,8,*">
-                            <Label Text="渲染类型" />
-                            <Picker
-                                Title="选择渲染类型"
-                                Grid.Column="2"
-                                SelectedIndex="{Binding Display.RenderingMode}"
-                                VerticalOptions="Center">
-                                <Picker.ItemsSource>
-                                    <x:Array Type="{x:Type x:String}">
-                                        <x:String>自动</x:String>
-                                        <x:String>静态</x:String>
-                                        <x:String>动态</x:String>
-                                    </x:Array>
-                                </Picker.ItemsSource>
-                            </Picker>
-                        </Grid>
-                    </ViewCell>
-        -->
-        <!--  存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
-        <!--
-                </TableSection>
-
-                <TableSection
-                    Title="操作"
-                    TextColor="{DynamicResource Primary}">
-                    <ViewCell>
-                        <Button
-                            Margin="0,8"
-                            BackgroundColor="Red"
-                            Clicked="DeleteButton_Click"
-                            HorizontalOptions="Fill"
-                            Text="移除"
-                            VerticalOptions="Center" />
-
-                    </ViewCell>
-                </TableSection>
-            </TableRoot>
-        </TableView>-->
+        <!--  TableView存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
         <Grid
             Grid.Row="2"
+            Margin="8"
             ColumnDefinitions="*,8,*">
             <Button
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray400},

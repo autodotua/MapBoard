@@ -126,16 +126,8 @@ namespace MapBoard.Mapping
         /// </summary>
         public MapLayerCollection Layers { get; }
 
-        /// <summary>
-        /// 编辑器相关
-        /// </summary>
-        //public EditorHelper Editor { get; private set; }
         public TrackOverlayHelper TrackOverlay { get; private set; }
 
-        /// <summary>
-        /// 选择相关
-        /// </summary>
-        //public SelectionHelper Selection { get; private set; }
         /// <summary>
         /// 初始化加载
         /// </summary>
@@ -300,7 +292,7 @@ namespace MapBoard.Mapping
             {
                 Text = text,
                 DetailText = detail,
-                ButtonImage = new RuntimeImage(closeImage),
+                ButtonImage = closeImage,
                 OnButtonClick = a =>
                 {
                     ClearSelection();
@@ -311,32 +303,25 @@ namespace MapBoard.Mapping
 
         private async Task TapToSelectFeatureAsync(GeoViewInputEventArgs e)
         {
-            var result = Layers.Selected == null ? null : await IdentifyLayerAsync(Layers.Selected.Layer, e.Position, 10, false, 1);
-            if (result != null && result.GeoElements.Count > 0)
+            IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
+            results = results.Where(p => Layers.FindLayer(p.LayerContent).Interaction.CanSelect);
+            if (results.Any())
             {
-                SelectFeature(result.GeoElements[0] as Feature, e.Position);
-            }
-            else
-            {
-                IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
-                if (results.Any())
+                if (results.Select(p => p.LayerContent)
+                    .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
+                    .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
                 {
-                    if (results.Select(p => p.LayerContent)
-                        .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
-                        .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
-                    {
-                        results = results
-                        .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
-                        //下面三条语句用于寻找各图层中最近的那个
-                        var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
-                        var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
-                        var index = distances.IndexOf(distances.Min());
-                        SelectFeature(features[index], e.Position);
-                    }
-                    else //如果只有面，那么随便选
-                    {
-                        SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
-                    }
+                    results = results
+                    .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
+                    //下面三条语句用于寻找各图层中最近的那个
+                    var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
+                    var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
+                    var index = distances.IndexOf(distances.Min());
+                    SelectFeature(features[index], e.Position);
+                }
+                else //如果只有面，那么随便选
+                {
+                    SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
                 }
             }
         }
@@ -352,6 +337,10 @@ namespace MapBoard.Mapping
                 isZoomingToLastExtent = true;
                 await this.TryZoomToLastExtent();
                 isZoomingToLastExtent = false;
+            }
+            if (LocationDisplay != null)
+            {
+                LocationDisplay.IsEnabled = true;
             }
         }
 
@@ -372,15 +361,21 @@ namespace MapBoard.Mapping
         {
             Config.Instance.Save();
             Layers.Save();
+            if (LocationDisplay != null)
+            {
+                LocationDisplay.IsEnabled = false;
+            }
         }
 
-        private readonly byte[] closeImage = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEU" +
+        private readonly RuntimeImage closeImage = new RuntimeImage(
+            Convert.FromBase64String("iVBORw0KGgoAAAANSUhEU" +
             "gAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAL" +
             "9JREFUaIHt10sOgzAQA1CrJ/WNyk3LDdpNs0G0JDMOZVQ/iRXEYyS+" +
             "gJmZmZmNWgA8AVCQxXfWXZDVpZVvGxNZ3GQtyW5d1s3Q6ElwJ2e" +
             "VNAwMHj0JRUZKpkBmrVSkSGTNVCOFRo49FXFcrOeYnyI+F/y271KI/aIlyj" +
             "dE4fINcWL5mzqwOqLwJUQUvomJwo9RovCLjCj8KREpFFkzRaZIZq2EooAiI" +
-            "2zmL+VD0nBwMC+SFRqsGKjMMjMzM/srL6TW4v8zOk00AAAAAElFTkSuQmCC");
+            "2zmL+VD0nBwMC+SFRqsGKjMMjMzM/srL6TW4v8zOk00AAAAAElFTkSuQmCC"));
+
         private void SelectFeature(Feature feature, Point point)
         {
             (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
