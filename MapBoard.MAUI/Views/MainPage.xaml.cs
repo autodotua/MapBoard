@@ -276,10 +276,8 @@ namespace MapBoard.Views
             {
                 Window.Title = "地图画板";
             }
-            MainMapView.Current.GeoViewTapped += (s, e) =>
-            {
-                CloseAllPanel();
-            };
+            MainMapView.Current.ViewpointChanged += (s, e) => CloseAllPanel();
+            MainMapView.Current. GeoViewTapped+= (s, e) => CloseAllPanel();
 #if ANDROID
             var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
             height /= (DeviceDisplay.MainDisplayInfo.Density * 2);

@@ -23,7 +23,7 @@ namespace MapBoard.Mapping
 
         public GraphicsOverlay Overlay { get; }
 
-        public void AddPoint(double x, double y, DateTime time, double speed)
+        public void AddPoint(double x, double y, DateTime time, double speed,double? altitude)
         {
             MapPoint thisPoint = new MapPoint(x, y);
             Polyline line = null;
@@ -48,6 +48,10 @@ namespace MapBoard.Mapping
             Graphic graphic = new Graphic(line);
             graphic.Attributes.Add("Speed", speed);
             graphic.Attributes.Add("Time", time);
+            if(altitude.HasValue)
+            {
+                graphic.Attributes.Add("Altitude", altitude.Value);
+            }
             Overlay.Graphics.Add(graphic);
         }
 
@@ -103,6 +107,10 @@ namespace MapBoard.Mapping
                 };
                 graphic.Attributes.Add("Speed", speed);
                 graphic.Attributes.Add("Time", points[i - 1].Time);
+                if (points[i-1].Z.HasValue)
+                {
+                    graphic.Attributes.Add("Altitude", points[i - 1].Z);
+                }
                 Overlay.Graphics.Add(graphic);
             }
 

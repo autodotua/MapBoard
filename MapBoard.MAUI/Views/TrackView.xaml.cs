@@ -41,11 +41,12 @@ public partial class TrackView : ContentView, ISidePanel
     public async void OnPanelOpening()
     {
         await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+        UpdateButtonsVisible();
     }
 
     private void ContentPage_Loaded(object sender, EventArgs e)
     {
-        UpdateButtonsVisible(TrackService.Current != null);
+        UpdateButtonsVisible();
     }
 
     private void ContentPage_Unloaded(object sender, EventArgs e)
@@ -163,7 +164,6 @@ public partial class TrackView : ContentView, ISidePanel
             if (MainPage.Current.IsVisible)
             {
                 MainPage.Current.DisplayAlert("¹ì¼£¼ÇÂ¼Ê§°Ü", e.Exception.Message, "È·¶¨");
-                UpdateButtonsVisible(false);
             }
         });
     }
@@ -185,12 +185,13 @@ public partial class TrackView : ContentView, ISidePanel
     {
         MainThread.InvokeOnMainThreadAsync(() =>
         {
-            UpdateButtonsVisible(TrackService.Current != null);
+            UpdateButtonsVisible();
         });
     }
 
-    private void UpdateButtonsVisible(bool running)
+    private void UpdateButtonsVisible()
     {
+        bool running = TrackService.Current != null;
         btnStart.IsVisible = !running;
         btnStop.IsVisible = running;
         btnResume.IsVisible = !running;

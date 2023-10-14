@@ -59,7 +59,7 @@
             <Label
                 Grid.Row="0"
                 Style="{StaticResource KeyLabel}"
-                Text="开始/更新" />
+                Text="开始" />
             <Label
                 Grid.Row="1"
                 Style="{StaticResource KeyLabel}"
@@ -95,19 +95,12 @@
             <Label
                 Grid.Row="9"
                 Style="{StaticResource KeyLabel}"
-                Text="卫星数量" />
+                Text="卫星" />
 
             <Label
                 Grid.Row="0"
-                Grid.Column="2">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="{Binding TrackService.StartTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
-                        <Span Text="  " />
-                        <Span Text="{Binding TrackService.UpdateTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
+                Grid.Column="2"
+                Text="{Binding TrackService.StartTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
             <Label
                 Grid.Row="1"
                 Grid.Column="2"

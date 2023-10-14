@@ -173,7 +173,8 @@ namespace MapBoard.Services
                     gpxTrack = gpx.Tracks[0];
                     StartTime = gpx.Time;
                     PointsCount = gpxTrack.Points.Count;
-                    Overlay.LoadLine(gpxTrack.Points.Select(p => new MapPoint(p.X, p.Y)));
+                    //Overlay.LoadLine(gpxTrack.Points.Select(p => new MapPoint(p.X, p.Y)));
+                    await Overlay.LoadColoredGpxAsync(gpx);
                 }
                 else
                 {
@@ -186,10 +187,14 @@ namespace MapBoard.Services
                 while (running)
                 {
                     Location location = null;
+#if WINDOWS
                     await MainThread.InvokeOnMainThreadAsync(async () =>
                        {
-                           location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-                       });
+#endif
+                    location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
+#if WINDOWS
+                });
+#endif
                     if (running == false)
                     {
                         break;
@@ -213,7 +218,7 @@ namespace MapBoard.Services
                     if (PointsCount == 0 || distance > MinDistance)
                     {
                         TotalDistance += distance;
-                        Overlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d);
+                        Overlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
                         UpdateGpx(location);
                         LastLocation = location;
                         PointsCount++;

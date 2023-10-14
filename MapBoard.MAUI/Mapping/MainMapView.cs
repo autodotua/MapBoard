@@ -279,8 +279,13 @@ namespace MapBoard.Mapping
                 var time = (DateTime)graphic.Attributes["Time"];
                 var speed = (double)graphic.Attributes["Speed"];
                 var timeString = time.ToString("HH:mm:ss");
-                var speedString = $"{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
-                ShowCallout(e.Position, graphic, timeString, speedString);
+                var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
+                if (graphic.Attributes.ContainsKey("Altitude"))
+                {
+                    var altitude =(double) graphic.Attributes["Altitude"];
+                    detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
+                }
+                ShowCallout(e.Position, graphic, timeString, detailString);
                 return true;
             }
             return false;
