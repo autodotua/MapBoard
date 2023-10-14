@@ -6,17 +6,21 @@ using MapBoard.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static FzLib.Program.Runtime.SimplePipe;
 
 namespace MapBoard.Mapping
 {
+
     /// <summary>
     /// XYZ瓦片图层，WebTiledLayer的更灵活的实现
     /// </summary>
@@ -24,7 +28,7 @@ namespace MapBoard.Mapping
     {
         private readonly static ConcurrentDictionary<string, byte[]> cacheQueueFiles = new ConcurrentDictionary<string, byte[]>();
 
-        private readonly static ConcurrentQueue<string> cacheWriterQuque = new ConcurrentQueue<string>();
+        private readonly static ConcurrentQueue<string> cacheWriterQueue = new ConcurrentQueue<string>();
 
         /// <summary>
         /// 瓦片地址的ID
@@ -44,7 +48,7 @@ namespace MapBoard.Mapping
                 {
                     try
                     {
-                        while (!cacheWriterQuque.IsEmpty && cacheWriterQuque.TryDequeue(out string cacheFile))
+                        while (!cacheWriterQueue.IsEmpty && cacheWriterQueue.TryDequeue(out string cacheFile))
                         {
                             if (cacheQueueFiles.TryGetValue(cacheFile, out byte[] data))
                             {
@@ -55,7 +59,7 @@ namespace MapBoard.Mapping
                                 }
                                 File.WriteAllBytes(cacheFile, data);
                                 cacheQueueFiles.TryRemove(cacheFile, out _);
-                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
+                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQueue.Count}, hashset={cacheQueueFiles.Count}");
                             }
                             else
                             {
@@ -69,7 +73,7 @@ namespace MapBoard.Mapping
                     }
                     await Task.Delay(1000);
                 }
-            },TaskCreationOptions.LongRunning);
+            }, TaskCreationOptions.LongRunning);
             //原来的代码中，用的是Task.Run，导致在MAUI的Android下异常卡顿，快速滑动后甚至完全卡死界面。
         }
         private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
@@ -83,7 +87,8 @@ namespace MapBoard.Mapping
                 PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
             };
             client = new HttpClient(socketsHttpHandler);
-            ApplyHttpClientHeaders(client, layerInfo, userAgent);        }
+            ApplyHttpClientHeaders(client, layerInfo, userAgent);
+        }
 
         /// <summary>
         /// 是否启用缓存机制
@@ -202,7 +207,7 @@ namespace MapBoard.Mapping
                 if (EnableCache && !File.Exists(cacheFile) && !cacheQueueFiles.ContainsKey(cacheFile))
                 {
                     cacheQueueFiles.TryAdd(cacheFile, data);
-                    cacheWriterQuque.Enqueue(cacheFile);
+                    cacheWriterQueue.Enqueue(cacheFile);
                 }
             }
             return new ImageTileData(level, row, column, data, "");

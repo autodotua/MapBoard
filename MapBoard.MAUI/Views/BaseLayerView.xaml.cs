@@ -160,8 +160,11 @@ public partial class BaseLayerView : ContentView, ISidePanel
         var view = sender as Switch;
         if (view.BindingContext is BaseLayerInfo baseLayer)
         {
-            var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.First(p => p.Name == baseLayer.Name);
-            esriBaseLayer.IsVisible = baseLayer.Visible;
+            var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.FirstOrDefault(p => p.Name == baseLayer.Name);
+            if (esriBaseLayer != null)
+            {
+                esriBaseLayer.IsVisible = baseLayer.Visible;
+            }
         }
 
     }
