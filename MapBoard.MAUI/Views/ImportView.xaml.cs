@@ -2,6 +2,7 @@ using MapBoard.IO;
 using MapBoard.Mapping;
 using MapBoard.Models;
 using MapBoard.Services;
+using MapBoard.Util;
 using MapBoard.ViewModels;
 using System.Diagnostics;
 using System.Globalization;
@@ -33,7 +34,7 @@ public partial class ImportView : ContentView, ISidePanel
 
     private async Task ImportAsync(string file)
     {
-        IsEnabled = false;
+        var handle = PlatformDialog.ShowLoading("正在导入地图");
         try
         {
             await Package.ImportMapAsync(file, MainMapView.Current.Layers, true);
@@ -45,7 +46,7 @@ public partial class ImportView : ContentView, ISidePanel
         }
         finally
         {
-            IsEnabled = true;
+            PlatformDialog.DismissLoading(handle);
         }
     }
 

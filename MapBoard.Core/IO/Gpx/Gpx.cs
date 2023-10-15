@@ -59,7 +59,13 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public static async Task<Gpx> FromFileAsync(string path)
         {
-            return FromString(path, await File.ReadAllTextAsync(path));
+            var file = await File.ReadAllTextAsync(path);
+            Gpx gpx= null;
+            await Task.Run(() =>
+            {
+                gpx = FromString(path, file);
+            });
+            return gpx;
         }
 
         /// <summary>

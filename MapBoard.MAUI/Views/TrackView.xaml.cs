@@ -14,6 +14,7 @@ using MapBoard.Mapping;
 using MapBoard.IO.Gpx;
 using Esri.ArcGISRuntime.Geometry;
 using MapBoard.Models;
+using MapBoard.Util;
 
 namespace MapBoard.Views;
 
@@ -63,15 +64,15 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async Task LoadGpxAsync(string path)
     {
-        IsEnabled = false;
+            var handle = PlatformDialog.ShowLoading("ÕýÔÚ¼ÓÔØ¹ì¼£");
         try
         {
-            Gpx gpx = await Gpx.FromFileAsync(path);
+                Gpx gpx = await Gpx.FromFileAsync(path);
 
-            var overlay = MainMapView.Current.TrackOverlay;
-            var extent = await overlay.LoadColoredGpxAsync(gpx);
-            MainPage.Current.ClosePanel<TrackView>();
-            await MainMapView.Current.ZoomToGeometryAsync(extent);
+                var overlay = MainMapView.Current.TrackOverlay;
+                var extent = await overlay.LoadColoredGpxAsync(gpx);
+                MainPage.Current.ClosePanel<TrackView>();
+                await MainMapView.Current.ZoomToGeometryAsync(extent);
         }
         catch (Exception ex)
         {
@@ -79,7 +80,7 @@ public partial class TrackView : ContentView, ISidePanel
         }
         finally
         {
-            IsEnabled = true;
+            PlatformDialog.DismissLoading(handle);
         }
     }
 

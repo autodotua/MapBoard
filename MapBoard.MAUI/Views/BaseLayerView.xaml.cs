@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using Application = Microsoft.Maui.Controls.Application;
 using Switch = Microsoft.Maui.Controls.Switch;
+using MapBoard.Util;
+using System.Reflection.Metadata;
 
 namespace MapBoard.Views;
 
@@ -102,7 +104,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     private async Task AddLayerAsync(string name, string url)
     {
-        IsEnabled = false;
+        var handle = PlatformDialog.ShowLoading("正在添加底图");
         try
         {
             var baseLayer = new BaseLayerInfo()
@@ -120,7 +122,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
         }
         finally
         {
-            IsEnabled = true;
+            PlatformDialog.DismissLoading(handle);
         }
     }
 
@@ -132,7 +134,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     private async Task ModifyLayerAsync(BaseLayerInfo baseLayer, string name, string url)
     {
-        IsEnabled = false;
+        var handle = PlatformDialog.ShowLoading("正在修改底图");
         try
         {
             (BindingContext as BaseLayerViewViewModel).Save();
@@ -150,7 +152,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
         }
         finally
         {
-            IsEnabled = true;
+            PlatformDialog.DismissLoading(handle);
         }
     }
 
