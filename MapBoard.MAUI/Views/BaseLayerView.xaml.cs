@@ -104,7 +104,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     private async Task AddLayerAsync(string name, string url)
     {
-        var handle = PlatformDialog.ShowLoading("正在添加底图");
+        var handle = ProgressPopup.Show("正在添加底图");
         try
         {
             var baseLayer = new BaseLayerInfo()
@@ -122,7 +122,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
         }
         finally
         {
-            PlatformDialog.DismissLoading(handle);
+            handle.Close();
         }
     }
 
@@ -134,7 +134,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     private async Task ModifyLayerAsync(BaseLayerInfo baseLayer, string name, string url)
     {
-        var handle = PlatformDialog.ShowLoading("正在修改底图");
+        var handle = ProgressPopup.Show("正在修改底图");
         try
         {
             (BindingContext as BaseLayerViewViewModel).Save();
@@ -152,7 +152,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
         }
         finally
         {
-            PlatformDialog.DismissLoading(handle);
+            handle.Close();
         }
     }
 

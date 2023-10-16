@@ -106,6 +106,9 @@
 	  <Compile Update="Views\MapPage.xaml.cs">
 	    <DependentUpon>MapPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\ProgressPopup.xaml.cs">
+	    <DependentUpon>ProgressPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\TrackView.xaml.cs">
 	    <DependentUpon>TrackView.xaml</DependentUpon>
 	  </Compile>
@@ -137,6 +140,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\MapPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ProgressPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\TrackingBar.xaml">

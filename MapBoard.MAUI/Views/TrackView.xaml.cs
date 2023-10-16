@@ -64,7 +64,7 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async Task LoadGpxAsync(string path)
     {
-            var handle = PlatformDialog.ShowLoading("正在加载轨迹");
+        var handle = ProgressPopup.Show("正在加载轨迹");
         try
         {
                 Gpx gpx = await Gpx.FromFileAsync(path);
@@ -80,7 +80,7 @@ public partial class TrackView : ContentView, ISidePanel
         }
         finally
         {
-            PlatformDialog.DismissLoading(handle);
+            handle.Close();
         }
     }
 

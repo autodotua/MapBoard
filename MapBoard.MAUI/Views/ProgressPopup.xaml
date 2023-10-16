@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="MapBoard.Views.ProgressPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="vm:ProgressPopupViewModel">
+    <Grid
+        Margin="16"
+        BackgroundColor="{AppThemeBinding Dark={DynamicResource Black},
+                                          Light={DynamicResource White}}"
+        ColumnDefinitions="16,Auto,8,*,16"
+        WidthRequest="200">
+        <Grid.Shadow>
+            <Shadow />
+        </Grid.Shadow>
+
+        <ActivityIndicator
+            Grid.Column="1"
+            IsRunning="True" />
+        <Label
+            Grid.Column="3"
+            Text="{Binding Message}"
+            TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                        Light={DynamicResource Black}}"
+            VerticalOptions="Center" />
+    </Grid>
+</toolkit:Popup>
