@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.TrackView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:base="clr-namespace:MapBoard"
+    xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:io="clr-namespace:System.IO;assembly=System.IO.FileSystem"
+    xmlns:m="clr-namespace:MapBoard.Models"
+    xmlns:s="clr-namespace:MapBoard.Services"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:TrackViewViewModel}"
+    Loaded="ContentPage_Loaded"
+    Unloaded="ContentPage_Unloaded">
+    <ContentView.Resources>
+        <c:TrackDetailConverter x:Key="TrackDetailConverter" />
+    </ContentView.Resources>
+    <Grid
+        Margin="8"
+        RowDefinitions="*,8,Auto,8,Auto">
+        <ListView
+            x:Name="lvwGpxList"
+            IsVisible="{Binding TrackService}"
+            ItemTapped="GpxList_ItemTapped"
+            ItemsSource="{Binding GpxFiles}"
+            SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid
+                            x:DataType="{x:Type m:SimpleFile}"
+                            ColumnDefinitions="*,8,Auto,8">
+                            <Label
+                                Text="{Binding Name}"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="2"
+                                Text="{Binding Length, Converter={StaticResource KbConverter}, StringFormat='{0:0.0} KB'}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Grid
+            x:Name="grdDetail"
+            ColumnDefinitions="Auto,24,Auto"
+            HorizontalOptions="Center"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+            VerticalOptions="Center">
+            <Grid.Resources>
+                <Style
+                    x:Key="KeyLabel"
+                    TargetType="{x:Type Label}">
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="HorizontalOptions" Value="End" />
+                </Style>
+            </Grid.Resources>
+            <Label
+                Grid.Row="0"
+                Style="{StaticResource KeyLabel}"
+                Text="开始" />
+            <Label
+                Grid.Row="1"
+                Style="{StaticResource KeyLabel}"
+                Text="历时" />
+            <Label
+                Grid.Row="2"
+                Style="{StaticResource KeyLabel}"
+                Text="记录点" />
+            <Label
+                Grid.Row="3"
+                Style="{StaticResource KeyLabel}"
+                Text="里程" />
+            <Label
+                Grid.Row="4"
+                Style="{StaticResource KeyLabel}"
+                Text="经纬度" />
+            <Label
+                Grid.Row="5"
+                Style="{StaticResource KeyLabel}"
+                Text="海拔" />
+            <Label
+                Grid.Row="6"
+                Style="{StaticResource KeyLabel}"
+                Text="速度" />
+            <Label
+                Grid.Row="7"
+                Style="{StaticResource KeyLabel}"
+                Text="方向" />
+            <Label
+                Grid.Row="8"
+                Style="{StaticResource KeyLabel}"
+                Text="精度" />
+            <Label
+                Grid.Row="9"
+                Style="{StaticResource KeyLabel}"
+                Text="卫星" />
+
+            <Label
+                Grid.Row="0"
+                Grid.Column="2"
+                Text="{Binding TrackService.StartTime, Converter={StaticResource TrackDetailConverter}, ConverterParameter=0}" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="2"
+                Text="{Binding TrackService.Duration, Converter={StaticResource TrackDetailConverter}, ConverterParameter=1}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="2"
+                Text="{Binding TrackService.PointsCount}" />
+            <Label
+                Grid.Row="3"
+                Grid.Column="2"
+                Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
+            <Label
+                Grid.Row="4"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=3}" />
+            <Label
+                Grid.Row="5"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=4}" />
+            <Label
+                Grid.Row="6"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
+            <Label
+                Grid.Row="7"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=6}" />
+            <Label
+                Grid.Row="8"
+                Grid.Column="2"
+                Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=7}" />
+            <Label
+                Grid.Row="9"
+                Grid.Column="2"
+                Text="{Binding TrackService.GnssStatus, Converter={StaticResource TrackDetailConverter}, ConverterParameter=8}" />
+        </Grid>
+        <Grid
+            Grid.Row="2"
+            ColumnDefinitions="*,16,*">
+            <Button
+                x:Name="btnStart"
+                Grid.Column="2"
+                Clicked="StartTrackButton_Click"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="开始记录"
+                VerticalOptions="Center" />
+            <Button
+                x:Name="btnResume"
+                BackgroundColor="Orange"
+                Clicked="ResumeButton_Clicked"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="继续上次"
+                VerticalOptions="Center" />
+            <Button
+                x:Name="btnStop"
+                Grid.ColumnSpan="99"
+                BackgroundColor="Red"
+                Clicked="StopButton_Clicked"
+                HorizontalOptions="Fill"
+                MaximumWidthRequest="200"
+                Text="停止/暂停"
+                VerticalOptions="Center" />
+        </Grid>
+        <Label
+            x:Name="lblLoadGpx"
+            Grid.Row="4"
+            HorizontalOptions="Center"
+            Style="{StaticResource LinkedLabelStyle}"
+            Text="加载其他GPX文件">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+            </Label.GestureRecognizers>
+        </Label>
+    </Grid>
+</ContentView>

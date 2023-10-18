@@ -6,17 +6,21 @@ using MapBoard.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static FzLib.Program.Runtime.SimplePipe;
 
 namespace MapBoard.Mapping
 {
+
     /// <summary>
     /// XYZ瓦片图层，WebTiledLayer的更灵活的实现
     /// </summary>
@@ -24,7 +28,7 @@ namespace MapBoard.Mapping
     {
         private readonly static ConcurrentDictionary<string, byte[]> cacheQueueFiles = new ConcurrentDictionary<string, byte[]>();
 
-        private readonly static ConcurrentQueue<string> cacheWriterQuque = new ConcurrentQueue<string>();
+        private readonly static ConcurrentQueue<string> cacheWriterQueue = new ConcurrentQueue<string>();
 
         /// <summary>
         /// 瓦片地址的ID
@@ -35,7 +39,7 @@ namespace MapBoard.Mapping
 
         static XYZTiledLayer()
         {
-            Task.Run(async () =>
+            Task.Factory.StartNew(async () =>
             {
                 //单队列写入缓存
                 //有两个集合，Queue用来确定任务的顺序，然后用Dictionary来获取任务数据。
@@ -44,7 +48,7 @@ namespace MapBoard.Mapping
                 {
                     try
                     {
-                        while (!cacheWriterQuque.IsEmpty && cacheWriterQuque.TryDequeue(out string cacheFile))
+                        while (!cacheWriterQueue.IsEmpty && cacheWriterQueue.TryDequeue(out string cacheFile))
                         {
                             if (cacheQueueFiles.TryGetValue(cacheFile, out byte[] data))
                             {
@@ -55,14 +59,13 @@ namespace MapBoard.Mapping
                                 }
                                 File.WriteAllBytes(cacheFile, data);
                                 cacheQueueFiles.TryRemove(cacheFile, out _);
-                                //Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQuque.Count}, hashset={cacheQueueFiles.Count}");
+                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQueue.Count}, hashset={cacheQueueFiles.Count}");
                             }
                             else
                             {
                                 Debug.WriteLine("待写入的缓存文件不在Dictionary中");
                             }
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -70,7 +73,8 @@ namespace MapBoard.Mapping
                     }
                     await Task.Delay(1000);
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
+            //原来的代码中，用的是Task.Run，导致在MAUI的Android下异常卡顿，快速滑动后甚至完全卡死界面。
         }
         private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
         {
@@ -84,18 +88,6 @@ namespace MapBoard.Mapping
             };
             client = new HttpClient(socketsHttpHandler);
             ApplyHttpClientHeaders(client, layerInfo, userAgent);
-
-
-            //client.DefaultRequestHeaders.Add("Host", "t3.tianditu.gov.cn");
-            //client.DefaultRequestHeaders.Add("Origin", "https://zhejiang.tianditu.gov.cn");
-            //client.DefaultRequestHeaders.Add("Referer", "https://zhejiang.tianditu.gov.cn");
-
-            //client.SendAsync(new HttpRequestMessage
-            //{
-            //    Method = new HttpMethod("HEAD"),
-            //    RequestUri = new Uri(Url)
-            //}).ConfigureAwait(false);
-            //client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue(UserAgentName, UserAgentVersion));
         }
 
         /// <summary>
@@ -195,6 +187,7 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         protected override async Task<ImageTileData> GetTileDataAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
+            Debug.WriteLine("Thread ID::::::::::::::::::" + Thread.CurrentThread.ManagedThreadId);
             if (MaxLevel >= 0 && level > MaxLevel || MinLevel >= 0 && level < MinLevel)
             {
                 return null;
@@ -214,7 +207,7 @@ namespace MapBoard.Mapping
                 if (EnableCache && !File.Exists(cacheFile) && !cacheQueueFiles.ContainsKey(cacheFile))
                 {
                     cacheQueueFiles.TryAdd(cacheFile, data);
-                    cacheWriterQuque.Enqueue(cacheFile);
+                    cacheWriterQueue.Enqueue(cacheFile);
                 }
             }
             return new ImageTileData(level, row, column, data, "");

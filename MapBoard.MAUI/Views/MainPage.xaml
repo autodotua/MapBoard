@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MapBoard.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
+    xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:v="clr-namespace:MapBoard.Views"
+    Title="地图画板"
+    Loaded="ContentPage_Loaded">
+    <Grid
+        x:Name="grdMain"
+        IsClippedToBounds="True"
+        RowDefinitions="*,Auto">
+        <v:MapPage x:Name="map" />
+        <v:TrackingBar
+            x:Name="tbar"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start" />
+        <Grid
+            x:Name="track"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="轨迹记录" />
+            <v:TrackView
+                x:Name="trackView"
+                Grid.Row="2" />
+        </Grid>
+        <Grid
+            x:Name="ftp"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="文件管理" />
+            <v:FtpView
+                x:Name="ftpView"
+                Grid.Row="2" />
+        </Grid>
+
+        <Grid
+            x:Name="layer"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <HorizontalStackLayout Margin="8,8,0,0">
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Text="图层" />
+                <Label
+                    Margin="24,0,0,0"
+                    Style="{StaticResource LinkedLabelStyle}"
+                    Text="设置底图"
+                    VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="SetBaseLayersTapGestureRecognizer_Tapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            <v:LayerListView
+                x:Name="layerView"
+                Grid.Row="2" />
+        </Grid>
+        <Grid
+            x:Name="baseLayer"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="底图" />
+            <v:BaseLayerView
+                x:Name="baseLayerView"
+                Grid.Row="2" />
+        </Grid>
+        <Grid
+            x:Name="import"
+            Padding="0,24,0,0"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray900}}"
+            HorizontalOptions="Start"
+            RowDefinitions="Auto,8,*">
+            <Label
+                Margin="8,8,0,0"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="加载地图包" />
+
+            <v:ImportView
+                x:Name="importView"
+                Grid.Row="2" />
+        </Grid>
+
+
+        <Border
+            x:Name="bdBottom"
+            Grid.Row="99"
+            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                              Dark={DynamicResource Gray400}}"
+            Stroke="Transparent"
+            StrokeThickness="0">
+            <Border.Shadow>
+                <Shadow Opacity="0.8" />
+            </Border.Shadow>
+            <Grid
+                x:Name="grdBottom"
+                Padding="0,4"
+                ColumnDefinitions="*,*,*,*,*,*"
+                HeightRequest="40">
+                <Grid.Resources>
+                    <Style
+                        BasedOn="{StaticResource DefaultImageButtonStyle}"
+                        TargetType="{x:Type ImageButton}">
+                        <Setter Property="CornerRadius" Value="2" />
+                    </Style>
+                </Grid.Resources>
+                <ImageButton
+                    Grid.Column="0"
+                    Clicked="ImportButton_Clicked"
+                    Source="btn_import.png" />
+                <ImageButton
+                    Grid.Column="1"
+                    Padding="4"
+                    Clicked="FtpButton_Clicked"
+                    Source="btn_ftp.png" />
+                <ImageButton
+                    Grid.Column="2"
+                    Clicked="RefreshButton_Clicked"
+                    Source="btn_refresh.png" />
+                <ImageButton
+                    Grid.Column="3"
+                    Clicked="TrackButton_Clicked"
+                    Source="btn_track.png" />
+                <ImageButton
+                    Grid.Column="4"
+                    Clicked="ZoomToLayerButton_Click"
+                    Source="btn_zoom_to_layer.png" />
+                <ImageButton
+                    Grid.Column="5"
+                    Clicked="LayerButton_Click"
+                    Source="btn_layers.png" />
+
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

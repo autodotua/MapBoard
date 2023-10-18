@@ -59,7 +59,13 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public static async Task<Gpx> FromFileAsync(string path)
         {
-            return FromString(path,await File.ReadAllTextAsync(path));
+            var file = await File.ReadAllTextAsync(path);
+            Gpx gpx= null;
+            await Task.Run(() =>
+            {
+                gpx = FromString(path, file);
+            });
+            return gpx;
         }
 
         /// <summary>
@@ -69,7 +75,7 @@ namespace MapBoard.IO.Gpx
         /// <param name="gpxString"></param>
         /// <returns></returns>
         /// <exception cref="XmlException"></exception>
-        public static Gpx FromString(string path,string gpxString)
+        public static Gpx FromString(string path, string gpxString)
         {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(gpxString);
@@ -78,7 +84,7 @@ namespace MapBoard.IO.Gpx
             {
                 throw new XmlException("没有找到gpx元素");
             }
-            Gpx info = new Gpx(path,xmlGpx);
+            Gpx info = new Gpx(path, xmlGpx);
 
             return info;
         }
@@ -101,6 +107,12 @@ namespace MapBoard.IO.Gpx
             return info;
         }
 
+        public GpxTrack CreateTrack()
+        {
+            var track = new GpxTrack(this);
+            Tracks.Add(track);
+            return track;
+        }
         /// <summary>
         /// 保存到原始位置
         /// </summary>

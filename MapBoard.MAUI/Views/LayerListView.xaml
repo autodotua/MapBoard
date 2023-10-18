@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.LayerListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mmm="clr-namespace:MapBoard.Mapping.Model;assembly=MapBoard.Core"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:LayerViewViewModel}"
+    Loaded="ContentView_Loaded">
+    <ContentView.Resources>
+        <DataTemplate
+            x:Key="LayerListDataTemplate"
+            x:DataType="{x:Type mmm:MapLayerInfo}">
+            <ViewCell>
+                <Grid
+                    Margin="8"
+                    ColumnDefinitions="*,8,Auto">
+                    <Label
+                        Text="{Binding Name}"
+                        TextColor="{AppThemeBinding Dark=White,
+                                                    Light=Black}" />
+                    <Switch
+                        Grid.Column="2"
+                        IsToggled="{Binding LayerVisible}" />
+                </Grid>
+            </ViewCell>
+        </DataTemplate>
+    </ContentView.Resources>
+    <Grid
+        Margin="8"
+        RowDefinitions="0,8,*">
+        <HorizontalStackLayout
+            IsClippedToBounds="True"
+            Spacing="16">
+            <RadioButton
+                x:Name="rbtnByLevel"
+                CheckedChanged="ViewTypeRadioButton_CheckChanged"
+                Content="按层序"
+                GroupName="ViewType" />
+            <RadioButton
+                x:Name="rbtnByGroup"
+                CheckedChanged="ViewTypeRadioButton_CheckChanged"
+                Content="按分组"
+                GroupName="ViewType" />
+        </HorizontalStackLayout>
+
+        <ListView
+            x:Name="lvwLevel"
+            Grid.Row="2"
+            CachingStrategy="RetainElement"
+            GroupDisplayBinding="{Binding Name}"
+            GroupShortNameBinding="{Binding Name}"
+            ItemTapped="lvwLevel_ItemTapped"
+            ItemTemplate="{StaticResource LayerListDataTemplate}"
+            ItemsSource="{Binding Layers}"
+            SelectionMode="None">
+            <ListView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="{x:Type mmm:GroupInfo}">
+                    <ViewCell>
+                        <Label
+                            Margin="8"
+                            FontAttributes="Bold"
+                            Text="{Binding Name}"
+                            TextColor="{DynamicResource Gray500}" />
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.GroupHeaderTemplate>
+        </ListView>
+
+
+    </Grid>
+</ContentView>

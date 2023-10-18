@@ -25,18 +25,7 @@ namespace MapBoard.Model
         /// <summary>
         /// 图层集合改变事件，将和LayerList的同步
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged
-        {
-            add
-            {
-                ((INotifyCollectionChanged)LayerList).CollectionChanged += value;
-            }
-
-            remove
-            {
-                ((INotifyCollectionChanged)LayerList).CollectionChanged -= value;
-            }
-        }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public event EventHandler<LayerPropertyChangedEventArgs> LayerPropertyChanged;
 
@@ -107,7 +96,7 @@ namespace MapBoard.Model
         /// <returns></returns>
         public IEnumerator<ILayerInfo> GetEnumerator()
         {
-            return LayerList.GetEnumerator();
+            return LayerList?.GetEnumerator();
         }
 
         /// <summary>
@@ -116,12 +105,12 @@ namespace MapBoard.Model
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return LayerList.GetEnumerator();
+            return LayerList?.GetEnumerator();
         }
 
         public int IndexOf(ILayerInfo layer)
         {
-            return LayerList.IndexOf(layer);
+            return LayerList?.IndexOf(layer) ?? -1;
         }
 
         /// <summary>
@@ -199,6 +188,7 @@ namespace MapBoard.Model
             {
                 oldLayers.ForEach(p => p.PropertyChanged -= Layer_PropertyChanged);
             }
+            CollectionChanged?.Invoke(sender, e);
         }
 
         public class LayerPropertyChangedEventArgs : PropertyChangedEventArgs

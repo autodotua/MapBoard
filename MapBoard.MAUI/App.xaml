@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Application
+    x:Class="MapBoard.App"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:local="clr-namespace:MapBoard">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <c:KbConverter x:Key="KbConverter" />
+            <c:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <c:NotNullConverter x:Key="NotNullConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

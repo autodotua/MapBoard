@@ -9,7 +9,7 @@ namespace MapBoard.Model
     /// <summary>
     /// 图层显示设置
     /// </summary>
-    public class LayerDisplay : INotifyPropertyChanged
+    public class LayerDisplay : INotifyPropertyChanged, ICloneable
     {
         private double maxScale = 0;
         private double minScale = 0;
@@ -84,6 +84,11 @@ namespace MapBoard.Model
                 }
                 renderingMode = value;
             }
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

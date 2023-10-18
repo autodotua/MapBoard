@@ -41,6 +41,7 @@ namespace MapBoard
 
         public App()
         {
+            Parameters.AppType = AppType.WPF;
             try
             {
                 SplashWindow.CreateAndShow();

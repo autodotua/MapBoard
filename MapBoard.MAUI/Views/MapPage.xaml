@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.MapPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:arc="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
+    xmlns:esri="http://schemas.esri.com/arcgis/runtime/2013"
+    xmlns:et="clr-namespace:Esri.ArcGISRuntime.Toolkit.Maui;assembly=Esri.ArcGISRuntime.Toolkit.Maui"
+    xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:v="clr-namespace:MapBoard.Views"
+    Loaded="ContentPage_Loaded">
+    <Grid x:Name="grdMain">
+        <!--  地图  -->
+        <Grid IsClippedToBounds="True">
+            <map:MainMapView x:Name="map" />
+        </Grid>
+        <et:Compass
+            Margin="8,42"
+            GeoView="{Binding Source={x:Reference map}, Path=.}"
+            HorizontalOptions="End"
+            VerticalOptions="Start" />
+        <et:ScaleLine
+            Margin="24,8"
+            HorizontalOptions="End"
+            MapView="{Binding Source={x:Reference map}, Path=.}"
+            TargetWidth="48"
+            VerticalOptions="End"
+            Color="White">
+            <et:ScaleLine.Shadow>
+                <Shadow
+                    Brush="Black"
+                    Opacity="1"
+                    Radius="5" />
+            </et:ScaleLine.Shadow>
+
+        </et:ScaleLine>
+
+        <!--  右侧按钮  -->
+        <VerticalStackLayout
+            x:Name="grdSide"
+            Margin="8,0,8,72"
+            HorizontalOptions="End"
+            Spacing="8"
+            VerticalOptions="End">
+            <VerticalStackLayout.Resources>
+                <Style
+                    BasedOn="{StaticResource DefaultImageButtonStyle}"
+                    TargetType="{x:Type ImageButton}">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
+                    <Setter Property="WidthRequest" Value="42" />
+                    <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
+                    <Setter Property="HeightRequest" Value="42" />
+                </Style>
+            </VerticalStackLayout.Resources>
+            <!--<Button
+                Clicked="TestButton_Click"
+                Text="T" />-->
+            <ImageButton
+                x:Name="btnZoomIn"
+                Clicked="ZoomInButton_Click"
+                CornerRadius="4"
+                Source="btn_zoom_in.png" />
+            <ImageButton
+                x:Name="btnZoomOut"
+                Clicked="ZoomOutButton_Click"
+                CornerRadius="4"
+                Source="btn_zoom_out.png" />
+
+            <ImageButton
+                Margin="0,60,0,0"
+                Clicked="LocationButton_Click"
+                CornerRadius="4"
+                Source="btn_location.png" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentView>

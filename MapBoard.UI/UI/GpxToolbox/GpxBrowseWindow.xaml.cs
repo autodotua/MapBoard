@@ -77,7 +77,11 @@ namespace MapBoard.UI.GpxToolbox
                 Directory.CreateDirectory(GetRecordPath());
             }
             var points = Track.Track.Points;
-            DateTime startTime = points.First().Time;
+            if (points.Any(p => !p.Time.HasValue))
+            {
+                throw new InvalidOperationException("存在没有时间信息的点");
+            }
+            DateTime startTime = points.First().Time.Value;
             int i = 0;
             int count = 0;
             bool useTimeFileName = rbtnFormatTime.IsChecked.Value;
@@ -99,9 +103,9 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     GpxPoint point = points[i];
                     GpxPoint nextPoint = points[i + 1];
-                    Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[^1].Time - points[0].Time).Ticks;
+                    Progress = 1.0 * (point.Time - points[0].Time).Value.Ticks / (points[^1].Time - points[0].Time).Value.Ticks;
                     var curve = GeometryUtility.CalculateGeodeticCurve(point.ToMapPoint(), nextPoint.ToMapPoint());
-                    double percent = 1.0 * (time - point.Time).Ticks / (nextPoint.Time - point.Time).Ticks;
+                    double percent = 1.0 * (time - point.Time).Value.Ticks / (nextPoint.Time - point.Time).Value.Ticks;
                     interPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.Azimuth, curve.Distance * percent);
                     var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
                     camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);
@@ -142,12 +146,16 @@ namespace MapBoard.UI.GpxToolbox
 
             int i = 0;
             DateTime startTime = DateTime.Now;
-            DateTime startGpxTime = points[0].Time;
+            if (points.Any(p => !p.Time.HasValue))
+            {
+                throw new InvalidOperationException("存在没有时间信息的点");
+            }
+            DateTime startGpxTime = points[0].Time.Value;
             int viewIndex = 0;
             timer.Tick += async (p1, p2) =>
              {
                  DateTime now = DateTime.Now;
-                 while (i < points.Count - 2 && (points[i + 1].Time - startGpxTime).Ticks < BrowseInfo.Speed * (now - startTime).Ticks)
+                 while (i < points.Count - 2 && (points[i + 1].Time - startGpxTime).Value.Ticks < BrowseInfo.Speed * (now - startTime).Ticks)
                  {
                      i++;
                  }
@@ -163,11 +171,11 @@ namespace MapBoard.UI.GpxToolbox
                  {
                      GpxPoint point = points[i];
                      GpxPoint nextPoint = points[i + 1];
-                     Progress = 1.0 * (point.Time - points[0].Time).Ticks / (points[^1].Time - points[0].Time).Ticks;
+                     Progress = 1.0 * (point.Time - points[0].Time).Value.Ticks / (points[^1].Time - points[0].Time).Value.Ticks;
                      var curve = GeometryUtility.CalculateGeodeticCurve(point.ToMapPoint(), nextPoint.ToMapPoint());
                      double percent =
-                     (BrowseInfo.Speed * (now - startTime).Ticks - (point.Time - startGpxTime).Ticks)
-                     / (nextPoint.Time - point.Time).Ticks;
+                     (BrowseInfo.Speed * (now - startTime).Ticks - (point.Time - startGpxTime).Value.Ticks)
+                     / (nextPoint.Time - point.Time).Value.Ticks;
                      interPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.Azimuth, curve.Distance * percent);
                      var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(point.ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
                      camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);

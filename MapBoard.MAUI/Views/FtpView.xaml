@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.FtpView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:base="clr-namespace:MapBoard">
+    <Grid
+        Margin="16"
+        RowDefinitions="Auto,*,Auto,8,Auto">
+        <Grid
+            x:Name="grdFtpInfo"
+            ColumnDefinitions="Auto,8,*"
+            RowDefinitions="Auto,4,Auto">
+            <Label
+                FontAttributes="Bold"
+                Text="IP地址："
+                VerticalOptions="Center" />
+            <Label
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                LineBreakMode="MiddleTruncation"
+                Text="{Binding IP}"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Row="2"
+                FontAttributes="Bold"
+                Text="端口："
+                VerticalOptions="Center" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                Text="2222"
+                VerticalOptions="Center" />
+        </Grid>
+
+        <VerticalStackLayout
+            x:Name="stkFtpDirs"
+            Grid.Row="2">
+            <RadioButton
+                x:Name="rbtnDataDir"
+                Content="地图数据目录"
+                GroupName="FtpDir"
+                IsChecked="True" />
+            <RadioButton
+                x:Name="rbtnPackageDir"
+                Content="地图包目录"
+                GroupName="FtpDir"/>
+            <RadioButton
+                x:Name="rbtnTrackDir"
+                Content="轨迹目录"
+                GroupName="FtpDir" />
+            <RadioButton
+                x:Name="rbtnLogDir"
+                Content="日志目录"
+                GroupName="FtpDir" />
+            <RadioButton
+                x:Name="rbtnRootDir"
+                Content="程序数据目录"
+                GroupName="FtpDir" />
+            <RadioButton
+                x:Name="rbtnCacheDir"
+                Content="程序缓存目录"
+                GroupName="FtpDir" />
+        </VerticalStackLayout>
+
+        <Button
+            x:Name="btnFtp"
+            Grid.Row="99"
+            Margin="8"
+            Clicked="StartStopFtpButton_Clicked"
+            Text="打开FTP" />
+        <Button
+            x:Name="btnOpenDir"
+            Grid.Row="99"
+            Margin="8"
+            Clicked="OpenDirButton_Clicked"
+            IsVisible="False"
+            Text="打开目录" />
+    </Grid>
+</ContentView>

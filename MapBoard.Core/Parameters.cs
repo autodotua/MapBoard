@@ -51,5 +51,7 @@ namespace MapBoard
         /// 加载超时
         /// </summary>
         public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+        public static AppType AppType { get; set; }
     }
 }

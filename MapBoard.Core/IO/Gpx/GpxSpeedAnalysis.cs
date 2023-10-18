@@ -41,25 +41,32 @@ namespace MapBoard.IO.Gpx
                     }
                     last = point;
                 }
-                for (int i = sampleCount - 1; i < sortedPoints.Count; i += jump)
+                try
                 {
-                    DateTime minTime = sortedPoints[i - sampleCount + 1].Time;
-                    DateTime maxTime = sortedPoints[i].Time;
-                    double totalDistance = 0;
-                    for (int j = i - sampleCount + 1; j < i; j++)
+                    for (int i = sampleCount - 1; i < sortedPoints.Count; i += jump)
                     {
-                        totalDistance += distances[j];
+                        DateTime minTime = sortedPoints[i - sampleCount + 1].Time.Value;
+                        DateTime maxTime = sortedPoints[i].Time.Value;
+                        double totalDistance = 0;
+                        for (int j = i - sampleCount + 1; j < i; j++)
+                        {
+                            totalDistance += distances[j];
+                        }
+                        double speed = totalDistance / (maxTime - minTime).TotalSeconds;
+                        if (speed < min)
+                        {
+                            continue;
+                        }
+                        if (speed > max)
+                        {
+                            continue;
+                        }
+                        speedList.Add(new SpeedInfo(minTime, maxTime, speed));
                     }
-                    double speed = totalDistance / (maxTime - minTime).TotalSeconds;
-                    if (speed < min)
-                    {
-                        continue;
-                    }
-                    if (speed > max)
-                    {
-                        continue;
-                    }
-                    speedList.Add(new SpeedInfo(minTime, maxTime, speed));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidOperationException("存在没有时间信息的点", ex);
                 }
             });
             return speedList.AsReadOnly();
@@ -113,7 +120,11 @@ namespace MapBoard.IO.Gpx
         public static double GetSpeed(IEnumerable<GpxPoint> points)
         {
             var sortedPoints = points.OrderBy(p => p.Time);
-            TimeSpan totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
+            TimeSpan? totalTime = sortedPoints.Last().Time - sortedPoints.First().Time;
+            if (!totalTime.HasValue)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点");
+            }
             double totalDistance = 0;
             GpxPoint last = null;
             foreach (var point in sortedPoints)
@@ -124,7 +135,7 @@ namespace MapBoard.IO.Gpx
                 }
                 last = point;
             }
-            return totalDistance / totalTime.TotalSeconds;
+            return totalDistance / totalTime.Value.TotalSeconds;
         }
 
         /// <summary>
@@ -135,7 +146,9 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public static double GetSpeed(GpxPoint point1, GpxPoint point2)
         {
-            return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(), TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time).TotalMilliseconds)));
+            return GetSpeed(point1.ToMapPoint(), point2.ToMapPoint(),
+                TimeSpan.FromMilliseconds(Math.Abs((point1.Time - point2.Time)?.TotalMilliseconds
+                ?? throw new InvalidOperationException("存在没有时间信息的点"))));
         }
 
         /// <summary>
@@ -191,7 +204,7 @@ namespace MapBoard.IO.Gpx
             return (await GetSpeedsAsync(points, sampleCount))
                 .Where(p => !(double.IsNaN(p.Speed) || double.IsInfinity(p.Speed)));
         }
-        
+
         /// <summary>
         /// 速度信息
         /// </summary>
@@ -219,17 +232,24 @@ namespace MapBoard.IO.Gpx
                 List<GpxPoint> relatedPointList = new List<GpxPoint>();
                 DateTime minTime = DateTime.MaxValue;
                 DateTime maxTime = DateTime.MinValue;
-                foreach (var point in points)
+                try
                 {
-                    if (point.Time < minTime)
+                    foreach (var point in points)
                     {
-                        minTime = point.Time;
+                        if (point.Time < minTime)
+                        {
+                            minTime = point.Time.Value;
+                        }
+                        if (point.Time > maxTime)
+                        {
+                            maxTime = point.Time.Value;
+                        }
+                        relatedPointList.Add(point);
                     }
-                    if (point.Time > maxTime)
-                    {
-                        maxTime = point.Time;
-                    }
-                    relatedPointList.Add(point);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidOperationException("存在没有时间信息的点", ex);
                 }
                 if (relatedPointList.Count < 2)
                 {

@@ -459,9 +459,9 @@ namespace MapBoard.UI.GpxToolbox
                     await CommonDialog.ShowErrorDialogAsync("输入的数值超出范围");
                     return;
                 }
-                if (z)
+                if (z && points.All(p=>p.Z.HasValue))
                 {
-                    GpxUtility.Smooth(points, num, p => p.Z, (p, v) => p.Z = v);
+                    GpxUtility.Smooth(points, num, p => p.Z.Value, (p, v) => p.Z = v);
                 }
                 if (xy)
                 {
@@ -543,6 +543,11 @@ namespace MapBoard.UI.GpxToolbox
         }
 
         /// <summary>
+        /// 选择的GPX文件是否全部点都提供了高度和时间信息
+        /// </summary>
+        private bool hasZAndTimeInfo;
+
+        /// <summary>
         /// 选择的的文件改变
         /// </summary>
         /// <param name="sender"></param>
@@ -582,7 +587,17 @@ namespace MapBoard.UI.GpxToolbox
 
                     Gpx = arcMap.SelectedTrack.Gpx;
                     GpxTrack = arcMap.SelectedTrack.Track;
-                    await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
+
+                    hasZAndTimeInfo = GpxTrack.Points.All(p => p.Z.HasValue && p.Time.HasValue);
+
+                    if (hasZAndTimeInfo)
+                    {
+                        await Task.WhenAll(ZoomToTrackAsync(), UpdateUI());
+                    }
+                    else
+                    {
+                        await ZoomToTrackAsync();
+                    }
                 }
             }
             catch (Exception ex)
@@ -845,9 +860,9 @@ namespace MapBoard.UI.GpxToolbox
         private void PointsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var points = grdPoints.SelectedItems.Cast<GpxPoint>();
-            if (grdPoints.SelectedItem is GpxPoint point && !double.IsNaN(point.Z) && point.Y != 0)
+            if (grdPoints.SelectedItem is GpxPoint point && !double.IsNaN(point.Z.Value) && point.Y != 0)
             {
-                chartHelper.SetLine(point.Time);
+                chartHelper.SetLine(point.Time.Value);
                 arcMap.SelectPoints(points);
             }
             else
@@ -908,11 +923,12 @@ namespace MapBoard.UI.GpxToolbox
                            XAxisValueConverter = p => p.CenterTime,
                            YAxisValueConverter = p => p.Speed,
                        }),
-                 chartHelper.DrawAxisAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z)),
+
+                 chartHelper.DrawAxisAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z.Value)),
                     false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                     {
-                        XAxisValueConverter = p => p.Time,
-                        YAxisValueConverter = p => p.Z,
+                        XAxisValueConverter = p => p.Time.Value,
+                        YAxisValueConverter = p => p.Z.Value,
                     }),
                  chartHelper.DrawAxisAsync(points, false,
                         new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<SpeedInfo>()
@@ -945,11 +961,11 @@ namespace MapBoard.UI.GpxToolbox
 
             chartHelper.XAxisLineValueConverter = p => p.CenterTime;
             chartHelper.XAxisPointValueConverter = p => p.CenterTime;
-            chartHelper.XAxisPolygonValueConverter = p => p.Time;
+            chartHelper.XAxisPolygonValueConverter = p => p.Time.Value;
 
             chartHelper.YAxisPointValueConverter = p => p.Speed;
             chartHelper.YAxisLineValueConverter = p => p.Speed;
-            chartHelper.YAxisPolygonValueConverter = p => p.Z;
+            chartHelper.YAxisPolygonValueConverter = p => p.Z.Value;
             chartHelper.XLabelFormat = p => p.ToString("HH:mm");
             chartHelper.YLabelFormat = p => $"{p}m/s {(p * 3.6).ToString(".0")}km/h";
             chartHelper.ToolTipConverter = p =>
@@ -958,9 +974,9 @@ namespace MapBoard.UI.GpxToolbox
                 sb.AppendLine(p.CenterTime.ToString("HH:mm:ss"));
                 sb.Append(p.Speed.ToString("0.00")).AppendLine("m/s");
                 sb.Append((3.6 * p.Speed).ToString("0.00")).AppendLine("km/h");
-                if (!double.IsNaN(p.RelatedPoints[0].Z) && !double.IsNaN(p.RelatedPoints[1].Z))
+                if (!double.IsNaN(p.RelatedPoints[0].Z.Value) && !double.IsNaN(p.RelatedPoints[1].Z.Value))
                 {
-                    sb.Append(((p.RelatedPoints[0].Z + p.RelatedPoints[1].Z) / 2).ToString("0.00") + "m");
+                    sb.Append(((p.RelatedPoints[0].Z + p.RelatedPoints[1].Z) / 2).Value.ToString("0.00") + "m");
                 }
                 return sb.ToString();
             };

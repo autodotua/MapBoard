@@ -176,37 +176,55 @@ namespace MapBoard.Mapping.Model
         }
 
         /// <summary>
+        /// 是否正在批量加载
+        /// </summary>
+        public bool IsBatchLoading { get; private set; }
+
+        /// <summary>
         /// 加载所有图层
         /// </summary>
         /// <param name="esriLayers"></param>
         /// <returns></returns>
         public async Task LoadAsync(ELayerCollection esriLayers)
         {
-            EsriLayers = esriLayers;
-            //初始化一个新的图层列表
-            SetLayers(new ObservableCollection<ILayerInfo>());
-            //图层配置文件
-            string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
-            if (!File.Exists(path))
+            IsBatchLoading = true;
+
+            try
             {
-                return;
+                EsriLayers = esriLayers;
+                //初始化一个新的图层列表
+                SetLayers(new ObservableCollection<ILayerInfo>());
+                //图层配置文件
+                string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
+                if (!File.Exists(path))
+                {
+                    return;
+                }
+                //获取临时图层对象，并映射到当前对象。使用临时对象是因为无法将对象反序列化后直接应用到当前对象，对象类型可能不一致，属性可能被覆盖。
+                var tempLayers = FromFile(path);
+                new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<MLayerCollection, MapLayerCollection>();
+                }).CreateMapper().Map(tempLayers, this);
+                //将临时对象中所有图层加入当前对象
+                foreach (var layer in tempLayers)
+                {
+                    if (layer == tempLayers[^1])
+                    {
+                        IsBatchLoading = false;
+                    }
+                    await AddAsync(layer);
+                }
+                //如果选定了某个图层，则将其设置为选定图层
+                if (SelectedIndex >= 0
+                    && SelectedIndex < Count)
+                {
+                    Selected = this[SelectedIndex] as MapLayerInfo;
+                }
             }
-            //获取临时图层对象，并映射到当前对象。使用临时对象是因为无法将对象反序列化后直接应用到当前对象，对象类型可能不一致，属性可能被覆盖。
-            var tempLayers = FromFile(path);
-            new MapperConfiguration(cfg =>
+            finally
             {
-                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
-            }).CreateMapper().Map(tempLayers, this);
-            //将临时对象中所有图层加入当前对象
-            foreach (var layer in tempLayers)
-            {
-                await AddAsync(layer);
-            }
-            //如果选定了某个图层，则将其设置为选定图层
-            if (SelectedIndex >= 0
-                && SelectedIndex < Count)
-            {
-                Selected = this[SelectedIndex] as MapLayerInfo;
+                IsBatchLoading = false;
             }
         }
 
@@ -290,7 +308,7 @@ namespace MapBoard.Mapping.Model
             EsriLayers.RemoveAt(index);
             EsriLayers.Insert(index, layer.GetLayerForLayerList());
         }
-        public void Remove(MapLayerInfo layer)
+        public void Remove(IMapLayerInfo layer)
         {
             try
             {
