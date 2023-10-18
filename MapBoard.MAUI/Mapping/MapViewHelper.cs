@@ -103,8 +103,7 @@ OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
                     }
                 }
                 //加载底图
-                var baseLayers = Config.Instance.BaseLayers;
-                baseLayers.Reverse();
+                var baseLayers = Config.Instance.BaseLayers.Reverse<BaseLayerInfo>();
                 foreach (var item in baseLayers)
                 {
                     Layer layer = null;

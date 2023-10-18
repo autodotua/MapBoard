@@ -89,6 +89,8 @@ namespace MapBoard.Services
         /// </summary>
         public static string ResumeGpx { get; set; } = null;
 
+        public static Action BeforeLoop { get; set; } = null;
+
         /// <summary>
         /// GNSS状态信息
         /// </summary>
@@ -194,6 +196,7 @@ namespace MapBoard.Services
 
                 PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
                 int index = 0;
+                BeforeLoop?.Invoke();
                 while (running)
                 {
 

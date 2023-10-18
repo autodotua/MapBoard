@@ -28,6 +28,8 @@ using MapBoard.Services;
 using MapBoard.Views;
 using static Microsoft.Maui.ApplicationModel.Permissions;
 using Microsoft.Maui.Controls.Shapes;
+using MapBoard.Mapping.Model;
+using System.Xml.Linq;
 
 
 #if ANDROID
@@ -76,7 +78,7 @@ namespace MapBoard.Views
                     Type = typeof(LayerListView),
                     Direction = SwipeDirection.Left,
                     Container = layer,
-                    Content=layerView,
+                    Content = layerView,
                     Length = 300,
                 },
                 new SidePanelInfo
@@ -84,7 +86,7 @@ namespace MapBoard.Views
                     Type = typeof(TrackView),
                     Direction = SwipeDirection.Left,
                     Container = track,
-                    Content=trackView,
+                    Content = trackView,
                     Length = 300,
                 },
                 new SidePanelInfo
@@ -92,7 +94,7 @@ namespace MapBoard.Views
                     Type = typeof(FtpView),
                     Direction = SwipeDirection.Left,
                     Container = ftp,
-                    Content=ftpView,
+                    Content = ftpView,
                     Length = 300,
                 },
                 new SidePanelInfo
@@ -108,7 +110,7 @@ namespace MapBoard.Views
                     Type = typeof(ImportView),
                     Direction = SwipeDirection.Left,
                     Container = import,
-                    Content= importView,
+                    Content = importView,
                     Length = 300,
                 },
                 new SidePanelInfo
@@ -276,8 +278,7 @@ namespace MapBoard.Views
             {
                 Window.Title = "地图画板";
             }
-            MainMapView.Current.ViewpointChanged += (s, e) => CloseAllPanel();
-            MainMapView.Current. GeoViewTapped+= (s, e) => CloseAllPanel();
+            MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
 #if ANDROID
             var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
             height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
@@ -307,7 +308,16 @@ namespace MapBoard.Views
 
         private async void RefreshButton_Clicked(object sender, EventArgs e)
         {
-            await MainMapView.Current.LoadAsync();
+            var handle = ProgressPopup.Show("正在重载");
+            await Task.Delay(TimeSpan.FromSeconds(0.2));
+            try
+            {
+                await MainMapView.Current.LoadAsync();
+            }
+            finally
+            {
+                handle.Close();
+            }
         }
 
         private void TrackButton_Clicked(object sender, EventArgs e)
@@ -328,15 +338,39 @@ namespace MapBoard.Views
         }
         private async void ZoomToLayerButton_Click(object sender, EventArgs e)
         {
-            var layer = MainMapView.Current?.Layers?.Selected;
-            if (layer != null)
+            var layers = MainMapView.Current.Layers.Where(p => p.LayerVisible).ToDictionary(p => p.Name);
+            if (layers.Count != 0)
             {
-                try
+                string result = await DisplayActionSheet("缩放到图层", "取消", "全部", layers.Keys.ToArray());
+                if (result != null)
                 {
-                    var extent = await layer.QueryExtentAsync(new QueryParameters());
-                    await MainMapView.Current.ZoomToGeometryAsync(extent);
+                    Envelope extent = null;
+                    var handle = ProgressPopup.Show("正在查找范围");
+                    try
+                    {
+                        if (layers.TryGetValue(result, out ILayerInfo layer))
+                        {
+                             extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
+                        }
+                        else
+                        {
+                            EnvelopeBuilder eb = new EnvelopeBuilder(SpatialReferences.Wgs84);
+                            foreach (var layer2 in layers.Values)
+                            {
+                                var tempExtent = await (layer2 as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
+                                eb.UnionOf(tempExtent);
+                            }
+                            extent=eb.ToGeometry();
+                        }
+                        handle.Close();
+                        await MainMapView.Current.ZoomToGeometryAsync(extent);
+                    }
+                    catch (Exception ex)
+                    {
+                        handle.Close();
+                        await DisplayAlert("错误", ex.Message, "确定");
+                    }
                 }
-                catch { }
             }
         }
 

@@ -38,10 +38,10 @@
                 <FormattedString>
                     <Span Text="{Binding TrackService.Duration, Converter={StaticResource TrackDetailConverter}, ConverterParameter=1}" />
 
-                    <Span Text="   D=" />
+                    <Span Text="   " />
                     <Span Text="{Binding TrackService.TotalDistance, Converter={StaticResource TrackDetailConverter}, ConverterParameter=2}" />
 
-                    <Span Text="   V=" />
+                    <Span Text="   " />
                     <Span Text="{Binding TrackService.LastLocation, Converter={StaticResource TrackDetailConverter}, ConverterParameter=5}" />
 
                 </FormattedString>

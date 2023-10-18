@@ -67,12 +67,12 @@ public partial class TrackView : ContentView, ISidePanel
         var handle = ProgressPopup.Show("正在加载轨迹");
         try
         {
-                Gpx gpx = await Gpx.FromFileAsync(path);
+            Gpx gpx = await Gpx.FromFileAsync(path);
 
-                var overlay = MainMapView.Current.TrackOverlay;
-                var extent = await overlay.LoadColoredGpxAsync(gpx);
-                MainPage.Current.ClosePanel<TrackView>();
-                await MainMapView.Current.ZoomToGeometryAsync(extent);
+            var overlay = MainMapView.Current.TrackOverlay;
+            var extent = await overlay.LoadColoredGpxAsync(gpx);
+            MainPage.Current.ClosePanel<TrackView>();
+            await MainMapView.Current.ZoomToGeometryAsync(extent);
         }
         catch (Exception ex)
         {
@@ -92,15 +92,17 @@ public partial class TrackView : ContentView, ISidePanel
             await MainPage.Current.DisplayAlert("无法继续", "不存在现有的轨迹", "确定");
             return;
         }
-        StartTrack(gpxs[0].FullName);
-        //UpdateButtonsVisible(true);
+
+        var handle = ProgressPopup.Show("正在加载轨迹");
+        StartTrack(gpxs[0].FullName, handle);
     }
 
-    private void StartTrack(string resume = null)
+    private void StartTrack(string resume = null, ProgressPopup popup = null)
     {
         if (resume != null)
         {
             TrackService.ResumeGpx = resume;
+            TrackService.BeforeLoop = () => popup.Close();
         }
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StartTrackService();
@@ -188,6 +190,10 @@ public partial class TrackView : ContentView, ISidePanel
         {
             UpdateButtonsVisible();
         });
+        if (TrackService.Current == null)
+        {
+            TrackService.BeforeLoop = null;
+        }
     }
 
     private void UpdateButtonsVisible()
