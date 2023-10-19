@@ -37,7 +37,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#1D8348" ForegroundScale="0.5"  />
 		<None Remove="Resources\Images\btn_cancel.svg" />
 		<None Remove="Resources\Images\btn_clear.svg" />
 		<None Remove="Resources\Images\btn_delete.svg" />

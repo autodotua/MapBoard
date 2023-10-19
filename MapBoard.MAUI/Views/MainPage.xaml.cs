@@ -30,6 +30,8 @@ using static Microsoft.Maui.ApplicationModel.Permissions;
 using Microsoft.Maui.Controls.Shapes;
 using MapBoard.Mapping.Model;
 using System.Xml.Linq;
+using MapBoard.IO;
+
 
 
 #if ANDROID
@@ -249,6 +251,21 @@ namespace MapBoard.Views
 #endif
 
             await CheckAndRequestLocationPermission();
+
+            await CheckCrashAsync();
+        }
+
+        private async Task CheckCrashAsync()
+        {
+            var file = Directory.EnumerateFiles(FolderPaths.LogsPath, "Crash*.log")
+                .OrderByDescending(p => p)
+                .FirstOrDefault();
+            if (file != null && file != Config.Instance.LastCrashFile)
+            {
+                Config.Instance.LastCrashFile = file;
+                Config.Instance.Save();
+                await DisplayAlert("上一次崩溃", File.ReadAllText(file), "确定");
+            }
         }
 
         private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
@@ -265,7 +282,7 @@ namespace MapBoard.Views
 
         private void Current_SelectedFeatureChanged(object sender, EventArgs e)
         {
-         
+
         }
 
         private void FtpButton_Clicked(object sender, EventArgs e)
