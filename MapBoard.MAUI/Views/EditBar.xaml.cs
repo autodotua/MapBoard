@@ -13,7 +13,7 @@ public partial class EditBar : ContentView, ISidePanel
 
     public SwipeDirection Direction => SwipeDirection.Up;
 
-    public int Length => 120;
+    public int Length => 240;
 
     public bool Standalone => true;
 
@@ -53,7 +53,7 @@ public partial class EditBar : ContentView, ISidePanel
 
     private void GeometryEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(GeometryEditor.CanUndo) or nameof(GeometryEditor.CanRedo))
+        if (e.PropertyName is nameof(GeometryEditor.CanUndo) or nameof(GeometryEditor.CanRedo) or nameof(GeometryEditor.SelectedElement))
         {
             UpdateButtonsVisible();
         }
@@ -76,16 +76,23 @@ public partial class EditBar : ContentView, ISidePanel
 
     private void UpdateButtonsVisible()
     {
-        btnEdit.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Select;
-        btnClearSelection.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Select;
-        btnDelete.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Select;
+        stkSelection.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Select;
 
-        btnSaveEdit.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
-        btnCancelEdit.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
-        btnUndo.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
-        btnRedo.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
+        stkEdition.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
 
         btnUndo.IsEnabled = MainMapView.Current.GeometryEditor.CanUndo;
         btnRedo.IsEnabled = MainMapView.Current.GeometryEditor.CanRedo;
+
+        btnDeleteVertex.IsEnabled = MainMapView.Current.GeometryEditor.SelectedElement is GeometryEditorVertex;
+    }
+
+    private void DeleteVertexButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.GeometryEditor.DeleteSelectedElement();
+    }
+
+    private async void AttributeTableButton_Click(object sender, EventArgs e)
+    {
+        await MainPage.Current.DisplayAlert("属性表", "暂未实现此功能", "确定");
     }
 }

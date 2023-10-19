@@ -41,6 +41,7 @@
 		<None Remove="Resources\Images\btn_cancel.svg" />
 		<None Remove="Resources\Images\btn_clear.svg" />
 		<None Remove="Resources\Images\btn_delete.svg" />
+		<None Remove="Resources\Images\btn_delete_vertex.svg" />
 		<None Remove="Resources\Images\btn_draw.svg" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
@@ -48,6 +49,7 @@
 		<None Remove="Resources\Images\btn_redo.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
 		<None Remove="Resources\Images\btn_save.svg" />
+		<None Remove="Resources\Images\btn_table.svg" />
 		<None Remove="Resources\Images\btn_undo.svg" />
 		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
 

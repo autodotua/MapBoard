@@ -9,10 +9,14 @@
     HorizontalOptions="Center"
     Loaded="ContentView_Loaded">
     <ContentView.Resources>
-        <Style  
+        <Style
             BasedOn="{StaticResource DefaultButtonStyle}"
             TargetType="{x:Type Button}">
             <Setter Property="BackgroundColor" Value="{DynamicResource Gray600}" />
+            <Setter Property="WidthRequest" Value="60" />
+            <Setter Property="HeightRequest" Value="72" />
+            <Setter Property="ContentLayout" Value="0,Top" />
+            <Setter Property="Padding" Value="8" />
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
                     <VisualStateGroup x:Name="CommonStates">
@@ -44,82 +48,97 @@
         Padding="8"
         BackgroundColor="{DynamicResource Gray600}"
         HorizontalOptions="Center"
-        StrokeThickness="0">
+        StrokeThickness="0"
+        VerticalOptions="Start">
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="8" />
         </Border.StrokeShape>
         <Border.Shadow>
             <Shadow Opacity="0.8" />
         </Border.Shadow>
-        <HorizontalStackLayout
-            BackgroundColor="Transparent"
-            Spacing="8">
 
-            <Button
-                x:Name="btnEdit"
-                Padding="8"
-                Clicked="EditButton_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_draw.png"
-                Text="编辑"
-                WidthRequest="60" />
-            <Button
-                x:Name="btnDelete"
-                Padding="8"
-                Clicked="DeleteButton_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_delete.png"
-                Text="删除"
-                WidthRequest="60" />
-            <Button
-                x:Name="btnClearSelection"
-                Padding="8"
-                Clicked="CancelSelectionButton_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_ok.png"
-                Text="完成"
-                WidthRequest="60" />
+        <Grid>
+            <HorizontalStackLayout
+                x:Name="stkSelection"
+                BackgroundColor="Transparent"
+                Spacing="8">
 
-            <Button
-                x:Name="btnUndo"
-                Padding="8"
-                Clicked="UndoButton_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_undo.png"
-                Text="撤销"
-                WidthRequest="60" />
-            <Button
-                x:Name="btnRedo"
-                Padding="8"
-                Clicked="RedoButton_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_redo.png"
-                Text="恢复"
-                WidthRequest="60" />
-            <Button
-                x:Name="btnSaveEdit"
-                Padding="8"
-                Clicked="SaveEdit_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_save.png"
-                Text="保存"
-                WidthRequest="60" />
-            <Button
-                x:Name="btnCancelEdit"
-                Padding="8"
-                Clicked="CancelEdit_Click"
-                ContentLayout="0,Top"
-                HeightRequest="72"
-                ImageSource="btn_cancel.png"
-                Text="取消"
-                WidthRequest="60" />
+                <Button
+                    x:Name="btnEdit"
+                    Padding="8"
+                    Clicked="EditButton_Click"
+                    ContentLayout="0,Top"
+                    HeightRequest="72"
+                    ImageSource="btn_draw.png"
+                    Text="编辑"
+                    WidthRequest="60" />
+                <Button
+                    x:Name="btnDelete"
+                    Padding="8"
+                    Clicked="DeleteButton_Click"
+                    ContentLayout="0,Top"
+                    HeightRequest="72"
+                    ImageSource="btn_delete.png"
+                    Text="删除"
+                    WidthRequest="60" />
+                <Button
+                    x:Name="btnClearSelection"
+                    Padding="8"
+                    Clicked="CancelSelectionButton_Click"
+                    ContentLayout="0,Top"
+                    HeightRequest="72"
+                    ImageSource="btn_ok.png"
+                    Text="完成"
+                    WidthRequest="60" />
 
-        </HorizontalStackLayout>
+
+
+            </HorizontalStackLayout>
+            <VerticalStackLayout
+                x:Name="stkEdition"
+                BackgroundColor="Transparent">
+                <HorizontalStackLayout Spacing="8">
+                    <Button
+                        x:Name="btnUndo"
+                        Clicked="UndoButton_Click"
+                        ImageSource="btn_undo.png"
+                        Text="撤销" />
+                    <Button
+                        x:Name="btnRedo"
+                        Clicked="RedoButton_Click"
+                        ImageSource="btn_redo.png"
+                        Text="恢复" />
+                    <Button
+                        x:Name="btnSaveEdit"
+                        Clicked="SaveEdit_Click"
+                        ImageSource="btn_save.png"
+                        Text="保存" />
+                    <Button
+                        x:Name="btnCancelEdit"
+                        Clicked="CancelEdit_Click"
+                        ImageSource="btn_cancel.png"
+                        Text="取消" />
+
+
+
+                </HorizontalStackLayout>
+                <HorizontalStackLayout
+                    HorizontalOptions="Center"
+                    Spacing="8">
+                    <Button
+                        x:Name="btnDeleteVertex"
+                        Clicked="DeleteVertexButton_Click"
+                        ImageSource="btn_delete_vertex.png"
+                        Text="删除节点"
+                        WidthRequest="120" />
+                    <Button
+                        x:Name="btnAttributeTable"
+                        Clicked="AttributeTableButton_Click"
+                        ImageSource="btn_table.png"
+                        Text="编辑属性"
+                        WidthRequest="120" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
     </Border>
 </ContentView>
