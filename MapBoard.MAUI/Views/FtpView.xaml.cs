@@ -28,11 +28,8 @@ public partial class FtpView : ContentView, ISidePanel
     public int Length => 300;
 
     public bool Standalone => false;
-    public void OnPanelClosed()
-    {
-    }
 
-    public void OnPanelOpening()
+    public void OnPanelOpened()
     {
         var ip = FtpService.GetIpAddress();
         if (ip == null || !ip.Any())

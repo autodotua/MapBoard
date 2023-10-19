@@ -24,17 +24,10 @@ public partial class ImportView : ContentView, ISidePanel
     public int Length => 300;
 
     public bool Standalone => false;
-    public void OnPanelClosed()
-    {
-    }
 
-    public async void OnPanelOpening()
+    public async void OnPanelOpened()
     {
         await (BindingContext as ImportViewVideModel).LoadFilesAsync();
-    }
-
-    private void ContentView_Loaded(object sender, EventArgs e)
-    {
     }
 
     private async Task ImportAsync(string file)

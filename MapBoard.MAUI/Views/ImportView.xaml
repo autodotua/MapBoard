@@ -6,8 +6,7 @@
     xmlns:base="clr-namespace:MapBoard"
     xmlns:m="clr-namespace:MapBoard.Models"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
-    x:DataType="{x:Type vm:ImportViewVideModel}"
-    Loaded="ContentView_Loaded">
+    x:DataType="{x:Type vm:ImportViewVideModel}">
     <Grid
         Margin="16"
         RowDefinitions="*,8,Auto">

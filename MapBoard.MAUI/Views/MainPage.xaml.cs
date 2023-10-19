@@ -184,16 +184,16 @@ namespace MapBoard.Views
             }
         }
 
-        public void OpenPanel<T>()
+        public async void OpenPanel<T>()
         {
             var type = typeof(T);
             CloseAllPanel();
-            if (type2SidePanels[type].Content is ISidePanel s)
-            {
-                s.OnPanelOpening();
-            }
-            type2SidePanels[type].Container.TranslateTo(0, 0);
+            type2SidePanels[type].Content.OnPanelOpening();
             type2SidePanels[type].IsOpened = true;
+            if (!await type2SidePanels[type].Container.TranslateTo(0, 0))
+            {
+                type2SidePanels[type].Content.OnPanelOpened();
+            }
         }
 
         private void CloseAllPanel()

@@ -40,15 +40,13 @@ public partial class TrackView : ContentView, ISidePanel
     public int Length => 300;
 
     public bool Standalone => false;
-    public void OnPanelClosed()
+
+    public async void OnPanelOpened()
     {
+        UpdateButtonsVisible();
+        await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
     }
 
-    public async void OnPanelOpening()
-    {
-        await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
-        UpdateButtonsVisible();
-    }
 
     private void ContentPage_Loaded(object sender, EventArgs e)
     {
