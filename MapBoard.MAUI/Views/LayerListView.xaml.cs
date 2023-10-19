@@ -18,6 +18,13 @@ public partial class LayerListView : ContentView, ISidePanel
         BindingContext = new LayerViewViewModel();
 
     }
+
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
+
     public void OnPanelClosed()
     {
     }
@@ -44,6 +51,13 @@ public partial class LayerListView : ContentView, ISidePanel
         {
             (BindingContext as LayerViewViewModel).Update();
         }
+    }
+
+    private async void lvwLevel_ItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        var layer = e.Item as IMapLayerInfo;
+        LayerStylePopup p = new LayerStylePopup(layer);
+        await MainPage.Current.ShowPopupAsync(p);
     }
 
     private void MapView_MapLoaded(object sender, EventArgs e)
@@ -92,12 +106,5 @@ public partial class LayerListView : ContentView, ISidePanel
             }
 
         }
-    }
-
-    private async void lvwLevel_ItemTapped(object sender, ItemTappedEventArgs e)
-    {
-        var layer = e.Item as IMapLayerInfo;
-        LayerStylePopup p = new LayerStylePopup(layer);
-        await MainPage.Current.ShowPopupAsync(p);
     }
 }

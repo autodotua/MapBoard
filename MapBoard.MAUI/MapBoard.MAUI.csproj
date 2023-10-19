@@ -38,10 +38,17 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+		<None Remove="Resources\Images\btn_cancel.svg" />
 		<None Remove="Resources\Images\btn_clear.svg" />
+		<None Remove="Resources\Images\btn_delete.svg" />
+		<None Remove="Resources\Images\btn_draw.svg" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
+		<None Remove="Resources\Images\btn_ok.svg" />
+		<None Remove="Resources\Images\btn_redo.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
+		<None Remove="Resources\Images\btn_save.svg" />
+		<None Remove="Resources\Images\btn_undo.svg" />
 		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
 
 		<!-- Splash Screen -->
@@ -109,6 +116,9 @@
 	  <Compile Update="Views\ProgressPopup.xaml.cs">
 	    <DependentUpon>ProgressPopup.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\EditBar.xaml.cs">
+	    <DependentUpon>EditBar.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\TrackView.xaml.cs">
 	    <DependentUpon>TrackView.xaml</DependentUpon>
 	  </Compile>
@@ -143,6 +153,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ProgressPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EditBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\TrackingBar.xaml">

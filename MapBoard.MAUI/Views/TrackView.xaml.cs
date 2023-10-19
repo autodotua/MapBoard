@@ -35,6 +35,11 @@ public partial class TrackView : ContentView, ISidePanel
         TrackService.GpxSaved += TrackService_GpxSaved;
     }
 
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
     public void OnPanelClosed()
     {
     }

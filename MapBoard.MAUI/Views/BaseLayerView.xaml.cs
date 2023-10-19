@@ -21,6 +21,12 @@ namespace MapBoard.Views;
 
 public partial class BaseLayerView : ContentView, ISidePanel
 {
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
+
     public BaseLayerView()
     {
         InitializeComponent();
@@ -177,14 +183,14 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
         string deleteText = "删除";
         string modifyText = "修改";
-        var result = await MainPage.Current.DisplayActionSheet("底图操作", "取消", null,deleteText, modifyText);
-        if(result== deleteText)
+        var result = await MainPage.Current.DisplayActionSheet("底图操作", "取消", null, deleteText, modifyText);
+        if (result == deleteText)
         {
             (BindingContext as BaseLayerViewViewModel).BaseLayers.Remove(baseLayer);
             var esriBaseLayer = MainMapView.Current.Map.Basemap.BaseLayers.First(p => p.Name == baseLayer.Name);
             MainMapView.Current.Map.Basemap.BaseLayers.Remove(esriBaseLayer);
         }
-        else if(result== modifyText)
+        else if (result == modifyText)
         {
 #if ANDROID
             ShowAndroidDialog(true, baseLayer);

@@ -48,6 +48,21 @@ namespace MapBoard.Mapping
 
         private Feature selectedFeature = null;
 
+        public Feature SelectedFeature
+        {
+            get => selectedFeature;
+            set
+            {
+                if (selectedFeature != value)
+                {
+                    selectedFeature = value;
+                    SelectedFeatureChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public event EventHandler SelectedFeatureChanged;
+
         public MainMapView()
         {
             if (instances.Count > 1)
@@ -56,7 +71,7 @@ namespace MapBoard.Mapping
             }
             instances.Add(this);
             Layers = new MapLayerCollection();
-
+            Editor = new EditHelper(this);
             IsAttributionTextVisible = false;
             Margin = new Thickness(-watermarkHeight);
 
@@ -82,7 +97,26 @@ namespace MapBoard.Mapping
                 }
                 return true;
             });
+            SelectedFeatureChanged += (s, e) => UpdateBoardTask();
+            Editor.EditStatusChanged += (s, e) => UpdateBoardTask();
             //NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        private void UpdateBoardTask()
+        {
+            if (Editor.IsEditing)
+            {
+                CurrentTask = BoardTask.Draw;
+                ClearSelection();
+            }
+            else if (SelectedFeature != null)
+            {
+                CurrentTask = BoardTask.Select;
+            }
+            else
+            {
+                CurrentTask = BoardTask.Ready;
+            }
         }
 
         /// <summary>
@@ -128,6 +162,8 @@ namespace MapBoard.Mapping
         public MapLayerCollection Layers { get; }
 
         public TrackOverlayHelper TrackOverlay { get; private set; }
+
+        public EditHelper Editor { get; private set; }
 
         /// <summary>
         /// 初始化加载
@@ -244,21 +280,27 @@ namespace MapBoard.Mapping
         public void ClearSelection()
         {
             DismissCallout();
-            if (selectedFeature != null)
+            if (SelectedFeature != null)
             {
-                (selectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(selectedFeature);
-                selectedFeature = null;
+                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
+                SelectedFeature = null;
             }
         }
 
         private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
         {
-            ClearSelection();
+            if (Editor.IsEditing)
+            {
+                return;
+            }
             try
             {
                 if (!await TapToSelectOverlayAsync(e))
                 {
-                    await TapToSelectFeatureAsync(e);
+                    if (!await TapToSelectFeatureAsync(e))
+                    {
+                        ClearSelection();
+                    }
                 }
             }
             catch (Exception ex)
@@ -283,31 +325,34 @@ namespace MapBoard.Mapping
                 var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
                 if (graphic.Attributes.ContainsKey("Altitude"))
                 {
-                    var altitude =(double) graphic.Attributes["Altitude"];
+                    var altitude = (double)graphic.Attributes["Altitude"];
                     detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
                 }
-                ShowCallout(e.Position, graphic, timeString, detailString);
+                ShowCallout(e.Position, graphic, timeString, detailString, true);
                 return true;
             }
             return false;
         }
 
-        private void ShowCallout(Point point, GeoElement graphic, string text, string detail)
+        private void ShowCallout(Point point, GeoElement graphic, string text, string detail, bool cancelButton)
         {
             CalloutDefinition cd = new CalloutDefinition(graphic)
             {
                 Text = text,
                 DetailText = detail,
-                ButtonImage = closeImage,
                 OnButtonClick = a =>
                 {
                     ClearSelection();
                 }
             };
+            if (cancelButton)
+            {
+                cd.ButtonImage = closeImage;
+            }
             ShowCalloutForGeoElement(graphic, point, cd);
         }
 
-        private async Task TapToSelectFeatureAsync(GeoViewInputEventArgs e)
+        private async Task<bool> TapToSelectFeatureAsync(GeoViewInputEventArgs e)
         {
             IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
             results = results.Where(p => Layers.FindLayer(p.LayerContent).Interaction.CanSelect);
@@ -329,7 +374,9 @@ namespace MapBoard.Mapping
                 {
                     SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
                 }
+                return true;
             }
+            return false;
         }
 
         private async void MainMapView_Loaded(object sender, EventArgs e)
@@ -386,9 +433,20 @@ namespace MapBoard.Mapping
         {
             (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
             (feature.FeatureTable.Layer as FeatureLayer).SelectFeature(feature);
-            ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature));
-            selectedFeature = feature;
+            ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature), false);
+            SelectedFeature = feature;
         }
 
+        public async void DeleteSelectedFeatureAsync()
+        {
+            if (SelectedFeature == null)
+            {
+                throw new Exception("没有选中任何要素");
+            }
+
+            var feature = SelectedFeature;
+            ClearSelection();
+            await feature.FeatureTable.DeleteFeatureAsync(feature);
+        }
     }
 }

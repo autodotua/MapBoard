@@ -19,6 +19,11 @@ public partial class ImportView : ContentView, ISidePanel
 
     }
 
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
     public void OnPanelClosed()
     {
     }

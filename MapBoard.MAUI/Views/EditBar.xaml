@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.EditBar"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:map="clr-namespace:MapBoard.Mapping"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    HorizontalOptions="Center"
+    Loaded="ContentView_Loaded">
+    <ContentView.Resources>
+        <Style  
+            BasedOn="{StaticResource DefaultButtonStyle}"
+            TargetType="{x:Type Button}">
+            <Setter Property="BackgroundColor" Value="{DynamicResource Gray600}" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Button.Opacity" Value="0.4" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Button.Opacity" Value="0.6" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Button.Opacity" Value="0.8" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+
+        </Style>
+
+    </ContentView.Resources>
+    <Border
+        Margin="8,42,8,8"
+        Padding="8"
+        BackgroundColor="{DynamicResource Gray600}"
+        HorizontalOptions="Center"
+        StrokeThickness="0">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="8" />
+        </Border.StrokeShape>
+        <Border.Shadow>
+            <Shadow Opacity="0.8" />
+        </Border.Shadow>
+        <HorizontalStackLayout
+            BackgroundColor="Transparent"
+            Spacing="8">
+
+            <Button
+                x:Name="btnEdit"
+                Padding="8"
+                Clicked="EditButton_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_draw.png"
+                Text="编辑"
+                WidthRequest="60" />
+            <Button
+                x:Name="btnDelete"
+                Padding="8"
+                Clicked="DeleteButton_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_delete.png"
+                Text="删除"
+                WidthRequest="60" />
+            <Button
+                x:Name="btnClearSelection"
+                Padding="8"
+                Clicked="CancelSelectionButton_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_ok.png"
+                Text="完成"
+                WidthRequest="60" />
+
+            <Button
+                x:Name="btnUndo"
+                Padding="8"
+                Clicked="UndoButton_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_undo.png"
+                Text="撤销"
+                WidthRequest="60" />
+            <Button
+                x:Name="btnRedo"
+                Padding="8"
+                Clicked="RedoButton_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_redo.png"
+                Text="恢复"
+                WidthRequest="60" />
+            <Button
+                x:Name="btnSaveEdit"
+                Padding="8"
+                Clicked="SaveEdit_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_save.png"
+                Text="保存"
+                WidthRequest="60" />
+            <Button
+                x:Name="btnCancelEdit"
+                Padding="8"
+                Clicked="CancelEdit_Click"
+                ContentLayout="0,Top"
+                HeightRequest="72"
+                ImageSource="btn_cancel.png"
+                Text="取消"
+                WidthRequest="60" />
+
+        </HorizontalStackLayout>
+    </Border>
+</ContentView>

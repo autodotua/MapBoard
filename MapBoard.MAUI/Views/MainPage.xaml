@@ -17,6 +17,11 @@
             x:Name="tbar"
             HorizontalOptions="Fill"
             VerticalOptions="Start" />
+        <v:EditBar
+            x:Name="ebar"
+            BackgroundColor="Transparent"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start" />
         <Grid
             x:Name="track"
             Padding="0,24,0,0"

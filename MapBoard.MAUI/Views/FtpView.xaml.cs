@@ -10,6 +10,7 @@ namespace MapBoard.Views;
 public partial class FtpView : ContentView, ISidePanel
 {
     FtpService ftpService;
+
     public FtpView()
     {
         BindingContext = new FtpViewViewModel();
@@ -22,24 +23,23 @@ public partial class FtpView : ContentView, ISidePanel
         }
     }
 
-    private async void StartStopFtpButton_Clicked(object sender, EventArgs e)
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
+    public void OnPanelClosed()
     {
-        if ((BindingContext as FtpViewViewModel).IsOn)
+    }
+
+    public void OnPanelOpening()
+    {
+        var ip = FtpService.GetIpAddress();
+        if (ip == null || !ip.Any())
         {
-            stkFtpDirs.IsEnabled = true;
-            (sender as Button).Text = "打开FTP";
-            await ftpService.StopServerAsync();
-            ftpService = null;
+            ip = null;
         }
-        else
-        {
-            stkFtpDirs.IsEnabled = false;
-            string dir = GetSelectedDir();
-            ftpService = new FtpService(dir);
-            await ftpService.StartServerAsync();
-            (sender as Button).Text = "关闭FTP";
-        }
-        (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
+        (BindingContext as FtpViewViewModel).IP = ip == null ? "未知" : string.Join(Environment.NewLine, ip);
     }
 
     private string GetSelectedDir()
@@ -75,7 +75,7 @@ public partial class FtpView : ContentView, ISidePanel
 
     private void OpenDirButton_Clicked(object sender, EventArgs e)
     {
-        if(DeviceInfo.Platform!=DevicePlatform.WinUI)
+        if (DeviceInfo.Platform != DevicePlatform.WinUI)
         {
             throw new NotSupportedException("仅支持Windows");
         }
@@ -83,17 +83,23 @@ public partial class FtpView : ContentView, ISidePanel
         Process.Start("explorer.exe", dir);
     }
 
-    public void OnPanelOpening()
+    private async void StartStopFtpButton_Clicked(object sender, EventArgs e)
     {
-        var ip = FtpService.GetIpAddress();
-        if (ip == null || !ip.Any())
+        if ((BindingContext as FtpViewViewModel).IsOn)
         {
-            ip = null;
+            stkFtpDirs.IsEnabled = true;
+            (sender as Button).Text = "打开FTP";
+            await ftpService.StopServerAsync();
+            ftpService = null;
         }
-        (BindingContext as FtpViewViewModel).IP = ip == null ? "未知" : string.Join(Environment.NewLine, ip);
-    }
-
-    public void OnPanelClosed()
-    {
+        else
+        {
+            stkFtpDirs.IsEnabled = false;
+            string dir = GetSelectedDir();
+            ftpService = new FtpService(dir);
+            await ftpService.StartServerAsync();
+            (sender as Button).Text = "关闭FTP";
+        }
+        (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
     }
 }

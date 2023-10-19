@@ -73,54 +73,13 @@ namespace MapBoard.Views
 
             sidePanels =
             [
-                new SidePanelInfo
-                {
-                    Type = typeof(LayerListView),
-                    Direction = SwipeDirection.Left,
-                    Container = layer,
-                    Content = layerView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(TrackView),
-                    Direction = SwipeDirection.Left,
-                    Container = track,
-                    Content = trackView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(FtpView),
-                    Direction = SwipeDirection.Left,
-                    Container = ftp,
-                    Content = ftpView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(BaseLayerView),
-                    Direction = SwipeDirection.Left,
-                    Container = baseLayer,
-                    Content = baseLayerView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(ImportView),
-                    Direction = SwipeDirection.Left,
-                    Container = import,
-                    Content = importView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(TrackingBar),
-                    Direction = SwipeDirection.Up,
-                    Container = tbar,
-                    Length = 96,
-                    Standalone = true,
-                },
+                new SidePanelInfo(layer, layerView),
+                new SidePanelInfo(track, trackView),
+                new SidePanelInfo(ftp, ftpView),
+                new SidePanelInfo(baseLayer, baseLayerView),
+                new SidePanelInfo(import, importView),
+                new SidePanelInfo(tbar, tbar),
+                new SidePanelInfo(ebar, ebar)
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
@@ -279,6 +238,7 @@ namespace MapBoard.Views
                 Window.Title = "地图画板";
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
+            MainMapView.Current.BoardTaskChanged += MapView_BoardTaskChanged;
 #if ANDROID
             var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
             height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
@@ -289,6 +249,23 @@ namespace MapBoard.Views
 #endif
 
             await CheckAndRequestLocationPermission();
+        }
+
+        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        {
+            if (e.NewTask is BoardTask.Select or BoardTask.Draw)
+            {
+                OpenPanel<EditBar>();
+            }
+            else
+            {
+                ClosePanel<EditBar>();
+            }
+        }
+
+        private void Current_SelectedFeatureChanged(object sender, EventArgs e)
+        {
+         
         }
 
         private void FtpButton_Clicked(object sender, EventArgs e)
@@ -350,7 +327,7 @@ namespace MapBoard.Views
                     {
                         if (layers.TryGetValue(result, out ILayerInfo layer))
                         {
-                             extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
+                            extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
                         }
                         else
                         {
@@ -360,7 +337,7 @@ namespace MapBoard.Views
                                 var tempExtent = await (layer2 as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
                                 eb.UnionOf(tempExtent);
                             }
-                            extent=eb.ToGeometry();
+                            extent = eb.ToGeometry();
                         }
                         handle.Close();
                         await MainMapView.Current.ZoomToGeometryAsync(extent);
