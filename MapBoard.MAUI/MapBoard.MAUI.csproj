@@ -37,7 +37,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#1D8348" ForegroundScale="0.5"  />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#1D8348" ForegroundScale="0.5" />
 		<None Remove="Resources\Images\btn_cancel.svg" />
 		<None Remove="Resources\Images\btn_clear.svg" />
 		<None Remove="Resources\Images\btn_delete.svg" />
@@ -115,6 +115,9 @@
 	  <Compile Update="Views\MapPage.xaml.cs">
 	    <DependentUpon>MapPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\AttributeTablePopup.xaml.cs">
+	    <DependentUpon>AttributeTablePopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ProgressPopup.xaml.cs">
 	    <DependentUpon>ProgressPopup.xaml</DependentUpon>
 	  </Compile>
@@ -152,6 +155,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\MapPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\AttributeTablePopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ProgressPopup.xaml">

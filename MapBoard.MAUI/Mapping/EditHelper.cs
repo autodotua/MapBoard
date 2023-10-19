@@ -7,6 +7,7 @@ namespace MapBoard.Mapping
     public class EditHelper
     {
         private Feature editingFeature = null;
+        public Feature EditingFeature => editingFeature;
 
         private bool isEditing;
 

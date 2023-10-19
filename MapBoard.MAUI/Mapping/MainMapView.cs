@@ -93,7 +93,11 @@ namespace MapBoard.Mapping
                     && Layers != null
                  && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
                 {
-                    Layers.MapViewExtentJson = envelope.ToJson();
+                    if(Layers.MapViewExtentJson != envelope.ToJson())
+                    {
+                        Layers.MapViewExtentJson = envelope.ToJson();
+                        Layers.Save();
+                    }
                 }
                 return true;
             });

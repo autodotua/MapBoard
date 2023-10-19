@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping;
 using MapBoard.ViewModels;
@@ -91,8 +92,9 @@ public partial class EditBar : ContentView, ISidePanel
         MainMapView.Current.GeometryEditor.DeleteSelectedElement();
     }
 
-    private async void AttributeTableButton_Click(object sender, EventArgs e)
+    private void AttributeTableButton_Click(object sender, EventArgs e)
     {
-        await MainPage.Current.DisplayAlert("属性表", "暂未实现此功能", "确定");
+        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature);
+        MainPage.Current.ShowPopup(popup);
     }
 }
