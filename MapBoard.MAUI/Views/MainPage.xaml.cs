@@ -285,11 +285,6 @@ namespace MapBoard.Views
 
         }
 
-        private void FtpButton_Clicked(object sender, EventArgs e)
-        {
-            OpenOrClosePanel<FtpView>();
-        }
-
         private void ImportButton_Clicked(object sender, EventArgs e)
         {
             OpenOrClosePanel<ImportView>();
@@ -335,15 +330,29 @@ namespace MapBoard.Views
             var layers = MainMapView.Current.Layers.Where(p => p.LayerVisible).ToDictionary(p => p.Name);
             if (layers.Count != 0)
             {
-                string result = await DisplayActionSheet("缩放到图层", "取消", "全部", layers.Keys.ToArray());
-                if (result != null)
+                var items = new List<MenuItem>()
+                {
+                    new MenuItem(){Text="全部"},
+                };
+                foreach (var name in layers.Keys)
+                {
+                    items.Add(new MenuItem()
+                    {
+                        Text = name
+                    });
+                }
+                var result = await (sender as View).PopupMenuAsync(items, "缩放到图层");
+                //string result = await DisplayActionSheet("缩放到图层", "取消", "全部", layers.Keys.ToArray());
+                if (result > 0)
                 {
                     Envelope extent = null;
                     var handle = ProgressPopup.Show("正在查找范围");
                     try
                     {
-                        if (layers.TryGetValue(result, out ILayerInfo layer))
+                        if (result > 0)
                         {
+                            var name = items[result].Text;
+                            var layer = layers[name];
                             extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
                         }
                         else
@@ -371,6 +380,32 @@ namespace MapBoard.Views
         private void SetBaseLayersTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
         {
             OpenPanel<BaseLayerView>();
+        }
+
+        private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        {
+            OpenOrClosePanel<FtpView>();
+        }
+
+        private async void AddGeometryButton_Clicked(object sender, EventArgs e)
+        {
+            if (MainMapView.Current.Editor.IsEditing)
+            {
+                return;
+            }
+            var layers = MainMapView.Current.Layers
+                .Where(p => p.LayerVisible)
+                .Select(p => new MenuItem() { Text = p.Name, CommandParameter = p })
+                .ToList();
+            if (layers.Count == 0)
+            {
+                await DisplayAlert("无法绘制", "不存在任何可见图层", "确定");
+            }
+            var result = await (sender as View).PopupMenuAsync(layers, "选择图层");
+            if (result >= 0)
+            {
+                MainMapView.Current.Editor.StartDraw(layers[result].CommandParameter as IMapLayerInfo);
+            }
         }
     }
 

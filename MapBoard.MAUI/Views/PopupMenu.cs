@@ -5,18 +5,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace MapBoard.Views
 {
     public static class PopupMenu
     {
-        public static async Task<int> PopupMenuAsync(this View view, IEnumerable<MenuItem> items)
+        public static async Task<int> PopupMenuAsync(this View view, IEnumerable<MenuItem> items, string title = null)
         {
             Popup ppp = new Popup
             {
                 Color = Colors.Transparent,
                 Anchor = view,
-                VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.End,
                 CanBeDismissedByTappingOutsideOfPopup = true,
             };
             var template = new DataTemplate(() =>
@@ -32,7 +32,6 @@ namespace MapBoard.Views
                 BackgroundColor = Colors.Transparent,
                 SelectionMode = ListViewSelectionMode.None,
                 HorizontalOptions = LayoutOptions.Fill,
-                Margin = new Thickness(8),
                 ItemsSource = items,
                 ItemTemplate = template,
                 WidthRequest = 200,
@@ -41,9 +40,29 @@ namespace MapBoard.Views
             {
                 ppp.Close(e.ItemIndex);
             };
+            Grid grid = new Grid()
+            {
+                Margin = new Thickness(8),
+            };
+            grid.Add(list);
+            if (title != null)
+            {
+                Label titleLabel = new Label()
+                {
+                    Text = title,
+                    FontSize = 24,
+                    Margin=new Thickness(8,0,0,0),
+                    TextColor = Colors.Gray
+                };
+                grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
+                grid.AddRowDefinition(new RowDefinition(8));
+                grid.AddRowDefinition(new RowDefinition(new GridLength(1, GridUnitType.Star)));
+                grid.Add(titleLabel);
+                Grid.SetRow(list, 2);
+            }
             Border bd = new Border()
             {
-                Content = list,
+                Content = grid,
                 StrokeThickness = 0,
                 StrokeShape = new RoundRectangle()
                 {
@@ -55,10 +74,9 @@ namespace MapBoard.Views
                 },
             };
             bd.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Colors.Black);
-
             ppp.Content = bd;
             var result = await MainPage.Current.ShowPopupAsync(ppp);
-            if(result==null)
+            if (result == null)
             {
                 return -1;
             }

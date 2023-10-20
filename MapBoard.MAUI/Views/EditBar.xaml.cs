@@ -3,7 +3,6 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping;
 using MapBoard.ViewModels;
-using Microsoft.Maui.Platform;
 
 namespace MapBoard.Views;
 
@@ -137,7 +136,7 @@ public partial class EditBar : ContentView, ISidePanel
 
     private void AttributeTableButton_Click(object sender, EventArgs e)
     {
-        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature);
+        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature, MainMapView.Current.Editor.IsCreating);
         MainPage.Current.ShowPopup(popup);
     }
 
