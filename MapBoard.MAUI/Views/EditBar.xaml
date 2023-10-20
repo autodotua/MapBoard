@@ -130,13 +130,18 @@
                         Clicked="DeleteVertexButton_Click"
                         ImageSource="btn_delete_vertex.png"
                         Text="删除节点"
-                        WidthRequest="120" />
+                        WidthRequest="92" />
+                    <Button
+                        x:Name="btnPart"
+                        Clicked="PartButton_Click"
+                        ImageSource="btn_part.png"
+                        Text="部分"/>
                     <Button
                         x:Name="btnAttributeTable"
                         Clicked="AttributeTableButton_Click"
                         ImageSource="btn_table.png"
                         Text="编辑属性"
-                        WidthRequest="120" />
+                        WidthRequest="92" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
         </Grid>
