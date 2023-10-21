@@ -4,11 +4,14 @@ using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping;
 using MapBoard.Util;
 using MapBoard.ViewModels;
+using static MapBoard.Views.PopupMenu;
 
 namespace MapBoard.Views;
 
 public partial class EditBar : ContentView, ISidePanel
 {
+    private bool requestNewPart = false;
+
     public EditBar()
     {
         InitializeComponent();
@@ -29,6 +32,12 @@ public partial class EditBar : ContentView, ISidePanel
         UpdateButtonsVisible();
     }
 
+    private void AttributeTableButton_Click(object sender, EventArgs e)
+    {
+        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature, MainMapView.Current.Editor.IsCreating);
+        MainPage.Current.ShowPopup(popup);
+    }
+
     private void CancelEdit_Click(object sender, EventArgs e)
     {
         MainMapView.Current.Editor.Cancel();
@@ -42,11 +51,17 @@ public partial class EditBar : ContentView, ISidePanel
     private void ContentView_Loaded(object sender, EventArgs e)
     {
         MainMapView.Current.GeometryEditor.PropertyChanged += GeometryEditor_PropertyChanged;
+        MainMapView.Current.SelectedFeatureChanged += Mapview_SelectedFeatureChanged;
     }
 
     private void DeleteButton_Click(object sender, EventArgs e)
     {
         MainMapView.Current.DeleteSelectedFeatureAsync();
+    }
+
+    private void DeleteVertexButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.GeometryEditor.DeleteSelectedElement();
     }
 
     private void EditButton_Click(object sender, EventArgs e)
@@ -57,7 +72,10 @@ public partial class EditBar : ContentView, ISidePanel
     private void GeometryEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var editor = sender as GeometryEditor;
-        if (e.PropertyName is nameof(GeometryEditor.CanUndo) or nameof(GeometryEditor.CanRedo) or nameof(GeometryEditor.Geometry) or nameof(GeometryEditor.SelectedElement))
+        if (e.PropertyName is nameof(GeometryEditor.CanUndo)
+            or nameof(GeometryEditor.CanRedo)
+            or nameof(GeometryEditor.Geometry)
+            or nameof(GeometryEditor.SelectedElement))
         {
             UpdateButtonsVisible();
         }
@@ -102,57 +120,17 @@ public partial class EditBar : ContentView, ISidePanel
         }
     }
 
-    private void RedoButton_Click(object sender, EventArgs e)
+    private void Mapview_SelectedFeatureChanged(object sender, EventArgs e)
     {
-        MainMapView.Current.GeometryEditor.Redo();
+        UpdateButtonsVisible();
     }
-
-    private async void SaveEdit_Click(object sender, EventArgs e)
-    {
-        await MainMapView.Current.Editor.SaveAsync();
-    }
-
-    private void UndoButton_Click(object sender, EventArgs e)
-    {
-        MainMapView.Current.GeometryEditor.Undo();
-    }
-
-    private void UpdateButtonsVisible()
-    {
-        var map = MainMapView.Current;
-        stkSelection.IsVisible = map.CurrentTask == BoardTask.Select;
-
-        stkEdition.IsVisible = map.CurrentTask == BoardTask.Draw;
-
-        btnEdit.IsEnabled = map.Layers.FindLayer(map.SelectedFeature.FeatureTable.Layer).CanEdit;
-        btnUndo.IsEnabled = map.GeometryEditor.CanUndo;
-        btnRedo.IsEnabled = map.GeometryEditor.CanRedo;
-
-        btnDeleteVertex.IsEnabled = map.GeometryEditor.SelectedElement is GeometryEditorVertex;
-        btnPart.IsEnabled = map.GeometryEditor.Geometry is Multipart;
-    }
-
-    private void DeleteVertexButton_Click(object sender, EventArgs e)
-    {
-        MainMapView.Current.GeometryEditor.DeleteSelectedElement();
-    }
-
-    private void AttributeTableButton_Click(object sender, EventArgs e)
-    {
-        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature, MainMapView.Current.Editor.IsCreating);
-        MainPage.Current.ShowPopup(popup);
-    }
-
-    private bool requestNewPart = false;
-
     private async void PartButton_Click(object sender, EventArgs e)
     {
         var editor = MainMapView.Current.GeometryEditor;
-        var items = new MenuItem[] {
-            new MenuItem(){Text="新增部分"},
-            new MenuItem()
+        var items = new PopupMenuItem[] {
+            new PopupMenuItem("新增部分"),
+            new PopupMenuItem("删除当前部分")
             {
-                Text = "删除当前部分",
                 IsEnabled = (editor.Geometry as Multipart).Parts.Count > 1
             }
         };
@@ -196,5 +174,46 @@ public partial class EditBar : ContentView, ISidePanel
             editor.ReplaceGeometry(m is Polyline ? new Polyline(parts) : new Polygon(parts));
         }
 
+    }
+
+    private void RedoButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.GeometryEditor.Redo();
+    }
+
+    private async void SaveEdit_Click(object sender, EventArgs e)
+    {
+        await MainMapView.Current.Editor.SaveAsync();
+    }
+
+    private void UndoButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.GeometryEditor.Undo();
+    }
+
+    private void UpdateButtonsVisible()
+    {
+        var map = MainMapView.Current;
+        stkSelection.IsVisible = map.CurrentTask == BoardTask.Select;
+
+        stkEdition.IsVisible = map.CurrentTask == BoardTask.Draw;
+        switch (map.CurrentTask)
+        {
+            case BoardTask.NotReady:
+                break;
+            case BoardTask.Ready:
+                break;
+            case BoardTask.Draw:
+                btnUndo.IsEnabled = map.GeometryEditor.CanUndo;
+                btnRedo.IsEnabled = map.GeometryEditor.CanRedo;
+                btnDeleteVertex.IsEnabled = map.GeometryEditor.SelectedElement is GeometryEditorVertex;
+                btnPart.IsEnabled = map.GeometryEditor.Geometry is Multipart;
+                break;
+            case BoardTask.Select:
+                btnEdit.IsEnabled = map.Layers.FindLayer(map.SelectedFeature.FeatureTable.Layer).CanEdit;
+                break;
+            default:
+                break;
+        }
     }
 }

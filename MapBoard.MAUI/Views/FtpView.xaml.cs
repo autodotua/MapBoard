@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using MapBoard.IO;
 using MapBoard.Services;
 using MapBoard.ViewModels;
@@ -113,50 +114,19 @@ public partial class FtpView : ContentView, ISidePanel
             root = new Java.IO.File(root, AppInfo.Name);
             root.Mkdir();
 
-
-
-
             await Task.Run(() =>
             {
                 var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").ToList();
                 foreach (var name in gpxFiles)
                 {
                     var dist = Path.Combine(root.Path, Path.GetFileName(name));
-                    File.Copy(name, dist);
+                    File.Copy(name, dist, true);
                     File.SetLastWriteTime(dist, File.GetLastWriteTime(name));
-                    //var source = new Java.IO.File(name);
-                    //var dist = new Java.IO.File(root, Path.GetFileName(name));
-                    //if (dist.Exists())
-                    //{
-                    //    continue;
-                    //}
-                    //using Java.IO.InputStream inStream = new Java.IO.FileInputStream(source);
-                    //try
-                    //{
-                    //    var buffer = new byte[1024];
-                    //    int length = 0;
-                    //    using Java.IO.OutputStream outputStream = new Java.IO.FileOutputStream(dist);
-                    //    try
-                    //    {
-                    //        while ((length = await inStream.ReadAsync(buffer)) > 0)
-                    //        {
-                    //            await outputStream.WriteAsync(buffer, 0, length);
-                    //        }
-                    //    }
-                    //    finally
-                    //    {
-                    //        outputStream.Close();
-                    //    }
-                    //}
-                    //finally
-                    //{
-                    //    inStream.Close();
-                    //}
                 }
             });
-            Android.Widget.Toast.MakeText(Platform.CurrentActivity, "已保存到" + root.Path, Android.Widget.ToastLength.Short).Show();
+            await Toast.Make("已保存到" + root.Path,CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await MainPage.Current.DisplayAlert("保存失败", ex.Message, "确定");
         }

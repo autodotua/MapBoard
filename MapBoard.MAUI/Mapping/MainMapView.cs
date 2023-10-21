@@ -435,7 +435,10 @@ namespace MapBoard.Mapping
 
         private void SelectFeature(Feature feature, Point point)
         {
-            (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
+            if (SelectedFeature != null)
+            {
+                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
+            }
             (feature.FeatureTable.Layer as FeatureLayer).SelectFeature(feature);
             ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature), false);
             SelectedFeature = feature;

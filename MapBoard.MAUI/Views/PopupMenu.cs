@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using MapBoard.Mapping.Model;
 using Microsoft.Maui.Controls.Shapes;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace MapBoard.Views
 {
     public static class PopupMenu
     {
-        public static async Task<int> PopupMenuAsync(this View view, IEnumerable<MenuItem> items, string title = null)
+        public static async Task<int> PopupMenuAsync(this View view, IEnumerable<PopupMenuItem> items, string title = null)
         {
             Popup ppp = new Popup
             {
@@ -22,8 +23,9 @@ namespace MapBoard.Views
             var template = new DataTemplate(() =>
             {
                 TextCell tc = new TextCell();
-                tc.SetBinding(TextCell.TextProperty, new Binding(nameof(MenuItem.Text)));
-                tc.SetBinding(TextCell.IsEnabledProperty, new Binding(nameof(MenuItem.IsEnabled)));
+                tc.SetBinding(TextCell.TextProperty, new Binding(nameof(PopupMenuItem.Text)));
+                tc.SetBinding(TextCell.DetailProperty, new Binding(nameof(PopupMenuItem.Detail)));
+                tc.SetBinding(TextCell.IsEnabledProperty, new Binding(nameof(PopupMenuItem.IsEnabled)));
                 tc.SetAppThemeColor(TextCell.TextColorProperty, Colors.Black, Colors.White);
                 return tc;
             });
@@ -51,7 +53,7 @@ namespace MapBoard.Views
                 {
                     Text = title,
                     FontSize = 24,
-                    Margin=new Thickness(8,0,0,0),
+                    Margin = new Thickness(8, 0, 0, 0),
                     TextColor = Colors.Gray
                 };
                 grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
@@ -81,6 +83,22 @@ namespace MapBoard.Views
                 return -1;
             }
             return (int)result;
+        }
+
+        public class PopupMenuItem
+        {
+            public PopupMenuItem()
+            {
+
+            }
+            public PopupMenuItem(string text)
+            {
+                Text = text;
+            }
+            public string Detail { get; set; }
+            public bool IsEnabled { get; set; } = true;
+            public string Text { get; set; }
+            public object Tag { get; set; }
         }
     }
 }
