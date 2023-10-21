@@ -43,8 +43,8 @@ public partial class TrackView : ContentView, ISidePanel
 
     public async void OnPanelOpened()
     {
-        UpdateButtonsVisible();
         await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+        UpdateButtonsVisible();
     }
 
 

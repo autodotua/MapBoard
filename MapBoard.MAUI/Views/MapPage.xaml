@@ -52,25 +52,34 @@
                     <Setter Property="HeightRequest" Value="42" />
                 </Style>
             </VerticalStackLayout.Resources>
-            <!--<Button
-                Clicked="TestButton_Click"
-                Text="T" />-->
             <ImageButton
                 x:Name="btnZoomIn"
                 Clicked="ZoomInButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_in.png" />
+                Source="btn_zoom_in.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
             <ImageButton
                 x:Name="btnZoomOut"
                 Clicked="ZoomOutButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_out.png" />
+                Source="btn_zoom_out.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
 
             <ImageButton
                 Margin="0,60,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
-                Source="btn_location.png" />
+                Source="btn_location.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
         </VerticalStackLayout>
     </Grid>
 </ContentView>

@@ -7,9 +7,7 @@
     xmlns:m="clr-namespace:MapBoard.Models"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:ImportViewVideModel}">
-    <Grid
-        Margin="16"
-        RowDefinitions="*,8,Auto">
+    <Grid RowDefinitions="*,8,Auto">
         <ListView
             ItemTapped="ListView_ItemTapped"
             ItemsSource="{Binding Files}"
@@ -18,7 +16,9 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell x:DataType="{x:Type m:SimpleFile}">
-                        <Grid RowDefinitions="Auto,4,Auto">
+                        <Grid
+                            Margin="8,0"
+                            RowDefinitions="Auto,4,Auto">
                             <Label
                                 FontAttributes="Bold"
                                 Text="{Binding Name}" />
@@ -32,6 +32,7 @@
         </ListView>
         <Button
             Grid.Row="2"
+            Margin="8"
             Clicked="ImportButton_Clicked"
             MaximumWidthRequest="200"
             Text="加载外部地图包" />

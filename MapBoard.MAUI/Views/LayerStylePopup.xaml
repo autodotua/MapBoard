@@ -8,141 +8,142 @@
     x:DataType="{x:Type lm:ILayerInfo}"
     HorizontalOptions="Fill"
     Size="300,500"
-    VerticalOptions="Fill">
-    <Grid
-        BackgroundColor="{AppThemeBinding Dark={DynamicResource Gray900},
-                                          Light={DynamicResource Gray100}}"
-        RowDefinitions="*,8,Auto">
-        <Grid.Resources>
-            <Style TargetType="{x:Type Line}">
-                <Setter Property="HorizontalOptions" Value="Fill" />
-                <Setter Property="Stroke" Value="Gray" />
-                <Setter Property="StrokeThickness" Value="2" />
-                <Setter Property="X1" Value="0" />
-                <Setter Property="X2" Value="1000" />
-                <Setter Property="Margin" Value="16,0" />
-                <Setter Property="Opacity" Value="0.5" />
-            </Style>
-            <Style
-                x:Key="KeyLabelStyle"
-                BasedOn="{StaticResource DefaultLabelStyle}"
-                TargetType="{x:Type Label}">
-                <Setter Property="Margin" Value="14,0,0,0" />
-                <Setter Property="VerticalOptions" Value="Center" />
-                <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
-            </Style>
-            <ColumnDefinitionCollection x:Key="GridColumns">
-                <ColumnDefinition Width="80" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="*" />
-            </ColumnDefinitionCollection>
-        </Grid.Resources>
-        <ScrollView
-            Padding="8"
-            Orientation="Vertical">
-            <VerticalStackLayout Spacing="16">
-                <Label
-                    FontSize="Title"
-                    Text="显示" />
-                <Grid ColumnDefinitions="{StaticResource GridColumns}">
-                    <Label
-                        Style="{StaticResource KeyLabelStyle}"
-                        Text="最大比例" />
-                    <Entry
-                        Grid.Column="2"
-                        Text="{Binding Display.MaxScale}" />
-                </Grid>
+    VerticalOptions="Fill"
+    Color="Transparent">
+    <Border Style="{StaticResource PopupBorderStyle}">
 
-                <Grid ColumnDefinitions="{StaticResource GridColumns}">
+        <Grid RowDefinitions="*,8,Auto">
+            <Grid.Resources>
+                <Style TargetType="{x:Type Line}">
+                    <Setter Property="HorizontalOptions" Value="Fill" />
+                    <Setter Property="Stroke" Value="Gray" />
+                    <Setter Property="StrokeThickness" Value="2" />
+                    <Setter Property="X1" Value="0" />
+                    <Setter Property="X2" Value="1000" />
+                    <Setter Property="Margin" Value="16,0" />
+                    <Setter Property="Opacity" Value="0.5" />
+                </Style>
+                <Style
+                    x:Key="KeyLabelStyle"
+                    BasedOn="{StaticResource DefaultLabelStyle}"
+                    TargetType="{x:Type Label}">
+                    <Setter Property="Margin" Value="14,0,0,0" />
+                    <Setter Property="VerticalOptions" Value="Center" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
+                </Style>
+                <ColumnDefinitionCollection x:Key="GridColumns">
+                    <ColumnDefinition Width="96" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </ColumnDefinitionCollection>
+            </Grid.Resources>
+            <ScrollView
+                Padding="8"
+                Orientation="Vertical">
+                <VerticalStackLayout Spacing="16">
                     <Label
-                        Style="{StaticResource KeyLabelStyle}"
-                        Text="最小比例" />
-                    <Entry
-                        Grid.Column="2"
-                        Text="{Binding Display.MinScale}" />
-                </Grid>
+                        FontSize="Title"
+                        Text="显示" />
+                    <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        <Label
+                            Style="{StaticResource KeyLabelStyle}"
+                            Text="最大比例" />
+                        <Entry
+                            Grid.Column="2"
+                            Text="{Binding Display.MaxScale}" />
+                    </Grid>
 
-                <Grid ColumnDefinitions="{StaticResource GridColumns}">
-                    <Label
-                        Style="{StaticResource KeyLabelStyle}"
-                        Text="渲染类型" />
-                    <Picker
-                        Title="选择渲染类型"
-                        Grid.Column="2"
-                        SelectedIndex="{Binding Display.RenderingMode}"
-                        VerticalOptions="Center">
-                        <Picker.ItemsSource>
-                            <x:Array Type="{x:Type x:String}">
-                                <x:String>自动</x:String>
-                                <x:String>静态</x:String>
-                                <x:String>动态</x:String>
-                            </x:Array>
-                        </Picker.ItemsSource>
-                    </Picker>
-                </Grid>
-                <Line />
+                    <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        <Label
+                            Style="{StaticResource KeyLabelStyle}"
+                            Text="最小比例" />
+                        <Entry
+                            Grid.Column="2"
+                            Text="{Binding Display.MinScale}" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        <Label
+                            Style="{StaticResource KeyLabelStyle}"
+                            Text="渲染类型" />
+                        <Picker
+                            Title="选择渲染类型"
+                            Grid.Column="2"
+                            SelectedIndex="{Binding Display.RenderingMode}"
+                            VerticalOptions="Center">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>自动</x:String>
+                                    <x:String>静态</x:String>
+                                    <x:String>动态</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                    </Grid>
+                    <Line />
 
 
-                <Label
-                    FontSize="Title"
-                    Text="交互" />
-                <Grid ColumnDefinitions="{StaticResource GridColumns}">
                     <Label
-                        Style="{StaticResource KeyLabelStyle}"
-                        Text="允许选择" />
-                    <Switch
-                        Grid.Column="2"
-                        IsToggled="{Binding Interaction.CanSelect}" />
-                </Grid>
-                <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        FontSize="Title"
+                        Text="交互" />
+                    <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        <Label
+                            Style="{StaticResource KeyLabelStyle}"
+                            Text="允许选择" />
+                        <Switch
+                            Grid.Column="2"
+                            IsToggled="{Binding Interaction.CanSelect}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="{StaticResource GridColumns}">
+                        <Label
+                            Style="{StaticResource KeyLabelStyle}"
+                            Text="允许编辑" />
+                        <Switch
+                            Grid.Column="2"
+                            IsToggled="{Binding Interaction.CanEdit}" />
+                    </Grid>
+                    <Line />
                     <Label
-                        Style="{StaticResource KeyLabelStyle}"
-                        Text="允许编辑" />
-                    <Switch
-                        Grid.Column="2"
-                        IsToggled="{Binding Interaction.CanEdit}" />
-                </Grid>
-                <Line />
-                <Label
-                    FontSize="Title"
-                    Text="符号系统" />
-                <Label Text="请在MapBoard桌面端完成" />
-                <Line />
-                <Label
-                    FontSize="Title"
-                    Text="标注" />
-                <Label Text="请在MapBoard桌面端完成" />
-                <Line />
-                <Label
-                    FontSize="Title"
-                    Text="操作" />
+                        FontSize="Title"
+                        Text="符号系统" />
+                    <Label Text="请在MapBoard桌面端完成" />
+                    <Line />
+                    <Label
+                        FontSize="Title"
+                        Text="标注" />
+                    <Label Text="请在MapBoard桌面端完成" />
+                    <Line />
+                    <Label
+                        FontSize="Title"
+                        Text="操作" />
+                    <Button
+                        BackgroundColor="Red"
+                        Clicked="DeleteButton_Click"
+                        Text="移除"
+                        VerticalOptions="Center"
+                        WidthRequest="120" />
+
+
+                </VerticalStackLayout>
+            </ScrollView>
+            <!--  TableView存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
+            <Grid
+                Grid.Row="2"
+                Margin="8"
+                ColumnDefinitions="*,8,*">
                 <Button
-                    BackgroundColor="Red"
-                    Clicked="DeleteButton_Click"
-                    Text="移除"
-                    VerticalOptions="Center"
-                    WidthRequest="120" />
+                    BackgroundColor="{AppThemeBinding Light={DynamicResource Gray400},
+                                                      Dark={DynamicResource Gray500}}"
+                    Clicked="CalcelButton_Clicked"
+                    Text="取消"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    Grid.Column="2"
+                    Clicked="ApplyButton_Clicked"
+                    Text="应用" />
 
-
-            </VerticalStackLayout>
-        </ScrollView>
-        <!--  TableView存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
-        <Grid
-            Grid.Row="2"
-            Margin="8"
-            ColumnDefinitions="*,8,*">
-            <Button
-                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray400},
-                                                  Dark={DynamicResource Gray500}}"
-                Clicked="CalcelButton_Clicked"
-                Text="取消"
-                TextColor="{AppThemeBinding Dark={DynamicResource White},
-                                            Light={DynamicResource Black}}" />
-            <Button
-                Grid.Column="2"
-                Clicked="ApplyButton_Clicked"
-                Text="应用" />
-
+            </Grid>
         </Grid>
-    </Grid>
+    </Border>
 </toolkit:Popup>

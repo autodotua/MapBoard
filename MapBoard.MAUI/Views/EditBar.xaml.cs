@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.Views;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping;
+using MapBoard.Util;
 using MapBoard.ViewModels;
 
 namespace MapBoard.Views;
@@ -118,15 +119,17 @@ public partial class EditBar : ContentView, ISidePanel
 
     private void UpdateButtonsVisible()
     {
-        stkSelection.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Select;
+        var map = MainMapView.Current;
+        stkSelection.IsVisible = map.CurrentTask == BoardTask.Select;
 
-        stkEdition.IsVisible = MainMapView.Current.CurrentTask == BoardTask.Draw;
+        stkEdition.IsVisible = map.CurrentTask == BoardTask.Draw;
 
-        btnUndo.IsEnabled = MainMapView.Current.GeometryEditor.CanUndo;
-        btnRedo.IsEnabled = MainMapView.Current.GeometryEditor.CanRedo;
+        btnEdit.IsEnabled = map.Layers.FindLayer(map.SelectedFeature.FeatureTable.Layer).CanEdit;
+        btnUndo.IsEnabled = map.GeometryEditor.CanUndo;
+        btnRedo.IsEnabled = map.GeometryEditor.CanRedo;
 
-        btnDeleteVertex.IsEnabled = MainMapView.Current.GeometryEditor.SelectedElement is GeometryEditorVertex;
-        btnPart.IsEnabled = MainMapView.Current.GeometryEditor.Geometry is Multipart;
+        btnDeleteVertex.IsEnabled = map.GeometryEditor.SelectedElement is GeometryEditorVertex;
+        btnPart.IsEnabled = map.GeometryEditor.Geometry is Multipart;
     }
 
     private void DeleteVertexButton_Click(object sender, EventArgs e)

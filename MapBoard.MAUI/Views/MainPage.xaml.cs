@@ -394,12 +394,14 @@ namespace MapBoard.Views
                 return;
             }
             var layers = MainMapView.Current.Layers
+                .OfType<IMapLayerInfo>()
                 .Where(p => p.LayerVisible)
+                .Where(p => p.CanEdit)
                 .Select(p => new MenuItem() { Text = p.Name, CommandParameter = p })
                 .ToList();
             if (layers.Count == 0)
             {
-                await DisplayAlert("无法绘制", "不存在任何可见图层", "确定");
+                await DisplayAlert("无法绘制", "不存在任何可见可编辑图层", "确定");
             }
             var result = await (sender as View).PopupMenuAsync(layers, "选择图层");
             if (result >= 0)
