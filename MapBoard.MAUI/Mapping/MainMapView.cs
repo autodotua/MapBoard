@@ -78,8 +78,8 @@ namespace MapBoard.Mapping
             InteractionOptions = new MapViewInteractionOptions()
             {
                 IsRotateEnabled = Config.Instance.CanRotate,
-
             };
+            Config.Instance.PropertyChanged += Config_PropertyChanged;
             PropertyChanged += MainMapView_PropertyChanged;
 
             //启动时恢复到原来的视角，并定时保存
@@ -104,6 +104,16 @@ namespace MapBoard.Mapping
             SelectedFeatureChanged += (s, e) => UpdateBoardTask();
             Editor.EditStatusChanged += (s, e) => UpdateBoardTask();
             //NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch(e.PropertyName)
+            {
+                case nameof(Config.CanRotate):
+                    InteractionOptions.IsRotateEnabled = Config.Instance.CanRotate;
+                    break;
+            }
         }
 
         private void UpdateBoardTask()

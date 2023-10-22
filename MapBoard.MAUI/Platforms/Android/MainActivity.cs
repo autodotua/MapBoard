@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
+using Android.Widget;
 using MapBoard.Platforms.Android;
 
 namespace MapBoard
@@ -82,6 +83,28 @@ namespace MapBoard
                 }
             }
             return false;
+        }
+
+        protected override void OnStop()
+        {
+            Current = null;
+            base.OnStop();
+        }
+
+        private bool hasPressedBack = false;
+        public override async void OnBackPressed()
+        {
+            if(hasPressedBack)
+            {
+                OnBackPressedDispatcher.OnBackPressed();
+                Finish();
+                return;
+            }
+
+            hasPressedBack = true;
+            Toast.MakeText(this, "再按一次退出应用", ToastLength.Short).Show();
+            await Task.Delay(2000);
+            hasPressedBack = false;
         }
     }
 }

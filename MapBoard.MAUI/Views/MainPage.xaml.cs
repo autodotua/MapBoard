@@ -33,10 +33,7 @@ using System.Xml.Linq;
 using MapBoard.IO;
 using CommunityToolkit.Maui.Alerts;
 using static MapBoard.Views.PopupMenu;
-
-
-
-
+using CommunityToolkit.Maui.Views;
 
 #if ANDROID
 using MapBoard.Platforms.Android;
@@ -57,7 +54,53 @@ namespace MapBoard.Views
             }
             Current = this;
             InitializeComponent();
+            InitializeSidePanels();
 
+            //大屏设备，底部操作栏在右下角悬浮
+            if (DeviceInfo.Idiom != DeviceIdiom.Phone)
+            {
+                grdMain.RowDefinitions.RemoveAt(1);
+                bdBottom.Margin = new Thickness(16, 16);
+                bdBottom.HorizontalOptions = LayoutOptions.End;
+                bdBottom.VerticalOptions = LayoutOptions.End;
+                bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
+                bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
+            }
+
+            TrackService.CurrentChanged += TrackService_CurrentChanged;
+
+        }
+
+        private void InitializeFromConfigs()
+        {
+            SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+            Config.Instance.PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Config.ScreenAlwaysOn):
+                        SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+                        break;
+                }
+            };
+
+            void SetScreenAlwaysOn(bool on)
+            {
+#if ANDROID
+                if (on)
+                {
+                    Platform.CurrentActivity.Window.AddFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+                else
+                {
+                    Platform.CurrentActivity.Window.ClearFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+#endif
+            }
+        }
+
+        private void InitializeSidePanels()
+        {
             sidePanels =
             [
                 new SidePanelInfo(layer, layerView),
@@ -94,19 +137,6 @@ namespace MapBoard.Views
                         break;
                 }
             }
-
-            //大屏设备，底部操作栏在右下角悬浮
-            if (DeviceInfo.Idiom != DeviceIdiom.Phone)
-            {
-                grdMain.RowDefinitions.RemoveAt(1);
-                bdBottom.Margin = new Thickness(16, 16);
-                bdBottom.HorizontalOptions = LayoutOptions.End;
-                bdBottom.VerticalOptions = LayoutOptions.End;
-                bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
-                bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
-            }
-
-            TrackService.CurrentChanged += TrackService_CurrentChanged;
         }
 
         public static MainPage Current { get; private set; }
@@ -273,6 +303,8 @@ namespace MapBoard.Views
             }
 #endif
 
+            InitializeFromConfigs();
+
             await CheckAndRequestLocationPermission();
 
             await CheckCrashAsync();
@@ -391,6 +423,12 @@ namespace MapBoard.Views
                     }
                 }
             }
+        }
+
+        private void MenuButton_Clicked(object sender, EventArgs e)
+        {
+            SettingPopup popup = new SettingPopup();
+            MainPage.Current.ShowPopup(popup);
         }
     }
 

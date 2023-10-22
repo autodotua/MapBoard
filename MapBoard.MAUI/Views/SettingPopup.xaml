@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="MapBoard.Views.SettingPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mb="clr-namespace:MapBoard"
+    xmlns:mm="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type mb:Config}"
+    HorizontalOptions="Fill"
+    Color="Transparent">
+    <Border
+        Padding="8"
+        HeightRequest="500"
+        Style="{StaticResource PopupBorderStyle}"
+        WidthRequest="300">
+
+        <Grid RowDefinitions="*,8,Auto">
+            <TableView Intent="Settings">
+                <TableRoot>
+                    <TableSection Title="交互">
+                        <SwitchCell
+                            On="{Binding CanRotate}"
+                            Text="允许旋转" />
+                        <SwitchCell
+                            On="{Binding ScreenAlwaysOn}"
+                            Text="屏幕常亮" />
+                    </TableSection>
+                    <TableSection Title="工具">
+                        <TextCell
+                            DetailColor="{AppThemeBinding Dark={DynamicResource Gray400},
+                                                          Light={DynamicResource Gray600}}"
+                            Text="测量长度"
+                            TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                        Light={DynamicResource Black}}" />
+                        <TextCell
+                            DetailColor="{AppThemeBinding Dark={DynamicResource Gray400},
+                                                          Light={DynamicResource Gray600}}"
+                            Text="测量面积"
+                            TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                        Light={DynamicResource Black}}" />
+                    </TableSection>
+                    <TableSection Title="关于">
+                        <TextCell
+                            Detail="https://github.com/autodotua/MapBoard"
+                            DetailColor="{AppThemeBinding Dark={DynamicResource Gray400},
+                                                          Light={DynamicResource Gray600}}"
+                            StyleId=""
+                            Tapped="AboutButton_Click"
+                            Text="autodotua"
+                            TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                        Light={DynamicResource Black}}" />
+                    </TableSection>
+                </TableRoot>
+            </TableView>
+            <Button
+                Grid.Row="2"
+                Margin="0,0,8,0"
+                BackgroundColor="Transparent"
+                Clicked="CloseButton_Click"
+                HorizontalOptions="End"
+                Text="关闭"
+                TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                            Light={DynamicResource Black}}" />
+        </Grid>
+    </Border>
+</toolkit:Popup>

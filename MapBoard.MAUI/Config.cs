@@ -18,6 +18,20 @@ namespace MapBoard
         public static readonly int WatermarkHeight = 72;
         private static readonly string path = FolderPaths.ConfigPath;
         private static Config instance;
+        private bool canRotate = false;
+
+        private bool enableBasemapCache = true;
+
+        private bool isTracking;
+
+        private string lastCrashFile;
+
+        private int lastLayerListGroupType;
+
+        private double maxScale = 100;
+
+        private bool screenAlwaysOn = false;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -43,12 +57,43 @@ namespace MapBoard
         }
 
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
-        public bool EnableBasemapCache { get; set; } = true;
-        public bool IsTracking { get; set; }
-        public int LastLayerListGroupType { get; set; }
-        public double MaxScale { get; set; } = 100;
-        public bool CanRotate { get; set; } = false;
-        public string LastCrashFile { get; set; }
+        public bool CanRotate
+        {
+            get => canRotate;
+            set => this.SetValueAndNotify(ref canRotate, value, nameof(CanRotate));
+        }
+
+        public bool EnableBasemapCache
+        {
+            get => enableBasemapCache;
+            set => this.SetValueAndNotify(ref enableBasemapCache, value, nameof(EnableBasemapCache));
+        }
+        public bool IsTracking
+        {
+            get => isTracking;
+            set => this.SetValueAndNotify(ref isTracking, value, nameof(IsTracking));
+        }
+        public string LastCrashFile
+        {
+            get => lastCrashFile;
+            set => this.SetValueAndNotify(ref lastCrashFile, value, nameof(LastCrashFile));
+        }
+
+        public int LastLayerListGroupType
+        {
+            get => lastLayerListGroupType;
+            set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
+        }
+        public double MaxScale
+        {
+            get => maxScale;
+            set => this.SetValueAndNotify(ref maxScale, value, nameof(MaxScale));
+        }
+        public bool ScreenAlwaysOn
+        {
+            get => screenAlwaysOn;
+            set => this.SetValueAndNotify(ref screenAlwaysOn, value, nameof(ScreenAlwaysOn));
+        }
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>

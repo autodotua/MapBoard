@@ -45,6 +45,7 @@
 		<None Remove="Resources\Images\btn_draw.svg" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
+		<None Remove="Resources\Images\btn_menu.svg" />
 		<None Remove="Resources\Images\btn_ok.svg" />
 		<None Remove="Resources\Images\btn_redo.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
@@ -103,6 +104,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\SettingPopup.xaml.cs">
+	    <DependentUpon>SettingPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ImportView.xaml.cs">
 	    <DependentUpon>ImportView.xaml</DependentUpon>
 	  </Compile>
@@ -145,6 +149,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\SettingPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ImportView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

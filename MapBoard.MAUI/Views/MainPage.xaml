@@ -143,7 +143,7 @@
             <Grid
                 x:Name="grdBottom"
                 Padding="0,4"
-                ColumnDefinitions="*,*,*,*,*,*"
+                ColumnDefinitions="*,*,*,*,*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
                     <Style
@@ -166,14 +166,18 @@
                     Source="btn_refresh.png" />
                 <ImageButton
                     Grid.Column="3"
+                    Clicked="MenuButton_Clicked"
+                    Source="btn_menu.png" />
+                <ImageButton
+                    Grid.Column="4"
                     Clicked="TrackButton_Clicked"
                     Source="btn_track.png" />
                 <ImageButton
-                    Grid.Column="4"
+                    Grid.Column="5"
                     Clicked="ZoomToLayerButton_Click"
                     Source="btn_zoom_to_layer.png" />
                 <ImageButton
-                    Grid.Column="5"
+                    Grid.Column="6"
                     Clicked="LayerButton_Click"
                     Source="btn_layers.png" />
 
