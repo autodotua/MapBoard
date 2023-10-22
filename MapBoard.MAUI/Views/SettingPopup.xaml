@@ -27,16 +27,20 @@
                             On="{Binding ScreenAlwaysOn}"
                             Text="屏幕常亮" />
                     </TableSection>
+                    <!--  https://github.com/dotnet/maui/issues/10322  -->
+                    <!--  https://github.com/dotnet/maui/issues/5924  -->
                     <TableSection Title="工具">
                         <TextCell
                             DetailColor="{AppThemeBinding Dark={DynamicResource Gray400},
                                                           Light={DynamicResource Gray600}}"
+                            Tapped="MeasureLengthButton_Click"
                             Text="测量长度"
                             TextColor="{AppThemeBinding Dark={DynamicResource White},
                                                         Light={DynamicResource Black}}" />
                         <TextCell
                             DetailColor="{AppThemeBinding Dark={DynamicResource Gray400},
                                                           Light={DynamicResource Gray600}}"
+                            Tapped="MeasureAreaButton_Click"
                             Text="测量面积"
                             TextColor="{AppThemeBinding Dark={DynamicResource White},
                                                         Light={DynamicResource Black}}" />

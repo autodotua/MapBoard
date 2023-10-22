@@ -1,7 +1,8 @@
-using CommunityToolkit.Maui.Views;
+ï»¿using CommunityToolkit.Maui.Views;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping;
+using MapBoard.Models;
 using MapBoard.Util;
 using MapBoard.ViewModels;
 using static MapBoard.Views.PopupMenu;
@@ -34,7 +35,7 @@ public partial class EditBar : ContentView, ISidePanel
 
     private void AttributeTableButton_Click(object sender, EventArgs e)
     {
-        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature, MainMapView.Current.Editor.IsCreating);
+        AttributeTablePopup popup = new AttributeTablePopup(MainMapView.Current.Editor.EditingFeature, MainMapView.Current.Editor.Status == EditorStatus.Creating);
         MainPage.Current.ShowPopup(popup);
     }
 
@@ -51,7 +52,7 @@ public partial class EditBar : ContentView, ISidePanel
     private void ContentView_Loaded(object sender, EventArgs e)
     {
         MainMapView.Current.GeometryEditor.PropertyChanged += GeometryEditor_PropertyChanged;
-        MainMapView.Current.SelectedFeatureChanged += Mapview_SelectedFeatureChanged;
+        MainMapView.Current.SelectedFeatureChanged += MapView_SelectedFeatureChanged;
     }
 
     private void DeleteButton_Click(object sender, EventArgs e)
@@ -72,6 +73,7 @@ public partial class EditBar : ContentView, ISidePanel
     private void GeometryEditor_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var editor = sender as GeometryEditor;
+        Geometry geometry = null;
         if (e.PropertyName is nameof(GeometryEditor.CanUndo)
             or nameof(GeometryEditor.CanRedo)
             or nameof(GeometryEditor.Geometry)
@@ -81,7 +83,22 @@ public partial class EditBar : ContentView, ISidePanel
         }
         if (e.PropertyName == nameof(GeometryEditor.Geometry))
         {
-            var geometry = editor.Geometry;
+            geometry = editor.Geometry;
+            if (geometry != null)
+            {
+                HandleNewPart();
+                HandleMeasuring(geometry);
+            }
+
+        }
+        if (e.PropertyName == nameof(GeometryEditor.SelectedElement) && editor.SelectedElement != null)
+        {
+            //å¦‚æœç‚¹å‡»æ–°å¢éƒ¨åˆ†ååˆç‚¹äº†å…¶ä»–å…ƒç´ ï¼Œé‚£ä¹ˆè®¤ä¸ºéœ€è¦å–æ¶ˆæ–°å¢éƒ¨åˆ†æ“ä½œ
+            requestNewPart = false;
+        }
+
+        void HandleNewPart()
+        {
             if (requestNewPart
             && geometry is Multipart m
             && m.Parts.Count > 0
@@ -113,23 +130,72 @@ public partial class EditBar : ContentView, ISidePanel
                 }
             }
         }
-        if (e.PropertyName == nameof(GeometryEditor.SelectedElement) && editor.SelectedElement != null)
+
+    }
+    private void HandleMeasuring(Geometry geometry)
+    {
+        if (geometry.GeometryType == GeometryType.Polyline)
         {
-            //Èç¹ûµã»÷ĞÂÔö²¿·ÖºóÓÖµãÁËÆäËûÔªËØ£¬ÄÇÃ´ÈÏÎªĞèÒªÈ¡ÏûĞÂÔö²¿·Ö²Ù×÷
-            requestNewPart = false;
+            double length = 0;
+            if (geometry != null)
+            {
+                length = geometry.GetLength();
+            }
+            if (length > 1000)
+            {
+                lblMeasuringInfo.Text = $"é•¿åº¦ï¼š{length / 1000:0.00} km";
+            }
+            else
+            {
+                lblMeasuringInfo.Text = $"é•¿åº¦ï¼š{length:0.00} m";
+            }
+        }
+        else if (geometry.GeometryType == GeometryType.Polygon)
+        {
+            double area = 0;
+            if (geometry != null)
+            {
+                area = geometry.GetArea();
+            }
+            if (area > 1_000_000)
+            {
+                lblMeasuringInfo.Text = $"é¢ç§¯ï¼š{area / 1_000_000:0.00} kmÂ²";
+            }
+            else
+            {
+                lblMeasuringInfo.Text = $"é¢ç§¯ï¼š{area:0.0} mÂ²";
+            }
+        }
+        else if (geometry != null && geometry.GeometryType == GeometryType.Point)
+        {
+            var point = geometry as MapPoint;
+            lblMeasuringInfo.Text = $"ç»åº¦ï¼š{point.X:0.00000}  çº¬åº¦ï¼š{point.Y:0.00000}";
+        }
+        else if (geometry != null && geometry.GeometryType == GeometryType.Multipoint)
+        {
+            var points = geometry as Multipoint;
+            lblMeasuringInfo.Text = $"æ•°é‡ï¼š{points.Points.Count}";
+        }
+        else
+        {
+            lblMeasuringInfo.Text = "";
         }
     }
 
-    private void Mapview_SelectedFeatureChanged(object sender, EventArgs e)
+    private void MapView_SelectedFeatureChanged(object sender, EventArgs e)
     {
         UpdateButtonsVisible();
+        if(MainMapView.Current.SelectedFeature!=null)
+        {
+            HandleMeasuring(MainMapView.Current.SelectedFeature.Geometry);
+        }
     }
     private async void PartButton_Click(object sender, EventArgs e)
     {
         var editor = MainMapView.Current.GeometryEditor;
         var items = new PopupMenuItem[] {
-            new PopupMenuItem("ĞÂÔö²¿·Ö"),
-            new PopupMenuItem("É¾³ıµ±Ç°²¿·Ö")
+            new PopupMenuItem("æ–°å¢éƒ¨åˆ†"),
+            new PopupMenuItem("åˆ é™¤å½“å‰éƒ¨åˆ†")
             {
                 IsEnabled = (editor.Geometry as Multipart).Parts.Count > 1
             }
@@ -138,7 +204,7 @@ public partial class EditBar : ContentView, ISidePanel
         if (result == 0)
         {
             requestNewPart = true;
-            editor.ClearSelection();//Çå³ıÑ¡ÖĞµÄ½Úµã£¬²ÅÄÜ¿ªÊ¼ÏÂÒ»¸ö²¿·Ö
+            editor.ClearSelection();//æ¸…é™¤é€‰ä¸­çš„èŠ‚ç‚¹ï¼Œæ‰èƒ½å¼€å§‹ä¸‹ä¸€ä¸ªéƒ¨åˆ†
         }
         else if (result == 1)
         {
@@ -146,11 +212,11 @@ public partial class EditBar : ContentView, ISidePanel
             var selectedElement = editor.SelectedElement;
             if (geometry is not Multipart m)
             {
-                throw new NotSupportedException("Ö»Ö§³Ö¶Ô¶à²¿·ÖÍ¼ĞÎÔö¼Ó²¿·Ö");
+                throw new NotSupportedException("åªæ”¯æŒå¯¹å¤šéƒ¨åˆ†å›¾å½¢å¢åŠ éƒ¨åˆ†");
             }
             if (m.Parts.Count <= 1)
             {
-                throw new Exception("ĞèÒª°üº¬Á½¸ö»òÒÔÉÏµÄ²¿·Ö²Å¿ÉÉ¾³ı");
+                throw new Exception("éœ€è¦åŒ…å«ä¸¤ä¸ªæˆ–ä»¥ä¸Šçš„éƒ¨åˆ†æ‰å¯åˆ é™¤");
             }
             long partIndex;
             if (selectedElement is GeometryEditorVertex v)
@@ -167,7 +233,7 @@ public partial class EditBar : ContentView, ISidePanel
             }
             else
             {
-                throw new NotSupportedException("Î´ÖªµÄÑ¡ÖĞPartIndex");
+                throw new NotSupportedException("æœªçŸ¥çš„é€‰ä¸­PartIndex");
             }
             var parts = new List<IEnumerable<Segment>>(m.Parts);
             parts.RemoveAt((int)partIndex);
@@ -194,22 +260,23 @@ public partial class EditBar : ContentView, ISidePanel
     private void UpdateButtonsVisible()
     {
         var map = MainMapView.Current;
-        stkSelection.IsVisible = map.CurrentTask == BoardTask.Select;
+        var editor = map.Editor;
+        stkSelection.IsVisible = map.CurrentStatus == MapViewStatus.Select;
+        stkEdition.IsVisible = map.CurrentStatus == MapViewStatus.Draw;
 
-        stkEdition.IsVisible = map.CurrentTask == BoardTask.Draw;
-        switch (map.CurrentTask)
+        switch (map.CurrentStatus)
         {
-            case BoardTask.NotReady:
+            case MapViewStatus.Ready:
                 break;
-            case BoardTask.Ready:
-                break;
-            case BoardTask.Draw:
+            case MapViewStatus.Draw:
                 btnUndo.IsEnabled = map.GeometryEditor.CanUndo;
                 btnRedo.IsEnabled = map.GeometryEditor.CanRedo;
                 btnDeleteVertex.IsEnabled = map.GeometryEditor.SelectedElement is GeometryEditorVertex;
-                btnPart.IsEnabled = map.GeometryEditor.Geometry is Multipart;
+                btnPart.IsEnabled = editor.Status is EditorStatus.Creating or EditorStatus.Editing && map.GeometryEditor.Geometry is Multipart;
+                btnAttributeTable.IsEnabled = editor.Status is EditorStatus.Creating or EditorStatus.Editing;
+                btnSaveEdit.IsEnabled = editor.Status is EditorStatus.Creating or EditorStatus.Editing;
                 break;
-            case BoardTask.Select:
+            case MapViewStatus.Select:
                 btnEdit.IsEnabled = map.Layers.FindLayer(map.SelectedFeature.FeatureTable.Layer).CanEdit;
                 break;
             default:

@@ -48,16 +48,10 @@
         Padding="8"
         BackgroundColor="{DynamicResource Gray600}"
         HorizontalOptions="Center"
-        StrokeThickness="0"
+        Style="{StaticResource PopupBorderStyle}"
         VerticalOptions="Start">
-        <Border.StrokeShape>
-            <RoundRectangle CornerRadius="8" />
-        </Border.StrokeShape>
-        <Border.Shadow>
-            <Shadow Opacity="0.8" />
-        </Border.Shadow>
 
-        <Grid>
+        <VerticalStackLayout BackgroundColor="Transparent">
             <HorizontalStackLayout
                 x:Name="stkSelection"
                 BackgroundColor="Transparent"
@@ -135,7 +129,7 @@
                         x:Name="btnPart"
                         Clicked="PartButton_Click"
                         ImageSource="btn_part.png"
-                        Text="部分"/>
+                        Text="部分" />
                     <Button
                         x:Name="btnAttributeTable"
                         Clicked="AttributeTableButton_Click"
@@ -144,6 +138,11 @@
                         WidthRequest="92" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
-        </Grid>
+            <Label
+                x:Name="lblMeasuringInfo"
+                Margin="8,0"
+                HorizontalOptions="Center"
+                TextColor="{DynamicResource White}" />
+        </VerticalStackLayout>
     </Border>
 </ContentView>

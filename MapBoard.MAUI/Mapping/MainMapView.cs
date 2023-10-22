@@ -23,6 +23,7 @@ using Esri.ArcGISRuntime.Mapping.Popups;
 using System.Text;
 using MapBoard.Views;
 using System.Reflection;
+using MapBoard.Models;
 
 namespace MapBoard.Mapping
 {
@@ -34,7 +35,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 画板当前任务
         /// </summary>
-        private static BoardTask currentTask = BoardTask.NotReady;
+        private static Models.MapViewStatus currentStatus = Models.MapViewStatus.Ready;
 
         /// <summary>
         /// 所有<see cref="MainMapView"/>实例
@@ -118,25 +119,25 @@ namespace MapBoard.Mapping
 
         private void UpdateBoardTask()
         {
-            if (Editor.IsEditing)
+            if (Editor.Status is not EditorStatus.NotRunning)
             {
-                CurrentTask = BoardTask.Draw;
+                CurrentStatus = MapViewStatus.Draw;
                 ClearSelection();
             }
             else if (SelectedFeature != null)
             {
-                CurrentTask = BoardTask.Select;
+                CurrentStatus = MapViewStatus.Select;
             }
             else
             {
-                CurrentTask = BoardTask.Ready;
+                CurrentStatus = MapViewStatus.Ready;
             }
         }
 
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
-        public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
+        public event EventHandler MapViewStatusChanged;
 
         public event EventHandler MapLoaded;
 
@@ -155,17 +156,17 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 画板当前任务
         /// </summary>
-        public BoardTask CurrentTask
+        public Models.MapViewStatus CurrentStatus
         {
-            get => currentTask;
+            get => currentStatus;
             set
             {
-                if (currentTask != value)
+                if (currentStatus != value)
                 {
-                    BoardTask oldTask = currentTask;
-                    currentTask = value;
+                    MapViewStatus oldStatus = currentStatus;
+                    currentStatus = value;
 
-                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(oldTask, value));
+                    MapViewStatusChanged?.Invoke(null, EventArgs.Empty);
                 }
             }
         }
@@ -189,7 +190,7 @@ namespace MapBoard.Mapping
             Map.MaxScale = Config.Instance.MaxScale;
             Map.OperationalLayers.Clear();
             await Layers.LoadAsync(Map.OperationalLayers);
-            CurrentTask = BoardTask.Ready;
+            CurrentStatus = MapViewStatus.Ready;
             MapLoaded?.Invoke(this, EventArgs.Empty);
 
             if (TrackOverlay == null)
@@ -219,39 +220,39 @@ namespace MapBoard.Mapping
         {
             var attrStr = new StringBuilder();
 
-            switch (feature.Geometry.GeometryType)
-            {
-                case GeometryType.Point:
-                    break;
-                case GeometryType.Envelope:
-                    break;
-                case GeometryType.Polyline:
-                    double length = (feature.Geometry as Polyline).GetLength();
-                    if (length < 1000)
-                    {
-                        attrStr.AppendLine($"{length:0.0} m");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{length / 1000:0.00} km");
-                    }
-                    break;
-                case GeometryType.Polygon:
-                    double area = (feature.Geometry as Polygon).GetArea();
-                    if (area < 1_000_000)
-                    {
-                        attrStr.AppendLine($"{area:0.0} m²");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
-                    }
-                    break;
-                case GeometryType.Multipoint:
-                    break;
-                case GeometryType.Unknown:
-                    break;
-            }
+            //switch (feature.Geometry.GeometryType)
+            //{
+            //    case GeometryType.Point:
+            //        break;
+            //    case GeometryType.Envelope:
+            //        break;
+            //    case GeometryType.Polyline:
+            //        double length = (feature.Geometry as Polyline).GetLength();
+            //        if (length < 1000)
+            //        {
+            //            attrStr.AppendLine($"{length:0.0} m");
+            //        }
+            //        else
+            //        {
+            //            attrStr.AppendLine($"{length / 1000:0.00} km");
+            //        }
+            //        break;
+            //    case GeometryType.Polygon:
+            //        double area = (feature.Geometry as Polygon).GetArea();
+            //        if (area < 1_000_000)
+            //        {
+            //            attrStr.AppendLine($"{area:0.0} m²");
+            //        }
+            //        else
+            //        {
+            //            attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
+            //        }
+            //        break;
+            //    case GeometryType.Multipoint:
+            //        break;
+            //    case GeometryType.Unknown:
+            //        break;
+            //}
 
             Dictionary<string, string> key2Desc = Layers
                 .First(p => (p as MapLayerInfo).Layer == feature.FeatureTable.Layer)
@@ -303,7 +304,7 @@ namespace MapBoard.Mapping
 
         private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
         {
-            if (Editor.IsEditing)
+            if (Editor.Status is not EditorStatus.NotRunning)
             {
                 return;
             }

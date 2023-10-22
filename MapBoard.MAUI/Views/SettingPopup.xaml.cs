@@ -32,4 +32,16 @@ public partial class SettingPopup : Popup
         Uri uri = new Uri("https://github.com/autodotua/MapBoard");
         await Browser.Default.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
     }
+
+    private void MeasureLengthButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.Editor.StartMeasureLength();
+        Close();
+    }
+
+    private void MeasureAreaButton_Click(object sender, EventArgs e)
+    {
+        MainMapView.Current.Editor.StartMeasureArea();
+        Close();
+    }
 }

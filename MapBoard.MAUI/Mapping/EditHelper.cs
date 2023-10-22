@@ -1,17 +1,23 @@
-﻿using Esri.ArcGISRuntime.Data;
+﻿using CommunityToolkit.Maui.Alerts;
+using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Maui;
 using Esri.ArcGISRuntime.UI.Editing;
 using MapBoard.Mapping.Model;
+using MapBoard.Util;
 
 namespace MapBoard.Mapping
 {
+    public enum EditorStatus
+    {
+        NotRunning,
+        Editing,
+        Creating,
+        Measuring
+    }
     public class EditHelper
     {
         private Feature editingFeature = null;
-        public Feature EditingFeature => editingFeature;
-
-        private bool isEditing;
-
+        private EditorStatus status;
         public EditHelper(MainMapView mapView)
         {
             MapView = mapView;
@@ -20,39 +26,37 @@ namespace MapBoard.Mapping
 
         public event EventHandler EditStatusChanged;
 
+        public Feature EditingFeature => editingFeature;
+
         public GeometryEditor Editor { get; }
 
-        public bool IsEditing
+        public MainMapView MapView { get; }
+
+        public EditorStatus Status
         {
-            get => isEditing;
+            get => status;
             set
             {
-                if (isEditing != value)
+                if (status != value)
                 {
-                    isEditing = value;
+                    status = value;
                     EditStatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
-
-        public bool IsCreating { get; private set; }
-
-        public MainMapView MapView { get; }
-
         public void Cancel()
         {
-            if (!IsEditing)
+            if (Status is EditorStatus.NotRunning)
             {
                 throw new Exception("不在编辑状态");
             }
-            editingFeature = null;
             Editor.Stop();
-            IsEditing = false;
+            Status = EditorStatus.NotRunning;
         }
 
         public async Task SaveAsync()
         {
-            if (!IsEditing)
+            if (Status is not EditorStatus.NotRunning)
             {
                 throw new Exception("不在编辑状态");
             }
@@ -64,22 +68,42 @@ namespace MapBoard.Mapping
             if (geometry != null)
             {
                 editingFeature.Geometry = geometry;
-                if (IsCreating)
+                if (Status is EditorStatus.Creating)
                 {
                     await editingFeature.FeatureTable.AddFeatureAsync(editingFeature);
                 }
-                else
+                else if (Status is EditorStatus.Creating)
                 {
                     await editingFeature.FeatureTable.UpdateFeatureAsync(editingFeature);
                 }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+
             }
             editingFeature = null;
-            IsEditing = false;
+            Status = EditorStatus.NotRunning;
+        }
+
+        public void StartDraw(IMapLayerInfo layer)
+        {
+            if (Status is not EditorStatus.NotRunning)
+            {
+                throw new Exception("正在编辑，无法绘制");
+            }
+            Status = EditorStatus.Creating;
+            editingFeature = (layer as ShapefileMapLayerInfo).CreateFeature();
+            Editor.Start(layer.GeometryType);
+            if (MapView.SelectedFeature != null)
+            {
+                MapView.ClearSelection();
+            }
         }
 
         public void StartEditSelection()
         {
-            if (IsEditing)
+            if (Status is not EditorStatus.NotRunning)
             {
                 throw new Exception("正在编辑，无法再次开始编辑");
             }
@@ -88,25 +112,28 @@ namespace MapBoard.Mapping
                 throw new Exception("没有选择任何要素");
             }
             editingFeature = MapView.SelectedFeature;
-            IsCreating = false;
-            IsEditing = true;
+            Status = EditorStatus.Editing;
             Editor.Start(editingFeature.Geometry);
         }
 
-        public void StartDraw(IMapLayerInfo layer)
+        public void StartMeasureArea()
         {
-            if (IsEditing)
+            if (Status is not EditorStatus.NotRunning)
             {
-                throw new Exception("正在编辑，无法绘制");
+                throw new Exception("正在编辑，无法测量");
             }
-            IsCreating = true;
-            IsEditing = true;
-            editingFeature = (layer as ShapefileMapLayerInfo).CreateFeature();
-            Editor.Start(layer.GeometryType);
-            if (MapView.SelectedFeature != null)
+            Status = EditorStatus.Measuring;
+            Editor.Start(Esri.ArcGISRuntime.Geometry.GeometryType.Polygon);
+        }
+
+        public void StartMeasureLength()
+        {
+            if (Status is not EditorStatus.NotRunning)
             {
-                MapView.ClearSelection();
+                throw new Exception("正在编辑，无法测量");
             }
+            Status = EditorStatus.Measuring;
+            Editor.Start(Esri.ArcGISRuntime.Geometry.GeometryType.Polyline);
         }
     }
 }

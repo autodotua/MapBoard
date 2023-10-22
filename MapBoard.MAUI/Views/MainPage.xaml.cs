@@ -34,6 +34,8 @@ using MapBoard.IO;
 using CommunityToolkit.Maui.Alerts;
 using static MapBoard.Views.PopupMenu;
 using CommunityToolkit.Maui.Views;
+using MapBoard.Models;
+
 
 #if ANDROID
 using MapBoard.Platforms.Android;
@@ -213,7 +215,7 @@ namespace MapBoard.Views
 
         private async void AddGeometryButton_Clicked(object sender, EventArgs e)
         {
-            if (MainMapView.Current.Editor.IsEditing)
+            if (MainMapView.Current.CurrentStatus is not Models.MapViewStatus.Ready)
             {
                 return;
             }
@@ -293,7 +295,7 @@ namespace MapBoard.Views
                 Window.Title = "地图画板";
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
-            MainMapView.Current.BoardTaskChanged += MapView_BoardTaskChanged;
+            MainMapView.Current.MapViewStatusChanged += MapView_BoardTaskChanged;
 #if ANDROID
             var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
             height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
@@ -327,15 +329,15 @@ namespace MapBoard.Views
 
         private void LayerButton_Click(object sender, EventArgs e)
         {
-            if (MainMapView.Current.CurrentTask == BoardTask.Ready)
+            if (MainMapView.Current.CurrentStatus == MapViewStatus.Ready)
             {
                 OpenOrClosePanel<LayerListView>();
             }
         }
 
-        private void MapView_BoardTaskChanged(object sender, BoardTaskChangedEventArgs e)
+        private void MapView_BoardTaskChanged(object sender, EventArgs e)
         {
-            if (e.NewTask is BoardTask.Select or BoardTask.Draw)
+            if (MainMapView.Current.CurrentStatus is MapViewStatus.Select or MapViewStatus.Draw)
             {
                 OpenPanel<EditBar>();
             }
