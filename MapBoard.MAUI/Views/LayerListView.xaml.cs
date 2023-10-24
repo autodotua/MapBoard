@@ -4,6 +4,8 @@ using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
 using MapBoard.ViewModels;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using System.Diagnostics;
 
 namespace MapBoard.Views;
@@ -55,9 +57,31 @@ public partial class LayerListView : ContentView, ISidePanel
 
     private async void lvwLevel_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        var layer = e.Item as IMapLayerInfo;
-        LayerStylePopup p = new LayerStylePopup(layer);
-        await MainPage.Current.ShowPopupAsync(p);
+        PopupMenu.PopupMenuItem[] items = [
+            new PopupMenu.PopupMenuItem("样式设置"),
+            new PopupMenu.PopupMenuItem("删除")
+            ];
+        var result = await (sender as ListView).PopupMenuAsync(items, "图层选项");
+        if (result >= 0)
+        {
+            var layer = e.Item as IMapLayerInfo;
+            switch (result)
+            {
+                case 0:
+                    LayerStylePopup p = new LayerStylePopup(layer);
+                    await MainPage.Current.ShowPopupAsync(p);
+                    break;
+                case 1:
+                    if (await MainPage.Current.DisplayAlert("移除图层", "是否移除选择的图层？", "确定", "取消"))
+                    {
+                        MainMapView.Current.Layers.Remove(layer);
+                    }
+                    MainMapView.Current.Layers.Save();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private void MapView_MapLoaded(object sender, EventArgs e)
