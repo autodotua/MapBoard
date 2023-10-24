@@ -61,8 +61,45 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        var file = e.Item as SimpleFile;
-        await LoadGpxAsync(file.FullName);
+        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ", "É¾³ý","É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
+        var result = await (sender as ListView).PopupMenuAsync(e, items, "¹ì¼£");
+        if (result >= 0)
+        {
+            var file = e.Item as SimpleFile;
+            switch (result)
+            {
+                case 0:
+                    await LoadGpxAsync(file.FullName);
+                    return;
+                case 1:
+                    if(await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
+                    {
+                        File.Delete(file.FullName);
+                    }
+                    break;
+                case 2:
+                    var gpxs = (BindingContext as TrackViewViewModel).GpxFiles.Where(p => p.Time <= file.Time).ToList(); ;
+                    if (await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{gpxs.Count}¸ö¹ì¼££¿", "ÊÇ", "·ñ"))
+                    {
+                        foreach (var gpx in gpxs)
+                        {
+                            File.Delete(gpx.FullName);
+                        }
+                    }
+                    break;
+            }
+
+            var handle = ProgressPopup.Show("ÕýÔÚ¼ÓÔØ");
+            try
+            {
+                await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+            }
+            finally
+            {
+                handle.Close();
+            }
+
+        }
     }
 
     private async Task LoadGpxAsync(string path)

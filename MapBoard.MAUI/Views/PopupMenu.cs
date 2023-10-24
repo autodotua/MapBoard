@@ -6,12 +6,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace MapBoard.Views
 {
     public static class PopupMenu
     {
+        public static Task<int> PopupMenuAsync(this ListView list, ItemTappedEventArgs e, IEnumerable<PopupMenuItem> items, string title = null)
+        {
+            var view = list.GetVisualTreeDescendants()
+             .OfType<View>()
+             .Where(p => p is Grid)
+             .Where(p => p.BindingContext == e.Item)
+             .FirstOrDefault(list);
+            return view.PopupMenuAsync(items, title);
+        }
         public static async Task<int> PopupMenuAsync(this View view, IEnumerable<PopupMenuItem> items, string title = null)
         {
             Popup ppp = new Popup
@@ -99,6 +109,7 @@ namespace MapBoard.Views
             public bool IsEnabled { get; set; } = true;
             public string Text { get; set; }
             public object Tag { get; set; }
+            public static implicit operator PopupMenuItem(string text) => new PopupMenuItem(text);
         }
     }
 }

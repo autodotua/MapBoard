@@ -43,7 +43,9 @@
                 Content="按分组"
                 GroupName="ViewType" />
         </HorizontalStackLayout>
-
+        <!--  https://github.com/dotnet/maui/issues/12312  -->
+        <!--  https://github.com/dotnet/maui/issues/11598  -->
+        <!--  https://github.com/dotnet/maui/issues/11640  -->
         <ListView
             x:Name="lvwLevel"
             Grid.Row="2"

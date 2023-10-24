@@ -4,7 +4,6 @@ using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
 using MapBoard.ViewModels;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using System.Diagnostics;
 
@@ -61,7 +60,7 @@ public partial class LayerListView : ContentView, ISidePanel
             new PopupMenu.PopupMenuItem("样式设置"),
             new PopupMenu.PopupMenuItem("删除")
             ];
-        var result = await (sender as ListView).PopupMenuAsync(items, "图层选项");
+        var result = await (sender as ListView).PopupMenuAsync(e,items, "图层选项");
         if (result >= 0)
         {
             var layer = e.Item as IMapLayerInfo;
