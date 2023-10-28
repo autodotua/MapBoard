@@ -37,6 +37,8 @@ using CommunityToolkit.Maui.Views;
 using MapBoard.Models;
 
 
+
+
 #if ANDROID
 using MapBoard.Platforms.Android;
 #endif
@@ -58,19 +60,18 @@ namespace MapBoard.Views
             InitializeComponent();
             InitializeSidePanels();
 
+            TrackService.CurrentChanged += TrackService_CurrentChanged;
+
             //大屏设备，底部操作栏在右下角悬浮
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)
             {
                 grdMain.RowDefinitions.RemoveAt(1);
                 bdBottom.Margin = new Thickness(16, 16);
-                bdBottom.HorizontalOptions = LayoutOptions.End;
+                bdBottom.HorizontalOptions = LayoutOptions.Start;
                 bdBottom.VerticalOptions = LayoutOptions.End;
                 bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
             }
-
-            TrackService.CurrentChanged += TrackService_CurrentChanged;
-
         }
 
         private void InitializeFromConfigs()
@@ -296,25 +297,36 @@ namespace MapBoard.Views
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
             MainMapView.Current.MapViewStatusChanged += MapView_BoardTaskChanged;
+
 #if ANDROID
-            var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
-            height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
-            if (height > 0)
+            var navBarHeight = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
+            navBarHeight /= DeviceDisplay.MainDisplayInfo.Density;
+            if (navBarHeight > 0)
             {
-                bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + height);
+                if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+                {
+                    var a = this.Width;
+                    bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + navBarHeight);
+                }
+                if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+                {
+                    //navBarHeight *= DeviceDisplay.MainDisplayInfo.Density;
+                    bdBottom.Margin = new Thickness(bdBottom.Margin.Left, bdBottom.Margin.Top, bdBottom.Margin.Right, bdBottom.Margin.Bottom + navBarHeight);
+                }
             }
 #endif
+
 
             InitializeFromConfigs();
 
             await CheckAndRequestLocationPermission();
 
             await CheckCrashAsync();
+
         }
 
         private void Current_SelectedFeatureChanged(object sender, EventArgs e)
         {
-
         }
 
         private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)

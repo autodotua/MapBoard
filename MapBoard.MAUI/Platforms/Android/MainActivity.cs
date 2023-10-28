@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
+using Android.Views;
 using Android.Widget;
 using MapBoard.Platforms.Android;
 
@@ -30,7 +31,12 @@ namespace MapBoard
 
         public double GetNavBarHeight()
         {
-            int resourceId = Resources.GetIdentifier("navigation_bar_height", "dimen", "android");
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
+            {
+                return WindowManager.CurrentWindowMetrics.WindowInsets.GetInsets(WindowInsets.Type.NavigationBars()).Bottom;
+            }
+            var orientation = Resources.Configuration.Orientation;
+            int resourceId = Resources.GetIdentifier(orientation == Android.Content.Res.Orientation.Portrait ? "navigation_bar_height" : "navigation_bar_height_landscape", "dimen", "android");
             if (resourceId > 0)
             {
                 return Resources.GetDimensionPixelSize(resourceId);
@@ -94,7 +100,7 @@ namespace MapBoard
         private bool hasPressedBack = false;
         public override async void OnBackPressed()
         {
-            if(hasPressedBack)
+            if (hasPressedBack)
             {
                 OnBackPressedDispatcher.OnBackPressed();
                 Finish();

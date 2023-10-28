@@ -88,14 +88,14 @@ public partial class LayerListView : ContentView, ISidePanel
         var layers = MainMapView.Current.Layers;
         (BindingContext as LayerViewViewModel).Layers = layers;
         (BindingContext as LayerViewViewModel).Update();
-        if (false && Config.Instance.LastLayerListGroupType == 0)
-        {
-            rbtnByLevel.IsChecked = true;
-        }
-        else
-        {
-            rbtnByGroup.IsChecked = true;
-        }
+        //if (false && Config.Instance.LastLayerListGroupType == 0)
+        //{
+        //    rbtnByLevel.IsChecked = true;
+        //}
+        //else
+        //{
+        //    rbtnByGroup.IsChecked = true;
+        //}
     }
 
 

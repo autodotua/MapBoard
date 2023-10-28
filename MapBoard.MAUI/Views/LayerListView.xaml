@@ -18,7 +18,8 @@
                     <Label
                         Text="{Binding Name}"
                         TextColor="{AppThemeBinding Dark=White,
-                                                    Light=Black}" />
+                                                    Light=Black}"
+                        VerticalOptions="Center" />
                     <Switch
                         Grid.Column="2"
                         IsToggled="{Binding LayerVisible}" />

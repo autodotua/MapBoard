@@ -169,7 +169,7 @@ public partial class EditBar : ContentView, ISidePanel
         else if (geometry != null && geometry.GeometryType == GeometryType.Point)
         {
             var point = geometry as MapPoint;
-            lblMeasuringInfo.Text = $"经度：{point.X:0.00000}  纬度：{point.Y:0.00000}";
+            lblMeasuringInfo.Text = $"{point.X:0.00000}，{point.Y:0.00000}";
         }
         else if (geometry != null && geometry.GeometryType == GeometryType.Multipoint)
         {
