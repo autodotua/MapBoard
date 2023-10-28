@@ -19,7 +19,7 @@
             GeoView="{Binding Source={x:Reference map}, Path=.}"
             HorizontalOptions="End"
             VerticalOptions="Start" />
-        <et:ScaleLine
+        <!--<et:ScaleLine
             Margin="24,8"
             HorizontalOptions="End"
             MapView="{Binding Source={x:Reference map}, Path=.}"
@@ -33,7 +33,7 @@
                     Radius="5" />
             </et:ScaleLine.Shadow>
 
-        </et:ScaleLine>
+        </et:ScaleLine>-->
 
         <!--  右侧按钮  -->
         <VerticalStackLayout

@@ -61,7 +61,7 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ", "É¾³ý","É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
+        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ","·ÖÏí", "É¾³ý","É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
         var result = await (sender as ListView).PopupMenuAsync(e, items, "¹ì¼£");
         if (result >= 0)
         {
@@ -72,12 +72,15 @@ public partial class TrackView : ContentView, ISidePanel
                     await LoadGpxAsync(file.FullName);
                     return;
                 case 1:
+                    await Share.Default.RequestAsync(new ShareFileRequest("·ÖÏí¹ì¼£", new ShareFile(file.FullName)));
+                    break;
+                case 2:
                     if(await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
                     {
                         File.Delete(file.FullName);
                     }
                     break;
-                case 2:
+                case 3:
                     var gpxs = (BindingContext as TrackViewViewModel).GpxFiles.Where(p => p.Time <= file.Time).ToList(); ;
                     if (await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{gpxs.Count}¸ö¹ì¼££¿", "ÊÇ", "·ñ"))
                     {

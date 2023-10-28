@@ -67,7 +67,7 @@ namespace MapBoard.Views
             {
                 grdMain.RowDefinitions.RemoveAt(1);
                 bdBottom.Margin = new Thickness(16, 16);
-                bdBottom.HorizontalOptions = LayoutOptions.Start;
+                bdBottom.HorizontalOptions = LayoutOptions.End;
                 bdBottom.VerticalOptions = LayoutOptions.End;
                 bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
@@ -311,7 +311,7 @@ namespace MapBoard.Views
                 if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
                 {
                     //navBarHeight *= DeviceDisplay.MainDisplayInfo.Density;
-                    bdBottom.Margin = new Thickness(bdBottom.Margin.Left, bdBottom.Margin.Top, bdBottom.Margin.Right, bdBottom.Margin.Bottom + navBarHeight);
+                    grdMain.Margin = new Thickness(0, 0, 0, navBarHeight);
                 }
             }
 #endif

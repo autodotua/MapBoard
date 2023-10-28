@@ -17,11 +17,13 @@
             x:Name="tbar"
             HorizontalOptions="Fill"
             VerticalOptions="Start" />
+
         <v:EditBar
             x:Name="ebar"
             BackgroundColor="Transparent"
             HorizontalOptions="Fill"
             VerticalOptions="Start" />
+
         <Grid
             x:Name="track"
             Padding="0,24,0,0"
@@ -38,6 +40,7 @@
                 x:Name="trackView"
                 Grid.Row="2" />
         </Grid>
+
         <Grid
             x:Name="ftp"
             Padding="0,24,0,0"
@@ -83,7 +86,6 @@
                 Grid.Row="2" />
         </Grid>
 
-
         <Grid
             x:Name="baseLayer"
             Padding="0,24,0,0"
@@ -100,6 +102,7 @@
                 x:Name="baseLayerView"
                 Grid.Row="2" />
         </Grid>
+
         <Grid
             x:Name="import"
             Padding="0,24,0,0"
@@ -127,8 +130,6 @@
                 x:Name="importView"
                 Grid.Row="2" />
         </Grid>
-
-
 
         <Border
             x:Name="bdBottom"
