@@ -56,7 +56,7 @@ namespace MapBoard.Mapping
 
         public async Task SaveAsync()
         {
-            if (Status is not EditorStatus.NotRunning)
+            if (Status is EditorStatus.NotRunning)
             {
                 throw new Exception("不在编辑状态");
             }
@@ -72,7 +72,7 @@ namespace MapBoard.Mapping
                 {
                     await editingFeature.FeatureTable.AddFeatureAsync(editingFeature);
                 }
-                else if (Status is EditorStatus.Creating)
+                else if (Status is EditorStatus.Editing)
                 {
                     await editingFeature.FeatureTable.UpdateFeatureAsync(editingFeature);
                 }

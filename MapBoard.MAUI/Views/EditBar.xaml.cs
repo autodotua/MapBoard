@@ -249,7 +249,14 @@ public partial class EditBar : ContentView, ISidePanel
 
     private async void SaveEdit_Click(object sender, EventArgs e)
     {
-        await MainMapView.Current.Editor.SaveAsync();
+        try
+        {
+            await MainMapView.Current.Editor.SaveAsync();
+        }
+        catch(Exception ex)
+        {
+            await MainPage.Current.DisplayAlert("无法保存", ex.Message, "确定");
+        }
     }
 
     private void UndoButton_Click(object sender, EventArgs e)
