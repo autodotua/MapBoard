@@ -20,6 +20,7 @@ namespace MapBoard.Views;
 
 public partial class TrackView : ContentView, ISidePanel
 {
+    private static readonly string DeletedGpxDir = Path.Combine(FolderPaths.TrackPath, "deleted");
     public TrackView()
     {
         InitializeComponent();
@@ -77,16 +78,24 @@ public partial class TrackView : ContentView, ISidePanel
                 case 2:
                     if(await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
                     {
-                        File.Delete(file.FullName);
+                        if (!Directory.Exists(DeletedGpxDir))
+                        {
+                            Directory.CreateDirectory(DeletedGpxDir);
+                        }
+                        File.Move(file.FullName,Path.Combine(DeletedGpxDir,Path.GetFileName(file.FullName)));
                     }
                     break;
                 case 3:
                     var gpxs = (BindingContext as TrackViewViewModel).GpxFiles.Where(p => p.Time <= file.Time).ToList(); ;
                     if (await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{gpxs.Count}¸ö¹ì¼££¿", "ÊÇ", "·ñ"))
                     {
+                        if (!Directory.Exists(DeletedGpxDir))
+                        {
+                            Directory.CreateDirectory(DeletedGpxDir);
+                        }
                         foreach (var gpx in gpxs)
                         {
-                            File.Delete(gpx.FullName);
+                            File.Move(gpx.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(file.FullName)));
                         }
                     }
                     break;
