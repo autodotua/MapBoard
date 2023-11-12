@@ -453,4 +453,21 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
+    <Style
+        x:Key="PopupBorderStyle"
+        TargetType="{x:Type Border}">
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="4" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Opacity="0.6" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={DynamicResource Gray900}, Light={DynamicResource Gray100}}" />
+    </Style>
 </ResourceDictionary>

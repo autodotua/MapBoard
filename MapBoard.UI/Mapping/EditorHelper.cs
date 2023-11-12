@@ -71,7 +71,7 @@ namespace MapBoard.Mapping
                 }
                 else if (e.PropertyName == nameof(GeometryEditor.SelectedElement))
                 {
-                    SelectedVertexChanged?.Invoke(s, new EventArgs());
+                    SelectedElementChanged?.Invoke(s, new EventArgs());
                 }
             };
             MapView.PreviewMouseRightButtonDown += MapView_PreviewMouseRightButtonDown;
@@ -92,7 +92,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 选择的结点发生改变
         /// </summary>
-        public event EventHandler SelectedVertexChanged;
+        public event EventHandler SelectedElementChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

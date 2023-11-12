@@ -18,7 +18,8 @@
                     <Label
                         Text="{Binding Name}"
                         TextColor="{AppThemeBinding Dark=White,
-                                                    Light=Black}" />
+                                                    Light=Black}"
+                        VerticalOptions="Center" />
                     <Switch
                         Grid.Column="2"
                         IsToggled="{Binding LayerVisible}" />
@@ -27,7 +28,7 @@
         </DataTemplate>
     </ContentView.Resources>
     <Grid
-        Margin="8"
+        Margin="0"
         RowDefinitions="0,8,*">
         <HorizontalStackLayout
             IsClippedToBounds="True"
@@ -43,7 +44,9 @@
                 Content="按分组"
                 GroupName="ViewType" />
         </HorizontalStackLayout>
-
+        <!--  https://github.com/dotnet/maui/issues/12312  -->
+        <!--  https://github.com/dotnet/maui/issues/11598  -->
+        <!--  https://github.com/dotnet/maui/issues/11640  -->
         <ListView
             x:Name="lvwLevel"
             Grid.Row="2"

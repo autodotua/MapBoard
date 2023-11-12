@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using MapBoard.IO;
 using MapBoard.Services;
 using MapBoard.ViewModels;
@@ -10,36 +11,36 @@ namespace MapBoard.Views;
 public partial class FtpView : ContentView, ISidePanel
 {
     FtpService ftpService;
+
     public FtpView()
     {
         BindingContext = new FtpViewViewModel();
         InitializeComponent();
-        if (DeviceInfo.Platform == DevicePlatform.WinUI)
-        {
-            btnFtp.IsVisible = false;
+#if WINDOWS
+        btnFtp.IsVisible = false;
             btnOpenDir.IsVisible = true;
             grdFtpInfo.IsVisible = false;
-        }
+#endif
+
+#if !ANDROID
+    lblSaveGpx.IsVisible=false;
+#endif
     }
 
-    private async void StartStopFtpButton_Clicked(object sender, EventArgs e)
+    public SwipeDirection Direction => SwipeDirection.Left;
+
+    public int Length => 300;
+
+    public bool Standalone => false;
+
+    public void OnPanelOpened()
     {
-        if ((BindingContext as FtpViewViewModel).IsOn)
+        var ip = FtpService.GetIpAddress();
+        if (ip == null || !ip.Any())
         {
-            stkFtpDirs.IsEnabled = true;
-            (sender as Button).Text = "打开FTP";
-            await ftpService.StopServerAsync();
-            ftpService = null;
+            ip = null;
         }
-        else
-        {
-            stkFtpDirs.IsEnabled = false;
-            string dir = GetSelectedDir();
-            ftpService = new FtpService(dir);
-            await ftpService.StartServerAsync();
-            (sender as Button).Text = "关闭FTP";
-        }
-        (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
+        (BindingContext as FtpViewViewModel).IP = ip == null ? "未知" : string.Join(Environment.NewLine, ip);
     }
 
     private string GetSelectedDir()
@@ -75,25 +76,64 @@ public partial class FtpView : ContentView, ISidePanel
 
     private void OpenDirButton_Clicked(object sender, EventArgs e)
     {
-        if(DeviceInfo.Platform!=DevicePlatform.WinUI)
-        {
-            throw new NotSupportedException("仅支持Windows");
-        }
+#if WINDOWS
         string dir = GetSelectedDir();
         Process.Start("explorer.exe", dir);
+#else
+        throw new NotSupportedException();
+#endif
     }
 
-    public void OnPanelOpening()
+    private async void StartStopFtpButton_Clicked(object sender, EventArgs e)
     {
-        var ip = FtpService.GetIpAddress();
-        if (ip == null || !ip.Any())
+        if ((BindingContext as FtpViewViewModel).IsOn)
         {
-            ip = null;
+            stkFtpDirs.IsEnabled = true;
+            (sender as Button).Text = "打开FTP";
+            await ftpService.StopServerAsync();
+            ftpService = null;
         }
-        (BindingContext as FtpViewViewModel).IP = ip == null ? "未知" : string.Join(Environment.NewLine, ip);
+        else
+        {
+            stkFtpDirs.IsEnabled = false;
+            string dir = GetSelectedDir();
+            ftpService = new FtpService(dir);
+            await ftpService.StartServerAsync();
+            (sender as Button).Text = "关闭FTP";
+        }
+        (BindingContext as FtpViewViewModel).IsOn = !(BindingContext as FtpViewViewModel).IsOn;
     }
 
-    public void OnPanelClosed()
+    private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
     {
+        var handle = ProgressPopup.Show("正在保存");
+#if ANDROID
+        try
+        {
+            var root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads);
+            root = new Java.IO.File(root, AppInfo.Name);
+            root.Mkdir();
+
+            await Task.Run(() =>
+            {
+                var gpxFiles = Directory.EnumerateFiles(FolderPaths.TrackPath, "*.gpx").ToList();
+                foreach (var name in gpxFiles)
+                {
+                    var dist = Path.Combine(root.Path, Path.GetFileName(name));
+                    File.Copy(name, dist, true);
+                    File.SetLastWriteTime(dist, File.GetLastWriteTime(name));
+                }
+            });
+            await Toast.Make("已保存到" + root.Path,CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
+        }
+        catch (Exception ex)
+        {
+            await MainPage.Current.DisplayAlert("保存失败", ex.Message, "确定");
+        }
+
+#else
+        throw new NotSupportedException();
+#endif
+        handle.Close();
     }
 }

@@ -100,7 +100,15 @@ namespace MapBoard.UI.Bar
                     }
                 }
             };
-            MapView.Editor.SelectedVertexChanged += (s, e) => UpdateButtonAndMessage();
+            MapView.Editor.SelectedElementChanged += (s, e) =>
+            {
+                //如果点击新增部分后又点了其他元素，那么认为需要取消新增部分操作
+                if (MapView.GeometryEditor.SelectedElement != null)
+                {
+                    requestNewPart = false;
+                }
+                UpdateButtonAndMessage();
+            };
         }
 
         /// <summary>

@@ -32,12 +32,4 @@ public partial class LayerStylePopup : Popup
     {
         Close();
     }
-    private async void DeleteButton_Click(object sender, EventArgs e)
-    {
-        if(await MainPage.Current.DisplayAlert("移除图层","是否移除选择的图层？","确定","取消"))
-        {
-            MainMapView.Current.Layers.Remove(RawLayer);
-            Close();
-        }
-    }
 }

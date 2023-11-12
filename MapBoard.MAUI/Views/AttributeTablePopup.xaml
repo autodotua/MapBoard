@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="MapBoard.Views.AttributeTablePopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mm="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="vm:AttributeTablePopupViewModel"
+    HorizontalOptions="Fill"
+    Color="Transparent">
+    <Border Style="{StaticResource PopupBorderStyle}">
+        <Grid RowDefinitions="*,8,Auto">
+            <Grid.Resources>
+                <Style TargetType="{x:Type Line}">
+                    <Setter Property="HorizontalOptions" Value="Fill" />
+                    <Setter Property="Stroke" Value="Gray" />
+                    <Setter Property="StrokeThickness" Value="2" />
+                    <Setter Property="X1" Value="0" />
+                    <Setter Property="X2" Value="1000" />
+                    <Setter Property="Margin" Value="16,0" />
+                    <Setter Property="Opacity" Value="0.5" />
+                </Style>
+                <Style
+                    x:Key="KeyLabelStyle"
+                    BasedOn="{StaticResource DefaultLabelStyle}"
+                    TargetType="{x:Type Label}">
+                    <Setter Property="Margin" Value="14,0,0,0" />
+                    <Setter Property="VerticalOptions" Value="Center" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Dark={DynamicResource Gray200}, Light={DynamicResource Gray500}}" />
+                </Style>
+            </Grid.Resources>
+            <ListView
+                x:Name="list"
+                Margin="8"
+                ItemsSource="{Binding Attributes.Attributes}"
+                SelectionMode="None"
+                WidthRequest="300">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Type mm:FeatureAttribute}">
+                        <ViewCell>
+                            <Grid ColumnDefinitions="80,8,200">
+                                <Label
+                                    LineBreakMode="TailTruncation"
+                                    Text="{Binding DisplayName}"
+                                    VerticalOptions="Center" />
+                                <!--<Entry Grid.Column="2">
+                                <Entry.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Type}"
+                                        TargetType="{x:Type Entry}">
+                                        <DataTrigger.Value>
+                                            <mm:FieldInfoType>Date</mm:FieldInfoType>
+                                        </DataTrigger.Value>
+                                        <Setter Property="Entry.Text">
+                                            <Setter.Value>
+                                                <Binding Path="DateValue" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Entry.Triggers>
+                            </Entry>-->
+                                <ContentView Grid.Column="2">
+                                    <ContentView.Content>
+                                        <Label Text="5423" />
+                                    </ContentView.Content>
+                                    <ContentView.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding Type}"
+                                            TargetType="{x:Type ContentView}">
+                                            <DataTrigger.Value>
+                                                <mm:FieldInfoType>Date</mm:FieldInfoType>
+                                            </DataTrigger.Value>
+                                            <Setter Property="ContentView.Content">
+                                                <Setter.Value>
+                                                    <DatePicker
+                                                        Date="{Binding DateValue}"
+                                                        Format="yyyy-MM-dd" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+
+                                        <DataTrigger
+                                            Binding="{Binding Type}"
+                                            TargetType="{x:Type ContentView}">
+                                            <DataTrigger.Value>
+                                                <mm:FieldInfoType>Integer</mm:FieldInfoType>
+                                            </DataTrigger.Value>
+                                            <Setter Property="ContentView.Content">
+                                                <Setter.Value>
+                                                    <Entry Text="{Binding IntValue}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+
+                                        <DataTrigger
+                                            Binding="{Binding Type}"
+                                            TargetType="{x:Type ContentView}">
+                                            <DataTrigger.Value>
+                                                <mm:FieldInfoType>Float</mm:FieldInfoType>
+                                            </DataTrigger.Value>
+                                            <Setter Property="ContentView.Content">
+                                                <Setter.Value>
+                                                    <Entry Text="{Binding FloatValue}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+
+                                        <DataTrigger
+                                            Binding="{Binding Type}"
+                                            TargetType="{x:Type ContentView}">
+                                            <DataTrigger.Value>
+                                                <mm:FieldInfoType>Text</mm:FieldInfoType>
+                                            </DataTrigger.Value>
+                                            <Setter Property="ContentView.Content">
+                                                <Setter.Value>
+                                                    <Entry Text="{Binding TextValue}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+
+                                        <DataTrigger
+                                            Binding="{Binding Type}"
+                                            TargetType="{x:Type ContentView}">
+                                            <DataTrigger.Value>
+                                                <mm:FieldInfoType>Time</mm:FieldInfoType>
+                                            </DataTrigger.Value>
+                                            <Setter Property="ContentView.Content">
+                                                <Setter.Value>
+                                                    <Entry Text="{Binding TimeValue}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </ContentView.Triggers>
+                                </ContentView>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Grid
+                Grid.Row="2"
+                Margin="8"
+                ColumnDefinitions="*,8,*">
+                <Button
+                    BackgroundColor="{AppThemeBinding Light={DynamicResource Gray400},
+                                                      Dark={DynamicResource Gray500}}"
+                    Clicked="CancelButton_Clicked"
+                    Text="取消"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    Grid.Column="2"
+                    Clicked="ApplyButton_Clicked"
+                    Text="应用" />
+
+            </Grid>
+        </Grid>
+    </Border>
+</toolkit:Popup>

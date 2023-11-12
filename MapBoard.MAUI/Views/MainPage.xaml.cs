@@ -30,6 +30,13 @@ using static Microsoft.Maui.ApplicationModel.Permissions;
 using Microsoft.Maui.Controls.Shapes;
 using MapBoard.Mapping.Model;
 using System.Xml.Linq;
+using MapBoard.IO;
+using CommunityToolkit.Maui.Alerts;
+using static MapBoard.Views.PopupMenu;
+using CommunityToolkit.Maui.Views;
+using MapBoard.Models;
+
+
 
 
 #if ANDROID
@@ -43,24 +50,6 @@ namespace MapBoard.Views
         private SidePanelInfo[] sidePanels;
 
         private Dictionary<Type, SidePanelInfo> type2SidePanels;
-        private void HandleRippleBug()
-        {
-#if ANDROID
-            //Microsoft.Maui.Handlers.ImageButtonHandler.Mapper.AppendToMapping("WhiteBackground", (handler, view) =>
-            //{
-            //    var button = view.Handler.PlatformView as Google.Android.Material.ImageView.ShapeableImageView;
-            //    //button.SetBackgroundColor(Android.Graphics.Color.White);
-            //    button.SetBackgroundDrawable(new RippleDrawable(ColorStateList.ValueOf(Android.Graphics.Color.Gray), null, null));
-            //});    
-            //Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("WhiteBackgroundButton", (handler, view) =>
-            //{
-            //    var button = view.Handler.PlatformView as AndroidX.AppCompat.Widget.AppCompatButton;
-            //    //button.SetBackgroundColor(Android.Graphics.Color.White);
-            //    button.SetBackgroundColor(Android.Graphics.Color.White);
-            //});
-#endif
-        }
-
         public MainPage()
         {
             if (Current != null)
@@ -69,58 +58,61 @@ namespace MapBoard.Views
             }
             Current = this;
             InitializeComponent();
-            HandleRippleBug();
+            InitializeSidePanels();
 
+            TrackService.CurrentChanged += TrackService_CurrentChanged;
+
+            //大屏设备，底部操作栏在右下角悬浮
+            if (DeviceInfo.Idiom != DeviceIdiom.Phone)
+            {
+                grdMain.RowDefinitions.RemoveAt(1);
+                bdBottom.Margin = new Thickness(16, 16);
+                bdBottom.HorizontalOptions = LayoutOptions.End;
+                bdBottom.VerticalOptions = LayoutOptions.End;
+                bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
+                bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
+            }
+        }
+
+        private void InitializeFromConfigs()
+        {
+            SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+            Config.Instance.PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Config.ScreenAlwaysOn):
+                        SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+                        break;
+                }
+            };
+
+            void SetScreenAlwaysOn(bool on)
+            {
+#if ANDROID
+                if (on)
+                {
+                    Platform.CurrentActivity.Window.AddFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+                else
+                {
+                    Platform.CurrentActivity.Window.ClearFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+#endif
+            }
+        }
+
+        private void InitializeSidePanels()
+        {
             sidePanels =
             [
-                new SidePanelInfo
-                {
-                    Type = typeof(LayerListView),
-                    Direction = SwipeDirection.Left,
-                    Container = layer,
-                    Content = layerView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(TrackView),
-                    Direction = SwipeDirection.Left,
-                    Container = track,
-                    Content = trackView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(FtpView),
-                    Direction = SwipeDirection.Left,
-                    Container = ftp,
-                    Content = ftpView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(BaseLayerView),
-                    Direction = SwipeDirection.Left,
-                    Container = baseLayer,
-                    Content = baseLayerView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(ImportView),
-                    Direction = SwipeDirection.Left,
-                    Container = import,
-                    Content = importView,
-                    Length = 300,
-                },
-                new SidePanelInfo
-                {
-                    Type = typeof(TrackingBar),
-                    Direction = SwipeDirection.Up,
-                    Container = tbar,
-                    Length = 96,
-                    Standalone = true,
-                },
+                new SidePanelInfo(layer, layerView),
+                new SidePanelInfo(track, trackView),
+                new SidePanelInfo(ftp, ftpView),
+                new SidePanelInfo(baseLayer, baseLayerView),
+                new SidePanelInfo(import, importView),
+                new SidePanelInfo(tbar, tbar),
+                new SidePanelInfo(ebar, ebar)
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
@@ -148,19 +140,6 @@ namespace MapBoard.Views
                         break;
                 }
             }
-
-            //大屏设备，底部操作栏在右下角悬浮
-            if (DeviceInfo.Idiom != DeviceIdiom.Phone)
-            {
-                grdMain.RowDefinitions.RemoveAt(1);
-                bdBottom.Margin = new Thickness(16, 16);
-                bdBottom.HorizontalOptions = LayoutOptions.End;
-                bdBottom.VerticalOptions = LayoutOptions.End;
-                bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
-                bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
-            }
-
-            TrackService.CurrentChanged += TrackService_CurrentChanged;
         }
 
         public static MainPage Current { get; private set; }
@@ -223,16 +202,54 @@ namespace MapBoard.Views
             }
         }
 
-        public void OpenPanel<T>()
+        public async void OpenPanel<T>()
         {
             var type = typeof(T);
             CloseAllPanel();
-            if (type2SidePanels[type].Content is ISidePanel s)
-            {
-                s.OnPanelOpening();
-            }
-            type2SidePanels[type].Container.TranslateTo(0, 0);
+            type2SidePanels[type].Content.OnPanelOpening();
             type2SidePanels[type].IsOpened = true;
+            if (!await type2SidePanels[type].Container.TranslateTo(0, 0))
+            {
+                type2SidePanels[type].Content.OnPanelOpened();
+            }
+        }
+
+        private async void AddGeometryButton_Clicked(object sender, EventArgs e)
+        {
+            if (MainMapView.Current.CurrentStatus is not Models.MapViewStatus.Ready)
+            {
+                return;
+            }
+            CloseAllPanel();
+            var layers = MainMapView.Current.Layers
+                .OfType<IMapLayerInfo>()
+                .Where(p => p.LayerVisible)
+                .Where(p => p.CanEdit)
+                .Select(p => new PopupMenuItem(p.Name) { Tag = p })
+                .ToList();
+            if (layers.Count == 0)
+            {
+                await Toast.Make("不存在任何可见可编辑图层").Show();
+                return;
+            }
+            var result = await (sender as View).PopupMenuAsync(layers, "选择图层");
+            if (result >= 0)
+            {
+                MainMapView.Current.Editor.StartDraw(layers[result].Tag as IMapLayerInfo);
+            }
+        }
+
+        private async Task CheckCrashAsync()
+        {
+            var file = Directory.EnumerateFiles(FolderPaths.LogsPath, "Crash*.log")
+                .OrderByDescending(p => p)
+                .FirstOrDefault();
+            if (file != null && file != Config.Instance.LastCrashFile)
+            {
+                Config.Instance.LastCrashFile = file;
+                Config.Instance.Save();
+                await DisplayAlert("上一次崩溃", File.ReadAllText(file), "确定");
+            }
         }
 
         private void CloseAllPanel()
@@ -279,19 +296,40 @@ namespace MapBoard.Views
                 Window.Title = "地图画板";
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
+            MainMapView.Current.MapViewStatusChanged += MapView_BoardTaskChanged;
+
 #if ANDROID
-            var height = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
-            height /= (DeviceDisplay.MainDisplayInfo.Density * 2);
-            if (height > 0)
+            var navBarHeight = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
+            navBarHeight /= DeviceDisplay.MainDisplayInfo.Density;
+            if (navBarHeight > 0)
             {
-                bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + height);
+                if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+                {
+                    var a = this.Width;
+                    bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + navBarHeight);
+                }
+                if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+                {
+                    //navBarHeight *= DeviceDisplay.MainDisplayInfo.Density;
+                    grdMain.Margin = new Thickness(0, 0, 0, navBarHeight);
+                }
             }
 #endif
 
+
+            InitializeFromConfigs();
+
             await CheckAndRequestLocationPermission();
+
+            await CheckCrashAsync();
+
         }
 
-        private void FtpButton_Clicked(object sender, EventArgs e)
+        private void Current_SelectedFeatureChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
         {
             OpenOrClosePanel<FtpView>();
         }
@@ -303,9 +341,23 @@ namespace MapBoard.Views
 
         private void LayerButton_Click(object sender, EventArgs e)
         {
-            OpenOrClosePanel<LayerListView>();
+            if (MainMapView.Current.CurrentStatus == MapViewStatus.Ready)
+            {
+                OpenOrClosePanel<LayerListView>();
+            }
         }
 
+        private void MapView_BoardTaskChanged(object sender, EventArgs e)
+        {
+            if (MainMapView.Current.CurrentStatus is MapViewStatus.Select or MapViewStatus.Draw)
+            {
+                OpenPanel<EditBar>();
+            }
+            else
+            {
+                ClosePanel<EditBar>();
+            }
+        }
         private async void RefreshButton_Clicked(object sender, EventArgs e)
         {
             var handle = ProgressPopup.Show("正在重载");
@@ -318,6 +370,11 @@ namespace MapBoard.Views
             {
                 handle.Close();
             }
+        }
+
+        private void SetBaseLayersTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        {
+            OpenPanel<BaseLayerView>();
         }
 
         private void TrackButton_Clicked(object sender, EventArgs e)
@@ -341,16 +398,24 @@ namespace MapBoard.Views
             var layers = MainMapView.Current.Layers.Where(p => p.LayerVisible).ToDictionary(p => p.Name);
             if (layers.Count != 0)
             {
-                string result = await DisplayActionSheet("缩放到图层", "取消", "全部", layers.Keys.ToArray());
-                if (result != null)
+                List<PopupMenuItem> items = [new PopupMenuItem("全部")];
+                foreach (var name in layers.Keys)
+                {
+                    items.Add(new PopupMenuItem(name));
+                }
+                var result = await (sender as View).PopupMenuAsync(items, "缩放到图层");
+                //string result = await DisplayActionSheet("缩放到图层", "取消", "全部", layers.Keys.ToArray());
+                if (result >= 0)
                 {
                     Envelope extent = null;
                     var handle = ProgressPopup.Show("正在查找范围");
                     try
                     {
-                        if (layers.TryGetValue(result, out ILayerInfo layer))
+                        if (result > 0)
                         {
-                             extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
+                            var name = items[result].Text;
+                            var layer = layers[name];
+                            extent = await (layer as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
                         }
                         else
                         {
@@ -360,7 +425,7 @@ namespace MapBoard.Views
                                 var tempExtent = await (layer2 as IMapLayerInfo).QueryExtentAsync(new QueryParameters());
                                 eb.UnionOf(tempExtent);
                             }
-                            extent=eb.ToGeometry();
+                            extent = eb.ToGeometry();
                         }
                         handle.Close();
                         await MainMapView.Current.ZoomToGeometryAsync(extent);
@@ -374,9 +439,10 @@ namespace MapBoard.Views
             }
         }
 
-        private void SetBaseLayersTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        private void MenuButton_Clicked(object sender, EventArgs e)
         {
-            OpenPanel<BaseLayerView>();
+            SettingPopup popup = new SettingPopup();
+            MainPage.Current.ShowPopup(popup);
         }
     }
 

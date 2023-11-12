@@ -6,24 +6,24 @@
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="vm:ProgressPopupViewModel">
-    <Grid
-        Margin="16"
+    <Border
         BackgroundColor="{AppThemeBinding Dark={DynamicResource Black},
                                           Light={DynamicResource White}}"
-        ColumnDefinitions="16,Auto,8,*,16"
-        WidthRequest="200">
-        <Grid.Shadow>
-            <Shadow />
-        </Grid.Shadow>
+        Style="{StaticResource PopupBorderStyle}">
+        <Grid
+            Margin="16"
+            ColumnDefinitions="16,Auto,8,*,16"
+            WidthRequest="200">
 
-        <ActivityIndicator
-            Grid.Column="1"
-            IsRunning="True" />
-        <Label
-            Grid.Column="3"
-            Text="{Binding Message}"
-            TextColor="{AppThemeBinding Dark={DynamicResource White},
-                                        Light={DynamicResource Black}}"
-            VerticalOptions="Center" />
-    </Grid>
+            <ActivityIndicator
+                Grid.Column="1"
+                IsRunning="True" />
+            <Label
+                Grid.Column="3"
+                Text="{Binding Message}"
+                TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                            Light={DynamicResource Black}}"
+                VerticalOptions="Center" />
+        </Grid>
+    </Border>
 </toolkit:Popup>

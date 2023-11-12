@@ -37,11 +37,21 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#1D8348" ForegroundScale="0.5" />
+		<None Remove="Resources\Images\btn_cancel.svg" />
 		<None Remove="Resources\Images\btn_clear.svg" />
+		<None Remove="Resources\Images\btn_delete.svg" />
+		<None Remove="Resources\Images\btn_delete_vertex.svg" />
+		<None Remove="Resources\Images\btn_draw.svg" />
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
+		<None Remove="Resources\Images\btn_menu.svg" />
+		<None Remove="Resources\Images\btn_ok.svg" />
+		<None Remove="Resources\Images\btn_redo.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
+		<None Remove="Resources\Images\btn_save.svg" />
+		<None Remove="Resources\Images\btn_table.svg" />
+		<None Remove="Resources\Images\btn_undo.svg" />
 		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
 
 		<!-- Splash Screen -->
@@ -72,14 +82,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="6.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="6.1.0" />
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="200.2.0" />
 		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" Version="200.2.0" />
 		<PackageReference Include="FubarDev.FtpServer" Version="3.1.2" />
 		<PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23419.4" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9530" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.0-rc.2.9530" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.2.23479.6" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -94,6 +104,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\SettingPopup.xaml.cs">
+	    <DependentUpon>SettingPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ImportView.xaml.cs">
 	    <DependentUpon>ImportView.xaml</DependentUpon>
 	  </Compile>
@@ -106,8 +119,14 @@
 	  <Compile Update="Views\MapPage.xaml.cs">
 	    <DependentUpon>MapPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\AttributeTablePopup.xaml.cs">
+	    <DependentUpon>AttributeTablePopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ProgressPopup.xaml.cs">
 	    <DependentUpon>ProgressPopup.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\EditBar.xaml.cs">
+	    <DependentUpon>EditBar.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Views\TrackView.xaml.cs">
 	    <DependentUpon>TrackView.xaml</DependentUpon>
@@ -130,6 +149,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\SettingPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ImportView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -142,7 +164,13 @@
 	  <MauiXaml Update="Views\MapPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\AttributeTablePopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ProgressPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EditBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\TrackingBar.xaml">
@@ -171,7 +199,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
-    <ApplicationId>com.autod.mapboard.maui</ApplicationId>
+    <ApplicationId>com.autod.mapboard.maui.debug</ApplicationId>
     <AndroidKeyStore>False</AndroidKeyStore>
   </PropertyGroup>
 

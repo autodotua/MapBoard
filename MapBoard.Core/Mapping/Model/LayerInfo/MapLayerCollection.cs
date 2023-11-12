@@ -53,7 +53,14 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         public IMapLayerInfo Selected
         {
-            get => selected;
+            get
+            {
+                if (Parameters.AppType == AppType.MAUI)
+                {
+                    throw new NotSupportedException("MAUI平台不存在当前图层机制");
+                }
+                return selected;
+            }
             set
             {
                 SelectedIndex = value != null ? IndexOf(value) : -1;
@@ -267,7 +274,7 @@ namespace MapBoard.Mapping.Model
                 insertBeforeIndex++;
             }
             IMapLayerInfo insertBeforeItem = insertBeforeIndex >= Count ? null : this[insertBeforeIndex] as IMapLayerInfo;
-           
+
             foreach (var item in fromItems)
             {
                 int nowFromIndex = IndexOf(item);//目前状态下，需要移动的图层的索引

@@ -17,6 +17,13 @@
             x:Name="tbar"
             HorizontalOptions="Fill"
             VerticalOptions="Start" />
+
+        <v:EditBar
+            x:Name="ebar"
+            BackgroundColor="Transparent"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start" />
+
         <Grid
             x:Name="track"
             Padding="0,24,0,0"
@@ -33,6 +40,7 @@
                 x:Name="trackView"
                 Grid.Row="2" />
         </Grid>
+
         <Grid
             x:Name="ftp"
             Padding="0,24,0,0"
@@ -77,6 +85,7 @@
                 x:Name="layerView"
                 Grid.Row="2" />
         </Grid>
+
         <Grid
             x:Name="baseLayer"
             Padding="0,24,0,0"
@@ -93,6 +102,7 @@
                 x:Name="baseLayerView"
                 Grid.Row="2" />
         </Grid>
+
         <Grid
             x:Name="import"
             Padding="0,24,0,0"
@@ -100,17 +110,26 @@
                                               Dark={DynamicResource Gray900}}"
             HorizontalOptions="Start"
             RowDefinitions="Auto,8,*">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="加载地图包" />
+            <HorizontalStackLayout Margin="8,8,0,0">
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Text="地图包" />
+                <Label
+                    Margin="24,0,0,0"
+                    Style="{StaticResource LinkedLabelStyle}"
+                    Text="文件管理"
+                    VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="FtpTapGestureRecognizer_Tapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
 
             <v:ImportView
                 x:Name="importView"
                 Grid.Row="2" />
         </Grid>
-
 
         <Border
             x:Name="bdBottom"
@@ -125,7 +144,7 @@
             <Grid
                 x:Name="grdBottom"
                 Padding="0,4"
-                ColumnDefinitions="*,*,*,*,*,*"
+                ColumnDefinitions="*,*,*,*,*,*,*"
                 HeightRequest="40">
                 <Grid.Resources>
                     <Style
@@ -140,23 +159,26 @@
                     Source="btn_import.png" />
                 <ImageButton
                     Grid.Column="1"
-                    Padding="4"
-                    Clicked="FtpButton_Clicked"
-                    Source="btn_ftp.png" />
+                    Clicked="AddGeometryButton_Clicked"
+                    Source="btn_add_geometry.png" />
                 <ImageButton
                     Grid.Column="2"
                     Clicked="RefreshButton_Clicked"
                     Source="btn_refresh.png" />
                 <ImageButton
                     Grid.Column="3"
+                    Clicked="MenuButton_Clicked"
+                    Source="btn_menu.png" />
+                <ImageButton
+                    Grid.Column="4"
                     Clicked="TrackButton_Clicked"
                     Source="btn_track.png" />
                 <ImageButton
-                    Grid.Column="4"
+                    Grid.Column="5"
                     Clicked="ZoomToLayerButton_Click"
                     Source="btn_zoom_to_layer.png" />
                 <ImageButton
-                    Grid.Column="5"
+                    Grid.Column="6"
                     Clicked="LayerButton_Click"
                     Source="btn_layers.png" />
 

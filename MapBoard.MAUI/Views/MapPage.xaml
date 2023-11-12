@@ -19,7 +19,7 @@
             GeoView="{Binding Source={x:Reference map}, Path=.}"
             HorizontalOptions="End"
             VerticalOptions="Start" />
-        <et:ScaleLine
+        <!--<et:ScaleLine
             Margin="24,8"
             HorizontalOptions="End"
             MapView="{Binding Source={x:Reference map}, Path=.}"
@@ -33,7 +33,7 @@
                     Radius="5" />
             </et:ScaleLine.Shadow>
 
-        </et:ScaleLine>
+        </et:ScaleLine>-->
 
         <!--  右侧按钮  -->
         <VerticalStackLayout
@@ -52,25 +52,34 @@
                     <Setter Property="HeightRequest" Value="42" />
                 </Style>
             </VerticalStackLayout.Resources>
-            <!--<Button
-                Clicked="TestButton_Click"
-                Text="T" />-->
             <ImageButton
                 x:Name="btnZoomIn"
                 Clicked="ZoomInButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_in.png" />
+                Source="btn_zoom_in.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
             <ImageButton
                 x:Name="btnZoomOut"
                 Clicked="ZoomOutButton_Click"
                 CornerRadius="4"
-                Source="btn_zoom_out.png" />
+                Source="btn_zoom_out.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
 
             <ImageButton
                 Margin="0,60,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"
-                Source="btn_location.png" />
+                Source="btn_location.png">
+                <ImageButton.Shadow>
+                    <Shadow Opacity="0.8" />
+                </ImageButton.Shadow>
+            </ImageButton>
         </VerticalStackLayout>
     </Grid>
 </ContentView>

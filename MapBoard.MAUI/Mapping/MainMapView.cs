@@ -23,6 +23,7 @@ using Esri.ArcGISRuntime.Mapping.Popups;
 using System.Text;
 using MapBoard.Views;
 using System.Reflection;
+using MapBoard.Models;
 
 namespace MapBoard.Mapping
 {
@@ -34,7 +35,7 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 画板当前任务
         /// </summary>
-        private static BoardTask currentTask = BoardTask.NotReady;
+        private static Models.MapViewStatus currentStatus = Models.MapViewStatus.Ready;
 
         /// <summary>
         /// 所有<see cref="MainMapView"/>实例
@@ -48,6 +49,21 @@ namespace MapBoard.Mapping
 
         private Feature selectedFeature = null;
 
+        public Feature SelectedFeature
+        {
+            get => selectedFeature;
+            set
+            {
+                if (selectedFeature != value)
+                {
+                    selectedFeature = value;
+                    SelectedFeatureChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public event EventHandler SelectedFeatureChanged;
+
         public MainMapView()
         {
             if (instances.Count > 1)
@@ -56,15 +72,15 @@ namespace MapBoard.Mapping
             }
             instances.Add(this);
             Layers = new MapLayerCollection();
-
+            Editor = new EditHelper(this);
             IsAttributionTextVisible = false;
             Margin = new Thickness(-watermarkHeight);
 
             InteractionOptions = new MapViewInteractionOptions()
             {
                 IsRotateEnabled = Config.Instance.CanRotate,
-
             };
+            Config.Instance.PropertyChanged += Config_PropertyChanged;
             PropertyChanged += MainMapView_PropertyChanged;
 
             //启动时恢复到原来的视角，并定时保存
@@ -78,17 +94,50 @@ namespace MapBoard.Mapping
                     && Layers != null
                  && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
                 {
-                    Layers.MapViewExtentJson = envelope.ToJson();
+                    if(Layers.MapViewExtentJson != envelope.ToJson())
+                    {
+                        Layers.MapViewExtentJson = envelope.ToJson();
+                        Layers.Save();
+                    }
                 }
                 return true;
             });
+            SelectedFeatureChanged += (s, e) => UpdateBoardTask();
+            Editor.EditStatusChanged += (s, e) => UpdateBoardTask();
             //NavigationCompleted += MainMapView_NavigationCompleted;
+        }
+
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch(e.PropertyName)
+            {
+                case nameof(Config.CanRotate):
+                    InteractionOptions.IsRotateEnabled = Config.Instance.CanRotate;
+                    break;
+            }
+        }
+
+        private void UpdateBoardTask()
+        {
+            if (Editor.Status is not EditorStatus.NotRunning)
+            {
+                CurrentStatus = MapViewStatus.Draw;
+                ClearSelection();
+            }
+            else if (SelectedFeature != null)
+            {
+                CurrentStatus = MapViewStatus.Select;
+            }
+            else
+            {
+                CurrentStatus = MapViewStatus.Ready;
+            }
         }
 
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
-        public event EventHandler<BoardTaskChangedEventArgs> BoardTaskChanged;
+        public event EventHandler MapViewStatusChanged;
 
         public event EventHandler MapLoaded;
 
@@ -107,17 +156,17 @@ namespace MapBoard.Mapping
         /// <summary>
         /// 画板当前任务
         /// </summary>
-        public BoardTask CurrentTask
+        public Models.MapViewStatus CurrentStatus
         {
-            get => currentTask;
+            get => currentStatus;
             set
             {
-                if (currentTask != value)
+                if (currentStatus != value)
                 {
-                    BoardTask oldTask = currentTask;
-                    currentTask = value;
+                    MapViewStatus oldStatus = currentStatus;
+                    currentStatus = value;
 
-                    BoardTaskChanged?.Invoke(null, new BoardTaskChangedEventArgs(oldTask, value));
+                    MapViewStatusChanged?.Invoke(null, EventArgs.Empty);
                 }
             }
         }
@@ -129,6 +178,8 @@ namespace MapBoard.Mapping
 
         public TrackOverlayHelper TrackOverlay { get; private set; }
 
+        public EditHelper Editor { get; private set; }
+
         /// <summary>
         /// 初始化加载
         /// </summary>
@@ -139,7 +190,7 @@ namespace MapBoard.Mapping
             Map.MaxScale = Config.Instance.MaxScale;
             Map.OperationalLayers.Clear();
             await Layers.LoadAsync(Map.OperationalLayers);
-            CurrentTask = BoardTask.Ready;
+            CurrentStatus = MapViewStatus.Ready;
             MapLoaded?.Invoke(this, EventArgs.Empty);
 
             if (TrackOverlay == null)
@@ -169,39 +220,39 @@ namespace MapBoard.Mapping
         {
             var attrStr = new StringBuilder();
 
-            switch (feature.Geometry.GeometryType)
-            {
-                case GeometryType.Point:
-                    break;
-                case GeometryType.Envelope:
-                    break;
-                case GeometryType.Polyline:
-                    double length = (feature.Geometry as Polyline).GetLength();
-                    if (length < 1000)
-                    {
-                        attrStr.AppendLine($"{length:0.0} m");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{length / 1000:0.00} km");
-                    }
-                    break;
-                case GeometryType.Polygon:
-                    double area = (feature.Geometry as Polygon).GetArea();
-                    if (area < 1_000_000)
-                    {
-                        attrStr.AppendLine($"{area:0.0} m²");
-                    }
-                    else
-                    {
-                        attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
-                    }
-                    break;
-                case GeometryType.Multipoint:
-                    break;
-                case GeometryType.Unknown:
-                    break;
-            }
+            //switch (feature.Geometry.GeometryType)
+            //{
+            //    case GeometryType.Point:
+            //        break;
+            //    case GeometryType.Envelope:
+            //        break;
+            //    case GeometryType.Polyline:
+            //        double length = (feature.Geometry as Polyline).GetLength();
+            //        if (length < 1000)
+            //        {
+            //            attrStr.AppendLine($"{length:0.0} m");
+            //        }
+            //        else
+            //        {
+            //            attrStr.AppendLine($"{length / 1000:0.00} km");
+            //        }
+            //        break;
+            //    case GeometryType.Polygon:
+            //        double area = (feature.Geometry as Polygon).GetArea();
+            //        if (area < 1_000_000)
+            //        {
+            //            attrStr.AppendLine($"{area:0.0} m²");
+            //        }
+            //        else
+            //        {
+            //            attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
+            //        }
+            //        break;
+            //    case GeometryType.Multipoint:
+            //        break;
+            //    case GeometryType.Unknown:
+            //        break;
+            //}
 
             Dictionary<string, string> key2Desc = Layers
                 .First(p => (p as MapLayerInfo).Layer == feature.FeatureTable.Layer)
@@ -244,21 +295,27 @@ namespace MapBoard.Mapping
         public void ClearSelection()
         {
             DismissCallout();
-            if (selectedFeature != null)
+            if (SelectedFeature != null)
             {
-                (selectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(selectedFeature);
-                selectedFeature = null;
+                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
+                SelectedFeature = null;
             }
         }
 
         private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
         {
-            ClearSelection();
+            if (Editor.Status is not EditorStatus.NotRunning)
+            {
+                return;
+            }
             try
             {
                 if (!await TapToSelectOverlayAsync(e))
                 {
-                    await TapToSelectFeatureAsync(e);
+                    if (!await TapToSelectFeatureAsync(e))
+                    {
+                        ClearSelection();
+                    }
                 }
             }
             catch (Exception ex)
@@ -283,31 +340,34 @@ namespace MapBoard.Mapping
                 var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
                 if (graphic.Attributes.ContainsKey("Altitude"))
                 {
-                    var altitude =(double) graphic.Attributes["Altitude"];
+                    var altitude = (double)graphic.Attributes["Altitude"];
                     detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
                 }
-                ShowCallout(e.Position, graphic, timeString, detailString);
+                ShowCallout(e.Position, graphic, timeString, detailString, true);
                 return true;
             }
             return false;
         }
 
-        private void ShowCallout(Point point, GeoElement graphic, string text, string detail)
+        private void ShowCallout(Point point, GeoElement graphic, string text, string detail, bool cancelButton)
         {
             CalloutDefinition cd = new CalloutDefinition(graphic)
             {
                 Text = text,
                 DetailText = detail,
-                ButtonImage = closeImage,
                 OnButtonClick = a =>
                 {
                     ClearSelection();
                 }
             };
+            if (cancelButton)
+            {
+                cd.ButtonImage = closeImage;
+            }
             ShowCalloutForGeoElement(graphic, point, cd);
         }
 
-        private async Task TapToSelectFeatureAsync(GeoViewInputEventArgs e)
+        private async Task<bool> TapToSelectFeatureAsync(GeoViewInputEventArgs e)
         {
             IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
             results = results.Where(p => Layers.FindLayer(p.LayerContent).Interaction.CanSelect);
@@ -329,7 +389,9 @@ namespace MapBoard.Mapping
                 {
                     SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
                 }
+                return true;
             }
+            return false;
         }
 
         private async void MainMapView_Loaded(object sender, EventArgs e)
@@ -384,11 +446,25 @@ namespace MapBoard.Mapping
 
         private void SelectFeature(Feature feature, Point point)
         {
-            (feature.FeatureTable.Layer as FeatureLayer).ClearSelection();
+            if (SelectedFeature != null)
+            {
+                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
+            }
             (feature.FeatureTable.Layer as FeatureLayer).SelectFeature(feature);
-            ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature));
-            selectedFeature = feature;
+            ShowCallout(point, feature, feature.FeatureTable.Layer.Name, BuildCalloutText(feature), false);
+            SelectedFeature = feature;
         }
 
+        public async void DeleteSelectedFeatureAsync()
+        {
+            if (SelectedFeature == null)
+            {
+                throw new Exception("没有选中任何要素");
+            }
+
+            var feature = SelectedFeature;
+            ClearSelection();
+            await feature.FeatureTable.DeleteFeatureAsync(feature);
+        }
     }
 }

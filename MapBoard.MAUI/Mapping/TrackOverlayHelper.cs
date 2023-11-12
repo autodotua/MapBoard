@@ -23,7 +23,7 @@ namespace MapBoard.Mapping
 
         public GraphicsOverlay Overlay { get; }
 
-        public void AddPoint(double x, double y, DateTime time, double speed,double? altitude)
+        public void AddPoint(double x, double y, DateTime time, double speed, double? altitude)
         {
             MapPoint thisPoint = new MapPoint(x, y);
             Polyline line = null;
@@ -48,7 +48,7 @@ namespace MapBoard.Mapping
             Graphic graphic = new Graphic(line);
             graphic.Attributes.Add("Speed", speed);
             graphic.Attributes.Add("Time", time);
-            if(altitude.HasValue)
+            if (altitude.HasValue)
             {
                 graphic.Attributes.Add("Altitude", altitude.Value);
             }
@@ -71,9 +71,15 @@ namespace MapBoard.Mapping
             var speeds = (await GpxSpeedAnalysis.GetSpeedsAsync(points, 3)).ToList();
             var orderedSpeeds = speeds.Select(p => p.Speed).OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
-            int maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上线
-            int minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下线
-            double maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
+            int maxIndex = 0;
+            int minIndex = 0;
+            double maxMinusMinSpeed = 0;
+            if (speedsCount > 2)
+            {
+                maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上线
+                minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下线
+                maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
+            }
             for (int i = 2; i < points.Count; i++)
             {
                 MapPoint p1 = new MapPoint(points[i - 2].X, points[i - 2].Y, SpatialReferences.Wgs84);
@@ -99,15 +105,19 @@ namespace MapBoard.Mapping
                 }
                 var speed = speeds[i - 2].Speed;
                 Polyline line = new Polyline([p1, p2, p3]);
-                double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
-                var color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
+                Color color = Color.FromArgb(0x54, 0xA5, 0xF6);
+                if (maxMinusMinSpeed > 0)
+                {
+                    double speedPercent = Math.Max(0, Math.Min(1, (speed - orderedSpeeds[minIndex]) / maxMinusMinSpeed));
+                    color = InterpolateColors([Color.FromArgb(0x54, 0xA5, 0xF6), Color.FromArgb(0xFF, 0xB3, 0x00), Color.FromArgb(0xFF, 0, 0)], speedPercent);
+                }
                 Graphic graphic = new Graphic(line)
                 {
                     Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, color, 6)
                 };
                 graphic.Attributes.Add("Speed", speed);
                 graphic.Attributes.Add("Time", points[i - 1].Time);
-                if (points[i-1].Z.HasValue)
+                if (points[i - 1].Z.HasValue)
                 {
                     graphic.Attributes.Add("Altitude", points[i - 1].Z);
                 }

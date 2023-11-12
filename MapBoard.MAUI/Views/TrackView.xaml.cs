@@ -20,6 +20,7 @@ namespace MapBoard.Views;
 
 public partial class TrackView : ContentView, ISidePanel
 {
+    private static readonly string DeletedGpxDir = Path.Combine(FolderPaths.TrackPath, "deleted");
     public TrackView()
     {
         InitializeComponent();
@@ -35,15 +36,18 @@ public partial class TrackView : ContentView, ISidePanel
         TrackService.GpxSaved += TrackService_GpxSaved;
     }
 
-    public void OnPanelClosed()
-    {
-    }
+    public SwipeDirection Direction => SwipeDirection.Left;
 
-    public async void OnPanelOpening()
+    public int Length => 300;
+
+    public bool Standalone => false;
+
+    public async void OnPanelOpened()
     {
         await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
         UpdateButtonsVisible();
     }
+
 
     private void ContentPage_Loaded(object sender, EventArgs e)
     {
@@ -58,8 +62,56 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        var file = e.Item as SimpleFile;
-        await LoadGpxAsync(file.FullName);
+        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ","·ÖÏí", "É¾³ý","É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
+        var result = await (sender as ListView).PopupMenuAsync(e, items, "¹ì¼£");
+        if (result >= 0)
+        {
+            var file = e.Item as SimpleFile;
+            switch (result)
+            {
+                case 0:
+                    await LoadGpxAsync(file.FullName);
+                    return;
+                case 1:
+                    await Share.Default.RequestAsync(new ShareFileRequest("·ÖÏí¹ì¼£", new ShareFile(file.FullName)));
+                    break;
+                case 2:
+                    if(await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
+                    {
+                        if (!Directory.Exists(DeletedGpxDir))
+                        {
+                            Directory.CreateDirectory(DeletedGpxDir);
+                        }
+                        File.Move(file.FullName,Path.Combine(DeletedGpxDir,Path.GetFileName(file.FullName)));
+                    }
+                    break;
+                case 3:
+                    var gpxs = (BindingContext as TrackViewViewModel).GpxFiles.Where(p => p.Time <= file.Time).ToList(); ;
+                    if (await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{gpxs.Count}¸ö¹ì¼££¿", "ÊÇ", "·ñ"))
+                    {
+                        if (!Directory.Exists(DeletedGpxDir))
+                        {
+                            Directory.CreateDirectory(DeletedGpxDir);
+                        }
+                        foreach (var gpx in gpxs)
+                        {
+                            File.Move(gpx.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(file.FullName)));
+                        }
+                    }
+                    break;
+            }
+
+            var handle = ProgressPopup.Show("ÕýÔÚ¼ÓÔØ");
+            try
+            {
+                await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+            }
+            finally
+            {
+                handle.Close();
+            }
+
+        }
     }
 
     private async Task LoadGpxAsync(string path)

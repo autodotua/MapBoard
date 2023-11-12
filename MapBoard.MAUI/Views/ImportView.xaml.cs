@@ -19,17 +19,15 @@ public partial class ImportView : ContentView, ISidePanel
 
     }
 
-    public void OnPanelClosed()
-    {
-    }
+    public SwipeDirection Direction => SwipeDirection.Left;
 
-    public async void OnPanelOpening()
+    public int Length => 300;
+
+    public bool Standalone => false;
+
+    public async void OnPanelOpened()
     {
         await (BindingContext as ImportViewVideModel).LoadFilesAsync();
-    }
-
-    private void ContentView_Loaded(object sender, EventArgs e)
-    {
     }
 
     private async Task ImportAsync(string file)
