@@ -47,6 +47,9 @@ namespace MapBoard.Views
                 ItemsSource = items,
                 ItemTemplate = template,
                 WidthRequest = 200,
+                VerticalOptions = LayoutOptions.Center,
+                RowHeight = 40,
+                HeightRequest = Math.Min(400, 42 * items.Count()) //暂时规避PopupMenu的BUG：https://github.com/CommunityToolkit/Maui/issues/1516
             };
             list.ItemTapped += (s, e) =>
             {

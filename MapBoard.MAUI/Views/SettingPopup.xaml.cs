@@ -20,11 +20,10 @@ public partial class SettingPopup : Popup
         Config.Instance.Save();
         Close();
     }
-
-    protected override Task OnDismissedByTappingOutsideOfPopup()
+    protected override Task OnDismissedByTappingOutsideOfPopup(CancellationToken token = default)
     {
         Config.Instance.Save();
-        return base.OnDismissedByTappingOutsideOfPopup();
+        return base.OnDismissedByTappingOutsideOfPopup(token);
     }
 
     private async void AboutButton_Click(object sender, EventArgs e)
