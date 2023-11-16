@@ -19,8 +19,6 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using MapBoard.IO;
 using MapBoard.Mapping.Model;
-using Microsoft.WindowsAPICodePack.FzExtension;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using ModernWpf.Controls;
 using FzLib.DataStorage.Serialization;
 using MapBoard.Util;
@@ -29,6 +27,8 @@ using FzLib.Program;
 using FzLib.IO;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
+using Microsoft.Win32;
+using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 
 namespace MapBoard.UI.Dialog
 {
@@ -140,30 +140,27 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private void AddFileButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection()
-                           .Add("JPEG图片", "jpg,jpeg")
-                           .Add("PNG图片", "png")
-                           .Add("BMP图片", "bmp")
-                           .Add("TIFF图片", "tif,tiff")
-                           .Add("Shapefile矢量图", "shp")
-                           .Add("TilePackage切片包", "tpk")
-                           .AddUnion()
-                           .CreateOpenFileDialog()
-                           .SetParent(this)
-                           .GetFilePath();
-            if (path == null)
-            {
-                return;
-            }
+            var dialog = new OpenFileDialog()
+                .AddFilter("JPEG图片", "jpg,jpeg")
+                .AddFilter("PNG图片", "png")
+                .AddFilter("BMP图片", "bmp")
+                .AddFilter("TIFF图片", "tif,tiff")
+                .AddFilter("Shapefile矢量图", "shp")
+                .AddFilter("TilePackage切片包", "tpk")
+                .AddAllFilesFilter();
 
-            var layerInfo = Path.GetExtension(path) switch
+            string path = dialog.GetPath(this);
+            if (path != null)
             {
-                ".shp" => new BaseLayerInfo(BaseLayerType.ShapefileLayer, path),
-                ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
-                _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
-            };
-            baseLayers.BaseLayers.Add(layerInfo);
-            SelectAndScroll(layerInfo);
+                var layerInfo = Path.GetExtension(path) switch
+                {
+                    ".shp" => new BaseLayerInfo(BaseLayerType.ShapefileLayer, path),
+                    ".tpk" => new BaseLayerInfo(BaseLayerType.TpkLayer, path),
+                    _ => new BaseLayerInfo(BaseLayerType.RasterLayer, path),
+                };
+                baseLayers.BaseLayers.Add(layerInfo);
+                SelectAndScroll(layerInfo);
+            }
         }
 
         /// <summary>
@@ -293,11 +290,11 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private void ExportButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection().Add("MapBoard配置文件", "mbconfig")
-                .CreateSaveFileDialog()
-                .SetDefault("地图画板配置", null, "mbconfig")
-                .SetParent(this)
-                .GetFilePath();
+            var dialog = new SaveFileDialog();
+            dialog.AddFilter("MapBoard配置文件", "mbconfig");
+            dialog.AddExtension = true;
+            dialog.FileName = "地图画板配置";
+            string path = dialog.GetPath(this);
             if (path != null)
             {
                 Config.Save(path);
@@ -354,11 +351,10 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection()
-                .Add("MapBoard配置文件", "mbconfig")
-                .CreateOpenFileDialog()
-                .SetParent(this)
-                .GetFilePath();
+            var dialog = new OpenFileDialog();
+            dialog.AddFilter("MapBoard配置文件", "mbconfig");
+            dialog.FileName = "地图画板配置";
+            string path = dialog.GetPath(this);
             if (path != null)
             {
                 try

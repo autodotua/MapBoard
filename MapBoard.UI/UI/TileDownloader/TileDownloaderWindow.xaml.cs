@@ -19,11 +19,12 @@ using MapBoard.Util;
 using MapBoard.Model;
 using MapBoard.Mapping;
 using MapBoard.Mapping.Model;
-using Microsoft.WindowsAPICodePack.FzExtension;
 using MapBoard.IO;
 using System.Drawing.Imaging;
 using MapBoard.UI.Model;
 using Esri.ArcGISRuntime.UI.Editing;
+using Microsoft.Win32;
+using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 
 namespace MapBoard.UI.TileDownloader
 {
@@ -412,12 +413,10 @@ namespace MapBoard.UI.TileDownloader
             {
                 if (File.Exists(savedImgPath))
                 {
-                    var file = new FileFilterCollection()
-                        .Add("TIFF图片", "tif")
-                        .CreateSaveFileDialog()
-                        .SetDefault("地图.tif")
-                        .SetParent(this)
-                        .GetFilePath();
+                    var dialog = new SaveFileDialog()
+                        .AddFilter("TIFF图片", "tif");
+                    dialog.FileName = "地图.tif";
+                    var file = dialog.GetPath(this);
                     if (file != null)
                     {
                         tbkStichStatus.Text = "正在保存地图";

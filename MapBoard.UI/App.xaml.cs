@@ -18,7 +18,6 @@ using MapBoard.UI.GpxToolbox;
 using MapBoard.UI.TileDownloader;
 using log4net.Appender;
 using MapBoard.Util;
-using Microsoft.WindowsAPICodePack.FzExtension;
 using System.Xml;
 using log4net.Layout;
 using System.Reflection;
@@ -141,9 +140,9 @@ namespace MapBoard
             catch (TargetInvocationException ex) when (ex.InnerException?.InnerException?.InnerException?.InnerException is DllNotFoundException)
             {
                 SplashWindow.EnsureInvisible();
-                Log.Error("找不到C++库", ex);
+                Log.Error("启动失败", ex);
 
-                var result = MessageBox.Show("C++库不存在，请先安装C++2015-2019或更新版本的x86和x64。" + Environment.NewLine + ex.InnerException?.InnerException?.InnerException?.InnerException.Message + Environment.NewLine + "是否跳转到下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                var result = MessageBox.Show("启动失败，请确保C++2015-2019或更新版本的x86和x64已安装，检查ArcGIS相关dll。" + Environment.NewLine + ex.InnerException?.InnerException?.InnerException?.InnerException.Message + Environment.NewLine + "是否跳转到C++下载界面？", "MapBoard", MessageBoxButton.YesNo, MessageBoxImage.Error);
                 if (result == MessageBoxResult.Yes)
                 {
                     try

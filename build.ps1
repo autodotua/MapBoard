@@ -9,7 +9,7 @@ try {
     
     Write-Output "请先阅读ReadMe"
     Write-Output "请确保："
-    Write-Output "已经安装.NET 6 SDK"
+    Write-Output "已经安装.NET 8 SDK"
     Write-Output "已经安装Microsoft Visual C++ 2015-2019 Redistributable"
 
     pause

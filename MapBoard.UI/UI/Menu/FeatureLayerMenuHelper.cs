@@ -15,7 +15,8 @@ using System.Windows;
 using System.Windows.Controls;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using Microsoft.WindowsAPICodePack.FzExtension;
+using Microsoft.Win32;
+using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 
 namespace MapBoard.UI.Menu
 {
@@ -173,12 +174,12 @@ namespace MapBoard.UI.Menu
         /// <param name="filter"></param>
         /// <param name="task"></param>
         /// <returns></returns>
-        private async Task ExportBase(FileFilterCollection filter, Func<string, Task> task)
+        private async Task ExportBase(string filterDisplay, string filterExtension, Func<string, Task> task)
         {
-            string path = filter.CreateSaveFileDialog()
-                        .SetDefault(mapView.Selection.SelectedFeatures.Count + "个图形")
-                        .SetParent(mainWindow)
-                        .GetFilePath();
+            var dialog = new SaveFileDialog()
+                .AddFilter(filterDisplay, filterExtension);
+            dialog.FileName = layer.Name;
+            string path = dialog.GetPath(mainWindow);
             if (path != null)
             {
                 await task(path);
@@ -427,7 +428,7 @@ namespace MapBoard.UI.Menu
         /// <returns></returns>
         private Task ToCsvAsync()
         {
-            return ExportBase(new FileFilterCollection().Add("Csv表格", "csv"), async path => await Csv.ExportAsync(path, mapView.Selection.SelectedFeatures.ToArray()));
+            return ExportBase("Csv表格", "csv", async path => await Csv.ExportAsync(path, mapView.Selection.SelectedFeatures.ToArray()));
         }
 
         /// <summary>
@@ -436,7 +437,7 @@ namespace MapBoard.UI.Menu
         /// <returns></returns>
         private Task ToGeoJsonAsync()
         {
-            return ExportBase(new FileFilterCollection().Add("GeoJSON", "geojson"), async path => await GeoJson.ExportAsync(path, mapView.Selection.SelectedFeatures));
+            return ExportBase("GeoJSON", "geojson", async path => await GeoJson.ExportAsync(path, mapView.Selection.SelectedFeatures));
         }
 
         /// <summary>

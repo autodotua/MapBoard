@@ -21,7 +21,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static MapBoard.Util.CoordinateTransformation;
 using MapBoard.Mapping.Model;
-using Microsoft.WindowsAPICodePack.Dialogs.Controls;
 using EsriLayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 using System.Diagnostics;
 using System.ComponentModel;

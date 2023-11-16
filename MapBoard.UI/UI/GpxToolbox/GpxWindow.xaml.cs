@@ -33,11 +33,11 @@ using MapBoard.Util;
 using MapBoard.Mapping;
 using static MapBoard.IO.Gpx.GpxSpeedAnalysis;
 using MapBoard.Mapping.Model;
-using Microsoft.WindowsAPICodePack.FzExtension;
 using FzLib.WPF.Controls;
 using FzLib.WPF;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using MapBoard.IO;
+using Microsoft.Win32;
+using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -204,11 +204,10 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void CaptureScreenButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection().Add("PNG图片", "png")
-                .CreateSaveFileDialog()
-                .SetDefault(Gpx.Name + ".png")
-                .SetParent(this)
-                .GetFilePath();
+            var dialog = new SaveFileDialog();
+            dialog.AddFilter("PNG图片", "png");
+            dialog.FileName = Gpx.Name + ".png";
+            string path = dialog.GetPath(this);
             if (path != null)
             {
                 PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);
@@ -266,10 +265,9 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void OpenFilesButton_Click(object sender, RoutedEventArgs e)
         {
-            string[] files = new FileFilterCollection()
-                .Add("GPX轨迹文件", "gpx")
-                .CreateOpenFileDialog()
-                .GetFilePaths();
+            var dialog= new OpenFileDialog();
+            dialog.AddFilter("GPX轨迹文件", "gpx");
+            string[] files = dialog.GetPaths(this);
             if (files != null)
             {
                 await DoAsync(() => arcMap.LoadFilesAsync(files), "正在加载轨迹");
@@ -413,12 +411,10 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void SaveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = new FileFilterCollection()
-                .Add("GPX轨迹文件", "gpx")
-                .CreateSaveFileDialog()
-                .SetDefault(Gpx.Name + ".gpx")
-                .SetParent(this)
-                .GetFilePath();
+            var dialog = new SaveFileDialog();
+            dialog.AddFilter("GPX轨迹文件", "gpx");
+            dialog.FileName = Gpx.Name + ".gpx";
+            string path = dialog.GetPath(this);
             if (path != null)
             {
                 try
@@ -666,12 +662,10 @@ namespace MapBoard.UI.GpxToolbox
                     gpx.Tracks[0].Points.Add(p);
                 }
             }
-            string filePath =
-                new FileFilterCollection().Add("GPX轨迹文件", "gpx")
-                .CreateSaveFileDialog()
-                .SetDefault(tracks[0].FileName + " - 连接.gpx")
-                .SetParent(this)
-                .GetFilePath();
+            var dialog = new SaveFileDialog();
+            dialog.AddFilter("GPX轨迹文件", "gpx");
+            dialog.FileName = tracks[0].FileName + " - 连接.gpx";
+            string filePath = dialog.GetPath(this);
 
             if (filePath != null)
             {

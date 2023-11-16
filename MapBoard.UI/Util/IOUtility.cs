@@ -24,33 +24,16 @@ using ModernWpf.FzExtension;
 using MapBoard.Mapping.Model;
 using MapBoard.UI.Dialog;
 using System.Drawing.Imaging;
-using Microsoft.WindowsAPICodePack.FzExtension;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using FzLib.WPF;
 using FzLib;
 using MapBoard.UI.GpxToolbox;
+using Microsoft.Win32;
+using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 
 namespace MapBoard.Util
 {
     public static class IOUtility
     {
-        /// <summary>
-        /// 满足条件是加入文件筛选器
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="b"></param>
-        /// <param name="display"></param>
-        /// <param name="extensions"></param>
-        /// <returns></returns>
-        public static FileFilterCollection AddIf(this FileFilterCollection filter, bool b, string display, params string[] extensions)
-        {
-            if (b)
-            {
-                return filter.Add(display, extensions);
-            }
-            return filter;
-        }
-
         /// <summary>
         /// 拖放文件到窗口
         /// </summary>
@@ -262,22 +245,18 @@ namespace MapBoard.Util
         {
             if ((int)type <= (int)ExportLayerType.GeoJSON)
             {
-                return new FileFilterCollection()
-                    .AddIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
-                    .AddIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
-                    .AddIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
-                    .AddIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
-                    .AddIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
-                    .CreateSaveFileDialog()
-                    .SetDefault(layer.Name)
-                    .SetParent(parentWindow)
-                    .GetFilePath();
+                SaveFileDialog dialog = new SaveFileDialog()
+                        .AddFilterIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
+                        .AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
+                        .AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                        .AddFilterIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
+                        .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson");
+                return dialog.GetPath(parentWindow);
             }
             else
             {
-                return new CommonOpenFileDialog()
-                      .SetParent(parentWindow)
-                      .GetFolderPath();
+                OpenFolderDialog folderDialog = new OpenFolderDialog();
+                return folderDialog.GetPath(parentWindow);
             }
         }
 
@@ -291,22 +270,19 @@ namespace MapBoard.Util
         {
             if (type is ExportMapType.OpenLayers)
             {
-                return new CommonOpenFileDialog()
-                    .SetParent(parentWindow)
-                    .GetFolderPath();
+                var folderDialog = new OpenFolderDialog();
+                return folderDialog.GetPath(parentWindow);
             }
             else
             {
-                return new FileFilterCollection()
-                .AddIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
-                .AddIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
-                .AddIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
-                .AddIf(type == ExportMapType.KML, "KML打包文件", "kmz")
-                .AddIf(type == ExportMapType.Screenshot, "截图", "png")
-                .CreateSaveFileDialog()
-                .SetDefault("地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss"))
-                .SetParent(parentWindow)
-                .GetFilePath();
+                SaveFileDialog dialog = new SaveFileDialog()
+                .AddFilterIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
+                .AddFilterIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
+                .AddFilterIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                .AddFilterIf(type == ExportMapType.KML, "KML打包文件", "kmz")
+                .AddFilterIf(type == ExportMapType.Screenshot, "截图", "png");
+                dialog.FileName = "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                return dialog.GetPath(parentWindow);
             }
         }
 
@@ -318,12 +294,10 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static string GetImportFeaturePath(ImportLayerType type, Window parentWindow)
         {
-            return new FileFilterCollection()
-                .AddIf(type == ImportLayerType.Gpx, "GPS轨迹文件", "gpx")
-                .AddIf(type == ImportLayerType.Csv, "CSV表格", "csv")
-                .CreateOpenFileDialog()
-                .SetParent(parentWindow)
-                .GetFilePath();
+            OpenFileDialog dialog = new OpenFileDialog()
+                .AddFilterIf(type == ImportLayerType.Gpx, "GPS轨迹文件", "gpx")
+                .AddFilterIf(type == ImportLayerType.Csv, "CSV表格", "csv");
+            return dialog.GetPath(parentWindow);
         }
 
         /// <summary>
@@ -334,17 +308,15 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static string GetImportMapPath(ImportMapType type, Window parentWindow)
         {
-            return new FileFilterCollection()
-                .AddIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
-                .AddIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
-                .AddIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
-                .AddIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
-                .AddIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
-                .AddIf(type == ImportMapType.CSV, "CSV表格", "csv")
-                .AddIf(type == ImportMapType.KML, "KML（可扩展标记语言）", "kml", "kmz")
-                .CreateOpenFileDialog()
-                .SetParent(parentWindow)
-                .GetFilePath();
+            OpenFileDialog dialog = new OpenFileDialog()
+                .AddFilterIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
+                .AddFilterIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
+                .AddFilterIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
+                .AddFilterIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
+                .AddFilterIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
+                .AddFilterIf(type == ImportMapType.CSV, "CSV表格", "csv")
+                .AddFilterIf(type == ImportMapType.KML, "KML地理标记", "kml", "kmz");
+            return dialog.GetPath(parentWindow);
         }
 
         /// <summary>

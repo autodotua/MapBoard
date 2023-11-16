@@ -6,6 +6,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>2.0.0.0</ApplicationVersion>
+    <UseRidGraph>true</UseRidGraph> <!--.NET8下，若不加这个，发布时报错：无法识别指定的 RuntimeIdentifier“win10-x64”。https://github.com/dotnet/maui/issues/17330-->
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -52,9 +53,6 @@
     <Reference Include="ModernWpf.FzExtension">
       <HintPath>..\libs\ModernWpf.FzExtension.dll</HintPath>
     </Reference>
-    <Reference Include="WindowsAPICodePack.FzExtension">
-      <HintPath>..\libs\WindowsAPICodePack.FzExtension.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon.ico">
@@ -87,7 +85,6 @@
     <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
