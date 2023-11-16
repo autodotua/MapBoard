@@ -22,6 +22,8 @@ namespace MapBoard.Views
              .FirstOrDefault(list);
             return view.PopupMenuAsync(items, title);
         }
+
+        //https://github.com/CommunityToolkit/Maui/issues/1516
         public static async Task<int> PopupMenuAsync(this View view, IEnumerable<PopupMenuItem> items, string title = null)
         {
             Popup ppp = new Popup
@@ -48,18 +50,17 @@ namespace MapBoard.Views
                 ItemTemplate = template,
                 WidthRequest = 200,
                 VerticalOptions = LayoutOptions.Center,
-                RowHeight = 40,
-                HeightRequest = Math.Min(400, 42 * items.Count()) //暂时规避PopupMenu的BUG：https://github.com/CommunityToolkit/Maui/issues/1516
+                VerticalScrollBarVisibility=ScrollBarVisibility.Never,
+                SeparatorVisibility=SeparatorVisibility.None
             };
             list.ItemTapped += (s, e) =>
             {
                 ppp.Close(e.ItemIndex);
             };
-            Grid grid = new Grid()
+            VerticalStackLayout layout = new VerticalStackLayout()
             {
                 Margin = new Thickness(8),
             };
-            grid.Add(list);
             if (title != null)
             {
                 Label titleLabel = new Label()
@@ -69,15 +70,12 @@ namespace MapBoard.Views
                     Margin = new Thickness(8, 0, 0, 0),
                     TextColor = Colors.Gray
                 };
-                grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
-                grid.AddRowDefinition(new RowDefinition(8));
-                grid.AddRowDefinition(new RowDefinition(new GridLength(1, GridUnitType.Star)));
-                grid.Add(titleLabel);
-                Grid.SetRow(list, 2);
+                layout.Add(titleLabel);
             }
+            layout.Add(list);
             Border bd = new Border()
             {
-                Content = grid,
+                Content = layout,
                 StrokeThickness = 0,
                 StrokeShape = new RoundRectangle()
                 {
