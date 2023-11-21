@@ -76,8 +76,8 @@ namespace MapBoard.Mapping
             double maxMinusMinSpeed = 0;
             if (speedsCount > 2)
             {
-                maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上线
-                minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下线
+                maxIndex = Math.Max(1, (int)(speedsCount * 0.95));//取95%最大值作为速度颜色上限
+                minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下限
                 maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
             }
             for (int i = 2; i < points.Count; i++)

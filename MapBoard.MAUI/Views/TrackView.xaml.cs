@@ -62,7 +62,7 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ","·ÖÏí", "É¾³ý","É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
+        PopupMenu.PopupMenuItem[] items = ["¼ÓÔØ", "·ÖÏí", "É¾³ý", "É¾³ý±¾Ìõ¼°¸üÔçµÄ¹ì¼£"];
         var result = await (sender as ListView).PopupMenuAsync(e, items, "¹ì¼£");
         if (result >= 0)
         {
@@ -76,13 +76,13 @@ public partial class TrackView : ContentView, ISidePanel
                     await Share.Default.RequestAsync(new ShareFileRequest("·ÖÏí¹ì¼£", new ShareFile(file.FullName)));
                     break;
                 case 2:
-                    if(await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
+                    if (await MainPage.Current.DisplayAlert("É¾³ý¹ì¼£", $"ÊÇ·ñÒªÉ¾³ý{file.Name}£¿", "ÊÇ", "·ñ"))
                     {
                         if (!Directory.Exists(DeletedGpxDir))
                         {
                             Directory.CreateDirectory(DeletedGpxDir);
                         }
-                        File.Move(file.FullName,Path.Combine(DeletedGpxDir,Path.GetFileName(file.FullName)));
+                        File.Move(file.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(file.FullName)), true);
                     }
                     break;
                 case 3:
@@ -95,7 +95,7 @@ public partial class TrackView : ContentView, ISidePanel
                         }
                         foreach (var gpx in gpxs)
                         {
-                            File.Move(gpx.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(file.FullName)));
+                            File.Move(gpx.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(gpx.FullName)), true);
                         }
                     }
                     break;
