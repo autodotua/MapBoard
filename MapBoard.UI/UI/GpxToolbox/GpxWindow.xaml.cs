@@ -265,7 +265,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void OpenFilesButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog= new OpenFileDialog();
+            var dialog = new OpenFileDialog();
             dialog.AddFilter("GPX轨迹文件", "gpx");
             string[] files = dialog.GetPaths(this);
             if (files != null)
@@ -455,7 +455,7 @@ namespace MapBoard.UI.GpxToolbox
                     await CommonDialog.ShowErrorDialogAsync("输入的数值超出范围");
                     return;
                 }
-                if (z && points.All(p=>p.Z.HasValue))
+                if (z && points.All(p => p.Z.HasValue))
                 {
                     GpxUtility.Smooth(points, num, p => p.Z.Value, (p, v) => p.Z = v);
                 }
@@ -552,11 +552,7 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                if (arcMap.SelectedTrack != null)
-                {
-                    arcMap.SelectedTrack.Overlay.Renderer = null;
-                    arcMap.SelectedTrack.Overlay.Renderer = NormalRenderer;
-                }
+                arcMap.SelectedTrack?.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.SimpleLine);
                 if (lvwFiles.SelectedItem == null)
                 {
                     arcMap.SelectedTrack = null;
@@ -578,8 +574,7 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     arcMap.SelectedTrack = lvwFiles.SelectedItem as TrackInfo;
 
-                    arcMap.SelectedTrack.Overlay.Renderer = CurrentRenderer;
-                    //arcMap.SelectedTrack.Overlay.Graphics[0].Symbol = CurrentLineSymbol;
+                    arcMap.SelectedTrack.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.ColoredLine);
 
                     Gpx = arcMap.SelectedTrack.Gpx;
                     GpxTrack = arcMap.SelectedTrack.Track;
@@ -595,6 +590,9 @@ namespace MapBoard.UI.GpxToolbox
                         await ZoomToTrackAsync();
                     }
                 }
+                IsEnabled = false;
+                await arcMap.WaitForRenderCompletedAsync();
+                IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -694,7 +692,7 @@ namespace MapBoard.UI.GpxToolbox
         {
             foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToList())
             {
-                arcMap.GraphicsOverlays.Remove(item.Overlay);
+                //arcMap.GraphicsOverlays.Remove(item.Overlay);
                 Tracks.Remove(item);
             }
         }
@@ -857,7 +855,6 @@ namespace MapBoard.UI.GpxToolbox
             if (grdPoints.SelectedItem is GpxPoint point && !double.IsNaN(point.Z.Value) && point.Y != 0)
             {
                 chartHelper.SetLine(point.Time.Value);
-                arcMap.SelectPoints(points);
             }
             else
             {
@@ -977,7 +974,6 @@ namespace MapBoard.UI.GpxToolbox
 
             chartHelper.MouseOverPoint += (p1, p2) =>
             {
-                //arcMap.ClearSelection();
                 arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
             };
             chartHelper.LinePointEnable = (p1, p2) => (p2.CenterTime - p1.CenterTime) < TimeSpan.FromSeconds(200);
@@ -992,7 +988,7 @@ namespace MapBoard.UI.GpxToolbox
         {
             arcMap.ClearSelection();
         }
-
         #endregion
+
     }
 }

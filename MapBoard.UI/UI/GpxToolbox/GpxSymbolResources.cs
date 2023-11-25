@@ -25,17 +25,7 @@ namespace MapBoard.UI.GpxToolbox
             Style = SimpleMarkerSymbolStyle.Circle,
         };
 
-        /// <summary>
-        /// 当前轨迹渲染器
-        /// </summary>
-        public static SimpleRenderer CurrentRenderer =>
-            new SimpleRenderer(CurrentLineSymbol);
 
-        /// <summary>
-        /// 常规渲染器
-        /// </summary>
-        public static SimpleRenderer NormalRenderer =>
-        new SimpleRenderer(NormalLineSymbol);
         /// <summary>
         /// 未选择的点符号
         /// </summary>
@@ -61,16 +51,6 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         public static SimpleRenderer SelectionRenderer =>
             new SimpleRenderer(NotSelectedPointSymbol);
-        /// <summary>
-        /// 当前轨迹线符号
-        /// </summary>
-        private static SimpleLineSymbol CurrentLineSymbol { get; } =
-         new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Red, 3);
 
-        /// <summary>
-        /// 普通线符号
-        /// </summary>
-        private static SimpleLineSymbol NormalLineSymbol { get; } =
- new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color.Blue, 3);
     }
 }

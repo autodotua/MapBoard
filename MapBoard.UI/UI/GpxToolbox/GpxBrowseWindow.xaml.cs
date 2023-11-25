@@ -44,7 +44,8 @@ namespace MapBoard.UI.GpxToolbox
         {
             BrowseInfo = Config.Instance.Gpx_BrowseInfo;
             Track = track.Clone();
-            Track.Overlay = new GraphicsOverlay() { Renderer = CurrentRenderer };
+            throw new NotImplementedException();
+            //Track.Overlay = new GraphicsOverlay() { Renderer = CurrentRenderer };
             InitializeComponent();
 
             arcMap.InteractionOptions = new SceneViewInteractionOptions() { IsEnabled = false };
