@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 using FzLib.WPF.Dialog;
 using MapBoard.Util;
 using MapBoard.Mapping;
-using static MapBoard.IO.Gpx.GpxSpeedAnalysis;
 using MapBoard.Mapping.Model;
 using FzLib.WPF.Controls;
 using FzLib.WPF;
@@ -82,10 +81,10 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                var pointPoints = GpxTrack.Points.Clone() as GpxPointCollection;
+                var pointPoints = GpxTrack.Points;//.Clone() as GpxPointCollection;
                 var linePoints = GpxTrack.Points.Clone() as GpxPointCollection;
-                var pointsTask = GetMeanFilteredSpeedsAsync(pointPoints , 3,true);
-                var linesTask = GetMeanFilteredSpeedsAsync(linePoints, 19,true);
+                var pointsTask = GpxUtility.GetMeanFilteredSpeedsAsync(pointPoints, 3, true);
+                var linesTask = GpxUtility.GetMeanFilteredSpeedsAsync(linePoints, 19, true);
                 await Task.WhenAll(pointsTask, linesTask);
                 chartHelper.DrawActionAsync = () =>
                     DrawChartAsync(pointPoints, linePoints);
@@ -967,10 +966,10 @@ namespace MapBoard.UI.GpxToolbox
                 sb.AppendLine(p.Time.Value.ToString("HH:mm:ss"));
                 sb.Append(p.Speed.ToString("0.00")).AppendLine("m/s");
                 sb.Append((3.6 * p.Speed).ToString("0.00")).AppendLine("km/h");
-                //if (!double.IsNaN(p.RelatedPoints[0].Z.Value) && !double.IsNaN(p.RelatedPoints[1].Z.Value))
-                //{
-                //    sb.Append(((p.RelatedPoints[0].Z + p.RelatedPoints[1].Z) / 2).Value.ToString("0.00") + "m");
-                //}
+                if (p.Z.HasValue)
+                {
+                    sb.Append(p.Z.Value.ToString("0.00")).Append('m');
+                }
                 return sb.ToString();
             };
 

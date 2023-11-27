@@ -44,10 +44,8 @@ namespace MapBoard.UI.GpxToolbox
         {
             BrowseInfo = Config.Instance.Gpx_BrowseInfo;
             Track = track.Clone();
-            throw new NotImplementedException();
-            //Track.Overlay = new GraphicsOverlay() { Renderer = CurrentRenderer };
             InitializeComponent();
-
+            Track.Initialize();
             arcMap.InteractionOptions = new SceneViewInteractionOptions() { IsEnabled = false };
         }
 
@@ -343,6 +341,7 @@ namespace MapBoard.UI.GpxToolbox
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             arcMap.LoadTrack(Track, false, true, false);
+            Track.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.ColoredLine);
         }
 
     }

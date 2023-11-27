@@ -352,6 +352,8 @@ namespace MapBoard.Mapping
             trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
             trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.SimpleLine).SurfacePlacement =
                 gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height ? SurfacePlacement.Absolute : SurfacePlacement.DrapedFlat;
+            trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.ColoredLine).SurfacePlacement =
+                gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height ? SurfacePlacement.Absolute : SurfacePlacement.DrapedFlat;
             if (!update)
             {
                 trackInfo.AddToOverlays(GraphicsOverlays, overlay2Track);
