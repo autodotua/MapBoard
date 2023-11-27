@@ -2,7 +2,6 @@
   "profiles": {
     "MapBoard": {
       "commandName": "Project",
-      "commandLineArgs": "gpx",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

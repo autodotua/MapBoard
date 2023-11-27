@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using MapBoard.IO.Gpx;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 
@@ -65,11 +66,14 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         private GraphicsOverlay SimpleLineOverlay { get; set; }
 
-        public void AddToOverlays(GraphicsOverlayCollection overlays)
+        public void AddToOverlays(GraphicsOverlayCollection overlays, Dictionary<GraphicsOverlay, TrackInfo> dictionary)
         {
             overlays.Add(SimpleLineOverlay);
             overlays.Add(ColoredLineOverlay);
             overlays.Add(PointOverlay);
+            dictionary.Add(SimpleLineOverlay, this);
+            dictionary.Add(ColoredLineOverlay, this);
+            dictionary.Add(PointOverlay, this);
         }
         public TrackInfo Clone()
         {
@@ -116,11 +120,14 @@ namespace MapBoard.Mapping.Model
             };
         }
 
-        public void RemoveFromOverlays(GraphicsOverlayCollection overlays)
+        public void RemoveFromOverlays(GraphicsOverlayCollection overlays, Dictionary<GraphicsOverlay, TrackInfo> dictionary)
         {
             overlays.Remove(SimpleLineOverlay);
             overlays.Remove(ColoredLineOverlay);
             overlays.Remove(PointOverlay);
+            dictionary.Remove(SimpleLineOverlay);
+            dictionary.Remove(ColoredLineOverlay);
+            dictionary.Remove(PointOverlay);
         }
         public void SetRenderer(TrackSelectionDisplay display, Renderer renderer)
         {

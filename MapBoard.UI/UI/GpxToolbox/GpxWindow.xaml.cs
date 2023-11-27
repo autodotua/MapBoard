@@ -46,7 +46,7 @@ namespace MapBoard.UI.GpxToolbox
     /// </summary>
     public partial class GpxWindow : MainWindowBase
     {
-        private TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint> chartHelper;
+        private TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint> chartHelper;
 
         public GpxWindow()
         {
@@ -82,11 +82,13 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                var pointsTask = GetUsableSpeedsAsync(GpxTrack.Points);
-                var linesTask = GetMeanFilteredSpeedsAsync(GpxTrack.Points, 20, 5);
+                var pointPoints = GpxTrack.Points.Clone() as GpxPointCollection;
+                var linePoints = GpxTrack.Points.Clone() as GpxPointCollection;
+                var pointsTask = GetMeanFilteredSpeedsAsync(pointPoints , 3,true);
+                var linesTask = GetMeanFilteredSpeedsAsync(linePoints, 19,true);
                 await Task.WhenAll(pointsTask, linesTask);
                 chartHelper.DrawActionAsync = () =>
-                    DrawChartAsync(pointsTask.Result, linesTask.Result);
+                    DrawChartAsync(pointPoints, linePoints);
 
                 await Task.Run(() =>
                 {
@@ -480,7 +482,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 foreach (var item in GpxTrack.Points)
                 {
-                    double speed = GpxTrack.Points.GetSpeed(item as GpxPoint, num.Value);
+                    double speed = GpxTrack.Points.GetSpeed(item, num.Value);
                     item.Speed = speed;
                 }
             }
@@ -590,9 +592,6 @@ namespace MapBoard.UI.GpxToolbox
                         await ZoomToTrackAsync();
                     }
                 }
-                IsEnabled = false;
-                await arcMap.WaitForRenderCompletedAsync();
-                IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -624,18 +623,18 @@ namespace MapBoard.UI.GpxToolbox
                     menuLink.Click += LinkTrackMenu_Click;
                     menu.Items.Add(menuLink);
                 }
-            }
-            if (GpxTrack != null)
-            {
-                var menuZoom = new MenuItem() { Header = "缩放到轨迹" };
-                menuZoom.Click += async (s, e) => await ZoomToTrackAsync();
-                menu.Items.Add(menuZoom);
+                if (GpxTrack != null)
+                {
+                    var menuZoom = new MenuItem() { Header = "缩放到轨迹" };
+                    menuZoom.Click += async (s, e) => await ZoomToTrackAsync();
+                    menu.Items.Add(menuZoom);
 
-                var menuBrowse = new MenuItem() { Header = "游览" };
-                menuBrowse.Click += (s, e) => new GpxBrowseWindow(lvwFiles.SelectedItem as TrackInfo).Show();
-                menu.Items.Add(menuBrowse);
+                    var menuBrowse = new MenuItem() { Header = "游览" };
+                    menuBrowse.Click += (s, e) => new GpxBrowseWindow(lvwFiles.SelectedItem as TrackInfo).Show();
+                    menu.Items.Add(menuBrowse);
+                }
+                menu.IsOpen = true;
             }
-            menu.IsOpen = true;
         }
 
         /// <summary>
@@ -690,11 +689,14 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         private void RemoveSelectedGpxs()
         {
+            lvwFiles.SelectionChanged -= File_SelectionChanged;
             foreach (var item in lvwFiles.SelectedItems.Cast<TrackInfo>().ToList())
             {
                 //arcMap.GraphicsOverlays.Remove(item.Overlay);
                 Tracks.Remove(item);
             }
+            lvwFiles.SelectionChanged += File_SelectionChanged;
+            File_SelectionChanged(null, null);
         }
         #endregion 文件操作
 
@@ -825,19 +827,19 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private void MapPointSelected(object sender, GpxMapView.PointSelectedEventArgs e)
         {
-            if (e.Point == null)
-            {
-                return;
-            }
             if (arcMap.MapTapMode == GpxMapView.MapTapModes.SelectedLayer)
             {
+                if (e.Point == null)
+                {
+                    return;
+                }
                 grdPoints.SelectedItem = e.Point;
                 grdPoints.ScrollIntoView(e.Point);
             }
             else
             {
-                lvwFiles.SelectedItem = e.Trajectory;
-                SnakeBar.Show("已跳转到轨迹：" + e.Trajectory.FileName);
+                lvwFiles.SelectedItem = e.Track;
+                SnakeBar.Show(this, "已跳转到轨迹：" + e.Track.FileName);
             }
             arcMap.MapTapMode = GpxMapView.MapTapModes.None;
             Cursor = Cursors.Arrow;
@@ -851,14 +853,14 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private void PointsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var points = grdPoints.SelectedItems.Cast<GpxPoint>();
             if (grdPoints.SelectedItem is GpxPoint point && !double.IsNaN(point.Z.Value) && point.Y != 0)
             {
+                arcMap.SelectPoint(point);
                 chartHelper.SetLine(point.Time.Value);
             }
             else
             {
-                arcMap.ClearSelection();
+                arcMap.UnselectAllPoints();
                 chartHelper.ClearLine();
             }
         }
@@ -899,7 +901,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="points"></param>
         /// <param name="lines"></param>
         /// <returns></returns>
-        private async Task DrawChartAsync(IEnumerable<SpeedInfo> points, IReadOnlyList<SpeedInfo> lines)
+        private async Task DrawChartAsync(IEnumerable<GpxPoint> points, IReadOnlyList<GpxPoint> lines)
         {
             try
             {
@@ -909,22 +911,22 @@ namespace MapBoard.UI.GpxToolbox
                 //2、绘制坐标轴和网格
                 await Task.WhenAll(
                  chartHelper.DrawAxisAsync(lines, true,
-                       new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<SpeedInfo>()
+                       new TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                        {
-                           XAxisValueConverter = p => p.CenterTime,
+                           XAxisValueConverter = p => p.Time.Value,
                            YAxisValueConverter = p => p.Speed,
                        }),
 
                  chartHelper.DrawAxisAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z.Value)),
-                    false, new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
+                    false, new TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                     {
                         XAxisValueConverter = p => p.Time.Value,
                         YAxisValueConverter = p => p.Z.Value,
                     }),
                  chartHelper.DrawAxisAsync(points, false,
-                        new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>.CoordinateSystemSetting<SpeedInfo>()
+                        new TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                         {
-                            XAxisValueConverter = p => p.CenterTime,
+                            XAxisValueConverter = p => p.Time.Value,
                             YAxisValueConverter = p => p.Speed,
                         }));
 
@@ -948,10 +950,10 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         private void InitializeChart()
         {
-            chartHelper = new TimeBasedChartHelper<SpeedInfo, SpeedInfo, GpxPoint>(speedChart);
+            chartHelper = new TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint>(speedChart);
 
-            chartHelper.XAxisLineValueConverter = p => p.CenterTime;
-            chartHelper.XAxisPointValueConverter = p => p.CenterTime;
+            chartHelper.XAxisLineValueConverter = p => p.Time.Value;
+            chartHelper.XAxisPointValueConverter = p => p.Time.Value;
             chartHelper.XAxisPolygonValueConverter = p => p.Time.Value;
 
             chartHelper.YAxisPointValueConverter = p => p.Speed;
@@ -962,21 +964,21 @@ namespace MapBoard.UI.GpxToolbox
             chartHelper.ToolTipConverter = p =>
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(p.CenterTime.ToString("HH:mm:ss"));
+                sb.AppendLine(p.Time.Value.ToString("HH:mm:ss"));
                 sb.Append(p.Speed.ToString("0.00")).AppendLine("m/s");
                 sb.Append((3.6 * p.Speed).ToString("0.00")).AppendLine("km/h");
-                if (!double.IsNaN(p.RelatedPoints[0].Z.Value) && !double.IsNaN(p.RelatedPoints[1].Z.Value))
-                {
-                    sb.Append(((p.RelatedPoints[0].Z + p.RelatedPoints[1].Z) / 2).Value.ToString("0.00") + "m");
-                }
+                //if (!double.IsNaN(p.RelatedPoints[0].Z.Value) && !double.IsNaN(p.RelatedPoints[1].Z.Value))
+                //{
+                //    sb.Append(((p.RelatedPoints[0].Z + p.RelatedPoints[1].Z) / 2).Value.ToString("0.00") + "m");
+                //}
                 return sb.ToString();
             };
 
             chartHelper.MouseOverPoint += (p1, p2) =>
             {
-                arcMap.SelectPointTo(p2.Item.RelatedPoints[0]);
+                arcMap.SelectPoint(p2.Item);
             };
-            chartHelper.LinePointEnable = (p1, p2) => (p2.CenterTime - p1.CenterTime) < TimeSpan.FromSeconds(200);
+            chartHelper.LinePointEnable = (p1, p2) => (p2.Time.Value - p1.Time.Value) < TimeSpan.FromSeconds(200);
         }
 
         /// <summary>
@@ -986,7 +988,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private void SpeedChartMouseLeave(object sender, MouseEventArgs e)
         {
-            arcMap.ClearSelection();
+            arcMap.UnselectAllPoints();
         }
         #endregion
 

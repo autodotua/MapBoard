@@ -3,6 +3,7 @@ using FzLib.DataAnalysis;
 using MapBoard.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,6 +14,82 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class GpxSpeedAnalysis
     {
+        /// <summary>
+        /// 获取一组点经过均值滤波后的速度
+        /// </summary>
+        /// <param name="points">点的集合</param>
+        /// <param name="window">每一组采样点的个数</param>
+        /// <returns></returns>
+        public static async Task<IReadOnlyList<double>> GetMeanFilteredSpeedsAsync(GpxPointCollection points, int window, bool writeToPoints)
+        {
+            if (window % 2 == 0 || window < 3)
+            {
+                throw new ArgumentException("窗口大小必须为大于等于3的奇数", nameof(window));
+            }
+            double[] speeds = new double[points.Count];
+            double[] distances = new double[points.Count - 1];
+            points = points.TimeOrderedPoints;
+            await Task.Run(() =>
+            {
+                try
+                {
+                    int left = 0;//左端索引
+                    int right = 2;//右端索引（包含，因此长度为right-left+1）
+                    MapPoint lastPoint = points[1].ToMapPoint();
+                    double distance = GeometryUtility.GetDistance(points[0].ToMapPoint(), points[1].ToMapPoint());
+                    distances[0] = distance;
+                    while (right == 0 || left < right)
+                    {
+                        if ((right - left) % 2 == 0) //在左端或右端时，窗口大小可能为偶数，此时不进行处理
+                        {
+                            var currentPoint = points[right].ToMapPoint();
+                            distances[right - 1] = GeometryUtility.GetDistance(lastPoint, currentPoint);
+                            lastPoint = currentPoint;
+                            distance += distances[right - 1];
+                            var speed = distance / ((points[right].Time.Value.Ticks - points[left].Time.Value.Ticks) / 10_000_000.0);
+                            int index = (right + left) / 2;
+                            speeds[index] = speed;
+                            Debug.WriteLine($"left={left}, right={right}, distance={distance}, speed={speed}, index={index}");
+                            if (writeToPoints)
+                            {
+                                points[index].Speed = speed;
+                            }
+                        }
+                        if (right == points.Count - 1)//右端已经到底
+                        {
+                            distance -= distances[left];
+                            left++;
+                        }
+                        else if (right - left + 1 == window)//到达窗口大小
+                        {
+                            distance -= distances[left];
+                            left++;
+                            right++;
+                        }
+                        else
+                        {
+                            Debug.Assert(left == 0);
+                            right++;
+                        }
+                    }
+                    speeds[0] = speeds[1];
+                    speeds[^1] = speeds[^2];
+                    if (writeToPoints)
+                    {
+                        points[0].Speed = speeds[0];
+                        points[^1].Speed = speeds[^1];
+                    }
+
+
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidOperationException("存在没有时间信息的点", ex);
+                }
+            });
+            return speeds.AsReadOnly();
+        }
+
         /// <summary>
         /// 获取一组点经过均值滤波后的速度
         /// </summary>
