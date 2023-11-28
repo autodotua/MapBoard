@@ -18,7 +18,6 @@ namespace MapBoard.Mapping.Model
         {
             SimpleLine,
             ColoredLine,
-            Point
         }
 
         /// <summary>
@@ -59,21 +58,14 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 对应的图形
         /// </summary>
-        private GraphicsOverlay PointOverlay { get; set; }
-
-        /// <summary>
-        /// 对应的图形
-        /// </summary>
         private GraphicsOverlay SimpleLineOverlay { get; set; }
 
         public void AddToOverlays(GraphicsOverlayCollection overlays, Dictionary<GraphicsOverlay, TrackInfo> dictionary)
         {
             overlays.Add(SimpleLineOverlay);
             overlays.Add(ColoredLineOverlay);
-            overlays.Add(PointOverlay);
             dictionary.Add(SimpleLineOverlay, this);
             dictionary.Add(ColoredLineOverlay, this);
-            dictionary.Add(PointOverlay, this);
         }
         public TrackInfo Clone()
         {
@@ -108,26 +100,14 @@ namespace MapBoard.Mapping.Model
             {
                 IsVisible = false,
             };
-            PointOverlay = new GraphicsOverlay()
-            {
-                Renderer = new SimpleRenderer(new SimpleMarkerSymbol()
-                {
-                    Color = Color.Blue,
-                    Size = 3,
-                    Style = SimpleMarkerSymbolStyle.Circle,
-                }),
-                IsVisible = false
-            };
         }
 
         public void RemoveFromOverlays(GraphicsOverlayCollection overlays, Dictionary<GraphicsOverlay, TrackInfo> dictionary)
         {
             overlays.Remove(SimpleLineOverlay);
             overlays.Remove(ColoredLineOverlay);
-            overlays.Remove(PointOverlay);
             dictionary.Remove(SimpleLineOverlay);
             dictionary.Remove(ColoredLineOverlay);
-            dictionary.Remove(PointOverlay);
         }
         public void SetRenderer(TrackSelectionDisplay display, Renderer renderer)
         {
@@ -139,7 +119,6 @@ namespace MapBoard.Mapping.Model
         {
             SimpleLineOverlay.IsVisible = display == TrackSelectionDisplay.SimpleLine;
             ColoredLineOverlay.IsVisible = display == TrackSelectionDisplay.ColoredLine;
-            PointOverlay.IsVisible = display == TrackSelectionDisplay.Point;
         }
 
         private GraphicsOverlay GetOverlay(TrackSelectionDisplay display)
@@ -148,7 +127,6 @@ namespace MapBoard.Mapping.Model
             {
                 TrackSelectionDisplay.SimpleLine => SimpleLineOverlay,
                 TrackSelectionDisplay.ColoredLine => ColoredLineOverlay,
-                TrackSelectionDisplay.Point => PointOverlay,
                 _ => null
             };
         }

@@ -735,18 +735,8 @@ namespace MapBoard.UI.GpxToolbox
                 MenuItem menuSetToHere = new MenuItem() { Header = "移动点到此" };
                 menuSetToHere.Click += (p1, p2) =>
                 {
-                    if (arcMap.gpxPointAndGraphics.ContainsKey(point))
-                    {
-                        double oldZ = (arcMap.gpxPointAndGraphics[point].Geometry as MapPoint).Z;
-                        mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
-
-                        arcMap.gpxPointAndGraphics[point].Geometry = mapPoint;
-                    }
-                    else
-                    {
-                        mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, mapPoint.SpatialReference);
-                    }
-                    mapPoint = GeometryEngine.Project(mapPoint, SpatialReferences.Wgs84) as MapPoint;
+                    mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, point.Z.Value, mapPoint.SpatialReference);
+                    mapPoint = mapPoint.ToWgs84();
                     // mapPoint = new MapPoint(mapPoint.X, mapPoint.Y, oldZ, mapPoint.SpatialReference);
                     point.X = mapPoint.X;
                     point.Y = mapPoint.Y;

@@ -110,9 +110,8 @@ namespace MapBoard.Util
                 MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y, points[i - 1].Z ?? 0, SpatialReferences.Wgs84);
                 MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y, points[i - 0].Z ?? 0, SpatialReferences.Wgs84);
 
-                //如果两个点距离>300m，速度>1m/s，那么认为信号断连，p1p2之间的连线不显示
-                double p1p2Distance = GeometryUtility.GetDistance(p1, p2);
-                if (p1p2Distance > 300 && (points[i - 1].Time.Value - points[i - 1].Time.Value).TotalSeconds < 300)
+                //如果两个点时间差超过5分钟，那么认为信号断连，p1p2之间的连线不显示
+                if ((points[i - 1].Time.Value - points[i - 2].Time.Value).TotalMinutes > 5)
                 {
                     //还需要删去上一条线
                     if (graphics.Count > 0)
