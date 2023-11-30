@@ -12,6 +12,8 @@
     Title="GPX工具箱"
     Width="1000"
     Height="700"
+    MinWidth="600"
+    MinHeight="600"
     ui:WindowHelper.UseModernWindowStyle="True"
     AllowDrop="True"
     Closing="Window_Closing"
@@ -31,10 +33,10 @@
             Width="4"
             HorizontalAlignment="Center"
             Background="Transparent" />
-        <Grid
-            Margin="8"
-            IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
+        <Grid Margin="8">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="8" />
                 <RowDefinition Height="*" />
@@ -42,11 +44,68 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="8" />
             </Grid.RowDefinitions>
+            <Expander
+                Header="文件"
+                IsExpanded="True">
+                <Grid Margin="0,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-            <Expander Header="GPX信息">
+                    <ListView
+                        x:Name="lvwFiles"
+                        MaxHeight="200 "
+                        ItemsSource="{Binding Tracks}"
+                        PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
+                        PreviewMouseRightButtonDown="FilesList_PreviewMouseRightButtonDown"
+                        ScrollViewer.CanContentScroll="False"
+                        SelectionChanged="File_SelectionChanged"
+                        SelectionMode="Extended">
+                        <ListView.ItemContainerStyle>
+                            <Style
+                                BasedOn="{StaticResource DefaultListViewItemStyle}"
+                                TargetType="{x:Type ListViewItem}">
+                                <Setter Property="Margin" Value="0,0,20,0" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Width="300"
+                                    Margin="0,8"
+                                    Text="{Binding FileName}"
+                                    TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="OpenFilesButton_Click"
+                            Content="导入" />
+                        <Button
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="ClearFileListButton_Click"
+                            Content="清空" />
+                    </Grid>
+                </Grid>
+            </Expander>
+
+            <Expander
+                Grid.Row="2"
+                Header="GPX信息">
                 <Grid
                     Margin="8"
-                    DataContext="{Binding Gpx}">
+                    DataContext="{Binding Gpx}"
+                    IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -139,10 +198,12 @@
                 </Grid>
             </Expander>
             <Expander
-                Grid.Row="2"
+                Grid.Row="4"
                 Header="Gpx轨迹信息"
                 IsExpanded="True">
-                <Grid Margin="8">
+                <Grid
+                    Margin="8"
+                    IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -308,7 +369,9 @@
                     </Grid>
                 </Grid>
             </Expander>
-            <StackPanel Grid.Row="4">
+            <StackPanel
+                Grid.Row="6"
+                IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -348,7 +411,7 @@
                         Grid.Column="2"
                         HorizontalAlignment="Stretch"
                         Click="OperationButton_Click"
-                        Content="操作" />
+                        Content="轨迹处理" />
                     <Button
                         Grid.Row="2"
                         Grid.Column="4"
@@ -375,54 +438,6 @@
                         GpxLoaded="GpxLoaded"
                         PointSelected="MapPointSelected" />
 
-                    <Expander
-                        Grid.Column="2"
-                        Padding="8,0,8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                        Header="文件"
-                        IsExpanded="True">
-                        <Grid Margin="0,8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <StackPanel
-                                Margin="0,8,0,0"
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
-                                <Button
-                                    Click="OpenFilesButton_Click"
-                                    Content="导入" />
-                                <FrameworkElement Width="8" />
-                                <Button
-                                    Click="ClearFileListButton_Click"
-                                    Content="清空" />
-                            </StackPanel>
-                            <ListView
-                                x:Name="lvwFiles"
-                                Grid.Row="2"
-                                ItemsSource="{Binding Tracks}"
-                                PreviewKeyDown="ListViewItemPreviewDeleteKeyDown"
-                                PreviewMouseRightButtonDown="FilesList_PreviewMouseRightButtonDown"
-                                SelectionChanged="File_SelectionChanged"
-                                SelectionMode="Extended">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn
-                                            Width="144"
-                                            DisplayMemberBinding="{Binding FileName}"
-                                            Header="文件名" />
-                                        <GridViewColumn
-                                            DisplayMemberBinding="{Binding TrackIndex}"
-                                            Header="轨迹索引" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </Grid>
-                    </Expander>
                 </Grid>
             </Border>
             <Canvas

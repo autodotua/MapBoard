@@ -310,8 +310,10 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void RecoverCameraButton_Click(object sender, RoutedEventArgs e)
         {
-            Camera camera = new Camera(arcMap.Camera.Location, 0, 0, 0);
+            MapPoint centerPoint = arcMap.ScreenToBaseSurface(new System.Windows.Point(arcMap.ActualWidth / 2, arcMap.ActualWidth / 2));
+            Camera camera = new Camera(new MapPoint(centerPoint.X, centerPoint.Y, arcMap.Camera.Location.Z), 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
+            //            await arcMap.SetViewpointCameraAsync(arcMap.Camera.RotateTo(0, 0, 0));
         }
 
         /// <summary>
@@ -447,7 +449,7 @@ namespace MapBoard.UI.GpxToolbox
             TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
             var points = track.Track.Points;
             int count = points.Count;
-            int? result = await CommonDialog.ShowIntInputDialogAsync("请输入平滑度（0~{count}）");
+            int? result = await CommonDialog.ShowIntInputDialogAsync($"请输入平滑度（0~{count}）");
             if (result.HasValue)
             {
                 int num = result.Value;
