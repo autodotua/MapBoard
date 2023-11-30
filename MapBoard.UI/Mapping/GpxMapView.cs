@@ -25,6 +25,7 @@ using FzLib.Collection;
 using PropertyChanged;
 using System.Windows.Controls;
 using Point = System.Windows.Point;
+using System.Windows.Controls.Primitives;
 
 namespace MapBoard.Mapping
 {
@@ -34,7 +35,18 @@ namespace MapBoard.Mapping
     [DoNotNotify]
     public class GpxMapView : SceneView
     {
-        public TwoWayDictionary<GpxPoint, Graphic> gpxPointAndGraphics = new TwoWayDictionary<GpxPoint, Graphic>();
+        public Dictionary<GraphicsOverlay, TrackInfo> overlay2Track = new Dictionary<GraphicsOverlay, TrackInfo>();
+
+        //当前点
+        public Graphic pointGraphic = new Graphic()
+        {
+            Symbol = new PictureMarkerSymbol(new RuntimeImage(new Uri("./res/location.png", UriKind.Relative)))
+            {
+                OffsetY = 16,
+                Width = 32,
+                Height = 32
+            }
+        };
 
         /// <summary>
         /// 所有的<see cref="GpxMapView"/>对象
@@ -67,6 +79,12 @@ namespace MapBoard.Mapping
             Loaded += ArcMapViewLoaded;
             GeoViewTapped += MapViewTapped;
             this.SetHideWatermark();
+            var currentPositionOverlay = new GraphicsOverlay()
+            {
+
+            };
+            currentPositionOverlay.Graphics.Add(pointGraphic);
+            GraphicsOverlays.Add(currentPositionOverlay);
         }
 
         /// <summary>
@@ -131,11 +149,12 @@ namespace MapBoard.Mapping
             set
             {
                 selectedTrack = value;
-                if (value != null && value.Overlay != GraphicsOverlays.Last())
-                {
-                    GraphicsOverlays.Remove(value.Overlay);
-                    GraphicsOverlays.Add(value.Overlay);
-                }
+                //这是为了保证在最前面吗？
+                //if (value != null && value.Overlay != GraphicsOverlays.Last())
+                //{
+                //    GraphicsOverlays.Remove(value.Overlay);
+                //    GraphicsOverlays.Add(value.Overlay);
+                //}
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedTrajectorie.Gpx.Name"));
             }
         }
@@ -149,24 +168,6 @@ namespace MapBoard.Mapping
         /// 加载的轨迹
         /// </summary>
         public ObservableCollection<TrackInfo> Tracks { get; set; }
-
-        /// <summary>
-        /// 清空轨迹选择
-        /// </summary>
-        public void ClearSelection()
-        {
-            if (SelectedTrack == null)
-            {
-                return;
-            }
-            SelectedTrack.Overlay.Renderer = CurrentRenderer;
-            foreach (var g in SelectedTrack.Overlay.Graphics)
-            {
-                g.Symbol = null;
-            }
-            SelectedTrack.Overlay.Graphics[0].Symbol = null;
-            selectedGraphics.Clear();
-        }
 
         /// <summary>
         /// 加载指定文件的GPX文件
@@ -231,14 +232,14 @@ namespace MapBoard.Mapping
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
-                var overlay = new GraphicsOverlay() { Renderer = NormalRenderer };
+
                 var trackInfo = new TrackInfo()
                 {
                     FilePath = filePath,
-                    Overlay = overlay,
                     TrackIndex = i,
                     Gpx = gpx,
                 };
+                trackInfo.Initialize();
                 try
                 {
                     LoadTrack(trackInfo, false, false);
@@ -269,12 +270,8 @@ namespace MapBoard.Mapping
             //如果更新的话，把原来的点和图形对应关系取消
             if (update)
             {
-                foreach (var point in trackInfo.Track.Points)
-                {
-                    if (gpxPointAndGraphics.ContainsKey(point))
-                        gpxPointAndGraphics.Remove(point);
-                }
-                trackInfo.Overlay.Graphics.Clear();
+                trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Clear();
+                trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine).Clear();
             }
             double minZ = 0;
             double mag = 0;
@@ -302,51 +299,62 @@ namespace MapBoard.Mapping
                 throw new InvalidOperationException("存在没有高程信息的点", ex);
             }
 
-            List<List<MapPoint>> mapPoints = new List<List<MapPoint>>();
             List<MapPoint> subMapPoints = new List<MapPoint>();
-            mapPoints.Add(subMapPoints);
-            MapPoint lastPoint = null;
-            foreach (var p in trackInfo.Track.Points)
+            MapPoint lastMapPoint = null;
+            GpxPoint lastGpxPoint = null;
+
+            //添加简单线
+            Graphic lineGraphic = null;
+            foreach (var gpxPoint in trackInfo.Track.Points)
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
                 {
-                    var newP = CoordinateTransformation.Transformate(p.ToMapPoint(), CoordinateSystem.WGS84, Config.Instance.BasemapCoordinateSystem);
-                    p.X = newP.X;
-                    p.Y = newP.Y;
-                    p.Z = newP.Z;
+                    var newP = CoordinateTransformation.Transformate(gpxPoint.ToMapPoint(), CoordinateSystem.WGS84, Config.Instance.BasemapCoordinateSystem);
+                    gpxPoint.X = newP.X;
+                    gpxPoint.Y = newP.Y;
+                    gpxPoint.Z = newP.Z;
                 }
 
-                MapPoint point = new MapPoint(p.X, p.Y, (p.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
+                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, (gpxPoint.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
+
 
                 //如果前后两个点离得太远了，那么就不连接
-                if (lastPoint != null && GeometryUtility.GetDistance(point, lastPoint) > Config.Instance.Gpx_MaxAcceptablePointDistance)
+                if (lastMapPoint != null && (gpxPoint.Time.Value - lastGpxPoint.Time.Value).TotalMinutes > 5)
                 {
+                    //添加上一段
+                    lineGraphic = new Graphic(new Polyline(subMapPoints));
+                    trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
+
+                    //添加中间的虚线
+                    subMapPoints = new List<MapPoint>() { lastMapPoint, mapPoint };
+                    lineGraphic = new Graphic(new Polyline(subMapPoints));
+                    lineGraphic.Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, Color.LightGray, 3);
+                    trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
+
+                    //准备下一段
                     subMapPoints = new List<MapPoint>();
-                    mapPoints.Add(subMapPoints);
-                }
-                subMapPoints.Add(point);
-                lastPoint = point;
-
-
-                Graphic graphic = new Graphic(point);
-                if (!gpxPointAndGraphics.ContainsKey(p))
-                {
-                    gpxPointAndGraphics.Add(p, graphic);
                 }
 
-                trackInfo.Overlay.Graphics.Add(graphic);
+                //添加最后一段
+                subMapPoints.Add(mapPoint);
+                lastMapPoint = mapPoint;
+                lastGpxPoint = gpxPoint;
             }
+            //添加最后一段
+            lineGraphic = new Graphic(new Polyline(subMapPoints));
+            trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
 
-            //创建Graphic
-            Graphic lineGraphic = new Graphic(new Polyline(mapPoints));
-            trackInfo.Overlay.Graphics.Insert(0, lineGraphic);
-            trackInfo.Overlay.SceneProperties.SurfacePlacement =
-                gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height
-                ? SurfacePlacement.Absolute
-                : SurfacePlacement.DrapedFlat;
+            //添加速度彩色线
+            GpxUtility.LoadColoredGpxAsync(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
+
+            //设置高程策略
+            trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.SimpleLine).SurfacePlacement =
+                gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height ? SurfacePlacement.Absolute : SurfacePlacement.DrapedFlat;
+            trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.ColoredLine).SurfacePlacement =
+                gpxHeight == true || !gpxHeight.HasValue && Config.Instance.Gpx_Height ? SurfacePlacement.Absolute : SurfacePlacement.DrapedFlat;
             if (!update)
             {
-                GraphicsOverlays.Add(trackInfo.Overlay);
+                trackInfo.AddToOverlays(GraphicsOverlays, overlay2Track);
                 Tracks?.Add(trackInfo);
             }
             if (raiseEvent)
@@ -373,88 +381,18 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 选择一个点
+        /// 选择某个轨迹开头到指定点之间的所有点
         /// </summary>
         /// <param name="point"></param>
         public void SelectPoint(GpxPoint point)
         {
-            SelectPoint(gpxPointAndGraphics[point]);
-        }
-
-        /// <summary>
-        /// 选择一些点
-        /// </summary>
-        /// <param name="points"></param>
-        public void SelectPoints(IEnumerable<GpxPoint> points)
-        {
-            var graphics = SelectedTrack.Overlay.Graphics;
-            graphics[0].Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Null, Color.Red, 0); ;
-            int count = graphics.Count;
-            for (int i = 1; i < count; i++)
-            {
-                var graphic = graphics[i];
-                if (points.Contains(gpxPointAndGraphics.GetKey(graphic)))
-                {
-                    SelectPoint(graphic);
-                }
-                else
-                {
-                    UnselectPoint(graphic);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 选择某个轨迹开头到指定点之间的所有点
-        /// </summary>
-        /// <param name="point"></param>
-        public void SelectPointTo(GpxPoint point)
-        {
             if (point == null)
             {
-                ClearSelection();
-                return;
-            }
-            TrackInfo track = SelectedTrack;
-            track.Overlay.Graphics[0].Symbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Null, Color.Red, 0); ;
-            if (track.Overlay.Renderer == null)
-            {
-                track.Overlay.Renderer = SelectionRenderer;
-            }
-
-            int index = track.Track.Points.IndexOf(point);
-            if (index < 0)
-            {
+                UnselectAllPoints();
                 return;
             }
 
-            //选中之前的所有点
-            for (int i = 1; i < index; i++)
-            {
-                var p = track.Track.Points[i];
-
-                if (gpxPointAndGraphics.ContainsKey(p))
-                {
-                    Graphic g = gpxPointAndGraphics[p];
-                    if (!selectedGraphics.Contains(g))
-                    {
-                        SelectPoint(g);
-                    }
-                }
-            }
-            var count = track.Track.Points.Count;
-
-            //不选之后的所有点
-            for (int i = index; i < count; i++)
-            {
-                var p = track.Track.Points[i];
-                if (gpxPointAndGraphics.ContainsKey(p))
-                {
-                    Graphic g = gpxPointAndGraphics[p];
-
-                    UnselectPoint(g);
-                }
-            }
+            pointGraphic.Geometry = new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
         }
 
         /// <summary>
@@ -481,15 +419,17 @@ namespace MapBoard.Mapping
         }
 
         /// <summary>
-        /// 不选择某个点
+        /// 清空当前轨迹点的选择
         /// </summary>
-        /// <param name="g"></param>
-        public void UnselectPoint(Graphic g)
+        public void UnselectAllPoints()
         {
-            g.Symbol = NotSelectedPointSymbol;
-            selectedGraphics.Remove(g);
+            if (SelectedTrack == null)
+            {
+                return;
+            }
+            selectedGraphics.Clear();
+            pointGraphic.Geometry = null;
         }
-
         /// <summary>
         /// 鼠标右键按下
         /// </summary>
@@ -553,52 +493,48 @@ namespace MapBoard.Mapping
             {
                 return;
             }
-            PointSelecting?.Invoke(this, new EventArgs());
-            var clickPoint = await ScreenToLocationAsync(e.Position);
-            double tolerance = 1 * Camera.Location.Z * 1e-7;
-            double mapTolerance = tolerance;
-            Envelope envelope = new Envelope(clickPoint.X - mapTolerance, clickPoint.Y - mapTolerance, clickPoint.X + mapTolerance, clickPoint.Y + mapTolerance, SpatialReference);
-            bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            PointSelecting?.Invoke(this, EventArgs.Empty);
 
-            ClearSelection();
-            IEnumerable<TrackInfo> Track = null;
-            if (MapTapMode == MapTapModes.SelectedLayer)
+            if (MapTapMode == MapTapModes.AllLayers) //识别所有轨迹
             {
-                Track = new TrackInfo[] { SelectedTrack };
-            }
-            else
-            {
-                Track = Tracks;
-            }
-            foreach (var trajectory in Track)
-            {
-                var overlay = trajectory.Overlay;
 
-                foreach (var graphic in overlay.Graphics)
+                var result = await IdentifyGraphicsOverlaysAsync(e.Position, 10, false, 1);
+                var overlay = result.Where(p => p.Error == null).FirstOrDefault()?.GraphicsOverlay;
+                if (overlay != null)
                 {
-                    var newPoint = GeometryEngine.Project(graphic.Geometry, SpatialReference);
-                    if (GeometryEngine.Within(newPoint, envelope))
+                    var track = overlay2Track[overlay];
+                    PointSelected?.Invoke(this, new PointSelectedEventArgs(track, null));
+                }
+                else
+                {
+                    SnakeBar.Show("没有识别到任何轨迹");
+                }
+            }
+            else //识别当前轨迹
+            {
+                var clickPoint = await ScreenToLocationAsync(e.Position);
+
+                double tolerance = 1 * Camera.Location.Z * 1e-7;
+                double mapTolerance = tolerance;
+                Envelope envelope = new Envelope(clickPoint.X - mapTolerance, clickPoint.Y - mapTolerance, clickPoint.X + mapTolerance, clickPoint.Y + mapTolerance, SpatialReference);
+                bool multiple = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+
+                UnselectAllPoints();
+
+                foreach (var point in SelectedTrack.Track.Points)
+                {
+                    if (GeometryEngine.Within(point.ToMapPoint(), envelope))
                     {
-                        //SelectPoint(graphic);
-                        PointSelected?.Invoke(this, new PointSelectedEventArgs(trajectory, gpxPointAndGraphics.GetKey(graphic)));
+                        SelectPoint(point);
+                        PointSelected?.Invoke(this, new PointSelectedEventArgs(SelectedTrack, point));
                         return;
                     }
                 }
+
+                PointSelected?.Invoke(this, new PointSelectedEventArgs(null, null));
+
+                SnakeBar.Show("没有识别到任何点");
             }
-
-            PointSelected?.Invoke(this, new PointSelectedEventArgs(null, null));
-
-            SnakeBar.Show("没有识别到任何" + (MapTapMode == MapTapModes.SelectedLayer ? "点" : "轨迹"));
-        }
-
-        /// <summary>
-        /// 选择点
-        /// </summary>
-        /// <param name="g"></param>
-        private void SelectPoint(Graphic g)
-        {
-            g.Symbol = SelectedPointSymbol;
-            selectedGraphics.Add(g);
         }
 
         /// <summary>
@@ -611,19 +547,14 @@ namespace MapBoard.Mapping
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (TrackInfo item in e.OldItems)
+                    foreach (TrackInfo track in e.OldItems)
                     {
-                        foreach (var point in item.Track.Points)
-                        {
-                            gpxPointAndGraphics.Remove(point);
-                        }
-                        GraphicsOverlays.Remove(item.Overlay);
+                        track.RemoveFromOverlays(GraphicsOverlays, overlay2Track);
                     }
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
                     GraphicsOverlays.Clear();
-                    gpxPointAndGraphics.Clear();
                     break;
             }
         }
@@ -647,12 +578,12 @@ namespace MapBoard.Mapping
         {
             public PointSelectedEventArgs(TrackInfo trajectory, GpxPoint point)
             {
-                Trajectory = trajectory;
+                Track = trajectory;
                 Point = point;
             }
 
             public GpxPoint Point { get; private set; }
-            public TrackInfo Trajectory { get; private set; }
+            public TrackInfo Track { get; private set; }
         }
     }
 }

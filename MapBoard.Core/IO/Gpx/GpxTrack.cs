@@ -124,28 +124,16 @@ namespace MapBoard.IO.Gpx
             return info;
         }
 
-        /// <summary>
-        /// 获取最大速度
-        /// </summary>
-        /// <returns></returns>
-        public async Task<double> GetMaxSpeedAsync()
-        {
-            if (maxSpeed == -1)
-            {
-                maxSpeed = (await GpxSpeedAnalysis.GetSpeedsAsync(Points)).Max(p => p.Speed);
-            }
-            return maxSpeed;
-        }
 
         /// <summary>
         /// 根据提供的采样率参数，获取最大速度
         /// </summary>
-        /// <param name="sampleCount"></param>
+        /// <param name="window"></param>
         /// <param name="jump"></param>
         /// <returns></returns>
-        public async Task<double> GetMaxSpeedAsync(int sampleCount = 8, int jump = 1)
+        public async Task<double> GetMaxSpeedAsync(int window = 9)
         {
-            return (await GpxSpeedAnalysis.GetMeanFilteredSpeedsAsync(Points, sampleCount, jump)).Max(p => p.Speed);
+            return (await GpxUtility.GetMeanFilteredSpeedsAsync(Points, window, false)).Max();
         }
 
         /// <summary>

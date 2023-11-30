@@ -136,6 +136,9 @@
     <None Update="res\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="res\location.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="res\openlayers\index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
