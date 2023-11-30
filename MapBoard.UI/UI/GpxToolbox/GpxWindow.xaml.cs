@@ -37,6 +37,7 @@ using FzLib.WPF;
 using MapBoard.IO;
 using Microsoft.Win32;
 using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
+using ModernWpf.Controls;
 
 namespace MapBoard.UI.GpxToolbox
 {
@@ -198,30 +199,7 @@ namespace MapBoard.UI.GpxToolbox
             return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent), TimeSpan.FromMilliseconds(time)); ;
         }
 
-        /// <summary>
-        /// 单击截图按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void CaptureScreenButton_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new SaveFileDialog();
-            dialog.AddFilter("PNG图片", "png");
-            dialog.FileName = Gpx.Name + ".png";
-            string path = dialog.GetPath(this);
-            if (path != null)
-            {
-                PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);
-                var bitmap = export.GetBitmap().ToBitmap();
 
-                Graphics g = Graphics.FromImage(bitmap);
-                Bitmap image = await arcMap.GetImageAsync(GeoViewHelper.GetWatermarkThickness());
-
-                g.DrawImage(image, 0, 0, image.Width, image.Height);
-                g.Flush();
-                bitmap.Save(path);
-            }
-        }
 
         /// <summary>
         /// 单击高程偏移按钮
@@ -313,7 +291,6 @@ namespace MapBoard.UI.GpxToolbox
             MapPoint centerPoint = arcMap.ScreenToBaseSurface(new System.Windows.Point(arcMap.ActualWidth / 2, arcMap.ActualWidth / 2));
             Camera camera = new Camera(new MapPoint(centerPoint.X, centerPoint.Y, arcMap.Camera.Location.Z), 0, 0, 0);
             await arcMap.SetViewpointCameraAsync(camera);
-            //            await arcMap.SetViewpointCameraAsync(arcMap.Camera.RotateTo(0, 0, 0));
         }
 
         /// <summary>
@@ -321,90 +298,17 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ResetTrackButton_Click(object sender, RoutedEventArgs e)
+        private async void ResetTrackButton_Click(object sender, RoutedEventArgs e)
         {
             if (lvwFiles.SelectedItem is not TrackInfo track)
             {
                 return;
             }
 
-            bool smooth = Config.Instance.Gpx_AutoSmooth;
-            bool height = Config.Instance.Gpx_Height;
-
-            MenuItem menuReset = new MenuItem() { Header = "重置 - 不改变设置" };
-            menuReset.Click += async (p1, p2) =>
-            {
-                await arcMap.ReloadGpxAsync(track, true);
-            };
-            MenuItem menuResetWithSmooth = new MenuItem() { Header = "重置 - 自动平滑" };
-            menuResetWithSmooth.Click += async (p1, p2) =>
-            {
-                Config.Instance.Gpx_AutoSmooth = true;
-                try
-                {
-                    await arcMap.ReloadGpxAsync(track, true);
-                }
-                finally
-                {
-                    Config.Instance.Gpx_AutoSmooth = smooth;
-                }
-            };
-            MenuItem menuResetWithoutSmooth = new MenuItem() { Header = "重置 - 不自动平滑" };
-            menuResetWithoutSmooth.Click += async (p1, p2) =>
-            {
-                Config.Instance.Gpx_AutoSmooth = false;
-                try
-                {
-                    await arcMap.ReloadGpxAsync(track, true);
-                }
-                finally
-                {
-                    Config.Instance.Gpx_AutoSmooth = smooth;
-                }
-            };
-
-            MenuItem menuResetWithHeight = new MenuItem() { Header = "重置 - 显示高度" };
-            menuResetWithHeight.Click += async (p1, p2) =>
-            {
-                Config.Instance.Gpx_Height = true;
-                try
-                {
-                    await arcMap.ReloadGpxAsync(track, true);
-                }
-                finally
-                {
-                    Config.Instance.Gpx_Height = height;
-                }
-            };
-
-            MenuItem menuResetWithoutHeight = new MenuItem() { Header = "重置 - 不显示高度" };
-            menuResetWithoutHeight.Click += async (p1, p2) =>
-            {
-                Config.Instance.Gpx_Height = false;
-                try
-                {
-                    await arcMap.ReloadGpxAsync(track, true);
-                }
-                finally
-                {
-                    Config.Instance.Gpx_Height = height;
-                }
-            };
-
-            ContextMenu menu = new ContextMenu()
-            {
-                PlacementTarget = sender as UIElement,
-                Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
-                IsOpen = true,
-                Items =
-                {
-                    menuReset,
-                    menuResetWithHeight,
-                    menuResetWithoutHeight,
-                    menuResetWithSmooth,
-                    menuResetWithoutSmooth,
-                }
-            };
+            IsEnabled = false;
+            await arcMap.ReloadGpxAsync(track, true);
+            FlyoutService.GetFlyout(btnReset).Hide();
+            IsEnabled = true;
         }
 
         /// <summary>
@@ -414,15 +318,36 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void SaveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog();
-            dialog.AddFilter("GPX轨迹文件", "gpx");
-            dialog.FileName = Gpx.Name + ".gpx";
+            var dialog = new SaveFileDialog()
+                .AddFilter("GPX轨迹文件", "gpx")
+                .AddFilter("截图", "png");
+            dialog.AddExtension = true;
+            dialog.FileName = Gpx.Name;
             string path = dialog.GetPath(this);
             if (path != null)
             {
                 try
                 {
-                    await File.WriteAllTextAsync(path, Gpx.ToGpxXml());
+                    if (path.EndsWith(".gpx"))
+                    {
+                        await File.WriteAllTextAsync(path, Gpx.ToGpxXml());
+                    }
+                    else if (path.EndsWith(".png"))
+                    {
+                        PanelExport export = new PanelExport(grd, 0, VisualTreeHelper.GetDpi(this).DpiScaleX, VisualTreeHelper.GetDpi(this).DpiScaleX);
+                        var bitmap = export.GetBitmap().ToBitmap();
+
+                        Graphics g = Graphics.FromImage(bitmap);
+                        Bitmap image = await arcMap.GetImageAsync(GeoViewHelper.GetWatermarkThickness());
+
+                        g.DrawImage(image, 0, 0, image.Width, image.Height);
+                        g.Flush();
+                        bitmap.Save(path);
+                    }
+                    else
+                    {
+                        throw new Exception("未知导出类型");
+                    }
                     SnakeBar.Show("导出成功");
                 }
                 catch (Exception ex)
@@ -467,7 +392,7 @@ namespace MapBoard.UI.GpxToolbox
                     GpxUtility.Smooth(points, num, p => p.X, (p, v) => p.X = v);
                     GpxUtility.Smooth(points, num, p => p.Y, (p, v) => p.Y = v);
                 }
-                UpdateTrackButton_Click(null, null);
+                arcMap.LoadTrack(arcMap.SelectedTrack, true);
             }
         }
 
@@ -871,16 +796,6 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
-        /// <summary>
-        /// 单击更新轨迹按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void UpdateTrackButton_Click(object sender, RoutedEventArgs e)
-        {
-            arcMap.LoadTrack(arcMap.SelectedTrack, true);
-            await UpdateUI();
-        }
 
         #endregion 点菜单
 

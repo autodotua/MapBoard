@@ -227,8 +227,6 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBox
@@ -349,24 +347,6 @@
                                 IsReadOnly="True" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Grid
-                        Grid.Row="18"
-                        Grid.ColumnSpan="3">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Click="UpdateTrackButton_Click"
-                            Content="刷新" />
-                        <Button
-                            Grid.Column="2"
-                            HorizontalAlignment="Stretch"
-                            Click="ResetTrackButton_Click"
-                            Content="重置" />
-                    </Grid>
                 </Grid>
             </Expander>
             <StackPanel
@@ -395,12 +375,42 @@
                         HorizontalAlignment="Stretch"
                         Click="IdentifyAllButton_Click"
                         Content="识别轨迹" />
-                    <!--<Button Grid.Column="4" Content="计算速度" Click="SpeedButton_Click" />-->
                     <Button
+                        x:Name="btnReset"
                         Grid.Column="4"
                         HorizontalAlignment="Stretch"
-                        Click="CaptureScreenButton_Click"
-                        Content="截图" />
+                        Content="重置">
+                        <ui:FlyoutService.Flyout>
+                            <ui:Flyout>
+                                <ui:SimpleStackPanel
+                                    Orientation="Vertical"
+                                    Spacing="8">
+                                    <CheckBox
+                                        Content="自动平滑"
+                                        IsChecked="{Binding Config.Gpx_AutoSmooth}" />
+                                    <CheckBox
+                                        Content="仅平滑高程"
+                                        IsChecked="{Binding Config.Gpx_AutoSmoothOnlyZ}" />
+                                    <ui:NumberBox
+                                        Header="平滑级别"
+                                        Value="{Binding Config.Gpx_AutoSmoothLevel}" />
+                                    <CheckBox
+                                        Content="显示高程"
+                                        IsChecked="{Binding Config.Gpx_Height}" />
+                                    <CheckBox
+                                        Content="显示相对高程"
+                                        IsChecked="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
+                                    <ui:NumberBox
+                                        Header="高程夸大倍率"
+                                        Value="{Binding Config.Gpx_HeightExaggeratedMagnification}" />
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        Click="ResetTrackButton_Click"
+                                        Content="开始重置" />
+                                </ui:SimpleStackPanel>
+                            </ui:Flyout>
+                        </ui:FlyoutService.Flyout>
+                    </Button>
                     <Button
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
