@@ -96,6 +96,7 @@
                             Style="{DynamicResource SubtitleTextBlockStyle}"
                             Text="底图图层" />
                         <Button
+                            x:Name="btnBaseLayerSetting"
                             Margin="0,0,72,0"
                             HorizontalAlignment="Right"
                             Background="Transparent"
@@ -247,6 +248,7 @@
 
 
                     <Button
+                        x:Name="btnAPISetting"
                         Margin="0,5,48,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"

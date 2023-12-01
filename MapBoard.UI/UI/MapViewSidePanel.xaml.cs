@@ -73,8 +73,6 @@ namespace MapBoard.UI
                 bdViewPointInfo.Visibility = Visibility.Collapsed;
                 bdScale.Visibility = Visibility.Collapsed;
                 bdLocation.Visibility = Visibility.Collapsed;
-                bdZoomIn.Visibility = Visibility.Collapsed;
-                bdZoomOut.Visibility = Visibility.Collapsed;
             }
             else if (mapView is MapView m)
             {
@@ -82,6 +80,11 @@ namespace MapBoard.UI
                 m.LocationDisplay.LocationChanged += (s, e) => UpdateLocation();
                 m.LocationDisplay.DataSource.StatusChanged += (s, e) => UpdateLocation();
                 m.LocationDisplay.DataSource.HeadingChanged += (s, e) => UpdateLocation();
+            }
+            if (this.GetWindow().GetType() != typeof(MainWindow))
+            {
+                btnBaseLayerSetting.Visibility = Visibility.Collapsed;
+                btnAPISetting.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -324,7 +327,24 @@ namespace MapBoard.UI
             }
             else if (MapView is SceneView s)
             {
-                throw new NotSupportedException();
+                var c = s.Camera;
+                MapPoint centerPoint = s.ScreenToBaseSurface(new Point(s.ActualWidth / 2, s.ActualWidth / 2));
+                centerPoint ??= c.Location;
+                double x, y, z;
+                if (((sender as FrameworkElement).Tag as string).Equals("1"))
+                {
+                    x = (c.Location.X + centerPoint.X) / 2;
+                    y = (c.Location.Y + centerPoint.Y) / 2;
+                    z = c.Location.Z / 2;
+                }
+                else
+                {
+                    x = 2 * c.Location.X - centerPoint.X;
+                    y = 2 * c.Location.Y - centerPoint.Y;
+                    z = c.Location.Z * 2;
+                }
+                var camera = new Camera(new MapPoint(x, y, z), c.Heading, c.Pitch, c.Roll);
+                await s.SetViewpointCameraAsync(camera);
             }
         }
 

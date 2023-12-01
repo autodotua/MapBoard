@@ -33,7 +33,7 @@ namespace MapBoard.Mapping
     /// GPX地图
     /// </summary>
     [DoNotNotify]
-    public class GpxMapView : SceneView
+    public class GpxMapView : SceneView,IMapBoardGeoView
     {
         public Dictionary<GraphicsOverlay, TrackInfo> overlay2Track = new Dictionary<GraphicsOverlay, TrackInfo>();
 
@@ -85,6 +85,7 @@ namespace MapBoard.Mapping
             };
             currentPositionOverlay.Graphics.Add(pointGraphic);
             GraphicsOverlays.Add(currentPositionOverlay);
+            Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));
         }
 
         /// <summary>
@@ -135,11 +136,13 @@ namespace MapBoard.Mapping
         /// </summary>
         public static IReadOnlyList<GpxMapView> Instances => instances.AsReadOnly();
 
+        public MapLayerCollection Layers { get; }
         /// <summary>
         /// 当前地图点击模式
         /// </summary>
         public MapTapModes MapTapMode { get; set; } = MapTapModes.None;
 
+        public OverlayHelper Overlay { get; set; }
         /// <summary>
         /// 当前选择的轨迹
         /// </summary>
@@ -168,7 +171,6 @@ namespace MapBoard.Mapping
         /// 加载的轨迹
         /// </summary>
         public ObservableCollection<TrackInfo> Tracks { get; set; }
-
         /// <summary>
         /// 加载指定文件的GPX文件
         /// </summary>

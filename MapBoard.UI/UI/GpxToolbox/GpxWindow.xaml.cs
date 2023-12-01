@@ -55,6 +55,7 @@ namespace MapBoard.UI.GpxToolbox
             InitializeChart();
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
+            mapInfo.Initialize(arcMap);
         }
 
         /// <summary>
