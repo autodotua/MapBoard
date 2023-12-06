@@ -8,5 +8,6 @@
         KML = 4,
         GeoJSON = 5,
         OpenLayers = 6,
+        GeoJSONWithStyle = 7,
     }
 }

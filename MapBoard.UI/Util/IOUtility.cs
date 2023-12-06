@@ -174,6 +174,10 @@ namespace MapBoard.Util
                         await GeoJson.ExportAsync(path, layer);
                         break;
 
+                    case ExportLayerType.GeoJSONWithStyle:
+                        await GeoJson.ExportWithStyleAsync(path, layer);
+                        break;
+
                     default:
                         break;
                 }
@@ -243,20 +247,21 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static string GetExportLayerPath(ILayerInfo layer, ExportLayerType type, Window parentWindow)
         {
-            if ((int)type <= (int)ExportLayerType.GeoJSON)
+            if (type is ExportLayerType.OpenLayers)
+            {
+                OpenFolderDialog folderDialog = new OpenFolderDialog();
+                return folderDialog.GetPath(parentWindow);
+            }
+            else
             {
                 SaveFileDialog dialog = new SaveFileDialog()
                         .AddFilterIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
                         .AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
                         .AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                         .AddFilterIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
-                        .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson");
+                        .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
+                        .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson");
                 return dialog.GetPath(parentWindow);
-            }
-            else
-            {
-                OpenFolderDialog folderDialog = new OpenFolderDialog();
-                return folderDialog.GetPath(parentWindow);
             }
         }
 

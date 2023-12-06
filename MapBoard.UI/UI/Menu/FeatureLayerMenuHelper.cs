@@ -235,6 +235,7 @@ namespace MapBoard.UI.Menu
             {
                 ("导出到CSV表格","将图形导出为CSV表格",ToCsvAsync, true),
                 ("导出到GeoJSON","将图形导出为GeoJSON",ToGeoJsonAsync, true),
+                ("导出到CesiumGeoJSON","将图形导出为带样式的GeoJSON",ToGeoJsonWithStyleAsync, true),
             };
         }
 
@@ -438,6 +439,14 @@ namespace MapBoard.UI.Menu
         private Task ToGeoJsonAsync()
         {
             return ExportBase("GeoJSON", "geojson", async path => await GeoJson.ExportAsync(path, mapView.Selection.SelectedFeatures));
+        }
+        /// <summary>
+        /// 转到GeoJSON
+        /// </summary>
+        /// <returns></returns>
+        private Task ToGeoJsonWithStyleAsync()
+        {
+            return ExportBase("GeoJSON", "geojson", async path => await GeoJson.ExportWithStyleAsync(path, mapView.Selection.SelectedFeatures,mapView.Layers.Selected));
         }
 
         /// <summary>

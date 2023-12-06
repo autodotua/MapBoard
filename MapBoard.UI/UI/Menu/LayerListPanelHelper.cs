@@ -174,6 +174,10 @@ namespace MapBoard.UI.Menu
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSON, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSON),
                         "正在导出GeoJSON文件");
+                    AddToMenu(menuExport, "CesiumGeoJSON文件",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GeoJSONWithStyle, MainWindow),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GeoJSONWithStyle),
+                        "正在导出带样式的GeoJSON文件");
                     AddToMenu(menuExport, "OpenLayers网络地图",
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.OpenLayers, MainWindow),
                         p => ExportOpenLayersLayer(layer, p),

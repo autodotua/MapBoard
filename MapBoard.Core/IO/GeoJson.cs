@@ -1,7 +1,9 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using MapBoard.Mapping.Model;
+using MapBoard.Model;
 using MapBoard.Util;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MapBoard.IO
 {
@@ -42,6 +45,28 @@ namespace MapBoard.IO
         }
 
         /// <summary>
+        /// 将要素集合异步导出到GeoJSON
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="features"></param>
+        /// <returns></returns>
+        public async static Task<string> ExportWithStyleAsync(string path, IEnumerable<Feature> features, ILayerInfo layer)
+        {
+            string result = null;
+            await Task.Run(() =>
+            {
+                var json = Convert(features);
+                var s = new JsonSerializer();
+                s.Converters.Add(new GeoJsonStyleConverter());
+                json.Add("style", JObject.FromObject(layer.Renderer.DefaultSymbol, s));
+                result = json.ToString(Formatting.Indented);
+                File.WriteAllText(path, result, new UTF8Encoding(true));
+            });
+
+            return result;
+        }
+
+        /// <summary>
         /// 将图层异步导出到GeoJSON
         /// </summary>
         /// <param name="path"></param>
@@ -52,6 +77,19 @@ namespace MapBoard.IO
             var features = await layer.GetAllFeaturesAsync();
             await ExportAsync(path, features);
         }
+
+        /// <summary>
+        /// 将图层异步导出到GeoJSON
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <returns></returns>
+        public async static Task ExportWithStyleAsync(string path, IMapLayerInfo layer)
+        {
+            var features = await layer.GetAllFeaturesAsync();
+            await ExportWithStyleAsync(path, features, layer);
+        }
+
         /// <summary>
         /// 将一组Feature对象转换为表示GeoJSON FeatureCollection的JObject
         /// </summary>
@@ -269,6 +307,41 @@ namespace MapBoard.IO
                 }
             }
             return jProps;
+        }
+
+        class GeoJsonStyleConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+                Debug.WriteLine(objectType.FullName);
+                if (objectType == typeof(System.Drawing.Color))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                if (value is System.Drawing.Color color)
+                {
+                    writer.WriteStartArray();
+                    writer.WriteValue(color.A);
+                    writer.WriteValue(color.R);
+                    writer.WriteValue(color.G);
+                    writer.WriteValue(color.B);
+                    writer.WriteEndArray();
+                }
+                else
+                {
+                    writer.WriteValue(Array.Empty<int>());
+                }
+            }
         }
     }
 }
