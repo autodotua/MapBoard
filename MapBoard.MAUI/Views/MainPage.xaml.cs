@@ -439,10 +439,38 @@ namespace MapBoard.Views
             }
         }
 
-        private void MenuButton_Clicked(object sender, EventArgs e)
+        private async void MenuButton_Clicked(object sender, EventArgs e)
         {
-            SettingPopup popup = new SettingPopup();
-            MainPage.Current.ShowPopup(popup);
+            var index = await PopupMenu.PopupMenuAsync(sender as View,
+                 new PopupMenuItem[] {
+                    new PopupMenuItem("测量长度"),
+                    new PopupMenuItem("测量面积"),
+                    new PopupMenuItem("设置"),
+                    new PopupMenuItem("退出")
+                 });
+            switch (index)
+            {
+                case 0:
+                    MainMapView.Current.Editor.StartMeasureLength();
+                    break;
+                case 1:
+                    MainMapView.Current.Editor.StartMeasureArea();
+                    break;
+                case 2:
+                    SettingPopup popup = new SettingPopup();
+                    MainPage.Current.ShowPopup(popup);
+                    break;
+                case 3:
+                    if (TrackService.Current != null)
+                    {
+                        if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)
+                        {
+                            return;
+                        }
+                    }
+                    Application.Current.Quit();
+                    break;
+            }
         }
     }
 
