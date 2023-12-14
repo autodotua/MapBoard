@@ -467,6 +467,14 @@ namespace MapBoard.Views
                         {
                             return;
                         }
+                        else
+                        {
+#if ANDROID
+                            (Platform.CurrentActivity as MainActivity).StopTrackService();
+#else
+                            TrackService.Current.Stop();
+#endif
+                        }
                     }
                     Application.Current.Quit();
                     break;
