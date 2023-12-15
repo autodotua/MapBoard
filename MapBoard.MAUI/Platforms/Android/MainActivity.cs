@@ -103,7 +103,14 @@ namespace MapBoard
             if (hasPressedBack)
             {
                 OnBackPressedDispatcher.OnBackPressed();
-                Finish();
+                if (IsServiceRunning(nameof(AndroidTrackService)))
+                {
+                    Finish();
+                }
+                else
+                {
+                    MapBoard.App.Current.Quit();
+                }
                 return;
             }
 
