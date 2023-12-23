@@ -16,6 +16,7 @@ namespace MapBoard.Platforms.Android;
 [Service(ForegroundServiceType = ForegroundService.TypeLocation)]
 public class AndroidTrackService : Service
 {
+    public static bool IsRunning { get; private set; }  
     private readonly string NotificationChannelID = "MapBoard.Track";
     private readonly string NotificationChannelName = "轨迹记录";
     private readonly int NotificationID = 1;
@@ -38,6 +39,7 @@ public class AndroidTrackService : Service
     private bool isStopping = false;
     public override void OnDestroy()
     {
+        IsRunning = false;
         isStopping = true;
         base.OnDestroy();
         if (TrackService.Current != null)
@@ -53,6 +55,7 @@ public class AndroidTrackService : Service
 
     public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
     {
+        IsRunning = true;
         StartForegroundService();
         return StartCommandResult.NotSticky;
     }
