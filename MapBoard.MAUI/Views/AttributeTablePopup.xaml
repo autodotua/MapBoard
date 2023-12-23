@@ -8,19 +8,13 @@
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="vm:AttributeTablePopupViewModel"
     HorizontalOptions="Fill"
+    Size="336,500"
     Color="Transparent">
     <Border Style="{StaticResource PopupBorderStyle}">
-        <Grid RowDefinitions="*,8,Auto">
+        <Grid
+            Margin="8"
+            RowDefinitions="*,8,Auto">
             <Grid.Resources>
-                <Style TargetType="{x:Type Line}">
-                    <Setter Property="HorizontalOptions" Value="Fill" />
-                    <Setter Property="Stroke" Value="Gray" />
-                    <Setter Property="StrokeThickness" Value="2" />
-                    <Setter Property="X1" Value="0" />
-                    <Setter Property="X2" Value="1000" />
-                    <Setter Property="Margin" Value="16,0" />
-                    <Setter Property="Opacity" Value="0.5" />
-                </Style>
                 <Style
                     x:Key="KeyLabelStyle"
                     BasedOn="{StaticResource DefaultLabelStyle}"
@@ -35,6 +29,7 @@
                 Margin="8"
                 ItemsSource="{Binding Attributes.Attributes}"
                 SelectionMode="None"
+                VerticalScrollBarVisibility="Never"
                 WidthRequest="300">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="{x:Type mm:FeatureAttribute}">

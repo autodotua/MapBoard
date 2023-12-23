@@ -74,74 +74,6 @@ namespace MapBoard.Views
             }
         }
 
-        private void InitializeFromConfigs()
-        {
-            SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
-            Config.Instance.PropertyChanged += (s, e) =>
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(Config.ScreenAlwaysOn):
-                        SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
-                        break;
-                }
-            };
-
-            void SetScreenAlwaysOn(bool on)
-            {
-#if ANDROID
-                if (on)
-                {
-                    Platform.CurrentActivity.Window.AddFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
-                }
-                else
-                {
-                    Platform.CurrentActivity.Window.ClearFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
-                }
-#endif
-            }
-        }
-
-        private void InitializeSidePanels()
-        {
-            sidePanels =
-            [
-                new SidePanelInfo(layer, layerView),
-                new SidePanelInfo(track, trackView),
-                new SidePanelInfo(ftp, ftpView),
-                new SidePanelInfo(baseLayer, baseLayerView),
-                new SidePanelInfo(import, importView),
-                new SidePanelInfo(tbar, tbar),
-                new SidePanelInfo(ebar, ebar)
-            ];
-            type2SidePanels = sidePanels.ToDictionary(p => p.Type);
-
-            foreach (var panel in sidePanels)
-            {
-                switch (panel.Direction)
-                {
-                    case SwipeDirection.Right:
-                        panel.Container.WidthRequest = panel.Length;
-                        panel.Container.TranslationX = panel.Length;
-                        break;
-                    case SwipeDirection.Left:
-                        panel.Container.WidthRequest = panel.Length;
-                        panel.Container.TranslationX = -panel.Length;
-                        break;
-                    case SwipeDirection.Up:
-                        panel.Container.HeightRequest = panel.Length;
-                        panel.Container.TranslationY = -panel.Length;
-                        break;
-                    case SwipeDirection.Down:
-                        panel.Container.HeightRequest = panel.Length;
-                        panel.Container.TranslationY = panel.Length;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
         public static MainPage Current { get; private set; }
 
         public async Task CheckAndRequestLocationPermission()
@@ -252,7 +184,7 @@ namespace MapBoard.Views
             }
         }
 
-        private void CloseAllPanel()
+        public void CloseAllPanel()
         {
             if (sidePanels.Any(p => p.IsOpened && !p.Standalone))
             {
@@ -287,6 +219,17 @@ namespace MapBoard.Views
             {
                 s.OnPanelClosed();
             }
+        }
+
+        public bool IsPanelOpened<T>()
+        {
+            var type = typeof(T);
+            return type2SidePanels[type].IsOpened;
+        }
+
+        public bool IsAnyNotStandalonePanelOpened()
+        {
+            return type2SidePanels.Values.Where(p => !p.Standalone).Any(p => p.IsOpened);
         }
 
         private async void ContentPage_Loaded(object sender, EventArgs e)
@@ -339,6 +282,74 @@ namespace MapBoard.Views
             OpenOrClosePanel<ImportView>();
         }
 
+        private void InitializeFromConfigs()
+        {
+            SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+            Config.Instance.PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Config.ScreenAlwaysOn):
+                        SetScreenAlwaysOn(Config.Instance.ScreenAlwaysOn);
+                        break;
+                }
+            };
+
+            void SetScreenAlwaysOn(bool on)
+            {
+#if ANDROID
+                if (on)
+                {
+                    Platform.CurrentActivity.Window.AddFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+                else
+                {
+                    Platform.CurrentActivity.Window.ClearFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+                }
+#endif
+            }
+        }
+
+        private void InitializeSidePanels()
+        {
+            sidePanels =
+            [
+                new SidePanelInfo(layer, layerView),
+                new SidePanelInfo(track, trackView),
+                new SidePanelInfo(ftp, ftpView),
+                new SidePanelInfo(baseLayer, baseLayerView),
+                new SidePanelInfo(import, importView),
+                new SidePanelInfo(tbar, tbar),
+                new SidePanelInfo(ebar, ebar)
+            ];
+            type2SidePanels = sidePanels.ToDictionary(p => p.Type);
+
+            foreach (var panel in sidePanels)
+            {
+                switch (panel.Direction)
+                {
+                    case SwipeDirection.Right:
+                        panel.Container.WidthRequest = panel.Length;
+                        panel.Container.TranslationX = panel.Length;
+                        break;
+                    case SwipeDirection.Left:
+                        panel.Container.WidthRequest = panel.Length;
+                        panel.Container.TranslationX = -panel.Length;
+                        break;
+                    case SwipeDirection.Up:
+                        panel.Container.HeightRequest = panel.Length;
+                        panel.Container.TranslationY = -panel.Length;
+                        break;
+                    case SwipeDirection.Down:
+                        panel.Container.HeightRequest = panel.Length;
+                        panel.Container.TranslationY = panel.Length;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         private void LayerButton_Click(object sender, EventArgs e)
         {
             if (MainMapView.Current.CurrentStatus == MapViewStatus.Ready)
@@ -358,6 +369,49 @@ namespace MapBoard.Views
                 ClosePanel<EditBar>();
             }
         }
+
+        private async void MenuButton_Clicked(object sender, EventArgs e)
+        {
+            var index = await PopupMenu.PopupMenuAsync(sender as View,
+                 new PopupMenuItem[] {
+                    new PopupMenuItem("测量长度"),
+                    new PopupMenuItem("测量面积"),
+                    new PopupMenuItem("设置"),
+                    new PopupMenuItem("退出")
+                 });
+            switch (index)
+            {
+                case 0:
+                    MainMapView.Current.Editor.StartMeasureLength();
+                    break;
+                case 1:
+                    MainMapView.Current.Editor.StartMeasureArea();
+                    break;
+                case 2:
+                    SettingPopup popup = new SettingPopup();
+                    MainPage.Current.ShowPopup(popup);
+                    break;
+                case 3:
+                    if (TrackService.Current != null)
+                    {
+                        if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)
+                        {
+                            return;
+                        }
+                        else
+                        {
+#if ANDROID
+                            (Platform.CurrentActivity as MainActivity).StopTrackService();
+#else
+                            TrackService.Current.Stop();
+#endif
+                        }
+                    }
+                    Application.Current.Quit();
+                    break;
+            }
+        }
+
         private async void RefreshButton_Clicked(object sender, EventArgs e)
         {
             var handle = ProgressPopup.Show("正在重载");
@@ -393,6 +447,7 @@ namespace MapBoard.Views
                 OpenPanel<TrackingBar>();
             }
         }
+
         private async void ZoomToLayerButton_Click(object sender, EventArgs e)
         {
             var layers = MainMapView.Current.Layers.Where(p => p.LayerVisible).ToDictionary(p => p.Name);
@@ -436,48 +491,6 @@ namespace MapBoard.Views
                         await DisplayAlert("错误", ex.Message, "确定");
                     }
                 }
-            }
-        }
-
-        private async void MenuButton_Clicked(object sender, EventArgs e)
-        {
-            var index = await PopupMenu.PopupMenuAsync(sender as View,
-                 new PopupMenuItem[] {
-                    new PopupMenuItem("测量长度"),
-                    new PopupMenuItem("测量面积"),
-                    new PopupMenuItem("设置"),
-                    new PopupMenuItem("退出")
-                 });
-            switch (index)
-            {
-                case 0:
-                    MainMapView.Current.Editor.StartMeasureLength();
-                    break;
-                case 1:
-                    MainMapView.Current.Editor.StartMeasureArea();
-                    break;
-                case 2:
-                    SettingPopup popup = new SettingPopup();
-                    MainPage.Current.ShowPopup(popup);
-                    break;
-                case 3:
-                    if (TrackService.Current != null)
-                    {
-                        if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)
-                        {
-                            return;
-                        }
-                        else
-                        {
-#if ANDROID
-                            (Platform.CurrentActivity as MainActivity).StopTrackService();
-#else
-                            TrackService.Current.Stop();
-#endif
-                        }
-                    }
-                    Application.Current.Quit();
-                    break;
             }
         }
     }

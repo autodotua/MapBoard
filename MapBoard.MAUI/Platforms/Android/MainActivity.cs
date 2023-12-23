@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using MapBoard.Mapping;
 using MapBoard.Platforms.Android;
+using MapBoard.Views;
 
 namespace MapBoard
 {
@@ -42,24 +43,39 @@ namespace MapBoard
 
         public override async void OnBackPressed()
         {
-            if (hasPressedBack)
+            if (MainMapView.Current.CurrentStatus == Models.MapViewStatus.Draw)
             {
-                OnBackPressedDispatcher.OnBackPressed();
-                if (AndroidTrackService.IsRunning)
-                {
-                    Finish();
-                }
-                else
-                {
-                    MapBoard.App.Current.Quit();
-                }
-                return;
+                MainMapView.Current.Editor.Cancel();
             }
+            else if (MainMapView.Current.CurrentStatus == Models.MapViewStatus.Select)
+            {
+                MainMapView.Current.ClearSelection();
+            }
+            else if (MainPage.Current.IsAnyNotStandalonePanelOpened())
+            {
+                MainPage.Current.CloseAllPanel();
+            }
+            else
+            {
+                if (hasPressedBack)
+                {
+                    OnBackPressedDispatcher.OnBackPressed();
+                    if (AndroidTrackService.IsRunning)
+                    {
+                        Finish();
+                    }
+                    else
+                    {
+                        MapBoard.App.Current.Quit();
+                    }
+                    return;
+                }
 
-            hasPressedBack = true;
-            Toast.MakeText(this, "再按一次退出应用", ToastLength.Short).Show();
-            await Task.Delay(2000);
-            hasPressedBack = false;
+                hasPressedBack = true;
+                Toast.MakeText(this, "再按一次退出应用", ToastLength.Short).Show();
+                await Task.Delay(2000);
+                hasPressedBack = false;
+            }
         }
 
         public void StartTrackService()
