@@ -40,6 +40,7 @@ namespace MapBoard
 
         public App()
         {
+            AppContext.SetSwitch("Switch.System.Windows.Media.EnableHardwareAccelerationInRdp", true);
             Parameters.AppType = AppType.WPF;
             try
             {
