@@ -1,9 +1,21 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using FzLib;
 using FzLib.Program.Runtime;
+using FzLib.WPF;
+using JKang.IpcServiceFramework.Client;
+using JKang.IpcServiceFramework.Hosting;
 using MapBoard.UI;
+using MapBoard.UI.GpxToolbox;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using static FzLib.Program.Runtime.SimplePipe;
 
 namespace MapBoard.Util
@@ -13,48 +25,60 @@ namespace MapBoard.Util
     /// </summary>
     public static class PipeHelper
     {
-        private static Clinet clinet;
-
-        /// <summary>
-        /// 注册客户端
-        /// </summary>
-        public static void RegistClinet()
+        public interface IPipeService
         {
-            clinet = new Clinet(FzLib.Program.App.ProgramName);
-            clinet.Start();
-            clinet.GotMessage += ClinetGotMessage;
+            void LoadGpxs(IEnumerable<string> files);
         }
-
-        /// <summary>
-        /// 客户端收到其他客户端的信息
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void ClinetGotMessage(object sender, PipeMessageEventArgs e)
+        public class PipeService : IPipeService
         {
-            if (e.Message.StartsWith("mbmpkg"))
+            public async void LoadGpxs(IEnumerable<string> files)
             {
-                string path = e.Message.RemoveStart("mbmpkg ");
-                if (File.Exists(path))
-                {
-                    App.Current.Dispatcher.Invoke(() =>
-                  {
-                      (App.Current.MainWindow as MainWindow).LoadMbmpkg(path);
-                  });
-                }
+                await App.Current.Dispatcher.InvokeAsync(async () =>
+                       {
+                           GpxWindow gpxWindow;
+                           if (App.Current.Windows.OfType<GpxWindow>().Any())
+                           {
+                               gpxWindow = App.Current.Windows.OfType<GpxWindow>().First();
+                           }
+                           else
+                           {
+                               gpxWindow = await MainWindowBase.CreateAndShowAsync<GpxWindow>();
+                           }
+                           gpxWindow.BringToFront();
+                           await gpxWindow.LoadGpxFilesAsync(files);
+                       });
             }
         }
-
-        /// <summary>
-        /// 发送信息
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public static async Task Send(string message)
+        private static IHost host;
+        public static void StartHost()
         {
-            var server = new Server(FzLib.Program.App.ProgramName);
+            host = Host.CreateDefaultBuilder()
+           .ConfigureServices(services =>
+           {
+               services.AddSingleton<IPipeService, PipeService>();
+           })
+           .ConfigureIpcHost(builder =>
+           {
+               //用命名管道会有问题：Kang.IpcServiceFramework.IpcCommunicationException: Invalid message header length must be 4 but was 0
+               builder.AddTcpEndpoint<IPipeService>(IPAddress.Loopback, 23456);
+           })
+           .ConfigureLogging(builder =>
+           {
+               builder.SetMinimumLevel(LogLevel.Debug);
+           })
+           .Build();
+            host.Start();
+        }
 
-            await server.SendMessageAsync(message);
+        public static async Task LoadGpxs(IEnumerable<string> files)
+        {
+            ServiceProvider serviceProvider = new ServiceCollection()
+                .AddTcpIpcClient<IPipeService>("c", IPAddress.Loopback, 23456)
+                .BuildServiceProvider();
+            IIpcClientFactory<IPipeService> clientFactory = serviceProvider.GetRequiredService<IIpcClientFactory<IPipeService>>();
+            IIpcClient<IPipeService> client = clientFactory.CreateClient("c");
+            await client.InvokeAsync(p => p.LoadGpxs(files));
+            serviceProvider.Dispose();
         }
     }
 }

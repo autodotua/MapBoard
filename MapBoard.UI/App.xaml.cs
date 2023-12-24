@@ -1,4 +1,5 @@
-﻿using FzLib.Program.Runtime;
+﻿//#define PipeTest
+using FzLib.Program.Runtime;
 using FzLib.WPF.Dialog;
 using ModernWpf.Controls;
 using ModernWpf.FzExtension;
@@ -55,6 +56,7 @@ namespace MapBoard
         /// 日志系统
         /// </summary>
         public static ILog Log { get; private set; }
+
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             Log.Info("程序正常关闭");
@@ -62,49 +64,45 @@ namespace MapBoard
 
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
+#if PipeTest && DEBUG
+            if (e.Args.Length > 0 && e.Args[0] == @"O:\旧事重提\轨迹\20231017-电瓶车、地铁、火车、自行车、步行、动车-说走就走绍兴行.gpx")
+            {
+                await Task.Delay(4000);
+            }
+            else
+            {
+                Process.Start(FzLib.Program.App.ProgramFilePath, @"O:\旧事重提\轨迹\20231017-电瓶车、地铁、火车、自行车、步行、动车-说走就走绍兴行.gpx");
+            }
+#endif
+#if !DEBUG
+            UnhandledException.RegistAll();
+            UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
+#endif
             InitializeLogs();
 
-#if DEBUG
-            var existedProcesses = Process.GetProcessesByName("MapBoard")
-                .Where(p => p.Id != Process.GetCurrentProcess().Id);
-            if (existedProcesses.Any())
-            {
-                foreach (var process in existedProcesses)
-                {
-                    process.Kill(true);
-                }
-            }
-#else
+
             //单例检测
             singleInstance = new SingleInstance(FzLib.Program.App.ProgramName);
-            await singleInstance.CheckAndOpenWindow<MainWindow>(this);
+            //await singleInstance.CheckAndOpenWindow<MainWindow>(this);
             if (singleInstance.ExistAnotherInstance)
             {
                 Log.Info("已存在正在运行的程序");
-                //过于复杂，不实现
-                //if (e.Args.Length > 0)
-                //{
-                //    if (e.Args[0].EndsWith("mpmpkg"))
-                //    {
-                //        Log.Info("通知正在运行的程序打开地图包");
-                //        try
-                //        {
-                //            await PipeHelper.Send("mbmpkg " + e.Args[0]);
-                //        }
-                //        catch(Exception ex)
-                //        {
-                //            Log.Error("通知正在运行的程序打开地图包失败",ex);
-                //        }
-                //    }
-                //}
+                if (e.Args.Length > 0)
+                {
+                    string arg = e.Args[0];
+
+                    if (arg.EndsWith(".gpx"))
+                    {
+                        PipeHelper.LoadGpxs(e.Args);
+                        //pipe.SendGpxAsync(e.Args);
+                    }
+                }
                 Environment.Exit(0);
                 return;
-        }
+            }
+            PipeHelper.StartHost();
 
-            UnhandledException.RegistAll();
-            UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
 
-#endif
             System.IO.Directory.SetCurrentDirectory(FzLib.Program.App.ProgramDirectoryPath);
 
             //设置日期时间格式
@@ -128,7 +126,7 @@ namespace MapBoard
                         "tile" => await MainWindowBase.CreateAndShowAsync<TileDownloaderWindow>(),
                         "gpx" => await MainWindowBase.CreateAndShowAsync<GpxWindow>(),
                         string s when s.EndsWith(".mbmpkg") => await MainWindowBase.CreateAndShowAsync<MainWindow>(w => w.LoadFile = arg),
-                        string s when s.EndsWith(".gpx") => await MainWindowBase.CreateAndShowAsync<GpxWindow>(w => w.LoadFiles = new[] { arg }),
+                        string s when s.EndsWith(".gpx") => await MainWindowBase.CreateAndShowAsync<GpxWindow>(w => w.LoadFiles = e.Args),
                         _ => await MainWindowBase.CreateAndShowAsync<MainWindow>(),
                     };
                 }

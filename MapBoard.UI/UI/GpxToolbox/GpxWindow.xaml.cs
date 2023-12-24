@@ -75,6 +75,11 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
+        public async Task LoadGpxFilesAsync(IEnumerable<string> files)
+        {
+            await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
+        }
+
         /// <summary>
         /// 刷新轨迹的信息、表格和图表
         /// </summary>
@@ -147,7 +152,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <summary>
         /// 启动后需要加载的文件
         /// </summary>
-        public string[] LoadFiles { get; set; } = null;
+        public IEnumerable<string> LoadFiles { get; set; } = null;
 
         /// <summary>
         /// 所有轨迹
