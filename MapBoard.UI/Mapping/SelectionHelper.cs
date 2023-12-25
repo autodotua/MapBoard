@@ -134,7 +134,7 @@ namespace MapBoard.Mapping
         public async Task SelectRectangleAsync()
         {
             ClearSelection();
-            var envelope = await Editor.GetRectangleAsync();
+            var envelope = await Editor.GetEmptyRectangleAsync();
             if (envelope != null)
             {
                 envelope = GeometryEngine.Project(envelope, SpatialReferences.Wgs84) as Envelope;

@@ -51,10 +51,9 @@ namespace MapBoard.Mapping
         /// </summary>
         private MapPoint nearestVertex;
 
-        private TaskCompletionSource tcs;
-
         private bool oneTapPoint = false;
-
+        private bool stopWhenGeometryChanged = false;
+        private TaskCompletionSource tcs;
         public EditorHelper(MainMapView mapView)
         {
             MapView = mapView;
@@ -66,6 +65,10 @@ namespace MapBoard.Mapping
                     if (oneTapPoint && GeometryEditor.Geometry is MapPoint p && !double.IsNaN(p.X))
                     {
                         oneTapPoint = false;
+                        StopAndSave();
+                    }
+                    if(stopWhenGeometryChanged)
+                    {
                         StopAndSave();
                     }
                 }
@@ -89,13 +92,12 @@ namespace MapBoard.Mapping
         /// </summary>
         public event EventHandler<GeometryUpdatedEventArgs> GeometryChanged;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         /// <summary>
         /// 选择的结点发生改变
         /// </summary>
         public event EventHandler SelectedElementChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         /// <summary>
         /// 正在编辑的要素的属性
         /// </summary>
@@ -123,11 +125,6 @@ namespace MapBoard.Mapping
             Stop();
         }
 
-        private void StartDraw(GeometryType type, GeometryEditorTool tool = null)
-        {
-            GeometryEditor.Start(type);
-            GeometryEditor.Tool = tool ?? new VertexTool();
-        }
         /// <summary>
         /// 绘制新的图形
         /// </summary>
@@ -189,6 +186,25 @@ namespace MapBoard.Mapping
                 Attributes.SaveToFeature(feature);
                 await layer.UpdateFeatureAsync(newFeature, FeaturesChangedSource.Edit);
             }
+        }
+
+        /// <summary>
+        /// 获取一个用于选择要素矩形
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Envelope> GetEmptyRectangleAsync()
+        {
+            PrepareToDraw(EditMode.GetGeometry);
+            StartDraw(GeometryType.Polygon);
+            ShapeTool st = ShapeTool.Create(ShapeToolType.Rectangle);
+            GeometryEditor.Tool = st;
+            stopWhenGeometryChanged = true;
+            await WaitForStopAsync();
+            if (geometry is Polygon rect)
+            {
+                return rect.Extent;
+            }
+            return null;
         }
 
         /// 获取一个多点
@@ -269,7 +285,7 @@ namespace MapBoard.Mapping
         public async Task<Envelope> GetRectangleAsync()
         {
             PrepareToDraw(EditMode.GetGeometry);
-            StartDraw(GeometryType.Multipoint);
+            StartDraw(GeometryType.Polygon);
             ShapeTool st = ShapeTool.Create(ShapeToolType.Rectangle);
             GeometryEditor.Tool = st;
             await WaitForStopAsync();
@@ -598,11 +614,17 @@ namespace MapBoard.Mapping
         /// <param name="mode"></param>
         private void PrepareToDraw(EditMode mode)
         {
+            stopWhenGeometryChanged = false;
             Mode = mode;
             MapView.CurrentTask = BoardTask.Draw;
             EditorStatusChanged?.Invoke(this, new EditorStatusChangedEventArgs(true));
         }
 
+        private void StartDraw(GeometryType type, GeometryEditorTool tool = null)
+        {
+            GeometryEditor.Start(type);
+            GeometryEditor.Tool = tool ?? new VertexTool();
+        }
         /// <summary>
         /// 停止绘制
         /// </summary>
