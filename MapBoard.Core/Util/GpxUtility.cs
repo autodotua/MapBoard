@@ -92,7 +92,7 @@ namespace MapBoard.Util
         public static async Task LoadColoredGpxAsync(GpxTrack gpxTrack, GraphicCollection graphics)
         {
             var points = gpxTrack.Points;
-            var speeds = await GetMeanFilteredSpeedsAsync(points, 19, false);
+            var speeds = await GetMeanFilteredSpeedsAsync(points, Parameters.GpxSpeedSmoothWindow, false);
             var orderedSpeeds = speeds.OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
             int maxIndex = 0;

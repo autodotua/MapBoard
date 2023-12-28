@@ -52,6 +52,8 @@ namespace MapBoard
         /// </summary>
         public static TimeSpan LoadTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+        public static int GpxSpeedSmoothWindow { get; set; } = 3;
+
         public static AppType AppType { get; set; }
     }
 }

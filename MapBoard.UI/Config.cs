@@ -104,6 +104,11 @@ namespace MapBoard
         public bool EnableBasemapCache { get; set; } = true;
 
         /// <summary>
+        /// GPX速度相关平滑的窗口大小
+        /// </summary>
+        public int GpxSpeedSmoothWindow { get; set; } = 5;
+
+        /// <summary>
         /// GPX工具箱中，是否自动平滑
         /// </summary>
         public bool Gpx_AutoSmooth { get; set; } = false;
@@ -111,7 +116,7 @@ namespace MapBoard
         /// <summary>
         /// GPX工具箱中，自动平滑的等级（窗口大小）
         /// </summary>
-        public int Gpx_AutoSmoothLevel { get; set; } = 5;
+        public int Gpx_AutoSmoothLevel { get; set; } = 3;
 
         /// <summary>
         /// GPX工具箱中，是否仅自动平滑高程

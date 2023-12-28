@@ -108,6 +108,7 @@ namespace MapBoard
             //设置日期时间格式
             Model.FeatureAttribute.DateFormat = Parameters.DateFormat;
             Model.FeatureAttribute.DateTimeFormat = Parameters.TimeFormat;
+            Parameters.GpxSpeedSmoothWindow = Config.Instance.GpxSpeedSmoothWindow;
 
             //设置属性
             Config.Instance.ThemeChanged += (p1, p2) =>
