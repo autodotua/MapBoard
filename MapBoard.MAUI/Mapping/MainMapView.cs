@@ -94,7 +94,7 @@ namespace MapBoard.Mapping
                     && Layers != null
                  && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
                 {
-                    if(Layers.MapViewExtentJson != envelope.ToJson())
+                    if (Layers.MapViewExtentJson != envelope.ToJson())
                     {
                         Layers.MapViewExtentJson = envelope.ToJson();
                         Layers.Save();
@@ -109,7 +109,7 @@ namespace MapBoard.Mapping
 
         private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            switch(e.PropertyName)
+            switch (e.PropertyName)
             {
                 case nameof(Config.CanRotate):
                     InteractionOptions.IsRotateEnabled = Config.Instance.CanRotate;
@@ -338,10 +338,16 @@ namespace MapBoard.Mapping
                 var speed = (double)graphic.Attributes["Speed"];
                 var timeString = time.ToString("HH:mm:ss");
                 var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
-                if (graphic.Attributes.ContainsKey("Altitude"))
+                if (graphic.Attributes.TryGetValue("Altitude", out object objAlt))
                 {
-                    var altitude = (double)graphic.Attributes["Altitude"];
+                    var altitude = (double)objAlt;
                     detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
+                }
+                if (graphic.Attributes.TryGetValue("Distance", out object objDist))
+                {
+                    var distance = (double)objDist;
+                    string distanceString = distance < 1000 ? $"{distance:0}m" : $"{distance/1000:0.00}km";
+                    detailString = $"{detailString}{Environment.NewLine}距离：{distanceString}";
                 }
                 ShowCallout(e.Position, graphic, timeString, detailString, true);
                 return true;

@@ -25,8 +25,9 @@ namespace MapBoard.Mapping
 
         public void AddPoint(double x, double y, DateTime time, double speed, double? altitude)
         {
-            MapPoint thisPoint = new MapPoint(x, y);
-            Polyline line = null;
+            MapPoint thisPoint = new MapPoint(x, y, SpatialReferences.Wgs84);
+            double distance = 0;
+            Polyline line;
             if (firstPoint == null) //第一个点
             {
                 firstPoint = thisPoint;
@@ -35,6 +36,7 @@ namespace MapBoard.Mapping
             else if (Overlay.Graphics.Count == 0) //第二个点
             {
                 line = new Polyline(new MapPoint[] { firstPoint, thisPoint }, SpatialReferences.Wgs84);
+                distance = GeometryUtility.GetDistance(firstPoint, thisPoint);
             }
             else //第三个及以上的点
             {
@@ -44,6 +46,7 @@ namespace MapBoard.Mapping
                 var lastPoint = lastLine.Parts[0].Points[^1];
                 var lastLastPoint = lastLine.Parts[0].Points[^2];
                 line = new Polyline(new MapPoint[] { lastLastPoint, lastPoint, thisPoint }, SpatialReferences.Wgs84);
+                distance = (double)Overlay.Graphics[^1].Attributes["Distance"] + GeometryUtility.GetDistance(lastPoint, thisPoint);
             }
             Graphic graphic = new Graphic(line);
             graphic.Attributes.Add("Speed", speed);
@@ -52,6 +55,7 @@ namespace MapBoard.Mapping
             {
                 graphic.Attributes.Add("Altitude", altitude.Value);
             }
+            graphic.Attributes.Add("Distance", distance);
             Overlay.Graphics.Add(graphic);
         }
 

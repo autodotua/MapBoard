@@ -41,3 +41,10 @@ GPX工具箱
 - 进行任何发布、打包任务前，需要还原NuGet库，然后运行 `copyRuntimes.ps1`，将ArcGIS Runtime的若干库文件复制到 `MapBoard.UI`目录中。
 - 执行 `.build.ps1`能够一键构建，位于 `Generation\Publish`中。
 - `MapBoard.Package`项目用于生成MSIX安装包或者提交到Windows应用商店中。
+
+## 近期计划
+
+【MAUI】优化轨迹列表的显示，支持显示距离
+- 要修改GPX读取模块，按需读取元数据
+
+【MAUI】新增长按定位按钮切换PanMode

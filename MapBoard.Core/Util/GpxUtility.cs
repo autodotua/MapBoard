@@ -104,12 +104,18 @@ namespace MapBoard.Util
                 minIndex = Math.Min(speedsCount - 2, (int)(speedsCount * 0.15)); //取15%最小值作为速度颜色下限
                 maxMinusMinSpeed = orderedSpeeds[maxIndex] - orderedSpeeds[minIndex];
             }
+            double distance = 0;
             for (int i = 2; i < points.Count; i++)
             {
                 MapPoint p1 = new MapPoint(points[i - 2].X, points[i - 2].Y, points[i - 2].Z ?? 0, SpatialReferences.Wgs84);
                 MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y, points[i - 1].Z ?? 0, SpatialReferences.Wgs84);
                 MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y, points[i - 0].Z ?? 0, SpatialReferences.Wgs84);
 
+                if(distance==0)
+                {
+                    distance = GeometryUtility.GetDistance(p1, p2);
+                }
+                distance += GeometryUtility.GetDistance(p2, p3);
                 //如果两个点时间差超过5分钟，那么认为信号断连，p1p2之间的连线不显示
                 if ((points[i - 1].Time.Value - points[i - 2].Time.Value).TotalMinutes > 5)
                 {
@@ -144,6 +150,7 @@ namespace MapBoard.Util
                 {
                     graphic.Attributes.Add("Altitude", points[i - 1].Z);
                 }
+                graphic.Attributes.Add("Distance", distance);
                 graphics.Add(graphic);
             }
         }
