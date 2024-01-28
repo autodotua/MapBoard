@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using MapBoard.Mapping;
 using MapBoard.Platforms.Android;
+using MapBoard.Services;
 using MapBoard.Views;
 
 namespace MapBoard
@@ -122,10 +123,17 @@ namespace MapBoard
             base.OnResume();
         }
 
-        protected override void OnStop()
+        private int stopID = 0;
+        protected override async void OnStop()
         {
             MainMapView.Current.LocationDisplay.IsEnabled = false;
             base.OnStop();
+            int currentStopID = ++stopID;
+            await Task.Delay(1000 * 60 * 10);
+            if (Config.Instance.AutoQuit && currentStopID == stopID && TrackService.Current == null)
+            {
+                MapBoard.App.Current.Quit();
+            }
         }
     }
 }

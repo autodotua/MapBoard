@@ -94,6 +94,8 @@ namespace MapBoard
             get => screenAlwaysOn;
             set => this.SetValueAndNotify(ref screenAlwaysOn, value, nameof(ScreenAlwaysOn));
         }
+
+        public bool AutoQuit { get; set; } = false;
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>

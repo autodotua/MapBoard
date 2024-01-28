@@ -27,6 +27,11 @@
                             On="{Binding ScreenAlwaysOn}"
                             Text="屏幕常亮" />
                     </TableSection>
+                    <TableSection Title="应用">
+                        <SwitchCell
+                            On="{Binding AutoQuit}"
+                            Text="应用进入后台10分钟后自动退出" />
+                    </TableSection>
                     <!--  https://github.com/dotnet/maui/issues/10322  -->
                     <!--  https://github.com/dotnet/maui/issues/5924  -->
                     <TableSection Title="关于">
