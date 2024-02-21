@@ -87,8 +87,8 @@
 		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" Version="200.3.0" />
 		<PackageReference Include="FubarDev.FtpServer" Version="3.1.2" />
 		<PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 	</ItemGroup>
 
