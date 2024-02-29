@@ -192,7 +192,7 @@
                     <TextBox
                         Grid.Row="14"
                         Grid.Column="2"
-                        Text="{Binding Distance}" />
+                        Text="{Binding Distance,StringFormat='{}{0}m'}" />
                 </Grid>
             </Expander>
             <Expander

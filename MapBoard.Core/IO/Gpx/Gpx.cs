@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapBoard.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace MapBoard.IO.Gpx
 {
@@ -20,9 +22,9 @@ namespace MapBoard.IO.Gpx
         {
         }
 
-        private Gpx(string path, XmlElement xml)
+        private Gpx(string path, XmlElement xml, bool metadataOnly)
         {
-            LoadGpxInfoProperties(this, xml);
+            LoadGpxInfoProperties(this, xml, metadataOnly);
             FilePath = path;
         }
 
@@ -60,13 +62,105 @@ namespace MapBoard.IO.Gpx
         public static async Task<Gpx> FromFileAsync(string path)
         {
             var file = await File.ReadAllTextAsync(path);
-            Gpx gpx= null;
+            Gpx gpx = null;
             await Task.Run(() =>
             {
                 gpx = FromString(path, file);
             });
             return gpx;
         }
+
+        public static async Task<IList<Gpx>> MetadatasFromFilesAsync(IList<string> files)
+        {
+            Gpx[] gpxs = new Gpx[files.Count];
+            await Task.Run(() =>
+            {
+                for (int i = 0; i < files.Count; i++)
+                //Parallel.For(0, files.Count, i =>
+                {
+                    var file = files[i];
+                    //XmlDocument xml = new XmlDocument();
+                    //using FileStream fs = File.OpenRead(file);
+                    //xml.Load(fs);
+                    //XmlElement xmlGpx = xml["gpx"] ?? throw new XmlException("没有找到gpx元素");
+                    //gpxs[i] = new Gpx(file, xmlGpx, true);
+                    using XmlReader xr = XmlReader.Create(file);
+                    xr.MoveToContent();
+                    Gpx gpx = new Gpx();
+                    if (xr.NodeType == XmlNodeType.Element)
+                    {
+                        var name = xr.Name;
+                        var value = xr.Value;
+                        while (xr.MoveToNextAttribute())
+                        {
+                            switch (xr.Name)
+                            {
+                                case "creator":
+                                    gpx.Creator = xr.Value;
+                                    break;
+
+                                case "version":
+                                    gpx.Version = xr.Value;
+                                    break;
+                            }
+                        }
+                        while (xr.Read())
+                        {
+                            xr.MoveToContent();
+                            string xrName = xr.Name;
+                            xr.Read();
+                            string xrValue = xr.Value;
+                            switch (xrName)
+                            {
+                                case "name":
+                                    gpx.Name = xrValue;
+                                    break;
+
+                                case "author":
+                                    gpx.Author = xrValue;
+                                    break;
+
+                                case "url":
+                                    gpx.Url = xrValue;
+                                    break;
+
+                                case "urlname":
+                                    gpx.UrlName = xrValue;
+                                    break;
+
+                                case "distance":
+                                    if (double.TryParse(xrValue, out double result))
+                                    {
+                                        gpx.Distance = result;
+                                    }
+                                    break;
+
+                                case "time":
+                                    if (DateTime.TryParse(xrValue, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time))
+                                    {
+                                        gpx.Time = time;
+                                    }
+                                    break;
+
+                                case "keywords":
+                                    gpx.KeyWords = xrValue;
+                                    break;
+
+                                case "trk":
+                                    goto endReading;
+                            }
+                            xr.Read();//End Element
+                        }
+                    }
+                endReading:
+                    gpxs[i] = gpx;
+                }
+                //);
+            });
+            return gpxs;
+        }
+
+
 
         /// <summary>
         /// 从文件和读取后的内容加载GPX
@@ -84,7 +178,7 @@ namespace MapBoard.IO.Gpx
             {
                 throw new XmlException("没有找到gpx元素");
             }
-            Gpx info = new Gpx(path, xmlGpx);
+            Gpx info = new Gpx(path, xmlGpx, false);
 
             return info;
         }
@@ -94,7 +188,7 @@ namespace MapBoard.IO.Gpx
         /// </summary>
         /// <param name="info"></param>
         /// <param name="xml"></param>
-        public static void LoadGpxInfoProperties(Gpx info, XmlNode xml)
+        public static void LoadGpxInfoProperties(Gpx info, XmlNode xml, bool metadataOnly)
         {
             LoadGpxInfoProperties(info, xml.Attributes.Cast<XmlAttribute>());
             LoadGpxInfoProperties(info, xml.ChildNodes.Cast<XmlElement>());
@@ -142,7 +236,7 @@ namespace MapBoard.IO.Gpx
             AppendChildNode("urlname", UrlName);
             AppendChildNode("time", Time.ToString(GpxTimeFormat));
             AppendChildNode("keywords", KeyWords);
-            AppendChildNode("distance", Distance.ToString());
+            AppendChildNode("distance", Math.Round(Tracks.Sum(p => p.Distance), 2).ToString());
             foreach (var item in OtherProperties)
             {
                 if (item.Key.Contains("xmlns"))

@@ -24,6 +24,7 @@ using log4net.Layout;
 using System.Reflection;
 using System.Diagnostics;
 using MapBoard.IO;
+using MapBoard.IO.Gpx;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -64,16 +65,6 @@ namespace MapBoard
 
         private async void Application_Startup(object sender, StartupEventArgs e)
         {
-#if PipeTest && DEBUG
-            if (e.Args.Length > 0 && e.Args[0] == @"O:\旧事重提\轨迹\20231017-电瓶车、地铁、火车、自行车、步行、动车-说走就走绍兴行.gpx")
-            {
-                await Task.Delay(4000);
-            }
-            else
-            {
-                Process.Start(FzLib.Program.App.ProgramFilePath, @"O:\旧事重提\轨迹\20231017-电瓶车、地铁、火车、自行车、步行、动车-说走就走绍兴行.gpx");
-            }
-#endif
 #if !DEBUG
             UnhandledException.RegistAll();
             UnhandledException.UnhandledExceptionCatched += UnhandledException_UnhandledExceptionCatched;
