@@ -18,6 +18,7 @@
     <Grid RowDefinitions="*,8,Auto,8,Auto">
         <ListView
             x:Name="lvwGpxList"
+            HasUnevenRows="True"
             IsVisible="{Binding TrackService}"
             ItemTapped="GpxList_ItemTapped"
             ItemsSource="{Binding GpxFiles}"
@@ -26,21 +27,48 @@
                 <DataTemplate>
                     <ViewCell>
                         <Grid
-                            Margin="8,0"
-                            x:DataType="{x:Type m:SimpleFile}"
-                            ColumnDefinitions="*,8,Auto,8">
+                            Padding="8,4,8,0"
+                            x:DataType="{x:Type m:GpxAndFileInfo}"
+                            RowDefinitions="Auto,0,Auto,4,Auto">
                             <Label
-                                Text="{Binding Name}"
+                                FontAttributes="Bold"
+                                HorizontalOptions="Start"
+                                Text="{Binding File.Name}"
                                 VerticalOptions="Center" />
                             <Label
                                 Grid.Column="2"
-                                Text="{Binding Length, Converter={StaticResource KbConverter}, StringFormat='{0:0.0} KB'}"
+                                HorizontalOptions="End"
+                                Text="{Binding File.Length, Converter={StaticResource KbConverter}, StringFormat='{0:0.0} KB'}"
                                 VerticalOptions="Center" />
+                            <Label
+                                Grid.Row="2"
+                                HorizontalOptions="Start"
+                                Text="{Binding Gpx.Time, StringFormat='{0:yyyy-MM-dd HH:mm}'}" />
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                HorizontalOptions="End"
+                                Text="{Binding Gpx.Distance, Converter={StaticResource DistanceConverter}}" />
+                            <!--<Line
+                                Grid.Row="4"
+                                Grid.ColumnSpan="99"
+                                Stroke="{DynamicResource Gray300}"
+                                StrokeThickness="1"
+                                X1="0"
+                                X2="1000" />-->
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <!--<Line
+            Grid.ColumnSpan="99"
+            Margin="8,0"
+            Stroke="{DynamicResource Gray300}"
+            StrokeThickness="1"
+            X1="0"
+            X2="1000" />-->
         <Grid
             x:Name="grdDetail"
             ColumnDefinitions="Auto,24,Auto"
