@@ -8,7 +8,7 @@ namespace MapBoard.Models
         public GpxAndFileInfo(string file)
         {
             File = new SimpleFile(file);
-            Gpx=Gpx.MetadataFromFile(file);
+            Gpx=Gpx.LoadMetadatasFromFile(file);
         }
         public SimpleFile File { get; set; }
         public Gpx Gpx { get; set; }
