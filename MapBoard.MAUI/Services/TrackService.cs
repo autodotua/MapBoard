@@ -317,19 +317,19 @@ namespace MapBoard.Services
                 GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude, location.Timestamp.LocalDateTime);
                 if (location.Accuracy.HasValue)
                 {
-                    point.OtherProperties.Add("Accuracy", location.Accuracy.ToString());
+                    point.Extensions.Add("Accuracy", location.Accuracy.ToString());
                 }
                 if (location.VerticalAccuracy.HasValue)
                 {
-                    point.OtherProperties.Add("VerticalAccuracy", location.VerticalAccuracy.ToString());
+                    point.Extensions.Add("VerticalAccuracy", location.VerticalAccuracy.ToString());
                 }
                 if (location.Course.HasValue)
                 {
-                    point.OtherProperties.Add("Course", location.Course.ToString());
+                    point.Extensions.Add("Course", location.Course.ToString());
                 }
                 if (location.Speed.HasValue)
                 {
-                    point.OtherProperties.Add("Speed", location.Speed.ToString());
+                    point.Extensions.Add("Speed", location.Speed.ToString());
                 }
                 gpxTrack.Points.Add(point);
 

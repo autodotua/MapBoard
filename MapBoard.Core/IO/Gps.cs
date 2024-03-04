@@ -85,7 +85,7 @@ namespace MapBoard.IO
             }
             Feature feature = layer.CreateFeature();
             feature.Geometry = new Polyline(points);
-            ApplyAttributes(track, layer, null, feature, track.GpxInfo.Time);
+            ApplyAttributes(track, layer, null, feature, track.Parent.Time);
             yield return feature;
         }
 
@@ -121,18 +121,18 @@ namespace MapBoard.IO
         {
             if (layer.HasField(Filed_Name, FieldInfoType.Text))
             {
-                feature.SetAttributeValue(Filed_Name, track.GpxInfo.Name);
+                feature.SetAttributeValue(Filed_Name, track.Parent.Name);
                 //feature.SetAttributeValue(Filed_Name, Path.GetFileNameWithoutExtension(track.GpxInfo.FilePath));
             }
             if (layer.HasField(Filed_Path, FieldInfoType.Text))
             {
-                feature.SetAttributeValue(Filed_Path, track.GpxInfo.FilePath);
+                feature.SetAttributeValue(Filed_Path, track.Parent.FilePath);
             }
             if (layer.HasField(Filed_Date, FieldInfoType.Date))
             {
                 try
                 {
-                    feature.SetAttributeValue(Filed_Date, track.GpxInfo.Time);
+                    feature.SetAttributeValue(Filed_Date, track.Parent.Time);
                 }
                 catch
                 {
@@ -145,7 +145,7 @@ namespace MapBoard.IO
             }
             if (layer.HasField(Filed_Index, FieldInfoType.Integer))
             {
-                feature.SetAttributeValue(Filed_Index, track.GpxInfo.Tracks.IndexOf(track));
+                feature.SetAttributeValue(Filed_Index, track.Parent.Tracks.IndexOf(track));
             }
             if (layer.HasField(Filed_PointIndex, FieldInfoType.Integer) && index.HasValue)
             {

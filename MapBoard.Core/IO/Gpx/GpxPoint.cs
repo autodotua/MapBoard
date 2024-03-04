@@ -11,7 +11,7 @@ using System.Xml;
 namespace MapBoard.IO.Gpx
 {
     /// <summary>
-    /// GPX点
+    /// GPX trkpt对象
     /// </summary>
     public class GpxPoint : ICloneable, INotifyPropertyChanged
     {
@@ -28,7 +28,7 @@ namespace MapBoard.IO.Gpx
         /// <summary>
         /// 其他属性
         /// </summary>
-        public Dictionary<string, string> OtherProperties { get; internal set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Extensions { get; internal set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// 速度，需要计算后得出
@@ -59,7 +59,7 @@ namespace MapBoard.IO.Gpx
         {
             return new GpxPoint(X, Y, Z, Time)
             {
-                OtherProperties = OtherProperties.ToDictionary(p => p.Key, p => p.Value)
+                Extensions = Extensions.ToDictionary(p => p.Key, p => p.Value)
             };
         }
 
@@ -135,7 +135,7 @@ namespace MapBoard.IO.Gpx
             }
             var point = new GpxPoint(x, y, z, time)
             {
-                OtherProperties = otherProperties
+                Extensions = otherProperties
             };
             return point;
         }
@@ -157,7 +157,7 @@ namespace MapBoard.IO.Gpx
             {
                 AppendChildNode("time", Time.Value.ToString(Gpx.GpxTimeFormat));
             }
-            foreach (var item in OtherProperties)
+            foreach (var item in Extensions)
             {
                 AppendChildNode(item.Key, item.Value);
             }

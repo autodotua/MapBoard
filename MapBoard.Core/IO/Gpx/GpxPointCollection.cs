@@ -19,10 +19,6 @@ namespace MapBoard.IO.Gpx
     {
         private Envelope extent;
 
-        private bool? isOrdered = null;
-
-        private GpxPointCollection timeOrderedPoints = null;
-
         public GpxPointCollection()
         {
         }
@@ -61,55 +57,6 @@ namespace MapBoard.IO.Gpx
             }
         }
 
-        /// <summary>
-        /// 是否已经按时间顺序排序
-        /// </summary>
-        public bool IsOrdered
-        {
-            get
-            {
-                if (isOrdered == null)
-                {
-                    bool ok = true;
-                    GpxPoint last = default;
-                    foreach (var item in this)
-                    {
-                        if (last != default)
-                        {
-                            if (last.Time > item.Time)
-                            {
-                                ok = false;
-                                break;
-                            }
-                        }
-
-                        last = item;
-                    }
-                    isOrdered = ok;
-                }
-                return isOrdered.Value;
-            }
-        }
-
-        /// <summary>
-        /// 保证按时间顺序从早到晚排序的点集
-        /// </summary>
-        public GpxPointCollection TimeOrderedPoints
-        {
-            get
-            {
-                if (IsOrdered)
-                {
-                    return this;
-                }
-                if (timeOrderedPoints == null)
-                {
-                    timeOrderedPoints = new GpxPointCollection(this.OrderBy(p => p.Time));
-                    timeOrderedPoints.isOrdered = true;
-                }
-                return timeOrderedPoints;
-            }
-        }
 
         public object Clone()
         {
@@ -129,12 +76,7 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public double GetSpeed(GpxPoint point, int unilateralSampleCount)
         {
-            GpxPointCollection points = this;
-            if (!IsOrdered)
-            {
-                points = TimeOrderedPoints;
-            }
-            return points.GetSpeed(points.IndexOf(point), unilateralSampleCount);
+            return GetSpeed(IndexOf(point), unilateralSampleCount);
         }
         /// <summary>
         /// 获取某一点附近的速度
@@ -144,10 +86,6 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public double GetSpeed(int index, int unilateralSampleCount)
         {
-            if (!IsOrdered)
-            {
-                throw new GpxException("点集合不符合时间顺序");
-            }
             if (Count <= 1)
             {
                 throw new GpxException("集合拥有的点过少");
@@ -184,8 +122,6 @@ namespace MapBoard.IO.Gpx
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            isOrdered = null;
-            timeOrderedPoints = null;
             base.OnCollectionChanged(e);
         }
     }
