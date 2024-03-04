@@ -8,18 +8,65 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace MapBoard.Util
 {
     public static class GpxUtility
     {
+        public static double GetDistance(this IList<GpxPoint> points)
+        {
+            double distance = 0;
+            MapPoint last = null;
+            foreach (var point in points)
+            {
+                if (last != null)
+                {
+                    distance += GeometryUtility.GetDistance(last, point.ToMapPoint());
+                }
+                last = point.ToMapPoint();
+            }
+
+            return distance;
+        }
+
+        /// <summary>
+        /// 点的包围盒范围
+        /// </summary>
+        public static Envelope GetExtent(IList<GpxPoint> points)
+        {
+            double minX, minY, maxX, maxY;
+            minX = minY = double.MaxValue;
+            maxX = maxY = double.MinValue;
+            foreach (var point in points)
+            {
+                minX = Math.Min(point.X, minX);
+                maxX = Math.Max(point.X, maxX);
+                minY = Math.Min(point.Y, minY);
+                maxY = Math.Max(point.Y, maxY);
+            }
+
+            return new Envelope(minX, maxY, maxX, minY, SpatialReferences.Wgs84);
+        }
+
+        /// <summary>
+        /// 根据提供的采样率参数，获取最大速度
+        /// </summary>
+        /// <param name="window"></param>
+        /// <param name="jump"></param>
+        /// <returns></returns>
+        public static async Task<double> GetMaxSpeedAsync(this GpxTrack trk, int window = 9)
+        {
+            return (await GpxUtility.GetMeanFilteredSpeedsAsync(trk.GetPoints(), window, false)).Max();
+        }
+
         /// <summary>
         /// 获取一组点经过均值滤波后的速度
         /// </summary>
         /// <param name="points">点的集合</param>
         /// <param name="window">每一组采样点的个数</param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<double>> GetMeanFilteredSpeedsAsync(GpxPointCollection points, int window, bool writeToPoints)
+        public static async Task<IReadOnlyList<double>> GetMeanFilteredSpeedsAsync(IList<GpxPoint> points, int window, bool writeToPoints)
         {
             if (window % 2 == 0 || window < 3)
             {
@@ -27,7 +74,6 @@ namespace MapBoard.Util
             }
             double[] speeds = new double[points.Count];
             double[] distances = new double[points.Count - 1];
-            points = points.TimeOrderedPoints;
             await Task.Run(() =>
             {
                 try
@@ -89,9 +135,160 @@ namespace MapBoard.Util
             return speeds.AsReadOnly();
         }
 
+        /// <summary>
+        /// 获取移动均速
+        /// </summary>
+        /// <param name="speedDevaluation"></param>
+        /// <returns></returns>
+        public static double GetMovingAverageSpeed(this IList<GpxPoint> points, double speedDevaluation = 0.3)
+        {
+            double totalDistance = 0;
+            double totalSeconds = 0;
+            GpxPoint last = null;
+            try
+            {
+                foreach (var point in points)
+                {
+                    if (last != null)
+                    {
+                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double second = (point.Time - last.Time).Value.TotalSeconds;
+                        double speed = distance / second;
+                        if (speed > speedDevaluation)
+                        {
+                            totalDistance += distance;
+                            totalSeconds += second;
+                        }
+                    }
+                    last = point;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
+            }
+            return totalDistance / totalSeconds;
+        }
+
+        /// <summary>
+        /// 获取移动时间
+        /// </summary>
+        /// <param name="speedDevaluation"></param>
+        /// <returns></returns>
+        public static TimeSpan GetMovingTime(this IList<GpxPoint> points, double speedDevaluation = 0.3)
+        {
+            double totalDistance = 0;
+            double totalSeconds = 0;
+            GpxPoint last = null;
+            try
+            {
+                foreach (var point in points)
+                {
+                    if (last != null)
+                    {
+                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double second = (point.Time - last.Time).Value.TotalSeconds;
+                        double speed = distance / second;
+                        if (speed > speedDevaluation)
+                        {
+                            totalDistance += distance;
+                            totalSeconds += second;
+                        }
+                    }
+                    last = point;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
+            }
+            return TimeSpan.FromSeconds(totalSeconds);
+        }
+
+        public static IList<GpxPoint> GetPoints(this GpxTrack trk)
+        {
+            if (trk.Segments.Count == 0)
+            {
+                return new List<GpxPoint>();
+            }
+
+
+            List<GpxPoint> points = new List<GpxPoint>();
+            foreach (var seg in trk.Segments)
+            {
+                points.AddRange(seg.Points);
+            }
+            return points;
+        }
+
+        /// <summary>
+        /// 获取某一点附近的速度
+        /// </summary>
+        /// <param name="point">目标点</param>
+        /// <param name="unilateralSampleCount">采样点数量，单侧</param>
+        /// <returns></returns>
+        public static double GetSpeed(this GpxSegment seg, GpxPoint point, int unilateralSampleCount)
+        {
+            return seg.GetSpeed(seg.Points.IndexOf(point), unilateralSampleCount);
+        }
+
+        /// <summary>
+        /// 获取某一点附近的速度
+        /// </summary>
+        /// <param name="point">目标点在集合中的索引</param>
+        /// <param name="unilateralSampleCount">采样点数量，单侧</param>
+        /// <returns></returns>
+        public static double GetSpeed(this GpxSegment seg, int index, int unilateralSampleCount)
+        {
+            if (seg.Points.Count <= 1)
+            {
+                throw new GpxException("集合拥有的点过少");
+            }
+
+            int min = index - unilateralSampleCount;
+            if (min < 0)
+            {
+                min = 0;
+            }
+
+            int max = index + unilateralSampleCount;
+            if (max > seg.Points.Count - 1)
+            {
+                max = seg.Points.Count - 1;
+            }
+            double totalDistance = 0;
+            TimeSpan totalTime = TimeSpan.Zero;
+
+            try
+            {
+                for (int i = min; i < max; i++)
+                {
+                    totalDistance += GeometryUtility.GetDistance(seg.Points[i].ToMapPoint(), seg.Points[i + 1].ToMapPoint());
+                    totalTime += seg.Points[i + 1].Time.Value - seg.Points[i].Time.Value;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("存在没有时间信息的点", ex);
+            }
+            return totalDistance / totalTime.TotalSeconds;
+        }
+
+        public static TimeSpan? GetTotalTime(this IList<GpxPoint> points)
+        {
+            if (points.Count <= 1)
+            {
+                return TimeSpan.Zero;
+            }
+            if (points[0].Time.HasValue && points[^1].Time.HasValue)
+            {
+                return points[^1].Time.Value - points[0].Time.Value;
+            }
+            return null;
+        }
         public static async Task LoadColoredGpxAsync(GpxTrack gpxTrack, GraphicCollection graphics)
         {
-            var points = gpxTrack.Points;
+            var points = gpxTrack.GetPoints();
             var speeds = await GetMeanFilteredSpeedsAsync(points, Parameters.GpxSpeedSmoothWindow, false);
             var orderedSpeeds = speeds.OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
@@ -111,7 +308,7 @@ namespace MapBoard.Util
                 MapPoint p2 = new MapPoint(points[i - 1].X, points[i - 1].Y, points[i - 1].Z ?? 0, SpatialReferences.Wgs84);
                 MapPoint p3 = new MapPoint(points[i - 0].X, points[i - 0].Y, points[i - 0].Z ?? 0, SpatialReferences.Wgs84);
 
-                if(distance==0)
+                if (distance == 0)
                 {
                     distance = GeometryUtility.GetDistance(p1, p2);
                 }
@@ -162,7 +359,7 @@ namespace MapBoard.Util
         /// <param name="level"></param>
         /// <param name="get"></param>
         /// <param name="set"></param>
-        public static void Smooth(GpxPointCollection points, int level, Func<GpxPoint, double> get, Action<GpxPoint, double> set)
+        public static void Smooth(IList<GpxPoint> points, int level, Func<GpxPoint, double> get, Action<GpxPoint, double> set)
         {
             int count = points.Count;
             Queue<double> queue = new Queue<double>(level);
