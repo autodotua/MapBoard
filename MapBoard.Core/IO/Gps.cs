@@ -12,6 +12,7 @@ using LibGpx = MapBoard.IO.Gpx.Gpx;
 using static MapBoard.Model.CoordinateSystem;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
+using MapBoard.IO.Gpx;
 
 namespace MapBoard.IO
 {
@@ -36,7 +37,7 @@ namespace MapBoard.IO
         {
             string name = Path.GetFileNameWithoutExtension(path);
 
-            var gpx = await LibGpx.FromFileAsync(path);
+            var gpx = await GpxSerializer.FromFileAsync(path);
             string newName = FileSystem.GetNoDuplicateFile(Path.Combine(FolderPaths.DataPath, name + ".shp"));
             var fields = new List<FieldInfo>()
                 {
@@ -79,7 +80,7 @@ namespace MapBoard.IO
         private static IEnumerable<Feature> ImportAsPolyline(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
         {
             List<MapPoint> points = new List<MapPoint>();
-            foreach (var point in track.Points)
+            foreach (var point in track.GetPoints())
             {
                 points.Add(CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs));
             }
@@ -99,7 +100,7 @@ namespace MapBoard.IO
         private static IEnumerable<Feature> ImportAsPoint(Gpx.GpxTrack track, IEditableLayerInfo layer, CoordinateSystem baseCs)
         {
             int i = 0;
-            foreach (var point in track.Points)
+            foreach (var point in track.GetPoints())
             {
                 MapPoint mapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
                 Feature feature = layer.CreateFeature();
@@ -231,7 +232,7 @@ namespace MapBoard.IO
         /// <exception cref="NotSupportedException"></exception>
         public static async Task<IReadOnlyList<Feature>> ImportToLayerAsync(string path, IEditableLayerInfo layer, CoordinateSystem baseCS)
         {
-            var gpx = await LibGpx.FromFileAsync(path);
+            var gpx = await GpxSerializer.FromFileAsync(path);
             List<Feature> importedFeatures = new List<Feature>();
 
             foreach (var track in gpx.Tracks)

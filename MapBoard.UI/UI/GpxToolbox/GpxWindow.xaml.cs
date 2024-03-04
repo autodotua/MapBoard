@@ -88,8 +88,8 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                var pointPoints = GpxTrack.Points;//.Clone() as GpxPointCollection;
-                var linePoints = GpxTrack.Points.Clone() as GpxPointCollection;
+                var pointPoints = GpxTrack.GetPoints();//.Clone() as GpxPointCollection;
+                var linePoints = GpxTrack.GetPoints();//.Clone() as GpxPointCollection;
                 var pointsTask = GpxUtility.GetMeanFilteredSpeedsAsync(pointPoints, 3, true);
                 var linesTask = GpxUtility.GetMeanFilteredSpeedsAsync(linePoints, 19, true);
                 await Task.WhenAll(pointsTask, linesTask);
@@ -98,14 +98,14 @@ namespace MapBoard.UI.GpxToolbox
 
                 await Task.Run(() =>
                 {
-                    var speed = arcMap.SelectedTrack.Track.AverageSpeed;
+                    var speed = arcMap.SelectedTrack.Track.GetPoints().GetAverageSpeed();
 
                     SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
-                    DistanceText = (arcMap.SelectedTrack.Track.Distance / 1000).ToString("0.00") + "km";
+                    DistanceText = (arcMap.SelectedTrack.Track.GetPoints().GetDistance() / 1000).ToString("0.00") + "km";
 
-                    var movingSpeed = arcMap.SelectedTrack.Track.GetMovingAverageSpeed();
+                    var movingSpeed = arcMap.SelectedTrack.Track.GetPoints().GetMovingAverageSpeed();
                     MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
-                    MovingTimeText = arcMap.SelectedTrack.Track.GetMovingTime().ToString();
+                    MovingTimeText = arcMap.SelectedTrack.Track.GetPoints().GetMovingTime().ToString();
 
                     var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeedAsync().Result;
                     MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
@@ -202,7 +202,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 time = 0;
             }
-            return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.Points.Extent), TimeSpan.FromMilliseconds(time)); ;
+            return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.GetPoints().GetExtent()), TimeSpan.FromMilliseconds(time)); ;
         }
 
 
@@ -217,7 +217,7 @@ namespace MapBoard.UI.GpxToolbox
             double? num = await CommonDialog.ShowDoubleInputDialogAsync("请选择整体移动高度，向上为正（m）");
             if (num.HasValue)
             {
-                GpxTrack.Points.ForEach(p => p.Z += num.Value);
+                GpxTrack.GetPoints().ForEach(p => p.Z += num.Value);
             }
         }
 
@@ -336,7 +336,7 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     if (path.EndsWith(".gpx"))
                     {
-                        await File.WriteAllTextAsync(path, Gpx.ToGpxXml());
+                        await File.WriteAllTextAsync(path, Gpx.ToXmlString());
                     }
                     else if (path.EndsWith(".png"))
                     {
@@ -378,7 +378,7 @@ namespace MapBoard.UI.GpxToolbox
                 return;
             }
             TrackInfo track = lvwFiles.SelectedItem as TrackInfo;
-            var points = track.Track.Points;
+            var points = track.Track.GetPoints();
             int count = points.Count;
             int? result = await CommonDialog.ShowIntInputDialogAsync($"请输入平滑度（0~{count}）");
             if (result.HasValue)
@@ -412,9 +412,9 @@ namespace MapBoard.UI.GpxToolbox
             int? num = await CommonDialog.ShowIntInputDialogAsync("请选择单边采样率");
             if (num.HasValue)
             {
-                foreach (var item in GpxTrack.Points)
+                foreach (var item in GpxTrack.GetPoints())
                 {
-                    double speed = GpxTrack.Points.GetSpeed(item, num.Value);
+                    double speed = GpxTrack.GetPoints().GetSpeed(item, num.Value);
                     item.Speed = speed;
                 }
             }
@@ -513,7 +513,7 @@ namespace MapBoard.UI.GpxToolbox
                     Gpx = arcMap.SelectedTrack.Gpx;
                     GpxTrack = arcMap.SelectedTrack.Track;
 
-                    hasZAndTimeInfo = GpxTrack.Points.All(p => p.Z.HasValue && p.Time.HasValue);
+                    hasZAndTimeInfo = GpxTrack.GetPoints().All(p => p.Z.HasValue && p.Time.HasValue);
 
                     if (hasZAndTimeInfo)
                     {
@@ -576,7 +576,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private async void LinkTrackMenu_Click(object sender, RoutedEventArgs e)
         {
-            TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().OrderBy(p => p.Track.Points.FirstOrDefault()?.Time ?? DateTime.MaxValue).ToArray();
+            TrackInfo[] tracks = lvwFiles.SelectedItems.Cast<TrackInfo>().OrderBy(p => p.Track.GetPoints().FirstOrDefault()?.Time ?? DateTime.MaxValue).ToArray();
             if (tracks.Length <= 1)
             {
                 SnakeBar.ShowError("至少要2个轨迹才能进行连接操作");
@@ -586,9 +586,9 @@ namespace MapBoard.UI.GpxToolbox
             Gpx gpx = tracks[0].Gpx.Clone() as Gpx;
             for (int i = 1; i < tracks.Length; i++)
             {
-                foreach (var p in tracks[i].Track.Points)
+                foreach (var p in tracks[i].Track.GetPoints())
                 {
-                    gpx.Tracks[0].Points.Add(p);
+                    gpx.Tracks[0].GetPoints().Add(p);
                 }
             }
             var dialog = new SaveFileDialog();
@@ -706,7 +706,7 @@ namespace MapBoard.UI.GpxToolbox
             }
             foreach (var point in points)
             {
-                GpxTrack.Points.Remove(point);
+                GpxTrack.GetPoints().Remove(point);
             }
         }
 
@@ -735,7 +735,7 @@ namespace MapBoard.UI.GpxToolbox
             }
 
             GpxPoint point = points[0].Clone() as GpxPoint;
-            GpxTrack.Points.Insert(index, point);
+            GpxTrack.GetPoints().Insert(index, point);
             //arcMap.gpxPointAndGraphics.Add(point,)
             //arcMap.pointToTrackInfo.Add(point, arcMap.SelectedTrack);
             //arcMap.pointToTrajectoryInfo.Add(point, arcMap.SelectedTrack);
@@ -797,7 +797,7 @@ namespace MapBoard.UI.GpxToolbox
             int? num = await CommonDialog.ShowIntInputDialogAsync("请选择单边采样率");
             if (num.HasValue)
             {
-                double speed = GpxTrack.Points.GetSpeed(grdPoints.SelectedItem as GpxPoint, num.Value);
+                double speed = GpxTrack.GetPoints().GetSpeed(grdPoints.SelectedItem as GpxPoint, num.Value);
                 await CommonDialog.ShowOkDialogAsync("速度为：" + speed.ToString("0.00") + "m/s，" + (3.6 * speed).ToString("0.00") + "km/h");
             }
         }
@@ -813,7 +813,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="points"></param>
         /// <param name="lines"></param>
         /// <returns></returns>
-        private async Task DrawChartAsync(IEnumerable<GpxPoint> points, IReadOnlyList<GpxPoint> lines)
+        private async Task DrawChartAsync(IEnumerable<GpxPoint> points, IEnumerable<GpxPoint> lines)
         {
             try
             {
@@ -829,7 +829,7 @@ namespace MapBoard.UI.GpxToolbox
                            YAxisValueConverter = p => p.Speed,
                        }),
 
-                 chartHelper.DrawAxisAsync(GpxTrack.Points.TimeOrderedPoints.Where(p => !double.IsNaN(p.Z.Value)),
+                 chartHelper.DrawAxisAsync(GpxTrack.GetPoints().Where(p => !double.IsNaN(p.Z.Value)),
                     false, new TimeBasedChartHelper<GpxPoint, GpxPoint, GpxPoint>.CoordinateSystemSetting<GpxPoint>()
                     {
                         XAxisValueConverter = p => p.Time.Value,
@@ -844,7 +844,7 @@ namespace MapBoard.UI.GpxToolbox
 
                 //3、绘制数据
                 await Task.WhenAll(
-                 chartHelper.DrawPolygonAsync(GpxTrack.Points, 1),
+                 chartHelper.DrawPolygonAsync(GpxTrack.GetPoints(), 1),
           chartHelper.DrawPointsAsync(points, 0, Config.Instance.Gpx_DrawPoints),
                  chartHelper.DrawLinesAsync(lines, 0));
 

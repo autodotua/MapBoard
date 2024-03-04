@@ -75,7 +75,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 Directory.CreateDirectory(GetRecordPath());
             }
-            var points = Track.Track.Points;
+            var points = Track.Track.GetPoints();
             if (points.Any(p => !p.Time.HasValue))
             {
                 throw new InvalidOperationException("存在没有时间信息的点");
@@ -141,7 +141,7 @@ namespace MapBoard.UI.GpxToolbox
             {
                 Interval = TimeSpan.FromSeconds(1.0 / BrowseInfo.FPS),
             };
-            var points = Track.Track.Points;
+            var points = Track.Track.GetPoints();
 
             int i = 0;
             DateTime startTime = DateTime.Now;
@@ -275,7 +275,7 @@ namespace MapBoard.UI.GpxToolbox
         /// </summary>
         private void SetToFirstPoint()
         {
-            var points = Track.Track.Points;
+            var points = Track.Track.GetPoints();
             var curve = GeometryUtility.CalculateGeodeticCurve(points[0].ToMapPoint(), points[1].ToMapPoint());
             var cameraPoint = GeometryUtility.CalculateEndingGlobalCoordinates(points[0].ToMapPoint(), curve.ReverseAzimuth, Math.Tan(BrowseInfo.Angle * Math.PI / 180) * BrowseInfo.Zoom);
             var camera = new Camera(cameraPoint.Y, cameraPoint.X, BrowseInfo.Zoom, curve.Azimuth.Degrees, BrowseInfo.Angle, 0);

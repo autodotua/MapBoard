@@ -229,7 +229,7 @@ namespace MapBoard.Mapping
             Gpx gpx = null;
             await Task.Run(async () =>
              {
-                 gpx = await Gpx.FromFileAsync(filePath);
+                 gpx = await GpxSerializer.FromFileAsync(filePath);
              });
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
@@ -282,17 +282,17 @@ namespace MapBoard.Mapping
                 //处理自动平滑
                 if (Config.Instance.Gpx_AutoSmooth)
                 {
-                    GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
+                    GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
                     if (!Config.Instance.Gpx_AutoSmoothOnlyZ)
                     {
-                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
-                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
+                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
                     }
                     trackInfo.Smoothed = true;
                 }
 
                 //处理高程
-                minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z.Value) : 0;
+                minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.GetPoints().Min(p => p.Z.Value) : 0;
                 mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
 
             }
@@ -307,7 +307,7 @@ namespace MapBoard.Mapping
 
             //添加简单线
             Graphic lineGraphic = null;
-            foreach (var gpxPoint in trackInfo.Track.Points)
+            foreach (var gpxPoint in trackInfo.Track.GetPoints())
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
                 {
@@ -523,7 +523,7 @@ namespace MapBoard.Mapping
 
                 UnselectAllPoints();
 
-                foreach (var point in SelectedTrack.Track.Points)
+                foreach (var point in SelectedTrack.Track.GetPoints())
                 {
                     if (GeometryEngine.Within(point.ToMapPoint(), envelope))
                     {

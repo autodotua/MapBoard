@@ -65,7 +65,7 @@ namespace MapBoard.IO.Gpx
             //老版本的GPX类错误地将metadata中的元数据放在了gpx节点下
             foreach (XmlElement element in gpxNode.ChildNodes)
             {
-                SetGpxValue(gpx, element.Name, element.Value);
+                SetGpxValue(gpx, element.Name, element.InnerText);
             }
             //读取元数据
             if (gpxNode["metadata"] != null)
@@ -73,7 +73,7 @@ namespace MapBoard.IO.Gpx
                 var metadataNode = gpxNode["metadata"];
                 foreach (XmlElement element in metadataNode.ChildNodes)
                 {
-                    SetGpxValue(gpx, element.Name, element.Value);
+                    SetGpxValue(gpx, element.Name, element.InnerText);
                 }
                 //扩展元数据
                 if (metadataNode["extensions"] != null)
@@ -84,11 +84,11 @@ namespace MapBoard.IO.Gpx
                         //单独处理Distance
                         if (extensionElement.Name == "distance")
                         {
-                            SetGpxValue(gpx, "distance", extensionElement.Value);
+                            SetGpxValue(gpx, "distance", extensionElement.InnerText);
                         }
                         else
                         {
-                            gpx.Extensions.Add(extensionElement.Name, extensionElement.Value);
+                            gpx.Extensions.Add(extensionElement.Name, extensionElement.InnerText);
                         }
                     }
                 }
@@ -238,7 +238,7 @@ namespace MapBoard.IO.Gpx
         private static void AppendElement(this XmlElement parent, string name, string value)
         {
             XmlElement child = parent.OwnerDocument.CreateElement(name);
-            child.Value = value;
+            child.InnerText = value;
             parent.AppendChild(child);
         }
 
@@ -252,8 +252,8 @@ namespace MapBoard.IO.Gpx
                 }
                 double x = double.Parse(pointElement.Attributes["lon"].Value);
                 double y = double.Parse(pointElement.Attributes["lat"].Value);
-                DateTime? time = pointElement["time"] == null ? null : DateTime.ParseExact(pointElement["time"].Value, Gpx.GpxTimeFormat, CultureInfo.InvariantCulture);
-                double? z = pointElement["ele"] == null ? null : double.Parse(pointElement["ele"].Value);
+                DateTime? time = pointElement["time"] == null ? null : DateTime.ParseExact(pointElement["time"].InnerText, Gpx.GpxTimeFormat, CultureInfo.InvariantCulture);
+                double? z = pointElement["ele"] == null ? null : double.Parse(pointElement["ele"].InnerText);
                 GpxPoint point = new GpxPoint(x, y, z, time);
                 seg.Points.Add(point);
             }

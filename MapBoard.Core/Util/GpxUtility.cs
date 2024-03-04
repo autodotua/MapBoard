@@ -30,10 +30,20 @@ namespace MapBoard.Util
             return distance;
         }
 
+        public static double GetAverageSpeed(this IList<GpxPoint> points)
+        {
+            var time = points.GetTotalTime();
+            if (time.HasValue)
+            {
+                return points.GetDistance() / time.Value.TotalSeconds;
+            }
+            throw new Exception("无法计算总时间");
+        }
+
         /// <summary>
         /// 点的包围盒范围
         /// </summary>
-        public static Envelope GetExtent(IList<GpxPoint> points)
+        public static Envelope GetExtent(this IList<GpxPoint> points)
         {
             double minX, minY, maxX, maxY;
             minX = minY = double.MaxValue;
@@ -216,9 +226,13 @@ namespace MapBoard.Util
             List<GpxPoint> points = new List<GpxPoint>();
             foreach (var seg in trk.Segments)
             {
-                points.AddRange(seg.Points);
+                points.AddRange(points);
             }
             return points;
+        }
+        public static int GetPointsCount(this GpxTrack trk)
+        {
+            return trk.Segments.Select(p => p.Points.Count).Sum();
         }
 
         /// <summary>
@@ -227,9 +241,9 @@ namespace MapBoard.Util
         /// <param name="point">目标点</param>
         /// <param name="unilateralSampleCount">采样点数量，单侧</param>
         /// <returns></returns>
-        public static double GetSpeed(this GpxSegment seg, GpxPoint point, int unilateralSampleCount)
+        public static double GetSpeed(this IList<GpxPoint> points, GpxPoint point, int unilateralSampleCount)
         {
-            return seg.GetSpeed(seg.Points.IndexOf(point), unilateralSampleCount);
+            return points.GetSpeed(points.IndexOf(point), unilateralSampleCount);
         }
 
         /// <summary>
@@ -238,9 +252,9 @@ namespace MapBoard.Util
         /// <param name="point">目标点在集合中的索引</param>
         /// <param name="unilateralSampleCount">采样点数量，单侧</param>
         /// <returns></returns>
-        public static double GetSpeed(this GpxSegment seg, int index, int unilateralSampleCount)
+        public static double GetSpeed(this IList<GpxPoint> points, int index, int unilateralSampleCount)
         {
-            if (seg.Points.Count <= 1)
+            if (points.Count <= 1)
             {
                 throw new GpxException("集合拥有的点过少");
             }
@@ -252,9 +266,9 @@ namespace MapBoard.Util
             }
 
             int max = index + unilateralSampleCount;
-            if (max > seg.Points.Count - 1)
+            if (max > points.Count - 1)
             {
-                max = seg.Points.Count - 1;
+                max = points.Count - 1;
             }
             double totalDistance = 0;
             TimeSpan totalTime = TimeSpan.Zero;
@@ -263,8 +277,8 @@ namespace MapBoard.Util
             {
                 for (int i = min; i < max; i++)
                 {
-                    totalDistance += GeometryUtility.GetDistance(seg.Points[i].ToMapPoint(), seg.Points[i + 1].ToMapPoint());
-                    totalTime += seg.Points[i + 1].Time.Value - seg.Points[i].Time.Value;
+                    totalDistance += GeometryUtility.GetDistance(points[i].ToMapPoint(), points[i + 1].ToMapPoint());
+                    totalTime += points[i + 1].Time.Value - points[i].Time.Value;
                 }
             }
             catch (InvalidOperationException ex)
