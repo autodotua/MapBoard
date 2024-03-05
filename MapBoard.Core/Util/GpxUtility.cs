@@ -222,11 +222,10 @@ namespace MapBoard.Util
                 return new List<GpxPoint>();
             }
 
-
             List<GpxPoint> points = new List<GpxPoint>();
             foreach (var seg in trk.Segments)
             {
-                points.AddRange(points);
+                points.AddRange(seg.Points);
             }
             return points;
         }

@@ -235,12 +235,7 @@ namespace MapBoard.Mapping
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
 
-                var trackInfo = new TrackInfo()
-                {
-                    FilePath = filePath,
-                    TrackIndex = i,
-                    Gpx = gpx,
-                };
+                var trackInfo = new TrackInfo(filePath, gpx, i);
                 trackInfo.Initialize();
                 try
                 {

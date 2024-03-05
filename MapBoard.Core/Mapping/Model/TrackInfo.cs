@@ -2,8 +2,10 @@
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using MapBoard.IO.Gpx;
+using MapBoard.Util;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 
@@ -19,7 +21,15 @@ namespace MapBoard.Mapping.Model
             SimpleLine,
             ColoredLine,
         }
+        public TrackInfo(string file, Gpx gpx, int trackIndex)
+        {
+            FilePath = file;
+            Gpx = gpx;
+            TrackIndex = trackIndex;
+            Points = new ObservableCollection<GpxPoint>(Track.GetPoints());
+        }
 
+        public TimeSpan TotalTime => Points.GetTotalTime() ?? TimeSpan.Zero;
         /// <summary>
         /// 轨迹文件名
         /// </summary>
@@ -28,12 +38,12 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 轨迹文件名
         /// </summary>
-        public string FilePath { get; set; }
+        public string FilePath { get; init; }
 
         /// <summary>
         /// 对应的GPX对象
         /// </summary>
-        public Gpx Gpx { get; set; }
+        public Gpx Gpx { get; init; }
 
         /// <summary>
         /// 是否已经平滑
@@ -49,7 +59,7 @@ namespace MapBoard.Mapping.Model
         /// 轨迹在GPX中的索引
         /// </summary>
         public int TrackIndex { get; set; }
-
+        public ObservableCollection<GpxPoint> Points { get; }
         /// <summary>
         /// 对应的图形
         /// </summary>

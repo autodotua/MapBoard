@@ -301,7 +301,7 @@
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="True"
-                        ItemsSource="{Binding GpxTrack.Points}"
+                        ItemsSource="{Binding .Points}"
                         SelectionChanged="PointsGrid_SelectionChanged"
                         VerticalScrollBarVisibility="Visible">
                         <DataGrid.ContextMenu>
