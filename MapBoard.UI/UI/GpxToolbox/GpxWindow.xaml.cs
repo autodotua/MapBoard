@@ -58,6 +58,11 @@ namespace MapBoard.UI.GpxToolbox
             mapInfo.Initialize(arcMap);
         }
 
+        public async Task LoadGpxFilesAsync(IEnumerable<string> files)
+        {
+            await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
+        }
+
         /// <summary>
         /// 初始化
         /// </summary>
@@ -74,51 +79,6 @@ namespace MapBoard.UI.GpxToolbox
                 await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
             }
         }
-
-        public async Task LoadGpxFilesAsync(IEnumerable<string> files)
-        {
-            await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
-        }
-
-        /// <summary>
-        /// 刷新轨迹的信息、表格和图表
-        /// </summary>
-        /// <returns></returns>
-        private async Task UpdateUI()
-        {
-            try
-            {
-                var pointPoints = GpxTrack.GetPoints();//.Clone() as GpxPointCollection;
-                var linePoints = GpxTrack.GetPoints();//.Clone() as GpxPointCollection;
-                var pointsTask = GpxUtility.GetMeanFilteredSpeedsAsync(pointPoints, 3, true);
-                var linesTask = GpxUtility.GetMeanFilteredSpeedsAsync(linePoints, 19, true);
-                await Task.WhenAll(pointsTask, linesTask);
-                chartHelper.DrawActionAsync = () =>
-                    DrawChartAsync(pointPoints, linePoints);
-
-                await Task.Run(() =>
-                {
-                    var speed = arcMap.SelectedTrack.Track.GetPoints().GetAverageSpeed();
-
-                    SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
-                    DistanceText = (arcMap.SelectedTrack.Track.GetPoints().GetDistance() / 1000).ToString("0.00") + "km";
-
-                    var movingSpeed = arcMap.SelectedTrack.Track.GetPoints().GetMovingAverageSpeed();
-                    MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
-                    MovingTimeText = arcMap.SelectedTrack.Track.GetPoints().GetMovingTime().ToString();
-
-                    var maxSpeed = arcMap.SelectedTrack.Track.GetMaxSpeedAsync().Result;
-                    MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
-                });
-
-                chartHelper.BeginDraw();
-            }
-            catch (Exception ex)
-            {
-                App.Log.Error("绘制GPX图表失败", ex);
-            }
-        }
-
         /// <summary>
         /// GPX加载完成
         /// </summary>
@@ -132,6 +92,45 @@ namespace MapBoard.UI.GpxToolbox
             }
         }
 
+        /// <summary>
+        /// 刷新轨迹的信息、表格和图表
+        /// </summary>
+        /// <returns></returns>
+        private async Task UpdateUI()
+        {
+            try
+            {
+                var pointPoints = GpxTrack.GetPoints().Clone();//.Clone() as GpxPointCollection;
+                var linePoints = GpxTrack.GetPoints().Clone();//.Clone() as GpxPointCollection;
+                //下面两行没用到输出，因为会直接写入到Speed属性中
+                var pointsTask = GpxUtility.GetMeanFilteredSpeedsAsync(pointPoints, 3, true);
+                var linesTask = GpxUtility.GetMeanFilteredSpeedsAsync(linePoints, 19, true);
+                await Task.WhenAll(pointsTask, linesTask);
+                chartHelper.DrawActionAsync = () =>
+                    DrawChartAsync(pointPoints, linePoints);
+
+                await Task.Run(() =>
+                {
+                    var speed = GpxTrack.Track.GetPoints().GetAverageSpeed();
+
+                    SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
+                    DistanceText = (GpxTrack.Track.GetPoints().GetDistance() / 1000).ToString("0.00") + "km";
+
+                    var movingSpeed = GpxTrack.Track.GetPoints().GetMovingAverageSpeed();
+                    MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
+                    MovingTimeText = GpxTrack.Track.GetPoints().GetMovingTime().ToString();
+
+                    var maxSpeed = GpxTrack.Track.GetMaxSpeedAsync().Result;
+                    MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
+                });
+
+                chartHelper.BeginDraw();
+            }
+            catch (Exception ex)
+            {
+                App.Log.Error("绘制GPX图表失败", ex);
+            }
+        }
         private async void Window_Closing(object sender, CancelEventArgs e)
         {
             await File.WriteAllLinesAsync(FolderPaths.TrackHistoryPath, Tracks.Select(p => p.FilePath).ToArray());
@@ -139,15 +138,16 @@ namespace MapBoard.UI.GpxToolbox
         }
 
         #region GPX和轨迹属性
-        /// <summary>
-        /// GPX对象
-        /// </summary>
-        public Gpx Gpx { get; set; }
+
 
         /// <summary>
         /// GPX轨迹对象
         /// </summary>
-        public GpxTrack GpxTrack { get; set; }
+        public TrackInfo GpxTrack
+        {
+            get => arcMap?.SelectedTrack;
+            set => arcMap.SelectedTrack = value;
+        }
 
         /// <summary>
         /// 启动后需要加载的文件
@@ -190,22 +190,6 @@ namespace MapBoard.UI.GpxToolbox
         #endregion
 
         #region 轨迹操作
-
-        /// <summary>
-        /// 单击缩放到轨迹按钮
-        /// </summary>
-        /// <param name="time"></param>
-        /// <returns></returns>
-        private Task ZoomToTrackAsync(int time = 500)
-        {
-            if (time <= 0)
-            {
-                time = 0;
-            }
-            return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.GetPoints().GetExtent()), TimeSpan.FromMilliseconds(time)); ;
-        }
-
-
 
         /// <summary>
         /// 单击高程偏移按钮
@@ -328,7 +312,7 @@ namespace MapBoard.UI.GpxToolbox
                 .AddFilter("GPX轨迹文件", "gpx")
                 .AddFilter("截图", "png");
             dialog.AddExtension = true;
-            dialog.FileName = Gpx.Name;
+            dialog.FileName = GpxTrack.Gpx.Name;
             string path = dialog.GetPath(this);
             if (path != null)
             {
@@ -336,7 +320,7 @@ namespace MapBoard.UI.GpxToolbox
                 {
                     if (path.EndsWith(".gpx"))
                     {
-                        await File.WriteAllTextAsync(path, Gpx.ToXmlString());
+                        await File.WriteAllTextAsync(path, GpxTrack.Gpx.ToXmlString());
                     }
                     else if (path.EndsWith(".png"))
                     {
@@ -398,7 +382,7 @@ namespace MapBoard.UI.GpxToolbox
                     GpxUtility.Smooth(points, num, p => p.X, (p, v) => p.X = v);
                     GpxUtility.Smooth(points, num, p => p.Y, (p, v) => p.Y = v);
                 }
-                arcMap.LoadTrack(arcMap.SelectedTrack, true);
+                arcMap.LoadTrack(GpxTrack, true);
             }
         }
 
@@ -424,9 +408,27 @@ namespace MapBoard.UI.GpxToolbox
             grdPoints.ItemsSource = source;
         }
 
+        /// <summary>
+        /// 单击缩放到轨迹按钮
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        private Task ZoomToTrackAsync(int time = 500)
+        {
+            if (time <= 0)
+            {
+                time = 0;
+            }
+            return arcMap.SetViewpointAsync(new Viewpoint(GpxTrack.GetPoints().GetExtent()), TimeSpan.FromMilliseconds(time)); ;
+        }
         #endregion 左下角按钮
 
         #region 文件操作
+        /// <summary>
+        /// 选择的GPX文件是否全部点都提供了高度和时间信息
+        /// </summary>
+        private bool hasZAndTimeInfo;
+
         /// <summary>
         /// 文件拖放，加载文件
         /// </summary>
@@ -434,7 +436,7 @@ namespace MapBoard.UI.GpxToolbox
         protected override async void OnDrop(DragEventArgs e)
         {
             base.OnDrop(e);
-            if (!(e.Data.GetData(DataFormats.FileDrop) is string[] files) || files.Length == 0)
+            if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
             {
                 return;
             }
@@ -471,12 +473,6 @@ namespace MapBoard.UI.GpxToolbox
         {
             Tracks.Clear();
         }
-
-        /// <summary>
-        /// 选择的GPX文件是否全部点都提供了高度和时间信息
-        /// </summary>
-        private bool hasZAndTimeInfo;
-
         /// <summary>
         /// 选择的的文件改变
         /// </summary>
@@ -486,32 +482,29 @@ namespace MapBoard.UI.GpxToolbox
         {
             try
             {
-                arcMap.SelectedTrack?.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.SimpleLine);
+                GpxTrack?.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.SimpleLine);
                 if (lvwFiles.SelectedItem == null)
                 {
-                    arcMap.SelectedTrack = null;
-                    Gpx = null;
                     GpxTrack = null;
+                    this.Notify(nameof(GpxTrack));
                     chartHelper.Initialize();
                     return;
                 }
 
                 if (lvwFiles.SelectedItems.Count > 1)
                 {
-                    arcMap.SelectedTrack = null;
-                    Gpx = null;
                     GpxTrack = null;
-
+                    this.Notify(nameof(GpxTrack));
                     chartHelper.Initialize();
                 }
                 else
                 {
-                    arcMap.SelectedTrack = lvwFiles.SelectedItem as TrackInfo;
+                    GpxTrack = lvwFiles.SelectedItem as TrackInfo;
 
-                    arcMap.SelectedTrack.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.ColoredLine);
+                    GpxTrack.UpdateTrackDisplay(TrackInfo.TrackSelectionDisplay.ColoredLine);
 
-                    Gpx = arcMap.SelectedTrack.Gpx;
-                    GpxTrack = arcMap.SelectedTrack.Track;
+
+                    this.Notify(nameof(GpxTrack));
 
                     hasZAndTimeInfo = GpxTrack.GetPoints().All(p => p.Z.HasValue && p.Time.HasValue);
 
@@ -737,8 +730,8 @@ namespace MapBoard.UI.GpxToolbox
             GpxPoint point = points[0].Clone() as GpxPoint;
             GpxTrack.GetPoints().Insert(index, point);
             //arcMap.gpxPointAndGraphics.Add(point,)
-            //arcMap.pointToTrackInfo.Add(point, arcMap.SelectedTrack);
-            //arcMap.pointToTrajectoryInfo.Add(point, arcMap.SelectedTrack);
+            //arcMap.pointToTrackInfo.Add(point, GpxTrack);
+            //arcMap.pointToTrajectoryInfo.Add(point, GpxTrack);
             grdPoints.SelectedItem = point;
         }
 

@@ -2,6 +2,7 @@
 using MapBoard.Util;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,22 +13,9 @@ namespace MapBoard.IO.Gpx
 {
     public static class GpxSerializer
     {
-        private static readonly Dictionary<string, Action<Gpx, string>> xml2GpxProperty = new Dictionary<string, Action<Gpx, string>>()
-        {
-            ["creator"] = (g, v) => g.Creator = v,
-            ["version"] = (g, v) => g.Version = v,
-            ["name"] = (g, v) => g.Name = v,
-            ["author"] = (g, v) => g.Author = v,
-            ["url"] = (g, v) => g.Url = v,
-            ["distance"] = (g, v) => { if (double.TryParse(v, out double result)) g.Distance = result; },
-            ["time"] = (g, v) => { if (DateTime.TryParse(v, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time)) g.Time = time; },
-            ["keywords"] = (g, v) => g.KeyWords = v,
-        };
-        private static readonly Dictionary<string, Action<GpxTrack, string>> xml2TrackProperty = new Dictionary<string, Action<GpxTrack, string>>()
-        {
-            ["name"] = (g, v) => g.Name = v,
-            ["desc"] = (g, v) => g.Description = v,
-        };
+        public const string GpxTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+
+        #region 文件读写
 
         /// 从文件加载GPX
         /// </summary>
@@ -45,60 +33,16 @@ namespace MapBoard.IO.Gpx
         }
 
         /// <summary>
-        /// 从文件和读取后的内容加载GPX
+        /// 保存到原始位置
         /// </summary>
-        /// <param name="xmlString"></param>
         /// <param name="path"></param>
-        /// <returns></returns>
-        /// <exception cref="XmlException"></exception>
-        public static Gpx LoadFromString(string xmlString, string path)
+        public static void Save(this Gpx gpx, string path)
         {
-            Gpx gpx = new Gpx();
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.LoadXml(xmlString);
-            XmlElement gpxNode = xmlDoc["gpx"] ?? throw new XmlException("没有找到gpx元素");
-            gpx.FilePath = path;
-            foreach (XmlAttribute attribute in gpxNode.Attributes)
-            {
-                SetGpxValue(gpx, attribute.Name, attribute.Value);
-            }
-            //老版本的GPX类错误地将metadata中的元数据放在了gpx节点下
-            foreach (XmlElement element in gpxNode.ChildNodes)
-            {
-                SetGpxValue(gpx, element.Name, element.InnerText);
-            }
-            //读取元数据
-            if (gpxNode["metadata"] != null)
-            {
-                var metadataNode = gpxNode["metadata"];
-                foreach (XmlElement element in metadataNode.ChildNodes)
-                {
-                    SetGpxValue(gpx, element.Name, element.InnerText);
-                }
-                //扩展元数据
-                if (metadataNode["extensions"] != null)
-                {
-                    var extensionNode = metadataNode["extensions"];
-                    foreach (XmlElement extensionElement in extensionNode.ChildNodes)
-                    {
-                        //单独处理Distance
-                        if (extensionElement.Name == "distance")
-                        {
-                            SetGpxValue(gpx, "distance", extensionElement.InnerText);
-                        }
-                        else
-                        {
-                            gpx.Extensions.Add(extensionElement.Name, extensionElement.InnerText);
-                        }
-                    }
-                }
-            }
-            if (gpxNode["trk"] != null)
-            {
-                LoadTrack(gpx.CreateTrack(), gpxNode["trk"]);
-            }
-            return gpx;
+            File.WriteAllText(path, gpx.ToXmlString());
         }
+        #endregion
+
+        #region Metadata
 
         public static Gpx LoadMetadatasFromFile(string file)
         {
@@ -178,14 +122,156 @@ namespace MapBoard.IO.Gpx
             });
             return gpxs;
         }
-        /// <summary>
-        /// 保存到原始位置
-        /// </summary>
-        /// <param name="path"></param>
-        public static void Save(this Gpx gpx, string path)
+
+        #endregion
+
+        #region XML => Object
+
+        private static readonly Dictionary<string, Action<Gpx, string>> xml2GpxProperty = new Dictionary<string, Action<Gpx, string>>()
         {
-            File.WriteAllText(path, gpx.ToXmlString());
+            ["creator"] = (g, v) => g.Creator = v,
+            ["version"] = (g, v) => g.Version = v,
+            ["name"] = (g, v) => g.Name = v,
+            ["author"] = (g, v) => g.Author = v,
+            ["url"] = (g, v) => g.Url = v,
+            ["distance"] = (g, v) => { if (double.TryParse(v, out double result)) g.Distance = result; },
+            ["time"] = (g, v) => { if (DateTime.TryParse(v, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time)) g.Time = time; },
+            ["keywords"] = (g, v) => g.KeyWords = v,
+        };
+
+        private static readonly Dictionary<string, Action<GpxTrack, string>> xml2TrackProperty = new Dictionary<string, Action<GpxTrack, string>>()
+        {
+            ["name"] = (g, v) => g.Name = v,
+            ["desc"] = (g, v) => g.Description = v,
+        };
+
+        /// <summary>
+        /// 从文件和读取后的内容加载GPX
+        /// </summary>
+        /// <param name="xmlString"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="XmlException"></exception>
+        public static Gpx LoadFromString(string xmlString, string path)
+        {
+            Gpx gpx = new Gpx();
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(xmlString);
+            XmlElement gpxNode = xmlDoc["gpx"] ?? throw new XmlException("没有找到gpx元素");
+            gpx.FilePath = path;
+            foreach (XmlAttribute attribute in gpxNode.Attributes)
+            {
+                SetGpxValue(gpx, attribute.Name, attribute.Value);
+            }
+            //老版本的GPX类错误地将metadata中的元数据放在了gpx节点下
+            foreach (XmlElement element in gpxNode.ChildNodes)
+            {
+                SetGpxValue(gpx, element.Name, element.InnerText);
+            }
+            //读取元数据
+            if (gpxNode["metadata"] != null)
+            {
+                var metadataNode = gpxNode["metadata"];
+                foreach (XmlElement element in metadataNode.ChildNodes)
+                {
+                    SetGpxValue(gpx, element.Name, element.InnerText);
+                }
+                //扩展元数据
+                if (metadataNode["extensions"] != null)
+                {
+                    var extensionNode = metadataNode["extensions"];
+                    foreach (XmlElement extensionElement in extensionNode.ChildNodes)
+                    {
+                        //单独处理Distance
+                        if (extensionElement.Name == "distance")
+                        {
+                            SetGpxValue(gpx, "distance", extensionElement.InnerText);
+                        }
+                        else
+                        {
+                            gpx.Extensions.Add(extensionElement.Name, extensionElement.InnerText);
+                        }
+                    }
+                }
+            }
+            if (gpxNode["trk"] != null)
+            {
+                LoadTrack(gpx.CreateTrack(), gpxNode["trk"]);
+            }
+            return gpx;
         }
+
+        private static void AppendElement(this XmlElement parent, string name, string value)
+        {
+            XmlElement child = parent.OwnerDocument.CreateElement(name);
+            child.InnerText = value;
+            parent.AppendChild(child);
+        }
+
+        private static void LoadSegment(GpxSegment seg, XmlElement segmentNode)
+        {
+            foreach (XmlElement pointElement in segmentNode.GetElementsByTagName("trkpt"))
+            {
+                if (pointElement.Attributes["lon"] == null || pointElement.Attributes["lat"] == null)
+                {
+                    throw new FormatException("缺少必要属性lon或lat");
+                }
+                double x = double.Parse(pointElement.Attributes["lon"].Value);
+                double y = double.Parse(pointElement.Attributes["lat"].Value);
+                DateTime? time = null;
+                double? z = null;
+                Dictionary<string, string> extensions = new Dictionary<string, string>();
+                foreach (XmlElement child in pointElement.ChildNodes)
+                {
+                    switch (child.Name)
+                    {
+                        case "time":
+                            time = DateTime.ParseExact(child.InnerText, GpxTimeFormat, CultureInfo.InvariantCulture,DateTimeStyles.AdjustToUniversal);
+                            break;
+                        case "ele":
+                            z = double.Parse(child.InnerText);
+                            break;
+                        default:
+                            extensions.Add(child.Name, child.InnerText);
+                            break;
+                    }
+                }
+                GpxPoint point = new GpxPoint(x, y, z, time);
+                point.Extensions = extensions;
+                seg.Points.Add(point);
+            }
+        }
+
+        private static void LoadTrack(GpxTrack track, XmlElement trackNode)
+        {
+            foreach (XmlElement element in trackNode.Attributes)
+            {
+                SetTrackValue(track, element.Name, element.Value);
+            }
+            foreach (XmlElement segmentElement in trackNode.GetElementsByTagName("trkseg"))
+            {
+                LoadSegment(track.CreateSegment(), segmentElement);
+            }
+        }
+
+        private static void SetGpxValue(Gpx gpx, string key, string value)
+        {
+            if (xml2GpxProperty.TryGetValue(key, out Action<Gpx, string> func))
+            {
+                func(gpx, value);
+            }
+        }
+
+        private static void SetTrackValue(GpxTrack track, string key, string value)
+        {
+            if (xml2TrackProperty.TryGetValue(key, out Action<GpxTrack, string> func))
+            {
+                func(track, value);
+            }
+        }
+        #endregion
+
+        #region Object => XML
 
         /// <summary>
         /// 获取GPX的XML字符串
@@ -207,11 +293,12 @@ namespace MapBoard.IO.Gpx
             metadata.AppendElement("name", gpx.Name);
             metadata.AppendElement("author", gpx.Author);
             metadata.AppendElement("url", gpx.Url);
-            metadata.AppendElement("time", gpx.Time.ToString(Gpx.GpxTimeFormat));
+            metadata.AppendElement("time", gpx.Time.ToString(GpxTimeFormat));
             metadata.AppendElement("keywords", gpx.KeyWords);
-            metadata.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
+
+
             var metadataExtensions = doc.CreateElement("extensions");
-            metadata.AppendChild(metadataExtensions);
+            metadata.AppendChild(metadataExtensions); metadataExtensions.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
             foreach (var item in gpx.Extensions)
             {
                 metadataExtensions.AppendElement(item.Key, item.Value);
@@ -235,54 +322,27 @@ namespace MapBoard.IO.Gpx
             return stringWriter.GetStringBuilder().ToString();
         }
 
-        private static void AppendElement(this XmlElement parent, string name, string value)
+        private static void AppendExtensions(IGpxElement gpxObj, XmlElement parentElement)
         {
-            XmlElement child = parent.OwnerDocument.CreateElement(name);
-            child.InnerText = value;
-            parent.AppendChild(child);
-        }
-
-        private static void LoadSegment(GpxSegment seg, XmlElement segmentNode)
-        {
-            foreach (XmlElement pointElement in segmentNode.GetElementsByTagName("trkpt"))
+            if (gpxObj.Extensions != null || gpxObj.Extensions.Count > 0)
             {
-                if (pointElement.Attributes["lon"] == null || pointElement.Attributes["lat"] == null)
+                XmlElement extensionElement = null;
+                foreach (var extension in gpxObj.Extensions)
                 {
-                    throw new FormatException("缺少必要属性lon或lat");
+                    if (gpxObj.HiddenElements.Contains(extension.Key))
+                    {
+                        parentElement.AppendElement(extension.Key, extension.Value);
+                    }
+                    else
+                    {
+                        if (extensionElement == null)
+                        {
+                            extensionElement = parentElement.OwnerDocument.CreateElement("extensions");
+                            parentElement.AppendChild(extensionElement);
+                        }
+                        extensionElement.AppendElement(extension.Key, extension.Value);
+                    }
                 }
-                double x = double.Parse(pointElement.Attributes["lon"].Value);
-                double y = double.Parse(pointElement.Attributes["lat"].Value);
-                DateTime? time = pointElement["time"] == null ? null : DateTime.ParseExact(pointElement["time"].InnerText, Gpx.GpxTimeFormat, CultureInfo.InvariantCulture);
-                double? z = pointElement["ele"] == null ? null : double.Parse(pointElement["ele"].InnerText);
-                GpxPoint point = new GpxPoint(x, y, z, time);
-                seg.Points.Add(point);
-            }
-        }
-
-        private static void LoadTrack(GpxTrack track, XmlElement trackNode)
-        {
-            foreach (XmlElement element in trackNode.Attributes)
-            {
-                SetTrackValue(track, element.Name, element.Value);
-            }
-            foreach (XmlElement segmentElement in trackNode.GetElementsByTagName("trkseg"))
-            {
-                LoadSegment(track.CreateSegment(), segmentElement);
-            }
-        }
-        private static void SetGpxValue(Gpx gpx, string key, string value)
-        {
-            if (xml2GpxProperty.TryGetValue(key, out Action<Gpx, string> func))
-            {
-                func(gpx, value);
-            }
-        }
-
-        private static void SetTrackValue(GpxTrack track, string key, string value)
-        {
-            if (xml2TrackProperty.TryGetValue(key, out Action<GpxTrack, string> func))
-            {
-                func(track, value);
             }
         }
 
@@ -290,28 +350,29 @@ namespace MapBoard.IO.Gpx
         {
             foreach (var point in seg.Points)
             {
-                var pointElement = segElement.OwnerDocument.CreateElement("wpt");
+                var pointElement = segElement.OwnerDocument.CreateElement("trkpt");
                 segElement.AppendChild(pointElement);
-                segElement.SetAttribute("lon", point.X.ToString());
-                segElement.SetAttribute("lat", point.Y.ToString());
+                pointElement.SetAttribute("lon", point.X.ToString());
+                pointElement.SetAttribute("lat", point.Y.ToString());
                 if (point.Z.HasValue)
                 {
-                    segElement.AppendElement("ele", point.Extensions.ToString());
+                    pointElement.AppendElement("ele", point.Z.ToString());
                 }
                 if (point.Time.HasValue)
                 {
-                    segElement.AppendElement("time", point.Time.ToString());
+                    pointElement.AppendElement("time", point.Time.Value.ToString(GpxTimeFormat));
                 }
+                AppendExtensions(point, pointElement);
             }
+            AppendExtensions(seg, segElement);
         }
+
         private static void WriteTrackXml(this GpxTrack track, XmlElement trackElement)
         {
             trackElement.AppendElement("name", track.Name);
             trackElement.AppendElement("desc", track.Description);
-            foreach (var extension in track.Extensions)
-            {
-                trackElement.AppendElement(extension.Key, extension.Value);
-            }
+
+            AppendExtensions(track, trackElement);
             foreach (var seg in track.Segments)
             {
                 var segElement = trackElement.OwnerDocument.CreateElement("trkseg");
@@ -320,5 +381,6 @@ namespace MapBoard.IO.Gpx
             }
 
         }
+        #endregion
     }
 }

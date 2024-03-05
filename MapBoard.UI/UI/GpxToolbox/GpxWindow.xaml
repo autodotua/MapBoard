@@ -102,7 +102,7 @@
                 Header="GPX信息">
                 <Grid
                     Margin="8"
-                    DataContext="{Binding Gpx}"
+                    DataContext="{Binding GpxTrack.Gpx}"
                     IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -230,7 +230,7 @@
                     <TextBox
                         Grid.ColumnSpan="3"
                         FontSize="16"
-                        Text="{Binding GpxTrack.Name}"
+                        Text="{Binding GpxTrack.Track.Name}"
                         TextAlignment="Center" />
                     <TextBlock
                         Grid.Row="2"
@@ -239,7 +239,7 @@
                     <TextBox
                         Grid.Row="2"
                         Grid.Column="2"
-                        Text="{Binding GpxTrack.Description}" />
+                        Text="{Binding GpxTrack.Track.Description}" />
                     <TextBlock
                         Grid.Row="4"
                         HorizontalAlignment="Right"
@@ -301,7 +301,7 @@
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="True"
-                        ItemsSource="{Binding .Points}"
+                        ItemsSource="{Binding GpxTrack.Points}"
                         SelectionChanged="PointsGrid_SelectionChanged"
                         VerticalScrollBarVisibility="Visible">
                         <DataGrid.ContextMenu>

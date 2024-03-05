@@ -13,8 +13,9 @@ namespace MapBoard.IO.Gpx
     /// <summary>
     /// GPX trk对象
     /// </summary>
-    public class GpxTrack : ICloneable
+    public class GpxTrack : IGpxElement
     {
+        private static readonly string[] hiddenElements = ["cmt", "src", "link", "number", "type"];
         internal GpxTrack(Gpx parent)
         {
             Parent = parent;
@@ -26,28 +27,21 @@ namespace MapBoard.IO.Gpx
         public string Description { get; set; }
 
         /// <summary>
+        /// 其他属性
+        /// </summary>
+        public Dictionary<string, string> Extensions { get; set; } = new Dictionary<string, string>();
+
+        public string[] HiddenElements => hiddenElements;
+        /// <summary>
         /// 轨迹名
         /// </summary>
         public string Name { get; set; }
-
-        /// <summary>
-        /// 其他属性
-        /// </summary>
-        public Dictionary<string, string> Extensions { get; private set; } = new Dictionary<string, string>();
+        public IList<GpxSegment> Segments { get; private set; } = new List<GpxSegment>();
 
         /// <summary>
         /// 对应的GPX对象
         /// </summary>
         internal Gpx Parent { get; set; }
-
-        public IList<GpxSegment> Segments { get; private set; } = new List<GpxSegment>();
-
-        public GpxSegment CreateSegment()
-        {
-            var segment = new GpxSegment(this);
-            Segments.Add(segment);
-            return segment;
-        }
         public object Clone()
         {
             GpxTrack newObj = MemberwiseClone() as GpxTrack;
@@ -55,6 +49,11 @@ namespace MapBoard.IO.Gpx
             return newObj;
         }
 
-
+        public GpxSegment CreateSegment()
+        {
+            var segment = new GpxSegment(this);
+            Segments.Add(segment);
+            return segment;
+        }
     }
 }

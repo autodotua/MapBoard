@@ -15,8 +15,6 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class Gpx : ICloneable
     {
-        public const string GpxTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
-
         public Gpx()
         {
         }

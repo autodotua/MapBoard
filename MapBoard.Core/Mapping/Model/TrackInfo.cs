@@ -55,6 +55,8 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         public GpxTrack Track => Gpx.Tracks[TrackIndex];
 
+        public IList<GpxPoint> GetPoints() => Track.GetPoints();
+
         /// <summary>
         /// 轨迹在GPX中的索引
         /// </summary>

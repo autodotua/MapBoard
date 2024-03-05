@@ -14,6 +14,21 @@ namespace MapBoard.Util
 {
     public static class GpxUtility
     {
+        public static IList<GpxPoint> Clone(this IList<GpxPoint> points)
+        {
+            return points.Select(p => p.Clone() as GpxPoint).ToList();
+        }
+
+        public static double GetAverageSpeed(this IList<GpxPoint> points)
+        {
+            var time = points.GetTotalTime();
+            if (time.HasValue)
+            {
+                return points.GetDistance() / time.Value.TotalSeconds;
+            }
+            throw new Exception("无法计算总时间");
+        }
+
         public static double GetDistance(this IList<GpxPoint> points)
         {
             double distance = 0;
@@ -29,17 +44,6 @@ namespace MapBoard.Util
 
             return distance;
         }
-
-        public static double GetAverageSpeed(this IList<GpxPoint> points)
-        {
-            var time = points.GetTotalTime();
-            if (time.HasValue)
-            {
-                return points.GetDistance() / time.Value.TotalSeconds;
-            }
-            throw new Exception("无法计算总时间");
-        }
-
         /// <summary>
         /// 点的包围盒范围
         /// </summary>
@@ -76,7 +80,7 @@ namespace MapBoard.Util
         /// <param name="points">点的集合</param>
         /// <param name="window">每一组采样点的个数</param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<double>> GetMeanFilteredSpeedsAsync(IList<GpxPoint> points, int window, bool writeToPoints)
+        public static async Task<IList<double>> GetMeanFilteredSpeedsAsync(IList<GpxPoint> points, int window, bool writeToPoints)
         {
             if (window % 2 == 0 || window < 3)
             {
@@ -214,7 +218,6 @@ namespace MapBoard.Util
             }
             return TimeSpan.FromSeconds(totalSeconds);
         }
-
         public static IList<GpxPoint> GetPoints(this GpxTrack trk)
         {
             if (trk.Segments.Count == 0)
