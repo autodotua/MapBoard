@@ -9,6 +9,6 @@ namespace MapBoard.IO.Gpx
         /// <summary>
         /// 在GPX规范中，位于与<extension/>同层，但为了减少非必要属性，放置在程序的Extensions字典中的节点名
         /// </summary>
-        string[] HiddenElements { get; }
+        HashSet<string> HiddenElements { get; }
     }
 }

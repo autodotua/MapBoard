@@ -9,7 +9,7 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class GpxSegment : IGpxElement
     {
-        private static readonly string[] hiddenElements = [];
+        private static readonly HashSet<string> hiddenElements = [];
 
         internal GpxSegment(GpxTrack parent)
         {
@@ -22,7 +22,7 @@ namespace MapBoard.IO.Gpx
         /// 轨迹点集
         /// </summary>
         public IList<GpxPoint> Points { get; private set; } = new List<GpxPoint>();
-        public string[] HiddenElements => hiddenElements;
+        public HashSet<string> HiddenElements => hiddenElements;
         public object Clone()
         {
             var newObj = MemberwiseClone() as GpxSegment;

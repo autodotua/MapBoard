@@ -15,7 +15,7 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class GpxTrack : IGpxElement
     {
-        private static readonly string[] hiddenElements = ["cmt", "src", "link", "number", "type"];
+        private static readonly HashSet<string> hiddenElements = ["cmt", "src", "link", "number", "type"];
         internal GpxTrack(Gpx parent)
         {
             Parent = parent;
@@ -31,7 +31,7 @@ namespace MapBoard.IO.Gpx
         /// </summary>
         public Dictionary<string, string> Extensions { get; set; } = new Dictionary<string, string>();
 
-        public string[] HiddenElements => hiddenElements;
+        public HashSet<string> HiddenElements => hiddenElements;
         /// <summary>
         /// 轨迹名
         /// </summary>

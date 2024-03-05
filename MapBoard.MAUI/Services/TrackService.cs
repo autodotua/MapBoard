@@ -6,6 +6,7 @@ using MapBoard.IO;
 using MapBoard.IO.Gpx;
 using MapBoard.Mapping;
 using MapBoard.Model;
+using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -178,11 +179,11 @@ namespace MapBoard.Services
 
                 if (ResumeGpx != null)
                 {
-                    gpx = await Gpx.FromFileAsync(ResumeGpx);
+                    gpx = await GpxSerializer.FromFileAsync(ResumeGpx);
                     ResumeGpx = null;
                     gpxTrack = gpx.Tracks[0];
                     StartTime = gpx.Time;
-                    PointsCount = gpxTrack.Points.Count;
+                    PointsCount = gpxTrack.GetPointsCount();
                     //Overlay.LoadLine(gpxTrack.Points.Select(p => new MapPoint(p.X, p.Y)));
                     await Overlay.LoadColoredGpxAsync(gpx);
                 }
@@ -296,7 +297,7 @@ namespace MapBoard.Services
 
         private bool SaveGpx()
         {
-            if (gpxTrack != null && gpxTrack.Points.Count >= 2)
+            if (gpxTrack != null && gpxTrack.GetPointsCount() >= 2)
             {
                 string gpxFile = GetGpxFilePath(false);
                 if (File.Exists(gpxFile))
@@ -304,7 +305,7 @@ namespace MapBoard.Services
                     string backupFile = GetGpxFilePath(true);
                     File.Copy(gpxFile, backupFile, true);
                 }
-                File.WriteAllText(GetGpxFilePath(false), gpx.ToGpxXml());
+                File.WriteAllText(GetGpxFilePath(false), gpx.ToXmlString());
                 return true;
             }
             return false;
@@ -331,9 +332,13 @@ namespace MapBoard.Services
                 {
                     point.Extensions.Add("Speed", location.Speed.ToString());
                 }
-                gpxTrack.Points.Add(point);
+                if (gpxTrack.Segments.Count == 0)
+                {
+                    gpxTrack.CreateSegment();
+                }
+                gpxTrack.Segments[^1].Points.Add(point);
 
-                if (gpxTrack.Points.Count % 10 == 0)
+                if (gpxTrack.GetPointsCount() % 10 == 0)
                 {
                     SaveGpx();
                 }

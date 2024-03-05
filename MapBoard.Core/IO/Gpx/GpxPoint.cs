@@ -15,9 +15,9 @@ namespace MapBoard.IO.Gpx
     /// </summary>
     public class GpxPoint : IGpxElement, INotifyPropertyChanged
     {
-        public string[] HiddenElements => hiddenElements;
+        public HashSet<string> HiddenElements => hiddenElements;
 
-        private static readonly string[] hiddenElements = ["magvar", "geoidheight", "name", "cmt", "desc",
+        private static readonly HashSet<string> hiddenElements = ["magvar", "geoidheight", "name", "cmt", "desc",
         "src","link","sym","type","fix","sat","hdop","vdop","pdop","ageofdgpsdata","dgpsid"];
         public GpxPoint(double x, double y, double? z, DateTime? time)
         {

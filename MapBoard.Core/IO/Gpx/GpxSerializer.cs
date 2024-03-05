@@ -46,70 +46,100 @@ namespace MapBoard.IO.Gpx
 
         public static Gpx LoadMetadatasFromFile(string file)
         {
-            throw new NotImplementedException();
-            //using XmlReader xr = XmlReader.Create(file);
-            //xr.MoveToContent();
-            //if (xr.NodeType == XmlNodeType.Element)
-            //{
-            //    while (xr.MoveToNextAttribute())
-            //    {
-            //        switch (xr.Name)
-            //        {
-            //            case "creator":
-            //                Creator = xr.Value;
-            //                break;
+            //XmlReader有点难用，让ChatGPT帮我写了。
+            if (string.IsNullOrEmpty(file) || !File.Exists(file))
+            {
+                throw new ArgumentException("Invalid file path or file not found.");
+            }
 
-            //            case "version":
-            //                Version = xr.Value;
-            //                break;
-            //        }
-            //    }
-            //    while (xr.Read())
-            //    {
-            //        xr.MoveToContent();
-            //        string xrName = xr.Name;
-            //        xr.Read();
-            //        string xrValue = xr.Value;
-            //        switch (xrName)
-            //        {
-            //            case "name":
-            //                Name = xrValue;
-            //                break;
+            Gpx gpx = new Gpx();
 
-            //            case "author":
-            //                Author = xrValue;
-            //                break;
+            using (XmlReader reader = XmlReader.Create(file))
+            {
+                reader.ReadStartElement("gpx");
 
-            //            case "url":
-            //                Url = xrValue;
-            //                break;
+                while (reader.MoveToNextAttribute())
+                {
+                    if (reader.Name == "version")
+                    {
+                        gpx.Version = reader.Value;
+                    }
+                    else if (reader.Name == "creator")
+                    {
+                        gpx.Creator = reader.Value;
+                    }
+                }
 
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "metadata":
+                                ReadMetadata(reader, gpx);
+                                break;
+                        }
+                    }
+                }
+            }
 
-            //            case "distance":
-            //                if (double.TryParse(xrValue, out double result))
-            //                {
-            //                    Distance = result;
-            //                }
-            //                break;
-
-            //            case "time":
-            //                if (DateTime.TryParse(xrValue, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time))
-            //                {
-            //                    Time = time;
-            //                }
-            //                break;
-
-            //            case "keywords":
-            //                KeyWords = xrValue;
-            //                break;
-
-            //        }
-            //        xr.Read();//End Element
-            //    }
-            //}
+            return gpx;
         }
 
-        public static async Task<IList<Gpx>> MetadatasFromFilesAsync(IList<string> files)
+        private static void ReadMetadata(XmlReader reader, Gpx gpx)
+        {
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "name":
+                            gpx.Name = reader.ReadElementContentAsString();
+                            break;
+                        case "desc":
+                            gpx.Description = reader.ReadElementContentAsString();
+                            break;
+                        case "author":
+                            gpx.Author = reader.ReadElementContentAsString();
+                            break;
+                        case "time":
+                            gpx.Time = DateTime.Parse(reader.ReadElementContentAsString());
+                            break;
+                        case "keywords":
+                            gpx.KeyWords = reader.ReadElementContentAsString();
+                            break;
+                        case "extensions":
+                            ReadExtensions(reader, gpx);
+                            break;
+                    }
+                }
+
+                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "metadata")
+                {
+                    break;
+                }
+            }
+        }
+
+        private static void ReadExtensions(XmlReader reader, Gpx gpx)
+        {
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "distance")
+                {
+                    gpx.Distance = double.Parse(reader.ReadElementContentAsString());
+                }
+
+                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "extensions")
+                {
+                    break;
+                }
+            }
+        }
+
+        public static async Task<IList<Gpx>> LoadMetadatasFromFiles(IList<string> files)
         {
             Gpx[] gpxs = new Gpx[files.Count];
             await Task.Run(() =>
