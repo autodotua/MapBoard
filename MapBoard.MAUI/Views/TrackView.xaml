@@ -33,7 +33,7 @@
                             <Label
                                 FontAttributes="Bold"
                                 HorizontalOptions="Start"
-                                Text="{Binding File.Name}"
+                                Text="{Binding Gpx.Time, StringFormat='{0:yyyy-MM-dd HH:mm}'}"
                                 VerticalOptions="Center" />
                             <Label
                                 Grid.Column="2"
@@ -43,7 +43,7 @@
                             <Label
                                 Grid.Row="2"
                                 HorizontalOptions="Start"
-                                Text="{Binding Gpx.Time, StringFormat='{0:yyyy-MM-dd HH:mm}'}" />
+                                Text="{Binding Gpx.Duration, StringFormat='{}{0:hh\\:mm}'}" />
                             <Label
                                 Grid.Row="2"
                                 Grid.Column="2"

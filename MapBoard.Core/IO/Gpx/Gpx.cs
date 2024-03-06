@@ -27,6 +27,7 @@ namespace MapBoard.IO.Gpx
 
         public double Distance { get; set; }
 
+        public TimeSpan Duration { get; set; }
         public Dictionary<string, string> Extensions { get; private set; } = new Dictionary<string, string>();
 
         public string FilePath { get; internal set; }
@@ -36,13 +37,11 @@ namespace MapBoard.IO.Gpx
         public string Name { get; set; }
 
         public DateTime Time { get; set; }
-
         public List<GpxTrack> Tracks { get; private set; } = new List<GpxTrack>();
 
         public string Url { get; set; }
 
         public string Version { get; set; }
-
 
         public object Clone()
         {

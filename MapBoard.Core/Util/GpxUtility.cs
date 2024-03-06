@@ -21,7 +21,7 @@ namespace MapBoard.Util
 
         public static double GetAverageSpeed(this IList<GpxPoint> points)
         {
-            var time = points.GetTotalTime();
+            var time = points.GetDuration();
             if (time.HasValue)
             {
                 return points.GetDistance() / time.Value.TotalSeconds;
@@ -37,9 +37,9 @@ namespace MapBoard.Util
             {
                 if (last != null)
                 {
-                    distance += GeometryUtility.GetDistance(last, point.ToMapPoint());
+                    distance += GeometryUtility.GetDistance(last, point.ToXYMapPoint());
                 }
-                last = point.ToMapPoint();
+                last = point.ToXYMapPoint();
             }
 
             return distance;
@@ -290,7 +290,7 @@ namespace MapBoard.Util
             return totalDistance / totalTime.TotalSeconds;
         }
 
-        public static TimeSpan? GetTotalTime(this IList<GpxPoint> points)
+        public static TimeSpan? GetDuration(this IList<GpxPoint> points)
         {
             if (points.Count <= 1)
             {

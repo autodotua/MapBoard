@@ -131,6 +131,10 @@ namespace MapBoard.IO.Gpx
                 {
                     gpx.Distance = double.Parse(reader.ReadElementContentAsString());
                 }
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "duration")
+                {
+                    gpx.Duration = TimeSpan.Parse(reader.ReadElementContentAsString());
+                }
 
                 if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "extensions")
                 {
@@ -165,6 +169,7 @@ namespace MapBoard.IO.Gpx
             ["author"] = (g, v) => g.Author = v,
             ["url"] = (g, v) => g.Url = v,
             ["distance"] = (g, v) => { if (double.TryParse(v, out double result)) g.Distance = result; },
+            ["duration"] = (g, v) => { if (TimeSpan.TryParse(v, out TimeSpan result)) g.Duration = result; },
             ["time"] = (g, v) => { if (DateTime.TryParse(v, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time)) g.Time = time; },
             ["keywords"] = (g, v) => g.KeyWords = v,
         };
@@ -216,6 +221,10 @@ namespace MapBoard.IO.Gpx
                         if (extensionElement.Name == "distance")
                         {
                             SetGpxValue(gpx, "distance", extensionElement.InnerText);
+                        }
+                        if (extensionElement.Name == "duration")
+                        {
+                            SetGpxValue(gpx, "duration", extensionElement.InnerText);
                         }
                         else
                         {
@@ -328,7 +337,14 @@ namespace MapBoard.IO.Gpx
 
 
             var metadataExtensions = doc.CreateElement("extensions");
-            metadata.AppendChild(metadataExtensions); metadataExtensions.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
+            metadata.AppendChild(metadataExtensions);
+            metadataExtensions.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
+            var durations = gpx.Tracks.Select(p => p.GetPoints().GetDuration());
+            if (durations.All(p => p.HasValue))
+            {
+                metadataExtensions.AppendElement("duration", durations.Select(p=>p.Value)
+                    .Aggregate(TimeSpan.Zero, (current, duration) => current.Add(duration)).ToString());
+            }
             foreach (var item in gpx.Extensions)
             {
                 metadataExtensions.AppendElement(item.Key, item.Value);

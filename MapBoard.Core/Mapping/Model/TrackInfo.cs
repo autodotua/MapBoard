@@ -29,7 +29,7 @@ namespace MapBoard.Mapping.Model
             Points = new ObservableCollection<GpxPoint>(Track.GetPoints());
         }
 
-        public TimeSpan TotalTime => Points.GetTotalTime() ?? TimeSpan.Zero;
+        public TimeSpan TotalTime => Points.GetDuration() ?? TimeSpan.Zero;
         /// <summary>
         /// 轨迹文件名
         /// </summary>
