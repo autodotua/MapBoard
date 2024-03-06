@@ -232,6 +232,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.19041.0|AnyCPU'">
     <ApplicationId>com.autod.mapboard.maui</ApplicationId>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+    <AndroidSigningKeyStore>keys\key.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>key0</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>1234qwerASDF</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>1234qwerASDF</AndroidSigningStorePass>
+</PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.22621.0</TargetFrameworks>
