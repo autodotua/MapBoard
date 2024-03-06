@@ -33,7 +33,7 @@ namespace MapBoard.Mapping
     /// GPX地图
     /// </summary>
     [DoNotNotify]
-    public class GpxMapView : SceneView,IMapBoardGeoView
+    public class GpxMapView : SceneView, IMapBoardGeoView
     {
         public Dictionary<GraphicsOverlay, TrackInfo> overlay2Track = new Dictionary<GraphicsOverlay, TrackInfo>();
 
@@ -287,7 +287,15 @@ namespace MapBoard.Mapping
                 }
 
                 //处理高程
-                minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.GetPoints().Min(p => p.Z.Value) : 0;
+                if (Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight)
+                {
+                    var zs = trackInfo.Track.GetPoints().Where(p => p.Z.HasValue);
+                    minZ = zs.Any() ? zs.Min(p => p.Z.Value) : 0;
+                }
+                else
+                {
+                    minZ = 0;
+                }
                 mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
 
             }
@@ -302,6 +310,7 @@ namespace MapBoard.Mapping
 
             //添加简单线
             Graphic lineGraphic = null;
+            double lastZ = minZ;
             foreach (var gpxPoint in trackInfo.Track.GetPoints())
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
@@ -311,8 +320,9 @@ namespace MapBoard.Mapping
                     gpxPoint.Y = newP.Y;
                     gpxPoint.Z = newP.Z;
                 }
-
-                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, (gpxPoint.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
+                double z = gpxPoint.Z.HasValue ? gpxPoint.Z.Value : lastZ;
+                lastZ = z;
+                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, z * mag, SpatialReferences.Wgs84);
 
 
                 //如果前后两个点离得太远了，那么就不连接

@@ -94,14 +94,14 @@ namespace MapBoard.Util
                 {
                     int left = 0;//左端索引
                     int right = 2;//右端索引（包含，因此长度为right-left+1）
-                    MapPoint lastPoint = points[1].ToMapPoint();
+                    MapPoint lastPoint = points[1].ToXYMapPoint();
                     double distance = GeometryUtility.GetDistance(points[0].ToMapPoint(), points[1].ToMapPoint());
                     distances[0] = distance;
                     while (right == 0 || left < right)
                     {
                         if ((right - left) % 2 == 0) //在左端或右端时，窗口大小可能为偶数，此时不进行处理
                         {
-                            var currentPoint = points[right].ToMapPoint();
+                            var currentPoint = points[right].ToXYMapPoint();
                             distances[right - 1] = GeometryUtility.GetDistance(lastPoint, currentPoint);
                             lastPoint = currentPoint;
                             distance += distances[right - 1];
@@ -143,7 +143,7 @@ namespace MapBoard.Util
                 }
                 catch (InvalidOperationException ex)
                 {
-                    throw new InvalidOperationException("存在没有时间信息的点", ex);
+                    throw;
                 }
             });
             return speeds.AsReadOnly();

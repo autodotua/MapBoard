@@ -13,7 +13,7 @@ namespace MapBoard.IO.Gpx
 {
     public static class GpxSerializer
     {
-        public const string GpxTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+        public const string GpxTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
 
         #region 文件读写
 
@@ -255,10 +255,10 @@ namespace MapBoard.IO.Gpx
                 {
                     switch (child.Name)
                     {
-                        case "time":
-                            time = DateTime.ParseExact(child.InnerText, GpxTimeFormat, CultureInfo.InvariantCulture,DateTimeStyles.AdjustToUniversal);
+                        case "time" when !string.IsNullOrWhiteSpace(child.InnerText):
+                            time = DateTime.Parse(child.InnerText, null, DateTimeStyles.AdjustToUniversal);
                             break;
-                        case "ele":
+                        case "ele" when !string.IsNullOrWhiteSpace(child.InnerText):
                             z = double.Parse(child.InnerText);
                             break;
                         default:

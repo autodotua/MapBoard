@@ -130,6 +130,7 @@
                         <RowDefinition Height="8" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBox
@@ -140,43 +141,43 @@
                     <TextBlock
                         Grid.Row="2"
                         HorizontalAlignment="Right"
-                        Text="时间：" />
+                        Text="创建者：" />
                     <TextBox
                         Grid.Row="2"
                         Grid.Column="2"
-                        Text="{Binding Time}" />
+                        Text="{Binding Creator}" />
                     <TextBlock
                         Grid.Row="4"
+                        HorizontalAlignment="Right"
+                        Text="时间：" />
+                    <TextBox
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        Text="{Binding Time}" />
+                    <TextBlock
+                        Grid.Row="6"
                         HorizontalAlignment="Right"
                         Text="描述：" />
                     <TextBox
-                        Grid.Row="4"
+                        Grid.Row="6"
                         Grid.Column="2"
                         Text="{Binding Description}" />
                     <TextBlock
-                        Grid.Row="6"
+                        Grid.Row="8"
                         HorizontalAlignment="Right"
                         Text="作者：" />
                     <TextBox
-                        Grid.Row="6"
+                        Grid.Row="8"
                         Grid.Column="2"
                         Text="{Binding Author}" />
                     <TextBlock
-                        Grid.Row="8"
+                        Grid.Row="10"
                         HorizontalAlignment="Right"
                         Text="Url：" />
                     <TextBox
-                        Grid.Row="8"
+                        Grid.Row="10"
                         Grid.Column="2"
                         Text="{Binding Url}" />
-                    <TextBlock
-                        Grid.Row="10"
-                        HorizontalAlignment="Right"
-                        Text="Url名称：" />
-                    <TextBox
-                        Grid.Row="10"
-                        Grid.Column="2"
-                        Text="{Binding UrlName}" />
                     <TextBlock
                         Grid.Row="12"
                         HorizontalAlignment="Right"
@@ -324,7 +325,7 @@
                         </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Binding="{Binding Time, StringFormat={}{0:M-d HH:mm:ss}}"
+                                Binding="{Binding Time, StringFormat={}{0:M-d HH:mm:ss.fff}}"
                                 Header="时间"
                                 IsReadOnly="False" />
                             <DataGridTextColumn
