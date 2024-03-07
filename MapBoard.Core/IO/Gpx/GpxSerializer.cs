@@ -213,7 +213,7 @@ namespace MapBoard.IO.Gpx
                         {
                             SetGpxValue(gpx, "distance", extensionElement.InnerText);
                         }
-                        if (extensionElement.Name == "duration")
+                       else if (extensionElement.Name == "duration")
                         {
                             SetGpxValue(gpx, "duration", extensionElement.InnerText);
                         }
