@@ -71,7 +71,8 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static double GetMaxSpeed(this IList<GpxPoint> points, int window = 9)
         {
-            return GetMeanFilteredSpeeds(points, window, false).Max();
+            var speeds = GetMeanFilteredSpeeds(points, window, false).Where(p => p != double.PositiveInfinity);
+            return speeds.Any() ? speeds.Max() : 0;
         }
 
         public static IList<double> GetMeanFilteredSpeeds(IList<GpxPoint> points, int window, bool writeToPoints)

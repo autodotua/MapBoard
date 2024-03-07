@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案文件", "解�
 		.gitignore = .gitignore
 		build.ps1 = build.ps1
 		copyRuntimes.ps1 = copyRuntimes.ps1
+		Directory.Packages.props = Directory.Packages.props
 		README.md = README.md
 		日志.md = 日志.md
 	EndProjectSection
@@ -42,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapBoard.Model", "MapBoard.
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "MapBoard.Package", "MapBoard.Package\MapBoard.Package.wapproj", "{DF10B102-0BD6-47A8-99DD-AB4A1BAF9E04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBoard.MAUI", "MapBoard.MAUI\MapBoard.MAUI.csproj", "{73610792-A523-40EC-8D37-1E656A0FFC45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapBoard.MAUI", "MapBoard.MAUI\MapBoard.MAUI.csproj", "{73610792-A523-40EC-8D37-1E656A0FFC45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
