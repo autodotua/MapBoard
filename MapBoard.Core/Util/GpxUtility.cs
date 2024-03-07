@@ -69,18 +69,12 @@ namespace MapBoard.Util
         /// <param name="window"></param>
         /// <param name="jump"></param>
         /// <returns></returns>
-        public static async Task<double> GetMaxSpeedAsync(this GpxTrack trk, int window = 9)
+        public static double GetMaxSpeed(this IList<GpxPoint> points, int window = 9)
         {
-            return (await GpxUtility.GetMeanFilteredSpeedsAsync(trk.GetPoints(), window, false)).Max();
+            return GetMeanFilteredSpeeds(points, window, false).Max();
         }
 
-        /// <summary>
-        /// 获取一组点经过均值滤波后的速度
-        /// </summary>
-        /// <param name="points">点的集合</param>
-        /// <param name="window">每一组采样点的个数</param>
-        /// <returns></returns>
-        public static async Task<IList<double>> GetMeanFilteredSpeedsAsync(IList<GpxPoint> points, int window, bool writeToPoints)
+        public static IList<double> GetMeanFilteredSpeeds(IList<GpxPoint> points, int window, bool writeToPoints)
         {
             if (window % 2 == 0 || window < 3)
             {
@@ -88,65 +82,64 @@ namespace MapBoard.Util
             }
             double[] speeds = new double[points.Count];
             double[] distances = new double[points.Count - 1];
-            await Task.Run(() =>
+
+            try
             {
-                try
+                int left = 0;//左端索引
+                int right = 2;//右端索引（包含，因此长度为right-left+1）
+                MapPoint lastPoint = points[1].ToXYMapPoint();
+                double distance = GeometryUtility.GetDistance(points[0].ToXYMapPoint(), points[1].ToXYMapPoint());
+                distances[0] = distance;
+                while (right == 0 || left < right)
                 {
-                    int left = 0;//左端索引
-                    int right = 2;//右端索引（包含，因此长度为right-left+1）
-                    MapPoint lastPoint = points[1].ToXYMapPoint();
-                    double distance = GeometryUtility.GetDistance(points[0].ToMapPoint(), points[1].ToMapPoint());
-                    distances[0] = distance;
-                    while (right == 0 || left < right)
+                    if ((right - left) % 2 == 0) //在左端或右端时，窗口大小可能为偶数，此时不进行处理
                     {
-                        if ((right - left) % 2 == 0) //在左端或右端时，窗口大小可能为偶数，此时不进行处理
+                        var currentPoint = points[right].ToXYMapPoint();
+                        distances[right - 1] = GeometryUtility.GetDistance(lastPoint, currentPoint);
+                        lastPoint = currentPoint;
+                        distance += distances[right - 1];
+                        var speed = distance / ((points[right].Time.Value.Ticks - points[left].Time.Value.Ticks) / 10_000_000.0);
+                        int index = (right + left) / 2;
+                        speeds[index] = speed;
+                        //Debug.WriteLine($"left={left}, right={right}, distance={distance}, speed={speed}, index={index}");
+                        if (writeToPoints)
                         {
-                            var currentPoint = points[right].ToXYMapPoint();
-                            distances[right - 1] = GeometryUtility.GetDistance(lastPoint, currentPoint);
-                            lastPoint = currentPoint;
-                            distance += distances[right - 1];
-                            var speed = distance / ((points[right].Time.Value.Ticks - points[left].Time.Value.Ticks) / 10_000_000.0);
-                            int index = (right + left) / 2;
-                            speeds[index] = speed;
-                            //Debug.WriteLine($"left={left}, right={right}, distance={distance}, speed={speed}, index={index}");
-                            if (writeToPoints)
-                            {
-                                points[index].Speed = speed;
-                            }
-                        }
-                        if (right == points.Count - 1)//右端已经到底
-                        {
-                            distance -= distances[left];
-                            left++;
-                        }
-                        else if (right - left + 1 == window)//到达窗口大小
-                        {
-                            distance -= distances[left];
-                            left++;
-                            right++;
-                        }
-                        else
-                        {
-                            Debug.Assert(left == 0);
-                            right++;
+                            points[index].Speed = speed;
                         }
                     }
-                    speeds[0] = speeds[1];
-                    speeds[^1] = speeds[^2];
-                    if (writeToPoints)
+                    if (right == points.Count - 1)//右端已经到底
                     {
-                        points[0].Speed = speeds[0];
-                        points[^1].Speed = speeds[^1];
+                        distance -= distances[left];
+                        left++;
                     }
-
-
+                    else if (right - left + 1 == window)//到达窗口大小
+                    {
+                        distance -= distances[left];
+                        left++;
+                        right++;
+                    }
+                    else
+                    {
+                        Debug.Assert(left == 0);
+                        right++;
+                    }
                 }
-                catch (InvalidOperationException ex)
+                speeds[0] = speeds[1];
+                speeds[^1] = speeds[^2];
+                if (writeToPoints)
                 {
-                    throw;
+                    points[0].Speed = speeds[0];
+                    points[^1].Speed = speeds[^1];
                 }
-            });
-            return speeds.AsReadOnly();
+
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw;
+            }
+
+            return speeds;
         }
 
         /// <summary>
@@ -165,7 +158,7 @@ namespace MapBoard.Util
                 {
                     if (last != null)
                     {
-                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double distance = GeometryUtility.GetDistance(last.ToXYMapPoint(), point.ToXYMapPoint());
                         double second = (point.Time - last.Time).Value.TotalSeconds;
                         double speed = distance / second;
                         if (speed > speedDevaluation)
@@ -200,7 +193,7 @@ namespace MapBoard.Util
                 {
                     if (last != null)
                     {
-                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
+                        double distance = GeometryUtility.GetDistance(last.ToXYMapPoint(), point.ToXYMapPoint());
                         double second = (point.Time - last.Time).Value.TotalSeconds;
                         double speed = distance / second;
                         if (speed > speedDevaluation)
@@ -235,6 +228,24 @@ namespace MapBoard.Util
         public static int GetPointsCount(this GpxTrack trk)
         {
             return trk.Segments.Select(p => p.Points.Count).Sum();
+        }
+
+        public static IList<GpxPoint> GetPoints(this Gpx gpx)
+        {
+
+            List<GpxPoint> points = new List<GpxPoint>();
+            foreach (var trk in gpx.Tracks)
+            {
+                foreach (var seg in trk.Segments)
+                {
+                    points.AddRange(seg.Points);
+                }
+            }
+            return points;
+        }
+        public static int GetPointsCount(this Gpx gpx)
+        {
+            return gpx.Tracks.Select(trk => trk.Segments.Select(p => p.Points.Count).Sum()).Sum();
         }
 
         /// <summary>
@@ -279,7 +290,7 @@ namespace MapBoard.Util
             {
                 for (int i = min; i < max; i++)
                 {
-                    totalDistance += GeometryUtility.GetDistance(points[i].ToMapPoint(), points[i + 1].ToMapPoint());
+                    totalDistance += GeometryUtility.GetDistance(points[i].ToXYMapPoint(), points[i + 1].ToXYMapPoint());
                     totalTime += points[i + 1].Time.Value - points[i].Time.Value;
                 }
             }
@@ -302,10 +313,10 @@ namespace MapBoard.Util
             }
             return null;
         }
-        public static async Task LoadColoredGpxAsync(GpxTrack gpxTrack, GraphicCollection graphics)
+        public static void LoadColoredGpx(GpxTrack gpxTrack, GraphicCollection graphics)
         {
             var points = gpxTrack.GetPoints();
-            var speeds = await GetMeanFilteredSpeedsAsync(points, Parameters.GpxSpeedSmoothWindow, false);
+            var speeds = GetMeanFilteredSpeeds(points, Parameters.GpxSpeedSmoothWindow, false);
             var orderedSpeeds = speeds.OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;
             int maxIndex = 0;

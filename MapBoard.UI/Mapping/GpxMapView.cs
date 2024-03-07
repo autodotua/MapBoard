@@ -26,6 +26,7 @@ using PropertyChanged;
 using System.Windows.Controls;
 using Point = System.Windows.Point;
 using System.Windows.Controls.Primitives;
+using System.Diagnostics;
 
 namespace MapBoard.Mapping
 {
@@ -183,28 +184,22 @@ namespace MapBoard.Mapping
                 FileInfo fileInfo = new FileInfo(file);
                 try
                 {
-                    if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+                    if (!fileInfo.Exists)
                     {
-                        App.Log.Warn(file + "是目录不是文件");
-                    }
-                    else if (!fileInfo.Exists)
-                    {
-                        App.Log.Warn(file + "不存在");
+                        throw new Exception(file + "不存在");
                     }
                     else if (fileInfo.Length > 10 * 1024 * 1024)
                     {
-                        App.Log.Warn("gpx文件" + file + "大于1MB，跳过");
+                        throw new Exception("gpx文件" + file + "大于1MB，跳过");
                     }
                     else if (fileInfo.Extension != ".gpx")
                     {
-                        App.Log.Warn("文件" + file + "不是gpx");
-                        continue;
+                        throw new Exception("文件" + file + "不是gpx");
                     }
                     else
                     {
                         var exist = Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist == null)
-
                         {
                             loadedTrack.AddRange(await LoadGpxAsync(file, false));
                         }
@@ -213,6 +208,7 @@ namespace MapBoard.Mapping
                 catch (Exception ex)
                 {
                     App.Log.Error("加载GPX失败", ex);
+                    await CommonDialog.ShowErrorDialogAsync(ex, "加载GPX失败");
                 }
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
@@ -352,7 +348,7 @@ namespace MapBoard.Mapping
             trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
 
             //添加速度彩色线
-            GpxUtility.LoadColoredGpxAsync(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
+            GpxUtility.LoadColoredGpx(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
 
             //设置高程策略
             trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.SimpleLine).SurfacePlacement =
@@ -366,7 +362,7 @@ namespace MapBoard.Mapping
             }
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(new TrackInfo[] { trackInfo }, false));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs([trackInfo], false));
             }
         }
 
@@ -398,8 +394,14 @@ namespace MapBoard.Mapping
                 UnselectAllPoints();
                 return;
             }
-
-            pointGraphic.Geometry = new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
+            try
+            {
+                pointGraphic.Geometry = new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(false);
+            }
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace MapBoard.IO.Gpx
     /// <summary>
     /// GPX数据类型
     /// </summary>
-    public class Gpx : ICloneable
+    public class Gpx : IGpxElement
     {
         public Gpx()
         {
@@ -27,21 +27,54 @@ namespace MapBoard.IO.Gpx
 
         public double Distance { get; set; }
 
-        public TimeSpan Duration { get; set; }
-        public Dictionary<string, string> Extensions { get; private set; } = new Dictionary<string, string>();
+        private TimeSpan duration;
+        public TimeSpan Duration
+        {
+            get
+            {
+                if(duration==default)
+                {
+                    if (Tracks.Count > 0
+                     && Tracks[0].Segments.Count > 0
+                     && Tracks[0].Segments[0].Points.Count > 0
+                     && Tracks[0].Segments[0].Points[0].Time.HasValue && Tracks[^1].Segments[^1].Points[^1].Time.HasValue)
+                    {
+                        duration = Tracks[^1].Segments[^1].Points[^1].Time.Value- Tracks[0].Segments[0].Points[0].Time.Value;
+                    }
+                }
+                return duration;
+            }
+            set => duration = value;
+        }
+        public Dictionary<string, string> Extensions { get; set; } = new Dictionary<string, string>();
 
         public string FilePath { get; internal set; }
 
-        public string KeyWords { get; set; }
-
         public string Name { get; set; }
-
-        public DateTime Time { get; set; }
+        private DateTime time;
+        public DateTime Time
+        {
+            get
+            {
+                if (time == default)
+                {
+                    if (Tracks.Count > 0
+                        && Tracks[0].Segments.Count > 0
+                        && Tracks[0].Segments[0].Points.Count > 0
+                        && Tracks[0].Segments[0].Points[0].Time.HasValue)
+                    {
+                        time = Tracks[0].Segments[0].Points[0].Time.Value;
+                    }
+                }
+                return time;
+            }
+            set => time = value;
+        }
         public List<GpxTrack> Tracks { get; private set; } = new List<GpxTrack>();
 
-        public string Url { get; set; }
+        public HashSet<string> HiddenElements => hiddenElements;
 
-        public string Version { get; set; }
+        private static readonly HashSet<string> hiddenElements = ["copyright", "link", "keywords", "bounds"];
 
         public object Clone()
         {

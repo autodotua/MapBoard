@@ -56,6 +56,13 @@ namespace MapBoard.UI.GpxToolbox
             ListViewHelper<TrackInfo> lvwHelper = new ListViewHelper<TrackInfo>(lvwFiles);
             lvwHelper.EnableDragAndDropItem();
             mapInfo.Initialize(arcMap);
+            arcMap.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(arcMap.SelectedTrack))
+                {
+                    this.Notify(nameof(GpxTrack));
+                }
+            };
         }
 
         public async Task LoadGpxFilesAsync(IEnumerable<string> files)
@@ -103,26 +110,13 @@ namespace MapBoard.UI.GpxToolbox
                 var pointPoints = GpxTrack.GetPoints().Clone();//.Clone() as GpxPointCollection;
                 var linePoints = GpxTrack.GetPoints().Clone();//.Clone() as GpxPointCollection;
                 //下面两行没用到输出，因为会直接写入到Speed属性中
-                var pointsTask = GpxUtility.GetMeanFilteredSpeedsAsync(pointPoints, 3, true);
-                var linesTask = GpxUtility.GetMeanFilteredSpeedsAsync(linePoints, 19, true);
-                await Task.WhenAll(pointsTask, linesTask);
-                chartHelper.DrawActionAsync = () =>
-                    DrawChartAsync(pointPoints, linePoints);
-
                 await Task.Run(() =>
                 {
-                    var speed = GpxTrack.Track.GetPoints().GetAverageSpeed();
-
-                    SpeedText = speed.ToString("0.00") + "m/s    " + (speed * 3.6).ToString("0.00") + "km/h";
-                    DistanceText = (GpxTrack.Track.GetPoints().GetDistance() / 1000).ToString("0.00") + "km";
-
-                    var movingSpeed = GpxTrack.Track.GetPoints().GetMovingAverageSpeed();
-                    MovingSpeedText = movingSpeed.ToString("0.00") + "m/s    " + (movingSpeed * 3.6).ToString("0.00") + "km/h";
-                    MovingTimeText = GpxTrack.Track.GetPoints().GetMovingTime().ToString();
-
-                    var maxSpeed = GpxTrack.Track.GetMaxSpeedAsync().Result;
-                    MaxSpeedText = maxSpeed.ToString("0.00") + "m/s    " + (maxSpeed * 3.6).ToString("0.00") + "km/h";
+                    GpxUtility.GetMeanFilteredSpeeds(pointPoints, 3, true);
+                    GpxUtility.GetMeanFilteredSpeeds(linePoints, 19, true);
                 });
+                chartHelper.DrawActionAsync = () =>
+                    DrawChartAsync(pointPoints, linePoints);
 
                 chartHelper.BeginDraw();
             }
@@ -158,34 +152,6 @@ namespace MapBoard.UI.GpxToolbox
         /// 所有轨迹
         /// </summary>
         public ObservableCollection<TrackInfo> Tracks { get; } = new ObservableCollection<TrackInfo>();
-
-        #endregion
-
-        #region 轨迹信息
-        /// <summary>
-        /// 距离
-        /// </summary>
-        public string DistanceText { get; set; }
-
-        /// <summary>
-        /// 最大速度
-        /// </summary>
-        public string MaxSpeedText { get; set; }
-
-        /// <summary>
-        /// 移动速度
-        /// </summary>
-        public string MovingSpeedText { get; set; }
-
-        /// <summary>
-        /// 移动时间
-        /// </summary>
-        public string MovingTimeText { get; set; }
-
-        /// <summary>
-        /// 速度
-        /// </summary>
-        public string SpeedText { get; set; }
 
         #endregion
 

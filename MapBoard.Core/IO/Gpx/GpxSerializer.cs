@@ -60,11 +60,7 @@ namespace MapBoard.IO.Gpx
 
                 while (reader.MoveToNextAttribute())
                 {
-                    if (reader.Name == "version")
-                    {
-                        gpx.Version = reader.Value;
-                    }
-                    else if (reader.Name == "creator")
+                    if (reader.Name == "creator")
                     {
                         gpx.Creator = reader.Value;
                     }
@@ -107,9 +103,7 @@ namespace MapBoard.IO.Gpx
                         case "time":
                             gpx.Time = DateTime.Parse(reader.ReadElementContentAsString());
                             break;
-                        case "keywords":
-                            gpx.KeyWords = reader.ReadElementContentAsString();
-                            break;
+
                         case "extensions":
                             ReadExtensions(reader, gpx);
                             break;
@@ -164,14 +158,11 @@ namespace MapBoard.IO.Gpx
         private static readonly Dictionary<string, Action<Gpx, string>> xml2GpxProperty = new Dictionary<string, Action<Gpx, string>>()
         {
             ["creator"] = (g, v) => g.Creator = v,
-            ["version"] = (g, v) => g.Version = v,
             ["name"] = (g, v) => g.Name = v,
             ["author"] = (g, v) => g.Author = v,
-            ["url"] = (g, v) => g.Url = v,
             ["distance"] = (g, v) => { if (double.TryParse(v, out double result)) g.Distance = result; },
             ["duration"] = (g, v) => { if (TimeSpan.TryParse(v, out TimeSpan result)) g.Duration = result; },
             ["time"] = (g, v) => { if (DateTime.TryParse(v, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime time)) g.Time = time; },
-            ["keywords"] = (g, v) => g.KeyWords = v,
         };
 
         private static readonly Dictionary<string, Action<GpxTrack, string>> xml2TrackProperty = new Dictionary<string, Action<GpxTrack, string>>()
@@ -322,38 +313,50 @@ namespace MapBoard.IO.Gpx
             XmlDeclaration dec = doc.CreateXmlDeclaration("1.0", "utf-8", "no");
             doc.AppendChild(dec);
 
-            XmlElement root = doc.CreateElement("gpx");
-            doc.AppendChild(root);
-            XmlElement metadata = doc.CreateElement("metadata");
-            root.AppendChild(metadata);
+            XmlElement gpxElement = doc.CreateElement("gpx");
+            doc.AppendChild(gpxElement);
+            XmlElement metadataElement = doc.CreateElement("metadata");
+            gpxElement.AppendChild(metadataElement);
 
-            root.SetAttribute("version", gpx.Version);
-            root.SetAttribute("creator", gpx.Creator);
-            metadata.AppendElement("name", gpx.Name);
-            metadata.AppendElement("author", gpx.Author);
-            metadata.AppendElement("url", gpx.Url);
-            metadata.AppendElement("time", gpx.Time.ToString(GpxTimeFormat));
-            metadata.AppendElement("keywords", gpx.KeyWords);
+            gpxElement.SetAttribute("version", "1.1");
+            gpxElement.SetAttribute("creator", gpx.Creator);
+            metadataElement.AppendElement("name", gpx.Name);
+            metadataElement.AppendElement("author", gpx.Author);
+            metadataElement.AppendElement("time", gpx.Time.ToString(GpxTimeFormat));
 
+            var boundsElement = doc.CreateElement("bounds");
+            var extent = gpx.GetPoints().GetExtent();
+            boundsElement.AppendElement("minlat", extent.YMin.ToString());
+            boundsElement.AppendElement("minlon", extent.XMin.ToString());
+            boundsElement.AppendElement("maxlat", extent.YMax.ToString());
+            boundsElement.AppendElement("maxlon", extent.XMax.ToString());
+            metadataElement.AppendChild(boundsElement);
 
-            var metadataExtensions = doc.CreateElement("extensions");
-            metadata.AppendChild(metadataExtensions);
-            metadataExtensions.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
+            var metadataExtensionsElement = doc.CreateElement("extensions");
+            metadataExtensionsElement.AppendElement("distance", Math.Round(gpx.Tracks.Sum(p => p.GetPoints().GetDistance()), 2).ToString());
             var durations = gpx.Tracks.Select(p => p.GetPoints().GetDuration());
             if (durations.All(p => p.HasValue))
             {
-                metadataExtensions.AppendElement("duration", durations.Select(p=>p.Value)
+                metadataExtensionsElement.AppendElement("duration", durations.Select(p => p.Value)
                     .Aggregate(TimeSpan.Zero, (current, duration) => current.Add(duration)).ToString());
             }
             foreach (var item in gpx.Extensions)
             {
-                metadataExtensions.AppendElement(item.Key, item.Value);
+                if (gpx.HiddenElements.Contains(item.Key))
+                {
+                    metadataElement.AppendElement(item.Key, item.Value);
+                }
+                else
+                {
+                    metadataExtensionsElement.AppendElement(item.Key, item.Value);
+                }
             }
+            metadataElement.AppendChild(metadataExtensionsElement);
             foreach (var trk in gpx.Tracks)
             {
                 XmlElement node = doc.CreateElement("trk");
                 trk.WriteTrackXml(node);
-                root.AppendChild(node);
+                gpxElement.AppendChild(node);
             }
 
             using var stringWriter = new StringWriter();

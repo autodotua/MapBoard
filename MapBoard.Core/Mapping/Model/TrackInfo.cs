@@ -16,11 +16,6 @@ namespace MapBoard.Mapping.Model
     /// </summary>
     public class TrackInfo : ICloneable
     {
-        public enum TrackSelectionDisplay
-        {
-            SimpleLine,
-            ColoredLine,
-        }
         public TrackInfo(string file, Gpx gpx, int trackIndex)
         {
             FilePath = file;
@@ -29,7 +24,11 @@ namespace MapBoard.Mapping.Model
             Points = new ObservableCollection<GpxPoint>(Track.GetPoints());
         }
 
-        public TimeSpan TotalTime => Points.GetDuration() ?? TimeSpan.Zero;
+        public enum TrackSelectionDisplay
+        {
+            SimpleLine,
+            ColoredLine,
+        }
         /// <summary>
         /// 轨迹文件名
         /// </summary>
@@ -45,23 +44,23 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         public Gpx Gpx { get; init; }
 
+        public ObservableCollection<GpxPoint> Points { get; }
         /// <summary>
         /// 是否已经平滑
         /// </summary>
         public bool Smoothed { get; set; } = false;
 
+        public TimeSpan Duration => Points.GetDuration() ?? TimeSpan.Zero;
         /// <summary>
         /// GPX轨迹对象
         /// </summary>
         public GpxTrack Track => Gpx.Tracks[TrackIndex];
 
-        public IList<GpxPoint> GetPoints() => Track.GetPoints();
-
         /// <summary>
         /// 轨迹在GPX中的索引
         /// </summary>
         public int TrackIndex { get; set; }
-        public ObservableCollection<GpxPoint> Points { get; }
+
         /// <summary>
         /// 对应的图形
         /// </summary>
@@ -79,6 +78,7 @@ namespace MapBoard.Mapping.Model
             dictionary.Add(SimpleLineOverlay, this);
             dictionary.Add(ColoredLineOverlay, this);
         }
+
         public TrackInfo Clone()
         {
             return MemberwiseClone() as TrackInfo;
@@ -95,6 +95,7 @@ namespace MapBoard.Mapping.Model
             return overlay.Graphics;
         }
 
+        public IList<GpxPoint> GetPoints() => Track.GetPoints();
         public LayerSceneProperties GetSceneProperties(TrackSelectionDisplay display)
         {
             GraphicsOverlay overlay = GetOverlay(display);

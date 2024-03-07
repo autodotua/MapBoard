@@ -16,16 +16,20 @@ namespace MapBoard.UI.Converter
                 return "";
             }
             double speed = (double)value;
+            return Convert(speed);
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static string Convert(double speed)
+        {
             if (speed == 0)
             {
                 return "";
             }
-            return speed.ToString("0.00") + "m/s    " + (3.6 * speed).ToString("0.00") + "km/h";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
+            return speed.ToString("0.00") + " m/s    " + (3.6 * speed).ToString("0.00") + " km/h";
         }
     }
 }
