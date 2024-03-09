@@ -102,7 +102,7 @@
                                                                 x:Name="txtDateTime"
                                                                 ui:TextBoxHelper.IsDeleteButtonVisible="False"
                                                                 BorderThickness="0"
-                                                                Text="{Binding TimeValue, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+                                                                Text="{Binding TimeValue, StringFormat={StaticResource DateTimeFormat}}" />
 
                                                             <DataTemplate.Triggers>
                                                                 <DataTrigger

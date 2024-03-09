@@ -24,7 +24,7 @@
                                 Text="{Binding Name}" />
                             <Label
                                 Grid.Row="2"
-                                Text="{Binding Time, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                Text="{Binding Time, StringFormat={StaticResource DateTimeFormat}}" />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>

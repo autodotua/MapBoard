@@ -242,8 +242,8 @@ namespace MapBoard.Util
                         }
                         else
                         {
-                            DateTime dtDate = DateTime.ParseExact(line.Substring(0, 8), "MM-dd-yy", null);
-                            DateTime dtDateTime = DateTime.Parse(dtDate.ToString("yyyy-MM-dd") + line.Substring(8, 9));
+                            DateTime dtDate = DateTime.ParseExact(line[..8], "MM-dd-yy", null);
+                            DateTime dtDateTime = DateTime.Parse(string.Concat(dtDate.ToString(Parameters.DateFormat), line.AsSpan(8, 9)));
                             string[] arrs = line.Split(' ');
                             var model = new FTPFileStruct()
                             {

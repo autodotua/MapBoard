@@ -101,7 +101,7 @@ namespace MapBoard.IO.Gpx
                             gpx.Author = reader.ReadElementContentAsString();
                             break;
                         case "time":
-                            gpx.Time = DateTime.Parse(reader.ReadElementContentAsString());
+                            gpx.Time = DateTime.Parse(reader.ReadElementContentAsString(), null, DateTimeStyles.AdjustToUniversal);
                             break;
 
                         case "extensions":

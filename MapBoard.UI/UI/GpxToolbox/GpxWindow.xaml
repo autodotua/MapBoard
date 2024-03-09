@@ -146,7 +146,7 @@
                     <TextBox
                         Grid.Row="4"
                         Grid.Column="2"
-                        Text="{Binding Time}" />
+                        Text="{Binding Time,StringFormat={StaticResource DateTimeFormat}}" />
                     <TextBlock
                         Grid.Row="6"
                         HorizontalAlignment="Right"
