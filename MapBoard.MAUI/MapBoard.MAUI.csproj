@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android;net8.0-maccatalyst</TargetFrameworks>
@@ -82,14 +82,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="7.0.1" />
-		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="200.3.0" />
-		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" Version="200.3.0" />
-		<PackageReference Include="FubarDev.FtpServer" Version="3.1.2" />
-		<PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" />
+		<PackageReference Include="Esri.ArcGISRuntime.Maui" />
+		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" />
+		<PackageReference Include="FubarDev.FtpServer" />
+		<PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" />
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
 	</ItemGroup>
 
 	<ItemGroup>
