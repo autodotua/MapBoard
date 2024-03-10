@@ -65,9 +65,15 @@ namespace MapBoard.UI.GpxToolbox
             };
         }
 
-        public async Task LoadGpxFilesAsync(IEnumerable<string> files)
+        public async Task LoadGpxFilesAsync(IList<string> files)
         {
-            await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
+            await DoAsync(args =>
+            {
+                return arcMap.LoadFilesAsync(files, i =>
+                {
+                    args.SetMessage($"{i} / {files.Count}");
+                });
+            }, "正在加载轨迹");
         }
 
         /// <summary>
@@ -78,12 +84,13 @@ namespace MapBoard.UI.GpxToolbox
         {
             if (LoadFiles != null)
             {
-                await arcMap.LoadFilesAsync(LoadFiles);
+                await LoadGpxFilesAsync(LoadFiles);
             }
             else if (File.Exists(FolderPaths.TrackHistoryPath))
             {
                 string[] files = await File.ReadAllLinesAsync(FolderPaths.TrackHistoryPath);
-                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在导入轨迹");
+                
+                await LoadGpxFilesAsync(files);
             }
         }
         /// <summary>
@@ -93,7 +100,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <param name="e"></param>
         private void GpxLoaded(object sender, GpxMapView.GpxLoadedEventArgs e)
         {
-            if (e.Track.Length > 0)
+            if (e.Track.Count > 0)
             {
                 lvwFiles.SelectedItem = e.Track[^1];
             }
@@ -146,7 +153,7 @@ namespace MapBoard.UI.GpxToolbox
         /// <summary>
         /// 启动后需要加载的文件
         /// </summary>
-        public IEnumerable<string> LoadFiles { get; set; } = null;
+        public IList<string> LoadFiles { get; set; } = null;
 
         /// <summary>
         /// 所有轨迹
@@ -205,7 +212,7 @@ namespace MapBoard.UI.GpxToolbox
             string[] files = dialog.GetPaths(this);
             if (files != null)
             {
-                await DoAsync(() => arcMap.LoadFilesAsync(files), "正在加载轨迹");
+                await LoadGpxFilesAsync(files);
             }
         }
 
@@ -422,11 +429,12 @@ namespace MapBoard.UI.GpxToolbox
             bool yes = true;
             if (fileList.Count > 10)
             {
+                this.GetWindow().Activate();
                 yes = await CommonDialog.ShowYesNoDialogAsync("导入文件较多，是否确定导入？", $"将导入{fileList.Count}个文件");
             }
             if (yes)
             {
-                await DoAsync(() => arcMap.LoadFilesAsync(fileList), "正在导入轨迹");
+                await LoadGpxFilesAsync(fileList);
             }
         }
 

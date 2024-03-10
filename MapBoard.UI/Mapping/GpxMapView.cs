@@ -176,11 +176,13 @@ namespace MapBoard.Mapping
         /// 加载指定文件的GPX文件
         /// </summary>
         /// <param name="files"></param>
-        public async Task LoadFilesAsync(IEnumerable<string> files)
+        public async Task LoadFilesAsync(IList<string> files, Action<int> indexChanged = null)
         {
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
-            foreach (var file in files)
+            for (int i = 0; i < files.Count; i++)
             {
+                string file = files[i];
+                indexChanged?.Invoke(i);
                 FileInfo fileInfo = new FileInfo(file);
                 try
                 {
@@ -211,7 +213,7 @@ namespace MapBoard.Mapping
                     await CommonDialog.ShowErrorDialogAsync(ex, "加载GPX失败");
                 }
             }
-            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
+            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack, false));
         }
 
         /// <summary>
@@ -563,6 +565,7 @@ namespace MapBoard.Mapping
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
+                    overlay2Track.Clear();
                     GraphicsOverlays.Clear();
                     break;
             }
@@ -573,13 +576,13 @@ namespace MapBoard.Mapping
         /// </summary>
         public class GpxLoadedEventArgs : EventArgs
         {
-            public GpxLoadedEventArgs(TrackInfo[] track, bool update)
+            public GpxLoadedEventArgs(IList<TrackInfo> track, bool update)
             {
                 Track = track;
                 Update = update;
             }
 
-            public TrackInfo[] Track { get; private set; }
+            public IList<TrackInfo> Track { get; private set; }
             public bool Update { get; private set; }
         }
 
