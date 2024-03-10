@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converter="clr-namespace:MapBoard.UI.Converter"
     xmlns:converters="clr-namespace:FzLib.WPF.Converters;assembly=FzCoreLib.Windows"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Exit="Application_Exit"
     Startup="Application_Startup">
@@ -15,6 +16,8 @@
                 <ResourceDictionary Source="UI/PathIcons.xaml" />
                 <ResourceDictionary Source="UI/Converter/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <system:String x:Key="DateTimeFormat" />
+            <system:String x:Key="DateFormat" />
             <Style
                 BasedOn="{StaticResource DefaultTextBoxStyle}"
                 TargetType="{x:Type TextBox}">

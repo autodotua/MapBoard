@@ -11,10 +11,14 @@ using System.Xml;
 namespace MapBoard.IO.Gpx
 {
     /// <summary>
-    /// GPX点
+    /// GPX trkpt对象
     /// </summary>
-    public class GpxPoint : ICloneable, INotifyPropertyChanged
+    public class GpxPoint : IGpxElement, INotifyPropertyChanged
     {
+        public HashSet<string> HiddenElements => hiddenElements;
+
+        private static readonly HashSet<string> hiddenElements = ["magvar", "geoidheight", "name", "cmt", "desc",
+        "src","link","sym","type","fix","sat","hdop","vdop","pdop","ageofdgpsdata","dgpsid"];
         public GpxPoint(double x, double y, double? z, DateTime? time)
         {
             X = x;
@@ -28,7 +32,7 @@ namespace MapBoard.IO.Gpx
         /// <summary>
         /// 其他属性
         /// </summary>
-        public Dictionary<string, string> OtherProperties { get; internal set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Extensions { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// 速度，需要计算后得出
@@ -59,7 +63,7 @@ namespace MapBoard.IO.Gpx
         {
             return new GpxPoint(X, Y, Z, Time)
             {
-                OtherProperties = OtherProperties.ToDictionary(p => p.Key, p => p.Value)
+                Extensions = Extensions.ToDictionary(p => p.Key, p => p.Value)
             };
         }
 
@@ -69,7 +73,7 @@ namespace MapBoard.IO.Gpx
         /// <returns></returns>
         public MapPoint ToMapPoint()
         {
-            if(!Z.HasValue)
+            if (!Z.HasValue)
             {
                 throw new InvalidOperationException("指定的" + nameof(GpxPoint) + "没有高度信息");
             }
@@ -83,92 +87,6 @@ namespace MapBoard.IO.Gpx
         public MapPoint ToXYMapPoint()
         {
             return new MapPoint(X, Y, SpatialReferences.Wgs84);
-        }
-
-        /// <summary>
-        /// 从XML进行解析
-        /// </summary>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        internal static GpxPoint FromXml(XmlNode xml)
-        {
-            double x = 0;
-            double y = 0;
-            double? z = null;
-            DateTime? time = null;
-            Dictionary<string, string> otherProperties = new Dictionary<string, string>();
-            foreach (var nodes in new IEnumerable<XmlNode>[] {
-                xml.Attributes.Cast<XmlAttribute>(),
-                xml.ChildNodes.Cast<XmlElement>() })
-            {
-                foreach (XmlNode node in nodes)
-                {
-                    switch (node.Name)
-                    {
-                        case "lat":
-                            y = double.Parse(node.InnerText);
-                            break;
-
-                        case "lon":
-                            x = double.Parse(node.InnerText);
-                            break;
-
-                        case "ele":
-                            if (double.TryParse(node.InnerText, out double result))
-                            {
-                                z = result;
-                            }
-                            break;
-
-                        case "time":
-                            if (DateTime.TryParse(node.InnerText, CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out DateTime t))
-                            {
-                                time = t;
-                            }
-                            break;
-
-                        default:
-                            otherProperties.Add(node.Name, node.InnerText);
-                            break;
-                    }
-                }
-            }
-            var point = new GpxPoint(x, y, z, time)
-            {
-                OtherProperties = otherProperties
-            };
-            return point;
-        }
-
-        /// <summary>
-        /// 将点转换为XML字符串
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="trkpt"></param>
-        internal void WriteGpxXml(XmlDocument doc, XmlElement trkpt)
-        {
-            trkpt.SetAttribute("lat", Y.ToString());
-            trkpt.SetAttribute("lon", X.ToString());
-            if (Z.HasValue)
-            {
-                AppendChildNode("ele", Z.ToString());
-            }
-            if (Time.HasValue)
-            {
-                AppendChildNode("time", Time.Value.ToString(Gpx.GpxTimeFormat));
-            }
-            foreach (var item in OtherProperties)
-            {
-                AppendChildNode(item.Key, item.Value);
-            }
-
-
-            void AppendChildNode(string name, string value)
-            {
-                XmlElement child = doc.CreateElement(name);
-                child.InnerText = value;
-                trkpt.AppendChild(child);
-            }
         }
     }
 }

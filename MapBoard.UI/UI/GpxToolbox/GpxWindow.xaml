@@ -100,9 +100,14 @@
             <Expander
                 Grid.Row="2"
                 Header="GPX信息">
+                <Expander.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </Expander.Resources>
                 <Grid
                     Margin="8"
-                    DataContext="{Binding Gpx}"
+                    DataContext="{Binding GpxTrack.Gpx}"
                     IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -119,17 +124,6 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
                     </Grid.RowDefinitions>
 
                     <TextBox
@@ -140,68 +134,51 @@
                     <TextBlock
                         Grid.Row="2"
                         HorizontalAlignment="Right"
-                        Text="时间：" />
+                        Text="创建者：" />
                     <TextBox
                         Grid.Row="2"
                         Grid.Column="2"
-                        Text="{Binding Time}" />
+                        Text="{Binding Creator}" />
                     <TextBlock
                         Grid.Row="4"
+                        HorizontalAlignment="Right"
+                        Text="时间：" />
+                    <TextBox
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        Text="{Binding Time,StringFormat={StaticResource DateTimeFormat}}" />
+                    <TextBlock
+                        Grid.Row="6"
                         HorizontalAlignment="Right"
                         Text="描述：" />
                     <TextBox
-                        Grid.Row="4"
+                        Grid.Row="6"
                         Grid.Column="2"
                         Text="{Binding Description}" />
                     <TextBlock
-                        Grid.Row="6"
+                        Grid.Row="8"
                         HorizontalAlignment="Right"
                         Text="作者：" />
                     <TextBox
-                        Grid.Row="6"
+                        Grid.Row="8"
                         Grid.Column="2"
                         Text="{Binding Author}" />
-                    <TextBlock
-                        Grid.Row="8"
-                        HorizontalAlignment="Right"
-                        Text="Url：" />
-                    <TextBox
-                        Grid.Row="8"
-                        Grid.Column="2"
-                        Text="{Binding Url}" />
-                    <TextBlock
-                        Grid.Row="10"
-                        HorizontalAlignment="Right"
-                        Text="Url名称：" />
-                    <TextBox
-                        Grid.Row="10"
-                        Grid.Column="2"
-                        Text="{Binding UrlName}" />
-                    <TextBlock
-                        Grid.Row="12"
-                        HorizontalAlignment="Right"
-                        Text="关键词：" />
-                    <TextBox
-                        Grid.Row="12"
-                        Grid.Column="2"
-                        Text="{Binding KeyWords}" />
-                    <TextBlock
-                        Grid.Row="14"
-                        HorizontalAlignment="Right"
-                        Text="距离：" />
-                    <TextBox
-                        Grid.Row="14"
-                        Grid.Column="2"
-                        Text="{Binding Distance,StringFormat='{}{0}m'}" />
+
                 </Grid>
             </Expander>
             <Expander
                 Grid.Row="4"
+                DataContext="{Binding GpxTrack}"
                 Header="Gpx轨迹信息"
                 IsExpanded="True">
+                <Expander.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </Expander.Resources>
                 <Grid
                     Margin="8"
-                    IsEnabled="{Binding GpxTrack, Converter={StaticResource NotNullConverter}}">
+                    IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
@@ -230,7 +207,7 @@
                     <TextBox
                         Grid.ColumnSpan="3"
                         FontSize="16"
-                        Text="{Binding GpxTrack.Name}"
+                        Text="{Binding Track.Name}"
                         TextAlignment="Center" />
                     <TextBlock
                         Grid.Row="2"
@@ -239,7 +216,7 @@
                     <TextBox
                         Grid.Row="2"
                         Grid.Column="2"
-                        Text="{Binding GpxTrack.Description}" />
+                        Text="{Binding Track.Description}" />
                     <TextBlock
                         Grid.Row="4"
                         HorizontalAlignment="Right"
@@ -248,7 +225,7 @@
                         Grid.Row="4"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding DistanceText}" />
+                        Text="{Binding Track, Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=d}" />
                     <TextBlock
                         Grid.Row="6"
                         HorizontalAlignment="Right"
@@ -257,7 +234,7 @@
                         Grid.Row="6"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding SpeedText}" />
+                        Text="{Binding Track, Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=s}" />
                     <TextBlock
                         Grid.Row="8"
                         HorizontalAlignment="Right"
@@ -266,7 +243,7 @@
                         Grid.Row="8"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding GpxTrack.TotalTime, Mode=OneWay}" />
+                        Text="{Binding Duration, Mode=OneWay}" />
                     <TextBlock
                         Grid.Row="10"
                         HorizontalAlignment="Right"
@@ -275,7 +252,7 @@
                         Grid.Row="10"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding MovingSpeedText}" />
+                        Text="{Binding Track, Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=sm}" />
                     <TextBlock
                         Grid.Row="12"
                         HorizontalAlignment="Right"
@@ -284,7 +261,7 @@
                         Grid.Row="12"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding MovingTimeText}" />
+                        Text="{Binding Track, Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=tm}" />
                     <TextBlock
                         Grid.Row="14"
                         HorizontalAlignment="Right"
@@ -293,7 +270,7 @@
                         Grid.Row="14"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding MaxSpeedText}" />
+                        Text="{Binding Track,Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=ms}" />
                     <DataGrid
                         x:Name="grdPoints"
                         Grid.Row="16"
@@ -301,7 +278,7 @@
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="True"
-                        ItemsSource="{Binding GpxTrack.Points}"
+                        ItemsSource="{Binding Points}"
                         SelectionChanged="PointsGrid_SelectionChanged"
                         VerticalScrollBarVisibility="Visible">
                         <DataGrid.ContextMenu>
@@ -324,7 +301,7 @@
                         </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Binding="{Binding Time, StringFormat={}{0:M-d HH:mm:ss}}"
+                                Binding="{Binding Time, StringFormat={}{0:M-d HH:mm:ss.fff}}"
                                 Header="时间"
                                 IsReadOnly="False" />
                             <DataGridTextColumn
@@ -455,10 +432,11 @@
                 MouseLeave="SpeedChartMouseLeave" />
             <!--<local:SpeedChart x:Name="speed" Grid.Row="2" />-->
         </Grid>
-        <u:MapViewSidePanel Grid.Column="2"
-          x:Name="mapInfo"
-          Margin="0,12,8,12"
-          HorizontalAlignment="Right"
-          VerticalAlignment="Stretch" />
+        <u:MapViewSidePanel
+            x:Name="mapInfo"
+            Grid.Column="2"
+            Margin="0,12,8,12"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch" />
     </Grid>
 </u:MainWindowBase>

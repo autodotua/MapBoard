@@ -119,7 +119,7 @@ public partial class TrackView : ContentView, ISidePanel
         var handle = ProgressPopup.Show("ÕýÔÚ¼ÓÔØ¹ì¼£");
         try
         {
-            Gpx gpx = await Gpx.FromFileAsync(path);
+            Gpx gpx = await GpxSerializer.FromFileAsync(path);
 
             var overlay = MainMapView.Current.TrackOverlay;
             var extent = await overlay.LoadColoredGpxAsync(gpx);

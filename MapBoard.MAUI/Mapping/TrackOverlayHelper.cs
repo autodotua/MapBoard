@@ -71,7 +71,10 @@ namespace MapBoard.Mapping
         {
             Clear();
             GpxFile = gpx.FilePath;
-            await GpxUtility.LoadColoredGpxAsync(gpx.Tracks[0], Overlay.Graphics);
+            await Task.Run(() =>
+            {
+                GpxUtility.LoadColoredGpx(gpx.Tracks[0], Overlay.Graphics);
+            });
             return Overlay.Extent;
         }
 

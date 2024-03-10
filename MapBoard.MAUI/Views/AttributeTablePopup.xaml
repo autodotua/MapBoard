@@ -70,7 +70,7 @@
                                                 <Setter.Value>
                                                     <DatePicker
                                                         Date="{Binding DateValue}"
-                                                        Format="yyyy-MM-dd" />
+                                                        Format="{StaticResource DateFormat}" />
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>

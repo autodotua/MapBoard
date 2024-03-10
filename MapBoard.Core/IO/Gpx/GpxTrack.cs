@@ -11,29 +11,15 @@ using System.Xml;
 namespace MapBoard.IO.Gpx
 {
     /// <summary>
-    /// GPX单个轨迹
+    /// GPX trk对象
     /// </summary>
-    public class GpxTrack : ICloneable
+    public class GpxTrack : IGpxElement
     {
-        public double distance = -1;
-
-        private double maxSpeed = -1;
-
-        private TimeSpan? totalTime = null;
-
+        private static readonly HashSet<string> hiddenElements = ["cmt", "src", "link", "number", "type"];
         internal GpxTrack(Gpx parent)
         {
-            GpxInfo = parent;
+            Parent = parent;
         }
-        internal GpxTrack(XmlNode xml, Gpx parent) : this(parent)
-        {
-            LoadGpxTrackInfoProperties(this, xml);
-        }
-
-        /// <summary>
-        /// 平均速度
-        /// </summary>
-        public double AverageSpeed => Distance / TotalTime.TotalSeconds;
 
         /// <summary>
         /// 轨迹描述
@@ -41,232 +27,33 @@ namespace MapBoard.IO.Gpx
         public string Description { get; set; }
 
         /// <summary>
-        /// 总路程
+        /// 其他属性
         /// </summary>
-        public double Distance
-        {
-            get
-            {
-                if (distance == -1)
-                {
-                    distance = 0;
-                    MapPoint last = null;
-                    foreach (var point in Points.TimeOrderedPoints)
-                    {
-                        if (last != null)
-                        {
-                            distance += GeometryUtility.GetDistance(last, point.ToMapPoint());
-                        }
-                        last = point.ToMapPoint();
-                    }
-                }
-                return distance;
-            }
-        }
+        public Dictionary<string, string> Extensions { get; set; } = new Dictionary<string, string>();
 
+        public HashSet<string> HiddenElements => hiddenElements;
         /// <summary>
         /// 轨迹名
         /// </summary>
         public string Name { get; set; }
-
-        /// <summary>
-        /// 其他属性
-        /// </summary>
-        public Dictionary<string, string> OtherProperties { get; private set; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// 轨迹点集
-        /// </summary>
-        public GpxPointCollection Points { get; private set; } = new GpxPointCollection();
-
-        /// <summary>
-        /// 总时长
-        /// </summary>
-        public TimeSpan TotalTime
-        {
-            get
-            {
-                if (totalTime == null)
-                {
-                    totalTime = Points.TimeOrderedPoints[Points.TimeOrderedPoints.Count - 1].Time - Points.TimeOrderedPoints[0].Time;
-                }
-                return totalTime.Value;
-            }
-        }
+        public IList<GpxSegment> Segments { get; private set; } = new List<GpxSegment>();
 
         /// <summary>
         /// 对应的GPX对象
         /// </summary>
-        internal Gpx GpxInfo { get; set; }
-        /// <summary>
-        /// 读取节点值，写入到对应的GPX属性
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="xml"></param>
-        /// <exception cref="XmlException"></exception>
-        public static void LoadGpxTrackInfoProperties(GpxTrack info, XmlNode xml)
-        {
-            try
-            {
-                LoadGpxTrackInfoProperties(info, xml.Attributes.Cast<XmlAttribute>());
-                LoadGpxTrackInfoProperties(info, xml.ChildNodes.Cast<XmlElement>());
-            }
-            catch (Exception ex)
-            {
-                throw new XmlException("解析轨迹失败", ex);
-            }
-        }
-
+        internal Gpx Parent { get; set; }
         public object Clone()
         {
-            GpxTrack info = MemberwiseClone() as GpxTrack;
-            info.Points = Points.Clone() as GpxPointCollection;
-            return info;
+            GpxTrack newObj = MemberwiseClone() as GpxTrack;
+            newObj.Segments = Segments.Select(p => p.Clone() as GpxSegment).ToList();
+            return newObj;
         }
 
-
-        /// <summary>
-        /// 根据提供的采样率参数，获取最大速度
-        /// </summary>
-        /// <param name="window"></param>
-        /// <param name="jump"></param>
-        /// <returns></returns>
-        public async Task<double> GetMaxSpeedAsync(int window = 9)
+        public GpxSegment CreateSegment()
         {
-            return (await GpxUtility.GetMeanFilteredSpeedsAsync(Points, window, false)).Max();
-        }
-
-        /// <summary>
-        /// 获取移动均速
-        /// </summary>
-        /// <param name="speedDevaluation"></param>
-        /// <returns></returns>
-        public double GetMovingAverageSpeed(double speedDevaluation = 0.3)
-        {
-            double totalDistance = 0;
-            double totalSeconds = 0;
-            GpxPoint last = null;
-            try
-            {
-                foreach (var point in Points.TimeOrderedPoints)
-                {
-                    if (last != null)
-                    {
-                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
-                        double second = (point.Time - last.Time).Value.TotalSeconds;
-                        double speed = distance / second;
-                        if (speed > speedDevaluation)
-                        {
-                            totalDistance += distance;
-                            totalSeconds += second;
-                        }
-                    }
-                    last = point;
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException("存在没有时间信息的点", ex);
-            }
-            return totalDistance / totalSeconds;
-        }
-
-        /// <summary>
-        /// 获取移动时间
-        /// </summary>
-        /// <param name="speedDevaluation"></param>
-        /// <returns></returns>
-        public TimeSpan GetMovingTime(double speedDevaluation = 0.3)
-        {
-            double totalDistance = 0;
-            double totalSeconds = 0;
-            GpxPoint last = null;
-            try
-            {
-                foreach (var point in Points.TimeOrderedPoints)
-                {
-                    if (last != null)
-                    {
-                        double distance = GeometryUtility.GetDistance(last.ToMapPoint(), point.ToMapPoint());
-                        double second = (point.Time - last.Time).Value.TotalSeconds;
-                        double speed = distance / second;
-                        if (speed > speedDevaluation)
-                        {
-                            totalDistance += distance;
-                            totalSeconds += second;
-                        }
-                    }
-                    last = point;
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException("存在没有时间信息的点", ex);
-            }
-            return TimeSpan.FromSeconds(totalSeconds);
-        }
-        /// <summary>
-        /// 获取GPX的XML字符串
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="trk"></param>
-        internal void WriteGpxXml(XmlDocument doc, XmlNode trk)
-        {
-            AppendChildNode("name", Name);
-            AppendChildNode("desc", Description);
-            foreach (var item in OtherProperties)
-            {
-                AppendChildNode(item.Key, item.Value);
-            }
-            XmlElement pointsNode = doc.CreateElement("trkseg");
-            trk.AppendChild(pointsNode);
-            foreach (var point in Points)
-            {
-                XmlElement node = doc.CreateElement("trkpt");
-                point.WriteGpxXml(doc, node);
-                pointsNode.AppendChild(node);
-            }
-            void AppendChildNode(string name, string value)
-            {
-                XmlElement child = doc.CreateElement(name);
-                child.InnerText = value;
-                trk.AppendChild(child);
-            }
-        }
-
-        /// <summary>
-        /// 读取节点值，写入到对应的GPX属性
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="nodes"></param>
-        private static void LoadGpxTrackInfoProperties(GpxTrack info, IEnumerable<XmlNode> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                switch (node.Name)
-                {
-                    case "name":
-                        info.Name = node.InnerText;
-                        break;
-
-                    case "desc":
-                        info.Description = node.InnerText;
-                        break;
-
-                    case "trkseg":
-                        foreach (XmlNode ptNode in node.ChildNodes)
-                        {
-                            GpxPoint point = GpxPoint.FromXml(ptNode);
-                            //GpxTrackPoint.LoadGpxTrackPointInfoProperties(point, ptNode);
-                            info.Points.Add(point);
-                        }
-                        break;
-
-                    default:
-                        info.OtherProperties.Add(node.Name, node.InnerText);
-                        break;
-                }
-            }
+            var segment = new GpxSegment(this);
+            Segments.Add(segment);
+            return segment;
         }
     }
 }

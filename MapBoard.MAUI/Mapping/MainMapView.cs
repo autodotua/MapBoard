@@ -280,7 +280,7 @@ namespace MapBoard.Mapping
                     attrStr.Append('：');
                     if (kv.Value is DateTimeOffset dto)
                     {
-                        attrStr.AppendLine(dto.DateTime.ToString("yyyy-MM-dd"));
+                        attrStr.AppendLine(dto.DateTime.ToString(Parameters.DateFormat));
                     }
                     else
                     {

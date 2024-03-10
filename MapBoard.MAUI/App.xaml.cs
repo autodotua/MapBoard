@@ -16,7 +16,12 @@ namespace MapBoard
 
             MainPage = new MainPage();
         }
-
+        protected override void OnStart()
+        {
+            base.OnStart();
+            Resources["DateTimeFormat"] = Parameters.TimeFormat;
+            Resources["DateFormat"] = Parameters.DateFormat;
+        }
         private void MauiExceptions_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             if(e.ExceptionObject.ToString().Contains("System.Net.Sockets"))

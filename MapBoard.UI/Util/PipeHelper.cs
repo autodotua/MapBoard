@@ -27,11 +27,11 @@ namespace MapBoard.Util
     {
         public interface IPipeService
         {
-            void LoadGpxs(IEnumerable<string> files);
+            void LoadGpxs(IList<string> files);
         }
         public class PipeService : IPipeService
         {
-            public async void LoadGpxs(IEnumerable<string> files)
+            public async void LoadGpxs(IList<string> files)
             {
                 await App.Current.Dispatcher.InvokeAsync(async () =>
                        {
@@ -70,7 +70,7 @@ namespace MapBoard.Util
             host.Start();
         }
 
-        public static async Task LoadGpxs(IEnumerable<string> files)
+        public static async Task LoadGpxs(IList<string> files)
         {
             ServiceProvider serviceProvider = new ServiceCollection()
                 .AddTcpIpcClient<IPipeService>("c", IPAddress.Loopback, 23456)

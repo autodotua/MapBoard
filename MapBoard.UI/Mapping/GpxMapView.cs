@@ -26,6 +26,7 @@ using PropertyChanged;
 using System.Windows.Controls;
 using Point = System.Windows.Point;
 using System.Windows.Controls.Primitives;
+using System.Diagnostics;
 
 namespace MapBoard.Mapping
 {
@@ -33,7 +34,7 @@ namespace MapBoard.Mapping
     /// GPX地图
     /// </summary>
     [DoNotNotify]
-    public class GpxMapView : SceneView,IMapBoardGeoView
+    public class GpxMapView : SceneView, IMapBoardGeoView
     {
         public Dictionary<GraphicsOverlay, TrackInfo> overlay2Track = new Dictionary<GraphicsOverlay, TrackInfo>();
 
@@ -175,36 +176,32 @@ namespace MapBoard.Mapping
         /// 加载指定文件的GPX文件
         /// </summary>
         /// <param name="files"></param>
-        public async Task LoadFilesAsync(IEnumerable<string> files)
+        public async Task LoadFilesAsync(IList<string> files, Action<int> indexChanged = null)
         {
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
-            foreach (var file in files)
+            for (int i = 0; i < files.Count; i++)
             {
+                string file = files[i];
+                indexChanged?.Invoke(i);
                 FileInfo fileInfo = new FileInfo(file);
                 try
                 {
-                    if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+                    if (!fileInfo.Exists)
                     {
-                        App.Log.Warn(file + "是目录不是文件");
-                    }
-                    else if (!fileInfo.Exists)
-                    {
-                        App.Log.Warn(file + "不存在");
+                        throw new Exception(file + "不存在");
                     }
                     else if (fileInfo.Length > 10 * 1024 * 1024)
                     {
-                        App.Log.Warn("gpx文件" + file + "大于1MB，跳过");
+                        throw new Exception("gpx文件" + file + "大于1MB，跳过");
                     }
                     else if (fileInfo.Extension != ".gpx")
                     {
-                        App.Log.Warn("文件" + file + "不是gpx");
-                        continue;
+                        throw new Exception("文件" + file + "不是gpx");
                     }
                     else
                     {
                         var exist = Tracks.FirstOrDefault(p => p.FilePath == file);
                         if (exist == null)
-
                         {
                             loadedTrack.AddRange(await LoadGpxAsync(file, false));
                         }
@@ -213,9 +210,10 @@ namespace MapBoard.Mapping
                 catch (Exception ex)
                 {
                     App.Log.Error("加载GPX失败", ex);
+                    await CommonDialog.ShowErrorDialogAsync(ex, "加载GPX失败");
                 }
             }
-            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack.ToArray(), false));
+            GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack, false));
         }
 
         /// <summary>
@@ -229,18 +227,13 @@ namespace MapBoard.Mapping
             Gpx gpx = null;
             await Task.Run(async () =>
              {
-                 gpx = await Gpx.FromFileAsync(filePath);
+                 gpx = await GpxSerializer.FromFileAsync(filePath);
              });
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
 
-                var trackInfo = new TrackInfo()
-                {
-                    FilePath = filePath,
-                    TrackIndex = i,
-                    Gpx = gpx,
-                };
+                var trackInfo = new TrackInfo(filePath, gpx, i);
                 trackInfo.Initialize();
                 try
                 {
@@ -282,17 +275,25 @@ namespace MapBoard.Mapping
                 //处理自动平滑
                 if (Config.Instance.Gpx_AutoSmooth)
                 {
-                    GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
+                    GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
                     if (!Config.Instance.Gpx_AutoSmoothOnlyZ)
                     {
-                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
-                        GpxUtility.Smooth(trackInfo.Track.Points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
+                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
                     }
                     trackInfo.Smoothed = true;
                 }
 
                 //处理高程
-                minZ = Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight ? trackInfo.Track.Points.Min(p => p.Z.Value) : 0;
+                if (Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight)
+                {
+                    var zs = trackInfo.Track.GetPoints().Where(p => p.Z.HasValue);
+                    minZ = zs.Any() ? zs.Min(p => p.Z.Value) : 0;
+                }
+                else
+                {
+                    minZ = 0;
+                }
                 mag = Config.Instance.Gpx_Height ? Config.Instance.Gpx_HeightExaggeratedMagnification : 1;
 
             }
@@ -307,7 +308,8 @@ namespace MapBoard.Mapping
 
             //添加简单线
             Graphic lineGraphic = null;
-            foreach (var gpxPoint in trackInfo.Track.Points)
+            double lastZ = minZ;
+            foreach (var gpxPoint in trackInfo.Track.GetPoints())
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
                 {
@@ -316,8 +318,9 @@ namespace MapBoard.Mapping
                     gpxPoint.Y = newP.Y;
                     gpxPoint.Z = newP.Z;
                 }
-
-                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, (gpxPoint.Z.Value - minZ) * mag, SpatialReferences.Wgs84);
+                double z = gpxPoint.Z.HasValue ? gpxPoint.Z.Value : lastZ;
+                lastZ = z;
+                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, z * mag, SpatialReferences.Wgs84);
 
 
                 //如果前后两个点离得太远了，那么就不连接
@@ -347,7 +350,7 @@ namespace MapBoard.Mapping
             trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
 
             //添加速度彩色线
-            GpxUtility.LoadColoredGpxAsync(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
+            GpxUtility.LoadColoredGpx(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
 
             //设置高程策略
             trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.SimpleLine).SurfacePlacement =
@@ -361,7 +364,7 @@ namespace MapBoard.Mapping
             }
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(new TrackInfo[] { trackInfo }, false));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs([trackInfo], false));
             }
         }
 
@@ -393,8 +396,14 @@ namespace MapBoard.Mapping
                 UnselectAllPoints();
                 return;
             }
-
-            pointGraphic.Geometry = new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
+            try
+            {
+                pointGraphic.Geometry = new MapPoint(point.X, point.Y, SpatialReferences.Wgs84);
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(false);
+            }
         }
 
         /// <summary>
@@ -523,7 +532,7 @@ namespace MapBoard.Mapping
 
                 UnselectAllPoints();
 
-                foreach (var point in SelectedTrack.Track.Points)
+                foreach (var point in SelectedTrack.Track.GetPoints())
                 {
                     if (GeometryEngine.Within(point.ToMapPoint(), envelope))
                     {
@@ -556,6 +565,7 @@ namespace MapBoard.Mapping
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
+                    overlay2Track.Clear();
                     GraphicsOverlays.Clear();
                     break;
             }
@@ -566,13 +576,13 @@ namespace MapBoard.Mapping
         /// </summary>
         public class GpxLoadedEventArgs : EventArgs
         {
-            public GpxLoadedEventArgs(TrackInfo[] track, bool update)
+            public GpxLoadedEventArgs(IList<TrackInfo> track, bool update)
             {
                 Track = track;
                 Update = update;
             }
 
-            public TrackInfo[] Track { get; private set; }
+            public IList<TrackInfo> Track { get; private set; }
             public bool Update { get; private set; }
         }
 
