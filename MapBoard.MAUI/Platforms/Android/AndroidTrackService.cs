@@ -16,7 +16,7 @@ namespace MapBoard.Platforms.Android;
 [Service(ForegroundServiceType = ForegroundService.TypeLocation)]
 public class AndroidTrackService : Service
 {
-    public static bool IsRunning { get; private set; }  
+    public static bool IsRunning { get; private set; }
     private readonly string NotificationChannelID = "MapBoard.Track";
     private readonly string NotificationChannelName = "轨迹记录";
     private readonly int NotificationID = 1;
@@ -86,10 +86,12 @@ public class AndroidTrackService : Service
 
     private void Timer_Tick(object sender, EventArgs e)
     {
+        if (notificationBuilder == null || TrackService == null)
+        {
+            return;
+        }
         notificationBuilder.SetContentTitle(pausing ? "暂停记录轨迹" : "正在记录轨迹");
-
         notificationBuilder.SetContentText($"用时{DateTime.Now - TrackService.StartTime:hh':'mm':'ss}，总长度{TrackService.TotalDistance:0}米");
-
         if (GetSystemService(Context.NotificationService) is NotificationManager notificationManager)
         {
             notificationManager.Notify(NotificationID, notificationBuilder.Build());

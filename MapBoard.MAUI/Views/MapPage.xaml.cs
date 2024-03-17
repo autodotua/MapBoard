@@ -38,6 +38,16 @@ namespace MapBoard.Views
                         var map = MainMapView.Current;
                         await map.SetViewpointScaleAsync(map.MapScale * 10);
                     }
+                    else if (view == btnLocate && map.LocationDisplay != null)
+                    {
+                        var index = await PopupMenu.PopupMenuAsync(btnLocate,
+                                   [
+                                   new PopupMenu.PopupMenuItem("定位"),
+                            new PopupMenu.PopupMenuItem("导航"),
+                            new PopupMenu.PopupMenuItem("指南针"),
+                            ], "定位图标模式");
+                        map.LocationDisplay.AutoPanMode = (LocationDisplayAutoPanMode)(1 + index);
+                    }
                 };
 #endif
 #if IOS
@@ -55,7 +65,7 @@ namespace MapBoard.Views
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            
+
 #if ANDROID
             Platform.CurrentActivity.Finish();
 #endif

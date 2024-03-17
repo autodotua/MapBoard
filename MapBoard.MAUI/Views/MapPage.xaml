@@ -72,6 +72,7 @@
             </ImageButton>
 
             <ImageButton
+                x:Name="btnLocate"
                 Margin="0,60,0,0"
                 Clicked="LocationButton_Click"
                 CornerRadius="4"

@@ -24,7 +24,10 @@ namespace MapBoard
         }
         private void MauiExceptions_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            if(e.ExceptionObject.ToString().Contains("System.Net.Sockets"))
+            string strEx = e.ExceptionObject.ToString();
+            if(strEx.Contains("System.Net.Sockets")
+                || strEx.Contains("Http2Connection")
+                || strEx.Contains("Esri.ArcGISRuntime.Http.Caching.CacheManager"))
             {
                 //FTP服务存在问题，打开后关闭应用，再次打开就会报错
                 return;
