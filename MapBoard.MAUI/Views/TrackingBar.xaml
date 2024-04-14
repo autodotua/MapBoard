@@ -13,7 +13,7 @@
 
             <Style
                 x:Key="WhiteLabel"
-                TargetType="{x:Type Label}">
+                TargetType="Label">
                 <Setter Property="TextColor" Value="White" />
             </Style>
         </ResourceDictionary>

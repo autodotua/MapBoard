@@ -15,7 +15,7 @@
             SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <ViewCell x:DataType="{x:Type m:SimpleFile}">
+                    <ViewCell x:DataType="m:SimpleFile">
                         <Grid
                             Margin="8,0"
                             RowDefinitions="Auto,4,Auto">

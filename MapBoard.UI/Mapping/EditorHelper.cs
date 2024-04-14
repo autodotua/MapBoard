@@ -67,7 +67,7 @@ namespace MapBoard.Mapping
                         oneTapPoint = false;
                         StopAndSave();
                     }
-                    if(stopWhenGeometryChanged)
+                    if (stopWhenGeometryChanged)
                     {
                         StopAndSave();
                     }
@@ -175,6 +175,20 @@ namespace MapBoard.Mapping
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             PrepareToDraw(EditMode.Edit);
             editingFeature = feature;
+
+            GeometryEditor.SnapSettings.IsEnabled = true;
+            GeometryEditor.SnapSettings.SyncSourceSettings();
+            foreach (var ss in GeometryEditor.SnapSettings.SourceSettings)
+            {
+                if (ss.Source is FeatureLayer fl)
+                {
+                    var l = Layers.Find(fl);
+                    if (l != null && l.Interaction.CanCatch)
+                    {
+                        ss.IsEnabled = true;
+                    }
+                }
+            }
             GeometryEditor.Start(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
                GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
             await WaitForStopAsync();
@@ -480,6 +494,7 @@ namespace MapBoard.Mapping
         private async void MapView_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             var position = e.GetPosition(MapView);
+            return; //ArcGIS Maps SDK for .NET 200.4的GeometryEditor已内置Snap吸附功能，因此废除之前自己实现的捕捉功能
             var location = MapView.ScreenToLocation(position);
             if (location == null)
             {

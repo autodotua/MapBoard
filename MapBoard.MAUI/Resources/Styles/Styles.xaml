@@ -455,7 +455,7 @@
 
     <Style
         x:Key="PopupBorderStyle"
-        TargetType="{x:Type Border}">
+        TargetType="Border">
         <Setter Property="StrokeShape">
             <Setter.Value>
                 <RoundRectangle CornerRadius="4" />
