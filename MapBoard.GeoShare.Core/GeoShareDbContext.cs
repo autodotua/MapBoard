@@ -14,7 +14,7 @@ namespace MapBoard.GeoShare.Core
     public class GeoShareDbContext : DbContext
     {
 
-        private static readonly string connectionString = "GeoShare.db";
+        private static readonly string connectionString = "Data Source=geoShare.db";
 
         public GeoShareDbContext()
         {
@@ -22,7 +22,6 @@ namespace MapBoard.GeoShare.Core
         }
 
         public DbSet<UserEntity> Users { get; set; }
-        public DbSet<GroupEntity> Groups { get; set; }
         public DbSet<SharedLocationEntity> SharedLocations { get; set; }
 
 

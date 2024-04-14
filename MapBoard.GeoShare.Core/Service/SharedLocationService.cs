@@ -11,32 +11,34 @@ namespace MapBoard.GeoShare.Core.Service
 {
     public class SharedLocationService(GeoShareDbContext db, UserService userService)
     {
-        //public async Task<SharedLocationEntity> GetUserLastLocationAsync(string username)
-        //{
-        //    UserEntity user = await userService.GetUserAsync(username);
-        //    return await db.SharedLocations.WhereNotDeleted()
-        //        .Where(p => p.UserId == user.Id)
-        //        .OrderByDescending(p => p.Time)
-        //        .FirstOrDefaultAsync();
-        //}
-
         public async Task<IList<UserLocationDto>> GetGroupLastLocationAsync(string groupName)
         {
-            var query = from location in db.SharedLocations
-                        join user in db.Users on location.UserId equals user.Id
-                        join grp in db.Groups on user.GroupId equals grp.Id
-                        where grp.GroupName == groupName
-                        group new { location, user } by location.UserId into userGroup
-                        let latestLocation = userGroup.OrderByDescending(g => g.location.Time).FirstOrDefault()
-                        select new UserLocationDto()
-                        {
-                            User = latestLocation.user,
-                            Location = latestLocation.location
-                        };
-            return await query.ToListAsync();
+            var latestLocations = db.SharedLocations
+           // 首先按用户ID进行分组
+           .GroupBy(sl => sl.UserId)
+           .Select(g => new
+           {
+               UserId = g.Key,
+               // 在分组中按时间降序排序，选择每组中的第一条记录（即最新记录）
+               LatestLocation = g.OrderByDescending(sl => sl.Time).FirstOrDefault()
+           })
+           .ToList();
+            var groupUsers =await userService.GetSameGroupUsersAsync(groupName);
+            return latestLocations
+                .Where(p => groupUsers.ContainsKey(p.UserId))
+                .Select(p => new UserLocationDto()
+                {
+                    UserName = groupUsers[p.UserId],
+                    Location = p.LatestLocation,
+                })
+                .ToList();
         }
 
-        public async Task<SharedLocationEntity> InsertCurrentLocation(string username, double longitude, double latitude, double altitude)
+        public async Task<SharedLocationEntity> InsertCurrentLocation(string username, double longitude, double latitude, double altitude
+#if DEBUG
+            , DateTime time=default
+#endif
+            )
         {
             UserEntity user = await userService.GetUserAsync(username);
             SharedLocationEntity entity = new SharedLocationEntity()
@@ -47,6 +49,12 @@ namespace MapBoard.GeoShare.Core.Service
                 UserId = user.Id,
                 Time = DateTime.Now,
             };
+#if DEBUG
+           if(time!= default)
+            {
+                entity.Time = time;
+            }
+#endif
             db.SharedLocations.Add(entity);
             await db.SaveChangesAsync();
             return entity;

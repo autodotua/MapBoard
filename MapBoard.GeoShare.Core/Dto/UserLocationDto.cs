@@ -9,7 +9,7 @@ namespace MapBoard.GeoShare.Core.Dto
 {
     public class UserLocationDto
     {
-        public UserEntity User { get; set; }
+        public string UserName { get; set; }
         public SharedLocationEntity Location { get; set; }
     }
 }
