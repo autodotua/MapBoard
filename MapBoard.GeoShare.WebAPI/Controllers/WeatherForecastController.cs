@@ -1,33 +1,57 @@
+using MapBoard.GeoShare.Core.Entity;
+using MapBoard.GeoShare.Core.Service;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace MapBoard.GeoShare.WebAPI.Controllers
 {
+    public class GeoShareControllerBase : ControllerBase
+    {
+        protected int GetUser()
+        {
+            if(HttpContext.Session.TryGetValue("user",out byte[] userIdBytes))
+            {
+               return Convert.ToInt32(userIdBytes);
+            }
+            throw new Exception("未登录");
+        }
+    }
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class UserController(UserService userService) : GeoShareControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly UserService userService = userService;
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        [HttpPost]
+        public async Task<IActionResult> Verify(UserEntity user)
         {
-            _logger = logger;
-        }
-
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var dbUser = await userService.GetUserAsync(user.Username);
+            if(dbUser == null)
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                throw new Exception("用户不存在");
+            }
+            if(dbUser.Password!=user.Password)
+            {
+                throw new Exception("用户名和密码不匹配");
+            }
+            HttpContext.Session.SetInt32("user", dbUser.Id) ;
+            return Ok();
+        }
+    }
+    [ApiController]
+    [Route("[controller]")]
+    public class SharedLocationController (SharedLocationService sharedLocationService): GeoShareControllerBase
+    {
+        private readonly SharedLocationService sharedLocationService = sharedLocationService;
+
+        [HttpGet]
+        public Task<IActionResult> GetLatestLocations()
+        {
+            throw new Exception("dasd");
+            //return sharedLocationService.GetGroupLastLocationAsync(GetUser());
         }
     }
 }

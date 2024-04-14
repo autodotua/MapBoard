@@ -271,3 +271,6 @@ packages
 /MapBoard.UI/runtimecore.dll
 /MapBoard.UI/runtimecoreAssembly.manifest
 /MapBoard.UI/RuntimeCoreNet*.dll
+
+*.db
+*.db-*
