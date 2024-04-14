@@ -28,7 +28,7 @@
                     <ViewCell>
                         <Grid
                             Padding="8,4,8,0"
-                            x:DataType="{x:Type m:GpxAndFileInfo}"
+                            x:DataType="m:GpxAndFileInfo"
                             RowDefinitions="Auto,0,Auto,4,Auto">
                             <Label
                                 FontAttributes="Bold"
