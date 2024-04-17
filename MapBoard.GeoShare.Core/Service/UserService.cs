@@ -10,13 +10,13 @@ namespace MapBoard.GeoShare.Core.Service
         private IMemoryCache memoryCache = memoryCache;
         private const string usersCacheKey = "Users";
 
-        private async Task<List<UserEntity>> GetUsersAsync()
+        public async Task<Dictionary<int,UserEntity>> GetUsersAsync()
         {
-            if (memoryCache.TryGetValue(usersCacheKey, out List<UserEntity> cacheUsers))
+            if (memoryCache.TryGetValue(usersCacheKey, out Dictionary<int,UserEntity> cacheUsers))
             {
                 return cacheUsers;
             }
-            var users = await db.Users.ToListAsync();
+            var users = await db.Users.ToDictionaryAsync(p=>p.Id);
             memoryCache.Set(usersCacheKey, users);
             return users;
         }
@@ -24,7 +24,16 @@ namespace MapBoard.GeoShare.Core.Service
         public async Task<UserEntity> GetUserAsync(string username)
         {
             var users = await GetUsersAsync();
-            return users.FirstOrDefault(p => p.Username == username);
+            return users.Values.FirstOrDefault(p => p.Username == username);
+        }
+        public async Task<UserEntity> GetUserAsync(int id)
+        {
+            var users = await GetUsersAsync();
+            if(users.TryGetValue(id, out UserEntity user))
+            {
+                return user;
+            }
+            throw new Exception($"找不到ID为{id}的用户");
         }
 
         public async Task<UserEntity> AddUserAsync(string username, string password, string groupName)
@@ -41,15 +50,32 @@ namespace MapBoard.GeoShare.Core.Service
             db.Users.Add(newUser);
             await db.SaveChangesAsync();
 
-            cacheUsers.Add(newUser);
+            cacheUsers.Add(newUser.Id, newUser);
 
             return newUser;
         }
 
+        public async Task UpdateGroupNameAsync(int userId, string groupName)
+        {
+            var users = await GetUsersAsync();
+
+            if (users.TryGetValue(userId, out UserEntity user))
+            {
+                user.GroupName = groupName;
+                db.Entry(user).State = EntityState.Modified;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception($"找不到ID为{userId}的用户");
+            }
+        }
+
+
         public async Task<Dictionary<int, string>> GetSameGroupUsersAsync(string groupName)
         {
             var users = await GetUsersAsync();
-            return users.Where(p => p.GroupName == groupName).ToDictionary(p => p.Id, p => p.Username);
+            return users.Values.Where(p => p.GroupName == groupName).ToDictionary(p => p.Id, p => p.Username);
         }
     }
 }

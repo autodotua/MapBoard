@@ -1,5 +1,6 @@
 ﻿using MapBoard.GeoShare.Core.Dto;
 using MapBoard.GeoShare.Core.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace MapBoard.GeoShare.Core.Service
 {
+    [Authorize]
     public class SharedLocationService(GeoShareDbContext db, UserService userService)
     {
         public async Task<IList<UserLocationDto>> GetGroupLastLocationAsync(string groupName)
@@ -34,19 +36,18 @@ namespace MapBoard.GeoShare.Core.Service
                 .ToList();
         }
 
-        public async Task<SharedLocationEntity> InsertCurrentLocation(string username, double longitude, double latitude, double altitude
+        public async Task<SharedLocationEntity> InsertCurrentLocation(int userId, double longitude, double latitude, double altitude
 #if DEBUG
             , DateTime time=default
 #endif
             )
         {
-            UserEntity user = await userService.GetUserAsync(username);
             SharedLocationEntity entity = new SharedLocationEntity()
             {
                 Longitude = longitude,
                 Latitude = latitude,
                 Altitude = altitude,
-                UserId = user.Id,
+                UserId = userId,
                 Time = DateTime.Now,
             };
 #if DEBUG
