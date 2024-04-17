@@ -58,12 +58,13 @@ namespace MapBoard.Services
 
         public TrackService()
         {
-            Overlay.Clear();
+            TrackOverlay.Clear();
         }
 
         public static event ThreadExceptionEventHandler ExceptionThrown;
 
         public static event EventHandler CurrentChanged;
+
         public static event EventHandler<GpxSavedEventArgs> GpxSaved;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -153,7 +154,8 @@ namespace MapBoard.Services
             private set => this.SetValueAndNotify(ref updateTime, value, nameof(UpdateTime), nameof(Duration));
         }
 
-        private TrackOverlayHelper Overlay => MainMapView.Current.TrackOverlay;
+        private TrackOverlayHelper TrackOverlay => MainMapView.Current.TrackOverlay;
+        private GeoShareService GeoShare => MainMapView.Current.GeoShareService;
         public async void Start()
         {
             if (running)
@@ -165,7 +167,7 @@ namespace MapBoard.Services
 
             try
             {
-                Overlay.Clear();
+                TrackOverlay.Clear();
                 double distance = 0;
 
                 string backupDir = Path.Combine(FolderPaths.TrackPath, "backup");
@@ -185,7 +187,7 @@ namespace MapBoard.Services
                     StartTime = gpx.Time;
                     PointsCount = gpxTrack.GetPointsCount();
                     //Overlay.LoadLine(gpxTrack.Points.Select(p => new MapPoint(p.X, p.Y)));
-                    await Overlay.LoadColoredGpxAsync(gpx);
+                    await TrackOverlay.LoadColoredGpxAsync(gpx);
                 }
                 else
                 {
@@ -239,12 +241,13 @@ namespace MapBoard.Services
                     if (PointsCount == 0 || distance > MinDistance)
                     {
                         TotalDistance += distance;
-                        Overlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
+                        TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
+                        await GeoShare.ReportLocationAsync(location);
                         UpdateGpx(location);
                         lastRecordLocation = location;
                         PointsCount++;
                     }
-                    if(LastLocation.Longitude==location.Longitude && LastLocation.Latitude==location.Latitude&& LastLocation.Altitude==location.Altitude)
+                    if (LastLocation.Longitude == location.Longitude && LastLocation.Latitude == location.Latitude && LastLocation.Altitude == location.Altitude)
                     {
                         location.Speed = 0;
                     }

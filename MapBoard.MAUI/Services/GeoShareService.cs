@@ -88,7 +88,7 @@ namespace MapBoard.Services
                             var buffer = GeometryEngine.BufferGeodetic(mapLocation, loc.Location.Accuracy, LinearUnits.Meters);
                             Graphic accuracyGraphic = new Graphic(buffer);
                             accuracyGraphic.Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid,
-                                System.Drawing.Color.FromArgb(64, 0, 0x7a,0xc2), null);
+                                System.Drawing.Color.FromArgb(64, 0, 0x7a, 0xc2), null);
                             Overlay.Graphics.Add(accuracyGraphic);
                         }
 
@@ -98,20 +98,6 @@ namespace MapBoard.Services
                         graphic.Attributes.Add(nameof(loc.Location.Altitude), loc.Location.Altitude);
                         graphic.Attributes.Add(nameof(loc.Location.Time), loc.Location.Time);
                         Overlay.Graphics.Add(graphic);
-                    }
-                    if (locationDisplay.MapLocation != null &&
-                        (double.IsNaN(locationDisplay.Location.HorizontalAccuracy)
-                        || locationDisplay.Location.HorizontalAccuracy < 100))
-                    {
-                        var mapLocation = locationDisplay.MapLocation.ToWgs84();
-                        await httpService.PostAsync(Config.Instance.GeoShare.Server + HttpService.Url_ReportLocation, new SharedLocationEntity()
-                        {
-                            Longitude = mapLocation.X,
-                            Latitude = mapLocation.Y,
-                            Altitude = mapLocation.Z,
-                            Accuracy = locationDisplay.Location.HorizontalAccuracy,
-                        });
-
                     }
 
                 }
@@ -125,6 +111,25 @@ namespace MapBoard.Services
                 }
             }
         }
+
+        private DateTime lastReportTime = DateTime.MinValue;
+        public async Task ReportLocationAsync(Location location)
+        {
+            if((DateTime.Now-lastReportTime).Seconds<10)
+            {
+                return;
+            }
+            lastReportTime = DateTime.Now;
+            await httpService.PostAsync(Config.Instance.GeoShare.Server + HttpService.Url_ReportLocation, new SharedLocationEntity()
+            {
+                Longitude = location.Longitude,
+                Latitude = location.Latitude,
+                Altitude = location.Altitude ?? 0,
+                Accuracy = location.Accuracy ?? 0
+            });
+            lastReportTime = DateTime.Now;
+        }
+        //需要处理掉登录问题
     }
 
     public class GeoShareEventArgs : EventArgs
