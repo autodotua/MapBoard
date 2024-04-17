@@ -41,5 +41,7 @@ app.UseSession();
 app.UseAuthorization();
 
 app.MapControllers();
-
+#if DEBUG
+app.Urls.Add("http://0.0.0.0:5289");
+#endif
 app.Run();

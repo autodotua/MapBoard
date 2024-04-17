@@ -376,6 +376,7 @@ namespace MapBoard.Views
                  new PopupMenuItem[] {
                     new PopupMenuItem("测量长度"),
                     new PopupMenuItem("测量面积"),
+                    new PopupMenuItem("位置共享"),
                     new PopupMenuItem("设置"),
                     new PopupMenuItem("退出")
                  });
@@ -388,10 +389,14 @@ namespace MapBoard.Views
                     MainMapView.Current.Editor.StartMeasureArea();
                     break;
                 case 2:
-                    SettingPopup popup = new SettingPopup();
-                    MainPage.Current.ShowPopup(popup);
+                    GeoShareConfigPopup popup = new GeoShareConfigPopup();
+                    this.ShowPopup(popup);
                     break;
                 case 3:
+                    SettingPopup popup2 = new SettingPopup();
+                    this.ShowPopup(popup2);
+                    break;
+                case 4:
                     if (TrackService.Current != null)
                     {
                         if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)

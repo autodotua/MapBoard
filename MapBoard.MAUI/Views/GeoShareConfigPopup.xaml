@@ -1,18 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup
-    x:Class="MapBoard.Views.LayerStylePopup"
+    x:Class="MapBoard.Views.GeoShareConfigPopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:lm="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:m="clr-namespace:MapBoard.Models"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    x:DataType="{x:Type lm:ILayerInfo}"
+    x:DataType="{x:Type m:GeoShareConfig}"
+    CanBeDismissedByTappingOutsideOfPopup="False"
     HorizontalOptions="Fill"
     Size="300,500"
     VerticalOptions="Fill"
     Color="Transparent">
-    <Border Style="{StaticResource PopupBorderStyle}">
+    <Border
+        Padding="8"
+        HeightRequest="500"
+        Style="{StaticResource PopupBorderStyle}"
+        WidthRequest="300">
 
         <Grid RowDefinitions="*,8,Auto">
+            <TableView Intent="Settings">
+                <TableRoot>
+                    <TableSection Title="位置共享配置">
+                        <EntryCell
+                            Label="服务器地址"
+                            Text="{Binding Server}" />
+                        <EntryCell
+                            Label="账号"
+                            Text="{Binding UserName}" />
+                        <EntryCell
+                            Label="密码"
+                            Text="{Binding Password}" />
+                        <EntryCell
+                            Label="组名"
+                            Text="{Binding GroupName}" />
+                    </TableSection>
+
+                </TableRoot>
+            </TableView>
+            <StackLayout
+                Grid.Row="2"
+                Margin="0,0,8,0"
+                HorizontalOptions="End"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="LoginButton_Clicked"
+                    Text="登录"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="CancelButton_Clicked"
+                    Text="关闭"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+            </StackLayout>
+        </Grid>
+
+        <!--<Grid RowDefinitions="*,8,Auto">
             <Grid.Resources>
                 <Style TargetType="{x:Type Line}">
                     <Setter Property="HorizontalOptions" Value="Fill" />
@@ -43,14 +90,14 @@
                 <VerticalStackLayout Spacing="16">
                     <Label
                         FontSize="Title"
-                        Text="显示" />
+                        Text="位置共享配置" />
                     <Grid ColumnDefinitions="{StaticResource GridColumns}">
                         <Label
                             Style="{StaticResource KeyLabelStyle}"
-                            Text="最大比例" />
+                            Text="服务器" />
                         <Entry
                             Grid.Column="2"
-                            Text="{Binding Display.MaxScale}" />
+                            Text="{Binding Server}" />
                     </Grid>
 
                     <Grid ColumnDefinitions="{StaticResource GridColumns}">
@@ -114,7 +161,9 @@
                     <Label Text="请在MapBoard桌面端完成" />
                 </VerticalStackLayout>
             </ScrollView>
-            <!--  TableView存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
+        -->
+        <!--  TableView存在BUG：在安卓上更新单元格时，表格视图单元格消，https://github.com/dotnet/maui/issues/16533  -->
+        <!--
             <Grid
                 Grid.Row="2"
                 Margin="8"
@@ -122,7 +171,7 @@
                 <Button
                     BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                       Dark={DynamicResource Gray600}}"
-                    Clicked="CancelButton_Clicked"
+                    Clicked="CalcelButton_Clicked"
                     Text="取消"
                     TextColor="{AppThemeBinding Dark={DynamicResource White},
                                                 Light={DynamicResource Black}}" />
@@ -132,6 +181,6 @@
                     Text="应用" />
 
             </Grid>
-        </Grid>
+        </Grid>-->
     </Border>
 </toolkit:Popup>

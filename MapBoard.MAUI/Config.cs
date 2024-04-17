@@ -2,6 +2,7 @@
 using FzLib.DataStorage.Serialization;
 using MapBoard.IO;
 using MapBoard.Model;
+using MapBoard.Models;
 using Newtonsoft.Json;
 using PropertyChanged;
 using System;
@@ -56,7 +57,9 @@ namespace MapBoard
             }
         }
 
+        public bool AutoQuit { get; set; } = false;
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
+
         public bool CanRotate
         {
             get => canRotate;
@@ -68,11 +71,14 @@ namespace MapBoard
             get => enableBasemapCache;
             set => this.SetValueAndNotify(ref enableBasemapCache, value, nameof(EnableBasemapCache));
         }
+
+        public GeoShareConfig GeoShare { get; set; } = new GeoShareConfig();
         public bool IsTracking
         {
             get => isTracking;
             set => this.SetValueAndNotify(ref isTracking, value, nameof(IsTracking));
         }
+
         public string LastCrashFile
         {
             get => lastCrashFile;
@@ -84,18 +90,18 @@ namespace MapBoard
             get => lastLayerListGroupType;
             set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
         }
+
         public double MaxScale
         {
             get => maxScale;
             set => this.SetValueAndNotify(ref maxScale, value, nameof(MaxScale));
         }
+
         public bool ScreenAlwaysOn
         {
             get => screenAlwaysOn;
             set => this.SetValueAndNotify(ref screenAlwaysOn, value, nameof(ScreenAlwaysOn));
         }
-
-        public bool AutoQuit { get; set; } = false;
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>

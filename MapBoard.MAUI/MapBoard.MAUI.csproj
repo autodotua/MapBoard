@@ -94,6 +94,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\MapBoard.Core\MapBoard.Core.csproj" />
+	  <ProjectReference Include="..\MapBoard.GeoShare.Core\MapBoard.GeoShare.Core.csproj" />
 	  <ProjectReference Include="..\MapBoard.Model\MapBoard.Model.csproj" />
 	</ItemGroup>
 
@@ -104,6 +105,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\GeoShareConfigPopup.xaml.cs">
+	    <DependentUpon>GeoShareConfigPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\SettingPopup.xaml.cs">
 	    <DependentUpon>SettingPopup.xaml</DependentUpon>
 	  </Compile>
@@ -149,6 +153,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\GeoShareConfigPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\SettingPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
