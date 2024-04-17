@@ -9,5 +9,9 @@
         public string Password { get; set; } = "string";
 
         public string GroupName { get; set; } = "string";
+
+        public bool IsEnabled { get; set; } = false;
+
+        public bool ShareLocation { get; set; } = true;
     }
 }

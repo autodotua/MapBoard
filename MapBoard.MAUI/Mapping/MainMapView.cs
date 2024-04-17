@@ -24,6 +24,8 @@ using System.Text;
 using MapBoard.Views;
 using System.Reflection;
 using MapBoard.Models;
+using MapBoard.Services;
+using MapBoard.GeoShare.Core.Dto;
 
 namespace MapBoard.Mapping
 {
@@ -180,6 +182,8 @@ namespace MapBoard.Mapping
 
         public EditHelper Editor { get; private set; }
 
+        public GeoShareService GeoShareService { get; private set; }
+
         /// <summary>
         /// 初始化加载
         /// </summary>
@@ -202,6 +206,23 @@ namespace MapBoard.Mapping
                 GraphicsOverlays.Add(overlay);
                 TrackOverlay = new TrackOverlayHelper(overlay);
             }
+
+            if (GeoShareService == null)
+            {
+                var overlay = new GraphicsOverlay()
+                {
+                    Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 10) 
+                    { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.White, 2) })
+                };
+                GraphicsOverlays.Add(overlay);
+                GeoShareService = new GeoShareService(overlay, LocationDisplay);
+                GeoShareService.GeoShareLocationsChanged += GeoShareService_GeoShareLocationsChanged;
+                GeoShareService.Start();
+            }
+        }
+
+        private void GeoShareService_GeoShareLocationsChanged(object sender, GeoShareEventArgs e)
+        {
         }
 
         public void MoveToLocation()
@@ -326,6 +347,11 @@ namespace MapBoard.Mapping
 
         private async Task<bool> TapToSelectOverlayAsync(GeoViewInputEventArgs e)
         {
+            return await TapTrackOverlay(e) || await TapGeoShareOverlay(e);
+        }
+
+        private async Task<bool> TapTrackOverlay(GeoViewInputEventArgs e)
+        {
             var result = await IdentifyGraphicsOverlayAsync(TrackOverlay.Overlay, e.Position, 10, false, 1);
             if (result != null && result.Graphics.Count > 0)
             {
@@ -346,10 +372,29 @@ namespace MapBoard.Mapping
                 if (graphic.Attributes.TryGetValue("Distance", out object objDist))
                 {
                     var distance = (double)objDist;
-                    string distanceString = distance < 1000 ? $"{distance:0}m" : $"{distance/1000:0.00}km";
+                    string distanceString = distance < 1000 ? $"{distance:0}m" : $"{distance / 1000:0.00}km";
                     detailString = $"{detailString}{Environment.NewLine}距离：{distanceString}";
                 }
                 ShowCallout(e.Position, graphic, timeString, detailString, true);
+                return true;
+            }
+            return false;
+        }
+        private async Task<bool> TapGeoShareOverlay(GeoViewInputEventArgs e)
+        {
+            var result = await IdentifyGraphicsOverlayAsync(GeoShareService.Overlay, e.Position, 10, false, 1);
+            if (result != null && result.Graphics.Count > 0)
+            {
+                var graphic = result.Graphics[0];
+                if (graphic.Attributes.Count == 0)
+                {
+                    return false;
+                }
+                var username = graphic.Attributes[nameof(UserLocationDto.UserName)] as string;
+                var timeString = ((DateTime)graphic.Attributes[nameof(UserLocationDto.Location.Time)]).ToString("HH:mm:ss");
+                var altitude = (double)graphic.Attributes[nameof(UserLocationDto.Location.Altitude)];
+                var detailString = $"时间：{timeString}{Environment.NewLine}海拔：{altitude} m";
+                ShowCallout(e.Position, graphic, username, detailString, true);
                 return true;
             }
             return false;

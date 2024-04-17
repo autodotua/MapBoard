@@ -83,6 +83,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" />
 		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" />
 		<PackageReference Include="FubarDev.FtpServer" />

@@ -14,6 +14,8 @@ namespace MapBoard.GeoShare.Core.Entity
 
         public double Altitude { get; set; }
 
+        public double Accuracy { get; set; }
+
         public DateTime Time { get; set; }
 
         public int UserId { get; set; }

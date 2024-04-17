@@ -12,12 +12,17 @@ namespace MapBoard.Services
     public class HttpService
     {
         public const string Url_Login = "/User/Login";
+        public const string Url_LatestLocations = "/Loc/Latest";
+        public const string Url_ReportLocation = "/Loc/New";
 
         private HttpClient httpClient;
 
         public HttpService()
         {
-            httpClient = new HttpClient();
+            httpClient = new HttpClient()
+            {
+                Timeout = TimeSpan.FromSeconds(5)
+            };
         }
 
         public Task GetAsync(string url)
