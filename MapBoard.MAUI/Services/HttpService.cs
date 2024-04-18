@@ -34,12 +34,7 @@ namespace MapBoard.Services
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             string responseContent = await response.Content.ReadAsStringAsync();
-            HttpResponseContainer<T> container = JsonConvert.DeserializeObject<HttpResponseContainer<T>>(responseContent);
-            if (!container.Success)
-            {
-                throw new Exception($"请求失败：{container.Message}");
-            }
-            return container.Data;
+            return JsonConvert.DeserializeObject<T>(responseContent);
         }
 
         public Task PostAsync(string url, object requestData)
@@ -53,12 +48,7 @@ namespace MapBoard.Services
             HttpResponseMessage response = await httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
             string responseContent = await response.Content.ReadAsStringAsync();
-            HttpResponseContainer<T> container = JsonConvert.DeserializeObject<HttpResponseContainer<T>>(responseContent);
-            if (!container.Success)
-            {
-                throw new Exception($"请求失败：{container.Message}");
-            }
-            return container.Data;
+            return JsonConvert.DeserializeObject<T>(responseContent);
         }
     }
 }

@@ -39,8 +39,19 @@ public partial class GeoShareConfigPopup : Popup
             Config.Instance.GeoShare.IsEnabled = true;
             viewModel.NotifyConfig();
             Config.Instance.Save();
-            await MainPage.Current.DisplayAlert("登陆成功", "位置共享服务已登录", "确定");
+            await MainPage.Current.DisplayAlert("登陆成功", "登陆成功", "确定");
             Close();
+        }
+        catch (HttpRequestException ex )
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await MainPage.Current.DisplayAlert("登陆失败", "用户名或密码错误", "确定");
+            }
+            else
+            {
+                await MainPage.Current.DisplayAlert("登陆失败", ex.Message, "确定");
+            }
         }
         catch (Exception ex)
         {

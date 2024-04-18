@@ -55,12 +55,14 @@ namespace MapBoard.Services
             });
         }
 
-        public event EventHandler<GeoShareEventArgs> GeoShareLocationsChanged;
+        public event EventHandler<ExceptionEventArgs> GeoShareExceptionThrow;
 
         private async void StartTimerAsync()
         {
-            while (await timer.WaitForNextTickAsync())
+            bool retry = false;
+            while (retry|| await timer.WaitForNextTickAsync())
             {
+                retry = false;
                 if (!Config.Instance.GeoShare.IsEnabled)
                 {
                     continue;
@@ -68,10 +70,6 @@ namespace MapBoard.Services
                 try
                 {
                     var locations = await httpService.GetAsync<IList<UserLocationDto>>(Config.Instance.GeoShare.Server + HttpService.Url_LatestLocations);
-                    GeoShareLocationsChanged?.Invoke(this, new GeoShareEventArgs()
-                    {
-                        Locations = locations
-                    });
                     Overlay.Graphics.Clear();
                     foreach (var loc in locations
 #if !DEBUG
@@ -92,22 +90,42 @@ namespace MapBoard.Services
                             Overlay.Graphics.Add(accuracyGraphic);
                         }
 
-                        Graphic graphic = new Graphic(mapLocation);
-                        graphic.Attributes.Add(nameof(loc.UserName), loc.UserName);
-                        graphic.Attributes.Add(nameof(loc.Location.Accuracy), loc.Location.Accuracy);
-                        graphic.Attributes.Add(nameof(loc.Location.Altitude), loc.Location.Altitude);
-                        graphic.Attributes.Add(nameof(loc.Location.Time), loc.Location.Time);
+                        Dictionary<string, object> attrs = new Dictionary<string, object>()
+                        {
+                            [nameof(loc.UserName)] = loc.UserName,
+                            [nameof(loc.Location.Accuracy)] = loc.Location.Accuracy,
+                            [nameof(loc.Location.Altitude)] = loc.Location.Altitude,
+                            [nameof(loc.Location.Time)] = loc.Location.Time 
+                        };
+                        Graphic graphic = new Graphic(mapLocation, attrs);
                         Overlay.Graphics.Add(graphic);
                     }
 
                 }
+                catch(HttpRequestException ex)
+                {
+                    //登陆存在问题
+                    if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        try
+                        {
+                            await LoginAsync();
+                            retry = true;
+                        }
+                        catch (Exception ex2)
+                        {
+                            GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+                            Config.Instance.GeoShare.IsEnabled = false;
+                        }
+                    }
+                    else
+                    {
+                        GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+                    }
+                }
                 catch (Exception ex)
                 {
-                    GeoShareLocationsChanged?.Invoke(this, new GeoShareEventArgs()
-                    {
-                        HasException = true,
-                        Exception = ex
-                    });
+                    GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
                 }
             }
         }
@@ -119,23 +137,42 @@ namespace MapBoard.Services
             {
                 return;
             }
-            lastReportTime = DateTime.Now;
-            await httpService.PostAsync(Config.Instance.GeoShare.Server + HttpService.Url_ReportLocation, new SharedLocationEntity()
+            try
             {
-                Longitude = location.Longitude,
-                Latitude = location.Latitude,
-                Altitude = location.Altitude ?? 0,
-                Accuracy = location.Accuracy ?? 0
-            });
-            lastReportTime = DateTime.Now;
+                lastReportTime = DateTime.Now;
+                await httpService.PostAsync(Config.Instance.GeoShare.Server + HttpService.Url_ReportLocation, new SharedLocationEntity()
+                {
+                    Longitude = location.Longitude,
+                    Latitude = location.Latitude,
+                    Altitude = location.Altitude ?? 0,
+                    Accuracy = location.Accuracy ?? 0
+                });
+                lastReportTime = DateTime.Now;
+            }
+            catch (HttpRequestException ex)
+            {
+                //登陆存在问题
+                if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        await LoginAsync();
+                    }
+                    catch (Exception ex2)
+                    {
+                        GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+                        Config.Instance.GeoShare.IsEnabled = false;
+                    }
+                }
+                else
+                {
+                    GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+                }
+            }
+            catch (Exception ex)
+            {
+                GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+            }
         }
-        //需要处理掉登录问题
-    }
-
-    public class GeoShareEventArgs : EventArgs
-    {
-        public bool HasException { get; set; }
-        public Exception Exception { get; set; }
-        public IList<UserLocationDto> Locations { get; set; }
     }
 }

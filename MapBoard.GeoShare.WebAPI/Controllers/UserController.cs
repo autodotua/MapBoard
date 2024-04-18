@@ -16,7 +16,7 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
         private readonly UserService userService = userService;
 
         [HttpPost("Login")]
-        public async Task LoginAsync(UserEntity user)
+        public async Task<IActionResult> LoginAsync(UserEntity user)
         {
 #if DEBUG
             var users = await userService.GetUsersAsync();
@@ -28,17 +28,18 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
             var dbUser = await userService.GetUserAsync(user.Username);
             if (dbUser == null)
             {
-                throw new Exception("用户不存在");
+                return Unauthorized("用户不存在");
             }
             if (dbUser.Password != user.Password)
             {
-                throw new Exception("用户名和密码不匹配");
+                return Unauthorized("用户名和密码不匹配");
             }
             if (user.GroupName != dbUser.GroupName)
             {
                 await userService.UpdateGroupNameAsync(dbUser.Id, user.GroupName);
             }
             HttpContext.Session.SetInt32("user", dbUser.Id);
+            return Ok();
         }
     }
 }

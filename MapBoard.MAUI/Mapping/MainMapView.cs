@@ -211,17 +211,17 @@ namespace MapBoard.Mapping
             {
                 var overlay = new GraphicsOverlay()
                 {
-                    Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 10) 
+                    Renderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 10)
                     { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.White, 2) })
                 };
                 GraphicsOverlays.Add(overlay);
                 GeoShareService = new GeoShareService(overlay, LocationDisplay);
-                GeoShareService.GeoShareLocationsChanged += GeoShareService_GeoShareLocationsChanged;
+                GeoShareService.GeoShareExceptionThrow += GeoShareService_GeoShareExceptionThrow;
                 GeoShareService.Start();
             }
         }
 
-        private void GeoShareService_GeoShareLocationsChanged(object sender, GeoShareEventArgs e)
+        private void GeoShareService_GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
         {
         }
 
@@ -391,9 +391,9 @@ namespace MapBoard.Mapping
                     return false;
                 }
                 var username = graphic.Attributes[nameof(UserLocationDto.UserName)] as string;
-                var timeString = ((DateTime)graphic.Attributes[nameof(UserLocationDto.Location.Time)]).ToString("HH:mm:ss");
+                var timeString = ((DateTime)graphic.Attributes[nameof(UserLocationDto.Location.Time)]).ToString("yyyy-MM-dd HH:mm:ss");
                 var altitude = (double)graphic.Attributes[nameof(UserLocationDto.Location.Altitude)];
-                var detailString = $"时间：{timeString}{Environment.NewLine}海拔：{altitude} m";
+                var detailString = $"时间：{timeString}{Environment.NewLine}海拔：{altitude:0.0} m";
                 ShowCallout(e.Position, graphic, username, detailString, true);
                 return true;
             }
