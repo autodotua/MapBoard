@@ -133,6 +133,10 @@ namespace MapBoard.Services
         private DateTime lastReportTime = DateTime.MinValue;
         public async Task ReportLocationAsync(Location location)
         {
+            if(!Config.Instance.GeoShare.IsEnabled || !Config.Instance.GeoShare.ShareLocation)
+            {
+                return;
+            }
             if((DateTime.Now-lastReportTime).Seconds<10)
             {
                 return;

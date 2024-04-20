@@ -10,7 +10,7 @@ public class GeoShareActionFilter : IActionFilter
         {
             throw new Exception();
         }
-        if (context.HttpContext.Request.Path.Value.EndsWith("Login"))
+        if (context.HttpContext.Request.Path.Value.EndsWith("Login") || context.HttpContext.Request.Path.Value.EndsWith("Register"))
         {
             return;
         }

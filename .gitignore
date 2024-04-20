@@ -153,10 +153,10 @@ PublishScripts/
 
 # NuGet Packages
  *.nupkg
-# ÕâÀïĞŞ¸ÄÁË
+# ï¿½ï¿½ï¿½ï¿½ï¿½Ş¸ï¿½ï¿½ï¿½
 # The packages folder can be ignored because of Package Restore
  **/packages/*
-# ÕâÀïĞŞ¸ÄÁË
+# ï¿½ï¿½ï¿½ï¿½ï¿½Ş¸ï¿½ï¿½ï¿½
 # except build/, which is used as an MSBuild target.
 !**/packages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
@@ -164,7 +164,7 @@ PublishScripts/
 # NuGet v3's project.json files produces more ignoreable files
  *.nuget.props
  *.nuget.targets
-# ÕâÀïĞŞ¸ÄÁË
+# ï¿½ï¿½ï¿½ï¿½ï¿½Ş¸ï¿½ï¿½ï¿½
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -262,7 +262,7 @@ paket-files/
 __pycache__/
 *.pyc
 
-#¾É°æ±¾
+#ï¿½É°æ±¾
 OldVersions
 
 packages
@@ -274,3 +274,4 @@ packages
 
 *.db
 *.db-*
+*.pubxml

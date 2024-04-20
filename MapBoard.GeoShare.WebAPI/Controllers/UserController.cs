@@ -18,13 +18,6 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> LoginAsync(UserEntity user)
         {
-#if DEBUG
-            var users = await userService.GetUsersAsync();
-            if (users.Count == 0)
-            {
-                await userService.AddUserAsync("string", "string", "string");
-            }
-#endif
             var dbUser = await userService.GetUserAsync(user.Username);
             if (dbUser == null)
             {
@@ -40,6 +33,21 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
             }
             HttpContext.Session.SetInt32("user", dbUser.Id);
             return Ok();
+        }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> RegisterAsync(UserEntity user)
+        {
+            int id;
+            try
+            {
+                id = await userService.RegisterAsync(user);
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
+            return Ok(id);
         }
     }
 }

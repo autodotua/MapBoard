@@ -10,13 +10,13 @@ namespace MapBoard.GeoShare.Core.Service
         private IMemoryCache memoryCache = memoryCache;
         private const string usersCacheKey = "Users";
 
-        public async Task<Dictionary<int,UserEntity>> GetUsersAsync()
+        public async Task<Dictionary<int, UserEntity>> GetUsersAsync()
         {
-            if (memoryCache.TryGetValue(usersCacheKey, out Dictionary<int,UserEntity> cacheUsers))
+            if (memoryCache.TryGetValue(usersCacheKey, out Dictionary<int, UserEntity> cacheUsers))
             {
                 return cacheUsers;
             }
-            var users = await db.Users.ToDictionaryAsync(p=>p.Id);
+            var users = await db.Users.ToDictionaryAsync(p => p.Id);
             memoryCache.Set(usersCacheKey, users);
             return users;
         }
@@ -26,14 +26,29 @@ namespace MapBoard.GeoShare.Core.Service
             var users = await GetUsersAsync();
             return users.Values.FirstOrDefault(p => p.Username == username);
         }
+
         public async Task<UserEntity> GetUserAsync(int id)
         {
             var users = await GetUsersAsync();
-            if(users.TryGetValue(id, out UserEntity user))
+            if (users.TryGetValue(id, out UserEntity user))
             {
                 return user;
             }
             throw new Exception($"找不到ID为{id}的用户");
+        }
+
+        public async Task<int> RegisterAsync(UserEntity user)
+        {
+            var users = await GetUsersAsync();
+            if (users.Values.Any(p => p.Username == user.Username))
+            {
+                throw new Exception("用户名重复");
+            }
+            user.Id = 0;
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+            users.Add(user.Id, user);
+            return user.Id;
         }
 
         public async Task<UserEntity> AddUserAsync(string username, string password, string groupName)

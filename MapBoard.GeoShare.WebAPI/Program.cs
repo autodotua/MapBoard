@@ -30,18 +30,16 @@ builder.Services.AddTransient<SharedLocationService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 app.UseSession();
 app.UseAuthorization();
 
 app.MapControllers();
-#if DEBUG
-app.Urls.Add("http://0.0.0.0:5289");
-#endif
+
 app.Run();

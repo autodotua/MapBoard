@@ -68,6 +68,21 @@
                 Spacing="8">
                 <Button
                     BackgroundColor="Transparent"
+                    Clicked="CancelButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    Text="关闭"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="RegisterButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    IsVisible="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                    Text="注册"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
                     Clicked="LoginButton_Clicked"
                     IsEnabled="{Binding IsReady}"
                     IsVisible="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
@@ -80,12 +95,6 @@
                     IsEnabled="{Binding IsReady}"
                     IsVisible="{Binding Config.IsEnabled}"
                     Text="注销"
-                    TextColor="{AppThemeBinding Dark={DynamicResource White},
-                                                Light={DynamicResource Black}}" />
-                <Button
-                    BackgroundColor="Transparent"
-                    Clicked="CancelButton_Clicked"
-                    Text="关闭"
                     TextColor="{AppThemeBinding Dark={DynamicResource White},
                                                 Light={DynamicResource Black}}" />
             </StackLayout>

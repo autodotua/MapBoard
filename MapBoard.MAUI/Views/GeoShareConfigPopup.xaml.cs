@@ -42,7 +42,7 @@ public partial class GeoShareConfigPopup : Popup
             await MainPage.Current.DisplayAlert("登陆成功", "登陆成功", "确定");
             Close();
         }
-        catch (HttpRequestException ex )
+        catch (HttpRequestException ex)
         {
             if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -56,6 +56,34 @@ public partial class GeoShareConfigPopup : Popup
         catch (Exception ex)
         {
             await MainPage.Current.DisplayAlert("登陆失败", ex.Message, "确定");
+        }
+        finally
+        {
+            viewModel.IsReady = true;
+        }
+    }
+
+    private async void RegisterButton_Clicked(object sender, EventArgs e)
+    {
+        HttpService httpService = new HttpService();
+        try
+        {
+            viewModel.IsReady = false;
+            await httpService.PostAsync(Config.Instance.GeoShare.Server + HttpService.Url_Register, new UserEntity()
+            {
+                Username = Config.Instance.GeoShare.UserName,
+                Password = Config.Instance.GeoShare.Password,
+                GroupName = Config.Instance.GeoShare.GroupName,
+            });
+            Config.Instance.GeoShare.IsEnabled = true;
+            viewModel.NotifyConfig();
+            Config.Instance.Save();
+            await MainPage.Current.DisplayAlert("注册成功", "注册成功并已登录", "确定");
+            Close();
+        }
+        catch (Exception ex)
+        {
+            await MainPage.Current.DisplayAlert("注册失败", ex.Message, "确定");
         }
         finally
         {

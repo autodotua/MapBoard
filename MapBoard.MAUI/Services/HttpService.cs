@@ -12,6 +12,7 @@ namespace MapBoard.Services
     public class HttpService
     {
         public const string Url_Login = "/User/Login";
+        public const string Url_Register = "/User/Register";
         public const string Url_LatestLocations = "/Loc/Latest";
         public const string Url_ReportLocation = "/Loc/New";
 
@@ -32,9 +33,31 @@ namespace MapBoard.Services
         public async Task<T> GetAsync<T>(string url)
         {
             HttpResponseMessage response = await httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            string responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(responseContent);
+            string responseContent = null;
+            try
+            {
+                try
+                {
+                    responseContent = await response.Content.ReadAsStringAsync();
+                }
+                catch
+                {
+
+                }
+                response.EnsureSuccessStatusCode();
+                return JsonConvert.DeserializeObject<T>(responseContent);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (!string.IsNullOrEmpty(responseContent))
+                {
+                    throw new HttpRequestException(responseContent, ex, ex.StatusCode);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public Task PostAsync(string url, object requestData)
@@ -46,9 +69,31 @@ namespace MapBoard.Services
             string jsonData = JsonConvert.SerializeObject(requestData);
             StringContent content = new StringContent(jsonData, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-            string responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(responseContent);
+            string responseContent = null;
+            try
+            {
+                try
+                {
+                    responseContent = await response.Content.ReadAsStringAsync();
+                }
+                catch
+                {
+
+                }
+                response.EnsureSuccessStatusCode();
+                return JsonConvert.DeserializeObject<T>(responseContent);
+            }
+            catch(HttpRequestException ex)
+            {
+                if(!string.IsNullOrEmpty(responseContent))
+                {
+                    throw new HttpRequestException(responseContent, ex,ex.StatusCode);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 }
