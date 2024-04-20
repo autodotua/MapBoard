@@ -13,7 +13,7 @@ namespace MapBoard.GeoShare.Core.Service
     [Authorize]
     public class SharedLocationService(GeoShareDbContext db, UserService userService)
     {
-        public async Task<IList<UserLocationDto>> GetGroupLastLocationAsync(string groupName)
+        public async Task<IList<UserLocationDto>> GetGroupLastLocationAsync(string groupName,TimeSpan timeRange)
         {
             var latestLocations = db.SharedLocations
            // 首先按用户ID进行分组
@@ -28,6 +28,7 @@ namespace MapBoard.GeoShare.Core.Service
             var groupUsers =await userService.GetSameGroupUsersAsync(groupName);
             return latestLocations
                 .Where(p => groupUsers.ContainsKey(p.UserId))
+                .Where(p=>p.LatestLocation.Time>DateTime.Now- timeRange)
                 .Select(p => new UserLocationDto()
                 {
                     UserName = groupUsers[p.UserId],

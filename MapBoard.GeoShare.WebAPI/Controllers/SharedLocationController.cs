@@ -15,7 +15,7 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
         [HttpGet("Latest")]
         public async Task<IList<UserLocationDto>> GetLatestLocationsAsync()
         {
-            return await sharedLocationService.GetGroupLastLocationAsync((await userService.GetUserAsync(GetUser())).GroupName);
+            return await sharedLocationService.GetGroupLastLocationAsync((await userService.GetUserAsync(GetUser())).GroupName,TimeSpan.FromHours(1));
         }
 
         [HttpPost("New")]

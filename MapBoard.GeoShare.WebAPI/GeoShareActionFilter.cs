@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using MapBoard.GeoShare.Core.Dto;
+using MapBoard.GeoShare.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public class GeoShareActionFilter : IActionFilter
 {
@@ -10,7 +12,8 @@ public class GeoShareActionFilter : IActionFilter
         {
             throw new Exception();
         }
-        if (context.HttpContext.Request.Path.Value.EndsWith("Login") || context.HttpContext.Request.Path.Value.EndsWith("Register"))
+        if (context.HttpContext.Request.Path.Value.EndsWith("Login") 
+            || context.HttpContext.Request.Path.Value.EndsWith("Register"))
         {
             return;
         }
@@ -22,21 +25,20 @@ public class GeoShareActionFilter : IActionFilter
 
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        //if (context.Exception == null)
-        //{
-        //    if (context.Result is ObjectResult r)
-        //    {
-        //        context.Result = new ObjectResult(new HttpResponseContainer(HttpResponseStatus.OK, null, r.Value));
-        //    }
-        //    else
-        //    {
-        //        context.Result = new ObjectResult(new HttpResponseContainer(HttpResponseStatus.OK, null, context.Result));
-        //    }
-        //}
-        //else
-        //{
-        //    context.Result = new ObjectResult(new HttpResponseContainer(HttpResponseStatus.ServiceUnavailable, context.Exception.Message, context.Exception.ToString()));
-        //    context.Exception = null;
-        //}
+        if (context.Exception != null)
+        {
+            if(context.Exception is StatusBasedException sbe)
+            {
+                if(string.IsNullOrEmpty(sbe.Message))
+                {
+                    context.Result = new StatusCodeResult((int)sbe.StatusCode);
+                }
+                else
+                {
+                    context.Result = new ObjectResult(sbe.Message) { StatusCode = (int)sbe.StatusCode };
+                }
+                context.ExceptionHandled = true;
+            }
+        }
     }
 }

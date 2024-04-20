@@ -38,15 +38,7 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> RegisterAsync(UserEntity user)
         {
-            int id;
-            try
-            {
-                id = await userService.RegisterAsync(user);
-            }
-            catch (Exception ex)
-            {
-                return Conflict(ex.Message);
-            }
+            int id = await userService.RegisterAsync(user);
             return Ok(id);
         }
     }
