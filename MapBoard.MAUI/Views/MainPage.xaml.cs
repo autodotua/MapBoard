@@ -240,6 +240,7 @@ namespace MapBoard.Views
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
             MainMapView.Current.MapViewStatusChanged += MapView_BoardTaskChanged;
+            MainMapView.Current.GeoShareExceptionThrow += GeoShareExceptionThrow;
 
 #if ANDROID
             var navBarHeight = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
@@ -266,6 +267,14 @@ namespace MapBoard.Views
 
             await CheckCrashAsync();
 
+        }
+
+        private Exception lastGeoShareException = null;
+
+        private void GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
+        {
+            lastGeoShareException = e.Exception;
+            bdGeoShareError.IsVisible = true;
         }
 
         private void Current_SelectedFeatureChanged(object sender, EventArgs e)
@@ -376,6 +385,7 @@ namespace MapBoard.Views
                  new PopupMenuItem[] {
                     new PopupMenuItem("测量长度"),
                     new PopupMenuItem("测量面积"),
+                    new PopupMenuItem("位置共享"),
                     new PopupMenuItem("设置"),
                     new PopupMenuItem("退出")
                  });
@@ -388,10 +398,14 @@ namespace MapBoard.Views
                     MainMapView.Current.Editor.StartMeasureArea();
                     break;
                 case 2:
-                    SettingPopup popup = new SettingPopup();
-                    MainPage.Current.ShowPopup(popup);
+                    GeoShareConfigPopup popup = new GeoShareConfigPopup();
+                    this.ShowPopup(popup);
                     break;
                 case 3:
+                    SettingPopup popup2 = new SettingPopup();
+                    this.ShowPopup(popup2);
+                    break;
+                case 4:
                     if (TrackService.Current != null)
                     {
                         if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)
@@ -492,6 +506,12 @@ namespace MapBoard.Views
                     }
                 }
             }
+        }
+
+        private async void GeoShareError_Tapped(object sender, TappedEventArgs e)
+        {
+            await DisplayAlert("位置共享错误", lastGeoShareException.Message, "确定");
+            bdGeoShareError.IsVisible = false;
         }
     }
 

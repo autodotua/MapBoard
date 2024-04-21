@@ -53,6 +53,7 @@
 		<None Remove="Resources\Images\btn_table.svg" />
 		<None Remove="Resources\Images\btn_undo.svg" />
 		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
+		<None Remove="Resources\Images\icon_error.svg" />
 
 		<!-- Splash Screen -->
     <None Remove="Resources\Splash\splash.svg" />
@@ -83,6 +84,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" />
 		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" />
 		<PackageReference Include="FubarDev.FtpServer" />
@@ -94,6 +96,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\MapBoard.Core\MapBoard.Core.csproj" />
+	  <ProjectReference Include="..\MapBoard.GeoShare.Core\MapBoard.GeoShare.Core.csproj" />
 	  <ProjectReference Include="..\MapBoard.Model\MapBoard.Model.csproj" />
 	</ItemGroup>
 
@@ -104,6 +107,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\GeoShareConfigPopup.xaml.cs">
+	    <DependentUpon>GeoShareConfigPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\SettingPopup.xaml.cs">
 	    <DependentUpon>SettingPopup.xaml</DependentUpon>
 	  </Compile>
@@ -149,6 +155,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\GeoShareConfigPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\SettingPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

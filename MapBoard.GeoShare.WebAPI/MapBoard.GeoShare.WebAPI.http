@@ -1,0 +1,6 @@
+@MapBoard.GeoShare.WebAPI_HostAddress = http://localhost:5289
+
+GET {{MapBoard.GeoShare.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -13,6 +13,31 @@
         IsClippedToBounds="True"
         RowDefinitions="*,Auto">
         <v:MapPage x:Name="map" />
+
+        <Border
+            x:Name="bdGeoShareError"
+            Margin="0,32,8,0"
+            Padding="6,2"
+            Background="Red"
+            HorizontalOptions="End"
+            IsVisible="False"
+            StrokeThickness="0"
+            VerticalOptions="Start">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="6" />
+            </Border.StrokeShape>
+            <HorizontalStackLayout Spacing="4">
+                <Image
+                    Margin="0,1,0,0"
+                    HeightRequest="12"
+                    Source="icon_error.png" />
+                <Label TextColor="White">位置共享出现错误</Label>
+            </HorizontalStackLayout>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="GeoShareError_Tapped"/>
+            </Border.GestureRecognizers>
+        </Border>
+
         <v:TrackingBar
             x:Name="tbar"
             HorizontalOptions="Fill"

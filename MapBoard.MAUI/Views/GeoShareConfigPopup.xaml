@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="MapBoard.Views.GeoShareConfigPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:lm="clr-namespace:MapBoard.Model;assembly=MapBoard.Model"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:GeoShareViewModel}"
+    CanBeDismissedByTappingOutsideOfPopup="False"
+    HorizontalOptions="Fill"
+    Size="300,500"
+    VerticalOptions="Fill"
+    Color="Transparent">
+    <toolkit:Popup.Resources>
+        <Style TargetType="Button">
+            <Style.Triggers>
+                <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                    <Trigger.Setters>
+                        <Setter Property="BackgroundColor" Value="Transparent" />
+                        <Setter Property="Opacity" Value="0.5" />
+                    </Trigger.Setters>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </toolkit:Popup.Resources>
+    <Border
+        Padding="8"
+        HeightRequest="500"
+        Style="{StaticResource PopupBorderStyle}"
+        WidthRequest="300">
+
+        <Grid RowDefinitions="*,8,Auto,8,Auto">
+            <Border StrokeThickness="0">
+                <TableView Intent="Settings">
+                    <TableRoot>
+                        <TableSection Title="位置共享配置">
+                            <EntryCell
+                                IsEnabled="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                                Label="服务器地址"
+                                Text="{Binding Config.Server}" />
+                            <EntryCell
+                                IsEnabled="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                                Label="账号"
+                                Text="{Binding Config.UserName}" />
+                            <EntryCell
+                                IsEnabled="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                                Label="密码"
+                                Text="{Binding Config.Password}" />
+                            <EntryCell
+                                IsEnabled="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                                Label="组名"
+                                Text="{Binding Config.GroupName}" />
+                            <SwitchCell
+                                IsEnabled="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                                On="{Binding Config.ShareLocation}"
+                                Text="共享我的位置" />
+                        </TableSection>
+                    </TableRoot>
+                </TableView>
+            </Border>
+            <Label Grid.Row="2">注意：分享位置需要开启轨迹记录</Label>
+            <StackLayout
+                Grid.Row="999"
+                Margin="0,0,8,0"
+                HorizontalOptions="End"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="CancelButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    Text="关闭"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="RegisterButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    IsVisible="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                    Text="注册"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="LoginButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    IsVisible="{Binding Config.IsEnabled, Converter={StaticResource InverseBoolConverter}}"
+                    Text="登录"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Clicked="LogoutButton_Clicked"
+                    IsEnabled="{Binding IsReady}"
+                    IsVisible="{Binding Config.IsEnabled}"
+                    Text="注销"
+                    TextColor="{AppThemeBinding Dark={DynamicResource White},
+                                                Light={DynamicResource Black}}" />
+            </StackLayout>
+        </Grid>
+
+    </Border>
+</toolkit:Popup>

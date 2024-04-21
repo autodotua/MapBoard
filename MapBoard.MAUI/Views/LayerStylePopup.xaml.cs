@@ -28,7 +28,7 @@ public partial class LayerStylePopup : Popup
         Close();
     }
 
-    private void CalcelButton_Clicked(object sender, EventArgs e)
+    private void CancelButton_Clicked(object sender, EventArgs e)
     {
         Close();
     }

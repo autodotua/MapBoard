@@ -122,7 +122,7 @@
                 <Button
                     BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                       Dark={DynamicResource Gray600}}"
-                    Clicked="CalcelButton_Clicked"
+                    Clicked="CancelButton_Clicked"
                     Text="取消"
                     TextColor="{AppThemeBinding Dark={DynamicResource White},
                                                 Light={DynamicResource Black}}" />
