@@ -44,27 +44,21 @@ namespace MapBoard.Mapping
         /// </summary>
         private static List<MainMapView> instances = new List<MainMapView>();
 
+        private readonly RuntimeImage closeImage = new RuntimeImage(
+            Convert.FromBase64String("iVBORw0KGgoAAAANSUhEU" +
+            "gAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAL" +
+            "9JREFUaIHt10sOgzAQA1CrJ/WNyk3LDdpNs0G0JDMOZVQ/iRXEYyS+" +
+            "gJmZmZmNWgA8AVCQxXfWXZDVpZVvGxNZ3GQtyW5d1s3Q6ElwJ2e" +
+            "VNAwMHj0JRUZKpkBmrVSkSGTNVCOFRo49FXFcrOeYnyI+F/y271KI/aIlyj" +
+            "dE4fINcWL5mzqwOqLwJUQUvomJwo9RovCLjCj8KREpFFkzRaZIZq2EooAiI" +
+            "2zmL+VD0nBwMC+SFRqsGKjMMjMzM/srL6TW4v8zOk00AAAAAElFTkSuQmCC"));
+
         private readonly double watermarkHeight = 72;
 
 
         private bool isZoomingToLastExtent = false;
 
         private Feature selectedFeature = null;
-
-        public Feature SelectedFeature
-        {
-            get => selectedFeature;
-            set
-            {
-                if (selectedFeature != value)
-                {
-                    selectedFeature = value;
-                    SelectedFeatureChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
-        public event EventHandler SelectedFeatureChanged;
 
         public MainMapView()
         {
@@ -109,39 +103,16 @@ namespace MapBoard.Mapping
             //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
-        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(Config.CanRotate):
-                    InteractionOptions.IsRotateEnabled = Config.Instance.CanRotate;
-                    break;
-            }
-        }
+        public event EventHandler<ExceptionEventArgs> GeoShareExceptionThrow;
 
-        private void UpdateBoardTask()
-        {
-            if (Editor.Status is not EditorStatus.NotRunning)
-            {
-                CurrentStatus = MapViewStatus.Draw;
-                ClearSelection();
-            }
-            else if (SelectedFeature != null)
-            {
-                CurrentStatus = MapViewStatus.Select;
-            }
-            else
-            {
-                CurrentStatus = MapViewStatus.Ready;
-            }
-        }
+        public event EventHandler MapLoaded;
 
         /// <summary>
         /// 画板当前任务改变事件
         /// </summary>
         public event EventHandler MapViewStatusChanged;
 
-        public event EventHandler MapLoaded;
+        public event EventHandler SelectedFeatureChanged;
 
         public static MainMapView Current => instances[0];
 
@@ -173,16 +144,50 @@ namespace MapBoard.Mapping
             }
         }
 
+        public EditHelper Editor { get; private set; }
+
+        public GeoShareService GeoShareService { get; private set; }
+
         /// <summary>
         /// 图层
         /// </summary>
         public MapLayerCollection Layers { get; }
 
+        public Feature SelectedFeature
+        {
+            get => selectedFeature;
+            set
+            {
+                if (selectedFeature != value)
+                {
+                    selectedFeature = value;
+                    SelectedFeatureChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
         public TrackOverlayHelper TrackOverlay { get; private set; }
 
-        public EditHelper Editor { get; private set; }
+        public void ClearSelection()
+        {
+            DismissCallout();
+            if (SelectedFeature != null)
+            {
+                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
+                SelectedFeature = null;
+            }
+        }
 
-        public GeoShareService GeoShareService { get; private set; }
+        public async void DeleteSelectedFeatureAsync()
+        {
+            if (SelectedFeature == null)
+            {
+                throw new Exception("没有选中任何要素");
+            }
+
+            var feature = SelectedFeature;
+            ClearSelection();
+            await feature.FeatureTable.DeleteFeatureAsync(feature);
+        }
 
         /// <summary>
         /// 初始化加载
@@ -215,14 +220,10 @@ namespace MapBoard.Mapping
                     { Outline = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.White, 2) })
                 };
                 GraphicsOverlays.Add(overlay);
-                GeoShareService = new GeoShareService(overlay, LocationDisplay);
+                GeoShareService = new GeoShareService(overlay);
                 GeoShareService.GeoShareExceptionThrow += GeoShareService_GeoShareExceptionThrow;
                 GeoShareService.Start();
             }
-        }
-
-        private void GeoShareService_GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
-        {
         }
 
         public void MoveToLocation()
@@ -313,14 +314,19 @@ namespace MapBoard.Mapping
             return attrStr.ToString().Trim();
         }
 
-        public void ClearSelection()
+        private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            DismissCallout();
-            if (SelectedFeature != null)
+            switch (e.PropertyName)
             {
-                (SelectedFeature.FeatureTable.Layer as FeatureLayer).UnselectFeature(SelectedFeature);
-                SelectedFeature = null;
+                case nameof(Config.CanRotate):
+                    InteractionOptions.IsRotateEnabled = Config.Instance.CanRotate;
+                    break;
             }
+        }
+
+        private void GeoShareService_GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
+        {
+            GeoShareExceptionThrow?.Invoke(sender, e);
         }
 
         private async void MainMapView_GeoViewTapped(object sender, GeoViewInputEventArgs e)
@@ -343,106 +349,6 @@ namespace MapBoard.Mapping
             {
                 await MainPage.Current.DisplayAlert("选取失败", ex.Message, "确定");
             }
-        }
-
-        private async Task<bool> TapToSelectOverlayAsync(GeoViewInputEventArgs e)
-        {
-            return await TapTrackOverlay(e) || await TapGeoShareOverlay(e);
-        }
-
-        private async Task<bool> TapTrackOverlay(GeoViewInputEventArgs e)
-        {
-            var result = await IdentifyGraphicsOverlayAsync(TrackOverlay.Overlay, e.Position, 10, false, 1);
-            if (result != null && result.Graphics.Count > 0)
-            {
-                var graphic = result.Graphics[0];
-                if (graphic.Attributes.Count == 0)
-                {
-                    return false;
-                }
-                var time = (DateTime)graphic.Attributes["Time"];
-                var speed = (double)graphic.Attributes["Speed"];
-                var timeString = time.ToString("HH:mm:ss");
-                var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
-                if (graphic.Attributes.TryGetValue("Altitude", out object objAlt))
-                {
-                    var altitude = (double)objAlt;
-                    detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
-                }
-                if (graphic.Attributes.TryGetValue("Distance", out object objDist))
-                {
-                    var distance = (double)objDist;
-                    string distanceString = distance < 1000 ? $"{distance:0}m" : $"{distance / 1000:0.00}km";
-                    detailString = $"{detailString}{Environment.NewLine}距离：{distanceString}";
-                }
-                ShowCallout(e.Position, graphic, timeString, detailString, true);
-                return true;
-            }
-            return false;
-        }
-        private async Task<bool> TapGeoShareOverlay(GeoViewInputEventArgs e)
-        {
-            var result = await IdentifyGraphicsOverlayAsync(GeoShareService.Overlay, e.Position, 10, false, 1);
-            if (result != null && result.Graphics.Count > 0)
-            {
-                var graphic = result.Graphics[0];
-                if (graphic.Attributes.Count == 0)
-                {
-                    return false;
-                }
-                var username = graphic.Attributes[nameof(UserLocationDto.UserName)] as string;
-                var timeString = ((DateTime)graphic.Attributes[nameof(UserLocationDto.Location.Time)]).ToString("yyyy-MM-dd HH:mm:ss");
-                var altitude = (double)graphic.Attributes[nameof(UserLocationDto.Location.Altitude)];
-                var detailString = $"时间：{timeString}{Environment.NewLine}海拔：{altitude:0.0} m";
-                ShowCallout(e.Position, graphic, username, detailString, true);
-                return true;
-            }
-            return false;
-        }
-
-        private void ShowCallout(Point point, GeoElement graphic, string text, string detail, bool cancelButton)
-        {
-            CalloutDefinition cd = new CalloutDefinition(graphic)
-            {
-                Text = text,
-                DetailText = detail,
-                OnButtonClick = a =>
-                {
-                    ClearSelection();
-                }
-            };
-            if (cancelButton)
-            {
-                cd.ButtonImage = closeImage;
-            }
-            ShowCalloutForGeoElement(graphic, point, cd);
-        }
-
-        private async Task<bool> TapToSelectFeatureAsync(GeoViewInputEventArgs e)
-        {
-            IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
-            results = results.Where(p => Layers.FindLayer(p.LayerContent).Interaction.CanSelect);
-            if (results.Any())
-            {
-                if (results.Select(p => p.LayerContent)
-                    .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
-                    .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
-                {
-                    results = results
-                    .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
-                    //下面三条语句用于寻找各图层中最近的那个
-                    var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
-                    var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
-                    var index = distances.IndexOf(distances.Min());
-                    SelectFeature(features[index], e.Position);
-                }
-                else //如果只有面，那么随便选
-                {
-                    SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
-                }
-                return true;
-            }
-            return false;
         }
 
         private async void MainMapView_Loaded(object sender, EventArgs e)
@@ -486,15 +392,6 @@ namespace MapBoard.Mapping
             }
         }
 
-        private readonly RuntimeImage closeImage = new RuntimeImage(
-            Convert.FromBase64String("iVBORw0KGgoAAAANSUhEU" +
-            "gAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAL" +
-            "9JREFUaIHt10sOgzAQA1CrJ/WNyk3LDdpNs0G0JDMOZVQ/iRXEYyS+" +
-            "gJmZmZmNWgA8AVCQxXfWXZDVpZVvGxNZ3GQtyW5d1s3Q6ElwJ2e" +
-            "VNAwMHj0JRUZKpkBmrVSkSGTNVCOFRo49FXFcrOeYnyI+F/y271KI/aIlyj" +
-            "dE4fINcWL5mzqwOqLwJUQUvomJwo9RovCLjCj8KREpFFkzRaZIZq2EooAiI" +
-            "2zmL+VD0nBwMC+SFRqsGKjMMjMzM/srL6TW4v8zOk00AAAAAElFTkSuQmCC"));
-
         private void SelectFeature(Feature feature, Point point)
         {
             if (SelectedFeature != null)
@@ -506,16 +403,122 @@ namespace MapBoard.Mapping
             SelectedFeature = feature;
         }
 
-        public async void DeleteSelectedFeatureAsync()
+        private void ShowCallout(Point point, GeoElement graphic, string text, string detail, bool cancelButton)
         {
-            if (SelectedFeature == null)
+            CalloutDefinition cd = new CalloutDefinition(graphic)
             {
-                throw new Exception("没有选中任何要素");
+                Text = text,
+                DetailText = detail,
+                OnButtonClick = a =>
+                {
+                    ClearSelection();
+                }
+            };
+            if (cancelButton)
+            {
+                cd.ButtonImage = closeImage;
             }
+            ShowCalloutForGeoElement(graphic, point, cd);
+        }
 
-            var feature = SelectedFeature;
-            ClearSelection();
-            await feature.FeatureTable.DeleteFeatureAsync(feature);
+        private async Task<bool> TapGeoShareOverlay(GeoViewInputEventArgs e)
+        {
+            var result = await IdentifyGraphicsOverlayAsync(GeoShareService.Overlay, e.Position, 10, false, 1);
+            if (result != null && result.Graphics.Count > 0)
+            {
+                var graphic = result.Graphics[0];
+                if (graphic.Attributes.Count == 0)
+                {
+                    return false;
+                }
+                var username = graphic.Attributes[nameof(UserLocationDto.UserName)] as string;
+                var timeString = ((DateTime)graphic.Attributes[nameof(UserLocationDto.Location.Time)]).ToString("yyyy-MM-dd HH:mm:ss");
+                var altitude = (double)graphic.Attributes[nameof(UserLocationDto.Location.Altitude)];
+                var detailString = $"时间：{timeString}{Environment.NewLine}海拔：{altitude:0.0} m";
+                ShowCallout(e.Position, graphic, username, detailString, true);
+                return true;
+            }
+            return false;
+        }
+
+        private async Task<bool> TapToSelectFeatureAsync(GeoViewInputEventArgs e)
+        {
+            IEnumerable<IdentifyLayerResult> results = await IdentifyLayersAsync(e.Position, 10, false, 1);
+            results = results.Where(p => Layers.FindLayer(p.LayerContent).Interaction.CanSelect);
+            if (results.Any())
+            {
+                if (results.Select(p => p.LayerContent)
+                    .OfType<FeatureLayer>() //如果存在非面图形，只查找非面图形
+                    .Any(p => p.FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline))
+                {
+                    results = results
+                    .Where(p => (p.LayerContent as FeatureLayer).FeatureTable.GeometryType is GeometryType.Point or GeometryType.Multipoint or GeometryType.Polyline);
+                    //下面三条语句用于寻找各图层中最近的那个
+                    var features = results.Select(p => p.GeoElements[0] as Feature).ToList();
+                    var distances = features.Select(p => GeometryEngine.NearestCoordinate(p.Geometry, e.Location.ToWgs84())?.Distance ?? double.MaxValue).ToList();
+                    var index = distances.IndexOf(distances.Min());
+                    SelectFeature(features[index], e.Position);
+                }
+                else //如果只有面，那么随便选
+                {
+                    SelectFeature(results.First().GeoElements[0] as Feature, e.Position);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private async Task<bool> TapToSelectOverlayAsync(GeoViewInputEventArgs e)
+        {
+            return await TapTrackOverlay(e) || await TapGeoShareOverlay(e);
+        }
+
+        private async Task<bool> TapTrackOverlay(GeoViewInputEventArgs e)
+        {
+            var result = await IdentifyGraphicsOverlayAsync(TrackOverlay.Overlay, e.Position, 10, false, 1);
+            if (result != null && result.Graphics.Count > 0)
+            {
+                var graphic = result.Graphics[0];
+                if (graphic.Attributes.Count == 0)
+                {
+                    return false;
+                }
+                var time = (DateTime)graphic.Attributes["Time"];
+                var speed = (double)graphic.Attributes["Speed"];
+                var timeString = time.ToString("HH:mm:ss");
+                var detailString = $"速度：{speed:0.0} m/s, {speed * 3.6:0.0} km/h";
+                if (graphic.Attributes.TryGetValue("Altitude", out object objAlt))
+                {
+                    var altitude = (double)objAlt;
+                    detailString = $"{detailString}{Environment.NewLine}海拔：{altitude:0.0}m";
+                }
+                if (graphic.Attributes.TryGetValue("Distance", out object objDist))
+                {
+                    var distance = (double)objDist;
+                    string distanceString = distance < 1000 ? $"{distance:0}m" : $"{distance / 1000:0.00}km";
+                    detailString = $"{detailString}{Environment.NewLine}距离：{distanceString}";
+                }
+                ShowCallout(e.Position, graphic, timeString, detailString, true);
+                return true;
+            }
+            return false;
+        }
+
+        private void UpdateBoardTask()
+        {
+            if (Editor.Status is not EditorStatus.NotRunning)
+            {
+                CurrentStatus = MapViewStatus.Draw;
+                ClearSelection();
+            }
+            else if (SelectedFeature != null)
+            {
+                CurrentStatus = MapViewStatus.Select;
+            }
+            else
+            {
+                CurrentStatus = MapViewStatus.Ready;
+            }
         }
     }
 }

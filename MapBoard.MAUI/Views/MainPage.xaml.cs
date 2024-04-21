@@ -240,6 +240,7 @@ namespace MapBoard.Views
             }
             MainMapView.Current.GeoViewTapped += (s, e) => CloseAllPanel();
             MainMapView.Current.MapViewStatusChanged += MapView_BoardTaskChanged;
+            MainMapView.Current.GeoShareExceptionThrow += GeoShareExceptionThrow;
 
 #if ANDROID
             var navBarHeight = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
@@ -266,6 +267,14 @@ namespace MapBoard.Views
 
             await CheckCrashAsync();
 
+        }
+
+        private Exception lastGeoShareException = null;
+
+        private void GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
+        {
+            lastGeoShareException = e.Exception;
+            bdGeoShareError.IsVisible = true;
         }
 
         private void Current_SelectedFeatureChanged(object sender, EventArgs e)
@@ -497,6 +506,12 @@ namespace MapBoard.Views
                     }
                 }
             }
+        }
+
+        private async void GeoShareError_Tapped(object sender, TappedEventArgs e)
+        {
+            await DisplayAlert("位置共享错误", lastGeoShareException.Message, "确定");
+            bdGeoShareError.IsVisible = false;
         }
     }
 

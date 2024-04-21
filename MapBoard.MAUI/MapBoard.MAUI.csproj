@@ -53,6 +53,7 @@
 		<None Remove="Resources\Images\btn_table.svg" />
 		<None Remove="Resources\Images\btn_undo.svg" />
 		<None Remove="Resources\Images\btn_zoom_to_layer.svg" />
+		<None Remove="Resources\Images\icon_error.svg" />
 
 		<!-- Splash Screen -->
     <None Remove="Resources\Splash\splash.svg" />

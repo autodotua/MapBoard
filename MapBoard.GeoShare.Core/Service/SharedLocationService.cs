@@ -37,7 +37,7 @@ namespace MapBoard.GeoShare.Core.Service
                 .ToList();
         }
 
-        public async Task<SharedLocationEntity> InsertCurrentLocation(int userId, double longitude, double latitude, double altitude
+        public async Task<SharedLocationEntity> InsertCurrentLocation(int userId, SharedLocationEntity location
 #if DEBUG
             , DateTime time=default
 #endif
@@ -45,9 +45,10 @@ namespace MapBoard.GeoShare.Core.Service
         {
             SharedLocationEntity entity = new SharedLocationEntity()
             {
-                Longitude = longitude,
-                Latitude = latitude,
-                Altitude = altitude,
+                Longitude = location.Longitude,
+                Latitude = location.Latitude,
+                Altitude = location.Altitude,
+                Accuracy = location.Accuracy,
                 UserId = userId,
                 Time = DateTime.Now,
             };

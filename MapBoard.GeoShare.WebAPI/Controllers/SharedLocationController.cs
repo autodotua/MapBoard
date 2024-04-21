@@ -21,7 +21,7 @@ namespace MapBoard.GeoShare.WebAPI.Controllers
         [HttpPost("New")]
         public async Task ReportNewLocationAsync(SharedLocationEntity location)
         {
-            await sharedLocationService.InsertCurrentLocation(GetUser(), location.Longitude, location.Latitude, location.Altitude);
+            await sharedLocationService.InsertCurrentLocation(GetUser(), location);
         }
     }
 }
