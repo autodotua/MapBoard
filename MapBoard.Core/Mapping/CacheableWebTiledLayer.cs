@@ -1,10 +1,13 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,18 +27,80 @@ namespace MapBoard.Mapping
     /// </remarks>
     public class CacheableWebTiledLayer : ServiceImageTiledLayer
     {
-        private readonly static ConcurrentDictionary<string, string> cacheQueueFiles = new ConcurrentDictionary<string, string>();
-        private readonly static ConcurrentQueue<string> cacheQueue = new ConcurrentQueue<string>();
-        private static HttpClient client;
-        private readonly string id = null;
+        [Index("X", "Y", "Z", "TemplateUrl")]
+        public class CacheableWebTiledLayerDbTileEntity
+        {
+            [Key]
+            public int Id { get; set; }
+
+            public string TileUrl { get; set; }
+
+            public string TemplateUrl { get; set; }
+
+            public int X { get; set; }
+
+            public int Y { get; set; }
+
+            public int Z { get; set; }
+
+            public byte[] Data { get; set; }
+        }
+        public class CacheableWebTiledLayerDbContext : DbContext
+        {
+            private static object lockObj = new object();
+            public CacheableWebTiledLayerDbContext()
+            {
+                lock (lockObj)
+                {
+                    try
+                    {
+                        Database.EnsureCreated();
+                    }
+                    catch (Exception ex)
+                    {
+                        Database.EnsureDeleted();
+                        Database.EnsureCreated();
+                    }
+                }
+            }
+            public DbSet<CacheableWebTiledLayerDbTileEntity> Tiles { get; set; }
+
+
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            {
+                optionsBuilder.UseSqlite($"Data Source={Path.Combine(FolderPaths.TileCachePath, "tiles.db")}");
+            }
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+            }
+        }
+
+        private readonly static ConcurrentQueue<CacheableWebTiledLayerDbTileEntity> cacheQueue = new ConcurrentQueue<CacheableWebTiledLayerDbTileEntity>();
+
+        private static HttpClient httpClient;
+
+        private static readonly CacheableWebTiledLayerDbContext dbContext;
+
+        private const string CacheImageFileDirName = "cacheFiles";
+
+        private static readonly string CacheImageFileDir = Path.Combine(FolderPaths.TileCachePath, CacheImageFileDirName);
+
         static CacheableWebTiledLayer()
         {
-            var socketsHttpHandler = new SocketsHttpHandler()
+            dbContext = new CacheableWebTiledLayerDbContext();
+
+            httpClient = new HttpClient(new SocketsHttpHandler() { PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5), })
             {
-                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+                Timeout = TimeSpan.FromSeconds(5)
             };
-            client = new HttpClient(socketsHttpHandler);
-            client.Timeout = TimeSpan.FromSeconds(5);
+
+            if (Directory.Exists(CacheImageFileDir))
+            {
+                Directory.Delete(CacheImageFileDir, true);
+            }
+            Directory.CreateDirectory(CacheImageFileDir);
 
             Task.Factory.StartNew(async () =>
             {
@@ -43,23 +108,19 @@ namespace MapBoard.Mapping
                 {
                     try
                     {
-                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out string cacheUrl))
+                        int count = 0;
+                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out CacheableWebTiledLayerDbTileEntity tile))
                         {
-                            if (cacheQueueFiles.TryRemove(cacheUrl, out string cacheFile))
+                            byte[] bytes = await httpClient.GetByteArrayAsync(tile.TileUrl);
+                            tile.Data = bytes;
+                            dbContext.Tiles.Add(tile);
+                            Debug.WriteLine($"写入Tile缓存，队列长度剩余{cacheQueue.Count}");
+                            if (++count % 10 == 0)
                             {
-                                using var response = await client.GetAsync(cacheUrl);
-                                using var content = response.EnsureSuccessStatusCode().Content;
-                                var data = await content.ReadAsByteArrayAsync();
-                                string dir = Path.GetDirectoryName(cacheFile);
-                                if (!Directory.Exists(dir))
-                                {
-                                    Directory.CreateDirectory(dir);
-                                }
-                                File.WriteAllBytes(cacheFile, data);
-
-                                Debug.WriteLine($"写入Tile缓存，queue={cacheQueue.Count}");
+                                await dbContext.SaveChangesAsync();
                             }
                         }
+                        await dbContext.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
@@ -72,7 +133,6 @@ namespace MapBoard.Mapping
 
         public CacheableWebTiledLayer(string url, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent) : base(tileInfo, fullExtent)
         {
-            id = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(url))).Replace("-", "");
             Url = url;
         }
 
@@ -82,20 +142,29 @@ namespace MapBoard.Mapping
             var webTiledLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return new CacheableWebTiledLayer(url, webTiledLayer.TileInfo, webTiledLayer.FullExtent);
         }
+
         protected async override Task<Uri> GetTileUriAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
-            Debug.WriteLine("Thread ID::::::::::::::::::" + Thread.CurrentThread.ManagedThreadId);
-
-            string cacheFile = Path.Combine(FolderPaths.TileCachePath, id, level.ToString(), row.ToString(), column.ToString());
-            if (File.Exists(cacheFile))//缓存优先
+            var cache = await dbContext.Tiles
+                .Where(p => p.TemplateUrl == Url && p.X == column && p.Y == row && p.Z == level)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (cache != null)
             {
-                return new Uri(cacheFile, UriKind.Absolute);
+                string file = Path.Combine(CacheImageFileDir, Guid.NewGuid().ToString());
+                await File.WriteAllBytesAsync(file, cache.Data, cancellationToken);
+                return new Uri(file, UriKind.Absolute);
             }
             else
             {
-                string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString());
-                cacheQueue.Enqueue(url);
-                cacheQueueFiles.TryAdd(url, cacheFile);
+                string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString()).Trim();
+                cacheQueue.Enqueue(new CacheableWebTiledLayerDbTileEntity()
+                {
+                    X = column,
+                    Y = row,
+                    Z = level,
+                    TemplateUrl = Url,
+                    TileUrl = url,
+                });
                 return new Uri(url);
             }
         }

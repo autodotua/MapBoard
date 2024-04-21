@@ -16,6 +16,8 @@ using Application = Microsoft.Maui.Controls.Application;
 using Switch = Microsoft.Maui.Controls.Switch;
 using MapBoard.Util;
 using System.Reflection.Metadata;
+using static MapBoard.Mapping.CacheableWebTiledLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace MapBoard.Views;
 
@@ -198,5 +200,16 @@ public partial class BaseLayerView : ContentView, ISidePanel
         throw new NotImplementedException();
 #endif
         }
+    }
+
+    private async void ClearCache_Tapped(object sender, TappedEventArgs e)
+    {
+        if (await MainPage.Current.DisplayAlert("清除缓存", "是否清除所有底图缓存？", "是", "否"))
+        {
+            CacheableWebTiledLayerDbContext db = new CacheableWebTiledLayerDbContext();
+            await db.Database.ExecuteSqlRawAsync("delete from Tiles");
+            await MainPage.Current.DisplayAlert("清除缓存", "缓存已清空？", "关闭");
+        }
+
     }
 }
