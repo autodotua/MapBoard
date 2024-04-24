@@ -205,8 +205,8 @@ OpenStreetMap公交 https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png
         private static string HttpUserAgent = "";
         private static ImageTiledLayer AddTiledLayer(string url, bool cache)
         {
-            //XYZTiledLayer layer = XYZTiledLayer.Create(url, HttpUserAgent, cache);
-            CacheableWebTiledLayer layer = CacheableWebTiledLayer.Create(url);
+            XYZTiledLayer layer = XYZTiledLayer.Create(url, HttpUserAgent, cache);
+            //CacheableWebTiledLayer layer = CacheableWebTiledLayer.Create(url);
             //WebTiledLayer layer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return layer;
         }
