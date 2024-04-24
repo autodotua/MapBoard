@@ -29,6 +29,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using Microsoft.Win32;
 using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
+using Microsoft.EntityFrameworkCore;
 
 namespace MapBoard.UI.Dialog
 {
@@ -236,19 +237,24 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteAllBasemapCachesButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (Directory.Exists(FolderPaths.TileCachePath))
-                {
-                    WindowsFileSystem.DeleteFileOrFolder(FolderPaths.TileCachePath, true, false);
-                }
                 (sender as Button).IsEnabled = false;
+                using TileCacheDbContext db = new TileCacheDbContext();
+                await db.Tiles.ExecuteDeleteAsync();
+                await db.Database.ExecuteSqlRawAsync("VACUUM;");
+                await CommonDialog.ShowOkDialogAsync("清除缓存", "已清除缓存");
             }
             catch (Exception ex)
             {
+                await CommonDialog.ShowErrorDialogAsync(ex, "清除缓存失败");
                 App.Log.Error("清除缓存", ex);
+            }
+            finally
+            {
+                (sender as Button).IsEnabled = true;
             }
         }
 

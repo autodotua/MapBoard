@@ -206,7 +206,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
     {
         if (await MainPage.Current.DisplayAlert("清除缓存", "是否清除所有底图缓存？", "是", "否"))
         {
-            CacheableWebTiledLayerDbContext db = new CacheableWebTiledLayerDbContext();
+            TileCacheDbContext db = new TileCacheDbContext();
             await db.Database.ExecuteSqlRawAsync("delete from Tiles");
             await MainPage.Current.DisplayAlert("清除缓存", "缓存已清空？", "关闭");
         }

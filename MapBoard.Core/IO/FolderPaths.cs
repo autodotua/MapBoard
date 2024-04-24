@@ -74,7 +74,7 @@ namespace MapBoard.IO
         /// <summary>
         /// 瓦片缓存目录
         /// </summary>
-        public static readonly string TileCachePath;
+        public static readonly string CachePath;
 
         static FolderPaths()
         {
@@ -91,7 +91,7 @@ namespace MapBoard.IO
                         BackupPath = "Backup";
                         RecordsPath = "Record";
                         LogsPath = "Logs";
-                        TileCachePath = "Cache/Tiles";
+                        CachePath = "Cache";
                     }
                     else if (File.Exists(Path.Combine(appPath, ConfigUp)))
                     {
@@ -102,7 +102,7 @@ namespace MapBoard.IO
                         BackupPath = "../Backup";
                         RecordsPath = "../Record";
                         LogsPath = "../Logs";
-                        TileCachePath = "../Cache/Tiles";
+                        CachePath = "../Cache";
                     }
                     else
                     {
@@ -114,7 +114,7 @@ namespace MapBoard.IO
                         BackupPath = Path.Combine(folder, AppName, "Backup");
                         RecordsPath = Path.Combine(folder, AppName, "Record");
                         LogsPath = Path.Combine(folder, AppName, "Logs");
-                        TileCachePath = Path.Combine(folder, AppName, "Cache/Tiles");
+                        CachePath = Path.Combine(folder, AppName, "Cache");
                     }
                     DataPath = GetCurrentDataPath();
                     break;
@@ -134,7 +134,7 @@ namespace MapBoard.IO
                     ConfigPath = Path.Combine(mauiFolder, "config.json");
                     BackupPath = Path.Combine(mauiFolder, "Backup");
                     LogsPath = Path.Combine(mauiFolder, "Logs");
-                    TileCachePath = Path.Combine(Path.GetTempPath(), "Tiles");//等同于FileSystem.Current.CacheDirectory 
+                    CachePath = Path.GetTempPath();//等同于FileSystem.Current.CacheDirectory 
                     RootDataPath = Path.Combine(mauiFolder, "Data");
                     DataPath = GetCurrentDataPath();
                     TrackPath = Path.Combine(mauiFolder, "Track");
@@ -145,7 +145,7 @@ namespace MapBoard.IO
                     throw new InvalidEnumArgumentException();
             }
 
-            foreach (var dir in new[] { BackupPath, LogsPath, TileCachePath, DataPath, TrackPath,PackagePath })
+            foreach (var dir in new[] { BackupPath, LogsPath, CachePath, DataPath, TrackPath, PackagePath })
             {
                 if (dir != null && !Directory.Exists(dir))
                 {

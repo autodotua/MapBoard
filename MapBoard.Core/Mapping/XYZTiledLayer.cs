@@ -3,6 +3,7 @@ using Esri.ArcGISRuntime.Mapping;
 using FzLib.Collection;
 using MapBoard.IO;
 using MapBoard.Model;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -20,85 +21,31 @@ using static FzLib.Program.Runtime.SimplePipe;
 
 namespace MapBoard.Mapping
 {
-
     /// <summary>
     /// XYZ瓦片图层，WebTiledLayer的更灵活的实现
     /// </summary>
     public class XYZTiledLayer : ImageTiledLayer
     {
-        private readonly static ConcurrentDictionary<string, byte[]> cacheQueueFiles = new ConcurrentDictionary<string, byte[]>();
-
-        private readonly static ConcurrentQueue<string> cacheWriterQueue = new ConcurrentQueue<string>();
-
-        /// <summary>
-        /// 瓦片地址的ID
-        /// </summary>
-        private readonly string id;
-
-        private HttpClient client;
-
-        static XYZTiledLayer()
-        {
-            Task.Factory.StartNew(async () =>
-            {
-                //单队列写入缓存
-                //有两个集合，Queue用来确定任务的顺序，然后用Dictionary来获取任务数据。
-                //同时Dictionary也可以用来检测是否已经提交过相同的任务，防止重复提交
-                while (true)
-                {
-                    try
-                    {
-                        while (!cacheWriterQueue.IsEmpty && cacheWriterQueue.TryDequeue(out string cacheFile))
-                        {
-                            if (cacheQueueFiles.TryGetValue(cacheFile, out byte[] data))
-                            {
-                                string dir = Path.GetDirectoryName(cacheFile);
-                                if (!Directory.Exists(dir))
-                                {
-                                    Directory.CreateDirectory(dir);
-                                }
-                                File.WriteAllBytes(cacheFile, data);
-                                cacheQueueFiles.TryRemove(cacheFile, out _);
-                                Debug.WriteLine($"写入Tile缓存，queue={cacheWriterQueue.Count}, hashset={cacheQueueFiles.Count}");
-                            }
-                            else
-                            {
-                                Debug.WriteLine("待写入的缓存文件不在Dictionary中");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex);
-                    }
-                    await Task.Delay(1000);
-                }
-            }, TaskCreationOptions.LongRunning);
-            //原来的代码中，用的是Task.Run，导致在MAUI的Android下异常卡顿，快速滑动后甚至完全卡死界面。
-        }
+        private readonly HttpClient httpClient;
+        private readonly ConcurrentDictionary<string, TileCacheEntity> processingCache = new ConcurrentDictionary<string, TileCacheEntity>();
         private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
         {
-            Url = layerInfo.Path;
+            TemplateUrl = layerInfo.Path;
             EnableCache = enableCache;
-            id = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(layerInfo.Path))).Replace("-", "");
 
             var socketsHttpHandler = new SocketsHttpHandler()
             {
                 PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
             };
-            client = new HttpClient(socketsHttpHandler);
-            ApplyHttpClientHeaders(client, layerInfo, userAgent);
+            httpClient = new HttpClient(socketsHttpHandler);
+            ApplyHttpClientHeaders(httpClient, layerInfo, userAgent);
         }
+
 
         /// <summary>
         /// 是否启用缓存机制
         /// </summary>
         public bool EnableCache { get; }
-
-        /// <summary>
-        /// 瓦片地址的模板链接
-        /// </summary>
-        public string Url { get; }
 
         /// <summary>
         /// 最大缩放比例
@@ -110,6 +57,10 @@ namespace MapBoard.Mapping
         /// </summary>
         public int MinLevel { get; set; } = -1;
 
+        /// <summary>
+        /// 瓦片地址的模板链接
+        /// </summary>
+        public string TemplateUrl { get; }
         /// <summary>
         /// 应用Http客户端的请求头
         /// </summary>
@@ -187,32 +138,65 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         protected override async Task<ImageTileData> GetTileDataAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
-            Debug.WriteLine("Thread ID::::::::::::::::::" + Thread.CurrentThread.ManagedThreadId);
             if (MaxLevel >= 0 && level > MaxLevel || MinLevel >= 0 && level < MinLevel)
             {
                 return null;
             }
-            string cacheFile = Path.Combine(FolderPaths.TileCachePath, id, level.ToString(), row.ToString(), column.ToString());
+
+            TileCacheEntity cache = null;
+            TileCacheDbContext dbContext = null;
             byte[] data = null;
-            if (EnableCache && File.Exists(cacheFile))//缓存优先
+            try
             {
-                data = await File.ReadAllBytesAsync(cacheFile);
-            }
-            else
-            {
-                string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString());
-                using var response = await client.GetAsync(url, cancellationToken);
-                using var content = response.EnsureSuccessStatusCode().Content;
-                data = await content.ReadAsByteArrayAsync(cancellationToken);
-                if (EnableCache && !File.Exists(cacheFile) && !cacheQueueFiles.ContainsKey(cacheFile))
+                if (EnableCache)
                 {
-                    cacheQueueFiles.TryAdd(cacheFile, data);
-                    cacheWriterQueue.Enqueue(cacheFile);
+                    dbContext = new TileCacheDbContext();
+                    cache = await dbContext.Tiles
+                         .Where(p => p.TemplateUrl == TemplateUrl && p.X == column && p.Y == row && p.Z == level)
+                         .FirstOrDefaultAsync(cancellationToken);
+                }
+                if (cache != null)
+                {
+                    data = cache.Data;
+                }
+                else
+                {
+                    string url = TemplateUrl.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString());
+                    using var response = await httpClient.GetAsync(url, cancellationToken);
+                    using var content = response.EnsureSuccessStatusCode().Content;
+                    data = await content.ReadAsByteArrayAsync(cancellationToken);
+                    if (EnableCache)
+                    {
+                        TileCacheEntity tileCache = null;
+                        if (processingCache.TryGetValue(url, out tileCache))
+                        {
+                            data = tileCache.Data;
+                        }
+                        else
+                        {
+                            tileCache = new TileCacheEntity()
+                            {
+                                X = column,
+                                Y = row,
+                                Z = level,
+                                TemplateUrl = TemplateUrl,
+                                TileUrl = url,
+                                Data = data
+                            };
+                            dbContext.Tiles.Add(tileCache);
+                            await dbContext.SaveChangesAsync(CancellationToken.None).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (dbContext != null)
+                {
+                    await dbContext.DisposeAsync();
                 }
             }
             return new ImageTileData(level, row, column, data, "");
         }
-
     }
-
 }

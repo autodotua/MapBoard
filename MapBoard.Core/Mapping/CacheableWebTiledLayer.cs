@@ -4,7 +4,6 @@ using MapBoard.IO;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -25,82 +24,32 @@ namespace MapBoard.Mapping
     /// 在静态类创建时创建一个定时器，不停循环，如果有需要缓存的瓦片，则重新进行下载并缓存。
     /// 这样，同时进行下载缓存的线程就只有1个，减少了资源占用。
     /// </remarks>
-    public class CacheableWebTiledLayer : ServiceImageTiledLayer
+    public  class CacheableWebTiledLayer : ServiceImageTiledLayer
     {
-        [Index("X", "Y", "Z", "TemplateUrl")]
-        public class CacheableWebTiledLayerDbTileEntity
-        {
-            [Key]
-            public int Id { get; set; }
-
-            public string TileUrl { get; set; }
-
-            public string TemplateUrl { get; set; }
-
-            public int X { get; set; }
-
-            public int Y { get; set; }
-
-            public int Z { get; set; }
-
-            public byte[] Data { get; set; }
-        }
-        public class CacheableWebTiledLayerDbContext : DbContext
-        {
-            private static object lockObj = new object();
-            public CacheableWebTiledLayerDbContext()
-            {
-                lock (lockObj)
-                {
-                    try
-                    {
-                        Database.EnsureCreated();
-                    }
-                    catch (Exception ex)
-                    {
-                        Database.EnsureDeleted();
-                        Database.EnsureCreated();
-                    }
-                }
-            }
-            public DbSet<CacheableWebTiledLayerDbTileEntity> Tiles { get; set; }
-
-
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            {
-                optionsBuilder.UseSqlite($"Data Source={Path.Combine(FolderPaths.TileCachePath, "tiles.db")}");
-            }
-
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
-                base.OnModelCreating(modelBuilder);
-            }
-        }
-
-        private readonly static ConcurrentQueue<CacheableWebTiledLayerDbTileEntity> cacheQueue = new ConcurrentQueue<CacheableWebTiledLayerDbTileEntity>();
+        private readonly static ConcurrentQueue<TileCacheEntity> cacheQueue = new ConcurrentQueue<TileCacheEntity>();
 
         private static HttpClient httpClient;
 
-        private static readonly CacheableWebTiledLayerDbContext dbContext;
+        private static readonly TileCacheDbContext dbContext;
 
-        private const string CacheImageFileDirName = "cacheFiles";
+        private const string CacheFileDirName = "cacheFiles";
 
-        private static readonly string CacheImageFileDir = Path.Combine(FolderPaths.TileCachePath, CacheImageFileDirName);
+        private static readonly string CacheFileDir = Path.Combine(FolderPaths.CachePath, CacheFileDirName);
 
         static CacheableWebTiledLayer()
         {
-            dbContext = new CacheableWebTiledLayerDbContext();
+            dbContext = new TileCacheDbContext();
 
             httpClient = new HttpClient(new SocketsHttpHandler() { PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5), })
             {
                 Timeout = TimeSpan.FromSeconds(5)
             };
 
-            if (Directory.Exists(CacheImageFileDir))
+            if (Directory.Exists(CacheFileDir))
             {
-                Directory.Delete(CacheImageFileDir, true);
+                Directory.Delete(CacheFileDir, true);
             }
-            Directory.CreateDirectory(CacheImageFileDir);
+            Directory.CreateDirectory(CacheFileDir);
 
             Task.Factory.StartNew(async () =>
             {
@@ -109,7 +58,7 @@ namespace MapBoard.Mapping
                     try
                     {
                         int count = 0;
-                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out CacheableWebTiledLayerDbTileEntity tile))
+                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out TileCacheEntity tile))
                         {
                             byte[] bytes = await httpClient.GetByteArrayAsync(tile.TileUrl);
                             tile.Data = bytes;
@@ -150,14 +99,14 @@ namespace MapBoard.Mapping
                 .FirstOrDefaultAsync(cancellationToken);
             if (cache != null)
             {
-                string file = Path.Combine(CacheImageFileDir, Guid.NewGuid().ToString());
+                string file = Path.Combine(CacheFileDir, Guid.NewGuid().ToString());
                 await File.WriteAllBytesAsync(file, cache.Data, cancellationToken);
                 return new Uri(file, UriKind.Absolute);
             }
             else
             {
                 string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString()).Trim();
-                cacheQueue.Enqueue(new CacheableWebTiledLayerDbTileEntity()
+                cacheQueue.Enqueue(new TileCacheEntity()
                 {
                     X = column,
                     Y = row,
