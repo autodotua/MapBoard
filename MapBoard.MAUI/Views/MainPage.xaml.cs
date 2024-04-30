@@ -62,6 +62,8 @@ namespace MapBoard.Views
 
             TrackService.CurrentChanged += TrackService_CurrentChanged;
 
+            TileCacheDbContext.InitializeAsync().Wait();
+
             //大屏设备，底部操作栏在右下角悬浮
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)
             {

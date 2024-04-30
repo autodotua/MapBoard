@@ -16,7 +16,10 @@ using MapBoard.IO;
 
 namespace MapBoard.Services
 {
-    public class FtpService
+    public class 
+        
+        
+        FtpService
     {
         private IFtpServerHost ftpServerHost;
         private ServiceCollection services;
@@ -47,7 +50,7 @@ namespace MapBoard.Services
             if (manager is ConnectivityManager m)
             {
                 var link = m.GetLinkProperties(m.ActiveNetwork);
-                foreach (var address in link.LinkAddresses)
+                foreach (var address in link.LinkAddresses.OrderBy(p=>p.PrefixLength))
                 {
                     yield return address.Address.HostAddress;
                 }

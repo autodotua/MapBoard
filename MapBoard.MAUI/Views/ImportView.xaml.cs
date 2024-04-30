@@ -55,8 +55,8 @@ public partial class ImportView : ContentView, ISidePanel
             PickerTitle = "选取mbmpkg地图包文件",
             FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
             {
-                [DevicePlatform.Android] = new[] { "application/octet-stream" },
-                [DevicePlatform.WinUI] = new[] { "*.mbmpkg" }
+                [DevicePlatform.Android] = ["application/octet-stream"],
+                [DevicePlatform.WinUI] = ["*.mbmpkg"]
             })
         };
         var file = await FilePicker.Default.PickAsync(options);

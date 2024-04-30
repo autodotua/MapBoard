@@ -19,13 +19,13 @@ namespace MapBoard
         protected override void OnStart()
         {
             base.OnStart();
-            Resources["DateTimeFormat"] = Parameters.TimeFormat;
-            Resources["DateFormat"] = Parameters.DateFormat;
+            Resources["DateTimeFormat"] = "{0:" + Parameters.TimeFormat + "}";
+            Resources["DateFormat"] = "{0:" + Parameters.DateFormat + "}";
         }
         private void MauiExceptions_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string strEx = e.ExceptionObject.ToString();
-            if(strEx.Contains("System.Net.Sockets")
+            if (strEx.Contains("System.Net.Sockets")
                 || strEx.Contains("Http2Connection")
                 || strEx.Contains("Esri.ArcGISRuntime.Http.Caching.CacheManager"))
             {

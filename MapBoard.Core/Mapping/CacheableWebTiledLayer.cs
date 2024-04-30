@@ -1,10 +1,12 @@
 ﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,20 +24,32 @@ namespace MapBoard.Mapping
     /// 在静态类创建时创建一个定时器，不停循环，如果有需要缓存的瓦片，则重新进行下载并缓存。
     /// 这样，同时进行下载缓存的线程就只有1个，减少了资源占用。
     /// </remarks>
-    public class CacheableWebTiledLayer : ServiceImageTiledLayer
+    public  class CacheableWebTiledLayer : ServiceImageTiledLayer
     {
-        private readonly static ConcurrentDictionary<string, string> cacheQueueFiles = new ConcurrentDictionary<string, string>();
-        private readonly static ConcurrentQueue<string> cacheQueue = new ConcurrentQueue<string>();
-        private static HttpClient client;
-        private readonly string id = null;
+        private readonly static ConcurrentQueue<TileCacheEntity> cacheQueue = new ConcurrentQueue<TileCacheEntity>();
+
+        private static HttpClient httpClient;
+
+        private static readonly TileCacheDbContext dbContext;
+
+        private const string CacheFileDirName = "cacheFiles";
+
+        private static readonly string CacheFileDir = Path.Combine(FolderPaths.CachePath, CacheFileDirName);
+
         static CacheableWebTiledLayer()
         {
-            var socketsHttpHandler = new SocketsHttpHandler()
+            dbContext = new TileCacheDbContext();
+
+            httpClient = new HttpClient(new SocketsHttpHandler() { PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5), })
             {
-                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+                Timeout = TimeSpan.FromSeconds(5)
             };
-            client = new HttpClient(socketsHttpHandler);
-            client.Timeout = TimeSpan.FromSeconds(5);
+
+            if (Directory.Exists(CacheFileDir))
+            {
+                Directory.Delete(CacheFileDir, true);
+            }
+            Directory.CreateDirectory(CacheFileDir);
 
             Task.Factory.StartNew(async () =>
             {
@@ -43,23 +57,19 @@ namespace MapBoard.Mapping
                 {
                     try
                     {
-                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out string cacheUrl))
+                        int count = 0;
+                        while (!cacheQueue.IsEmpty && cacheQueue.TryDequeue(out TileCacheEntity tile))
                         {
-                            if (cacheQueueFiles.TryRemove(cacheUrl, out string cacheFile))
+                            byte[] bytes = await httpClient.GetByteArrayAsync(tile.TileUrl);
+                            tile.Data = bytes;
+                            dbContext.Tiles.Add(tile);
+                            Debug.WriteLine($"写入Tile缓存，队列长度剩余{cacheQueue.Count}");
+                            if (++count % 10 == 0)
                             {
-                                using var response = await client.GetAsync(cacheUrl);
-                                using var content = response.EnsureSuccessStatusCode().Content;
-                                var data = await content.ReadAsByteArrayAsync();
-                                string dir = Path.GetDirectoryName(cacheFile);
-                                if (!Directory.Exists(dir))
-                                {
-                                    Directory.CreateDirectory(dir);
-                                }
-                                File.WriteAllBytes(cacheFile, data);
-
-                                Debug.WriteLine($"写入Tile缓存，queue={cacheQueue.Count}");
+                                await dbContext.SaveChangesAsync();
                             }
                         }
+                        await dbContext.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
@@ -72,7 +82,6 @@ namespace MapBoard.Mapping
 
         public CacheableWebTiledLayer(string url, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent) : base(tileInfo, fullExtent)
         {
-            id = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(url))).Replace("-", "");
             Url = url;
         }
 
@@ -82,20 +91,29 @@ namespace MapBoard.Mapping
             var webTiledLayer = new WebTiledLayer(url.Replace("{x}", "{col}").Replace("{y}", "{row}").Replace("{z}", "{level}"));
             return new CacheableWebTiledLayer(url, webTiledLayer.TileInfo, webTiledLayer.FullExtent);
         }
+
         protected async override Task<Uri> GetTileUriAsync(int level, int row, int column, CancellationToken cancellationToken)
         {
-            Debug.WriteLine("Thread ID::::::::::::::::::" + Thread.CurrentThread.ManagedThreadId);
-
-            string cacheFile = Path.Combine(FolderPaths.TileCachePath, id, level.ToString(), row.ToString(), column.ToString());
-            if (File.Exists(cacheFile))//缓存优先
+            var cache = await dbContext.Tiles
+                .Where(p => p.TemplateUrl == Url && p.X == column && p.Y == row && p.Z == level)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (cache != null)
             {
-                return new Uri(cacheFile, UriKind.Absolute);
+                string file = Path.Combine(CacheFileDir, Guid.NewGuid().ToString());
+                await File.WriteAllBytesAsync(file, cache.Data, cancellationToken);
+                return new Uri(file, UriKind.Absolute);
             }
             else
             {
-                string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString());
-                cacheQueue.Enqueue(url);
-                cacheQueueFiles.TryAdd(url, cacheFile);
+                string url = Url.Replace("{x}", column.ToString()).Replace("{y}", row.ToString()).Replace("{z}", level.ToString()).Trim();
+                cacheQueue.Enqueue(new TileCacheEntity()
+                {
+                    X = column,
+                    Y = row,
+                    Z = level,
+                    TemplateUrl = Url,
+                    TileUrl = url,
+                });
                 return new Uri(url);
             }
         }
