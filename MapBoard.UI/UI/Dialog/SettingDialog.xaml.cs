@@ -242,9 +242,7 @@ namespace MapBoard.UI.Dialog
             try
             {
                 (sender as Button).IsEnabled = false;
-                using TileCacheDbContext db = new TileCacheDbContext();
-                await db.Tiles.ExecuteDeleteAsync();
-                await db.Database.ExecuteSqlRawAsync("VACUUM;");
+                await TileCacheDbContext.ClearCacheAsync();
                 await CommonDialog.ShowOkDialogAsync("清除缓存", "已清除缓存");
             }
             catch (Exception ex)

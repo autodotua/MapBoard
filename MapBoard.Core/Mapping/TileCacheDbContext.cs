@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using static MapBoard.Mapping.CacheableWebTiledLayer;
 
 namespace MapBoard.Mapping
@@ -11,21 +12,15 @@ namespace MapBoard.Mapping
         private static object lockObj = new object();
         public TileCacheDbContext()
         {
-            lock (lockObj)
-            {
-                try
-                {
-                    Database.EnsureCreated();
-                }
-                catch (Exception ex)
-                {
-                    Database.EnsureDeleted();
-                    Database.EnsureCreated();
-                }
-            }
+
         }
         public DbSet<TileCacheEntity> Tiles { get; set; }
 
+        public static async Task InitializeAsync()
+        {
+            using var db = new TileCacheDbContext();
+            await db.Database.EnsureCreatedAsync();
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -36,7 +31,12 @@ namespace MapBoard.Mapping
         {
             base.OnModelCreating(modelBuilder);
         }
+
+        public async static Task ClearCacheAsync()
+        {
+            using TileCacheDbContext db = new TileCacheDbContext();
+            await db.Tiles.ExecuteDeleteAsync();
+            await db.Database.ExecuteSqlRawAsync("VACUUM;");
+        }
     }
-
-
 }

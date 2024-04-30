@@ -189,6 +189,12 @@ namespace MapBoard.Mapping
                     }
                 }
             }
+#if DEBUG
+            catch(Exception ex)
+            {
+
+            }
+#endif
             finally
             {
                 if (dbContext != null)

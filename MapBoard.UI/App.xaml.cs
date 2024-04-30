@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Diagnostics;
 using MapBoard.IO;
 using MapBoard.IO.Gpx;
+using MapBoard.Mapping;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -109,6 +110,9 @@ namespace MapBoard
             WindowBase.WindowCreated += (p1, p2) =>
                 Theme.SetTheme(Config.Instance.Theme, p1 as Window);
             SnakeBar.DefaultOwner = new WindowOwner(true);
+
+            //初始化数据库
+            await TileCacheDbContext.InitializeAsync();
 
             try
             {
