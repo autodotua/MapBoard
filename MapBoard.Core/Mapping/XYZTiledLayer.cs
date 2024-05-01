@@ -27,7 +27,8 @@ namespace MapBoard.Mapping
     public class XYZTiledLayer : ImageTiledLayer
     {
         private readonly HttpClient httpClient;
-        private readonly ConcurrentDictionary<string, TileCacheEntity> processingCache = new ConcurrentDictionary<string, TileCacheEntity>();
+        private readonly ConcurrentQueue<TileCacheEntity> cacheQueue = new ConcurrentQueue<TileCacheEntity>();
+        private readonly ConcurrentDictionary<string, TileCacheEntity> cacheDic = new ConcurrentDictionary<string, TileCacheEntity>();
         private XYZTiledLayer(BaseLayerInfo layerInfo, string userAgent, Esri.ArcGISRuntime.ArcGISServices.TileInfo tileInfo, Envelope fullExtent, bool enableCache) : base(tileInfo, fullExtent)
         {
             TemplateUrl = layerInfo.Path;
@@ -37,10 +38,55 @@ namespace MapBoard.Mapping
             {
                 PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
             };
-            httpClient = new HttpClient(socketsHttpHandler);
+            httpClient = new HttpClient(socketsHttpHandler)
+            {
+                Timeout = TimeSpan.FromSeconds(5),
+            };
             ApplyHttpClientHeaders(httpClient, layerInfo, userAgent);
+            StartSavingCache();
         }
 
+        public void StartSavingCache()
+        {
+            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+            new TaskFactory().StartNew(async () =>
+            {
+                while (await timer.WaitForNextTickAsync())
+                {
+                    if (!EnableCache)
+                    {
+                        return;
+                    }
+                    try
+                    {
+                        if (!cacheQueue.IsEmpty)
+                        {
+                            List<string> removedUrls = new List<string>();
+                            Debug.WriteLine($"有{cacheQueue.Count}张瓦片正在缓存");
+                            using (var db = new TileCacheDbContext())
+                            {
+                                while (cacheQueue.TryDequeue(out TileCacheEntity tile))
+                                {
+                                    db.Tiles.Add(tile);
+                                    removedUrls.Add(tile.TileUrl);
+                                }
+                                await db.SaveChangesAsync();
+                            }
+                            foreach (var url in removedUrls)
+                            {
+                                var removedResult = cacheDic.TryRemove(url, out _);
+                                Debug.Assert(removedResult);
+                            }
+                            Debug.WriteLine($"瓦片缓存完成，cacheDic.Count={cacheDic.Count}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
+        }
 
         /// <summary>
         /// 是否启用缓存机制
@@ -72,11 +118,13 @@ namespace MapBoard.Mapping
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
             if (!string.IsNullOrWhiteSpace(layerInfo.UserAgent))
             {
-                client.DefaultRequestHeaders.Add("User-Agent", layerInfo.UserAgent);
+                client.DefaultRequestHeaders.UserAgent.TryParseAdd(layerInfo.UserAgent);
+                //client.DefaultRequestHeaders.Add("User-Agent", layerInfo.UserAgent);
             }
             else if (!string.IsNullOrEmpty(defaultUserAgent))
             {
-                client.DefaultRequestHeaders.Add("User-Agent", defaultUserAgent);
+                client.DefaultRequestHeaders.UserAgent.TryParseAdd(defaultUserAgent);
+                //client.DefaultRequestHeaders.Add("User-Agent", defaultUserAgent);
             }
             if (!string.IsNullOrWhiteSpace(layerInfo.Host))
             {
@@ -144,13 +192,13 @@ namespace MapBoard.Mapping
             }
 
             TileCacheEntity cache = null;
-            TileCacheDbContext dbContext = null;
+            //TileCacheDbContext dbContext = null;
             byte[] data = null;
             try
             {
                 if (EnableCache)
                 {
-                    dbContext = new TileCacheDbContext();
+                    using var dbContext = new TileCacheDbContext();
                     cache = await dbContext.Tiles
                          .Where(p => p.TemplateUrl == TemplateUrl && p.X == column && p.Y == row && p.Z == level)
                          .FirstOrDefaultAsync(cancellationToken);
@@ -168,7 +216,7 @@ namespace MapBoard.Mapping
                     if (EnableCache)
                     {
                         TileCacheEntity tileCache = null;
-                        if (processingCache.TryGetValue(url, out tileCache))
+                        if (cacheDic.TryGetValue(url, out tileCache))
                         {
                             data = tileCache.Data;
                         }
@@ -183,26 +231,30 @@ namespace MapBoard.Mapping
                                 TileUrl = url,
                                 Data = data
                             };
-                            dbContext.Tiles.Add(tileCache);
-                            await dbContext.SaveChangesAsync(CancellationToken.None).ConfigureAwait(false);
+                            cacheQueue.Enqueue(tileCache);
+                            cacheDic.TryAdd(url, tileCache);
+                            //dbContext.Tiles.Add(tileCache);
+                            //await dbContext.SaveChangesAsync(CancellationToken.None).ConfigureAwait(false);
                         }
                     }
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                throw;
+            }
 #if DEBUG
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
 #endif
-            finally
-            {
-                if (dbContext != null)
-                {
-                    await dbContext.DisposeAsync();
-                }
-            }
             return new ImageTileData(level, row, column, data, "");
+        }
+
+        ~XYZTiledLayer()
+        {
+            httpClient.Dispose();
         }
     }
 }
