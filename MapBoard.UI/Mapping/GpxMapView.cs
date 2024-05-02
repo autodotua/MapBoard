@@ -224,11 +224,8 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task<List<TrackInfo>> LoadGpxAsync(string filePath, bool raiseEvent)
         {
-            Gpx gpx = null;
-            await Task.Run(async () =>
-             {
-                 gpx = await GpxSerializer.FromFileAsync(filePath);
-             });
+            Gpx gpx = await GpxSerializer.FromFileAsync(filePath);
+
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < gpx.Tracks.Count; i++)
             {
@@ -270,16 +267,17 @@ namespace MapBoard.Mapping
             }
             double minZ = 0;
             double mag = 0;
+            var points = trackInfo.Track.GetPoints();
             try
             {
                 //处理自动平滑
                 if (Config.Instance.Gpx_AutoSmooth)
                 {
-                    GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
+                    GpxUtility.Smooth(points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Z.Value, (p, v) => p.Z = v);
                     if (!Config.Instance.Gpx_AutoSmoothOnlyZ)
                     {
-                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
-                        GpxUtility.Smooth(trackInfo.Track.GetPoints(), Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
+                        GpxUtility.Smooth(points, Config.Instance.Gpx_AutoSmoothLevel, p => p.X, (p, v) => p.X = v);
+                        GpxUtility.Smooth(points, Config.Instance.Gpx_AutoSmoothLevel, p => p.Y, (p, v) => p.Y = v);
                     }
                     trackInfo.Smoothed = true;
                 }
@@ -287,7 +285,7 @@ namespace MapBoard.Mapping
                 //处理高程
                 if (Config.Instance.Gpx_Height && Config.Instance.Gpx_RelativeHeight)
                 {
-                    var zs = trackInfo.Track.GetPoints().Where(p => p.Z.HasValue);
+                    var zs = points.Where(p => p.Z.HasValue);
                     minZ = zs.Any() ? zs.Min(p => p.Z.Value) : 0;
                 }
                 else
@@ -309,7 +307,7 @@ namespace MapBoard.Mapping
             //添加简单线
             Graphic lineGraphic = null;
             double lastZ = minZ;
-            foreach (var gpxPoint in trackInfo.Track.GetPoints())
+            foreach (var gpxPoint in points)
             {
                 if (Config.Instance.BasemapCoordinateSystem != CoordinateSystem.WGS84)
                 {
@@ -320,7 +318,8 @@ namespace MapBoard.Mapping
                 }
                 double z = gpxPoint.Z.HasValue ? gpxPoint.Z.Value : lastZ;
                 lastZ = z;
-                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, z * mag, SpatialReferences.Wgs84);
+                gpxPoint.Z *= mag;
+                MapPoint mapPoint = new MapPoint(gpxPoint.X, gpxPoint.Y, z, SpatialReferences.Wgs84);
 
 
                 //如果前后两个点离得太远了，那么就不连接
@@ -350,7 +349,7 @@ namespace MapBoard.Mapping
             trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.SimpleLine).Add(lineGraphic);
 
             //添加速度彩色线
-            GpxUtility.LoadColoredGpx(trackInfo.Track, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
+            GpxUtility.LoadColoredGpx(points, trackInfo.GetGraphic(TrackInfo.TrackSelectionDisplay.ColoredLine));
 
             //设置高程策略
             trackInfo.GetSceneProperties(TrackInfo.TrackSelectionDisplay.SimpleLine).SurfacePlacement =
@@ -380,7 +379,7 @@ namespace MapBoard.Mapping
             var ts = await LoadGpxAsync(track.FilePath, false);
             if (raiseEvent)
             {
-                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(ts.ToArray(), true));
+                GpxLoaded?.Invoke(this, new GpxLoadedEventArgs([.. ts], true));
             }
             return ts;
         }
@@ -402,7 +401,7 @@ namespace MapBoard.Mapping
             }
             catch (Exception ex)
             {
-                Debug.Assert(false);
+                //A null pointer: disconnected from collection.
             }
         }
 
@@ -439,7 +438,14 @@ namespace MapBoard.Mapping
                 return;
             }
             selectedGraphics.Clear();
-            pointGraphic.Geometry = null;
+            try
+            {
+                pointGraphic.Geometry = null;
+            }
+            catch
+            {
+                //A null pointer: disconnected from collection.
+            }
         }
         /// <summary>
         /// 鼠标右键按下

@@ -275,3 +275,4 @@ packages
 *.db
 *.db-*
 *.pubxml
+launchSettings.json

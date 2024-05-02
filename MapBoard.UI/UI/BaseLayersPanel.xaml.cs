@@ -123,7 +123,6 @@ namespace MapBoard.UI
         {
             var baseLayer = (sender as FrameworkElement).DataContext as BaseLayerInfo;
             ChangeLayerProperty(baseLayer, (arc, b) => arc.IsVisible = b.Visible);
-
         }
 
         /// <summary>
@@ -133,7 +132,8 @@ namespace MapBoard.UI
         /// <param name="layerAction"></param>
         private void ChangeLayerProperty(BaseLayerInfo baseLayer, Action<Layer, BaseLayerInfo> layerAction)
         {
-            foreach (var map in MainMapView.Instances.Cast<GeoView>().Concat(BrowseSceneView.Instances))
+            List<GeoView> views = [.. MainMapView.Instances, .. BrowseSceneView.Instances, .. GpxMapView.Instances];
+            foreach (var map in views)
             {
                 Basemap basemap = null;
                 if (map is MapView m)

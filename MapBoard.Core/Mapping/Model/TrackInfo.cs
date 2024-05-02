@@ -6,6 +6,7 @@ using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 
@@ -14,7 +15,7 @@ namespace MapBoard.Mapping.Model
     /// <summary>
     /// GPS轨迹信息
     /// </summary>
-    public class TrackInfo : ICloneable
+    public class TrackInfo : INotifyPropertyChanged, ICloneable
     {
         public TrackInfo(string file, Gpx gpx, int trackIndex)
         {
@@ -44,7 +45,19 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         public Gpx Gpx { get; init; }
 
-        public ObservableCollection<GpxPoint> Points { get; }
+        public ObservableCollection<GpxPoint> Points { get;private set; }
+
+        public void UpdatePoints(ObservableCollection<GpxPoint> points)
+        {
+            Points = points;
+            Track.Segments.Clear();
+            var segment = Track.CreateSegment();
+            foreach (var point in points)
+            {
+                segment.Points.Add(point);
+            }
+        }
+
         /// <summary>
         /// 是否已经平滑
         /// </summary>
@@ -71,6 +84,8 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         private GraphicsOverlay SimpleLineOverlay { get; set; }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public void AddToOverlays(GraphicsOverlayCollection overlays, Dictionary<GraphicsOverlay, TrackInfo> dictionary)
         {
             overlays.Add(SimpleLineOverlay);
@@ -95,7 +110,6 @@ namespace MapBoard.Mapping.Model
             return overlay.Graphics;
         }
 
-        public IList<GpxPoint> GetPoints() => Track.GetPoints();
         public LayerSceneProperties GetSceneProperties(TrackSelectionDisplay display)
         {
             GraphicsOverlay overlay = GetOverlay(display);

@@ -314,9 +314,8 @@ namespace MapBoard.Util
             }
             return null;
         }
-        public static void LoadColoredGpx(GpxTrack gpxTrack, GraphicCollection graphics)
+        public static void LoadColoredGpx(IList<GpxPoint> points, GraphicCollection graphics)
         {
-            var points = gpxTrack.GetPoints();
             var speeds = GetMeanFilteredSpeeds(points, Parameters.GpxSpeedSmoothWindow, false);
             var orderedSpeeds = speeds.OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;

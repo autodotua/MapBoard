@@ -246,7 +246,7 @@ namespace MapBoard.Mapping
 #if DEBUG
             catch (Exception ex)
             {
-
+                throw;
             }
 #endif
             return new ImageTileData(level, row, column, data, "");
