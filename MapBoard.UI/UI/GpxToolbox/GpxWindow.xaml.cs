@@ -652,6 +652,7 @@ namespace MapBoard.UI.GpxToolbox
                     {
                         overlay.Graphics.RemoveAt(overlay.Graphics.Count - 1);
                     }
+                    ReloadTrack();
                 };
                 menu.Items.Add(menuSetToHere);
                 menu.IsOpen = true;

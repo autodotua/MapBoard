@@ -146,7 +146,7 @@
                     <TextBox
                         Grid.Row="4"
                         Grid.Column="2"
-                        Text="{Binding Time,StringFormat={StaticResource DateTimeFormat}}" />
+                        Text="{Binding Time, StringFormat={StaticResource DateTimeFormat}}" />
                     <TextBlock
                         Grid.Row="6"
                         HorizontalAlignment="Right"
@@ -270,7 +270,7 @@
                         Grid.Row="14"
                         Grid.Column="2"
                         IsReadOnly="True"
-                        Text="{Binding Track,Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=ms}" />
+                        Text="{Binding Track, Mode=OneWay, Converter={StaticResource TrackInfoConverter}, ConverterParameter=ms}" />
                     <DataGrid
                         x:Name="grdPoints"
                         Grid.Row="16"
@@ -354,7 +354,7 @@
                         x:Name="btnReset"
                         Grid.Column="4"
                         HorizontalAlignment="Stretch"
-                        Content="重置">
+                        Content="刷新">
                         <ui:FlyoutService.Flyout>
                             <ui:Flyout>
                                 <ui:SimpleStackPanel
@@ -381,7 +381,7 @@
                                     <Button
                                         HorizontalAlignment="Stretch"
                                         Click="ResetTrackButton_Click"
-                                        Content="开始重置" />
+                                        Content="刷新" />
                                 </ui:SimpleStackPanel>
                             </ui:Flyout>
                         </ui:FlyoutService.Flyout>
