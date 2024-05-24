@@ -4,6 +4,7 @@ using Esri.ArcGISRuntime.UI;
 using FzLib;
 using MapBoard.IO;
 using MapBoard.IO.Gpx;
+using MapBoard.IO.TrackDb;
 using MapBoard.Mapping;
 using MapBoard.Model;
 using MapBoard.Util;
@@ -45,8 +46,7 @@ namespace MapBoard.Services
         private static TrackService current;
         private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         private GnssStatusInfo gnssStatus;
-        private Gpx gpx = new Gpx();
-        private GpxTrack gpxTrack;
+        private TrackDbService trackDbService;
         private Location lastLocation;
 
         private int pointsCount;

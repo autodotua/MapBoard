@@ -35,6 +35,7 @@ using CommunityToolkit.Maui.Alerts;
 using static MapBoard.Views.PopupMenu;
 using CommunityToolkit.Maui.Views;
 using MapBoard.Models;
+using MapBoard.IO.TrackDb;
 
 
 
@@ -63,6 +64,7 @@ namespace MapBoard.Views
             TrackService.CurrentChanged += TrackService_CurrentChanged;
 
             TileCacheDbContext.InitializeAsync().Wait();
+            TrackDbContext.InitializeAsync().Wait();
 
             //大屏设备，底部操作栏在右下角悬浮
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)

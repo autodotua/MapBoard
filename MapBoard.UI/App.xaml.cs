@@ -26,6 +26,7 @@ using System.Diagnostics;
 using MapBoard.IO;
 using MapBoard.IO.Gpx;
 using MapBoard.Mapping;
+using MapBoard.IO.TrackDb;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -113,6 +114,7 @@ namespace MapBoard
 
             //初始化数据库
             await TileCacheDbContext.InitializeAsync();
+            await TrackDbContext.InitializeAsync();
 
             try
             {

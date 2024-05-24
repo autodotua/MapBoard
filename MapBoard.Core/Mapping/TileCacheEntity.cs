@@ -1,15 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MapBoard.IO;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MapBoard.Mapping
 {
-    [Index("X", "Y", "Z", "TemplateUrl")]
-    public class TileCacheEntity
+    [Index(nameof(X), nameof(Y), nameof(Z), nameof(TemplateUrl))]
+    public class TileCacheEntity : EntityBase
     {
-        [Key]
-        public int Id { get; set; }
-
         public string TileUrl { get; set; }
 
         public string TemplateUrl { get; set; }
