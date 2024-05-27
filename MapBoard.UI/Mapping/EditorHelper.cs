@@ -176,19 +176,7 @@ namespace MapBoard.Mapping
             PrepareToDraw(EditMode.Edit);
             editingFeature = feature;
 
-            GeometryEditor.SnapSettings.IsEnabled = true;
-            GeometryEditor.SnapSettings.SyncSourceSettings();
-            foreach (var ss in GeometryEditor.SnapSettings.SourceSettings)
-            {
-                if (ss.Source is FeatureLayer fl)
-                {
-                    var l = Layers.Find(fl);
-                    if (l != null && l.Interaction.CanCatch)
-                    {
-                        ss.IsEnabled = true;
-                    }
-                }
-            }
+            InitializeSnapping();
             GeometryEditor.Start(feature.Geometry.SpatialReference != MapView.Map.SpatialReference ?
                GeometryEngine.Project(feature.Geometry, MapView.Map.SpatialReference) : feature.Geometry);
             await WaitForStopAsync();
@@ -458,6 +446,22 @@ namespace MapBoard.Mapping
             }
         }
 
+        private void InitializeSnapping()
+        {
+            GeometryEditor.SnapSettings.IsEnabled = true;
+            GeometryEditor.SnapSettings.SyncSourceSettings();
+            foreach (var ss in GeometryEditor.SnapSettings.SourceSettings)
+            {
+                if (ss.Source is FeatureLayer fl)
+                {
+                    var l = Layers.Find(fl);
+                    if (l != null && l.Interaction.CanCatch)
+                    {
+                        ss.IsEnabled = true;
+                    }
+                }
+            }
+        }
         /// <summary>
         /// 鼠标是否在绘制的图形旁。
         /// </summary>
@@ -637,6 +641,7 @@ namespace MapBoard.Mapping
 
         private void StartDraw(GeometryType type, GeometryEditorTool tool = null)
         {
+            InitializeSnapping(); 
             GeometryEditor.Start(type);
             GeometryEditor.Tool = tool ?? new VertexTool();
         }
