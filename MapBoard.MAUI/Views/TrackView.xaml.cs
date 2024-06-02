@@ -63,7 +63,7 @@ public partial class TrackView : ContentView, ISidePanel
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)
     {
-        PopupMenu.PopupMenuItem[] items = ["加载", "转为图层", "分享", "删除", "删除本条及更早的轨迹"];
+        PopupMenu.PopupMenuItem[] items = ["加载", "分享", "删除", "删除本条及更早的轨迹"];
         var result = await (sender as ListView).PopupMenuAsync(e, items, "轨迹");
         if (result >= 0)
         {
@@ -71,21 +71,12 @@ public partial class TrackView : ContentView, ISidePanel
             switch (result)
             {
                 case 0:
-                    if (TrackService.Current != null)
-                    {
-                        await MainPage.Current.DisplayAlert("无法加载", "正在记录轨迹", "确定");
-                        return;
-                    }
-
                     await LoadGpxAsync(file.File.FullName);
                     return;
                 case 1:
-                    await ConvertToLayerAsync(file.File.FullName);
-                    break;
-                case 2:
                     await Share.Default.RequestAsync(new ShareFileRequest("分享轨迹", new ShareFile(file.File.FullName)));
                     break;
-                case 3:
+                case 2:
                     if (await MainPage.Current.DisplayAlert("删除轨迹", $"是否要删除{file.File.Name}？", "是", "否"))
                     {
                         if (!Directory.Exists(DeletedGpxDir))
@@ -95,7 +86,7 @@ public partial class TrackView : ContentView, ISidePanel
                         File.Move(file.File.FullName, Path.Combine(DeletedGpxDir, Path.GetFileName(file.File.FullName)), true);
                     }
                     break;
-                case 4:
+                case 3:
                     var gpxs = (BindingContext as TrackViewViewModel).GpxFiles.Where(p => p.File.Time <= file.File.Time).ToList(); ;
                     if (await MainPage.Current.DisplayAlert("删除轨迹", $"是否要删除{gpxs.Count}个轨迹？", "是", "否"))
                     {
@@ -129,15 +120,22 @@ public partial class TrackView : ContentView, ISidePanel
         var handle = ProgressPopup.Show("正在转为图层");
         try
         {
-            Gpx gpx = await GpxSerializer.FromFileAsync(path);
+            MainPage.Current.ClosePanel<TrackView>();
 
             var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, MainMapView.Current.Layers, Path.GetFileNameWithoutExtension(path));
+            layer.Renderer.DefaultSymbol = new Model.SymbolInfo()
+            {
+                OutlineWidth = 6,
+                LineColor = System.Drawing.Color.FromArgb(0xff, 0x4d, 0xdd, 0xdd)
+            };
+            layer.ApplyStyle();
+
+            Gpx gpx = await GpxSerializer.FromFileAsync(path);
             var points = gpx.GetPoints();
             var line = new Polyline(points.Select(p => p.ToXYMapPoint()));
             var feature = layer.CreateFeature(null, line);
             await layer.AddFeatureAsync(feature, Mapping.Model.FeaturesChangedSource.Import);
             var extent = await layer.QueryExtentAsync(new Esri.ArcGISRuntime.Data.QueryParameters());
-            MainPage.Current.ClosePanel<TrackView>();
             await MainMapView.Current.ZoomToGeometryAsync(extent);
         }
         catch (Exception ex)
@@ -150,7 +148,7 @@ public partial class TrackView : ContentView, ISidePanel
         }
     }
 
-    private async Task LoadGpxAsync(string path)
+    private async Task LoadOverlayGpxAsync(string path)
     {
         var handle = ProgressPopup.Show("正在加载轨迹");
         try
@@ -241,10 +239,26 @@ public partial class TrackView : ContentView, ISidePanel
                 [DevicePlatform.WinUI] = ["*.gpx"]
             })
         };
-        var file = await FilePicker.Default.PickAsync(options);
+        var file = (await FilePicker.Default.PickAsync(options))?.FullPath;
         if (file != null)
         {
-            await LoadGpxAsync(file.FullPath);
+            await LoadGpxAsync(file);
+        }
+    }
+
+    private async Task LoadGpxAsync(string file)
+    {
+        string[] actions = ["作为临时轨迹打开", "转换为图层"];
+        var result = await MainPage.Current.DisplayActionSheet("打开轨迹", "取消", null, actions);
+        int index = Array.IndexOf(actions, result);
+        switch (index)
+        {
+            case 0:
+                await LoadOverlayGpxAsync(file);
+                break;
+            case 1:
+                await ConvertToLayerAsync(file);
+                break;
         }
     }
 
@@ -273,7 +287,7 @@ public partial class TrackView : ContentView, ISidePanel
         }
         if (TrackService.Current == null)
         {
-            await LoadGpxAsync(e.FilePath);
+            await LoadOverlayGpxAsync(e.FilePath);
         }
     }
 

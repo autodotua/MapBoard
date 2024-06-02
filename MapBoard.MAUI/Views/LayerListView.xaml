@@ -16,6 +16,7 @@
                     Margin="8"
                     ColumnDefinitions="*,8,Auto">
                     <Label
+                        LineBreakMode="MiddleTruncation"
                         Text="{Binding Name}"
                         TextColor="{AppThemeBinding Dark=White,
                                                     Light=Black}"
