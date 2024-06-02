@@ -51,7 +51,8 @@ namespace MapBoard.Services
 
     public class TrackService : INotifyPropertyChanged
     {
-        public const double MinDistance = 2;
+        public const int MinTimeSpan = 2000;
+        public const int MinDistance = 2;
         private static TrackService current;
         private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         private GnssStatusInfo gnssStatus;
@@ -171,11 +172,13 @@ namespace MapBoard.Services
 
         private LocationListener androidListener;
 
+        private bool canUpdate=false;
+
         public void StartAndroid()
         {
             androidListener = new LocationListener();
             AL.LocationManager manager = Platform.AppContext.GetSystemService(Android.Content.Context.LocationService) as AL.LocationManager;
-            manager.RequestLocationUpdates(AL.LocationManager.GpsProvider, 1000, 1, androidListener);
+            manager.RequestLocationUpdates(AL.LocationManager.GpsProvider, MinTimeSpan, MinDistance, androidListener);
         }
 
         private void StopAndroid()
@@ -190,7 +193,10 @@ namespace MapBoard.Services
             {
                 Debug.WriteLine("Android Location Listener Changed");
                 Debug.Assert(Current != null);
-
+                if(!Current.canUpdate)
+                {
+                    return;
+                }
                 await Current.UpdateLocationAsync(new Location()
                 {
                     Longitude = location.Longitude,
@@ -267,11 +273,12 @@ namespace MapBoard.Services
                     gpx.Creator = AppInfo.Name;
                 }
 
+                canUpdate = true;
                 BeforeLoop?.Invoke();
 #if ANDROID
 #else
                 throw new NotImplementedException();
-                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromMicroseconds(MinTimeSpan));
                 while (running)
                 {
                     Location location = null;
@@ -398,19 +405,19 @@ namespace MapBoard.Services
                 GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude, location.Timestamp.LocalDateTime);
                 if (location.Accuracy.HasValue)
                 {
-                    point.Extensions.Add("Accuracy", location.Accuracy.ToString());
+                    point.Extensions.Add(nameof(location.Accuracy), location.Accuracy.ToString());
                 }
                 if (location.VerticalAccuracy.HasValue)
                 {
-                    point.Extensions.Add("VerticalAccuracy", location.VerticalAccuracy.ToString());
+                    point.Extensions.Add(nameof(location.VerticalAccuracy), location.VerticalAccuracy.ToString());
                 }
                 if (location.Course.HasValue)
                 {
-                    point.Extensions.Add("Course", location.Course.ToString());
+                    point.Extensions.Add(nameof(location.Course), location.Course.ToString());
                 }
                 if (location.Speed.HasValue)
                 {
-                    point.Extensions.Add("Speed", location.Speed.ToString());
+                    point.Extensions.Add(nameof(location.Speed), location.Speed.ToString());
                 }
                 if (gpxTrack.Segments.Count == 0)
                 {

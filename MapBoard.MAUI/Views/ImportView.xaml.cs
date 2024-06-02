@@ -35,7 +35,7 @@ public partial class ImportView : ContentView, ISidePanel
         var handle = ProgressPopup.Show("正在导入地图");
         try
         {
-            await Package.ImportMapAsync(file, MainMapView.Current.Layers, true);
+            await Package.ImportMapAsync(file, MainMapView.Current.Layers, true).ConfigureAwait(false);
             MainPage.Current.ClosePanel<ImportView>();
         }
         catch (Exception ex)
