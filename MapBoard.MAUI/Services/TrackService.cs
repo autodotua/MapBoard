@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+﻿
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using FzLib;
@@ -15,6 +16,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using XmpCore.Impl;
+using Debug = System.Diagnostics.Debug;
+
+
+#if ANDROID
+using Java.Interop;
+using Android.OS;
+using Android.Runtime;
+using AL = Android.Locations;
+#endif
 
 namespace MapBoard.Services
 {
@@ -156,8 +166,65 @@ namespace MapBoard.Services
 
         private TrackOverlayHelper TrackOverlay => MainMapView.Current.TrackOverlay;
         private GeoShareService GeoShare => MainMapView.Current.GeoShareService;
+
+#if ANDROID
+
+        private LocationListener androidListener;
+
+        public void StartAndroid()
+        {
+            androidListener = new LocationListener();
+            AL.LocationManager manager = Platform.AppContext.GetSystemService(Android.Content.Context.LocationService) as AL.LocationManager;
+            manager.RequestLocationUpdates(AL.LocationManager.GpsProvider, 1000, 1, androidListener);
+        }
+
+        private void StopAndroid()
+        {
+            AL.LocationManager manager = Platform.AppContext.GetSystemService(Android.Content.Context.LocationService) as AL.LocationManager;
+            manager.RemoveUpdates(androidListener);
+        }
+
+        public class LocationListener : Java.Lang.Object, AL.ILocationListener
+        {
+            public async void OnLocationChanged(AL.Location location)
+            {
+                Debug.WriteLine("Android Location Listener Changed");
+                Debug.Assert(Current != null);
+
+                await Current.UpdateLocationAsync(new Location()
+                {
+                    Longitude = location.Longitude,
+                    Latitude = location.Latitude,
+                    Altitude = location.HasAltitude ? location.Altitude : null,
+                    Accuracy = location.HasAccuracy ? location.Accuracy : null,
+                    VerticalAccuracy = location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : null,
+                    Course = location.HasBearing ? location.Bearing : null,
+                    Speed = location.HasSpeed ? location.Speed : null,
+                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(location.Time)
+                });
+
+            }
+
+            public void OnProviderDisabled(string provider)
+            {
+                Debug.WriteLine("Android Location Listener Disabled");
+            }
+
+            public void OnProviderEnabled(string provider)
+            {
+                Debug.WriteLine("Android Location Listener Enabled");
+            }
+
+            public void OnStatusChanged(string provider, [GeneratedEnum] AL.Availability status, Bundle extras)
+            {
+                Debug.WriteLine("Android Location Status Changed：" + status.ToString());
+            }
+        }
+#endif
+
         public async void Start()
         {
+
             if (running)
             {
                 throw new Exception("单个实例不可多次开始记录轨迹");
@@ -168,16 +235,19 @@ namespace MapBoard.Services
             try
             {
                 TrackOverlay.Clear();
-                double distance = 0;
 
                 string backupDir = Path.Combine(FolderPaths.TrackPath, "backup");
                 if (!Directory.Exists(backupDir))
                 {
                     Directory.CreateDirectory(backupDir);
                 }
-
-                //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
+#if ANDROID
+                StartAndroid();
+#else
+                throw new NotImplementedException();
+ //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
                 await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
+#endif
 
                 if (ResumeGpx != null)
                 {
@@ -197,63 +267,26 @@ namespace MapBoard.Services
                     gpx.Creator = AppInfo.Name;
                 }
 
-                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-                int index = 0;
                 BeforeLoop?.Invoke();
+#if ANDROID
+#else
+                throw new NotImplementedException();
+                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
                 while (running)
                 {
-
-                    UpdateTime = DateTime.Now;
-                    if (index++ % 2 == 1)
-                    {
-                        //两秒一次获取位置
-                        continue;
-                    }
-
                     Location location = null;
-#if WINDOWS
+# if WINDOWS
                     await MainThread.InvokeOnMainThreadAsync(async () =>
                        {
-#endif
+# endif
                     location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-#if WINDOWS
+# if WINDOWS
                 });
-#endif
-                    if (running == false)
-                    {
-                        break;
-                    }
-                    if (location == null)
-                    {
-                        throw new Exception("无法获取位置");
-                    }
-                    if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
-                    {
-                        continue;
-                    }
-
-                    if (LastLocation == null)
-                    {
-                        lastRecordLocation = location;
-                        LastLocation = location;
-                    }
-                    distance = Location.CalculateDistance(location, lastRecordLocation, DistanceUnits.Kilometers) * 1000;
-                    if (PointsCount == 0 || distance > MinDistance)
-                    {
-                        TotalDistance += distance;
-                        TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
-                        await GeoShare.ReportLocationAsync(location);
-                        UpdateGpx(location);
-                        lastRecordLocation = location;
-                        PointsCount++;
-                    }
-                    if (LastLocation.Longitude == location.Longitude && LastLocation.Latitude == location.Latitude && LastLocation.Altitude == location.Altitude)
-                    {
-                        location.Speed = 0;
-                    }
-                    LastLocation = location;
+# endif
+                    await UpdateLocationAsync(location);
                     await timer.WaitForNextTickAsync();
                 }
+#endif
             }
             catch (Exception ex)
             {
@@ -262,7 +295,45 @@ namespace MapBoard.Services
             }
         }
 
+        private async Task UpdateLocationAsync(Location location)
+        {
 
+            UpdateTime = DateTime.Now;
+
+            if (running == false)
+            {
+                return;
+            }
+            if (location == null)
+            {
+                throw new Exception("无法获取位置");
+            }
+            if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
+            {
+                return;
+            }
+
+            if (LastLocation == null)
+            {
+                lastRecordLocation = location;
+                LastLocation = location;
+            }
+            var distance = Location.CalculateDistance(location, lastRecordLocation, DistanceUnits.Kilometers) * 1000;
+            if (PointsCount == 0 || distance > MinDistance)
+            {
+                TotalDistance += distance;
+                TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
+                await GeoShare.ReportLocationAsync(location);
+                UpdateGpx(location);
+                lastRecordLocation = location;
+                PointsCount++;
+            }
+            if (LastLocation.Longitude == location.Longitude && LastLocation.Latitude == location.Latitude && LastLocation.Altitude == location.Altitude)
+            {
+                location.Speed = 0;
+            }
+            LastLocation = location;
+        }
         public void Stop()
         {
             if (!running)
@@ -273,7 +344,13 @@ namespace MapBoard.Services
             Current = null;
             try
             {
+#if ANDROID
+                StopAndroid();
+#else
+                
+                throw new NotImplementedException();
                 Geolocation.Default.StopListeningForeground();
+#endif
                 if (SaveGpx())
                 {
                     GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath(false)));
@@ -361,4 +438,6 @@ namespace MapBoard.Services
             public string FilePath { get; init; }
         }
     }
+
+
 }
