@@ -193,8 +193,7 @@ public partial class TrackView : ContentView, ISidePanel
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StartTrackService();
 #else
-        var trackService = new TrackService();
-        trackService.Start();
+        throw new NotImplementedException();
 #endif
         MainPage.Current.ClosePanel<TrackView>();
     }
@@ -224,7 +223,7 @@ public partial class TrackView : ContentView, ISidePanel
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StopTrackService();
 #else
-        TrackService.Current.Stop();
+        throw new NotImplementedException();
 #endif
     }
 

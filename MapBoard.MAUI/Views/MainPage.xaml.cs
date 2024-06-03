@@ -419,7 +419,7 @@ namespace MapBoard.Views
 #if ANDROID
                             (Platform.CurrentActivity as MainActivity).StopTrackService();
 #else
-                            TrackService.Current.Stop();
+                            throw new NotImplementedException();
 #endif
                         }
                     }

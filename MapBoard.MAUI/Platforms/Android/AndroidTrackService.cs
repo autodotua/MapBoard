@@ -22,7 +22,6 @@ public class AndroidTrackService : Service
     private readonly int NotificationID = 1;
     private IBinder binder;
     private NotificationCompat.Builder notificationBuilder;
-    private AndroidGnssHelper gnss;
     private bool pausing = false;
 
     public AndroidTrackService()
@@ -46,9 +45,7 @@ public class AndroidTrackService : Service
         {
             TrackService.Stop();
         }
-        gnss.Stop();
         timer.Stop();
-        gnss.GnssStatusChanged -= Gnss_GnssStatusChanged;
         TrackService.CurrentChanged -= TrackService_CurrentChanged;
         TrackService = null;
     }
@@ -60,8 +57,6 @@ public class AndroidTrackService : Service
         return StartCommandResult.NotSticky;
     }
 
-
-
     public void SetTrackServiceAndStart(TrackService trackService)
     {
         if (TrackService != null)
@@ -69,11 +64,9 @@ public class AndroidTrackService : Service
             throw new Exception("不可重复设置");
         }
 
-        gnss = new AndroidGnssHelper(this);
         TrackService = trackService;
         TrackService.CurrentChanged += TrackService_CurrentChanged;
-        gnss.GnssStatusChanged += Gnss_GnssStatusChanged;
-        gnss.Start();
+
         trackService.Start();
 
         timer = App.Current.Dispatcher.CreateTimer();
@@ -104,11 +97,6 @@ public class AndroidTrackService : Service
         {
             StopSelf();
         }
-    }
-
-    private void Gnss_GnssStatusChanged(object sender, EventArgs e)
-    {
-        TrackService.UpdateGnssStatus(gnss.LastStatus);
     }
 
     private void StartForegroundService()
@@ -145,15 +133,5 @@ public class AndroidTrackService : Service
         }
         notificationManager.Notify(NotificationID, notificationBuilder.Build());
     }
-
 }
 
-public class AndroidTrackServiceBinder : Binder
-{
-    public AndroidTrackServiceBinder(AndroidTrackService service)
-    {
-        Service = service;
-    }
-
-    public AndroidTrackService Service { get; }
-}

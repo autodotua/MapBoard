@@ -16,15 +16,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using XmpCore.Impl;
-using Debug = System.Diagnostics.Debug;
-
-
-#if ANDROID
-using Java.Interop;
-using Android.OS;
-using Android.Runtime;
-using AL = Android.Locations;
-#endif
 
 namespace MapBoard.Services
 {
@@ -49,36 +40,44 @@ namespace MapBoard.Services
      * 然后在卫星信息改变时，调用TrackService.UpdateGnssStatus进行更新。
      */
 
-    public class TrackService : INotifyPropertyChanged
+    public abstract class TrackService : INotifyPropertyChanged
     {
-        public const int MinTimeSpan = 2000;
         public const int MinDistance = 2;
+        public const int MinTimeSpan = 2000;
         private static TrackService current;
-        private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private bool canUpdate = false;
         private GnssStatusInfo gnssStatus;
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
 
+        /// <summary>
+        /// 上一个记录的位置
+        /// </summary>
+        private Location lastRecordLocation = null;
+
         private int pointsCount;
         private bool running = false;
         private DateTime startTime = DateTime.Now;
-        private double tolerableAccuracy = 20;
         private double totalDistance;
         private DateTime updateTime = DateTime.Now;
+
+
 
         public TrackService()
         {
             TrackOverlay.Clear();
         }
 
-        public static event ThreadExceptionEventHandler ExceptionThrown;
-
         public static event EventHandler CurrentChanged;
+
+        public static event ThreadExceptionEventHandler ExceptionThrown;
 
         public static event EventHandler<GpxSavedEventArgs> GpxSaved;
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public static Action BeforeLoop { get; set; } = null;
 
         /// <summary>
         /// 当前实例
@@ -101,8 +100,7 @@ namespace MapBoard.Services
         /// 设置恢复记录的轨迹文件，当调用Start方法时，若该值非null，则会读取该文件然后继续记录
         /// </summary>
         public static string ResumeGpx { get; set; } = null;
-
-        public static Action BeforeLoop { get; set; } = null;
+        public TimeSpan Duration => UpdateTime - StartTime;
 
         /// <summary>
         /// GNSS状态信息
@@ -110,7 +108,7 @@ namespace MapBoard.Services
         public GnssStatusInfo GnssStatus
         {
             get => gnssStatus;
-            private set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
+            set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
         }
 
         /// <summary>
@@ -121,12 +119,6 @@ namespace MapBoard.Services
             get => lastLocation;
             private set => this.SetValueAndNotify(ref lastLocation, value, nameof(LastLocation));
         }
-
-        /// <summary>
-        /// 上一个记录的位置
-        /// </summary>
-        private Location lastRecordLocation = null;
-
         /// <summary>
         /// 已经记录的点数量
         /// </summary>
@@ -144,9 +136,6 @@ namespace MapBoard.Services
             get => startTime;
             private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
         }
-
-        public TimeSpan Duration => UpdateTime - StartTime;
-
         /// <summary>
         /// 总里程
         /// </summary>
@@ -166,67 +155,10 @@ namespace MapBoard.Services
         }
 
         private TrackOverlayHelper TrackOverlay => MainMapView.Current.TrackOverlay;
-        private GeoShareService GeoShare => MainMapView.Current.GeoShareService;
 
-#if ANDROID
+        protected abstract void BeginListening();
 
-        private LocationListener androidListener;
-
-        private bool canUpdate=false;
-
-        public void StartAndroid()
-        {
-            androidListener = new LocationListener();
-            AL.LocationManager manager = Platform.AppContext.GetSystemService(Android.Content.Context.LocationService) as AL.LocationManager;
-            manager.RequestLocationUpdates(AL.LocationManager.GpsProvider, MinTimeSpan, MinDistance, androidListener);
-        }
-
-        private void StopAndroid()
-        {
-            AL.LocationManager manager = Platform.AppContext.GetSystemService(Android.Content.Context.LocationService) as AL.LocationManager;
-            manager.RemoveUpdates(androidListener);
-        }
-
-        public class LocationListener : Java.Lang.Object, AL.ILocationListener
-        {
-            public async void OnLocationChanged(AL.Location location)
-            {
-                Debug.WriteLine("Android Location Listener Changed");
-                Debug.Assert(Current != null);
-                if(!Current.canUpdate)
-                {
-                    return;
-                }
-                await Current.UpdateLocationAsync(new Location()
-                {
-                    Longitude = location.Longitude,
-                    Latitude = location.Latitude,
-                    Altitude = location.HasAltitude ? location.Altitude : null,
-                    Accuracy = location.HasAccuracy ? location.Accuracy : null,
-                    VerticalAccuracy = location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : null,
-                    Course = location.HasBearing ? location.Bearing : null,
-                    Speed = location.HasSpeed ? location.Speed : null,
-                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(location.Time)
-                });
-
-            }
-
-            public void OnProviderDisabled(string provider)
-            {
-                Debug.WriteLine("Android Location Listener Disabled");
-            }
-
-            public void OnProviderEnabled(string provider)
-            {
-                Debug.WriteLine("Android Location Listener Enabled");
-            }
-
-            public void OnStatusChanged(string provider, [GeneratedEnum] AL.Availability status, Bundle extras)
-            {
-                Debug.WriteLine("Android Location Status Changed：" + status.ToString());
-            }
-        }
-#endif
+        protected abstract void EndListening();
 
         public async void Start()
         {
@@ -247,13 +179,7 @@ namespace MapBoard.Services
                 {
                     Directory.CreateDirectory(backupDir);
                 }
-#if ANDROID
-                StartAndroid();
-#else
-                throw new NotImplementedException();
- //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
-                await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
-#endif
+                BeginListening();
 
                 if (ResumeGpx != null)
                 {
@@ -274,50 +200,48 @@ namespace MapBoard.Services
                 }
 
                 canUpdate = true;
-                BeforeLoop?.Invoke();
-#if ANDROID
-#else
-                throw new NotImplementedException();
-                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromMicroseconds(MinTimeSpan));
-                while (running)
-                {
-                    Location location = null;
-# if WINDOWS
-                    await MainThread.InvokeOnMainThreadAsync(async () =>
-                       {
-# endif
-                    location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-# if WINDOWS
-                });
-# endif
-                    await UpdateLocationAsync(location);
-                    await timer.WaitForNextTickAsync();
-                }
-#endif
             }
             catch (Exception ex)
             {
                 Stop();
                 ExceptionThrown?.Invoke(this, new ThreadExceptionEventArgs(ex));
             }
+            BeforeLoop?.Invoke();
         }
 
-        private async Task UpdateLocationAsync(Location location)
+        public void Stop()
         {
-
-            UpdateTime = DateTime.Now;
-
-            if (running == false)
+            if (!running)
             {
                 return;
             }
+            running = false;
+            Current = null;
+            try
+            {
+                EndListening();
+                if (SaveGpx())
+                {
+                    GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath(false)));
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        public async Task UpdateLocationAsync(Location location)
+        {
+            if (!canUpdate || !running)
+            {
+                return;
+            }
+            UpdateTime = DateTime.Now;
+
             if (location == null)
             {
                 throw new Exception("无法获取位置");
-            }
-            if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
-            {
-                return;
             }
 
             if (LastLocation == null)
@@ -330,7 +254,7 @@ namespace MapBoard.Services
             {
                 TotalDistance += distance;
                 TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
-                await GeoShare.ReportLocationAsync(location);
+                await MainMapView.Current.GeoShareService.ReportLocationAsync(location);
                 UpdateGpx(location);
                 lastRecordLocation = location;
                 PointsCount++;
@@ -341,38 +265,6 @@ namespace MapBoard.Services
             }
             LastLocation = location;
         }
-        public void Stop()
-        {
-            if (!running)
-            {
-                return;
-            }
-            running = false;
-            Current = null;
-            try
-            {
-#if ANDROID
-                StopAndroid();
-#else
-                
-                throw new NotImplementedException();
-                Geolocation.Default.StopListeningForeground();
-#endif
-                if (SaveGpx())
-                {
-                    GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath(false)));
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-        public void UpdateGnssStatus(GnssStatusInfo gpsStatus)
-        {
-            GnssStatus = gpsStatus;
-        }
-
         private string GetGpxFilePath(bool backup)
         {
             if (backup)
