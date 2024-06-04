@@ -126,7 +126,7 @@ public partial class TrackView : ContentView, ISidePanel
             layer.Renderer.DefaultSymbol = new Model.SymbolInfo()
             {
                 OutlineWidth = 6,
-                LineColor = System.Drawing.Color.FromArgb(0xff, 0x4d, 0xdd, 0xdd)
+                LineColor = System.Drawing.Color.FromArgb(0x54, 0xA5, 0xF6)
             };
             layer.ApplyStyle();
 
@@ -193,8 +193,7 @@ public partial class TrackView : ContentView, ISidePanel
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StartTrackService();
 #else
-        var trackService = new TrackService();
-        trackService.Start();
+        throw new NotImplementedException();
 #endif
         MainPage.Current.ClosePanel<TrackView>();
     }
@@ -224,7 +223,7 @@ public partial class TrackView : ContentView, ISidePanel
 #if ANDROID
         (Platform.CurrentActivity as MainActivity).StopTrackService();
 #else
-        TrackService.Current.Stop();
+        throw new NotImplementedException();
 #endif
     }
 

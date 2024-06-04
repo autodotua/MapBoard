@@ -19,7 +19,7 @@ namespace MapBoard
             }
             else
             {
-                TrackService = new TrackService();
+                TrackService = new TrackServiceAndroidImpl(Platform.AppContext);
                 trackService.SetTrackServiceAndStart(TrackService);
             }
             if (ResumingTrack)

@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+﻿
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using FzLib;
@@ -39,35 +40,43 @@ namespace MapBoard.Services
      * 然后在卫星信息改变时，调用TrackService.UpdateGnssStatus进行更新。
      */
 
-    public class TrackService : INotifyPropertyChanged
+    public abstract class TrackService : INotifyPropertyChanged
     {
-        public const double MinDistance = 2;
+
         private static TrackService current;
-        private readonly PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        private bool canUpdate = false;
         private GnssStatusInfo gnssStatus;
         private Gpx gpx = new Gpx();
         private GpxTrack gpxTrack;
         private Location lastLocation;
 
+        /// <summary>
+        /// 上一个记录的位置
+        /// </summary>
+        private Location lastRecordLocation = null;
+
         private int pointsCount;
         private bool running = false;
         private DateTime startTime = DateTime.Now;
-        private double tolerableAccuracy = 20;
         private double totalDistance;
         private DateTime updateTime = DateTime.Now;
+
+
 
         public TrackService()
         {
             TrackOverlay.Clear();
         }
 
-        public static event ThreadExceptionEventHandler ExceptionThrown;
-
         public static event EventHandler CurrentChanged;
+
+        public static event ThreadExceptionEventHandler ExceptionThrown;
 
         public static event EventHandler<GpxSavedEventArgs> GpxSaved;
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public static Action BeforeLoop { get; set; } = null;
 
         /// <summary>
         /// 当前实例
@@ -90,8 +99,7 @@ namespace MapBoard.Services
         /// 设置恢复记录的轨迹文件，当调用Start方法时，若该值非null，则会读取该文件然后继续记录
         /// </summary>
         public static string ResumeGpx { get; set; } = null;
-
-        public static Action BeforeLoop { get; set; } = null;
+        public TimeSpan Duration => UpdateTime - StartTime;
 
         /// <summary>
         /// GNSS状态信息
@@ -99,7 +107,7 @@ namespace MapBoard.Services
         public GnssStatusInfo GnssStatus
         {
             get => gnssStatus;
-            private set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
+            set => this.SetValueAndNotify(ref gnssStatus, value, nameof(GnssStatus));
         }
 
         /// <summary>
@@ -110,12 +118,6 @@ namespace MapBoard.Services
             get => lastLocation;
             private set => this.SetValueAndNotify(ref lastLocation, value, nameof(LastLocation));
         }
-
-        /// <summary>
-        /// 上一个记录的位置
-        /// </summary>
-        private Location lastRecordLocation = null;
-
         /// <summary>
         /// 已经记录的点数量
         /// </summary>
@@ -133,9 +135,6 @@ namespace MapBoard.Services
             get => startTime;
             private set => this.SetValueAndNotify(ref startTime, value, nameof(StartTime));
         }
-
-        public TimeSpan Duration => UpdateTime - StartTime;
-
         /// <summary>
         /// 总里程
         /// </summary>
@@ -155,9 +154,14 @@ namespace MapBoard.Services
         }
 
         private TrackOverlayHelper TrackOverlay => MainMapView.Current.TrackOverlay;
-        private GeoShareService GeoShare => MainMapView.Current.GeoShareService;
+
+        protected abstract void BeginListening();
+
+        protected abstract void EndListening();
+
         public async void Start()
         {
+
             if (running)
             {
                 throw new Exception("单个实例不可多次开始记录轨迹");
@@ -168,16 +172,13 @@ namespace MapBoard.Services
             try
             {
                 TrackOverlay.Clear();
-                double distance = 0;
 
                 string backupDir = Path.Combine(FolderPaths.TrackPath, "backup");
                 if (!Directory.Exists(backupDir))
                 {
                     Directory.CreateDirectory(backupDir);
                 }
-
-                //不知道是否会出现仅进行GetLocationAsync时才调用GPS，所以用这个方法抓住GPS
-                await Geolocation.Default.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Best)).ConfigureAwait(false);
+                BeginListening();
 
                 if (ResumeGpx != null)
                 {
@@ -197,71 +198,15 @@ namespace MapBoard.Services
                     gpx.Creator = AppInfo.Name;
                 }
 
-                PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-                int index = 0;
-                BeforeLoop?.Invoke();
-                while (running)
-                {
-
-                    UpdateTime = DateTime.Now;
-                    if (index++ % 2 == 1)
-                    {
-                        //两秒一次获取位置
-                        continue;
-                    }
-
-                    Location location = null;
-#if WINDOWS
-                    await MainThread.InvokeOnMainThreadAsync(async () =>
-                       {
-#endif
-                    location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)));
-#if WINDOWS
-                });
-#endif
-                    if (running == false)
-                    {
-                        break;
-                    }
-                    if (location == null)
-                    {
-                        throw new Exception("无法获取位置");
-                    }
-                    if (location.Accuracy > tolerableAccuracy || location.Altitude == null) //通常是基站和WIFI定位结果，排除
-                    {
-                        continue;
-                    }
-
-                    if (LastLocation == null)
-                    {
-                        lastRecordLocation = location;
-                        LastLocation = location;
-                    }
-                    distance = Location.CalculateDistance(location, lastRecordLocation, DistanceUnits.Kilometers) * 1000;
-                    if (PointsCount == 0 || distance > MinDistance)
-                    {
-                        TotalDistance += distance;
-                        TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
-                        await GeoShare.ReportLocationAsync(location);
-                        UpdateGpx(location);
-                        lastRecordLocation = location;
-                        PointsCount++;
-                    }
-                    if (LastLocation.Longitude == location.Longitude && LastLocation.Latitude == location.Latitude && LastLocation.Altitude == location.Altitude)
-                    {
-                        location.Speed = 0;
-                    }
-                    LastLocation = location;
-                    await timer.WaitForNextTickAsync();
-                }
+                canUpdate = true;
             }
             catch (Exception ex)
             {
                 Stop();
                 ExceptionThrown?.Invoke(this, new ThreadExceptionEventArgs(ex));
             }
+            BeforeLoop?.Invoke();
         }
-
 
         public void Stop()
         {
@@ -273,7 +218,7 @@ namespace MapBoard.Services
             Current = null;
             try
             {
-                Geolocation.Default.StopListeningForeground();
+                EndListening();
                 if (SaveGpx())
                 {
                     GpxSaved?.Invoke(this, new GpxSavedEventArgs(GetGpxFilePath(false)));
@@ -284,11 +229,41 @@ namespace MapBoard.Services
 
             }
         }
-        public void UpdateGnssStatus(GnssStatusInfo gpsStatus)
-        {
-            GnssStatus = gpsStatus;
-        }
 
+        public async Task UpdateLocationAsync(Location location)
+        {
+            if (!canUpdate || !running)
+            {
+                return;
+            }
+            UpdateTime = DateTime.Now;
+
+            if (location == null)
+            {
+                throw new Exception("无法获取位置");
+            }
+
+            if (LastLocation == null)
+            {
+                lastRecordLocation = location;
+                LastLocation = location;
+            }
+            var distance = Location.CalculateDistance(location, lastRecordLocation, DistanceUnits.Kilometers) * 1000;
+            if (PointsCount == 0 || distance > Config.Instance.TrackMinDistance)
+            {
+                TotalDistance += distance;
+                TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
+                await MainMapView.Current.GeoShareService.ReportLocationAsync(location);
+                UpdateGpx(location);
+                lastRecordLocation = location;
+                PointsCount++;
+            }
+            if (LastLocation.Longitude == location.Longitude && LastLocation.Latitude == location.Latitude && LastLocation.Altitude == location.Altitude)
+            {
+                location.Speed = 0;
+            }
+            LastLocation = location;
+        }
         private string GetGpxFilePath(bool backup)
         {
             if (backup)
@@ -308,7 +283,7 @@ namespace MapBoard.Services
                     string backupFile = GetGpxFilePath(true);
                     File.Copy(gpxFile, backupFile, true);
                 }
-                File.WriteAllText(GetGpxFilePath(false), gpx.ToXmlString());
+                File.WriteAllTextAsync(GetGpxFilePath(false), gpx.ToXmlString());
                 return true;
             }
             return false;
@@ -321,19 +296,19 @@ namespace MapBoard.Services
                 GpxPoint point = new GpxPoint(location.Longitude, location.Latitude, location.Altitude, location.Timestamp.LocalDateTime);
                 if (location.Accuracy.HasValue)
                 {
-                    point.Extensions.Add("Accuracy", location.Accuracy.ToString());
+                    point.Extensions.Add(nameof(location.Accuracy), location.Accuracy.ToString());
                 }
                 if (location.VerticalAccuracy.HasValue)
                 {
-                    point.Extensions.Add("VerticalAccuracy", location.VerticalAccuracy.ToString());
+                    point.Extensions.Add(nameof(location.VerticalAccuracy), location.VerticalAccuracy.ToString());
                 }
                 if (location.Course.HasValue)
                 {
-                    point.Extensions.Add("Course", location.Course.ToString());
+                    point.Extensions.Add(nameof(location.Course), location.Course.ToString());
                 }
                 if (location.Speed.HasValue)
                 {
-                    point.Extensions.Add("Speed", location.Speed.ToString());
+                    point.Extensions.Add(nameof(location.Speed), location.Speed.ToString());
                 }
                 if (gpxTrack.Segments.Count == 0)
                 {
@@ -361,4 +336,6 @@ namespace MapBoard.Services
             public string FilePath { get; init; }
         }
     }
+
+
 }

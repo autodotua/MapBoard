@@ -122,29 +122,16 @@ namespace MapBoard
             }
             base.OnResume();
         }
-        private bool isActive = false;
 
         protected override void OnStart()
         {
-            isActive = true;
             base.OnStart();
         }
 
-        private int stopID = 0;
-        protected override async void OnStop()
+        protected override void OnStop()
         {
-            isActive = false;
             MainMapView.Current.LocationDisplay.IsEnabled = false;
             base.OnStop();
-            int currentStopID = ++stopID;
-            await Task.Delay(1000 * 60 * 1);
-            if (Config.Instance.AutoQuit //开启自动退出
-                && !isActive //Activity在后台
-                && currentStopID == stopID //当前方法启动时和当前运行行之间，没有发生再一次的OnStop
-                && AndroidTrackService.IsRunning==false) //没有在记录轨迹
-            {
-                MapBoard.App.Current.Quit();
-            }
         }
     }
 }

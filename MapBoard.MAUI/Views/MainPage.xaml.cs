@@ -410,7 +410,7 @@ namespace MapBoard.Views
                 case 4:
                     if (TrackService.Current != null)
                     {
-                        if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否一并推出？", "是", "否") == true)
+                        if (!await MainPage.Current.DisplayAlert("退出", "正在进行轨迹记录，是否停止？", "是", "否") == true)
                         {
                             return;
                         }
@@ -419,7 +419,7 @@ namespace MapBoard.Views
 #if ANDROID
                             (Platform.CurrentActivity as MainActivity).StopTrackService();
 #else
-                            TrackService.Current.Stop();
+                            throw new NotImplementedException();
 #endif
                         }
                     }

@@ -19,7 +19,7 @@
         <Grid RowDefinitions="*,8,Auto">
             <TableView Intent="Settings">
                 <TableRoot>
-                    <TableSection Title="交互">
+                    <TableSection Title="显示">
                         <SwitchCell
                             On="{Binding CanRotate}"
                             Text="允许旋转" />
@@ -27,10 +27,17 @@
                             On="{Binding ScreenAlwaysOn}"
                             Text="屏幕常亮" />
                     </TableSection>
-                    <TableSection Title="应用">
-                        <SwitchCell
-                            On="{Binding AutoQuit}"
-                            Text="进入后台1分钟后自动退出" />
+
+                    <TableSection Title="轨迹记录">
+                        <EntryCell
+                            Label="最短记录距离（米）"
+                            Text="{Binding TrackMinDistance}" />
+                        <EntryCell
+                            Label="最短记录时间间隔（秒）"
+                            Text="{Binding TrackMinTimeSpan}" />
+                        <EntryCell
+                            Label="通知更新时间间隔（秒）"
+                            Text="{Binding TrackNotificationUpdateTimeSpan}" />
                     </TableSection>
                     <!--  https://github.com/dotnet/maui/issues/10322  -->
                     <!--  https://github.com/dotnet/maui/issues/5924  -->

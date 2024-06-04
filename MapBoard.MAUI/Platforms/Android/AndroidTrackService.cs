@@ -22,7 +22,6 @@ public class AndroidTrackService : Service
     private readonly int NotificationID = 1;
     private IBinder binder;
     private NotificationCompat.Builder notificationBuilder;
-    private AndroidGnssHelper gnss;
     private bool pausing = false;
 
     public AndroidTrackService()
@@ -37,6 +36,12 @@ public class AndroidTrackService : Service
         return binder;
     }
     private bool isStopping = false;
+    private NotificationManager notificationManager;
+    public override void OnCreate()
+    {
+        base.OnCreate();
+        notificationManager = GetSystemService(NotificationService) as NotificationManager;
+    }
     public override void OnDestroy()
     {
         IsRunning = false;
@@ -46,9 +51,7 @@ public class AndroidTrackService : Service
         {
             TrackService.Stop();
         }
-        gnss.Stop();
         timer.Stop();
-        gnss.GnssStatusChanged -= Gnss_GnssStatusChanged;
         TrackService.CurrentChanged -= TrackService_CurrentChanged;
         TrackService = null;
     }
@@ -60,8 +63,6 @@ public class AndroidTrackService : Service
         return StartCommandResult.NotSticky;
     }
 
-
-
     public void SetTrackServiceAndStart(TrackService trackService)
     {
         if (TrackService != null)
@@ -69,22 +70,26 @@ public class AndroidTrackService : Service
             throw new Exception("不可重复设置");
         }
 
-        gnss = new AndroidGnssHelper(this);
         TrackService = trackService;
         TrackService.CurrentChanged += TrackService_CurrentChanged;
-        gnss.GnssStatusChanged += Gnss_GnssStatusChanged;
-        gnss.Start();
+
         trackService.Start();
 
         timer = App.Current.Dispatcher.CreateTimer();
-        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Interval = TimeSpan.FromSeconds(Config.Instance.TrackNotificationUpdateTimeSpan);
         timer.Tick += Timer_Tick;
         timer.Start();
+        UpdateNotification();
     }
 
     IDispatcherTimer timer;
 
     private void Timer_Tick(object sender, EventArgs e)
+    {
+        UpdateNotification();
+    }
+
+    private void UpdateNotification()
     {
         if (notificationBuilder == null || TrackService == null)
         {
@@ -92,10 +97,7 @@ public class AndroidTrackService : Service
         }
         notificationBuilder.SetContentTitle(pausing ? "暂停记录轨迹" : "正在记录轨迹");
         notificationBuilder.SetContentText($"用时{DateTime.Now - TrackService.StartTime:hh':'mm':'ss}，总长度{TrackService.TotalDistance:0}米");
-        if (GetSystemService(Context.NotificationService) is NotificationManager notificationManager)
-        {
-            notificationManager.Notify(NotificationID, notificationBuilder.Build());
-        }
+        notificationManager.Notify(NotificationID, notificationBuilder.Build());
     }
 
     private void TrackService_CurrentChanged(object sender, EventArgs e)
@@ -106,15 +108,8 @@ public class AndroidTrackService : Service
         }
     }
 
-    private void Gnss_GnssStatusChanged(object sender, EventArgs e)
-    {
-        TrackService.UpdateGnssStatus(gnss.LastStatus);
-    }
-
     private void StartForegroundService()
     {
-        var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
-
         Intent intent = new Intent(this, typeof(MainActivity));
 
         const int pendingIntentId = 0;
@@ -145,15 +140,5 @@ public class AndroidTrackService : Service
         }
         notificationManager.Notify(NotificationID, notificationBuilder.Build());
     }
-
 }
 
-public class AndroidTrackServiceBinder : Binder
-{
-    public AndroidTrackServiceBinder(AndroidTrackService service)
-    {
-        Service = service;
-    }
-
-    public AndroidTrackService Service { get; }
-}
