@@ -57,9 +57,7 @@ namespace MapBoard
             }
         }
 
-        public bool AutoQuit { get; set; } = false;
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
-
         public bool CanRotate
         {
             get => canRotate;
@@ -102,6 +100,12 @@ namespace MapBoard
             get => screenAlwaysOn;
             set => this.SetValueAndNotify(ref screenAlwaysOn, value, nameof(ScreenAlwaysOn));
         }
+
+        public int TrackMinDistance { get; set; } = 2;
+
+        public int TrackMinTimeSpan { get; set; } = 2;
+
+        public int TrackNotificationUpdateTimeSpan { get; set; } = 10;
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>

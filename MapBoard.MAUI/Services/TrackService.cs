@@ -42,8 +42,7 @@ namespace MapBoard.Services
 
     public abstract class TrackService : INotifyPropertyChanged
     {
-        public const int MinDistance = 2;
-        public const int MinTimeSpan = 2000;
+
         private static TrackService current;
         private bool canUpdate = false;
         private GnssStatusInfo gnssStatus;
@@ -250,7 +249,7 @@ namespace MapBoard.Services
                 LastLocation = location;
             }
             var distance = Location.CalculateDistance(location, lastRecordLocation, DistanceUnits.Kilometers) * 1000;
-            if (PointsCount == 0 || distance > MinDistance)
+            if (PointsCount == 0 || distance > Config.Instance.TrackMinDistance)
             {
                 TotalDistance += distance;
                 TrackOverlay.AddPoint(location.Longitude, location.Latitude, location.Timestamp.LocalDateTime, location.Speed ?? 0d, location.Altitude);
@@ -284,7 +283,7 @@ namespace MapBoard.Services
                     string backupFile = GetGpxFilePath(true);
                     File.Copy(gpxFile, backupFile, true);
                 }
-                File.WriteAllText(GetGpxFilePath(false), gpx.ToXmlString());
+                File.WriteAllTextAsync(GetGpxFilePath(false), gpx.ToXmlString());
                 return true;
             }
             return false;

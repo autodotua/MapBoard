@@ -11,18 +11,21 @@ namespace MapBoard.Platforms.Android;
 
 public class TrackServiceAndroidImpl : TrackService
 {
-    private AndroidLocationListener androidListener;
-    private GnssStatusCallback gnssStatusCallback;
-    private LocationManager manager;
+    private readonly AndroidLocationListener androidListener;
+    private readonly GnssStatusCallback gnssStatusCallback;
+    private readonly LocationManager manager;
     public TrackServiceAndroidImpl(Context context)
     {
         manager = context.GetSystemService(Context.LocationService) as LocationManager;
         gnssStatusCallback = new GnssStatusCallback(this);
+        androidListener = new AndroidLocationListener(this);
     }
     protected override void BeginListening()
     {
-        androidListener = new AndroidLocationListener(this);
-        manager.RequestLocationUpdates(LocationManager.GpsProvider, MinTimeSpan, MinDistance, androidListener);
+        manager.RequestLocationUpdates(LocationManager.GpsProvider,
+            Config.Instance.TrackMinTimeSpan * 1000,
+            Config.Instance.TrackMinDistance,
+            androidListener);
         manager.RegisterGnssStatusCallback(gnssStatusCallback, null);
     }
 
@@ -84,7 +87,7 @@ public class GnssStatusCallback : GnssStatus.Callback
     public override void OnSatelliteStatusChanged(GnssStatus status)
     {
         base.OnSatelliteStatusChanged(status);
-        TrackService.GnssStatus=new GnssStatusInfo()
+        TrackService.GnssStatus = new GnssStatusInfo()
         {
             Total = status.SatelliteCount,
             Fixed = Enumerable
