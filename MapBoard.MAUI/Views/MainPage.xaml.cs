@@ -82,12 +82,22 @@ namespace MapBoard.Views
             CollectionView debugListView = new CollectionView()
             {
                 ItemsSource = items,
-                ItemTemplate= new DataTemplate(() =>
+                ItemTemplate = new DataTemplate(() =>
                 {
                     var label = new Label();
                     label.SetBinding(Label.TextProperty, new Binding("."));
                     return label;
                 }),
+            };
+            items.CollectionChanged += (s, e) =>
+            {
+                try
+                {
+                    debugListView.ScrollTo(items.Count - 1);
+                }
+                catch(Exception ex)
+                { 
+                }
             };
             grdMain.Children.Add(debugListView);
             Microsoft.Maui.Controls.Grid.SetRow(debugListView, grdMain.RowDefinitions.Count - 1);
@@ -113,7 +123,10 @@ namespace MapBoard.Views
 
             public override void WriteLine(string message)
             {
-                items.Add(message);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    items.Add($"{DateTime.Now:mm:ss} {message}");
+                });
             }
         }
 #endif

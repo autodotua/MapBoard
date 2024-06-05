@@ -84,7 +84,6 @@ namespace MapBoard.Mapping
 
             SelectedFeatureChanged += (s, e) => UpdateBoardTask();
             Editor.EditStatusChanged += (s, e) => UpdateBoardTask();
-            //NavigationCompleted += MainMapView_NavigationCompleted;
         }
 
         public event EventHandler<ExceptionEventArgs> GeoShareExceptionThrow;
@@ -197,6 +196,16 @@ namespace MapBoard.Mapping
                     });
                 };
             }
+#endif
+
+#if DEBUG
+            LocationDisplay.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(LocationDisplay.IsEnabled))
+                {
+                    Debug.WriteLine($"{nameof(LocationDisplay.IsEnabled)}: {LocationDisplay.IsEnabled}");
+                }
+            };
 #endif
             await LocationDisplay.DataSource.StartAsync();
         }

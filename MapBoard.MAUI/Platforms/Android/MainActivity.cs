@@ -9,6 +9,7 @@ using MapBoard.Mapping;
 using MapBoard.Platforms.Android;
 using MapBoard.Services;
 using MapBoard.Views;
+using Debug = System.Diagnostics.Debug;
 
 namespace MapBoard
 {
@@ -110,12 +111,14 @@ namespace MapBoard
 
         protected override void OnPause()
         {
+            Debug.WriteLine("MainActivity Pause");
             base.OnPause();
             App.SaveConfigsAndStatus();
         }
 
         protected override void OnDestroy()
         {
+            Debug.WriteLine("MainActivity Destroy");
             base.OnDestroy();
             if (AndroidTrackService.IsRunning)
             {
@@ -125,11 +128,15 @@ namespace MapBoard
 
         protected override void OnResume()
         {
+            Debug.WriteLine("MainActivity Resume");
             base.OnResume();
         }
-
+        private bool isActive = false;
+        private int stopID = 0;
         protected override async void OnStart()
         {
+            isActive = true;
+            Debug.WriteLine("MainActivity Start");
             base.OnStart();
             if (MainMapView.Current.LocationDisplay != null
                 && MainMapView.Current.LocationDisplay.DataSource is LocationDataSourceAndroidImpl) //表示不是第一次打开了。第一次打开需要初始化。
@@ -140,8 +147,19 @@ namespace MapBoard
 
         protected override async void OnStop()
         {
+            isActive = false;
+            Debug.WriteLine("MainActivity Stop");
             base.OnStop();
             await MainMapView.Current.LocationDisplay.DataSource.StopAsync();
+            int currentStopID = ++stopID;
+            await Task.Delay(1000 * 60 * 1);
+            if (Config.Instance.AutoQuit //开启自动退出
+                && !isActive //Activity在后台
+                && currentStopID == stopID //当前方法启动时和当前运行行之间，没有发生再一次的OnStop
+                && AndroidTrackService.IsRunning == false) //没有在记录轨迹
+            {
+                MapBoard.App.Current.Quit();
+            }
         }
     }
 }

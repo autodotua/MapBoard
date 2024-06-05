@@ -29,6 +29,7 @@ namespace MapBoard.Platforms.Android
         private bool isListening = false;
         public LocationDataSourceAndroidImpl()
         {
+            Debug.WriteLine("Create new LocationDataSourceAndroidImpl");
             locationListener = new LocationDisplayLocationListener();
             locationListener.LocationChanged += LocationListener_LocationChanged;
 
@@ -84,8 +85,10 @@ namespace MapBoard.Platforms.Android
         {
             if (isListening)
             {
+                Debug.WriteLine("DataSource abort startting");
                 return;
             }
+            Debug.WriteLine("DataSource startting");
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
@@ -105,14 +108,18 @@ namespace MapBoard.Platforms.Android
                     SensorDelay.Ui);
                 isListening = true;
             });
+            Debug.WriteLine("DataSource started");
         }
 
         protected override Task OnStopAsync()
         {
+            Debug.WriteLine("DataSource stopping");
             isListening = false;
+            locationManager.RemoveUpdates(locationListener);
             locationManager.RemoveUpdates(locationListener);
             locationManager.UnregisterGnssStatusCallback(gnssListener);
             sensorManager.UnregisterListener(sensorListener);
+            Debug.WriteLine("DataSource stopped");
             return Task.CompletedTask;
         }
     }

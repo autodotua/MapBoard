@@ -26,6 +26,9 @@
                         <SwitchCell
                             On="{Binding ScreenAlwaysOn}"
                             Text="屏幕常亮" />
+                        <SwitchCell
+                            On="{Binding AutoQuit}"
+                            Text="进入后台1分钟后自动退出" />
                     </TableSection>
 
                     <TableSection Title="轨迹记录">

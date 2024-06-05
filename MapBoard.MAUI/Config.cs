@@ -20,19 +20,12 @@ namespace MapBoard
         private static readonly string path = FolderPaths.ConfigPath;
         private static Config instance;
         private bool canRotate = false;
-
         private bool enableBasemapCache = true;
-
         private bool isTracking;
-
         private string lastCrashFile;
-
         private int lastLayerListGroupType;
-
         private double maxScale = 100;
-
         private bool screenAlwaysOn = false;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -57,6 +50,7 @@ namespace MapBoard
             }
         }
 
+        public bool AutoQuit { get; set; } = false;
         public List<BaseLayerInfo> BaseLayers { get; set; } = new List<BaseLayerInfo>();
         public bool CanRotate
         {
