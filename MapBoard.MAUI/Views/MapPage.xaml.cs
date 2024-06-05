@@ -63,13 +63,6 @@ namespace MapBoard.Views
             map.LocationDisplay.AutoPanMode = LocationDisplayAutoPanMode.Recenter;
         }
 
-        private void TestButton_Click(object sender, EventArgs e)
-        {
-
-#if ANDROID
-            Platform.CurrentActivity.Finish();
-#endif
-        }
 
         private async void ZoomInButton_Click(object sender, EventArgs e)
         {
@@ -82,11 +75,6 @@ namespace MapBoard.Views
             var map = MainMapView.Current;
             await map.SetViewpointScaleAsync(map.MapScale * 3);
         }
-
-        //private void ClearSelectionButton_Click(object sender, EventArgs e)
-        //{
-        //    map.ClearSelection();
-        //}
     }
 
 }

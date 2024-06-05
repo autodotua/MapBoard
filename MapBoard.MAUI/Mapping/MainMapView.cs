@@ -26,6 +26,7 @@ using System.Reflection;
 using MapBoard.Models;
 using MapBoard.Services;
 using MapBoard.GeoShare.Core.Dto;
+using MapBoard.Platforms.Android;
 
 namespace MapBoard.Mapping
 {
@@ -77,27 +78,12 @@ namespace MapBoard.Mapping
                 IsRotateEnabled = Config.Instance.CanRotate,
             };
             Config.Instance.PropertyChanged += Config_PropertyChanged;
-            PropertyChanged += MainMapView_PropertyChanged;
 
             //启动时恢复到原来的视角，并定时保存
             Loaded += MainMapView_Loaded;
             Unloaded += MainMapView_Unloaded;
             GeoViewTapped += MainMapView_GeoViewTapped;
 
-            Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
-            {
-                if (IsLoaded
-                    && Layers != null
-                 && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-                {
-                    if (Layers.MapViewExtentJson != envelope.ToJson())
-                    {
-                        Layers.MapViewExtentJson = envelope.ToJson();
-                        Layers.Save();
-                    }
-                }
-                return true;
-            });
             SelectedFeatureChanged += (s, e) => UpdateBoardTask();
             Editor.EditStatusChanged += (s, e) => UpdateBoardTask();
             //NavigationCompleted += MainMapView_NavigationCompleted;
@@ -242,40 +228,6 @@ namespace MapBoard.Mapping
         {
             var attrStr = new StringBuilder();
 
-            //switch (feature.Geometry.GeometryType)
-            //{
-            //    case GeometryType.Point:
-            //        break;
-            //    case GeometryType.Envelope:
-            //        break;
-            //    case GeometryType.Polyline:
-            //        double length = (feature.Geometry as Polyline).GetLength();
-            //        if (length < 1000)
-            //        {
-            //            attrStr.AppendLine($"{length:0.0} m");
-            //        }
-            //        else
-            //        {
-            //            attrStr.AppendLine($"{length / 1000:0.00} km");
-            //        }
-            //        break;
-            //    case GeometryType.Polygon:
-            //        double area = (feature.Geometry as Polygon).GetArea();
-            //        if (area < 1_000_000)
-            //        {
-            //            attrStr.AppendLine($"{area:0.0} m²");
-            //        }
-            //        else
-            //        {
-            //            attrStr.AppendLine($"{area / 1_000_000:0.00} km²");
-            //        }
-            //        break;
-            //    case GeometryType.Multipoint:
-            //        break;
-            //    case GeometryType.Unknown:
-            //        break;
-            //}
-
             Dictionary<string, string> key2Desc = Layers
                 .First(p => (p as MapLayerInfo).Layer == feature.FeatureTable.Layer)
                 .Fields
@@ -363,28 +315,49 @@ namespace MapBoard.Mapping
                 await this.TryZoomToLastExtent();
                 isZoomingToLastExtent = false;
             }
-            if (LocationDisplay != null)
-            {
-                LocationDisplay.IsEnabled = true;
-            }
         }
 
-        private void MainMapView_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void InitializeLocationDisplay()
         {
-            if (e.PropertyName == nameof(LocationDisplay))
+            if (LocationDisplay == null)
             {
-                if (LocationDisplay != null)
-                {
-                    LocationDisplay.NavigationPointHeightFactor = 0.4;
-                    LocationDisplay.WanderExtentFactor = 0;
-                    LocationDisplay.IsEnabled = true;
-                }
+                throw new Exception("LocationDispaly为空");
             }
+
+            LocationDisplay.NavigationPointHeightFactor = 0.4;
+            LocationDisplay.WanderExtentFactor = 0;
+            LocationDisplay.IsEnabled = true;
+
+#if ANDROID
+            if (LocationDisplay.DataSource is not LocationDataSourceAndroidImpl)
+            {
+                LocationDisplay.DataSource = new LocationDataSourceAndroidImpl();
+
+                LocationDisplay.DataSource.ErrorChanged += async (s, e) =>
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        MainPage.Current.DisplayAlert("位置源错误", e.Message, "关闭");
+                    });
+                };
+            }
+#endif
+            LocationDisplay.IsEnabled = true;
         }
 
         private void MainMapView_Unloaded(object sender, EventArgs e)
         {
             Config.Instance.Save();
+
+            if (IsLoaded
+                && Layers != null
+             && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                if (Layers.MapViewExtentJson != envelope.ToJson())
+                {
+                    Layers.MapViewExtentJson = envelope.ToJson();
+                }
+            }
             Layers.Save();
             if (LocationDisplay != null)
             {

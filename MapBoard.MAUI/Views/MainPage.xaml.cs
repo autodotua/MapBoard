@@ -269,6 +269,7 @@ namespace MapBoard.Views
 
             await CheckCrashAsync();
 
+            MainMapView.Current.InitializeLocationDisplay();
         }
 
         private Exception lastGeoShareException = null;

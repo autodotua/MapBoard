@@ -11,14 +11,14 @@ namespace MapBoard.Platforms.Android;
 
 public class TrackServiceAndroidImpl : TrackService
 {
-    private readonly AndroidLocationListener androidListener;
+    private readonly AndroidTrackLocationListener androidListener;
     private readonly GnssStatusCallback gnssStatusCallback;
     private readonly LocationManager manager;
     public TrackServiceAndroidImpl(Context context)
     {
         manager = context.GetSystemService(Context.LocationService) as LocationManager;
         gnssStatusCallback = new GnssStatusCallback(this);
-        androidListener = new AndroidLocationListener(this);
+        androidListener = new AndroidTrackLocationListener(this);
     }
     protected override void BeginListening()
     {
@@ -36,13 +36,13 @@ public class TrackServiceAndroidImpl : TrackService
     }
 }
 
-public class AndroidLocationListener(TrackService trackService) : Java.Lang.Object, ILocationListener
+public class AndroidTrackLocationListener(TrackService trackService) : Java.Lang.Object, ILocationListener
 {
     public TrackService TrackService { get; } = trackService;
 
     public async void OnLocationChanged(Location location)
     {
-        Debug.WriteLine("Android Location Listener Changed");
+        Debug.WriteLine("Android Track Location Listener Changed");
         Debug.Assert(TrackService != null);
 
         await TrackService.UpdateLocationAsync(new Microsoft.Maui.Devices.Sensors.Location()
@@ -61,17 +61,17 @@ public class AndroidLocationListener(TrackService trackService) : Java.Lang.Obje
 
     public void OnProviderDisabled(string provider)
     {
-        Debug.WriteLine("Android Location Listener Disabled");
+        Debug.WriteLine("Android Track Location Listener Disabled");
     }
 
     public void OnProviderEnabled(string provider)
     {
-        Debug.WriteLine("Android Location Listener Enabled");
+        Debug.WriteLine("Android Track Location Listener Enabled");
     }
 
     public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
     {
-        Debug.WriteLine("Android Location Status Changed：" + status.ToString());
+        Debug.WriteLine("Android Track Location Status Changed：" + status.ToString());
     }
 }
 

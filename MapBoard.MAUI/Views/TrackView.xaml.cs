@@ -57,8 +57,6 @@ public partial class TrackView : ContentView, ISidePanel
 
     private void ContentPage_Unloaded(object sender, EventArgs e)
     {
-        Config.Instance.Save();
-        MainMapView.Current.Layers.Save();
     }
 
     private async void GpxList_ItemTapped(object sender, ItemTappedEventArgs e)

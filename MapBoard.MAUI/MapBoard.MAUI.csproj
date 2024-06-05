@@ -209,6 +209,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
     <ApplicationId>com.autod.mapboard.maui.debug</ApplicationId>
+    <ApplicationTitle>（调试）地图画板</ApplicationTitle>
     <AndroidKeyStore>False</AndroidKeyStore>
   </PropertyGroup>
 
