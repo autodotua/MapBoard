@@ -61,21 +61,24 @@ namespace MapBoard
                 if (hasPressedBack)
                 {
                     OnBackPressedDispatcher.OnBackPressed();
-                    if (AndroidTrackService.IsRunning)
-                    {
-                        Finish();
-                    }
-                    else
-                    {
-                        MapBoard.App.Current.Quit();
-                    }
-                    return;
+                    //if (AndroidTrackService.IsRunning)
+                    //{
+                    Finish();
+                    //}
+                    //else
+                    //{
+                    //    MapBoard.App.Current.Quit();
+                    //}
+                    //return;
                 }
 
-                hasPressedBack = true;
-                Toast.MakeText(this, "再按一次退出应用", ToastLength.Short).Show();
-                await Task.Delay(2000);
-                hasPressedBack = false;
+                else
+                {
+                    hasPressedBack = true;
+                    Toast.MakeText(this, "再按一次退出应用", ToastLength.Short).Show();
+                    await Task.Delay(2000);
+                    hasPressedBack = false;
+                }
             }
         }
 
@@ -103,6 +106,12 @@ namespace MapBoard
             {
                 BindService(new Intent(this, typeof(AndroidTrackService)), trackServiceConnection, 0);
             }
+        }
+
+        protected override void OnPause()
+        {
+            base.OnPause();
+            App.SaveConfigsAndStatus();
         }
 
         protected override void OnDestroy()

@@ -26,7 +26,6 @@ using System.Reflection;
 using MapBoard.Models;
 using MapBoard.Services;
 using MapBoard.GeoShare.Core.Dto;
-using MapBoard.Platforms.Android;
 
 namespace MapBoard.Mapping
 {
@@ -81,7 +80,6 @@ namespace MapBoard.Mapping
 
             //启动时恢复到原来的视角，并定时保存
             Loaded += MainMapView_Loaded;
-            Unloaded += MainMapView_Unloaded;
             GeoViewTapped += MainMapView_GeoViewTapped;
 
             SelectedFeatureChanged += (s, e) => UpdateBoardTask();
@@ -151,6 +149,7 @@ namespace MapBoard.Mapping
                 }
             }
         }
+
         public TrackOverlayHelper TrackOverlay { get; private set; }
 
         public void ClearSelection()
@@ -173,6 +172,34 @@ namespace MapBoard.Mapping
             var feature = SelectedFeature;
             ClearSelection();
             await feature.FeatureTable.DeleteFeatureAsync(feature);
+        }
+
+        public void InitializeLocationDisplay()
+        {
+            if (LocationDisplay == null)
+            {
+                throw new Exception("LocationDispaly为空");
+            }
+
+            LocationDisplay.NavigationPointHeightFactor = 0.4;
+            LocationDisplay.WanderExtentFactor = 0;
+            LocationDisplay.IsEnabled = true;
+
+#if ANDROID
+            if (LocationDisplay.DataSource is not Platforms.Android.LocationDataSourceAndroidImpl)
+            {
+                LocationDisplay.DataSource = new Platforms.Android.LocationDataSourceAndroidImpl();
+
+                LocationDisplay.DataSource.ErrorChanged += async (s, e) =>
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        MainPage.Current.DisplayAlert("位置源错误", e.Message, "关闭");
+                    });
+                };
+            }
+#endif
+            LocationDisplay.IsEnabled = true;
         }
 
         /// <summary>
@@ -314,54 +341,6 @@ namespace MapBoard.Mapping
                 isZoomingToLastExtent = true;
                 await this.TryZoomToLastExtent();
                 isZoomingToLastExtent = false;
-            }
-        }
-
-        public void InitializeLocationDisplay()
-        {
-            if (LocationDisplay == null)
-            {
-                throw new Exception("LocationDispaly为空");
-            }
-
-            LocationDisplay.NavigationPointHeightFactor = 0.4;
-            LocationDisplay.WanderExtentFactor = 0;
-            LocationDisplay.IsEnabled = true;
-
-#if ANDROID
-            if (LocationDisplay.DataSource is not LocationDataSourceAndroidImpl)
-            {
-                LocationDisplay.DataSource = new LocationDataSourceAndroidImpl();
-
-                LocationDisplay.DataSource.ErrorChanged += async (s, e) =>
-                {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        MainPage.Current.DisplayAlert("位置源错误", e.Message, "关闭");
-                    });
-                };
-            }
-#endif
-            LocationDisplay.IsEnabled = true;
-        }
-
-        private void MainMapView_Unloaded(object sender, EventArgs e)
-        {
-            Config.Instance.Save();
-
-            if (IsLoaded
-                && Layers != null
-             && GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
-            {
-                if (Layers.MapViewExtentJson != envelope.ToJson())
-                {
-                    Layers.MapViewExtentJson = envelope.ToJson();
-                }
-            }
-            Layers.Save();
-            if (LocationDisplay != null)
-            {
-                LocationDisplay.IsEnabled = false;
             }
         }
 

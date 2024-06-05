@@ -36,9 +36,6 @@ using static MapBoard.Views.PopupMenu;
 using CommunityToolkit.Maui.Views;
 using MapBoard.Models;
 
-
-
-
 #if ANDROID
 using MapBoard.Platforms.Android;
 #endif
@@ -278,10 +275,6 @@ namespace MapBoard.Views
         {
             lastGeoShareException = e.Exception;
             bdGeoShareError.IsVisible = true;
-        }
-
-        private void Current_SelectedFeatureChanged(object sender, EventArgs e)
-        {
         }
 
         private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)

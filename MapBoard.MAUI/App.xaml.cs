@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Maui.Alerts;
+using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
+using MapBoard.Mapping;
 using MapBoard.Views;
 
 namespace MapBoard
@@ -16,6 +19,27 @@ namespace MapBoard
 
             MainPage = new MainPage();
         }
+
+        public static void SaveConfigsAndStatus()
+        {
+            Config.Instance.Save();
+            var map = MainMapView.Current;
+            if (map.IsLoaded
+                && map.Layers != null
+             && map.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
+            {
+                if (map.Layers.MapViewExtentJson != envelope.ToJson())
+                {
+                    map.Layers.MapViewExtentJson = envelope.ToJson();
+                }
+            }
+            map.Layers.Save();
+            if (map.LocationDisplay != null)
+            {
+                map.LocationDisplay.IsEnabled = false;
+            }
+        }
+
         protected override void OnStart()
         {
             base.OnStart();
