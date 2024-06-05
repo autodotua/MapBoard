@@ -28,16 +28,13 @@ namespace MapBoard
                 && map.Layers != null
              && map.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry is Envelope envelope)
             {
-                if (map.Layers.MapViewExtentJson != envelope.ToJson())
+                var json = envelope.ToJson();
+                if (map.Layers.MapViewExtentJson != json)
                 {
-                    map.Layers.MapViewExtentJson = envelope.ToJson();
+                    map.Layers.MapViewExtentJson = json;
                 }
             }
             map.Layers.Save();
-            if (map.LocationDisplay != null)
-            {
-                map.LocationDisplay.IsEnabled = false;
-            }
         }
 
         protected override void OnStart()

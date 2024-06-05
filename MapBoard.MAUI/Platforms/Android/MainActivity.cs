@@ -125,22 +125,23 @@ namespace MapBoard
 
         protected override void OnResume()
         {
-            if (MainMapView.Current.LocationDisplay != null)
-            {
-                MainMapView.Current.LocationDisplay.IsEnabled = true;
-            }
             base.OnResume();
         }
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
             base.OnStart();
+            if (MainMapView.Current.LocationDisplay != null
+                && MainMapView.Current.LocationDisplay.DataSource is LocationDataSourceAndroidImpl) //表示不是第一次打开了。第一次打开需要初始化。
+            {
+                await MainMapView.Current.LocationDisplay.DataSource.StartAsync();
+            }
         }
 
-        protected override void OnStop()
+        protected override async void OnStop()
         {
-            MainMapView.Current.LocationDisplay.IsEnabled = false;
             base.OnStop();
+            await MainMapView.Current.LocationDisplay.DataSource.StopAsync();
         }
     }
 }

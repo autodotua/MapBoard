@@ -33,49 +33,26 @@ namespace MapBoard.Platforms.Android
 
         protected override async Task OnStartAsync()
         {
-            try
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
-                        Config.Instance.TrackMinTimeSpan * 1000,
-                        Config.Instance.TrackMinDistance,
-                        locationListener);
-                    sensorManager.RegisterListener(sensorListener,
-                        sensorManager.GetDefaultSensor(SensorType.Accelerometer),
-                        SensorDelay.Ui);
-                    sensorManager.RegisterListener(sensorListener,
-                        sensorManager.GetDefaultSensor(SensorType.MagneticField),
-                        SensorDelay.Ui);
-                });
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-
+                locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
+                    Config.Instance.TrackMinTimeSpan * 1000,
+                    Config.Instance.TrackMinDistance,
+                    locationListener);
+                sensorManager.RegisterListener(sensorListener,
+                    sensorManager.GetDefaultSensor(SensorType.Accelerometer),
+                    SensorDelay.Ui);
+                sensorManager.RegisterListener(sensorListener,
+                    sensorManager.GetDefaultSensor(SensorType.MagneticField),
+                    SensorDelay.Ui);
+            });
         }
 
-        protected async override Task OnStopAsync()
+        protected override Task OnStopAsync()
         {
-            try
-            {
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    locationManager.RemoveUpdates(locationListener);
-                    sensorManager.UnregisterListener(sensorListener);
-                });
-            }
-            catch (Exception ex)
-            {
-                throw;
-            };
-        }
-
-        internal void CallLocationChanged(Esri.ArcGISRuntime.Location.Location location)
-        {
-            UpdateLocation(location);
+            locationManager.RemoveUpdates(locationListener);
+            sensorManager.UnregisterListener(sensorListener);
+            return Task.CompletedTask;
         }
     }
 

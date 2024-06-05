@@ -266,7 +266,7 @@ namespace MapBoard.Views
 
             await CheckCrashAsync();
 
-            MainMapView.Current.InitializeLocationDisplay();
+            await MainMapView.Current.InitializeLocationDisplayAsync();
         }
 
         private Exception lastGeoShareException = null;
@@ -378,13 +378,13 @@ namespace MapBoard.Views
         private async void MenuButton_Clicked(object sender, EventArgs e)
         {
             var index = await PopupMenu.PopupMenuAsync(sender as View,
-                 new PopupMenuItem[] {
+                 [
                     new PopupMenuItem("测量长度"),
                     new PopupMenuItem("测量面积"),
                     new PopupMenuItem("位置共享"),
                     new PopupMenuItem("设置"),
                     new PopupMenuItem("退出")
-                 });
+                 ]);
             switch (index)
             {
                 case 0:

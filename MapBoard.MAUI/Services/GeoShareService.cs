@@ -17,9 +17,9 @@ namespace MapBoard.Services
     {
         HttpService httpService = new HttpService();
 
+        private bool isBusy = false;
         private DateTime lastReportTime = DateTime.MinValue;
 
-        PeriodicTimer timer;
         public GeoShareService(GraphicsOverlay overlay)
         {
             Overlay = overlay;
@@ -79,7 +79,6 @@ namespace MapBoard.Services
 
         public async void Start()
         {
-            timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
             if (Config.Instance.GeoShare.IsEnabled)
             {
                 try
@@ -92,7 +91,8 @@ namespace MapBoard.Services
                     Config.Instance.GeoShare.IsEnabled = false;
                 }
             }
-            StartTimerAsync();
+            var timer = App.Current.Dispatcher.CreateTimer();
+            timer.Tick += Timer_Tick;
         }
 
         private async Task LoginAsync()
@@ -104,78 +104,78 @@ namespace MapBoard.Services
                 GroupName = Config.Instance.GeoShare.GroupName,
             });
         }
-
-        private async void StartTimerAsync()
+        private async void Timer_Tick(object sender, EventArgs e)
         {
-            do
+            if (isBusy || !Config.Instance.GeoShare.IsEnabled)
             {
-                if (!Config.Instance.GeoShare.IsEnabled)
-                {
-                    continue;
-                }
-                try
-                {
-                    var locations = await httpService.GetAsync<IList<UserLocationDto>>(Config.Instance.GeoShare.Server + HttpService.Url_LatestLocations);
-                    Overlay.Graphics.Clear();
-                    foreach (var loc in locations
+                return;
+            }
+            isBusy = true;
+            try
+            {
+                var locations = await httpService.GetAsync<IList<UserLocationDto>>(Config.Instance.GeoShare.Server + HttpService.Url_LatestLocations);
+                Overlay.Graphics.Clear();
+                foreach (var loc in locations
 #if !DEBUG
                         .Where(p=>p.UserName!=Config.Instance.GeoShare.UserName)
 #endif
-                        )
-                    {
-                        var mapLocation = new MapPoint(loc.Location.Longitude, loc.Location.Latitude, SpatialReferences.Wgs84);
-#if DEBUG
-                        loc.Location.Accuracy = 20;
-#endif
-                        if (loc.Location.Accuracy > 0)
-                        {
-                            var buffer = GeometryEngine.BufferGeodetic(mapLocation, loc.Location.Accuracy, LinearUnits.Meters);
-                            Graphic accuracyGraphic = new Graphic(buffer)
-                            {
-                                ZIndex = 10,
-                                Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.FromArgb(64, 0, 0x7a, 0xc2), null)
-                            };
-                            Overlay.Graphics.Add(accuracyGraphic);
-                        }
-
-                        Dictionary<string, object> attrs = new Dictionary<string, object>()
-                        {
-                            [nameof(loc.UserName)] = loc.UserName,
-                            [nameof(loc.Location.Accuracy)] = loc.Location.Accuracy,
-                            [nameof(loc.Location.Altitude)] = loc.Location.Altitude,
-                            [nameof(loc.Location.Time)] = loc.Location.Time
-                        };
-                        Graphic graphic = new Graphic(mapLocation, attrs) { ZIndex = 100 };
-                        Overlay.Graphics.Add(graphic);
-                    }
-
-                }
-                catch (HttpRequestException ex)
+                    )
                 {
-                    //登陆存在问题
-                    if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    var mapLocation = new MapPoint(loc.Location.Longitude, loc.Location.Latitude, SpatialReferences.Wgs84);
+#if DEBUG
+                    loc.Location.Accuracy = 20;
+#endif
+                    if (loc.Location.Accuracy > 0)
                     {
-                        try
+                        var buffer = GeometryEngine.BufferGeodetic(mapLocation, loc.Location.Accuracy, LinearUnits.Meters);
+                        Graphic accuracyGraphic = new Graphic(buffer)
                         {
-                            await LoginAsync();
-                        }
-                        catch (Exception ex2)
-                        {
-                            GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
-                            Config.Instance.GeoShare.IsEnabled = false;
-                        }
+                            ZIndex = 10,
+                            Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.FromArgb(64, 0, 0x7a, 0xc2), null)
+                        };
+                        Overlay.Graphics.Add(accuracyGraphic);
                     }
-                    else
+
+                    Dictionary<string, object> attrs = new Dictionary<string, object>()
+                    {
+                        [nameof(loc.UserName)] = loc.UserName,
+                        [nameof(loc.Location.Accuracy)] = loc.Location.Accuracy,
+                        [nameof(loc.Location.Altitude)] = loc.Location.Altitude,
+                        [nameof(loc.Location.Time)] = loc.Location.Time
+                    };
+                    Graphic graphic = new Graphic(mapLocation, attrs) { ZIndex = 100 };
+                    Overlay.Graphics.Add(graphic);
+                }
+
+            }
+            catch (HttpRequestException ex)
+            {
+                //登陆存在问题
+                if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        await LoginAsync();
+                    }
+                    catch (Exception ex2)
                     {
                         GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+                        Config.Instance.GeoShare.IsEnabled = false;
                     }
                 }
-                catch (Exception ex)
+                else
                 {
                     GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
                 }
             }
-            while (await timer.WaitForNextTickAsync());
+            catch (Exception ex)
+            {
+                GeoShareExceptionThrow?.Invoke(this, new ExceptionEventArgs(ex));
+            }
+            finally
+            {
+                isBusy = false;
+            }
         }
     }
 }

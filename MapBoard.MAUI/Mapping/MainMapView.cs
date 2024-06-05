@@ -174,7 +174,7 @@ namespace MapBoard.Mapping
             await feature.FeatureTable.DeleteFeatureAsync(feature);
         }
 
-        public void InitializeLocationDisplay()
+        public async Task InitializeLocationDisplayAsync()
         {
             if (LocationDisplay == null)
             {
@@ -183,7 +183,6 @@ namespace MapBoard.Mapping
 
             LocationDisplay.NavigationPointHeightFactor = 0.4;
             LocationDisplay.WanderExtentFactor = 0;
-            LocationDisplay.IsEnabled = true;
 
 #if ANDROID
             if (LocationDisplay.DataSource is not Platforms.Android.LocationDataSourceAndroidImpl)
@@ -199,7 +198,7 @@ namespace MapBoard.Mapping
                 };
             }
 #endif
-            LocationDisplay.IsEnabled = true;
+            await LocationDisplay.DataSource.StartAsync();
         }
 
         /// <summary>
