@@ -34,7 +34,7 @@
                 <Label TextColor="White">位置共享出现错误</Label>
             </HorizontalStackLayout>
             <Border.GestureRecognizers>
-                <TapGestureRecognizer Tapped="GeoShareError_Tapped"/>
+                <TapGestureRecognizer Tapped="GeoShareError_Tapped" />
             </Border.GestureRecognizers>
         </Border>
 
@@ -158,7 +158,7 @@
 
         <Border
             x:Name="bdBottom"
-            Grid.Row="99"
+            Grid.Row="1"
             BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                               Dark={DynamicResource Gray400}}"
             Stroke="Transparent"

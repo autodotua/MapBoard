@@ -35,6 +35,7 @@ using CommunityToolkit.Maui.Alerts;
 using static MapBoard.Views.PopupMenu;
 using CommunityToolkit.Maui.Views;
 using MapBoard.Models;
+using System.Collections.ObjectModel;
 
 #if ANDROID
 using MapBoard.Platforms.Android;
@@ -71,7 +72,51 @@ namespace MapBoard.Views
                 bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
             }
+
+#if DEBUG
+            grdMain.RowDefinitions.Add(new RowDefinition(200));
+            ObservableCollection<string> items = new ObservableCollection<string>()
+            {
+                "调试输出"
+            };
+            CollectionView debugListView = new CollectionView()
+            {
+                ItemsSource = items,
+                ItemTemplate= new DataTemplate(() =>
+                {
+                    var label = new Label();
+                    label.SetBinding(Label.TextProperty, new Binding("."));
+                    return label;
+                }),
+            };
+            grdMain.Children.Add(debugListView);
+            Microsoft.Maui.Controls.Grid.SetRow(debugListView, grdMain.RowDefinitions.Count - 1);
+            Trace.Listeners.Add(new DebugListener(items));
+#endif
         }
+#if DEBUG
+        class DebugListener(ObservableCollection<string> items) : TraceListener
+        {
+            private readonly ObservableCollection<string> items = items;
+
+            public override void Write(string message)
+            {
+                if (items.Count > 0)
+                {
+                    items[^1] = items[^1] + message;
+                }
+                else
+                {
+                    WriteLine(message);
+                }
+            }
+
+            public override void WriteLine(string message)
+            {
+                items.Add(message);
+            }
+        }
+#endif
 
         public static MainPage Current { get; private set; }
 
