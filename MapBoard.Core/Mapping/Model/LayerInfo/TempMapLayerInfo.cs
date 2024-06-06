@@ -33,10 +33,10 @@ namespace MapBoard.Mapping.Model
             Fields = fields.ToArray();
         }
 
-        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             Name = newName;
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         protected override FeatureTable GetTable()

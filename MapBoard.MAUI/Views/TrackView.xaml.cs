@@ -45,7 +45,10 @@ public partial class TrackView : ContentView, ISidePanel
 
     public async void OnPanelOpened()
     {
-        await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+        if ((BindingContext as TrackViewViewModel).GpxFiles.Count == 0)
+        {
+            await (BindingContext as TrackViewViewModel).LoadGpxFilesAsync();
+        }
         UpdateButtonsVisible();
     }
 
@@ -280,7 +283,14 @@ public partial class TrackView : ContentView, ISidePanel
         var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
         if (gpxs != null && (gpxs.Count == 0 || gpxs[0].File.FullName != e.FilePath))
         {
-            gpxs.Insert(0, new GpxAndFileInfo(e.FilePath));
+            try
+            {
+                gpxs.Insert(0, await GpxAndFileInfo.FromFileAsync(e.FilePath));
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
         if (TrackService.Current == null)
         {

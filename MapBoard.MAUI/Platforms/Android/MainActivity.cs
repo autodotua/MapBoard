@@ -17,6 +17,8 @@ namespace MapBoard
     public class MainActivity : MauiAppCompatActivity
     {
         private bool hasPressedBack = false;
+        private bool isActive = false;
+        private int stopID = 0;
         AndroidServiceConnection trackServiceConnection = new AndroidServiceConnection();
 
         public void BindTrackService()
@@ -109,14 +111,7 @@ namespace MapBoard
             }
         }
 
-        protected override void OnPause()
-        {
-            Debug.WriteLine("MainActivity Pause");
-            base.OnPause();
-            App.SaveConfigsAndStatus();
-        }
-
-        protected override void OnDestroy()
+        protected async override void OnDestroy()
         {
             Debug.WriteLine("MainActivity Destroy");
             base.OnDestroy();
@@ -124,21 +119,27 @@ namespace MapBoard
             {
                 UnbindService(trackServiceConnection);
             }
+            await MainMapView.Current.LocationDisplay.DataSource.StopAsync();
         }
 
+        protected override void OnPause()
+        {
+            Debug.WriteLine("MainActivity Pause");
+            base.OnPause();
+            App.SaveConfigsAndStatus();
+        }
         protected override void OnResume()
         {
             Debug.WriteLine("MainActivity Resume");
             base.OnResume();
         }
-        private bool isActive = false;
-        private int stopID = 0;
         protected override async void OnStart()
         {
             isActive = true;
             Debug.WriteLine("MainActivity Start");
             base.OnStart();
             if (MainMapView.Current.LocationDisplay != null
+                && MainMapView.Current.LocationDisplay.DataSource.Status==Esri.ArcGISRuntime.Location.LocationDataSourceStatus.Stopped
                 && MainMapView.Current.LocationDisplay.DataSource is LocationDataSourceAndroidImpl) //表示不是第一次打开了。第一次打开需要初始化。
             {
                 await MainMapView.Current.LocationDisplay.DataSource.StartAsync();
@@ -150,7 +151,12 @@ namespace MapBoard
             isActive = false;
             Debug.WriteLine("MainActivity Stop");
             base.OnStop();
-            await MainMapView.Current.LocationDisplay.DataSource.StopAsync();
+            if (TrackService.Current == null)
+            {
+                //如果开着轨迹记录，那么就不用停止LocationDisplay了，防止重新进去的时候又要重新定位
+                await MainMapView.Current.LocationDisplay.DataSource.StopAsync();
+            }
+
             int currentStopID = ++stopID;
             await Task.Delay(1000 * 60 * 1);
             if (Config.Instance.AutoQuit //开启自动退出

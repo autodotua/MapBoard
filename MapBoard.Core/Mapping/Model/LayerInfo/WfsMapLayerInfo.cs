@@ -60,9 +60,10 @@ namespace MapBoard.Mapping.Model
         [JsonIgnore]
         public string Url { get; private set; }
 
-        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             Name = newName;
+            return Task.CompletedTask;
         }
 
         public async Task PopulateAllFromServiceAsync(CancellationToken? cancellationToken = null)

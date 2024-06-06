@@ -44,7 +44,7 @@ namespace MapBoard.IO.Gpx
 
         #region Metadata
 
-        public static Gpx LoadMetadatasFromFile(string file)
+        public static async Task<Gpx> LoadMetadatasFromFileAsync(string file)
         {
             //XmlReader有点难用，让ChatGPT帮我写了。
             if (string.IsNullOrEmpty(file) || !File.Exists(file))
@@ -54,7 +54,10 @@ namespace MapBoard.IO.Gpx
 
             Gpx gpx = new Gpx();
 
-            using (XmlReader reader = XmlReader.Create(file))
+            using (XmlReader reader = XmlReader.Create(file, new XmlReaderSettings()
+            {
+                Async = true,
+            }))
             {
                 reader.ReadStartElement("gpx");
 
@@ -66,14 +69,14 @@ namespace MapBoard.IO.Gpx
                     }
                 }
 
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
                         switch (reader.Name)
                         {
                             case "metadata":
-                                ReadMetadata(reader, gpx);
+                                await ReadMetadataAsync(reader, gpx);
                                 break;
                         }
                     }
@@ -83,29 +86,29 @@ namespace MapBoard.IO.Gpx
             return gpx;
         }
 
-        private static void ReadMetadata(XmlReader reader, Gpx gpx)
+        private static async Task ReadMetadataAsync(XmlReader reader, Gpx gpx)
         {
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "name":
-                            gpx.Name = reader.ReadElementContentAsString();
+                            gpx.Name = await reader.ReadElementContentAsStringAsync();
                             break;
                         case "desc":
-                            gpx.Description = reader.ReadElementContentAsString();
+                            gpx.Description = await reader.ReadElementContentAsStringAsync();
                             break;
                         case "author":
-                            gpx.Author = reader.ReadElementContentAsString();
+                            gpx.Author = await reader.ReadElementContentAsStringAsync();
                             break;
                         case "time":
-                            gpx.Time = DateTime.Parse(reader.ReadElementContentAsString(), null, DateTimeStyles.AdjustToUniversal);
+                            gpx.Time = DateTime.Parse(await reader.ReadElementContentAsStringAsync(), null, DateTimeStyles.AdjustToUniversal);
                             break;
 
                         case "extensions":
-                            ReadExtensions(reader, gpx);
+                            await ReadExtensionsAsync(reader, gpx);
                             break;
                     }
                 }
@@ -117,17 +120,17 @@ namespace MapBoard.IO.Gpx
             }
         }
 
-        private static void ReadExtensions(XmlReader reader, Gpx gpx)
+        private static async Task ReadExtensionsAsync(XmlReader reader, Gpx gpx)
         {
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "distance")
                 {
-                    gpx.Distance = double.Parse(reader.ReadElementContentAsString());
+                    gpx.Distance = double.Parse(await reader.ReadElementContentAsStringAsync());
                 }
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "duration")
                 {
-                    gpx.Duration = TimeSpan.Parse(reader.ReadElementContentAsString());
+                    gpx.Duration = TimeSpan.Parse(await reader.ReadElementContentAsStringAsync());
                 }
 
                 if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "extensions")
@@ -135,20 +138,6 @@ namespace MapBoard.IO.Gpx
                     break;
                 }
             }
-        }
-
-        public static async Task<IList<Gpx>> LoadMetadatasFromFiles(IList<string> files)
-        {
-            Gpx[] gpxs = new Gpx[files.Count];
-            await Task.Run(() =>
-            {
-                for (int i = 0; i < files.Count; i++)
-                {
-                    var file = files[i];
-                    gpxs[i] = LoadMetadatasFromFile(file);
-                }
-            });
-            return gpxs;
         }
 
         #endregion
@@ -213,7 +202,7 @@ namespace MapBoard.IO.Gpx
                         {
                             SetGpxValue(gpx, "distance", extensionElement.InnerText);
                         }
-                       else if (extensionElement.Name == "duration")
+                        else if (extensionElement.Name == "duration")
                         {
                             SetGpxValue(gpx, "duration", extensionElement.InnerText);
                         }

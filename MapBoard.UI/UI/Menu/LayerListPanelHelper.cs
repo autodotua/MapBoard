@@ -400,8 +400,8 @@ namespace MapBoard.UI.Menu
         private Task PopulateAllAsync(IServerBasedLayer s)
         {
             return s.PopulateAllFromServiceAsync();
-        }     
-        
+        }
+
         private Task UpdateShapefileExtentAsync(ShapefileMapLayerInfo l)
         {
             return l.UpdateExtent(MapView.Map.OperationalLayers);
@@ -462,11 +462,11 @@ namespace MapBoard.UI.Menu
         /// </summary>
         /// <param name="layer"></param>
         /// <returns></returns>
-        private async Task SetDefinitionExpression(IMapLayerInfo layer)
+        private Task SetDefinitionExpression(IMapLayerInfo layer)
         {
             DefinitionExpressionDialog dialog = DefinitionExpressionDialog.Get(MainWindow, layer, MapView);
             dialog.Show();
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         /// <summary>

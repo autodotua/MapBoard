@@ -42,18 +42,21 @@ namespace MapBoard.ViewModels
 
         public async Task LoadGpxFilesAsync()
         {
-            List<GpxAndFileInfo> files = new List<GpxAndFileInfo>();
-            await Task.Run(() =>
+            GpxFiles.Clear();
+            foreach (var file in Directory
+                .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
+                .OrderDescending()
+                .Take(50))
             {
-                foreach (var file in Directory
-                    .EnumerateFiles(FolderPaths.TrackPath, "*.gpx")
-                    .OrderDescending()
-                    .Take(50))
+                try
                 {
-                    files.Add(new GpxAndFileInfo(file)) ;
+                    GpxFiles.Add(await GpxAndFileInfo.FromFileAsync(file));
                 }
-            });
-            GpxFiles = new ObservableCollection<GpxAndFileInfo>(files);
+                catch (Exception ex)
+                {
+
+                }
+            }
         }
         private void TrackService_StaticPropertyChanged(object sender, EventArgs e)
         {

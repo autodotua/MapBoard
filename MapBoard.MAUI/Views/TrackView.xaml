@@ -19,7 +19,6 @@
         <ListView
             x:Name="lvwGpxList"
             HasUnevenRows="True"
-            IsVisible="{Binding TrackService}"
             ItemTapped="GpxList_ItemTapped"
             ItemsSource="{Binding GpxFiles}"
             SelectionMode="None">

@@ -24,9 +24,9 @@ namespace MapBoard.Mapping.Model
             return new EmptyMapLayerInfo();
         }
 
-        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
-            await Task.Yield();
+            return Task.CompletedTask;
         }
     }
 }

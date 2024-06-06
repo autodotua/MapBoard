@@ -316,6 +316,10 @@ namespace MapBoard.Util
         }
         public static void LoadColoredGpx(IList<GpxPoint> points, GraphicCollection graphics)
         {
+            if (points.Count <= 3)
+            {
+                throw new ArgumentException("点的数量过少，无法加载", nameof(points));
+            }
             var speeds = GetMeanFilteredSpeeds(points, Parameters.GpxSpeedSmoothWindow, false);
             var orderedSpeeds = speeds.OrderBy(p => p).ToList();
             int speedsCount = speeds.Count;

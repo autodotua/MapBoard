@@ -163,9 +163,9 @@ namespace MapBoard.UI.TileDownloader
         /// 初始化
         /// </summary>
         /// <returns></returns>
-        protected override async Task InitializeAsync()
+        protected override Task InitializeAsync()
         {
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         /// <summary>

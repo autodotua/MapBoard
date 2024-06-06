@@ -26,18 +26,15 @@ namespace MapBoard.Platforms.Android
         private LocationManager locationManager;
         private SensorManager sensorManager;
 
+
+        private global::Android.Locations.Location lastNotFixedGpxLocation = null;
+        private DateTime lastGpsTime = DateTime.MinValue;
+
         private bool isListening = false;
         public LocationDataSourceAndroidImpl()
         {
             Debug.WriteLine("Create new LocationDataSourceAndroidImpl");
-            locationListener = new LocationDisplayLocationListener();
-            locationListener.LocationChanged += LocationListener_LocationChanged;
 
-            sensorListener = new LocationDisplaySensorListener();
-            sensorListener.AzimuthCanged += SensorListener_AzimuthCanged;
-
-            gnssListener = new LocationDisplayGnssListener();
-            gnssListener.IsFixedChanged += GnssListener_IsFixedChanged;
 
             locationManager = Platform.AppContext.GetSystemService(Context.LocationService) as LocationManager;
             sensorManager = Platform.AppContext.GetSystemService(Context.SensorService) as SensorManager;
@@ -46,13 +43,22 @@ namespace MapBoard.Platforms.Android
 
         private void GnssListener_IsFixedChanged(object sender, LocationDisplayGnssListener.IsGnssFixedChangedEventArgs e)
         {
+            //当卫星锁定时，有时候GNSS的回调会比位置监听的通知来得晚
+            //因此就需要在GNSS收到回调时去判断一下是不是最近GPS已经报告过位置
+            DateTime now = DateTime.Now;
+            if (e.IsFixed 
+                && (now - lastGpsTime).TotalSeconds<3 //如果GPS位置在一秒内已经更新
+                && lastNotFixedGpxLocation!=null)
+            {
+                UpdateLocation(lastNotFixedGpxLocation);
+                lastNotFixedGpxLocation=null;
+            }
         }
 
         private void SensorListener_AzimuthCanged(object sender, LocationDisplaySensorListener.AzimuthCangedEventArgs e)
         {
             UpdateHeading(e.Azimuth);
         }
-
         private void LocationListener_LocationChanged(object sender, LocationChangedEventArgs e)
         {
             var location = e.Location;
@@ -60,10 +66,20 @@ namespace MapBoard.Platforms.Android
             switch (location.Provider)
             {
                 case LocationManager.GpsProvider when gnssListener.IsFixed:
+                    //来自GPS并且GPS已经定位，更新位置
                     UpdateLocation(location);
                     break;
+                case LocationManager.GpsProvider when !gnssListener.IsFixed:
+                    //来自GPS并且但GPS还未定位，保留
+                    lastNotFixedGpxLocation = location;
+                    lastGpsTime = DateTime.Now;
+                    break;
                 case LocationManager.FusedProvider when !gnssListener.IsFixed:
+                    //来自融合并且GPS没有定位，更新位置
                     UpdateLocation(location);
+                    break;
+                default:
+                    //来自融合但GPS已经定位，忽略
                     break;
             }
         }
@@ -91,6 +107,17 @@ namespace MapBoard.Platforms.Android
             Debug.WriteLine("DataSource startting");
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
+                locationListener = new LocationDisplayLocationListener();
+                locationListener.LocationChanged += LocationListener_LocationChanged;
+
+                sensorListener = new LocationDisplaySensorListener();
+                sensorListener.AzimuthCanged += SensorListener_AzimuthCanged;
+
+                gnssListener = new LocationDisplayGnssListener();
+                gnssListener.IsFixedChanged += GnssListener_IsFixedChanged;
+
+                //感觉是MAUI的关系，多次关闭打开后，再关闭，就会一直挂着位置服务。仅GpsProvider。
+                //貌似每次重新new上面的对象以后，可以解决这个问题
                 locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
                     Config.Instance.TrackMinTimeSpan * 1000,
                     Config.Instance.TrackMinDistance,
@@ -115,10 +142,18 @@ namespace MapBoard.Platforms.Android
         {
             Debug.WriteLine("DataSource stopping");
             isListening = false;
-            locationManager.RemoveUpdates(locationListener);
+
             locationManager.RemoveUpdates(locationListener);
             locationManager.UnregisterGnssStatusCallback(gnssListener);
             sensorManager.UnregisterListener(sensorListener);
+
+            locationListener.LocationChanged -= LocationListener_LocationChanged;
+            sensorListener.AzimuthCanged -= SensorListener_AzimuthCanged;
+            gnssListener.IsFixedChanged -= GnssListener_IsFixedChanged;
+
+            locationListener = null;
+            sensorListener = null;
+            gnssListener = null;
             Debug.WriteLine("DataSource stopped");
             return Task.CompletedTask;
         }
@@ -133,7 +168,7 @@ namespace MapBoard.Platforms.Android
             get => isFixed;
             private set
             {
-                if(isFixed != value)
+                if (isFixed != value)
                 {
                     IsFixedChanged?.Invoke(this, new IsGnssFixedChangedEventArgs(value));
                 }
