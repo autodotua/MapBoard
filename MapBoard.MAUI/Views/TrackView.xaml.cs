@@ -285,7 +285,8 @@ public partial class TrackView : ContentView, ISidePanel
         {
             try
             {
-                gpxs.Insert(0, await GpxAndFileInfo.FromFileAsync(e.FilePath));
+                gpxs.Insert(0, new GpxAndFileInfo(e.FilePath));
+                await gpxs[0].LoadGpxAsync();
             }
             catch (Exception ex)
             {

@@ -50,7 +50,18 @@ namespace MapBoard.ViewModels
             {
                 try
                 {
-                    GpxFiles.Add(await GpxAndFileInfo.FromFileAsync(file));
+                    GpxFiles.Add(new GpxAndFileInfo(file));
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            foreach (var gpxFile in GpxFiles)
+            {
+                try
+                {
+                    await gpxFile.LoadGpxAsync();
                 }
                 catch (Exception ex)
                 {

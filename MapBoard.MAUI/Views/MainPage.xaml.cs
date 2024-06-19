@@ -66,11 +66,15 @@ namespace MapBoard.Views
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)
             {
                 grdMain.RowDefinitions.RemoveAt(1);
+                Microsoft.Maui.Controls.Grid.SetRow(bdBottom, Microsoft.Maui.Controls.Grid.GetRow(bdBottom) - 1);
                 bdBottom.Margin = new Thickness(16, 16);
                 bdBottom.HorizontalOptions = LayoutOptions.End;
                 bdBottom.VerticalOptions = LayoutOptions.End;
                 bdBottom.WidthRequest = (bdBottom.Content as Microsoft.Maui.Controls.Grid).Children.Count * 60;
                 bdBottom.StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(8), Shadow = null };
+#if DEBUG
+                //bdBottom.Margin = new Thickness(16, 16, 16, 216);
+#endif
             }
 
 #if DEBUG
@@ -199,6 +203,8 @@ namespace MapBoard.Views
             type2SidePanels[type].IsOpened = true;
             if (!await type2SidePanels[type].Container.TranslateTo(0, 0))
             {
+                //上面的await执行完毕的时候，其实还没有完全展开
+                await Task.Delay(50);
                 type2SidePanels[type].Content.OnPanelOpened();
             }
         }
