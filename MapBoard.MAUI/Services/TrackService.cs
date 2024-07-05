@@ -283,7 +283,7 @@ namespace MapBoard.Services
                     string backupFile = GetGpxFilePath(true);
                     File.Copy(gpxFile, backupFile, true);
                 }
-                File.WriteAllTextAsync(GetGpxFilePath(false), gpx.ToXmlString());
+                File.WriteAllText(GetGpxFilePath(false), gpx.ToXmlString());
                 return true;
             }
             return false;

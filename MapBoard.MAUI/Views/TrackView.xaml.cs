@@ -265,6 +265,7 @@ public partial class TrackView : ContentView, ISidePanel
     private void ClearLoadedTracks_Tapped(object sender, TappedEventArgs e)
     {
         MainMapView.Current.TrackOverlay.Clear();
+        MainPage.Current.ClosePanel<TrackView>();
     }
 
     private void TrackService_ExceptionThrown(object sender, ThreadExceptionEventArgs e)
