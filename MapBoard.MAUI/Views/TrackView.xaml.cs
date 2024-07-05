@@ -281,16 +281,24 @@ public partial class TrackView : ContentView, ISidePanel
     private async void TrackService_GpxSaved(object sender, TrackService.GpxSavedEventArgs e)
     {
         var gpxs = (BindingContext as TrackViewViewModel)?.GpxFiles;
-        if (gpxs != null && (gpxs.Count == 0 || gpxs[0].File.FullName != e.FilePath))
+        if (gpxs != null)
         {
-            try
+            if (gpxs.Count > 0 && gpxs[0].File.FullName == e.FilePath)
+            {
+                gpxs[0] = new GpxAndFileInfo(e.FilePath);
+            }
+            else
             {
                 gpxs.Insert(0, new GpxAndFileInfo(e.FilePath));
+            }
+
+            try
+            {
                 await gpxs[0].LoadGpxAsync();
             }
             catch (Exception ex)
             {
-
+                // “Ï≥£¥¶¿Ì¬ﬂº≠
             }
         }
         if (TrackService.Current == null)

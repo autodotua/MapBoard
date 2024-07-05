@@ -275,7 +275,7 @@ namespace MapBoard.Services
 
         private bool SaveGpx()
         {
-            if (gpxTrack != null && gpxTrack.GetPointsCount() >= 2)
+            if (gpxTrack != null && gpxTrack.GetPointsCount() >= 4)
             {
                 string gpxFile = GetGpxFilePath(false);
                 if (File.Exists(gpxFile))
