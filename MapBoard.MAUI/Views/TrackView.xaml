@@ -15,7 +15,7 @@
     <ContentView.Resources>
         <c:TrackDetailConverter x:Key="TrackDetailConverter" />
     </ContentView.Resources>
-    <Grid RowDefinitions="*,8,Auto,8,Auto,8,Auto">
+    <Grid RowDefinitions="*,8,Auto,8,Auto">
         <ListView
             x:Name="lvwGpxList"
             HasUnevenRows="True"
@@ -194,27 +194,31 @@
                 Text="停止/暂停"
                 VerticalOptions="Center" />
         </Grid>
-        <Label
-            x:Name="lblLoadGpx"
+        <Grid
             Grid.Row="4"
-            Margin="8,8,8,0"
-            HorizontalOptions="Center"
-            Style="{StaticResource LinkedLabelStyle}"
-            Text="加载其他GPX文件">
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer Tapped="LoadOtherGpx_Tapped" />
-            </Label.GestureRecognizers>
-        </Label>
-        <Label
-            x:Name="lblClearGpx"
-            Grid.Row="6"
-            Margin="8,0,8,8"
-            HorizontalOptions="Center"
-            Style="{StaticResource LinkedLabelStyle}"
-            Text="清除已加载的轨迹">
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer Tapped="ClearLoadedTracks_Tapped" />
-            </Label.GestureRecognizers>
-        </Label>
+            Margin="8"
+            ColumnDefinitions="Auto,16,Auto"
+            HorizontalOptions="Center">
+
+            <Label
+                x:Name="lblLoadGpx"
+                HorizontalOptions="Center"
+                Style="{StaticResource LinkedLabelStyle}"
+                Text="加载GPX">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="LoadOtherGpx_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+            <Label
+                x:Name="lblClearGpx"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                Style="{StaticResource LinkedLabelStyle}"
+                Text="移除轨迹">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="ClearLoadedTracks_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
     </Grid>
 </ContentView>

@@ -10,9 +10,14 @@ namespace MapBoard.Mapping
     public class TileCacheDbContext : DbContext
     {
         private static object lockObj = new object();
+        private string dbPath;
         public TileCacheDbContext()
         {
-
+            dbPath = Path.Combine(FolderPaths.CachePath, "tiles.db");
+        }
+        public TileCacheDbContext(string dbPath)
+        {
+            this.dbPath = dbPath;
         }
         public DbSet<TileCacheEntity> Tiles { get; set; }
 
@@ -24,7 +29,7 @@ namespace MapBoard.Mapping
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite($"Data Source={Path.Combine(FolderPaths.CachePath, "tiles.db")}");
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

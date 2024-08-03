@@ -527,5 +527,58 @@ namespace MapBoard.UI.Dialog
                 await CommonDialog.ShowErrorDialogAsync(ex, "获取默认底图失败");
             }
         }
+
+        private async void ImportCachesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.AddFilter("SQLite数据库", "db");
+            string path = dialog.GetPath(this);
+            if (path == null)
+            {
+                return;
+            }
+            canClose = false;
+            IsEnabled = false;
+
+            try
+            {
+                using var db1 = new TileCacheDbContext();
+                using var db2 = new TileCacheDbContext(path);
+                await Task.Run(() =>
+                {
+                    var db1Tiles = db1.Tiles.Select(p => p.TileUrl).ToHashSet();
+                    int count = db2.Tiles.Count();
+                    int index = 0;
+                    foreach (var tile in db2.Tiles)
+                    {
+                        index++;
+                        CacheImportProgress = 1.0 * index / count;
+                        if (!db1Tiles.Contains(tile.TileUrl))
+                        {
+                            tile.Id = 0;
+                            db1.Tiles.Add(tile);
+                        }
+                        if (index % 100 == 0)
+                        {
+                            db1.SaveChanges();
+                        }
+                    }
+                    db1.SaveChanges();
+                });
+            }
+            catch (Exception ex)
+            {
+                IsEnabled = true;
+                Activate();
+                await CommonDialog.ShowErrorDialogAsync(ex, "合并失败");
+            }
+            finally
+            {
+                canClose = true;
+                IsEnabled = true;
+            }
+        }
+
+        public double CacheImportProgress { get; set; } = 0;
     }
 }

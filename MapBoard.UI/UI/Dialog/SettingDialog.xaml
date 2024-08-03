@@ -327,6 +327,17 @@
                             VerticalAlignment="Bottom"
                             Click="DeleteAllBasemapCachesButton_Click"
                             Content="清除缓存" />
+                        <Button
+                            VerticalAlignment="Bottom"
+                            Click="ImportCachesButton_Click"
+                            Content="导入并合并缓存" />
+                        <ProgressBar
+                            Width="180"
+                            Margin="0,0,0,12"
+                            VerticalAlignment="Bottom"
+                            Maximum="1"
+                            Minimum="0"
+                            Value="{Binding CacheImportProgress}" />
                     </ui:SimpleStackPanel>
                 </GroupBox>
             </Grid>
