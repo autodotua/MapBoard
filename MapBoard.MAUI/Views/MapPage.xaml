@@ -48,7 +48,7 @@
                     TargetType="{x:Type ImageButton}">
                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
                     <Setter Property="WidthRequest" Value="42" />
-                    <Setter Property="Padding" Value="{OnPlatform Default=8, Android=16}" />
+                    <Setter Property="Padding" Value="4" />
                     <Setter Property="HeightRequest" Value="42" />
                 </Style>
             </VerticalStackLayout.Resources>
