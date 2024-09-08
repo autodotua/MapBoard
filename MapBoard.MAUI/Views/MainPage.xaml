@@ -15,7 +15,6 @@
         RowDefinitions="Auto,*,Auto">
         <Grid
             x:Name="grdMeter"
-            Padding="0,32,0,0"
             Background="{AppThemeBinding Light=White,
                                          Dark=Black,
                                          Default=Black}"

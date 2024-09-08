@@ -47,6 +47,7 @@ namespace MapBoard.Views
 {
     public partial class MainPage : ContentPage
     {
+        public const int AnimationDurationMs = 250;
         private SidePanelInfo[] sidePanels;
 
         private Dictionary<Type, SidePanelInfo> type2SidePanels;
@@ -205,12 +206,10 @@ namespace MapBoard.Views
             panel.Content.OnPanelOpening();
             panel.IsOpened = true;
             var task = panel.Length > 0 ? panel.Container.TranslateTo(0, 0) : panel.Container.FadeTo(1);
-            if (!await task)
-            {
-                //上面的await执行完毕的时候，其实还没有完全展开
-                await Task.Delay(50);
-                panel.Content.OnPanelOpened();
-            }
+            await task;
+            //上面的await执行完毕的时候，其实还没有完全展开
+            await Task.Delay(50);
+            panel.Content.OnPanelOpened();
         }
 
         private async void AddGeometryButton_Clicked(object sender, EventArgs e)
