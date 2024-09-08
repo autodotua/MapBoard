@@ -8,6 +8,7 @@ public partial class TrackingBar : ContentView, ISidePanel
     {
         InitializeComponent();
         BindingContext = new TrackViewViewModel();
+
     }
 
     public SwipeDirection Direction => SwipeDirection.Up;
@@ -21,5 +22,17 @@ public partial class TrackingBar : ContentView, ISidePanel
 
     public void OnPanelOpening()
     {
+    }
+
+    public void SetStatusBarHeight(double height)
+    {
+        mainLayout.Margin = new Thickness(8, 8 + height, 8, 8);
+    }
+
+    private void ContentView_Loaded(object sender, EventArgs e)
+    {
+#if ANDROID
+        SetStatusBarHeight((Platform.CurrentActivity as MainActivity).GetStatusBarHeight());
+#endif
     }
 }

@@ -27,6 +27,9 @@ public partial class MeterBar : ContentView, ISidePanel
             UpdateData();
             return canUpdateData;
         });
+#if ANDROID
+      ( Platform.CurrentActivity as MainActivity).SetStatusBarVisible(false );
+#endif
     }
 
     private void UpdateData()
@@ -47,7 +50,7 @@ public partial class MeterBar : ContentView, ISidePanel
             speed = l.Velocity;
             distance = "Ðè¿ªÆô¹ì¼£";
         }
-        (BindingContext as MeterBarViewModel).Speed = speed;
+        (BindingContext as MeterBarViewModel).Speed = speed * 3.6;
         (BindingContext as MeterBarViewModel).Time = DateTime.Now;
         (BindingContext as MeterBarViewModel).Distance = distance;
     }
@@ -55,5 +58,8 @@ public partial class MeterBar : ContentView, ISidePanel
     public void OnPanelClosed()
     {
         canUpdateData = false;
+#if ANDROID
+        (Platform.CurrentActivity as MainActivity).SetStatusBarVisible(true);
+#endif
     }
 }

@@ -15,7 +15,7 @@
                 <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black, Default=White}" />
             </Style>
         </Grid.Resources>
-        <v:ViewBox>
+        <v:ViewBox Margin="8">
             <Grid RowDefinitions="Auto,0,Auto">
                 <Grid
                     ColumnDefinitions="Auto,8,Auto,8,Auto"
@@ -42,7 +42,7 @@
                     HorizontalOptions="Center">
                     <Label
                         Grid.Column="2"
-                        FontSize="10"
+                        FontSize="6"
                         Text="{Binding Distance}"
                         VerticalOptions="Center" />
                     <Label

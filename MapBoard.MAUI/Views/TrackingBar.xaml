@@ -6,7 +6,8 @@
     xmlns:c="clr-namespace:MapBoard.Converters"
     xmlns:vm="clr-namespace:MapBoard.ViewModels"
     x:DataType="{x:Type vm:TrackViewViewModel}"
-    BackgroundColor="{DynamicResource Primary}">
+    BackgroundColor="{DynamicResource Primary}"
+    Loaded="ContentView_Loaded">
     <ContentView.Resources>
         <ResourceDictionary>
             <c:TrackDetailConverter x:Key="TrackDetailConverter" />
@@ -20,7 +21,8 @@
 
     </ContentView.Resources>
     <VerticalStackLayout
-        Margin="8,32,8,0"
+        x:Name="mainLayout"
+        Margin="8,36,8,0"
         Spacing="8">
         <Label
             Grid.ColumnSpan="99"

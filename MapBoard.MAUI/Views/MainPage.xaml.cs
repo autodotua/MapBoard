@@ -201,13 +201,15 @@ namespace MapBoard.Views
         {
             var type = typeof(T);
             CloseAllPanel();
-            type2SidePanels[type].Content.OnPanelOpening();
-            type2SidePanels[type].IsOpened = true;
-            if (!await type2SidePanels[type].Container.TranslateTo(0, 0))
+            SidePanelInfo panel = type2SidePanels[type];
+            panel.Content.OnPanelOpening();
+            panel.IsOpened = true;
+            var task = panel.Length > 0 ? panel.Container.TranslateTo(0, 0) : panel.Container.FadeTo(1);
+            if (!await task)
             {
                 //上面的await执行完毕的时候，其实还没有完全展开
                 await Task.Delay(50);
-                type2SidePanels[type].Content.OnPanelOpened();
+                panel.Content.OnPanelOpened();
             }
         }
 
@@ -264,20 +266,27 @@ namespace MapBoard.Views
         private void ClosePanel(Type type)
         {
             var panel = type2SidePanels[type];
-            switch (panel.Direction)
+            if (panel.Length == 0)
             {
-                case SwipeDirection.Right:
-                    panel.Container.TranslateTo(panel.Length, 0);
-                    break;
-                case SwipeDirection.Left:
-                    panel.Container.TranslateTo(-panel.Length, 0);
-                    break;
-                case SwipeDirection.Up:
-                    panel.Container.TranslateTo(0, -panel.Length);
-                    break;
-                case SwipeDirection.Down:
-                    panel.Container.TranslateTo(0, panel.Length);
-                    break;
+                panel.Container.FadeTo(0);
+            }
+            else
+            {
+                switch (panel.Direction)
+                {
+                    case SwipeDirection.Right:
+                        panel.Container.TranslateTo(panel.Length, 0);
+                        break;
+                    case SwipeDirection.Left:
+                        panel.Container.TranslateTo(-panel.Length, 0);
+                        break;
+                    case SwipeDirection.Up:
+                        panel.Container.TranslateTo(0, -panel.Length);
+                        break;
+                    case SwipeDirection.Down:
+                        panel.Container.TranslateTo(0, panel.Length);
+                        break;
+                }
             }
             type2SidePanels[type].IsOpened = false;
             if (type2SidePanels[type].Content is ISidePanel s)
@@ -309,7 +318,7 @@ namespace MapBoard.Views
 
 #if ANDROID
             var navBarHeight = (Platform.CurrentActivity as MainActivity).GetNavBarHeight();
-            navBarHeight /= DeviceDisplay.MainDisplayInfo.Density;
+            //navBarHeight /= DeviceDisplay.MainDisplayInfo.Density;
             if (navBarHeight > 0)
             {
                 if (DeviceInfo.Idiom == DeviceIdiom.Phone)
@@ -390,30 +399,35 @@ namespace MapBoard.Views
                 new SidePanelInfo(ftp, ftpView),
                 new SidePanelInfo(baseLayer, baseLayerView),
                 new SidePanelInfo(import, importView),
-                new SidePanelInfo(tbar, tbar),
+                new SidePanelInfo(tbar, tbar){Length=0},
                 new SidePanelInfo(ebar, ebar)
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
             foreach (var panel in sidePanels)
             {
+                int length = panel.Length;
+                if (length == 0)
+                {
+                    continue;
+                }
                 switch (panel.Direction)
                 {
                     case SwipeDirection.Right:
-                        panel.Container.WidthRequest = panel.Length;
-                        panel.Container.TranslationX = panel.Length;
+                        panel.Container.WidthRequest = length;
+                        panel.Container.TranslationX = length;
                         break;
                     case SwipeDirection.Left:
-                        panel.Container.WidthRequest = panel.Length;
-                        panel.Container.TranslationX = -panel.Length;
+                        panel.Container.WidthRequest = length;
+                        panel.Container.TranslationX = -length;
                         break;
                     case SwipeDirection.Up:
-                        panel.Container.HeightRequest = panel.Length;
-                        panel.Container.TranslationY = -panel.Length;
+                        panel.Container.HeightRequest = length;
+                        panel.Container.TranslationY = -length;
                         break;
                     case SwipeDirection.Down:
-                        panel.Container.HeightRequest = panel.Length;
-                        panel.Container.TranslationY = panel.Length;
+                        panel.Container.HeightRequest = length;
+                        panel.Container.TranslationY = length;
                         break;
                     default:
                         break;
@@ -581,12 +595,18 @@ namespace MapBoard.Views
             double targetHeight = 0;
             if (grdMeter.Bounds.Height == 0)//需要展开
             {
-                 targetHeight = Bounds.Height / 3;
+                targetHeight = Bounds.Height / 3;
                 meterBar.OnPanelOpening();
+#if ANDROID
+                tbar.SetStatusBarHeight(0);
+#endif
             }
             else
             {
                 meterBar.OnPanelClosed();
+#if ANDROID
+                tbar.SetStatusBarHeight((Platform.CurrentActivity as MainActivity).GetStatusBarHeight());
+#endif
             }
             grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, 0, targetHeight, easing: Easing.SinOut));
         }

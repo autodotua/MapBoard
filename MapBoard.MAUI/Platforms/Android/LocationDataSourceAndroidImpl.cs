@@ -3,6 +3,7 @@ using Android.Hardware;
 using Android.Locations;
 using Android.OS;
 using Android.Runtime;
+using CommunityToolkit.Maui.Alerts;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Location;
 using MapBoard.Views;
@@ -118,21 +119,28 @@ namespace MapBoard.Platforms.Android
 
                 //感觉是MAUI的关系，多次关闭打开后，再关闭，就会一直挂着位置服务。仅GpsProvider。
                 //貌似每次重新new上面的对象以后，可以解决这个问题
-                locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
-                    Config.Instance.TrackMinTimeSpan * 1000,
-                    Config.Instance.TrackMinDistance,
-                    locationListener);
-                locationManager.RequestLocationUpdates(LocationManager.FusedProvider,
-                    Config.Instance.TrackMinTimeSpan * 1000,
-                    Config.Instance.TrackMinDistance,
-                    locationListener);
-                locationManager.RegisterGnssStatusCallback(gnssListener, null);
-                sensorManager.RegisterListener(sensorListener,
-                    sensorManager.GetDefaultSensor(SensorType.Accelerometer),
-                    SensorDelay.Ui);
-                sensorManager.RegisterListener(sensorListener,
-                    sensorManager.GetDefaultSensor(SensorType.MagneticField),
-                    SensorDelay.Ui);
+                try
+                {
+                    locationManager.RequestLocationUpdates(LocationManager.GpsProvider,
+                        Config.Instance.TrackMinTimeSpan * 1000,
+                        Config.Instance.TrackMinDistance,
+                        locationListener);
+                    locationManager.RequestLocationUpdates(LocationManager.FusedProvider,
+                        Config.Instance.TrackMinTimeSpan * 1000,
+                        Config.Instance.TrackMinDistance,
+                        locationListener);
+                    locationManager.RegisterGnssStatusCallback(gnssListener, null);
+                    sensorManager.RegisterListener(sensorListener,
+                        sensorManager.GetDefaultSensor(SensorType.Accelerometer),
+                        SensorDelay.Ui);
+                    sensorManager.RegisterListener(sensorListener,
+                        sensorManager.GetDefaultSensor(SensorType.MagneticField),
+                        SensorDelay.Ui);
+                }
+                catch(Exception ex)
+                {
+                    Toast.Make("无法获取位置信息，请授予权限后重启程序").Show();
+                }
                 isListening = true;
             });
             Debug.WriteLine("DataSource started");

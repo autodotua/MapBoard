@@ -55,6 +55,7 @@
             <v:TrackingBar
                 x:Name="tbar"
                 HorizontalOptions="Fill"
+                Opacity="0"
                 VerticalOptions="Start" />
 
             <v:EditBar

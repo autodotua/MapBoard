@@ -132,6 +132,10 @@ public class AndroidTrackService : Service
             notificationChannel.LockscreenVisibility = NotificationVisibility.Public;
             notificationManager.CreateNotificationChannel(notificationChannel);
             notificationBuilder.SetChannelId(NotificationChannelID);
+        }
+
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+        {
             StartForeground(NotificationID, notificationBuilder.Build(), ForegroundService.TypeLocation);
         }
         else

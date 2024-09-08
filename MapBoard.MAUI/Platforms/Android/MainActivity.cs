@@ -34,15 +34,32 @@ namespace MapBoard
         {
             if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
             {
-                return WindowManager.CurrentWindowMetrics.WindowInsets.GetInsets(WindowInsets.Type.NavigationBars()).Bottom;
+                return WindowManager.CurrentWindowMetrics.WindowInsets.GetInsets(WindowInsets.Type.NavigationBars()).Bottom
+                    / DeviceDisplay.MainDisplayInfo.Density;
             }
             var orientation = Resources.Configuration.Orientation;
             int resourceId = Resources.GetIdentifier(orientation == Android.Content.Res.Orientation.Portrait ? "navigation_bar_height" : "navigation_bar_height_landscape", "dimen", "android");
             if (resourceId > 0)
             {
-                return Resources.GetDimensionPixelSize(resourceId);
+                return Resources.GetDimensionPixelSize(resourceId) / DeviceDisplay.MainDisplayInfo.Density;
             }
             return 0;
+        }
+
+        public double GetStatusBarHeight()
+        {
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
+            {
+                return WindowManager.CurrentWindowMetrics.WindowInsets.GetInsets(WindowInsets.Type.StatusBars()).Top
+                    / DeviceDisplay.MainDisplayInfo.Density;
+            }
+            //var orientation = Resources.Configuration.Orientation;
+            int resourceId = Resources.GetIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0)
+            {
+                return Resources.GetDimensionPixelSize(resourceId) / DeviceDisplay.MainDisplayInfo.Density;
+            }
+            return 24;
         }
 
         public override async void OnBackPressed()
@@ -82,6 +99,35 @@ namespace MapBoard
                     await Task.Delay(2000);
                     hasPressedBack = false;
                 }
+            }
+        }
+
+        public void SetStatusBarVisible(bool visible)
+        {
+            var decorView = Window.DecorView;
+            if (visible)
+            {
+                if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
+                {
+                    decorView.WindowInsetsController.Show(WindowInsets.Type.StatusBars());
+                }
+                else if (Build.VERSION.SdkInt >= (BuildVersionCodes)26)
+                {
+                    decorView.SystemUiFlags = SystemUiFlags.Visible;
+                }
+                ActionBar?.Show();
+            }
+            else
+            {
+                if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
+                {
+                    decorView.WindowInsetsController.Hide(WindowInsets.Type.StatusBars());
+                }
+                else if (Build.VERSION.SdkInt >= (BuildVersionCodes)26)
+                {
+                    decorView.SystemUiFlags = SystemUiFlags.Fullscreen;
+                }
+                ActionBar?.Hide();
             }
         }
 
@@ -128,18 +174,20 @@ namespace MapBoard
             base.OnPause();
             App.SaveConfigsAndStatus();
         }
+
         protected override void OnResume()
         {
             Debug.WriteLine("MainActivity Resume");
             base.OnResume();
         }
+
         protected override async void OnStart()
         {
             isActive = true;
             Debug.WriteLine("MainActivity Start");
             base.OnStart();
             if (MainMapView.Current.LocationDisplay != null
-                && MainMapView.Current.LocationDisplay.DataSource.Status==Esri.ArcGISRuntime.Location.LocationDataSourceStatus.Stopped
+                && MainMapView.Current.LocationDisplay.DataSource.Status == Esri.ArcGISRuntime.Location.LocationDataSourceStatus.Stopped
                 && MainMapView.Current.LocationDisplay.DataSource is LocationDataSourceAndroidImpl) //表示不是第一次打开了。第一次打开需要初始化。
             {
                 await MainMapView.Current.LocationDisplay.DataSource.StartAsync();
