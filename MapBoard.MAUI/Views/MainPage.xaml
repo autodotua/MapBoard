@@ -8,157 +8,172 @@
     xmlns:v="clr-namespace:MapBoard.Views"
     Title="地图画板"
     Loaded="ContentPage_Loaded">
+
     <Grid
         x:Name="grdMain"
         IsClippedToBounds="True"
-        RowDefinitions="*,Auto">
-        <v:MapPage x:Name="map" />
-
-        <Border
-            x:Name="bdGeoShareError"
-            Margin="0,32,8,0"
-            Padding="6,2"
-            Background="Red"
-            HorizontalOptions="End"
-            IsVisible="False"
-            StrokeThickness="0"
-            VerticalOptions="Start">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="6" />
-            </Border.StrokeShape>
-            <HorizontalStackLayout Spacing="4">
-                <Image
-                    Margin="0,1,0,0"
-                    HeightRequest="12"
-                    Source="icon_error.png" />
-                <Label TextColor="White">位置共享出现错误</Label>
-            </HorizontalStackLayout>
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Tapped="GeoShareError_Tapped" />
-            </Border.GestureRecognizers>
-        </Border>
-
-        <v:TrackingBar
-            x:Name="tbar"
-            HorizontalOptions="Fill"
-            VerticalOptions="Start" />
-
-        <v:EditBar
-            x:Name="ebar"
-            BackgroundColor="Transparent"
-            HorizontalOptions="Fill"
-            VerticalOptions="Start" />
-
+        RowDefinitions="Auto,*,Auto">
         <Grid
-            x:Name="track"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
-                                              Dark={DynamicResource Gray900}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="轨迹记录" />
-            <v:TrackView
-                x:Name="trackView"
-                Grid.Row="2" />
+            x:Name="grdMeter"
+            Padding="0,32,0,0"
+            Background="{AppThemeBinding Light=White,
+                                         Dark=Black,
+                                         Default=Black}"
+            HeightRequest="0">
+            <v:MeterBar x:Name="meterBar" />
         </Grid>
-
         <Grid
-            x:Name="ftp"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
-                                              Dark={DynamicResource Gray900}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="文件管理" />
-            <v:FtpView
-                x:Name="ftpView"
-                Grid.Row="2" />
-        </Grid>
+            Grid.Row="1"
+            IsClippedToBounds="true">
 
-        <Grid
-            x:Name="layer"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
-                                              Dark={DynamicResource Gray900}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*">
-            <HorizontalStackLayout Margin="8,8,0,0">
+            <v:MapPage x:Name="map" />
+
+            <Border
+                x:Name="bdGeoShareError"
+                Margin="0,32,8,0"
+                Padding="6,2"
+                Background="Red"
+                HorizontalOptions="End"
+                IsVisible="False"
+                StrokeThickness="0"
+                VerticalOptions="Start">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="6" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="4">
+                    <Image
+                        Margin="0,1,0,0"
+                        HeightRequest="12"
+                        Source="icon_error.png" />
+                    <Label TextColor="White">位置共享出现错误</Label>
+                </HorizontalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="GeoShareError_Tapped" />
+                </Border.GestureRecognizers>
+            </Border>
+
+            <v:TrackingBar
+                x:Name="tbar"
+                HorizontalOptions="Fill"
+                VerticalOptions="Start" />
+
+            <v:EditBar
+                x:Name="ebar"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Fill"
+                VerticalOptions="Start" />
+
+            <Grid
+                x:Name="track"
+                Padding="0,24,0,0"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                                  Dark={DynamicResource Gray900}}"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto,8,*">
                 <Label
+                    Margin="8,8,0,0"
                     FontAttributes="Bold"
                     FontSize="Title"
-                    Text="图层" />
+                    Text="轨迹记录" />
+                <v:TrackView
+                    x:Name="trackView"
+                    Grid.Row="2" />
+            </Grid>
+
+            <Grid
+                x:Name="ftp"
+                Padding="0,24,0,0"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                                  Dark={DynamicResource Gray900}}"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto,8,*">
                 <Label
-                    Margin="24,0,0,0"
-                    Style="{StaticResource LinkedLabelStyle}"
-                    Text="设置底图"
-                    VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="SetBaseLayersTapGestureRecognizer_Tapped" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </HorizontalStackLayout>
-
-            <v:LayerListView
-                x:Name="layerView"
-                Grid.Row="2" />
-        </Grid>
-
-        <Grid
-            x:Name="baseLayer"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
-                                              Dark={DynamicResource Gray900}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*">
-            <Label
-                Margin="8,8,0,0"
-                FontAttributes="Bold"
-                FontSize="Title"
-                Text="底图" />
-            <v:BaseLayerView
-                x:Name="baseLayerView"
-                Grid.Row="2" />
-        </Grid>
-
-        <Grid
-            x:Name="import"
-            Padding="0,24,0,0"
-            BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
-                                              Dark={DynamicResource Gray900}}"
-            HorizontalOptions="Start"
-            RowDefinitions="Auto,8,*">
-            <HorizontalStackLayout Margin="8,8,0,0">
-                <Label
+                    Margin="8,8,0,0"
                     FontAttributes="Bold"
                     FontSize="Title"
-                    Text="地图包" />
+                    Text="文件管理" />
+                <v:FtpView
+                    x:Name="ftpView"
+                    Grid.Row="2" />
+            </Grid>
+
+            <Grid
+                x:Name="layer"
+                Padding="0,24,0,0"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                                  Dark={DynamicResource Gray900}}"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto,8,*">
+                <HorizontalStackLayout Margin="8,8,0,0">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="Title"
+                        Text="图层" />
+                    <Label
+                        Margin="24,0,0,0"
+                        Style="{StaticResource LinkedLabelStyle}"
+                        Text="设置底图"
+                        VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="SetBaseLayersTapGestureRecognizer_Tapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+                <v:LayerListView
+                    x:Name="layerView"
+                    Grid.Row="2" />
+            </Grid>
+
+            <Grid
+                x:Name="baseLayer"
+                Padding="0,24,0,0"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                                  Dark={DynamicResource Gray900}}"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto,8,*">
                 <Label
-                    Margin="24,0,0,0"
-                    Style="{StaticResource LinkedLabelStyle}"
-                    Text="文件管理"
-                    VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="FtpTapGestureRecognizer_Tapped" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </HorizontalStackLayout>
+                    Margin="8,8,0,0"
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Text="底图" />
+                <v:BaseLayerView
+                    x:Name="baseLayerView"
+                    Grid.Row="2" />
+            </Grid>
 
-            <v:ImportView
-                x:Name="importView"
-                Grid.Row="2" />
+            <Grid
+                x:Name="import"
+                Padding="0,24,0,0"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
+                                                  Dark={DynamicResource Gray900}}"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto,8,*">
+                <HorizontalStackLayout Margin="8,8,0,0">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="Title"
+                        Text="地图包" />
+                    <Label
+                        Margin="24,0,0,0"
+                        Style="{StaticResource LinkedLabelStyle}"
+                        Text="文件管理"
+                        VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="FtpTapGestureRecognizer_Tapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+                <v:ImportView
+                    x:Name="importView"
+                    Grid.Row="2" />
+            </Grid>
+
         </Grid>
-
         <Border
             x:Name="bdBottom"
-            Grid.Row="1"
+            Grid.Row="2"
             BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                               Dark={DynamicResource Gray400}}"
             Stroke="Transparent"
@@ -188,8 +203,8 @@
                     Source="btn_add_geometry.png" />
                 <ImageButton
                     Grid.Column="2"
-                    Clicked="RefreshButton_Clicked"
-                    Source="btn_refresh.png" />
+                    Clicked="MeterButton_Clicked"
+                    Source="btn_meter.png" />
                 <ImageButton
                     Grid.Column="3"
                     Clicked="MenuButton_Clicked"

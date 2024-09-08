@@ -46,6 +46,7 @@
 		<None Remove="Resources\Images\btn_ftp.svg" />
 		<None Remove="Resources\Images\btn_import.svg" />
 		<None Remove="Resources\Images\btn_menu.svg" />
+		<None Remove="Resources\Images\btn_meter.svg" />
 		<None Remove="Resources\Images\btn_ok.svg" />
 		<None Remove="Resources\Images\btn_redo.svg" />
 		<None Remove="Resources\Images\btn_refresh.svg" />
@@ -134,6 +135,9 @@
 	  <Compile Update="Views\EditBar.xaml.cs">
 	    <DependentUpon>EditBar.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\MeterBar.xaml.cs">
+	    <DependentUpon>MeterBar.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\TrackView.xaml.cs">
 	    <DependentUpon>TrackView.xaml</DependentUpon>
 	  </Compile>
@@ -180,6 +184,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\EditBar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\MeterBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\TrackingBar.xaml">

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="MapBoard.Views.MeterBar"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:MapBoard.Converters"
+    xmlns:v="clr-namespace:MapBoard.Views"
+    xmlns:vm="clr-namespace:MapBoard.ViewModels"
+    x:DataType="{x:Type vm:MeterBarViewModel}">
+    <Grid>
+        <Grid.Resources>
+            <Style
+                BasedOn="{StaticResource DefaultLabelStyle}"
+                TargetType="{x:Type Label}">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black, Default=White}" />
+            </Style>
+        </Grid.Resources>
+        <v:ViewBox>
+            <Grid RowDefinitions="Auto,0,Auto">
+                <Grid
+                    ColumnDefinitions="Auto,8,Auto,8,Auto"
+                    HorizontalOptions="Center">
+                    <Label
+                        Grid.Column="2"
+                        FontSize="20"
+                        Text="{Binding Speed, StringFormat='{}{0:0.0}'}"
+                        VerticalOptions="Center" />
+                    <Label
+                        FontSize="6"
+                        Opacity="0"
+                        Text="km/h"
+                        VerticalOptions="End" />
+                    <Label
+                        Grid.Column="4"
+                        FontSize="6"
+                        Text="km/h"
+                        VerticalOptions="End" />
+                </Grid>
+                <Grid
+                    Grid.Row="2"
+                    ColumnDefinitions="Auto,8,Auto,8,Auto"
+                    HorizontalOptions="Center">
+                    <Label
+                        Grid.Column="2"
+                        FontSize="10"
+                        Text="{Binding Distance}"
+                        VerticalOptions="Center" />
+                    <Label
+                        FontSize="6"
+                        Text="里程："
+                        VerticalOptions="End" />
+                    <Label
+                        Grid.Column="4"
+                        FontSize="6"
+                        Text="km&#x0020;&#x0020;&#x0020;&#x0020;&#x0020;&#x0020;"
+                        VerticalOptions="End" />
+                </Grid>
+
+            </Grid>
+        </v:ViewBox>
+        <Label
+            Margin="8"
+            FontSize="18"
+            HorizontalOptions="EndAndExpand"
+            Text="{Binding Time, StringFormat='{}{0:HH:mm:ss}'}"
+            VerticalOptions="Start" />
+    </Grid>
+</ContentView>

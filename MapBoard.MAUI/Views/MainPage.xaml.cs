@@ -36,6 +36,8 @@ using static MapBoard.Views.PopupMenu;
 using CommunityToolkit.Maui.Views;
 using MapBoard.Models;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Animations;
+
 
 #if ANDROID
 using MapBoard.Platforms.Android;
@@ -65,7 +67,7 @@ namespace MapBoard.Views
             //大屏设备，底部操作栏在右下角悬浮
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)
             {
-                grdMain.RowDefinitions.RemoveAt(1);
+                grdMain.RowDefinitions.RemoveAt(grdMain.RowDefinitions.Count - 1);
                 Microsoft.Maui.Controls.Grid.SetRow(bdBottom, Microsoft.Maui.Controls.Grid.GetRow(bdBottom) - 1);
                 bdBottom.Margin = new Thickness(16, 16);
                 bdBottom.HorizontalOptions = LayoutOptions.End;
@@ -77,7 +79,7 @@ namespace MapBoard.Views
 #endif
             }
 
-#if DEBUG
+#if DEBUG && false
             grdMain.RowDefinitions.Add(new RowDefinition(200));
             ObservableCollection<string> items = new ObservableCollection<string>()
             {
@@ -312,8 +314,8 @@ namespace MapBoard.Views
             {
                 if (DeviceInfo.Idiom == DeviceIdiom.Phone)
                 {
-                    var a = this.Width;
-                    bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + navBarHeight);
+                    //目前我的设备都不需要额外增加高度，增加了反而有问题，所以就先隐藏了
+                    //bdBottom.Padding = new Thickness(bdBottom.Padding.Left, bdBottom.Padding.Top, bdBottom.Padding.Right, bdBottom.Padding.Bottom + navBarHeight);
                 }
                 if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
                 {
@@ -572,6 +574,21 @@ namespace MapBoard.Views
         {
             await DisplayAlert("位置共享错误", lastGeoShareException.Message, "确定");
             bdGeoShareError.IsVisible = false;
+        }
+
+        private void MeterButton_Clicked(object sender, EventArgs e)
+        {
+            double targetHeight = 0;
+            if (grdMeter.Bounds.Height == 0)//需要展开
+            {
+                 targetHeight = Bounds.Height / 3;
+                meterBar.OnPanelOpening();
+            }
+            else
+            {
+                meterBar.OnPanelClosed();
+            }
+            grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, 0, targetHeight, easing: Easing.SinOut));
         }
     }
 
