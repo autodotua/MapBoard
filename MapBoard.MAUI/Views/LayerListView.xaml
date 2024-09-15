@@ -30,7 +30,7 @@
     </ContentView.Resources>
     <Grid
         Margin="0"
-        RowDefinitions="0,8,*">
+        RowDefinitions="Auto,8,*">
         <HorizontalStackLayout
             IsClippedToBounds="True"
             Spacing="16">
@@ -48,29 +48,38 @@
         <!--  https://github.com/dotnet/maui/issues/12312  -->
         <!--  https://github.com/dotnet/maui/issues/11598  -->
         <!--  https://github.com/dotnet/maui/issues/11640  -->
+        <CollectionView
+            x:Name="lvwGroups"
+            Grid.Row="2"
+            ItemsSource="{Binding Groups}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type vm:LayerGroupList}">
+                    <VerticalStackLayout>
+                        <Label
+                            Margin="0,8,0,2"
+                            FontAttributes="Bold"
+                            FontSize="18"
+                            HorizontalTextAlignment="Center"
+                            Text="{Binding Name}" />
+                        <ListView
+                            CachingStrategy="RetainElement"
+                            ItemTapped="lvwLevel_ItemTapped"
+                            ItemTemplate="{StaticResource LayerListDataTemplate}"
+                            ItemsSource="{Binding Layers}"
+                            SelectionMode="None" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
         <ListView
-            x:Name="lvwLevel"
+            x:Name="lvwLayers"
             Grid.Row="2"
             CachingStrategy="RetainElement"
-            GroupDisplayBinding="{Binding Name}"
-            GroupShortNameBinding="{Binding Name}"
             ItemTapped="lvwLevel_ItemTapped"
             ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Layers}"
-            SelectionMode="None">
-            <ListView.GroupHeaderTemplate>
-                <DataTemplate x:DataType="{x:Type mmm:GroupInfo}">
-                    <ViewCell>
-                        <Label
-                            Margin="8"
-                            FontAttributes="Bold"
-                            Text="{Binding Name}"
-                            TextColor="{DynamicResource Gray500}" />
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.GroupHeaderTemplate>
-        </ListView>
-
+            SelectionMode="None" />
 
     </Grid>
 </ContentView>

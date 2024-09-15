@@ -60,7 +60,7 @@ public partial class LayerListView : ContentView, ISidePanel
             new PopupMenu.PopupMenuItem("样式设置"),
             new PopupMenu.PopupMenuItem("删除")
             ];
-        var result = await (sender as ListView).PopupMenuAsync(e,items, "图层选项");
+        var result = await (sender as ListView).PopupMenuAsync(e, items, "图层选项");
         if (result >= 0)
         {
             var layer = e.Item as IMapLayerInfo;
@@ -88,31 +88,19 @@ public partial class LayerListView : ContentView, ISidePanel
         var layers = MainMapView.Current.Layers;
         (BindingContext as LayerViewViewModel).Layers = layers;
         (BindingContext as LayerViewViewModel).Update();
-        //if (false && Config.Instance.LastLayerListGroupType == 0)
-        //{
-        //    rbtnByLevel.IsChecked = true;
-        //}
-        //else
-        //{
-        //    rbtnByGroup.IsChecked = true;
-        //}
+        rbtnByLevel.IsChecked = !Config.Instance.GroupLayers;
+        rbtnByGroup.IsChecked = Config.Instance.GroupLayers;
     }
 
 
     private void UpdateListType(bool group)
     {
-        //存在渲染问题
+        //ListView自带Group存在渲染问题
         //https://github.com/dotnet/maui/issues/16031
-        lvwLevel.BeginRefresh();
-        lvwLevel.RemoveBinding(ListView.ItemsSourceProperty);
-        lvwLevel.SetBinding(ListView.ItemsSourceProperty, group ? nameof(LayerViewViewModel.Groups) : nameof(LayerViewViewModel.Layers));
-        lvwLevel.IsGroupingEnabled = group;
-        lvwLevel.EndRefresh();
-        //UpdateListSelectedItem();
-        if (lvwLevel.SelectedItem != null)
-        {
-            lvwLevel.ScrollTo(lvwLevel.SelectedItem, ScrollToPosition.MakeVisible, true);
-        }
+
+        lvwGroups.IsVisible = group;
+        lvwLayers.IsVisible = !group;
+        Config.Instance.GroupLayers = group;
     }
 
     private void ViewTypeRadioButton_CheckChanged(object sender, CheckedChangedEventArgs e)
@@ -120,14 +108,6 @@ public partial class LayerListView : ContentView, ISidePanel
         if (e.Value)
         {
             UpdateListType(sender == rbtnByGroup);
-            UpdateListType(sender != rbtnByGroup);
-            UpdateListType(sender == rbtnByGroup);
-            int id = sender == rbtnByGroup ? 1 : 0;
-            if (Config.Instance.LastLayerListGroupType != id)
-            {
-                Config.Instance.LastLayerListGroupType = id;
-            }
-
         }
     }
 }

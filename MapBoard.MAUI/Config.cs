@@ -23,7 +23,7 @@ namespace MapBoard
         private bool enableBasemapCache = true;
         private bool isTracking;
         private string lastCrashFile;
-        private int lastLayerListGroupType;
+        private bool groupLayers;
         private double maxScale = 100;
         private bool screenAlwaysOn = false;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -77,10 +77,10 @@ namespace MapBoard
             set => this.SetValueAndNotify(ref lastCrashFile, value, nameof(LastCrashFile));
         }
 
-        public int LastLayerListGroupType
+        public bool GroupLayers
         {
-            get => lastLayerListGroupType;
-            set => this.SetValueAndNotify(ref lastLayerListGroupType, value, nameof(LastLayerListGroupType));
+            get => groupLayers;
+            set => this.SetValueAndNotify(ref groupLayers, value, nameof(GroupLayers));
         }
 
         public double MaxScale

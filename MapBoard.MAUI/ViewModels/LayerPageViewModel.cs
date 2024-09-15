@@ -42,7 +42,7 @@ namespace MapBoard.ViewModels
                         layers.Cast<IMapLayerInfo>()));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
 
@@ -69,28 +69,33 @@ namespace MapBoard.ViewModels
             return null;
         }
     }
-}
 
-public class LayerGroupList : ObservableCollection<IMapLayerInfo>
-{
-    public LayerGroupList(string name, bool? visible, bool isNull, IEnumerable<IMapLayerInfo> layers) : base(layers)
+    public class LayerGroupList
     {
-        Name = name;
-        Visible = visible;
-        IsNull = isNull;
+        public LayerGroupList(string name, bool? visible, bool isNull, IEnumerable<IMapLayerInfo> layers) 
+        {
+            Name = name;
+            Visible = visible;
+            IsNull = isNull;
+            Layers = new ObservableCollection<IMapLayerInfo>(layers);
+        }
+
+        public ObservableCollection<IMapLayerInfo> Layers { get; private set; }
+
+        /// <summary>
+        /// 是否为默认组（未分组的图层所在的组）
+        /// </summary>
+        public bool IsNull { get; private set; }
+
+        /// <summary>
+        /// 组名
+        /// </summary>
+        public string Name { get; private set; }
+
+        /// <summary>
+        /// 是否可见。null表示部分可见
+        /// </summary>
+        public bool? Visible { get; set; }
     }
-    /// <summary>
-    /// 是否为默认组（未分组的图层所在的组）
-    /// </summary>
-    public bool IsNull { get; private set; }
 
-    /// <summary>
-    /// 组名
-    /// </summary>
-    public string Name { get; private set; }
-
-    /// <summary>
-    /// 是否可见。null表示部分可见
-    /// </summary>
-    public bool? Visible { get; set; }
 }
