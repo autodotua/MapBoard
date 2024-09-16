@@ -112,7 +112,7 @@ namespace MapBoard.Views
             Trace.Listeners.Add(new DebugListener(items));
 #endif
         }
-#if DEBUG
+
         public static MainPage Current { get; private set; }
 
         public async Task CheckAndRequestLocationPermission()
@@ -203,7 +203,18 @@ namespace MapBoard.Views
             SidePanelInfo panel = type2SidePanels[type];
             panel.Content.OnPanelOpening();
             panel.IsOpened = true;
-            var task = panel.Length > 0 ? panel.Container.TranslateTo(0, 0) : panel.Container.FadeTo(1);
+            Task<bool> task;
+            if (panel.Length > 0)
+            {
+                task = panel.Container.TranslateTo(0, 0);
+            }
+            else
+            {
+                panel.Container.Opacity = 0;
+                panel.Container.IsVisible = true;
+                task = panel.Container.FadeTo(1);
+            }
+
             await task;
             //上面的await执行完毕的时候，其实还没有完全展开
             await Task.Delay(50);
@@ -253,7 +264,10 @@ namespace MapBoard.Views
             var panel = type2SidePanels[type];
             if (panel.Length == 0)
             {
-                panel.Container.FadeTo(0);
+                panel.Container.FadeTo(0).ContinueWith(t =>
+                {
+                    panel.Container.IsVisible = false;
+                });
             }
             else
             {
@@ -598,6 +612,8 @@ namespace MapBoard.Views
             }
         }
 
+
+#if DEBUG
         class DebugListener(ObservableCollection<string> items) : TraceListener
         {
             private readonly ObservableCollection<string> items = items;

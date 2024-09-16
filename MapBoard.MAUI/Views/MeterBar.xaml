@@ -43,7 +43,7 @@
                     <Label
                         Grid.Column="2"
                         FontSize="6"
-                        Text="{Binding Distance}"
+                        Text="{Binding Distance, StringFormat='{}{0:0.0}'}"
                         VerticalOptions="Center" />
                     <Label
                         FontSize="6"

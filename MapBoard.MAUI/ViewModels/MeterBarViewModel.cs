@@ -5,7 +5,7 @@ namespace MapBoard.ViewModels
 {
     public class MeterBarViewModel : INotifyPropertyChanged
     {
-        private string distance;
+        private double distance;
         private double speed;
 
         private DateTime time;
@@ -16,7 +16,7 @@ namespace MapBoard.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public string Distance
+        public double Distance
         {
             get => distance;
             set => this.SetValueAndNotify(ref distance, value, nameof(Distance));
