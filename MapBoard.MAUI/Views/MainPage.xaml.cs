@@ -48,6 +48,7 @@ namespace MapBoard.Views
     public partial class MainPage : ContentPage
     {
         public const int AnimationDurationMs = 250;
+        private Exception lastGeoShareException = null;
         private SidePanelInfo[] sidePanels;
 
         private Dictionary<Type, SidePanelInfo> type2SidePanels;
@@ -112,32 +113,6 @@ namespace MapBoard.Views
 #endif
         }
 #if DEBUG
-        class DebugListener(ObservableCollection<string> items) : TraceListener
-        {
-            private readonly ObservableCollection<string> items = items;
-
-            public override void Write(string message)
-            {
-                if (items.Count > 0)
-                {
-                    items[^1] = items[^1] + message;
-                }
-                else
-                {
-                    WriteLine(message);
-                }
-            }
-
-            public override void WriteLine(string message)
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    items.Add($"{DateTime.Now:mm:ss} {message}");
-                });
-            }
-        }
-#endif
-
         public static MainPage Current { get; private set; }
 
         public async Task CheckAndRequestLocationPermission()
@@ -180,9 +155,32 @@ namespace MapBoard.Views
 #endif
         }
 
+        public void CloseAllPanel()
+        {
+            if (sidePanels.Any(p => p.IsOpened && !p.Standalone))
+            {
+                foreach (var panel in sidePanels.Where(p => p.IsOpened && !p.Standalone))
+                {
+                    ClosePanel(panel.Type);
+                    panel.IsOpened = false;
+                }
+            }
+        }
+
         public void ClosePanel<T>()
         {
             ClosePanel(typeof(T));
+        }
+
+        public bool IsAnyNotStandalonePanelOpened()
+        {
+            return type2SidePanels.Values.Where(p => !p.Standalone).Any(p => p.IsOpened);
+        }
+
+        public bool IsPanelOpened<T>()
+        {
+            var type = typeof(T);
+            return type2SidePanels[type].IsOpened;
         }
 
         public void OpenOrClosePanel<T>()
@@ -250,18 +248,6 @@ namespace MapBoard.Views
             }
         }
 
-        public void CloseAllPanel()
-        {
-            if (sidePanels.Any(p => p.IsOpened && !p.Standalone))
-            {
-                foreach (var panel in sidePanels.Where(p => p.IsOpened && !p.Standalone))
-                {
-                    ClosePanel(panel.Type);
-                    panel.IsOpened = false;
-                }
-            }
-        }
-
         private void ClosePanel(Type type)
         {
             var panel = type2SidePanels[type];
@@ -294,17 +280,6 @@ namespace MapBoard.Views
             }
         }
 
-        public bool IsPanelOpened<T>()
-        {
-            var type = typeof(T);
-            return type2SidePanels[type].IsOpened;
-        }
-
-        public bool IsAnyNotStandalonePanelOpened()
-        {
-            return type2SidePanels.Values.Where(p => !p.Standalone).Any(p => p.IsOpened);
-        }
-
         private async void ContentPage_Loaded(object sender, EventArgs e)
         {
             if (Window != null)
@@ -331,8 +306,10 @@ namespace MapBoard.Views
                     grdMain.Margin = new Thickness(0, 0, 0, navBarHeight);
                 }
             }
+
 #endif
 
+            SetStatusBarConsidered(true);
 
             InitializeFromConfigs();
 
@@ -343,17 +320,21 @@ namespace MapBoard.Views
             await MainMapView.Current.InitializeLocationDisplayAsync();
         }
 
-        private Exception lastGeoShareException = null;
+        private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        {
+            OpenOrClosePanel<FtpView>();
+        }
+
+        private async void GeoShareError_Tapped(object sender, TappedEventArgs e)
+        {
+            await DisplayAlert("位置共享错误", lastGeoShareException.Message, "确定");
+            bdGeoShareError.IsVisible = false;
+        }
 
         private void GeoShareExceptionThrow(object sender, ExceptionEventArgs e)
         {
             lastGeoShareException = e.Exception;
             bdGeoShareError.IsVisible = true;
-        }
-
-        private void FtpTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
-        {
-            OpenOrClosePanel<FtpView>();
         }
 
         private void ImportButton_Clicked(object sender, EventArgs e)
@@ -399,7 +380,7 @@ namespace MapBoard.Views
                 new SidePanelInfo(baseLayer, baseLayerView),
                 new SidePanelInfo(import, importView),
                 new SidePanelInfo(tbar, tbar){Length=0},
-                new SidePanelInfo(ebar, ebar)
+                new SidePanelInfo(ebar, ebar){Length=0}
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
@@ -501,6 +482,23 @@ namespace MapBoard.Views
             }
         }
 
+        private void MeterButton_Clicked(object sender, EventArgs e)
+        {
+            double targetHeight = 0;
+            if (grdMeter.Bounds.Height == 0)//需要展开
+            {
+                targetHeight = Bounds.Height / 3;
+                meterBar.OnPanelOpening();
+                SetStatusBarConsidered(false);
+            }
+            else
+            {
+                meterBar.OnPanelClosed();
+                SetStatusBarConsidered(true);
+            }
+            grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, 0, targetHeight, easing: Easing.SinOut));
+        }
+
         private async void RefreshButton_Clicked(object sender, EventArgs e)
         {
             var handle = ProgressPopup.Show("正在重载");
@@ -518,6 +516,23 @@ namespace MapBoard.Views
         private void SetBaseLayersTapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
         {
             OpenPanel<BaseLayerView>();
+        }
+
+        private void SetStatusBarConsidered(bool consider)
+        {
+#if ANDROID
+            if (consider)
+            {
+                var statusBarHeight = (Platform.CurrentActivity as MainActivity).GetStatusBarHeight();
+                tbar.SetStatusBarHeight(statusBarHeight);
+                Resources["SidePanelPadding"] = new Thickness(4, statusBarHeight + 4, 4, 4);
+            }
+            else
+            {
+                tbar.SetStatusBarHeight(0);
+                Resources["SidePanelPadding"] = new Thickness(4);
+            }
+#endif
         }
 
         private void TrackButton_Clicked(object sender, EventArgs e)
@@ -583,32 +598,31 @@ namespace MapBoard.Views
             }
         }
 
-        private async void GeoShareError_Tapped(object sender, TappedEventArgs e)
+        class DebugListener(ObservableCollection<string> items) : TraceListener
         {
-            await DisplayAlert("位置共享错误", lastGeoShareException.Message, "确定");
-            bdGeoShareError.IsVisible = false;
-        }
+            private readonly ObservableCollection<string> items = items;
 
-        private void MeterButton_Clicked(object sender, EventArgs e)
-        {
-            double targetHeight = 0;
-            if (grdMeter.Bounds.Height == 0)//需要展开
+            public override void Write(string message)
             {
-                targetHeight = Bounds.Height / 3;
-                meterBar.OnPanelOpening();
-#if ANDROID
-                tbar.SetStatusBarHeight(0);
-#endif
+                if (items.Count > 0)
+                {
+                    items[^1] = items[^1] + message;
+                }
+                else
+                {
+                    WriteLine(message);
+                }
             }
-            else
+
+            public override void WriteLine(string message)
             {
-                meterBar.OnPanelClosed();
-#if ANDROID
-                tbar.SetStatusBarHeight((Platform.CurrentActivity as MainActivity).GetStatusBarHeight());
-#endif
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    items.Add($"{DateTime.Now:mm:ss} {message}");
+                });
             }
-            grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, 0, targetHeight, easing: Easing.SinOut));
         }
+#endif
     }
 
 }

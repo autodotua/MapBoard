@@ -28,7 +28,7 @@ public partial class MeterBar : ContentView, ISidePanel
             return canUpdateData;
         });
 #if ANDROID
-      ( Platform.CurrentActivity as MainActivity).SetStatusBarVisible(false );
+        (Platform.CurrentActivity as MainActivity).SetStatusBarVisible(false);
 #endif
     }
 

@@ -8,7 +8,9 @@
     xmlns:v="clr-namespace:MapBoard.Views"
     Title="地图画板"
     Loaded="ContentPage_Loaded">
-
+    <ContentPage.Resources>
+        <Thickness x:Key="SidePanelPadding">4</Thickness>
+    </ContentPage.Resources>
     <Grid
         x:Name="grdMain"
         IsClippedToBounds="True"
@@ -59,13 +61,15 @@
 
             <v:EditBar
                 x:Name="ebar"
+                Margin="{DynamicResource SidePanelPadding}"
                 BackgroundColor="Transparent"
                 HorizontalOptions="Fill"
+                Opacity="0"
                 VerticalOptions="Start" />
 
             <Grid
                 x:Name="track"
-                Padding="0,24,0,0"
+                Padding="{DynamicResource SidePanelPadding}"
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                   Dark={DynamicResource Gray900}}"
                 HorizontalOptions="Start"
@@ -82,7 +86,7 @@
 
             <Grid
                 x:Name="ftp"
-                Padding="0,24,0,0"
+                Padding="{DynamicResource SidePanelPadding}"
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                   Dark={DynamicResource Gray900}}"
                 HorizontalOptions="Start"
@@ -99,7 +103,7 @@
 
             <Grid
                 x:Name="layer"
-                Padding="0,24,0,0"
+                Padding="{DynamicResource SidePanelPadding}"
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                   Dark={DynamicResource Gray900}}"
                 HorizontalOptions="Start"
@@ -127,7 +131,7 @@
 
             <Grid
                 x:Name="baseLayer"
-                Padding="0,24,0,0"
+                Padding="{DynamicResource SidePanelPadding}"
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                   Dark={DynamicResource Gray900}}"
                 HorizontalOptions="Start"
@@ -144,7 +148,7 @@
 
             <Grid
                 x:Name="import"
-                Padding="0,24,0,0"
+                Padding="{DynamicResource SidePanelPadding}"
                 BackgroundColor="{AppThemeBinding Light={DynamicResource Gray200},
                                                   Dark={DynamicResource Gray900}}"
                 HorizontalOptions="Start"

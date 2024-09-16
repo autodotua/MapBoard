@@ -44,7 +44,6 @@
 
     </ContentView.Resources>
     <Border
-        Margin="8,42,8,8"
         Padding="8"
         BackgroundColor="{DynamicResource Gray600}"
         HorizontalOptions="Center"
