@@ -53,19 +53,26 @@
                 </Border.GestureRecognizers>
             </Border>
 
-            <v:TrackingBar
-                x:Name="tbar"
+            <Grid
+                x:Name="cTrack"
+                Padding="{DynamicResource SidePanelPadding}"
+                BackgroundColor="{DynamicResource Primary}"
                 HorizontalOptions="Fill"
                 IsVisible="False"
-                VerticalOptions="Start" />
+                VerticalOptions="Start">
+                <v:TrackingBar x:Name="tbar" />
+            </Grid>
 
-            <v:EditBar
-                x:Name="ebar"
-                Margin="{DynamicResource SidePanelPadding}"
-                BackgroundColor="Transparent"
+            <Grid
+                x:Name="cEdit"
+                Padding="{DynamicResource SidePanelPadding}"
                 HorizontalOptions="Fill"
                 IsVisible="False"
-                VerticalOptions="Start" />
+                VerticalOptions="Start">
+                <v:EditBar
+                    x:Name="ebar"
+                    BackgroundColor="Transparent" />
+            </Grid>
 
             <Grid
                 x:Name="track"

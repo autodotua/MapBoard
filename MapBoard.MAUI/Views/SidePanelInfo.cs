@@ -1,6 +1,6 @@
 ﻿public class SidePanelInfo
 {
-    public SidePanelInfo(VisualElement container, ISidePanel content)
+    public SidePanelInfo(View container, ISidePanel content)
     {
         Container = container;
         Content = content;
@@ -14,7 +14,7 @@
     }
 
     public Type Type { get; set; }
-    public VisualElement Container { get; set; }
+    public View Container { get; set; }
     public ISidePanel Content { get; set; }
     public SwipeDirection Direction { get; set; }
     public int Length { get; set; }

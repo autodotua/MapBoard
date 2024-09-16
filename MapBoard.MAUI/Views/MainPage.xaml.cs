@@ -266,7 +266,10 @@ namespace MapBoard.Views
             {
                 panel.Container.FadeTo(0).ContinueWith(t =>
                 {
-                    panel.Container.IsVisible = false;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        panel.Container.IsVisible = false;
+                    });
                 });
             }
             else
@@ -393,8 +396,8 @@ namespace MapBoard.Views
                 new SidePanelInfo(ftp, ftpView),
                 new SidePanelInfo(baseLayer, baseLayerView),
                 new SidePanelInfo(import, importView),
-                new SidePanelInfo(tbar, tbar){Length=0},
-                new SidePanelInfo(ebar, ebar){Length=0}
+                new SidePanelInfo(cTrack, tbar){Length=0},
+                new SidePanelInfo(cEdit, ebar){Length=0}
             ];
             type2SidePanels = sidePanels.ToDictionary(p => p.Type);
 
@@ -538,12 +541,11 @@ namespace MapBoard.Views
             if (consider)
             {
                 var statusBarHeight = (Platform.CurrentActivity as MainActivity).GetStatusBarHeight();
-                tbar.SetStatusBarHeight(statusBarHeight);
                 Resources["SidePanelPadding"] = new Thickness(4, statusBarHeight + 4, 4, 4);
+
             }
             else
             {
-                tbar.SetStatusBarHeight(0);
                 Resources["SidePanelPadding"] = new Thickness(4);
             }
 #endif
