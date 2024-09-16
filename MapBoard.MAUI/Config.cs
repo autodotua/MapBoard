@@ -100,6 +100,10 @@ namespace MapBoard
         public int TrackMinTimeSpan { get; set; } = 2;
 
         public int TrackNotificationUpdateTimeSpan { get; set; } = 10;
+
+        public bool UseReticleInDraw {  get; set; }
+        public bool UseReticleInMeasure {  get; set; }
+
         /// <summary>
         /// 保存配置到默认文件
         /// </summary>

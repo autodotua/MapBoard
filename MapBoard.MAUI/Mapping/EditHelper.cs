@@ -25,9 +25,15 @@ namespace MapBoard.Mapping
             Editor = mapView.GeometryEditor;
         }
 
-        private void InitializeEditor()
+        private void InitializeEditor(EditorStatus status)
         {
-            Editor.Tool = new ReticleVertexTool();
+            Editor.Tool = status switch
+            {
+                EditorStatus.Editing or EditorStatus.Creating => Config.Instance.UseReticleInDraw ? new ReticleVertexTool() : new VertexTool(),
+                EditorStatus.Measuring => Config.Instance.UseReticleInMeasure ? new ReticleVertexTool() : new VertexTool(),
+                _ => throw new ArgumentException(nameof(status)),
+            };
+            Status = status;
             Editor.SnapSettings = new SnapSettings()
             {
                 IsEnabled = true,
@@ -114,9 +120,8 @@ namespace MapBoard.Mapping
             {
                 throw new Exception("正在编辑，无法绘制");
             }
-            Status = EditorStatus.Creating;
             editingFeature = (layer as ShapefileMapLayerInfo).CreateFeature();
-            InitializeEditor();
+            InitializeEditor(EditorStatus.Creating);
             Editor.Start(layer.GeometryType);
             if (MapView.SelectedFeature != null)
             {
@@ -135,8 +140,7 @@ namespace MapBoard.Mapping
                 throw new Exception("没有选择任何要素");
             }
             editingFeature = MapView.SelectedFeature;
-            Status = EditorStatus.Editing;
-            InitializeEditor();
+            InitializeEditor(EditorStatus.Editing);
             Editor.Start(editingFeature.Geometry);
         }
 
@@ -146,8 +150,7 @@ namespace MapBoard.Mapping
             {
                 throw new Exception("正在编辑，无法测量");
             }
-            Status = EditorStatus.Measuring;
-            InitializeEditor();
+            InitializeEditor(EditorStatus.Measuring);
             Editor.Start(Esri.ArcGISRuntime.Geometry.GeometryType.Polygon);
         }
 
@@ -157,8 +160,7 @@ namespace MapBoard.Mapping
             {
                 throw new Exception("正在编辑，无法测量");
             }
-            Status = EditorStatus.Measuring;
-            InitializeEditor();
+            InitializeEditor(EditorStatus.Measuring);
             Editor.Start(Esri.ArcGISRuntime.Geometry.GeometryType.Polyline);
         }
     }

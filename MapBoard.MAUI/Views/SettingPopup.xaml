@@ -31,6 +31,15 @@
                             Text="进入后台1分钟后自动退出" />
                     </TableSection>
 
+                    <TableSection Title="绘制和编辑">
+                        <SwitchCell
+                            On="{Binding UseReticleInDraw}"
+                            Text="在图形绘制中使用准星模式" />
+                        <SwitchCell
+                            On="{Binding UseReticleInMeasure}"
+                            Text="在测量中使用准星模式" />
+                    </TableSection>
+
                     <TableSection Title="轨迹记录">
                         <EntryCell
                             Label="最短记录距离（米）"
