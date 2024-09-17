@@ -11,6 +11,22 @@ namespace MapBoard.Views;
 
 public partial class MeterBar : ContentView, ISidePanel
 {
+    private readonly int pointCountInCaculating = 5;
+
+    private bool canUpdateData = false;
+
+    private MapPoint lastLocation;
+
+    private DateTime lastUpdateTime = DateTime.MaxValue;
+
+    private Queue<double> qDistances = new Queue<double>();
+
+    private Queue<DateTime> qTimes = new Queue<DateTime>();
+
+    private double sumDistance = 0;
+
+    private double windowDistance = 0;
+
     public MeterBar()
     {
         InitializeComponent();
@@ -20,7 +36,11 @@ public partial class MeterBar : ContentView, ISidePanel
     public SwipeDirection Direction { get; }
     public int Length { get; }
     public bool Standalone => true;
-    private bool canUpdateData = false;
+    public void OnPanelClosed()
+    {
+        canUpdateData = false;
+        MainMapView.Current.LocationDisplay.LocationChanged -= LocationDisplay_LocationChanged;
+    }
 
     public void OnPanelOpening()
     {
@@ -45,28 +65,24 @@ public partial class MeterBar : ContentView, ISidePanel
                 return false;
             }
             DateTime now = DateTime.Now;
-            if ((DateTime.Now - lastUpdateTime).TotalSeconds > 3)
+            if ((DateTime.Now - lastUpdateTime).TotalSeconds > Config.Instance.MeterStayTooLongSecond)
             {
                 Debug.WriteLine("停留过久");
-                Update(lastLocation);
+                Update(lastLocation, 0);
             }
             vm.Time = now;
             return true;
         });
-
-#if ANDROID
-        (Platform.CurrentActivity as MainActivity).SetStatusBarVisible(false);
-#endif
     }
 
     private void LocationDisplay_LocationChanged(object sender, Esri.ArcGISRuntime.Location.Location e)
     {
         Debug.WriteLine("位置更新");
         lastUpdateTime = DateTime.Now;
-        Update(e.Position);
+        Update(e.Position, e.Velocity);
     }
 
-    private void Update(MapPoint location)
+    private void Update(MapPoint location, double velocity)
     {
         Debug.Assert(qTimes.Count == 0 || qTimes.Count == qDistances.Count + 1);
         try
@@ -84,7 +100,11 @@ public partial class MeterBar : ContentView, ISidePanel
             qDistances.Enqueue(distance);
             windowDistance += distance;
             sumDistance += distance;
-            var speed = windowDistance / (now - qTimes.Peek()).TotalSeconds * 3.6; //m/s=>km/h
+            var speed = Config.Instance.MeterSpeedAlgorithm switch
+            {
+                1 => windowDistance / (now - qTimes.Peek()).TotalSeconds * 3.6,//m/s=>km/h
+                _ => velocity * 3.6,
+            };
             if (speed < 0.06)
             {
                 speed = 0;
@@ -105,23 +125,5 @@ public partial class MeterBar : ContentView, ISidePanel
         {
             lastLocation = location;
         }
-    }
-
-    private MapPoint lastLocation;
-    private double windowDistance = 0;
-    private double sumDistance = 0;
-    private readonly int pointCountInCaculating = 5;
-    private Queue<DateTime> qTimes = new Queue<DateTime>();
-    private Queue<double> qDistances = new Queue<double>();
-    private DateTime lastUpdateTime = DateTime.MaxValue;
-
-    public void OnPanelClosed()
-    {
-        canUpdateData = false;
-        MainMapView.Current.LocationDisplay.LocationChanged -= LocationDisplay_LocationChanged;
-
-#if ANDROID
-        (Platform.CurrentActivity as MainActivity).SetStatusBarVisible(true);
-#endif
     }
 }
