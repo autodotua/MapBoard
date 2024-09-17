@@ -16,6 +16,7 @@
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
             <c:NotNullConverter x:Key="NotNullConverter" />
             <c:DistanceConverter x:Key="DistanceConverter" />
+            <c:EqualConverter x:Key="EqualConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -15,7 +15,7 @@
                 <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black, Default=White}" />
             </Style>
         </Grid.Resources>
-        <v:ViewBox Margin="8">
+        <v:ViewBox>
             <Grid RowDefinitions="Auto,0,Auto">
                 <Grid
                     ColumnDefinitions="Auto,8,Auto,8,Auto"
@@ -58,11 +58,11 @@
 
             </Grid>
         </v:ViewBox>
-        <Label
+        <!--<Label
             Margin="8"
             FontSize="18"
             HorizontalOptions="EndAndExpand"
             Text="{Binding Time, StringFormat='{}{0:HH:mm:ss}'}"
-            VerticalOptions="Start" />
+            VerticalOptions="Start" />-->
     </Grid>
 </ContentView>

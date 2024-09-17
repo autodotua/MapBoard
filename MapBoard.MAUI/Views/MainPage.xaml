@@ -10,6 +10,7 @@
     Loaded="ContentPage_Loaded">
     <ContentPage.Resources>
         <Thickness x:Key="SidePanelPadding">4</Thickness>
+        <Thickness x:Key="MeterBarPadding">4</Thickness>
     </ContentPage.Resources>
     <Grid
         x:Name="grdMain"
@@ -17,6 +18,7 @@
         RowDefinitions="Auto,*,Auto">
         <Grid
             x:Name="grdMeter"
+            Padding="{DynamicResource MeterBarPadding}"
             Background="{AppThemeBinding Light=White,
                                          Dark=Black,
                                          Default=Black}"

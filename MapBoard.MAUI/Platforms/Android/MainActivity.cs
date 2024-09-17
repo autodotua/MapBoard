@@ -215,5 +215,14 @@ namespace MapBoard
                 MapBoard.App.Current.Quit();
             }
         }
+
+        public void SetStatusBarColorBlack(bool light)
+        {
+            var controller = AndroidX.Core.View.WindowCompat.GetInsetsController(Window, Window.DecorView);
+            if (controller != null)
+            {
+                controller.AppearanceLightStatusBars = light;
+            }
+        }
     }
 }

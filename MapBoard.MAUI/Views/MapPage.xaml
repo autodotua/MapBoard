@@ -15,25 +15,34 @@
             <map:MainMapView x:Name="map" />
         </Grid>
         <et:Compass
-            Margin="8,42"
+            Margin="{DynamicResource SidePanelPadding}"
             GeoView="{Binding Source={x:Reference map}, Path=.}"
             HorizontalOptions="End"
-            VerticalOptions="Start" />
-        <!--<et:ScaleLine
+            VerticalOptions="Start">
+            <et:Compass.IsVisible>
+                <Binding
+                    Converter="{StaticResource EqualConverter}"
+                    ConverterParameter="0#i"
+                    Path="MapRotation"
+                    Source="{x:Reference map}" />
+            </et:Compass.IsVisible>
+        </et:Compass>
+        
+        <et:ScaleLine
             Margin="24,8"
-            HorizontalOptions="End"
+            HorizontalOptions="Start"
             MapView="{Binding Source={x:Reference map}, Path=.}"
             TargetWidth="48"
             VerticalOptions="End"
-            Color="White">
+            Color="Black">
             <et:ScaleLine.Shadow>
                 <Shadow
-                    Brush="Black"
+                    Brush="White"
                     Opacity="1"
                     Radius="5" />
             </et:ScaleLine.Shadow>
 
-        </et:ScaleLine>-->
+        </et:ScaleLine>
 
         <!--  右侧按钮  -->
         <VerticalStackLayout

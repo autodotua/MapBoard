@@ -103,6 +103,8 @@ namespace MapBoard
 
         public bool UseReticleInDraw {  get; set; }
         public bool UseReticleInMeasure {  get; set; }
+        public int MeterSpeedAlgorithm { get; set; }
+        public int MeterStayTooLongSecond { get; set; } = 5;
 
         /// <summary>
         /// 保存配置到默认文件

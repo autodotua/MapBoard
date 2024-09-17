@@ -501,19 +501,30 @@ namespace MapBoard.Views
 
         private void MeterButton_Clicked(object sender, EventArgs e)
         {
-            double targetHeight = 0;
+            double start = 0;
+            double end = 0;
             if (grdMeter.Bounds.Height == 0)//需要展开
             {
-                targetHeight = Bounds.Height / 3;
+                end = Bounds.Height / 3;
                 meterBar.OnPanelOpening();
                 SetStatusBarConsidered(false);
+#if ANDROID
+                if (Application.Current.RequestedTheme == AppTheme.Light)
+                {
+                    (Platform.CurrentActivity as MainActivity).SetStatusBarColorBlack(true);
+                }
+#endif
             }
             else
             {
+                start = Bounds.Height / 3;
                 meterBar.OnPanelClosed();
                 SetStatusBarConsidered(true);
+#if ANDROID
+                (Platform.CurrentActivity as MainActivity).SetStatusBarColorBlack(false);
+#endif
             }
-            grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, 0, targetHeight, easing: Easing.SinOut));
+            grdMeter.Animate("Expand", new Animation(x => grdMeter.HeightRequest = x, start, end, easing: Easing.CubicInOut));
         }
 
         private async void RefreshButton_Clicked(object sender, EventArgs e)
@@ -537,17 +548,10 @@ namespace MapBoard.Views
 
         private void SetStatusBarConsidered(bool consider)
         {
-#if ANDROID
-            if (consider)
-            {
-                var statusBarHeight = (Platform.CurrentActivity as MainActivity).GetStatusBarHeight();
-                Resources["SidePanelPadding"] = new Thickness(4, statusBarHeight + 4, 4, 4);
-
-            }
-            else
-            {
-                Resources["SidePanelPadding"] = new Thickness(4);
-            }
+#if ANDROID       
+            var statusBarHeight = (Platform.CurrentActivity as MainActivity).GetStatusBarHeight();
+            Resources["MeterBarPadding"] = new Thickness(8, statusBarHeight + 8, 8, 8);
+            Resources["SidePanelPadding"] = new Thickness(4, (consider ? statusBarHeight : 0) + 4, 4, 4);
 #endif
         }
 
