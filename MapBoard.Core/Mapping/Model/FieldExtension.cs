@@ -215,7 +215,9 @@ namespace MapBoard.Mapping.Model
             };
             string name = field.Name;
             //对不符合要求的字段名进行转换
-            if (!Regex.IsMatch(name[0].ToString(), "[a-zA-Z]")
+            if (string.IsNullOrEmpty(name)
+                || name.Length > 10
+              || !Regex.IsMatch(name[0].ToString(), "[a-zA-Z]")
                   || !Regex.IsMatch(name, "^[a-zA-Z0-9_]+$"))
             {
                 name = $"f_{Math.Abs(field.Name.GetHashCode())}".Substring(0, 10);

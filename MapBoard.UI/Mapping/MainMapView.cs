@@ -141,7 +141,7 @@ namespace MapBoard.Mapping
             BaseMapLoadErrors = await GeoViewHelper.LoadBaseGeoViewAsync(this, Config.Instance.EnableBasemapCache);
             Map.MaxScale = Config.Instance.MaxScale;
             await Layers.LoadAsync(Map.OperationalLayers);
-           this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
+            this.TryZoomToLastExtent().ContinueWith(t => ViewpointChanged += ArcMapView_ViewpointChanged);
             Editor = new EditorHelper(this);
             Selection = new SelectionHelper(this);
             Overlay = new OverlayHelper(GraphicsOverlays, async p => await this.ZoomToGeometryAsync(p));

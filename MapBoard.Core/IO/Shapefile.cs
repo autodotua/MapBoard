@@ -89,10 +89,11 @@ namespace MapBoard.IO
                 .Where(p => !p.IsIdField())//ID
                 .Where(p => p.Name.ToLower() != "shape_leng")//长度
                 .Where(p => p.Name.ToLower() != "shape_area");//面积
-            if (fields.Any(field => !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
+            if (fields.Any(field => string.IsNullOrEmpty(field.Name)
+            || !Regex.IsMatch(field.Name[0].ToString(), "[a-zA-Z]")
                   || !Regex.IsMatch(field.Name, "^[a-zA-Z0-9_]+$")))
             {
-                throw new ArgumentException($"字段名存在不合法");
+                throw new ArgumentException($"存在不合法的字段名");
             }
             //创建文件
             await CreateEgisShapefileAsync(type, name, folder, fields);
@@ -127,49 +128,7 @@ namespace MapBoard.IO
         public static async Task ImportAsync(string path, MapLayerCollection layers)
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
-            await table.LoadAsync();
-            FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
-            var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
-            ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,
-                 Path.GetFileNameWithoutExtension(path),
-                fieldMap.Values.ToList());
-            layer.LayerVisible = false;
-            var fields = layer.Fields.Select(p => p.Name).ToHashSet();
-            List<Feature> newFeatures = new List<Feature>();
-            foreach (var feature in features)
-            {
-                Dictionary<string, object> newAttributes = new Dictionary<string, object>();
-                foreach (var attr in feature.Attributes)
-                {
-                    if (attr.Key.ToLower() == "id")
-                    {
-                        continue;
-                    }
-                    string name = attr.Key;//现在是源文件的字段名
-
-                    if (!fieldMap.ContainsKey(name))
-                    {
-                        continue;
-                    }
-                    name = fieldMap[name].Name;//切换到目标表的字段名
-
-                    object value = attr.Value;
-                    if (value is short)
-                    {
-                        value = Convert.ToInt32(value);
-                    }
-                    else if (value is float)
-                    {
-                        value = Convert.ToDouble(value);
-                    }
-                    newAttributes.Add(name, value);
-                }
-                Feature newFeature = layer.CreateFeature(newAttributes, feature.Geometry.RemoveZAndM());
-                newFeatures.Add(newFeature);
-            }
-            await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
-
-            layer.LayerVisible = true;
+            await LayerUtility.ImportFromFeatureTable(Path.GetFileNameWithoutExtension(path), layers, table);
         }
 
         /// <summary>

@@ -41,6 +41,11 @@ namespace MapBoard.Model
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
 
         /// <summary>
+        /// Renderer.ToJson/FromJson的原始Json字符串。该值不为空时，使用该属性作为渲染器信息（不局限于唯一值），其他属性全部失效。
+        /// </summary>
+        public string RawJson { get; set; }
+
+        /// <summary>
         /// 建立副本
         /// </summary>
         /// <returns></returns>

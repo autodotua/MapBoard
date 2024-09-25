@@ -320,7 +320,8 @@ namespace MapBoard.Util
                 .AddFilterIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
                 .AddFilterIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
                 .AddFilterIf(type == ImportMapType.CSV, "CSV表格", "csv")
-                .AddFilterIf(type == ImportMapType.KML, "KML地理标记", "kml", "kmz");
+                .AddFilterIf(type == ImportMapType.KML, "KML地理标记", "kml", "kmz")
+                .AddFilterIf(type == ImportMapType.Mmpk, "移动地图包", "mmpk");
             return dialog.GetPath(parentWindow);
         }
 
@@ -458,6 +459,10 @@ namespace MapBoard.Util
 
                     case ImportMapType.KML:
                         await Kml.ImportAsync(path, layers);
+                        break;
+
+                    case ImportMapType.Mmpk:
+                        await MobileMapPackage.ImportAsync(path, layers);
                         break;
 
                     default:

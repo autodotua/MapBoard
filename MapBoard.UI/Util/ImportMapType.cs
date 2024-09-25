@@ -9,5 +9,6 @@
         Shapefile = 5,
         CSV = 6,
         KML = 7,
+        Mmpk = 8,
     }
 }

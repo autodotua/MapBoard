@@ -324,15 +324,15 @@
                                         Tag="2" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
-                                        Header="图层包"
+                                        Header="图层包（mblpkg）"
                                         Tag="3" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
-                                        Header="GPX轨迹文件"
+                                        Header="GPS轨迹文件（GPX）"
                                         Tag="4" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
-                                        Header="Shapefile"
+                                        Header="Shapefile（shp）"
                                         Tag="5" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
@@ -342,6 +342,10 @@
                                         Click="ImportMenu_Click"
                                         Header="KML"
                                         Tag="7" />
+                                    <MenuItem
+                                        Click="ImportMenu_Click"
+                                        Header="移动地图包（mmpk）"
+                                        Tag="8" />
                                 </ui:MenuFlyout>
                             </ui:SplitButton.Flyout>
                         </ui:SplitButton>
