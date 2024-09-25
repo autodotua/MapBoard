@@ -33,9 +33,9 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static LabelDefinition GetLabelDefinition(this LabelInfo label)
         {
-            if (!string.IsNullOrEmpty(label.RawJson))
+            if (label.UseRawJson)
             {
-                return LabelDefinition.FromJson(label.RawJson);
+                return LabelDefinition.FromJson(label.RawJson ?? "{}");
             }
             var exp = new ArcadeLabelExpression(label.Expression);
             TextSymbol symbol = new TextSymbol()
@@ -129,9 +129,9 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         private static void ApplyRenderer(this IMapLayerInfo layer)
         {
-            if (!string.IsNullOrEmpty(layer.Renderer.RawJson))
+            if (layer.Renderer.UseRawJson)
             {
-                layer.Layer.Renderer = Renderer.FromJson(layer.Renderer.RawJson);
+                layer.Layer.Renderer = Renderer.FromJson(layer.Renderer.RawJson ?? "{}");
                 return;
             }
             switch (layer.Type)

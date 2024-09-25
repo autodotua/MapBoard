@@ -613,6 +613,7 @@ namespace MapBoard.UI
             Keys.Add(defaultSymbol);
             SelectedKey = Keys[0];
         }
+
         /// <summary>
         /// 唯一值Key字段组合框下拉选择该百年
         /// </summary>

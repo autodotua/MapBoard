@@ -109,7 +109,12 @@ namespace MapBoard.Model
         public string WhereClause { get; set; } = "";
 
         /// <summary>
-        /// LabelDefinition.ToJson/FromJson的原始Json字符串。该值不为空时，使用该属性作为标签信息，其他属性全部失效。
+        /// 使用RawJson属性作为标注属性，其他属性全部失效。
+        /// </summary>
+        public bool UseRawJson { get; set; }
+
+        /// <summary>
+        /// LabelDefinition.ToJson/FromJson的原始Json字符串。
         /// </summary>
         public string RawJson { get; set; }
 

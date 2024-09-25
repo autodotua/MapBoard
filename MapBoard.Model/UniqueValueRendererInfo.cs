@@ -40,8 +40,14 @@ namespace MapBoard.Model
         /// </summary>
         public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
 
+
         /// <summary>
-        /// Renderer.ToJson/FromJson的原始Json字符串。该值不为空时，使用该属性作为渲染器信息（不局限于唯一值），其他属性全部失效。
+        /// 使用RawJson属性作为渲染器（不局限于唯一值）属性，其他属性全部失效。
+        /// </summary>
+        public bool UseRawJson { get; set; }
+
+        /// <summary>
+        /// Renderer.ToJson/FromJson的原始Json字符串。
         /// </summary>
         public string RawJson { get; set; }
 

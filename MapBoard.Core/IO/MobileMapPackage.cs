@@ -44,52 +44,14 @@ namespace MapBoard.IO
 
                 var layer = await LayerUtility.ImportFromFeatureTable(Path.GetFileNameWithoutExtension(path), layers, table);
 
-                layer.Renderer.RawJson=rendererJson;
-                layer.Labels = mmpkLayer.LabelDefinitions.Select(p => new LabelInfo() { RawJson = p.ToJson() }).ToArray();
+                layer.Renderer.RawJson = rendererJson;
+                layer.Labels = mmpkLayer.LabelDefinitions.Select(p => new LabelInfo()
+                {
+                    RawJson = p.ToJson(),
+                    UseRawJson = true
+                }).ToArray();
+                layer.Renderer.UseRawJson = true;
                 layer.ApplyStyle();
-
-                //FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
-                //var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
-                //ShapefileMapLayerInfo layer = await LayerUtility.CreateShapefileLayerAsync(table.GeometryType, layers,
-                //     Path.GetFileNameWithoutExtension(path),
-                //    fieldMap.Values.ToList());
-                //layer.LayerVisible = false;
-                //var fields = layer.Fields.Select(p => p.Name).ToHashSet();
-                //List<Feature> newFeatures = new List<Feature>();
-                //foreach (var feature in features)
-                //{
-                //    Dictionary<string, object> newAttributes = new Dictionary<string, object>();
-                //    foreach (var attr in feature.Attributes)
-                //    {
-                //        if (attr.Key.Equals("id", StringComparison.OrdinalIgnoreCase))
-                //        {
-                //            continue;
-                //        }
-                //        string name = attr.Key;//现在是源文件的字段名
-
-                //        if (!fieldMap.ContainsKey(name))
-                //        {
-                //            continue;
-                //        }
-                //        name = fieldMap[name].Name;//切换到目标表的字段名
-
-                //        object value = attr.Value;
-                //        if (value is short)
-                //        {
-                //            value = Convert.ToInt32(value);
-                //        }
-                //        else if (value is float)
-                //        {
-                //            value = Convert.ToDouble(value);
-                //        }
-                //        newAttributes.Add(name, value);
-                //    }
-                //    Feature newFeature = layer.CreateFeature(newAttributes, feature.Geometry.RemoveZAndM());
-                //    newFeatures.Add(newFeature);
-                //}
-                //await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
-
-                //layer.LayerVisible = true;
             }
 
         }
