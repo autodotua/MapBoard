@@ -214,6 +214,7 @@ namespace MapBoard.Mapping.Model
                 _ => throw new NotSupportedException(),
             };
             string name = field.Name;
+
             //对不符合要求的字段名进行转换
             if (string.IsNullOrEmpty(name)
                 || name.Length > 10
@@ -222,7 +223,8 @@ namespace MapBoard.Mapping.Model
             {
                 name = $"f_{Math.Abs(field.Name.GetHashCode())}".Substring(0, 10);
             }
-            return new FieldInfo(name, field.Name, type);
+            string alias = string.IsNullOrEmpty(field.Alias) ? field.Name : field.Alias;
+            return new FieldInfo(name, alias, type);
         }
     }
 }

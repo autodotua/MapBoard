@@ -266,6 +266,7 @@ namespace MapBoard.Util
             }
             return symbol;
         }
+
         private static SymbolInfo ToSymbolInfo(this Symbol symbol, SymbolInfo writeTo = null)
         {
             SymbolInfo s = writeTo ?? new SymbolInfo();
@@ -307,6 +308,7 @@ namespace MapBoard.Util
                     break;
 
                 case MultilayerPolygonSymbol mp:
+                    s.OutlineWidth = 0;//有时候只有SolidFillSymbolLayer没有SolidStrokeSymbolLayer，导致仍然会显示边框
                     foreach (var sl in mp.SymbolLayers)
                     {
                         switch (sl)
