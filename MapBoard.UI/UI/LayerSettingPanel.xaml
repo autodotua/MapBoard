@@ -351,12 +351,16 @@
                 <Border
                     Padding="8"
                     Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-                    <StackPanel Orientation="Vertical">
+                    <ui:SimpleStackPanel
+                        Orientation="Vertical"
+                        Spacing="8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="8" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -364,18 +368,23 @@
                             <ui:ToggleSwitch
                                 Grid.Column="2"
                                 Grid.ColumnSpan="99"
-                                IsOn="{Binding Layers.Selected.Renderer.UseRawJson}"
+                                IsOn="{Binding RendererUseRawJson}"
                                 OffContent="使用设置项"
-                                OnContent="使用JSON手动设置" />
+                                OnContent="JSON手动设置" />
+                            <Button
+                                Grid.Column="4"
+                                Click="ConvertRendererButton_Click"
+                                Content="转换" />
                         </Grid>
+
                         <TextBox
                             Style="{StaticResource RawJsonTextBoxStyle}"
-                            Text="{Binding Layers.Selected.Renderer.RawJson}"
-                            Visibility="{Binding Layers.Selected.Renderer.UseRawJson, Converter={StaticResource Bool2VisibilityConverter}}" />
+                            Text="{Binding RendererRawJson}"
+                            Visibility="{Binding RendererUseRawJson, Converter={StaticResource Bool2VisibilityConverter}}" />
 
                         <StackPanel
                             Orientation="Vertical"
-                            Visibility="{Binding Layers.Selected.Renderer.UseRawJson, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
+                            Visibility="{Binding RendererUseRawJson, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -769,7 +778,7 @@
                                 </TabItem>
                             </TabControl>
                         </StackPanel>
-                    </StackPanel>
+                    </ui:SimpleStackPanel>
                 </Border>
             </Expander>
             <Expander
@@ -869,7 +878,7 @@
                                 Grid.ColumnSpan="99"
                                 IsOn="{Binding Label.UseRawJson}"
                                 OffContent="使用设置项"
-                                OnContent="使用JSON手动设置" />
+                                OnContent="JSON手动设置" />
                         </Grid>
 
                         <TextBox

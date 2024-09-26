@@ -66,6 +66,33 @@ namespace MapBoard.Util
             return labelDefinition;
         }
 
+        public static UniqueValueRendererInfo ToRendererInfo(this Renderer renderer, UniqueValueRendererInfo writeTo = null)
+        {
+            if (renderer is not UniqueValueRenderer && renderer is not SimpleRenderer)
+            {
+                throw new Exception("非唯一值渲染器或简单渲染器，无法转换");
+            }
+
+            UniqueValueRendererInfo r = writeTo ?? new UniqueValueRendererInfo();
+            r.UseRawJson = false;
+            if (renderer is SimpleRenderer s)
+            {
+                r.DefaultSymbol = s.Symbol.ToSymbolInfo();
+            }
+            else if (renderer is UniqueValueRenderer u)
+            {
+                r.DefaultSymbol = u.DefaultSymbol.ToSymbolInfo();
+                r.KeyFieldName = string.Join('|', u.FieldNames);
+                foreach (var uv in u.UniqueValues)
+                {
+                    r.Symbols.Add(string.Join('|', uv.Values.Select(p => p.ToString())), uv.Symbol.ToSymbolInfo());
+                }
+            }
+            r.RawJson = renderer.ToJson();
+            return r;
+
+        }
+
         /// <summary>
         /// 将MapBoard的<see cref="SymbolInfo"/>转换为Esri的<see cref="Symbol"/>
         /// </summary>
@@ -202,6 +229,68 @@ namespace MapBoard.Util
                 default:
                     break;
             }
+        }
+
+        private static SymbolInfo ToSymbolInfo(this Symbol symbol, SymbolInfo writeTo = null)
+        {
+            SymbolInfo s = writeTo ?? new SymbolInfo();
+
+            // 根据传入的符号类型进行不同的处理
+            switch (symbol)
+            {
+                case SimpleMarkerSymbol marker:
+                    s.PointStyle = (int)marker.Style;
+                    s.FillColor = marker.Color;
+                    s.Size = marker.Size;
+                    if (marker.Outline != null)
+                    {
+                        s.LineStyle = (int)marker.Outline.Style;
+                        s.LineColor = marker.Outline.Color;
+                        s.OutlineWidth = marker.Outline.Width;
+                    }
+                    break;
+
+                case SimpleLineSymbol line:
+                    s.LineStyle = (int)line.Style;
+                    s.LineColor = line.Color;
+                    s.OutlineWidth = line.Width;
+                    s.Arrow = (int)line.MarkerPlacement + 1;
+                    break;
+
+                case SimpleFillSymbol fill:
+                    s.FillStyle = (int)fill.Style;
+                    s.FillColor = fill.Color;
+                    if (fill.Outline != null)
+                    {
+                        if (fill.Outline is SimpleLineSymbol sls)
+                        {
+                            s.LineStyle = (int)sls.Style;
+                        }
+                        s.LineColor = fill.Outline.Color;
+                        s.OutlineWidth = fill.Outline.Width;
+                    }
+                    break;
+
+                case MultilayerPolygonSymbol mp:
+                    foreach (var sl in mp.SymbolLayers)
+                    {
+                        switch (sl)
+                        {
+                            case SolidFillSymbolLayer sf:
+                                s.FillStyle = (int)SimpleFillSymbolStyle.Solid;
+                                s.FillColor = sf.Color;
+                                break;
+                            case SolidStrokeSymbolLayer ss:
+                                s.LineStyle = (int)SimpleLineSymbolStyle.Solid;
+                                s.LineColor = ss.Color;
+                                s.OutlineWidth = ss.Width;
+                                break;
+                        }
+                    }
+                    break;
+            }
+
+            return s;
         }
     }
 }

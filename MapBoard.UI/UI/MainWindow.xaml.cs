@@ -509,7 +509,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private async void ApplyStyleButton_Click(object sender, RoutedEventArgs e)
         {
-            await layerSettings.SetStyleFromUI();
+            await layerSettings.SaveStyles();
             arcMap.Layers.Save();
         }
 

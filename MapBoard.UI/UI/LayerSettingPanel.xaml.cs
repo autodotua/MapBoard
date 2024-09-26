@@ -28,6 +28,7 @@ using FzLib.WPF.Converters;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using MapBoard.UI.Model;
+using Esri.ArcGISRuntime.Symbology;
 
 namespace MapBoard.UI
 {
@@ -58,6 +59,10 @@ namespace MapBoard.UI
         [AlsoNotifyFor(nameof(Layers))]
         public MainMapView MapView { get; set; }
 
+        public string RendererRawJson { get; set; }
+
+        public bool RendererUseRawJson { get; set; }
+
         /// <summary>
         /// 初始化面板
         /// </summary>
@@ -65,7 +70,7 @@ namespace MapBoard.UI
         public void Initialize(MainMapView mapView)
         {
             MapView = mapView;
-            ResetLayerSettingUI();
+            LoadStyles();
             Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
             Layers.PropertyChanged += Layers_PropertyChanged;
         }
@@ -73,7 +78,7 @@ namespace MapBoard.UI
         /// <summary>
         /// 配置=>UI
         /// </summary>
-        public void ResetLayerSettingUI()
+        public void LoadStyles()
         {
             IMapLayerInfo layer = Layers.Selected;
             if (layer == null)
@@ -86,41 +91,11 @@ namespace MapBoard.UI
             {
                 LayerName = layer.Name;
 
-                Labels = layer.Labels == null ?
-                    new ObservableCollection<LabelInfo>() :
-                    new ObservableCollection<LabelInfo>(layer.Labels);
-                Label = Labels.Count > 0 ? Labels[0] : null;
-                InitializeKeys(false);
-                foreach (var symbol in layer.Renderer.Symbols)
-                {
-                    Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
-                }
-                SelectedKey = Keys.First(p => p.Key == defaultKeyName);
-                var keys = layer.Renderer.KeyFieldName?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                LoadLabels();
 
-                KeyFields = layer?.Fields
-                    ?.Where(p => p.CanBeRendererKey())
-                    ?.Select(p => new SelectableObject<FieldInfo>(p, keys.Contains(p.Name)))
-                    .ToList();
+                LoadRenderers(layer.Renderer);
+            }
 
-                btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
-            }
-            try
-            {
-                tab.SelectedIndex = layer.GeometryType switch
-                {
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
-                    _ => throw new InvalidEnumArgumentException("未知的类型"),
-                };
-                tab.IsEnabled = true;
-            }
-            catch (InvalidEnumArgumentException)
-            {
-                tab.IsEnabled = false;
-            }
             LoadLabelFieldsMenu();
         }
 
@@ -128,10 +103,12 @@ namespace MapBoard.UI
         /// UI=>配置
         /// </summary>
         /// <returns></returns>
-        public async Task SetStyleFromUI()
+        public async Task SaveStyles()
         {
             var layer = Layers.Selected;
 
+            layer.Renderer.UseRawJson = RendererUseRawJson;
+            layer.Renderer.RawJson = RendererRawJson;
             layer.Renderer.Symbols.Clear();
             layer.Renderer.KeyFieldName = string.Join('|', KeyFields.Where(p => p.IsSelected).Select(p => p.ObjectData.Name));
             foreach (var keySymbol in Keys)
@@ -212,7 +189,7 @@ namespace MapBoard.UI
         {
             if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
             {
-                ResetLayerSettingUI();
+                LoadStyles();
             }
         }
 
@@ -225,7 +202,53 @@ namespace MapBoard.UI
         {
             if (e.PropertyName == nameof(Layers.Selected))
             {
-                ResetLayerSettingUI();
+                LoadStyles();
+            }
+        }
+
+        private void LoadLabels()
+        {
+            var layer = Layers.Selected;
+            Labels = layer.Labels == null ?
+                new ObservableCollection<LabelInfo>() :
+                new ObservableCollection<LabelInfo>(layer.Labels);
+            Label = Labels.Count > 0 ? Labels[0] : null;
+        }
+
+        private void LoadRenderers(UniqueValueRendererInfo renderer)
+        {
+            InitializeKeys(false);
+            RendererUseRawJson = renderer.UseRawJson;
+            RendererRawJson = renderer.RawJson;
+            foreach (var symbol in renderer.Symbols)
+            {
+                Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
+            }
+            SelectedKey = Keys.First(p => p.Key == defaultKeyName);
+            var keys = renderer.KeyFieldName?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            KeyFields = Layers.Selected?.Fields
+                ?.Where(p => p.CanBeRendererKey())
+                ?.Select(p => new SelectableObject<FieldInfo>(p, keys.Contains(p.Name)))
+                .ToList();
+
+            btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
+
+            try
+            {
+                tab.SelectedIndex = Layers.Selected.GeometryType switch
+                {
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
+                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
+                    _ => throw new InvalidEnumArgumentException("未知的类型"),
+                };
+                tab.IsEnabled = true;
+            }
+            catch (InvalidEnumArgumentException)
+            {
+                tab.IsEnabled = false;
             }
         }
 
@@ -452,6 +475,23 @@ namespace MapBoard.UI
             (sender as ComboBox).SelectedItem = null;
         }
 
+        private void ConvertRendererButton_Click(object sender, RoutedEventArgs e)
+        {
+            IMapLayerInfo layer = Layers.Selected;
+            if (layer.Renderer.UseRawJson)
+            {
+                try
+                {
+                    var renderer = layer.Layer.Renderer.ToRendererInfo();
+                    LoadRenderers(renderer);
+                }
+                catch (Exception ex)
+                {
+                    CommonDialog.ShowErrorDialogAsync(ex, "转换失败");
+                }
+            }
+        }
+
         /// <summary>
         /// 单击创建唯一值Key按钮
         /// </summary>
@@ -590,7 +630,6 @@ namespace MapBoard.UI
             B = (B > 255) ? 255 : B;
             return Color.FromArgb(255, R, G, B);
         }
-
         /// <summary>
         /// 初始化所有Key，恢复只有默认Key的初始状态
         /// </summary>
