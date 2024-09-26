@@ -29,6 +29,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using MapBoard.UI.Model;
 using Esri.ArcGISRuntime.Symbology;
+using Esri.ArcGISRuntime.Mapping;
+using LayerCollection = MapBoard.Model.LayerCollection;
 
 namespace MapBoard.UI
 {
@@ -59,10 +61,6 @@ namespace MapBoard.UI
         [AlsoNotifyFor(nameof(Layers))]
         public MainMapView MapView { get; set; }
 
-        public string RendererRawJson { get; set; }
-
-        public bool RendererUseRawJson { get; set; }
-
         /// <summary>
         /// 初始化面板
         /// </summary>
@@ -74,6 +72,53 @@ namespace MapBoard.UI
             Layers.LayerPropertyChanged += Layers_LayerPropertyChanged;
             Layers.PropertyChanged += Layers_PropertyChanged;
         }
+
+        /// <summary>
+        /// 单击展开面板
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Expander_Expanded(object sender, RoutedEventArgs e)
+        {
+            //手动实现手风琴效果
+            Expander expander = sender as Expander;
+            foreach (var ex in grdExpanders.Children.OfType<Expander>().Where(p => p != sender))
+            {
+                ex.IsExpanded = false;
+            }
+            for (int i = 0; i < grdExpanders.Children.Count; i++)
+            {
+                grdExpanders.RowDefinitions[i].Height = Grid.GetRow(expander) == i ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+            }
+        }
+
+        /// <summary>
+        /// 如果选中的图层加载完成，重载面板
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
+        {
+            if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
+            {
+                LoadStyles();
+            }
+        }
+
+        /// <summary>
+        /// 如果选择了新的图层，重载面板
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Layers_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Layers.Selected))
+            {
+                LoadStyles();
+            }
+        }
+
+        #region 加载和保存
 
         /// <summary>
         /// 配置=>UI
@@ -161,51 +206,6 @@ namespace MapBoard.UI
             }
         }
 
-        /// <summary>
-        /// 单击展开面板
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Expander_Expanded(object sender, RoutedEventArgs e)
-        {
-            //手动实现手风琴效果
-            Expander expander = sender as Expander;
-            foreach (var ex in grdExpanders.Children.OfType<Expander>().Where(p => p != sender))
-            {
-                ex.IsExpanded = false;
-            }
-            for (int i = 0; i < grdExpanders.Children.Count; i++)
-            {
-                grdExpanders.RowDefinitions[i].Height = Grid.GetRow(expander) == i ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
-            }
-        }
-
-        /// <summary>
-        /// 如果选中的图层加载完成，重载面板
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Layers_LayerPropertyChanged(object sender, LayerCollection.LayerPropertyChangedEventArgs e)
-        {
-            if (e.Layer == MapView.Layers.Selected && e.PropertyName == nameof(MapLayerInfo.IsLoaded))
-            {
-                LoadStyles();
-            }
-        }
-
-        /// <summary>
-        /// 如果选择了新的图层，重载面板
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Layers_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Layers.Selected))
-            {
-                LoadStyles();
-            }
-        }
-
         private void LoadLabels()
         {
             var layer = Layers.Selected;
@@ -251,6 +251,8 @@ namespace MapBoard.UI
                 tab.IsEnabled = false;
             }
         }
+
+        #endregion
 
         #region 标注
         /// <summary>
@@ -315,6 +317,7 @@ namespace MapBoard.UI
                 Label = Labels[0];
             }
         }
+
         /// <summary>
         /// 单击设置显示比例按钮
         /// </summary>
@@ -335,6 +338,40 @@ namespace MapBoard.UI
                 case "max":
                     Layers.Selected.Display.MaxScale = MapView.MapScale;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 标注的设置项和JSON互转
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ConvertLabelButton_Click(object sender, RoutedEventArgs e)
+        {
+            IMapLayerInfo layer = Layers.Selected;
+            if (Label == null)
+            {
+                throw new Exception("不存在选中的Label");
+            }
+            if (Label.UseRawJson)
+            {
+                try
+                {
+                    var newLabel = LabelDefinition.FromJson(Label.RawJson).ToLabelInfo();
+                    int index = Labels.IndexOf(Label);
+                    Debug.Assert(index >= 0);
+                    Labels[index] = newLabel;
+                    Label = newLabel;
+                }
+                catch (Exception ex)
+                {
+                    CommonDialog.ShowErrorDialogAsync(ex, "转换失败");
+                }
+            }
+            else
+            {
+                Label.RawJson = Label.ToLabelDefinition().ToJson();
+                Label.UseRawJson = true;
             }
         }
 
@@ -409,6 +446,10 @@ namespace MapBoard.UI
         [AlsoNotifyFor(nameof(IsChangeOrDeleteKeyButtonEnabled))]
         public KeySymbolPair SelectedKey { get; set; }
 
+        public string RendererRawJson { get; set; }
+
+        public bool RendererUseRawJson { get; set; }
+
         /// <summary>
         /// 生成多个集合的笛卡尔积，由New Bing编写
         /// </summary>
@@ -475,20 +516,30 @@ namespace MapBoard.UI
             (sender as ComboBox).SelectedItem = null;
         }
 
+        /// <summary>
+        /// 渲染器的设置项和JSON互转
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ConvertRendererButton_Click(object sender, RoutedEventArgs e)
         {
             IMapLayerInfo layer = Layers.Selected;
-            if (layer.Renderer.UseRawJson)
+            if (RendererUseRawJson)
             {
                 try
                 {
-                    var renderer = layer.Layer.Renderer.ToRendererInfo();
+                    var renderer = Renderer.FromJson(RendererRawJson).ToRendererInfo();
                     LoadRenderers(renderer);
                 }
                 catch (Exception ex)
                 {
                     CommonDialog.ShowErrorDialogAsync(ex, "转换失败");
                 }
+            }
+            else
+            {
+                RendererRawJson = layer.Layer.Renderer.ToJson();
+                RendererUseRawJson = true;
             }
         }
 
@@ -630,6 +681,7 @@ namespace MapBoard.UI
             B = (B > 255) ? 255 : B;
             return Color.FromArgb(255, R, G, B);
         }
+
         /// <summary>
         /// 初始化所有Key，恢复只有默认Key的初始状态
         /// </summary>

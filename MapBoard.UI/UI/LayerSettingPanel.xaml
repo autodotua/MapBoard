@@ -879,6 +879,12 @@
                                 IsOn="{Binding Label.UseRawJson}"
                                 OffContent="使用设置项"
                                 OnContent="JSON手动设置" />
+
+                            <Button
+                                Grid.Row="2"
+                                Grid.Column="4"
+                                Click="ConvertLabelButton_Click"
+                                Content="转换" />
                         </Grid>
 
                         <TextBox

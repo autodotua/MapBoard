@@ -54,18 +54,18 @@ namespace MapBoard.Mapping
             overlays.Add(locationInfoOverlay);
 
             //POI
-            var d = new LabelInfo().GetLabelDefinition();
+            var d = new LabelInfo().ToLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
             poiOverlay.LabelDefinitions.Add(d);
             poiOverlay.LabelsEnabled = true;
             overlays.Add(poiOverlay);
 
             //路线规划
-            d = new LabelInfo().GetLabelDefinition();
+            d = new LabelInfo().ToLabelDefinition();
             d.Expression = new ArcadeLabelExpression("$feature.Name");
             d.WhereClause = "Distance is null";
             routeOverlay.LabelDefinitions.Add(d);
-            d = new LabelInfo().GetLabelDefinition();
+            d = new LabelInfo().ToLabelDefinition();
             d.Expression = new ArcadeLabelExpression(@"$feature.Name +'\n'+ $feature.Distance + 'm\n' + $feature.Duration");
             d.WhereClause = "Distance is not null";
             routeOverlay.LabelDefinitions.Add(d);

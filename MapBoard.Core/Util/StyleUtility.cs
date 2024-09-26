@@ -31,7 +31,7 @@ namespace MapBoard.Util
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        public static LabelDefinition GetLabelDefinition(this LabelInfo label)
+        public static LabelDefinition ToLabelDefinition(this LabelInfo label)
         {
             if (label.UseRawJson)
             {
@@ -66,6 +66,42 @@ namespace MapBoard.Util
             return labelDefinition;
         }
 
+        public static LabelInfo ToLabelInfo(this LabelDefinition labelDefinition, LabelInfo writeTo = null)
+        {
+            LabelInfo label = writeTo ?? new LabelInfo();
+
+            label.Expression = labelDefinition.Expression.Expression;
+
+            var textSymbol = labelDefinition.TextSymbol;
+            if (textSymbol != null)
+            {
+                label.HaloColor = textSymbol.HaloColor;
+                label.FontColor = textSymbol.Color;
+                label.BackgroundColor = textSymbol.BackgroundColor;
+                label.FontSize = textSymbol.Size;
+                label.HaloWidth = textSymbol.HaloWidth;
+                label.OutlineWidth = textSymbol.OutlineWidth;
+                label.OutlineColor = textSymbol.OutlineColor;
+                label.Bold = textSymbol.FontWeight == FontWeight.Bold;
+                label.Italic = textSymbol.FontStyle == FontStyle.Italic;
+                label.FontFamily = textSymbol.FontFamily ?? string.Empty;
+            }
+
+            label.WhereClause = labelDefinition.WhereClause;
+            label.MinScale = labelDefinition.MinScale;
+            label.Layout = (int)labelDefinition.TextLayout;
+            label.AllowRepeat = labelDefinition.RepeatStrategy == LabelRepeatStrategy.Repeat;
+            label.AllowOverlap = labelDefinition.LabelOverlapStrategy == LabelOverlapStrategy.Allow;
+            label.DeconflictionStrategy = (int)labelDefinition.DeconflictionStrategy;
+            label.RepeatDistance = (int)labelDefinition.RepeatDistance;
+
+            label.UseRawJson = false;
+            label.RawJson = labelDefinition.ToJson();
+
+            return label;
+
+        }
+
         public static UniqueValueRendererInfo ToRendererInfo(this Renderer renderer, UniqueValueRendererInfo writeTo = null)
         {
             if (renderer is not UniqueValueRenderer && renderer is not SimpleRenderer)
@@ -94,45 +130,6 @@ namespace MapBoard.Util
         }
 
         /// <summary>
-        /// 将MapBoard的<see cref="SymbolInfo"/>转换为Esri的<see cref="Symbol"/>
-        /// </summary>
-        /// <param name="symbolInfo"></param>
-        /// <param name="geometryType"></param>
-        /// <returns></returns>
-        public static Symbol ToSymbol(this SymbolInfo symbolInfo, GeometryType geometryType)
-        {
-            Symbol symbol = null;
-
-            switch (geometryType)
-            {
-                case GeometryType.Point:
-                case GeometryType.Multipoint:
-                    var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                    symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
-                    {
-                        Outline = outline
-                    };
-
-                    break;
-
-                case GeometryType.Polyline:
-                    symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                    if (symbolInfo.Arrow > 0)
-                    {
-                        (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow - 1);
-                        (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
-                    }
-                    break;
-
-                case GeometryType.Polygon:
-                    var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
-                    symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
-                    break;
-            }
-            return symbol;
-        }
-
-        /// <summary>
         /// 应用标注标签
         /// </summary>
         /// <param name="layer"></param>
@@ -145,7 +142,7 @@ namespace MapBoard.Util
             }
             foreach (var label in layer.Labels)
             {
-                layer.Layer.LabelDefinitions.Add(label.GetLabelDefinition());
+                layer.Layer.LabelDefinitions.Add(label.ToLabelDefinition());
             }
             layer.Layer.LabelsEnabled = layer.Labels.Length > 0;
         }
@@ -231,6 +228,44 @@ namespace MapBoard.Util
             }
         }
 
+        /// <summary>
+        /// 将MapBoard的<see cref="SymbolInfo"/>转换为Esri的<see cref="Symbol"/>
+        /// </summary>
+        /// <param name="symbolInfo"></param>
+        /// <param name="geometryType"></param>
+        /// <returns></returns>
+        private static Symbol ToSymbol(this SymbolInfo symbolInfo, GeometryType geometryType)
+        {
+            Symbol symbol = null;
+
+            switch (geometryType)
+            {
+                case GeometryType.Point:
+                case GeometryType.Multipoint:
+                    var outline = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    symbol = new SimpleMarkerSymbol((SimpleMarkerSymbolStyle)symbolInfo.PointStyle, symbolInfo.FillColor, symbolInfo.Size)
+                    {
+                        Outline = outline
+                    };
+
+                    break;
+
+                case GeometryType.Polyline:
+                    symbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    if (symbolInfo.Arrow > 0)
+                    {
+                        (symbol as SimpleLineSymbol).MarkerPlacement = (SimpleLineSymbolMarkerPlacement)(symbolInfo.Arrow - 1);
+                        (symbol as SimpleLineSymbol).MarkerStyle = SimpleLineSymbolMarkerStyle.Arrow;
+                    }
+                    break;
+
+                case GeometryType.Polygon:
+                    var lineSymbol = new SimpleLineSymbol((SimpleLineSymbolStyle)symbolInfo.LineStyle, symbolInfo.LineColor, symbolInfo.OutlineWidth);
+                    symbol = new SimpleFillSymbol((SimpleFillSymbolStyle)symbolInfo.FillStyle, symbolInfo.FillColor, lineSymbol);
+                    break;
+            }
+            return symbol;
+        }
         private static SymbolInfo ToSymbolInfo(this Symbol symbol, SymbolInfo writeTo = null)
         {
             SymbolInfo s = writeTo ?? new SymbolInfo();
@@ -292,5 +327,6 @@ namespace MapBoard.Util
 
             return s;
         }
+
     }
 }
