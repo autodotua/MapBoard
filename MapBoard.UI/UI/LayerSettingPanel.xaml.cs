@@ -217,7 +217,7 @@ namespace MapBoard.UI
 
         private void LoadRenderers(UniqueValueRendererInfo renderer)
         {
-            InitializeKeys(false);
+            InitializeKeys(false, renderer);
             RendererUseRawJson = renderer.UseRawJson;
             RendererRawJson = renderer.RawJson;
             foreach (var symbol in renderer.Symbols)
@@ -669,19 +669,19 @@ namespace MapBoard.UI
         /// 初始化所有Key，恢复只有默认Key的初始状态
         /// </summary>
         /// <param name="canKeepDefaultKey"></param>
-        private void InitializeKeys(bool canKeepDefaultKey)
+        private void InitializeKeys(bool canKeepDefaultKey, UniqueValueRendererInfo layerRenderer = null)
         {
-            Debug.Assert(Layers.Selected != null);
+            layerRenderer ??= Layers.Selected.Renderer;
             KeySymbolPair defaultSymbol = null;
             if (canKeepDefaultKey)
             {
                 defaultSymbol = Keys.FirstOrDefault(p => p.Key == defaultKeyName)//优先级1：本来的默认
-                ?? new KeySymbolPair(defaultKeyName, Layers.Selected.Renderer.DefaultSymbol//优先级2：定义的默认
+                ?? new KeySymbolPair(defaultKeyName, layerRenderer.DefaultSymbol//优先级2：定义的默认
                 ?? Layers.Selected.GetDefaultSymbol());//优先级3：类型默认
             }
             else
             {
-                defaultSymbol = new KeySymbolPair(defaultKeyName, Layers.Selected.Renderer.DefaultSymbol ?? Layers.Selected.GetDefaultSymbol());
+                defaultSymbol = new KeySymbolPair(defaultKeyName, layerRenderer.DefaultSymbol ?? Layers.Selected.GetDefaultSymbol());
             }
             Keys.Clear();
             Keys.Add(defaultSymbol);

@@ -931,24 +931,23 @@
                                 <ColumnDefinition Width="8" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
 
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Text="当前标签" />
-                            <TextBox
+                            <ContentControl
                                 Grid.Column="2"
                                 Margin="4,0"
-                                VerticalAlignment="Center"
-                                ui:ControlHelper.PlaceholderText="SQL筛选语句"
-                                IsEnabled="{Binding Label.UseRawJson, Converter={StaticResource InverseBoolConverter}}"
-                                MaxLines="3"
-                                Text="{Binding Label.WhereClause}"
-                                TextWrapping="Wrap" />
+                                IsEnabled="{Binding Label, Converter={StaticResource NotNullConverter}}">
+                                <TextBox
+                                    VerticalAlignment="Center"
+                                    ui:ControlHelper.PlaceholderText="SQL筛选语句，置空表示所有图形"
+                                    IsEnabled="{Binding Label.UseRawJson, Converter={StaticResource InverseBoolConverter}}"
+                                    MaxLines="4"
+                                    MinLines="2"
+                                    Text="{Binding Label.WhereClause}"
+                                    TextWrapping="Wrap" />
+                            </ContentControl>
                             <Button Grid.Column="4">
                                 <Button.Content>
                                     <TextBlock>
@@ -998,260 +997,271 @@
                                     </ui:Flyout>
                                 </ui:FlyoutService.Flyout>
                             </Button>
-
-                            <TextBlock
-                                Grid.Row="2"
-                                VerticalAlignment="Center"
-                                Text="手动配置" />
-                            <ui:ToggleSwitch
-                                Grid.Row="2"
-                                Grid.Column="2"
-                                Grid.ColumnSpan="99"
-                                IsOn="{Binding Label.UseRawJson}"
-                                OffContent="使用设置项"
-                                OnContent="JSON手动设置" />
-
-                            <Button
-                                Grid.Row="2"
-                                Grid.Column="4"
-                                Click="ConvertLabelButton_Click"
-                                Content="转换" />
                         </Grid>
 
-                        <TextBox
-                            Style="{StaticResource RawJsonTextBoxStyle}"
-                            Text="{Binding Label.RawJson}"
-                            Visibility="{Binding Label.UseRawJson, Converter={StaticResource Bool2VisibilityConverter}}" />
-
-                        <Grid
-                            DataContext="{Binding Label}"
-                            IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}"
-                            Visibility="{Binding UseRawJson, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.Resources>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                                <Style
-                                    BasedOn="{StaticResource DefaultCheckBoxStyle}"
-                                    TargetType="{x:Type CheckBox}">
-                                    <Setter Property="Margin" Value="0,0,-64,0" />
-                                </Style>
-                                <Style TargetType="{x:Type component:ColorPickerTextBox}">
-                                    <!--<Setter Property="Width" Value="120" />-->
-                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                </Style>
-                            </Grid.Resources>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="表达式" />
-                            <DockPanel
-                                Grid.Column="2"
-                                LastChildFill="True">
-                                <Button
-                                    Margin="12,0,0,0"
-                                    DockPanel.Dock="Right"
-                                    Focusable="False">
-                                    <ui:SymbolIcon Symbol="List" />
-                                    <ui:FlyoutService.Flyout>
-                                        <ui:MenuFlyout x:Name="menuFields" />
-                                    </ui:FlyoutService.Flyout>
-                                </Button>
-                                <TextBox
-                                    x:Name="txtExpression"
-                                    ui:ControlHelper.PlaceholderText="使用Arcade表达式"
-                                    AcceptsReturn="True"
-                                    AcceptsTab="True"
-                                    MinLines="3"
-                                    Text="{Binding Expression, UpdateSourceTrigger=PropertyChanged}"
-                                    TextWrapping="Wrap" />
-                            </DockPanel>
-
-                            <TextBlock
-                                Grid.Row="2"
-                                Text="字体" />
-                            <Grid
-                                Grid.Row="2"
-                                Grid.Column="2">
+                        <ui:SimpleStackPanel
+                            Orientation="Vertical"
+                            Spacing="8"
+                            Visibility="{Binding Label, Converter={StaticResource NotNullConverter}}">
+                            <Grid Margin="0,0,0,18">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="4" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="8" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="4" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="4" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                <TextBox
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="手动配置" />
+                                <ui:ToggleSwitch
                                     Grid.Column="2"
-                                    Text="{Binding FontSize}" />
-                                <ComboBox
-                                    Grid.Row="2"
-                                    Grid.ColumnSpan="3"
-                                    HorizontalAlignment="Stretch"
-                                    IsEditable="True"
-                                    ItemsSource="{Binding Source={x:Static Fonts.SystemFontFamilies}}"
-                                    Text="{Binding FontFamily}" />
-                                <ui:SimpleStackPanel
-                                    Grid.Row="4"
                                     Grid.ColumnSpan="99"
-                                    Orientation="Horizontal"
-                                    Spacing="12">
-                                    <CheckBox IsChecked="{Binding Bold}">粗体</CheckBox>
-                                    <CheckBox IsChecked="{Binding Italic}">斜体</CheckBox>
-                                </ui:SimpleStackPanel>
-                            </Grid>
-                            <TextBlock
-                                Grid.Row="4"
-                                Text="外描边" />
-                            <Grid
-                                Grid.Row="4"
-                                Grid.Column="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                <TextBox
-                                    Grid.Column="2"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding HaloWidth}" />
-                            </Grid>
-                            <TextBlock
-                                Grid.Row="6"
-                                Text="内描边" />
-                            <Grid
-                                Grid.Row="6"
-                                Grid.Column="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <component:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
-                                <TextBox
-                                    Grid.Column="2"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding OutlineWidth}" />
-                            </Grid>
-                            <TextBlock
-                                Grid.Row="8"
-                                Text="背景" />
-                            <component:ColorPickerTextBox
-                                x:Name="labelBackgroundColor"
-                                Grid.Row="8"
-                                Grid.Column="2"
-                                ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
+                                    IsOn="{Binding Label.UseRawJson}"
+                                    OffContent="使用设置项"
+                                    OnContent="JSON手动设置" />
 
-                            <TextBlock
-                                Grid.Row="10"
-                                Text="最小比例" />
-                            <Grid
-                                Grid.Row="10"
-                                Grid.Column="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBox Text="{Binding MinScale}" />
                                 <Button
-                                    Grid.Column="2"
-                                    Height="24"
-                                    Padding="8,0"
-                                    HorizontalAlignment="Right"
-                                    Click="SetScaleButton_Click"
-                                    Content="设为当前"
-                                    Tag="label" />
+                                    Grid.Column="4"
+                                    Click="ConvertLabelButton_Click"
+                                    Content="转换" />
                             </Grid>
-                            <TextBlock
-                                Grid.Row="12"
-                                Text="布局" />
-                            <ComboBox
-                                Grid.Row="12"
-                                Grid.Column="2"
-                                HorizontalAlignment="Stretch"
-                                SelectedIndex="{Binding Layout}">
-                                <ComboBoxItem>自动</ComboBoxItem>
-                                <ComboBoxItem>水平</ComboBoxItem>
-                                <ComboBoxItem>垂直</ComboBoxItem>
-                                <ComboBoxItem>直线</ComboBoxItem>
-                                <ComboBoxItem>跟随图形</ComboBoxItem>
-                            </ComboBox>
 
-                            <TextBlock
-                                Grid.Row="14"
-                                Text="碰撞策略" />
-                            <ComboBox
-                                Grid.Row="14"
-                                Grid.Column="2"
-                                HorizontalAlignment="Stretch"
-                                SelectedIndex="{Binding DeconflictionStrategy}">
-                                <ComboBoxItem>自动</ComboBoxItem>
-                                <ComboBoxItem>动态</ComboBoxItem>
-                                <ComboBoxItem>无</ComboBoxItem>
-                                <ComboBoxItem>静态</ComboBoxItem>
-                                <ComboBoxItem>动态（不移除）</ComboBoxItem>
-                            </ComboBox>
+                            <TextBox
+                                Style="{StaticResource RawJsonTextBoxStyle}"
+                                Text="{Binding Label.RawJson}"
+                                Visibility="{Binding Label.UseRawJson, Converter={StaticResource Bool2VisibilityConverter}}" />
+
                             <Grid
-                                Grid.Row="16"
-                                Grid.ColumnSpan="99">
+                                DataContext="{Binding Label}"
+                                IsEnabled="{Binding ., Converter={StaticResource NotNullConverter}}"
+                                Visibility="{Binding UseRawJson, Converter={StaticResource Bool2VisibilityConverter}, ConverterParameter=i}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="8" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <CheckBox IsChecked="{Binding AllowRepeat}">允许重复显示</CheckBox>
-                                <CheckBox
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                    <Style
+                                        BasedOn="{StaticResource DefaultCheckBoxStyle}"
+                                        TargetType="{x:Type CheckBox}">
+                                        <Setter Property="Margin" Value="0,0,-64,0" />
+                                    </Style>
+                                    <Style TargetType="{x:Type component:ColorPickerTextBox}">
+                                        <!--<Setter Property="Width" Value="120" />-->
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    </Style>
+                                </Grid.Resources>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="表达式" />
+                                <DockPanel
                                     Grid.Column="2"
-                                    IsChecked="{Binding AllowOverlap}">
-                                    允许重叠显示
-                                </CheckBox>
-                            </Grid>
-                            <TextBlock
-                                Grid.Row="18"
-                                Text="重复间隔" />
-                            <ui:NumberBox
-                                Grid.Row="18"
-                                Grid.Column="2"
-                                MinHeight="10"
-                                HorizontalAlignment="Stretch"
-                                ui:ControlHelper.PlaceholderText="像素"
-                                IsEnabled="{Binding AllowRepeat}"
-                                Maximum="1000"
-                                Value="{Binding RepeatDistance}" />
+                                    LastChildFill="True">
+                                    <Button
+                                        Margin="12,0,0,0"
+                                        DockPanel.Dock="Right"
+                                        Focusable="False">
+                                        <ui:SymbolIcon Symbol="List" />
+                                        <ui:FlyoutService.Flyout>
+                                            <ui:MenuFlyout x:Name="menuFields" />
+                                        </ui:FlyoutService.Flyout>
+                                    </Button>
+                                    <TextBox
+                                        x:Name="txtExpression"
+                                        ui:ControlHelper.PlaceholderText="使用Arcade表达式"
+                                        AcceptsReturn="True"
+                                        AcceptsTab="True"
+                                        MinLines="3"
+                                        Text="{Binding Expression, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap" />
+                                </DockPanel>
 
-                        </Grid>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Text="字体" />
+                                <Grid
+                                    Grid.Row="2"
+                                    Grid.Column="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="4" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="4" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <component:ColorPickerTextBox ColorBrush="{Binding FontColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        Text="{Binding FontSize}" />
+                                    <ComboBox
+                                        Grid.Row="2"
+                                        Grid.ColumnSpan="3"
+                                        HorizontalAlignment="Stretch"
+                                        IsEditable="True"
+                                        ItemsSource="{Binding Source={x:Static Fonts.SystemFontFamilies}}"
+                                        Text="{Binding FontFamily}" />
+                                    <ui:SimpleStackPanel
+                                        Grid.Row="4"
+                                        Grid.ColumnSpan="99"
+                                        Orientation="Horizontal"
+                                        Spacing="12">
+                                        <CheckBox IsChecked="{Binding Bold}">粗体</CheckBox>
+                                        <CheckBox IsChecked="{Binding Italic}">斜体</CheckBox>
+                                    </ui:SimpleStackPanel>
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="4"
+                                    Text="外描边" />
+                                <Grid
+                                    Grid.Row="4"
+                                    Grid.Column="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <component:ColorPickerTextBox ColorBrush="{Binding HaloColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding HaloWidth}" />
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="6"
+                                    Text="内描边" />
+                                <Grid
+                                    Grid.Row="6"
+                                    Grid.Column="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <component:ColorPickerTextBox ColorBrush="{Binding OutlineColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding OutlineWidth}" />
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="8"
+                                    Text="背景" />
+                                <component:ColorPickerTextBox
+                                    x:Name="labelBackgroundColor"
+                                    Grid.Row="8"
+                                    Grid.Column="2"
+                                    ColorBrush="{Binding BackgroundColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Color2SolidColorBrushConverter}}" />
+
+                                <TextBlock
+                                    Grid.Row="10"
+                                    Text="最小比例" />
+                                <Grid
+                                    Grid.Row="10"
+                                    Grid.Column="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding MinScale}" />
+                                    <Button
+                                        Grid.Column="2"
+                                        Height="24"
+                                        Padding="8,0"
+                                        HorizontalAlignment="Right"
+                                        Click="SetScaleButton_Click"
+                                        Content="设为当前"
+                                        Tag="label" />
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="12"
+                                    Text="布局" />
+                                <ComboBox
+                                    Grid.Row="12"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Stretch"
+                                    SelectedIndex="{Binding Layout}">
+                                    <ComboBoxItem>自动</ComboBoxItem>
+                                    <ComboBoxItem>水平</ComboBoxItem>
+                                    <ComboBoxItem>垂直</ComboBoxItem>
+                                    <ComboBoxItem>直线</ComboBoxItem>
+                                    <ComboBoxItem>跟随图形</ComboBoxItem>
+                                </ComboBox>
+
+                                <TextBlock
+                                    Grid.Row="14"
+                                    Text="碰撞策略" />
+                                <ComboBox
+                                    Grid.Row="14"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Stretch"
+                                    SelectedIndex="{Binding DeconflictionStrategy}">
+                                    <ComboBoxItem>自动</ComboBoxItem>
+                                    <ComboBoxItem>动态</ComboBoxItem>
+                                    <ComboBoxItem>无</ComboBoxItem>
+                                    <ComboBoxItem>静态</ComboBoxItem>
+                                    <ComboBoxItem>动态（不移除）</ComboBoxItem>
+                                </ComboBox>
+                                <Grid
+                                    Grid.Row="16"
+                                    Grid.ColumnSpan="99">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding AllowRepeat}">允许重复显示</CheckBox>
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        IsChecked="{Binding AllowOverlap}">
+                                        允许重叠显示
+                                    </CheckBox>
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="18"
+                                    Text="重复间隔" />
+                                <ui:NumberBox
+                                    Grid.Row="18"
+                                    Grid.Column="2"
+                                    MinHeight="10"
+                                    HorizontalAlignment="Stretch"
+                                    ui:ControlHelper.PlaceholderText="像素"
+                                    IsEnabled="{Binding AllowRepeat}"
+                                    Maximum="1000"
+                                    Value="{Binding RepeatDistance}" />
+
+                            </Grid>
+                        </ui:SimpleStackPanel>
                     </StackPanel>
                 </Border>
             </Expander>

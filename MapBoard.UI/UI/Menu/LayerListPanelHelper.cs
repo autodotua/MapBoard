@@ -110,16 +110,19 @@ namespace MapBoard.UI.Menu
                             //需要获取所有要素后，再显示菜单
                             layer.GetAllFeaturesAsync().ContinueWith(featuresTask =>
                             {
-                                var features = featuresTask.Result;
-                                MainWindow.Dispatcher.Invoke(() =>
+                                if (featuresTask.IsCompletedSuccessfully)
                                 {
-                                    subMenu.Header = "地理分析";
-                                    var menuHelper = new FeatureLayerMenuHelper(MainWindow, MapView, layer, features);
-                                    foreach (var item in menuHelper.GetEditMenus(header => $"正在进行{header}操作"))
+                                    var features = featuresTask.Result;
+                                    MainWindow.Dispatcher.Invoke(() =>
                                     {
-                                        subMenu.Items.Add(item);
-                                    }
-                                });
+                                        subMenu.Header = "地理分析";
+                                        var menuHelper = new FeatureLayerMenuHelper(MainWindow, MapView, layer, features);
+                                        foreach (var item in menuHelper.GetEditMenus(header => $"正在进行{header}操作"))
+                                        {
+                                            subMenu.Items.Add(item);
+                                        }
+                                    });
+                                }
                             });
                         }
                     }

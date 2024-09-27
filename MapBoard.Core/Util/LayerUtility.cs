@@ -271,20 +271,24 @@ namespace MapBoard.Util
             }
 
             var oldFeatures = await oldLayer.GetAllFeaturesAsync();
-            List<Feature> newFeatures = new List<Feature>(oldFeatures.Length);
-            foreach (var feature in oldFeatures)
+            List<Feature> newFeatures = null;
+            await Task.Run(() =>
             {
-                Dictionary<string, object> newAttributes = new Dictionary<string, object>();
-                foreach (var attribute in feature.Attributes)
+                newFeatures = new List<Feature>(oldFeatures.Length);
+                foreach (var feature in oldFeatures)
                 {
-                    if (oldName2newName.ContainsKey(attribute.Key))
+                    Dictionary<string, object> newAttributes = new Dictionary<string, object>();
+                    foreach (var attribute in feature.Attributes)
                     {
-                        newAttributes.Add(oldName2newName[attribute.Key], attribute.Value);
+                        if (oldName2newName.TryGetValue(attribute.Key, out string value))
+                        {
+                            newAttributes.Add(value, attribute.Value);
+                        }
                     }
-                }
 
-                newFeatures.Add(layer.CreateFeature(newAttributes, feature.Geometry));
-            }
+                    newFeatures.Add(layer.CreateFeature(newAttributes, feature.Geometry));
+                }
+            });
 
             await layer.AddFeaturesAsync(newFeatures, FeaturesChangedSource.Import);
 
