@@ -53,7 +53,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             return AddFeatureAsync(feature, source, feature.FeatureTable != table);
         }
 
@@ -66,7 +66,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source, bool rebuildFeature)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
             AddCreateTimeAttributeIfExistField(newFeature);
             await table.AddFeatureAsync(newFeature);
@@ -82,7 +82,7 @@ namespace MapBoard.Mapping.Model
         /// <exception cref="ArgumentException"></exception>
         public Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             if (features.Select(p => p.FeatureTable).Distinct().Count() != 1)
             {
                 throw new ArgumentException("集合为空或要素来自不同的要素类");
@@ -99,7 +99,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             Dictionary<string, FieldInfo> key2Field = Fields.ToDictionary(p => p.Name);
             //为了避免出现问题，改成了强制重建，经测试用不了多长时间
             if (true || rebuildFeature)
@@ -142,7 +142,6 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
         {
-            ThrowIfNotEditable();
             return table.CreateFeature(attributes, geometry);
         }
 
@@ -152,7 +151,6 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public Feature CreateFeature()
         {
-            ThrowIfNotEditable();
             return table.CreateFeature();
         }
 
@@ -164,7 +162,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             await table.DeleteFeatureAsync(feature);
             NotifyFeaturesChanged(null, new[] { feature }, null, source);
         }
@@ -177,7 +175,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             await table.DeleteFeaturesAsync(features);
             NotifyFeaturesChanged(null, features, null, source);
         }
@@ -190,7 +188,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             AddModifiedTimeAttributeIfExistField(feature.Feature);
             await table.UpdateFeatureAsync(feature.Feature);
             NotifyFeaturesChanged(null, null, new[] { feature }, source);
@@ -204,7 +202,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
         {
-            ThrowIfNotEditable();
+            ThrowIfNotEditable(source);
             features.ForEach(feature => AddModifiedTimeAttributeIfExistField(feature.Feature));
             await table.UpdateFeaturesAsync(features.Select(p => p.Feature));
             NotifyFeaturesChanged(null, null, features, source);
@@ -262,8 +260,12 @@ namespace MapBoard.Mapping.Model
         /// 检测是否允许编辑，若不允许则抛出错误
         /// </summary>
         /// <exception cref="NotSupportedException"></exception>
-        private void ThrowIfNotEditable()
+        private void ThrowIfNotEditable(FeaturesChangedSource? source=null)
         {
+            if(source.HasValue&&source.Value==FeaturesChangedSource.Initialize)
+            {
+                return;
+            }
             if (!Interaction.CanEdit)
             {
                 throw new NotSupportedException("当前图层被禁止编辑");

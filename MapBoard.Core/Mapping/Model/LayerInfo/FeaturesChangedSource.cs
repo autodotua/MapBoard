@@ -17,6 +17,9 @@ namespace MapBoard.Mapping.Model
         Undo,
 
         [Description("导入")]
-        Import
+        Import,
+
+        [Description("初始化")]
+        Initialize
     }
 }

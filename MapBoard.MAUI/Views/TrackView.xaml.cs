@@ -135,7 +135,7 @@ public partial class TrackView : ContentView, ISidePanel
             var points = gpx.GetPoints();
             var line = new Polyline(points.Select(p => p.ToXYMapPoint()));
             var feature = layer.CreateFeature(null, line);
-            await layer.AddFeatureAsync(feature, Mapping.Model.FeaturesChangedSource.Import);
+            await layer.AddFeatureAsync(feature, Mapping.Model.FeaturesChangedSource.Initialize);
             var extent = await layer.QueryExtentAsync(new Esri.ArcGISRuntime.Data.QueryParameters());
             await MainMapView.Current.ZoomToGeometryAsync(extent);
         }

@@ -105,7 +105,7 @@ namespace MapBoard.Util
 
                 var newLayer = await CreateShapefileLayerAsync(layer.GeometryType, layers, layer, includeFields);
 
-                await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Import, true);
+                await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Initialize, true);
                 layer.LayerVisible = false;
             }
             else

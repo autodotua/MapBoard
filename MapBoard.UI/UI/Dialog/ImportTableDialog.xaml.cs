@@ -182,7 +182,7 @@ namespace MapBoard.UI.Dialog
                             continue;
                         }
                     }
-                    layer.AddFeaturesAsync(features, FeaturesChangedSource.Import);
+                    layer.AddFeaturesAsync(features, FeaturesChangedSource.Initialize);
                 });
                 Hide();
                 await ShowOkDialogAsync($"导入了{features.Count}条，失败了{failedRowCount}条");
