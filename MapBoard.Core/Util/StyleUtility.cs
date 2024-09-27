@@ -183,7 +183,11 @@ namespace MapBoard.Util
                                     //对每个key中对应的字段进行处理
                                     for (int i = 0; i < names.Length; i++)
                                     {
-                                        var fieldType = layer.Fields.First(p => p.Name == names[i]).Type;
+                                        var fieldType = layer.Fields.FirstOrDefault(p => p.Name == names[i])?.Type;
+                                        if (fieldType == null)
+                                        {
+                                            continue;
+                                        }
                                         //如果key的长度不到names的长度，那么就设为null
                                         object key = keyStrings.Length < i + 1 ? "" : keyStrings[i];
                                         //空字符串也为null

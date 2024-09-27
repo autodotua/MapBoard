@@ -31,6 +31,7 @@ using MapBoard.UI.Model;
 using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.Mapping;
 using LayerCollection = MapBoard.Model.LayerCollection;
+using ModernWpf.Controls;
 
 namespace MapBoard.UI
 {
@@ -129,7 +130,6 @@ namespace MapBoard.UI
             if (layer == null)
             {
                 KeyFields = null;
-                tab.IsEnabled = false;
                 return;
             }
             else
@@ -233,23 +233,6 @@ namespace MapBoard.UI
                 .ToList();
 
             btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
-
-            try
-            {
-                tab.SelectedIndex = Layers.Selected.GeometryType switch
-                {
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Point => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Multipoint => 0,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polyline => 1,
-                    Esri.ArcGISRuntime.Geometry.GeometryType.Polygon => 2,
-                    _ => throw new InvalidEnumArgumentException("未知的类型"),
-                };
-                tab.IsEnabled = true;
-            }
-            catch (InvalidEnumArgumentException)
-            {
-                tab.IsEnabled = false;
-            }
         }
 
         #endregion
@@ -715,6 +698,54 @@ namespace MapBoard.UI
             this.Notify(nameof(KeyFieldsComboBoxText));
         }
         #endregion
+
+
+        private async void SymbolMoreButtonMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Button btn = (((sender as MenuItem).Parent as MenuFlyoutPresenter)
+                .Parent as System.Windows.Controls.Primitives.Popup)
+                .PlacementTarget as Button;
+
+                var parentGrid = btn.Parent as Grid;
+                var leftControl = parentGrid.Children.OfType<Control>()
+                    .Where(p => Grid.GetRow(p) == Grid.GetRow(btn) && Grid.GetColumn(p) == 2)
+                    .FirstOrDefault();
+                if (leftControl != null)
+                {
+                    DependencyProperty controlProperty = leftControl switch
+                    {
+                        TextBox => TextBox.TextProperty,
+                        ColorPickerTextBox => ColorPickerTextBox.ColorBrushProperty,
+                        ComboBox => ComboBox.SelectedIndexProperty,
+                        _ => throw new NotImplementedException()
+                    };
+
+                    var selectedSymbol = leftControl.DataContext as SymbolInfo;
+                    string propertyName = leftControl.GetBindingExpression(controlProperty).ResolvedSourcePropertyName;
+
+                    var dataProperty = typeof(SymbolInfo).GetProperty(propertyName);
+
+                    await Task.Run(() =>
+                    {
+                        foreach (var key in Keys.Where(p => p != SelectedKey))
+                        {
+                            dataProperty.SetValue(key.Symbol, dataProperty.GetValue(selectedSymbol));
+                        }
+                    });
+                }
+                else
+                {
+                    throw new Exception("找不到左侧控件");
+                }
+            }
+            catch (Exception ex)
+            {
+                await CommonDialog.ShowErrorDialogAsync(ex, "应用属性失败");
+            }
+        }
+
 
     }
 }
