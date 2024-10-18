@@ -25,8 +25,8 @@
     <PackageVersion Include="Esri.ArcGISRuntime.Toolkit.Maui" Version="200.5.0" />
     <PackageVersion Include="FubarDev.FtpServer" Version="3.1.2" />
     <PackageVersion Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="8.0.91" />
-    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.91" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="8.0.80" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.80" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="DesktopBridge.Helpers" Version="1.2.2" />
     <PackageVersion Include="Esri.ArcGISRuntime.WPF" Version="200.5.0" />
