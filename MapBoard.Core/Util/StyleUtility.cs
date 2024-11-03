@@ -311,6 +311,16 @@ namespace MapBoard.Util
                     }
                     break;
 
+                case MultilayerPolylineSymbol mp:
+                    if (mp.SymbolLayers.OfType<SolidStrokeSymbolLayer>().Any())
+                    {
+                        var mpl = mp.SymbolLayers.OfType<SolidStrokeSymbolLayer>().First();
+                        s.LineColor = mpl.Color;
+                        s.LineStyle = (int)SimpleLineSymbolStyle.Solid;
+                        s.OutlineWidth = mp.Width;
+                    }
+                    break;
+
                 case MultilayerPolygonSymbol mp:
                     s.OutlineWidth = 0;//有时候只有SolidFillSymbolLayer没有SolidStrokeSymbolLayer，导致仍然会显示边框
                     foreach (var sl in mp.SymbolLayers)

@@ -176,8 +176,9 @@ namespace MapBoard.Mapping
         /// 加载指定文件的GPX文件
         /// </summary>
         /// <param name="files"></param>
-        public async Task LoadFilesAsync(IList<string> files, Action<int> indexChanged = null)
+        public async Task<bool> LoadFilesAsync(IList<string> files, Action<int> indexChanged = null)
         {
+            bool allLoaded = true;
             List<TrackInfo> loadedTrack = new List<TrackInfo>();
             for (int i = 0; i < files.Count; i++)
             {
@@ -210,10 +211,11 @@ namespace MapBoard.Mapping
                 catch (Exception ex)
                 {
                     App.Log.Error("加载GPX失败", ex);
-                    await CommonDialog.ShowErrorDialogAsync(ex, "加载GPX失败");
+                    allLoaded = false;
                 }
             }
             GpxLoaded?.Invoke(this, new GpxLoadedEventArgs(loadedTrack, false));
+            return allLoaded;
         }
 
         /// <summary>

@@ -225,12 +225,20 @@ namespace MapBoard.UI
                 Keys.Add(new KeySymbolPair(symbol.Key, symbol.Value));
             }
             SelectedKey = Keys.First(p => p.Key == defaultKeyName);
-            var keys = renderer.KeyFieldName?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            var keys = renderer.KeyFieldName?.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList() ?? [];
 
             KeyFields = Layers.Selected?.Fields
                 ?.Where(p => p.CanBeRendererKey())
+                ?.OrderBy(p =>
+                {
+                    if (keys.Contains(p.Name))
+                    {
+                        return keys.IndexOf(p.Name);
+                    }
+                    return int.MaxValue;
+                })
                 ?.Select(p => new SelectableObject<FieldInfo>(p, keys.Contains(p.Name)))
-                .ToList();
+                ?.ToList();
 
             btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
         }

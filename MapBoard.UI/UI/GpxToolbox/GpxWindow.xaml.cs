@@ -68,12 +68,16 @@ namespace MapBoard.UI.GpxToolbox
 
         public async Task LoadGpxFilesAsync(IList<string> files)
         {
-            await DoAsync(args =>
+            await DoAsync(async args =>
             {
-                return arcMap.LoadFilesAsync(files, i =>
+                bool result = await arcMap.LoadFilesAsync(files, i =>
                 {
                     args.SetMessage($"{i} / {files.Count}");
                 });
+                if (!result)
+                {
+                    await CommonDialog.ShowErrorDialogAsync("部分GPX加载失败");
+                }
             }, "正在加载轨迹");
         }
 
@@ -558,12 +562,12 @@ namespace MapBoard.UI.GpxToolbox
             }
 
             Gpx gpx = tracks[0].Gpx.Clone() as Gpx;
-            for (int i = 1; i < tracks.Length; i++)
+            gpx.Tracks.Clear();
+            var track = gpx.CreateTrack();
+            var seg = track.CreateSegment();
+            foreach (var t in tracks)
             {
-                foreach (var p in tracks[i].Track.GetPoints())
-                {
-                    gpx.Tracks[0].GetPoints().Add(p);
-                }
+                (seg.Points as List<GpxPoint>).AddRange(t.Track.GetPoints());
             }
             var dialog = new SaveFileDialog();
             dialog.AddFilter("GPX轨迹文件", "gpx");
