@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.8" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
@@ -12,7 +12,7 @@
     <PackageVersion Include="AutoMapper" Version="13.0.1" />
     <PackageVersion Include="CsvHelper" Version="33.0.1" />
     <PackageVersion Include="Esri.ArcGISRuntime" Version="200.5.0" />
-    <PackageVersion Include="Fody" Version="6.8.1">
+    <PackageVersion Include="Fody" Version="6.8.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
@@ -20,13 +20,13 @@
     <PackageVersion Include="MetadataExtractor" Version="2.8.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="PropertyChanged.Fody" Version="4.1.0" />
-    <PackageVersion Include="CommunityToolkit.Maui" Version="9.0.3" />
+    <PackageVersion Include="CommunityToolkit.Maui" Version="9.1.0" />
     <PackageVersion Include="Esri.ArcGISRuntime.Maui" Version="200.5.0" />
     <PackageVersion Include="Esri.ArcGISRuntime.Toolkit.Maui" Version="200.5.0" />
     <PackageVersion Include="FubarDev.FtpServer" Version="3.1.2" />
     <PackageVersion Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="8.0.82" />
-    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="8.0.80" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.80" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="DesktopBridge.Helpers" Version="1.2.2" />
     <PackageVersion Include="Esri.ArcGISRuntime.WPF" Version="200.5.0" />
@@ -36,6 +36,6 @@
     <PackageVersion Include="log4net" Version="2.0.17" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.6" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
   </ItemGroup>
 </Project>
