@@ -20,8 +20,8 @@ namespace MapBoard.IO
         /// <summary>
         /// shapefile的可能的文件扩展名
         /// </summary>
-        public static readonly string[] ShapefileExtensions = new string[]
-        {
+        public static readonly string[] ShapefileExtensions =
+        [
             ".shp",
             ".shx",
             ".dbf",
@@ -31,7 +31,7 @@ namespace MapBoard.IO
             ".cpg",
             ".sbn",
             ".sbx",
-        };
+        ];
 
         /// <summary>
         /// 将图层克隆并保存到新的目录中的shapefile

@@ -117,6 +117,7 @@ namespace MapBoard.Mapping.Model
                 layer = layer.Type switch
                 {
                     MapLayerInfo.Types.Shapefile => new ShapefileMapLayerInfo(layer),
+                    MapLayerInfo.Types.MGDB => new MgdbMapLayerInfo(layer),
                     MapLayerInfo.Types.WFS => new WfsMapLayerInfo(layer),
                     MapLayerInfo.Types.Temp => new TempMapLayerInfo(layer),
                     null => new ShapefileMapLayerInfo(layer),
@@ -128,7 +129,6 @@ namespace MapBoard.Mapping.Model
             LayerList.Add(layer);
             return layer;
         }
-
         /// <summary>
         /// 清空所有图层
         /// </summary>
@@ -198,6 +198,7 @@ namespace MapBoard.Mapping.Model
 
             try
             {
+                await MobileGeodatabase.InitializeAsync();
                 EsriLayers = esriLayers;
                 //初始化一个新的图层列表
                 SetLayers(new ObservableCollection<ILayerInfo>());

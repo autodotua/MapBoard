@@ -271,11 +271,14 @@
                             <TextBlock Text="  " />
                             <ui:SplitButton
                                 x:Name="btnCreateStyle"
-                                Click="CreateLayerButton_Click"
+                                Click="CreateMgdbLayerButton_Click"
                                 Content="新建图层"
                                 ToolTip="新建可编辑图层">
                                 <ui:SplitButton.Flyout>
                                     <ui:MenuFlyout>
+                                        <MenuItem
+                                            Click="CreateShapefileLayerButton_Click"
+                                            Header="Shapefile图层" />
                                         <MenuItem
                                             Click="AddWfsLayerButton_Click"
                                             Header="WFS图层" />

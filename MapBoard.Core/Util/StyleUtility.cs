@@ -162,6 +162,7 @@ namespace MapBoard.Util
             {
                 case MapLayerInfo.Types.Shapefile:
                 case MapLayerInfo.Types.Temp:
+                case MapLayerInfo.Types.MGDB:
                 case null:
                     {
                         UniqueValueRenderer renderer = new UniqueValueRenderer();
