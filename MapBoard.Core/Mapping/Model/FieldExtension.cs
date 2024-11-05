@@ -188,6 +188,43 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 转为ArcGIS的字段类型
         /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static FieldDescription ToFieldDescription(this FieldInfo field)
+        {
+            FieldType type = default;
+            int length = 0;
+            switch (field.Type)
+            {
+                case FieldInfoType.Integer:
+                    type = FieldType.Int32;
+                    break;
+
+                case FieldInfoType.Float:
+                    type = FieldType.Float64;
+                    break;
+
+                case FieldInfoType.Date:
+                    type = FieldType.Date;
+                    break;
+
+                case FieldInfoType.Text:
+                    type = FieldType.Text;
+                    break;
+
+                case FieldInfoType.Time:
+                    type = FieldType.Date;
+                    break;
+
+                default:
+                    break;
+            }
+            return new FieldDescription(field.Name, type);
+        }
+
+        /// <summary>
+        /// 转为ArcGIS的字段类型
+        /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
         public static IEnumerable<Field> ToEsriFields(this IEnumerable<FieldInfo> fields)

@@ -157,6 +157,10 @@ namespace MapBoard.UI.Dialog
             {
                 return MapLayerInfo.Types.Shapefile;
             }
+            if (typeof(T) == typeof(MgdbMapLayerInfo))
+            {
+                return MapLayerInfo.Types.MGDB;
+            }
             else if (typeof(T) == typeof(TempMapLayerInfo))
             {
                 return MapLayerInfo.Types.Temp;
@@ -230,8 +234,9 @@ namespace MapBoard.UI.Dialog
                 switch (layerType)
                 {
                     case MapLayerInfo.Types.Shapefile:
+                    case MapLayerInfo.Types.MGDB:
                         //(editLayer as ShapefileMapLayerInfo).ModifyFieldsAsync(Fields.ToArray(), EsriLayers);
-                        editLayer.Fields = Fields.ToArray();
+                        editLayer.Fields = [.. Fields];
                         break;
 
                     case MapLayerInfo.Types.Temp:
@@ -257,7 +262,11 @@ namespace MapBoard.UI.Dialog
                     switch (layerType)
                     {
                         case MapLayerInfo.Types.Shapefile:
-                            await LayerUtility.CreateShapefileLayerAsync(type, Layers, name: LayerName, fields: fields);
+                            await LayerUtility.CreateFileLayerAsync(MapLayerInfo.Types.Shapefile, type, Layers, name: LayerName, fields: fields);
+                            break;
+                            
+                        case MapLayerInfo.Types.MGDB:
+                            await LayerUtility.CreateFileLayerAsync(MapLayerInfo.Types.MGDB, type, Layers, name: LayerName, fields: fields);
                             break;
 
                         case MapLayerInfo.Types.Temp:

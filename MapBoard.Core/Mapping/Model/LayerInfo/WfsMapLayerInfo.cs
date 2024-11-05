@@ -66,6 +66,11 @@ namespace MapBoard.Mapping.Model
             return Task.CompletedTask;
         }
 
+        public override Task DeleteAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task PopulateAllFromServiceAsync(CancellationToken? cancellationToken = null)
         {
             HasPopulateAll = true;

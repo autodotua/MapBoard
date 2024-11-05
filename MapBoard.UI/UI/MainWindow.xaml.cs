@@ -496,9 +496,20 @@ namespace MapBoard.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void CreateLayerButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
+        private async void CreateShapefileLayerButton_Click(object sender, RoutedEventArgs args)
         {
             await CreateLayerDialog.OpenCreateDialog<ShapefileMapLayerInfo>(arcMap.Layers);
+            arcMap.Layers.Save();
+        }
+        
+        /// <summary>
+        /// 单击创建图层按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private async void CreateMgdbLayerButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
+        {
+            await CreateLayerDialog.OpenCreateDialog<MgdbMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
         }
 
@@ -810,8 +821,7 @@ namespace MapBoard.UI
             grdLeft.BeginAnimation(WidthProperty, ani);
         }
 
+
         #endregion 图层列表事件
-
-
     }
 }

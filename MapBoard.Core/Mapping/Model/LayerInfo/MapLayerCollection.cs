@@ -114,21 +114,7 @@ namespace MapBoard.Mapping.Model
         {
             if (layer is not MapLayerInfo)
             {
-                layer = layer.Type switch
-                {
-                    MapLayerInfo.Types.Shapefile => new ShapefileMapLayerInfo(layer),
-                    MapLayerInfo.Types.WFS => new WfsMapLayerInfo(layer),
-                    MapLayerInfo.Types.Temp => new TempMapLayerInfo(layer),
-                    null => new ShapefileMapLayerInfo(layer),
-                    _ => throw new NotSupportedException("不支持的图层格式：" + layer.Type)
-                };
-            }
-            await AddLayerAsync(layer as MapLayerInfo, 0);
-            (layer as MapLayerInfo).PropertyChanged += OnLayerPropertyChanged;
-            LayerList.Add(layer);
-            return layer;
-        }
-
+                ^
         /// <summary>
         /// 清空所有图层
         /// </summary>
@@ -198,6 +184,7 @@ namespace MapBoard.Mapping.Model
 
             try
             {
+                await MobileGeodatabase.InitializeAsync();
                 EsriLayers = esriLayers;
                 //初始化一个新的图层列表
                 SetLayers(new ObservableCollection<ILayerInfo>());

@@ -47,6 +47,9 @@ namespace MapBoard.Mapping.Model
         public event EventHandler Unattached;
 
         [JsonIgnore]
+        public bool CanEdit => this is IEditableLayerInfo && Interaction.CanEdit;
+
+        [JsonIgnore]
         public GeometryType GeometryType => table.GeometryType;
 
         [JsonIgnore]
@@ -61,10 +64,6 @@ namespace MapBoard.Mapping.Model
 
         [JsonIgnore]
         public Exception LoadError { get; private set; }
-
-        [JsonIgnore]
-        public bool CanEdit => this is IEditableLayerInfo && Interaction.CanEdit;
-
         [JsonIgnore]
         public long NumberOfFeatures
         {
@@ -99,18 +98,10 @@ namespace MapBoard.Mapping.Model
             return layer;
         }
 
+        public abstract Task DeleteAsync();
         public virtual void Dispose()
         {
             Unattached?.Invoke(this, new EventArgs());
-        }
-
-        /// <summary>
-        /// 获取添加到MapView的图层集合中的图层
-        /// </summary>
-        /// <returns></returns>
-        public virtual Layer GetLayerForLayerList()
-        {
-            return layer;
         }
 
         public SymbolInfo GetDefaultSymbol()
@@ -125,6 +116,14 @@ namespace MapBoard.Mapping.Model
             };
         }
 
+        /// <summary>
+        /// 获取添加到MapView的图层集合中的图层
+        /// </summary>
+        /// <returns></returns>
+        public virtual Layer GetLayerForLayerList()
+        {
+            return layer;
+        }
         /// <summary>
         /// 加载图层
         /// </summary>
@@ -212,6 +211,19 @@ namespace MapBoard.Mapping.Model
             this.Notify(nameof(NumberOfFeatures), nameof(GeometryType));
         }
 
+        protected virtual void ApplyProperties()
+        {
+            Fields = FieldExtension.SyncWithSource(base.Fields, table).ToArray();
+            layer.IsVisible = LayerVisible;
+            layer.MinScale = Display.MinScale;
+            layer.MaxScale = Display.MaxScale;
+            layer.Opacity = Display.Opacity;
+            layer.DefinitionExpression = DefinitionExpression;
+            layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
+            PropertyChanged += PropertiesChanged;
+            Display.PropertyChanged += PropertiesChanged;
+        }
+
         /// <summary>
         /// 获取用于进行操作的图层
         /// </summary>
@@ -227,20 +239,6 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         /// <returns></returns>
         protected abstract FeatureTable GetTable();
-
-        protected virtual void ApplyProperties()
-        {
-            Fields = FieldExtension.SyncWithSource(base.Fields, table).ToArray();
-            layer.IsVisible = LayerVisible;
-            layer.MinScale = Display.MinScale;
-            layer.MaxScale = Display.MaxScale;
-            layer.Opacity = Display.Opacity;
-            layer.DefinitionExpression = DefinitionExpression;
-            layer.RenderingMode = (FeatureRenderingMode)Display.RenderingMode;
-            PropertyChanged += PropertiesChanged;
-            Display.PropertyChanged += PropertiesChanged;
-        }
-
         private void PropertiesChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -276,6 +274,9 @@ namespace MapBoard.Mapping.Model
 
         public class Types
         {
+            [Description("地理数据库")]
+            public const string MGDB = "Geodatabse";
+
             [Description("Shapefile文件")]
             public const string Shapefile = "Shapefile";
 
@@ -284,7 +285,6 @@ namespace MapBoard.Mapping.Model
 
             [Description("网络矢量服务")]
             public const string WFS = "WFS";
-
             /// <summary>
             /// 获取给定类型代码的图层类型描述
             /// </summary>

@@ -26,17 +26,37 @@ namespace MapBoard.Mapping.Model
             Set(name, type, fields);
         }
 
-        private void Set(string name, GeometryType type, IEnumerable<FieldInfo> fields)
-        {
-            Name = name;
-            ServiceParameters.AddOrSetValue(nameof(GeometryType), type.ToString());
-            Fields = fields.ToArray();
-        }
+        public override string Type => Types.Temp;
 
         public override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
         {
             Name = newName;
             return Task.CompletedTask;
+        }
+
+        public override Task DeleteAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Layer GetLayerForLayerList()
+        {
+            return featureCollectionLayer;
+        }
+
+        public void SetField(IEnumerable<FieldInfo> fields)
+        {
+            Fields = fields.ToArray();
+        }
+
+        public void SetGeometryType(GeometryType type)
+        {
+            ServiceParameters.AddOrSetValue(nameof(GeometryType), type.ToString());
+        }
+
+        protected override FeatureLayer GetLayerForLoading(FeatureTable table)
+        {
+            return featureCollectionLayer.Layers[0];
         }
 
         protected override FeatureTable GetTable()
@@ -59,27 +79,11 @@ namespace MapBoard.Mapping.Model
             return table;
         }
 
-        public void SetGeometryType(GeometryType type)
+        private void Set(string name, GeometryType type, IEnumerable<FieldInfo> fields)
         {
+            Name = name;
             ServiceParameters.AddOrSetValue(nameof(GeometryType), type.ToString());
-        }
-
-        public void SetField(IEnumerable<FieldInfo> fields)
-        {
             Fields = fields.ToArray();
         }
-
-        public override string Type => Types.Temp;
-
-        public override Layer GetLayerForLayerList()
-        {
-            return featureCollectionLayer;
-        }
-
-        protected override FeatureLayer GetLayerForLoading(FeatureTable table)
-        {
-            return featureCollectionLayer.Layers[0];
-        }
-
     }
 }

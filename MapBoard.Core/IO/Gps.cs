@@ -52,7 +52,7 @@ namespace MapBoard.IO
                 fields.Add(new FieldInfo(Filed_PointIndex, "点序号", FieldInfoType.Integer));
             }
 
-            var layer = await LayerUtility.CreateShapefileLayerAsync(type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
+            var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, type == GpxImportType.Point ? GeometryType.Point : GeometryType.Polyline,
                 layers, name: Path.GetFileNameWithoutExtension(newName), fields);
             List<Feature> newFeatures = new List<Feature>();
             foreach (var track in gpx.Tracks)
@@ -105,7 +105,7 @@ namespace MapBoard.IO
                 MapPoint mapPoint = CoordinateTransformation.Transformate(point.ToXYMapPoint(), WGS84, baseCs);
                 Feature feature = layer.CreateFeature();
                 feature.Geometry = mapPoint;
-                ApplyAttributes(track, layer, i++, feature,point.Time);
+                ApplyAttributes(track, layer, i++, feature, point.Time);
                 yield return feature;
             }
         }
@@ -118,7 +118,7 @@ namespace MapBoard.IO
         /// <param name="index"></param>
         /// <param name="feature"></param>
         /// <param name="time"></param>
-        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature,DateTime? time)
+        private static void ApplyAttributes(Gpx.GpxTrack track, IEditableLayerInfo layer, int? index, Feature feature, DateTime? time)
         {
             if (layer.HasField(Filed_Name, FieldInfoType.Text))
             {
@@ -142,7 +142,7 @@ namespace MapBoard.IO
             }
             if (layer.HasField(Filed_Time, FieldInfoType.Time))
             {
-                feature.SetAttributeValue(Filed_Time, time?.ToString(Parameters.TimeFormat)??"");
+                feature.SetAttributeValue(Filed_Time, time?.ToString(Parameters.TimeFormat) ?? "");
             }
             if (layer.HasField(Filed_Index, FieldInfoType.Integer))
             {
