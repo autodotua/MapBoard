@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Esri.ArcGISRuntime.Geometry;
 using MapBoard.Mapping.Model;
 using MapBoard.Model;
-using AutoMapper.Features;
 using static MapBoard.Util.GeometryUtility.CentripetalCatmullRom;
 using System.Diagnostics;
 

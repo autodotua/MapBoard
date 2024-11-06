@@ -46,7 +46,7 @@ namespace MapBoard.IO
         /// <param name="imagePath"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public static async Task<string> GetDisplayableImage(string imagePath, int maxLength)
+        public static async Task<string> GetDisplayableImage(string imagePath, uint maxLength)
         {
             string tempPath = Path.GetTempFileName() + ".jpg";
             await Task.Run(() =>

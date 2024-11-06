@@ -39,13 +39,21 @@ namespace MapBoard
             {
                 if (instance == null)
                 {
-                    instance = new Config();
                     try
                     {
-                        instance.TryLoadFromJsonFile(path);
+                        if(File.Exists(path))
+                        {
+                            var json = File.ReadAllText(path);
+                            instance = JsonConvert.DeserializeObject<Config>(json);
+                        }
+                        else
+                        {
+                            instance = new Config();
+                        }
                     }
                     catch (Exception ex)
                     {
+                        instance = new Config();
                         instance.LoadError = ex;
                     }
                 }
@@ -104,11 +112,6 @@ namespace MapBoard
         public bool EnableBasemapCache { get; set; } = true;
 
         /// <summary>
-        /// GPX速度相关平滑的窗口大小
-        /// </summary>
-        public int GpxSpeedSmoothWindow { get; set; } = 5;
-
-        /// <summary>
         /// GPX工具箱中，是否自动平滑
         /// </summary>
         public bool Gpx_AutoSmooth { get; set; } = false;
@@ -164,6 +167,10 @@ namespace MapBoard
         /// </summary>
         public bool Gpx_RelativeHeight { get; set; } = false;
 
+        /// <summary>
+        /// GPX速度相关平滑的窗口大小
+        /// </summary>
+        public int GpxSpeedSmoothWindow { get; set; } = 5;
         /// <summary>
         /// 是否隐藏ArcGIS水印
         /// </summary>
@@ -380,7 +387,7 @@ namespace MapBoard
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
-            this.Save(path, new JsonSerializerSettings().SetIndented());
+            File.WriteAllText(path, JsonConvert.SerializeObject(this, new JsonSerializerSettings() { Formatting = Formatting.Indented }));
         }
     }
 }

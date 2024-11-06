@@ -24,7 +24,6 @@ using MapBoard.Mapping.Model;
 using EsriLayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 using System.Diagnostics;
 using System.ComponentModel;
-using AutoMapper;
 
 namespace MapBoard.UI.Dialog
 {

@@ -75,11 +75,11 @@ namespace MapBoard.Model
         /// </summary>
         public UniqueValueRendererInfo Renderer { get; set; } = new UniqueValueRendererInfo();
 
-        public string SourceName { get; set; } = Guid.NewGuid().ToString("N");
+        public string SourceName { get; set; } = $"T{Guid.NewGuid():N}";
 
         protected void GenerateSourceName()
         {
-            SourceName = Guid.NewGuid().ToString("N");
+            SourceName = $"T{Guid.NewGuid():N}";
         }
 
         /// <summary>

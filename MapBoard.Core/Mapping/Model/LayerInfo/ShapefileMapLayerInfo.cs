@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Esri.ArcGISRuntime.Data;
+﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
 using MapBoard.Model;

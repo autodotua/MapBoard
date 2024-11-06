@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Esri.ArcGISRuntime.Data;
+﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
 using MapBoard.Model;
 using MapBoard.Util;
+using Mapster;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -33,13 +33,9 @@ namespace MapBoard.Mapping.Model
 
         public MgdbMapLayerInfo(MapLayerInfo template, string newName, bool includeFields)
         {
-            //需要从模板对象中读取信息，写入到当前对象
-            new MapperConfiguration(cfg =>
-               {
-                   cfg.CreateMap<LayerInfo, MgdbMapLayerInfo>();
-               }).CreateMapper().Map<LayerInfo, MgdbMapLayerInfo>(template, this);
-            Name = newName;
+            template.Adapt(this);
             GenerateSourceName();
+            Name = newName;
 
             if (!includeFields)
             {
@@ -49,11 +45,7 @@ namespace MapBoard.Mapping.Model
 
         public override object Clone()
         {
-            var layer = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<LayerInfo, MgdbMapLayerInfo>();
-            }).CreateMapper().Map<MgdbMapLayerInfo>(this);
-            return layer;
+            return this.Adapt<MgdbMapLayerInfo>();
         }
         public override void Dispose()
         {

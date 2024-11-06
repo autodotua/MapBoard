@@ -14,8 +14,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MLayerCollection = MapBoard.Model.LayerCollection;
 using ELayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
-using AutoMapper;
 using MapBoard.IO;
+using Mapster;
 
 namespace MapBoard.Mapping.Model
 {
@@ -86,10 +86,8 @@ namespace MapBoard.Mapping.Model
             var tempLayers = FromFile(path);
             instance = new MapLayerCollection(esriLayers);
             //将临时变量映射到新的对象中
-            new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<MLayerCollection, MapLayerCollection>();
-            }).CreateMapper().Map(tempLayers, instance);
+            tempLayers.Adapt(instance);
+
             //将临时变量中的图层添加到新的MapLayerCollection对象中
             foreach (var layer in tempLayers)
             {
@@ -193,7 +191,7 @@ namespace MapBoard.Mapping.Model
                 await MobileGeodatabase.InitializeAsync();
                 EsriLayers = esriLayers;
                 //初始化一个新的图层列表
-                SetLayers(new ObservableCollection<ILayerInfo>());
+                SetLayers([]);
                 //图层配置文件
                 string path = Path.Combine(FolderPaths.DataPath, LayersFileName);
                 if (!File.Exists(path))
@@ -202,10 +200,7 @@ namespace MapBoard.Mapping.Model
                 }
                 //获取临时图层对象，并映射到当前对象。使用临时对象是因为无法将对象反序列化后直接应用到当前对象，对象类型可能不一致，属性可能被覆盖。
                 var tempLayers = FromFile(path);
-                new MapperConfiguration(cfg =>
-                {
-                    cfg.CreateMap<MLayerCollection, MapLayerCollection>();
-                }).CreateMapper().Map(tempLayers, this);
+                tempLayers.Adapt(this);
                 //将临时对象中所有图层加入当前对象
                 foreach (var layer in tempLayers)
                 {

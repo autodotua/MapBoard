@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Esri.ArcGISRuntime.Data;
+﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using FzLib;
 using MapBoard.Model;
 using MapBoard.Util;
+using Mapster;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PropertyChanged;
@@ -39,10 +39,7 @@ namespace MapBoard.Mapping.Model
 
         public MapLayerInfo(ILayerInfo layer)
         {
-            new MapperConfiguration(cfg =>
-           {
-               cfg.CreateMap<LayerInfo, MapLayerInfo>();
-           }).CreateMapper().Map(layer, this);
+            layer.Adapt(this);
 
             if (Histories.Count > 0)
             {
@@ -88,12 +85,7 @@ namespace MapBoard.Mapping.Model
 
         public override object Clone()
         {
-            var layer = new MapperConfiguration(cfg =>
-              {
-                  cfg.CreateMap<LayerInfo, MapLayerInfo>();
-              }).CreateMapper().Map<MapLayerInfo>(this);
-
-            return layer;
+            return this.Adapt<MapLayerInfo>();
         }
 
         public abstract Task DeleteAsync();
