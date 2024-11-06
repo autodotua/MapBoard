@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using System.Threading;
+using Esri.ArcGISRuntime.Data;
 
 namespace MapBoard.IO
 {
@@ -29,6 +30,9 @@ namespace MapBoard.IO
             var tempDir = PathUtility.GetTempDir().FullName;
             await Task.Run(() => ZipFile.ExtractToDirectory(path, tempDir));
             var configPath = Path.Combine(tempDir, MapLayerCollection.LayersFileName);
+            var mgdbPath = Path.Combine(tempDir, MobileGeodatabase.MgdbFileName);
+
+            await MobileGeodatabase.ClearAsync();
             if (!File.Exists(configPath))
             {
                 throw new FileNotFoundException("找不到图层配置文件");
@@ -41,26 +45,32 @@ namespace MapBoard.IO
                     throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
             }
+            Geodatabase mgdb = null;
+            Dictionary<string, GeodatabaseFeatureTable> tables = null;
+            if (File.Exists(mgdbPath))
+            {
+                mgdb = await Geodatabase.OpenAsync(mgdbPath);
+                tables = mgdb.GeodatabaseFeatureTables.ToDictionary(p => p.TableName);
+            }
             foreach (var layer in newLayers)
             {
-                //switch (layer.Type)
-                //{
-                //    case null:
-                //    case "":
-                //    //case MapLayerInfo.Types.Shapefile:
-                //        await Task.Run(() =>
-                //        {
-                //            foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
-                //            {
-                //                File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-                //            }
-                //        });
-                //        break;
-                //}
-
-                //要兼容老的Shapefile和新的mgdb
-                throw new NotImplementedException();
-
+                if (tables != null && tables.TryGetValue(layer.SourceName, out GeodatabaseFeatureTable oldTable))
+                {
+                    throw new NotImplementedException("太慢了，下一版本改为直接复制");
+                    await oldTable.LoadAsync();
+                    await MobileGeodatabase.ImportFeatureTableAsync(layer.SourceName, oldTable);
+                }
+                else if (File.Exists(Path.Combine(tempDir, $"{layer.Name}.shp")))
+                {
+                    var shp = Path.Combine(tempDir, $"{layer.Name}.shp");
+                    ShapefileFeatureTable shpTable = new ShapefileFeatureTable(shp);
+                    await shpTable.LoadAsync();
+                    await MobileGeodatabase.ImportFeatureTableAsync(layer.SourceName, shpTable);
+                }
+                else
+                {
+                    throw new Exception($"找不到图层{layer.Name}的可导入源（包括gdb和shp）");
+                }
                 await layers.AddAsync(layer);
             }
             layers.Save();

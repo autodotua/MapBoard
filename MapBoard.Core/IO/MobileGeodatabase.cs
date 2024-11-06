@@ -18,7 +18,7 @@ namespace MapBoard.IO
 {
     public static class MobileGeodatabase
     {
-        public const string MgdbFileName = "layer.geodatabase";
+        public const string MgdbFileName = "layers.geodatabase";
 
         public static Geodatabase Current { get; private set; }
 
@@ -42,6 +42,25 @@ namespace MapBoard.IO
             {
                 Current = await Geodatabase.OpenAsync(gdbFile);
             }
+        }
+
+        public static async Task ClearAsync()
+        {
+            foreach (var table in Current.GeodatabaseFeatureTables.ToList())
+            {
+                await Current.DeleteTableAsync(table.TableName);
+            }
+        }
+
+        public static async Task ImportFeatureTableAsync(string name, FeatureTable featureTable)
+        {
+            TableDescription tableDescription = new TableDescription(name, featureTable.SpatialReference, featureTable.GeometryType);
+            foreach (var field in featureTable.Fields)
+            {
+                tableDescription.FieldDescriptions.Add(new FieldDescription(field.Name, field.FieldType));
+            }
+            var newTable = await Current.CreateTableAsync(tableDescription);
+            await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
         }
 
         /// <summary>
