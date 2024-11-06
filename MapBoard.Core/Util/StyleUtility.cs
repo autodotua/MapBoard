@@ -158,79 +158,63 @@ namespace MapBoard.Util
                 layer.Layer.Renderer = Renderer.FromJson(layer.Renderer.RawJson ?? "{}");
                 return;
             }
-            switch (layer.Type)
+
+            UniqueValueRenderer renderer = new UniqueValueRenderer();
+            if (layer.Renderer.HasCustomSymbols)
             {
-                case MapLayerInfo.Types.Shapefile:
-                case MapLayerInfo.Types.Temp:
-                case MapLayerInfo.Types.MGDB:
-                case null:
+                //解析字段名
+                string[] names = layer.Renderer.KeyFieldName.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                renderer.FieldNames.AddRange(names);
+
+                //对于每一个Key和Symbol
+                foreach (var info in layer.Renderer.Symbols)
+                {
+                    try
                     {
-                        UniqueValueRenderer renderer = new UniqueValueRenderer();
-                        if (layer.Renderer.HasCustomSymbols)
+                        //解析key
+                        string[] keyStrings = info.Key.Split('|', StringSplitOptions.None);
+                        List<object> keys = new List<object>();
+
+                        //对每个key中对应的字段进行处理
+                        for (int i = 0; i < names.Length; i++)
                         {
-                            //解析字段名
-                            string[] names = layer.Renderer.KeyFieldName.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                            renderer.FieldNames.AddRange(names);
-
-                            //对于每一个Key和Symbol
-                            foreach (var info in layer.Renderer.Symbols)
+                            var fieldType = layer.Fields.FirstOrDefault(p => p.Name == names[i])?.Type;
+                            if (fieldType == null)
                             {
-                                try
-                                {
-                                    //解析key
-                                    string[] keyStrings = info.Key.Split('|', StringSplitOptions.None);
-                                    List<object> keys = new List<object>();
-
-                                    //对每个key中对应的字段进行处理
-                                    for (int i = 0; i < names.Length; i++)
-                                    {
-                                        var fieldType = layer.Fields.FirstOrDefault(p => p.Name == names[i])?.Type;
-                                        if (fieldType == null)
-                                        {
-                                            continue;
-                                        }
-                                        //如果key的长度不到names的长度，那么就设为null
-                                        object key = keyStrings.Length < i + 1 ? "" : keyStrings[i];
-                                        //空字符串也为null
-                                        if ((key as string) is "" or "（空）")
-                                        {
-                                            key = "";
-                                        }
-                                        //转换到正确的类型
-                                        key = fieldType switch
-                                        {
-                                            FieldInfoType.Text or FieldInfoType.Time => key,
-                                            FieldInfoType.Date => DateTime.Parse(key as string),
-                                            FieldInfoType.Integer => int.Parse(key as string),
-                                            FieldInfoType.Float => double.Parse(key as string),
-                                            _ => throw new NotImplementedException(),
-                                        };
-                                        keys.Add(key);
-                                    }
-
-
-                                    renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), keys));
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    Debug.WriteLine("转换唯一值渲染器的Key失败：" + ex.ToString());
-                                }
-
+                                continue;
                             }
+                            //如果key的长度不到names的长度，那么就设为null
+                            object key = keyStrings.Length < i + 1 ? "" : keyStrings[i];
+                            //空字符串也为null
+                            if ((key as string) is "" or "（空）")
+                            {
+                                key = "";
+                            }
+                            //转换到正确的类型
+                            key = fieldType switch
+                            {
+                                FieldInfoType.Text or FieldInfoType.Time => key,
+                                FieldInfoType.Date => DateTime.Parse(key as string),
+                                FieldInfoType.Integer => int.Parse(key as string),
+                                FieldInfoType.Float => double.Parse(key as string),
+                                _ => throw new NotImplementedException(),
+                            };
+                            keys.Add(key);
                         }
-                        renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);
-                        layer.Layer.Renderer = renderer;
+
+
+                        renderer.UniqueValues.Add(new UniqueValue(info.Key, info.Key, info.Value.ToSymbol(layer.GeometryType), keys));
+
                     }
-                    break;
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("转换唯一值渲染器的Key失败：" + ex.ToString());
+                    }
 
-                case MapLayerInfo.Types.WFS:
-                    layer.Layer.Renderer = new SimpleRenderer((layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType));
-                    break;
-
-                default:
-                    break;
+                }
             }
+            renderer.DefaultSymbol = (layer.Renderer.DefaultSymbol ?? layer.GetDefaultSymbol()).ToSymbol(layer.GeometryType);
+            layer.Layer.Renderer = renderer;
         }
 
         /// <summary>

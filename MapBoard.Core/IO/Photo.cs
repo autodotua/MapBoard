@@ -74,7 +74,7 @@ namespace MapBoard.IO
                 new FieldInfo(DateField,"拍摄日期",FieldInfoType.Date),
                 new FieldInfo(TimeField,"拍摄时间",FieldInfoType.Time),
             };
-            var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, GeometryType.Point, layers, fields: fields);
+            var layer = await LayerUtility.CreateLayerAsync( GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
             await Task.Run(() =>
             {

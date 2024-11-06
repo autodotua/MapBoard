@@ -131,7 +131,7 @@ namespace MapBoard.UI.Dialog
                 .Select(p => p.Field).ToList();
             try
             {
-                var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, GeometryType.Point, Layers, name: LayerName, fields: fields);
+                var layer = await LayerUtility.CreateLayerAsync(GeometryType.Point, Layers, name: LayerName, fields: fields);
                 int failedRowCount = 0;
                 List<Feature> features = new List<Feature>();
                 await Task.Run(() =>

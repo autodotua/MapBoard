@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -42,12 +43,17 @@ namespace MapBoard.Mapping.Model
            {
                cfg.CreateMap<LayerInfo, MapLayerInfo>();
            }).CreateMapper().Map(layer, this);
+
+            if (Histories.Count > 0)
+            {
+                Histories.Clear();
+            }
         }
 
         public event EventHandler Unattached;
 
         [JsonIgnore]
-        public bool CanEdit => this is IEditableLayerInfo && Interaction.CanEdit;
+        public bool CanEdit => Interaction.CanEdit;
 
         [JsonIgnore]
         public GeometryType GeometryType => table.GeometryType;
@@ -79,14 +85,6 @@ namespace MapBoard.Mapping.Model
                 }
             }
         }
-
-        /// <summary>
-        /// 修改图层名，并同步修改物理文件的名称
-        /// </summary>
-        /// <param name="newName"></param>
-        /// <param name="layers">Esri图层集合</param>
-        /// <returns></returns>
-        public abstract Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers);
 
         public override object Clone()
         {
@@ -272,48 +270,242 @@ namespace MapBoard.Mapping.Model
             }
         }
 
-        public class Types
+
+        /// <summary>
+        /// 要素集合发生改变，即增删改
+        /// </summary>
+        public event EventHandler<FeaturesChangedEventArgs> FeaturesChanged;
+
+        /// <summary>
+        /// 要素操作历史
+        /// </summary>
+        [JsonIgnore]
+        public ObservableCollection<FeaturesChangedEventArgs> Histories { get; private set; } = new ObservableCollection<FeaturesChangedEventArgs>();
+
+        /// <summary>
+        /// 新增要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public Task AddFeatureAsync(Feature feature, FeaturesChangedSource source)
         {
-            [Description("地理数据库")]
-            public const string MGDB = "Geodatabse";
+            ThrowIfNotEditable(source);
+            return AddFeatureAsync(feature, source, feature.FeatureTable != table);
+        }
 
-            [Description("Shapefile文件")]
-            public const string Shapefile = "Shapefile";
+        /// <summary>
+        /// 新增要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <param name="rebuildFeature">根据原有要素的图形和属性，创建新的要素，而不是使用旧的要素</param>
+        /// <returns></returns>
+        public async Task AddFeatureAsync(Feature feature, FeaturesChangedSource source, bool rebuildFeature)
+        {
+            ThrowIfNotEditable(source);
+            Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
+            AddCreateTimeAttributeIfExistField(newFeature);
+            await table.AddFeatureAsync(newFeature);
+            NotifyFeaturesChanged(new[] { feature }, null, null, source);
+        }
 
-            [Description("临时矢量图层")]
-            public const string Temp = "Temp";
-
-            [Description("网络矢量服务")]
-            public const string WFS = "WFS";
-            /// <summary>
-            /// 获取给定类型代码的图层类型描述
-            /// </summary>
-            /// <param name="type"></param>
-            /// <returns></returns>
-            public static string GetDescription(string type)
+        /// <summary>
+        /// 新增一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
+        {
+            ThrowIfNotEditable(source);
+            if (features.Select(p => p.FeatureTable).Distinct().Count() != 1)
             {
-                var types = GetSupportedTypes();
-                var target = types.Where(p => p.GetRawConstantValue() as string == type).FirstOrDefault();
-                if (target == null)
+                throw new ArgumentException("集合为空或要素来自不同的要素类");
+            }
+            return AddFeaturesAsync(features, source, features.First().FeatureTable != table);
+        }
+
+        /// <summary>
+        /// 增加一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <param name="rebuildFeature">是否需要根据属性和图形新建要素。若源要素属于另一个拥有不同字段的要素类，则该值应设为True</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Feature>> AddFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source, bool rebuildFeature)
+        {
+            ThrowIfNotEditable(source);
+            Dictionary<string, FieldInfo> key2Field = Fields.ToDictionary(p => p.Name);
+            //为了避免出现问题，改成了强制重建，经测试用不了多长时间
+            if (true || rebuildFeature)
+            {
+                List<Feature> newFeatures = new List<Feature>();
+                foreach (var feature in features)
                 {
-                    throw new ArgumentException("找不到类型：" + type);
+                    Feature newFeature = feature.Clone(table, key2Field);
+                    newFeatures.Add(newFeature);
                 }
-                return target.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault()?.Description ?? type;
+                await table.AddFeaturesAsync(newFeatures);
+                NotifyFeaturesChanged(newFeatures, null, null, source);
+                features = newFeatures;
             }
-
-            /// <summary>
-            /// 获取所有支持的图层类型名
-            /// </summary>
-            /// <returns></returns>
-            public static IEnumerable<string> GetSupportedTypeNames()
+            else
             {
-                return GetSupportedTypes().Select(p => p.GetRawConstantValue() as string).Concat(new string[] { null });
+                foreach (var feature in features)
+                {
+                    if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
+                        || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+                    {
+                        AddCreateTimeAttributeIfExistField(feature);
+                    }
+                    else
+                    {
+                        AddModifiedTimeAttributeIfExistField(feature);
+                    }
+                }
+                await table.AddFeaturesAsync(features);
+                NotifyFeaturesChanged(features, null, null, source);
             }
+            return features;
+        }
 
-            private static IEnumerable<System.Reflection.FieldInfo> GetSupportedTypes()
+        /// <summary>
+        /// 根据属性和图形创建要素
+        /// </summary>
+        /// <param name="attributes"></param>
+        /// <param name="geometry"></param>
+        /// <returns></returns>
+        public Feature CreateFeature(IEnumerable<KeyValuePair<string, object>> attributes, Geometry geometry)
+        {
+            return table.CreateFeature(attributes, geometry);
+        }
+
+        /// <summary>
+        /// 创建空要素
+        /// </summary>
+        /// <returns></returns>
+        public Feature CreateFeature()
+        {
+            return table.CreateFeature();
+        }
+
+        /// <summary>
+        /// 删除要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task DeleteFeatureAsync(Feature feature, FeaturesChangedSource source)
+        {
+            ThrowIfNotEditable(source);
+            await table.DeleteFeatureAsync(feature);
+            NotifyFeaturesChanged(null, new[] { feature }, null, source);
+        }
+
+        /// <summary>
+        /// 删除一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task DeleteFeaturesAsync(IEnumerable<Feature> features, FeaturesChangedSource source)
+        {
+            ThrowIfNotEditable(source);
+            await table.DeleteFeaturesAsync(features);
+            NotifyFeaturesChanged(null, features, null, source);
+        }
+
+        /// <summary>
+        /// 更新要素
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task UpdateFeatureAsync(UpdatedFeature feature, FeaturesChangedSource source)
+        {
+            ThrowIfNotEditable(source);
+            AddModifiedTimeAttributeIfExistField(feature.Feature);
+            await table.UpdateFeatureAsync(feature.Feature);
+            NotifyFeaturesChanged(null, null, new[] { feature }, source);
+        }
+
+        /// <summary>
+        /// 更新一些要素
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source)
+        {
+            ThrowIfNotEditable(source);
+            features.ForEach(feature => AddModifiedTimeAttributeIfExistField(feature.Feature));
+            await table.UpdateFeaturesAsync(features.Select(p => p.Feature));
+            NotifyFeaturesChanged(null, null, features, source);
+        }
+
+        /// <summary>
+        /// 增加创建时间字段，如果该字段存在
+        /// </summary>
+        /// <param name="feature"></param>
+        private void AddCreateTimeAttributeIfExistField(Feature feature)
+        {
+            if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName)
+                && table.Fields.First(p => p.Name == Parameters.CreateTimeFieldName).FieldType == FieldType.Text)
             {
-                return typeof(Types).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                    .Where(fi => fi.IsLiteral && !fi.IsInitOnly);
+                if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
+                        || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+                {
+                    feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 增加修改时间字段，如果该字段存在
+        /// </summary>
+        /// <param name="feature"></param>
+        private void AddModifiedTimeAttributeIfExistField(Feature feature)
+        {
+            if (table.Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName)
+                && table.Fields.First(p => p.Name == Parameters.ModifiedTimeFieldName).FieldType == FieldType.Text)
+            {
+                feature.SetAttributeValue(Parameters.ModifiedTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+            }
+        }
+
+        /// <summary>
+        /// 通知要素发生改变
+        /// </summary>
+        /// <param name="added"></param>
+        /// <param name="deleted"></param>
+        /// <param name="updated"></param>
+        /// <param name="source"></param>
+        private void NotifyFeaturesChanged(IEnumerable<Feature> added,
+            IEnumerable<Feature> deleted,
+            IEnumerable<UpdatedFeature> updated,
+            FeaturesChangedSource source)
+        {
+            this.Notify(nameof(NumberOfFeatures));
+            var h = new FeaturesChangedEventArgs(this, added, deleted, updated, source);
+            FeaturesChanged?.Invoke(this, h);
+            Histories.Add(h);
+        }
+
+        /// <summary>
+        /// 检测是否允许编辑，若不允许则抛出错误
+        /// </summary>
+        /// <exception cref="NotSupportedException"></exception>
+        private void ThrowIfNotEditable(FeaturesChangedSource? source = null)
+        {
+            if (source.HasValue && source.Value == FeaturesChangedSource.Initialize)
+            {
+                return;
+            }
+            if (!Interaction.CanEdit)
+            {
+                throw new NotSupportedException("当前图层被禁止编辑");
             }
         }
     }

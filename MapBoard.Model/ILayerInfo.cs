@@ -39,6 +39,11 @@ namespace MapBoard.Model
         string Name { get; set; }
 
         /// <summary>
+        /// 数据源的名称，如数据库表名
+        /// </summary>
+        string SourceName { get; set; }
+
+        /// <summary>
         /// 符号系统
         /// </summary>
         UniqueValueRendererInfo Renderer { get; set; }
@@ -47,16 +52,6 @@ namespace MapBoard.Model
         /// 筛选
         /// </summary>
         string DefinitionExpression { get; set; }
-
-        /// <summary>
-        /// 图层的类型
-        /// </summary>
-        string Type { get; }
-
-        /// <summary>
-        /// 表示一些额外参数
-        /// </summary>
-        Dictionary<string, string> ServiceParameters { get; }
 
         /// <summary>
         /// 交互相关属性

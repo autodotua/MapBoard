@@ -39,7 +39,7 @@ namespace MapBoard.IO
         /// <param name="directory"></param>
         /// <param name="layer"></param>
         /// <returns></returns>
-        public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)
+        public static async Task CloneFeatureToNewShpAsync(string directory, IMapLayerInfo layer)
         {
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();

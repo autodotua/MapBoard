@@ -41,7 +41,7 @@ namespace MapBoard.UI
         {
 #if DEBUG
             instance = new SplashWindow();
-            instance.Show();
+            //instance.Show();
             //DEBUG下，如果运行下面的代码，暂停程序时，执行行就会变成下面的newWindowThread.Start();
 #else
             //在新线程中显示SplashWindow，使得SplashWindow的UI不会因为MainWindow的初始化而卡住

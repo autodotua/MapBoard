@@ -25,7 +25,6 @@ namespace MapBoard.IO
             if (overwrite)
             {
                 layers.Clear();
-                FolderPaths.SwitchToNewDataPath();
             }
             var tempDir = PathUtility.GetTempDir().FullName;
             await Task.Run(() => ZipFile.ExtractToDirectory(path, tempDir));
@@ -41,27 +40,26 @@ namespace MapBoard.IO
                 {
                     throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
-                if (!MapLayerInfo.Types.GetSupportedTypeNames().Contains(layer.Type))
-                {
-                    throw new NotSupportedException("不支持的图层类型：" + layer.Type);
-                }
             }
             foreach (var layer in newLayers)
             {
-                switch (layer.Type)
-                {
-                    case null:
-                    case "":
-                    case MapLayerInfo.Types.Shapefile:
-                        await Task.Run(() =>
-                        {
-                            foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
-                            {
-                                File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-                            }
-                        });
-                        break;
-                }
+                //switch (layer.Type)
+                //{
+                //    case null:
+                //    case "":
+                //    //case MapLayerInfo.Types.Shapefile:
+                //        await Task.Run(() =>
+                //        {
+                //            foreach (var file in Shapefile.GetExistShapefiles(tempDir, layer.Name))
+                //            {
+                //                File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
+                //            }
+                //        });
+                //        break;
+                //}
+
+                //要兼容老的Shapefile和新的mgdb
+                throw new NotImplementedException();
 
                 await layers.AddAsync(layer);
             }
@@ -86,17 +84,21 @@ namespace MapBoard.IO
             LayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(
                    File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
 
-            switch (layer.Type)
-            {
-                case null:
-                case "":
-                case MapLayerInfo.Types.Shapefile:
-                    foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
-                    {
-                        File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-                    }
-                    break;
-            }
+            //switch (layer.Type)
+            //{
+            //    case null:
+            //    case "":
+            //    case MapLayerInfo.Types.Shapefile:
+            //        foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
+            //        {
+            //            File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
+            //        }
+            //        break;
+            //}
+
+            //要兼容老的Shapefile和新的mgdb
+            throw new NotImplementedException();
+
             await layers.AddAsync(layer);
         }
 

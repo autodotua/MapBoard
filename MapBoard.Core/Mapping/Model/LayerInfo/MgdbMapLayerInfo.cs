@@ -17,7 +17,7 @@ namespace MapBoard.Mapping.Model
     /// <summary>
     /// 包含ArcGIS类型的Shapefile图层
     /// </summary>
-    public class MgdbMapLayerInfo : EditableLayerInfo
+    public class MgdbMapLayerInfo : MapLayerInfo
     {
         public MgdbMapLayerInfo() : base()
         {
@@ -39,45 +39,12 @@ namespace MapBoard.Mapping.Model
                    cfg.CreateMap<LayerInfo, MgdbMapLayerInfo>();
                }).CreateMapper().Map<LayerInfo, MgdbMapLayerInfo>(template, this);
             Name = newName;
+            GenerateSourceName();
 
             if (!includeFields)
             {
-                Fields = Array.Empty<FieldInfo>();
+                Fields = [];
             }
-        }
-
-        public override string Type => Types.MGDB;
-
-        public override async Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
-        {
-            Debug.Assert(!string.IsNullOrEmpty(newName));
-            if (newName == Name)
-            {
-                return;
-            }
-
-            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
-                   || newName.Length > 240 || newName.Length < 1)
-            {
-                throw new IOException("新文件名不合法");
-            }
-
-            //检查图层是否在集合中
-            if (!layers.Contains(Layer))
-            {
-                throw new ArgumentException("本图层不在给定的图层集合中");
-            }
-            int index = layers.IndexOf(Layer);
-
-            string oldName = Name;
-            var gdb = (table as GeodatabaseFeatureTable).Geodatabase;
-            var newTable = await gdb.CreateTableAsync(new TableDescription(newName, SpatialReferences.Wgs84, GeometryType));
-            newTable.AddFeaturesAsync(await table.QueryFeaturesAsync(new QueryParameters()));
-            table = newTable;
-            Name = newName;
-            await LoadAsync();
-            layers[index] = Layer;
-            await gdb.DeleteTableAsync(oldName);
         }
 
         public override object Clone()
@@ -115,7 +82,7 @@ namespace MapBoard.Mapping.Model
             //重命名
             await LayerUtility.DeleteLayerAsync(this, null, true);
 
-            await LayerUtility.CreateFileLayerAsync(Type, GeometryType, null, this, false, newFields, Name);
+            await LayerUtility.CreateLayerAsync(GeometryType, null, this, false, newFields, Name);
 
             await LoadAsync();
             layers[index] = Layer;
@@ -130,12 +97,12 @@ namespace MapBoard.Mapping.Model
 
         protected override FeatureTable GetTable()
         {
-            return MobileGeodatabase.Current.GetGeodatabaseFeatureTable(Name);
+            return MobileGeodatabase.Current.GetGeodatabaseFeatureTable(SourceName);
         }
 
         public override Task DeleteAsync()
         {
-            return (table as GeodatabaseFeatureTable).Geodatabase.DeleteTableAsync(Name);
+            return (table as GeodatabaseFeatureTable).Geodatabase.DeleteTableAsync(SourceName);
         }
     }
 }

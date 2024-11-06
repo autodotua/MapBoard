@@ -69,7 +69,7 @@ namespace MapBoard.Util
                         }
                     }
                 }
-                else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IEditableLayerInfo w2)
+                else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IMapLayerInfo w2)
                 {
                     if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
                     {
@@ -155,17 +155,6 @@ namespace MapBoard.Util
                         await Package.ExportLayerAsync(path, layer, false);
                         break;
 
-                    case ExportLayerType.GISToolBoxZip:
-                        if (layer is ShapefileMapLayerInfo s)
-                        {
-                            await MobileGISToolBox.ExportLayerAsync(path, s);
-                        }
-                        else
-                        {
-                            throw new NotSupportedException("非Shapefile图层不支持导出为GIS工具箱压缩包");
-                        }
-                        break;
-
                     case ExportLayerType.KML:
                         await Kml.ExportAsync(path, layer);
                         break;
@@ -213,9 +202,6 @@ namespace MapBoard.Util
                         await Package.ExportMapAsync(path, layers, false);
                         break;
 
-                    case ExportMapType.GISToolBoxZip:
-                        await MobileGISToolBox.ExportMapAsync(path, layers);
-                        break;
 
                     case ExportMapType.KML:
                         await Kml.ExportAsync(path, layers.Cast<MapLayerInfo>());
@@ -364,7 +350,7 @@ namespace MapBoard.Util
         /// <param name="mapView"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static async Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
+        public static async Task ImportFeatureAsync(Window owner, string path, IMapLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -604,7 +590,7 @@ namespace MapBoard.Util
                         new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点"),
                 };
             if (layer != null
-                && layer is IEditableLayerInfo
+                && layer is IMapLayerInfo
                 && layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
             {
                 items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层"));
@@ -627,7 +613,7 @@ namespace MapBoard.Util
                     await Gps.ImportAllToNewLayerAsync(files, Gps.GpxImportType.Point, layers, Config.Instance.BasemapCoordinateSystem);
                     break;
                 case 3:
-                    await Gps.ImportMultipleToLayerAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
+                    await Gps.ImportMultipleToLayerAsync(files, layer as IMapLayerInfo, Config.Instance.BasemapCoordinateSystem);
                     break;
 
             }

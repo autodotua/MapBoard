@@ -24,7 +24,7 @@ namespace MapBoard.UI.Dialog
         /// </summary>
         private FieldInfo fieldTarget;
 
-        public CopyAttributesDialog(IEditableLayerInfo layer)
+        public CopyAttributesDialog(IMapLayerInfo layer)
         {
             Layer = layer;
             Fields = layer.Fields;
@@ -44,7 +44,7 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 图层
         /// </summary>
-        public IEditableLayerInfo Layer { get; }
+        public IMapLayerInfo Layer { get; }
 
         /// <summary>
         /// 提示信息

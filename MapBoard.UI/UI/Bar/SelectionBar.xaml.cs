@@ -125,9 +125,9 @@ namespace MapBoard.UI.Bar
                     true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    bool copy = Layers.Selected is not IEditableLayerInfo || await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
+                    bool copy = Layers.Selected is not IMapLayerInfo || await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
 
-                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IMapLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
                     MapView.Selection.ClearSelection();
                     Layers.Selected = dialog.SelectedLayer;
                 }
@@ -141,7 +141,7 @@ namespace MapBoard.UI.Bar
         /// <param name="e"></param>
         private async void CutButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            Debug.Assert(Layers.Selected is IMapLayerInfo);
             var features = MapView.Selection.SelectedFeatures.ToArray();
             var line = await MapView.Editor.GetPolylineAsync();
 
@@ -149,7 +149,7 @@ namespace MapBoard.UI.Bar
             {
                 await (this.GetWindow() as MainWindow).DoAsync(async () =>
                 {
-                    var result = await FeatureUtility.CutAsync(Layers.Selected as IEditableLayerInfo, features, line);
+                    var result = await FeatureUtility.CutAsync(Layers.Selected as IMapLayerInfo, features, line);
                     SnakeBar.Show($"已分割为{result.Count}个图形");
                     MapView.Selection.ClearSelection();
                 }, "正在分割", true);
@@ -163,10 +163,10 @@ namespace MapBoard.UI.Bar
         /// <param name="e"></param>
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            Debug.Assert(Layers.Selected is IMapLayerInfo);
             await (this.GetWindow() as MainWindow).DoAsync(async () =>
             {
-                await FeatureUtility.DeleteAsync(Layers.Selected as IEditableLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
+                await FeatureUtility.DeleteAsync(Layers.Selected as IMapLayerInfo, MapView.Selection.SelectedFeatures.ToArray());
                 MapView.Selection.ClearSelection();
             }, "正在删除", true);
         }
@@ -179,10 +179,10 @@ namespace MapBoard.UI.Bar
         private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(MapView.Selection.SelectedFeatures.Count == 1);
-            Debug.Assert(Layers.Selected is IEditableLayerInfo);
+            Debug.Assert(Layers.Selected is IMapLayerInfo);
             var feature = MapView.Selection.SelectedFeatures.First();
             MapView.Selection.ClearSelection();
-            await MapView.Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
+            await MapView.Editor.EditAsync(Layers.Selected as IMapLayerInfo, feature);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace MapBoard.UI.Bar
         /// <param name="e"></param>
         private void FeatureOperationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Layers.Selected is not IEditableLayerInfo layer)
+            if (Layers.Selected is not IMapLayerInfo layer)
             {
                 return;
             }

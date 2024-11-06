@@ -63,7 +63,7 @@ namespace MapBoard.Model
         /// <summary>
         /// 图层可见性
         /// </summary>
-        public virtual bool LayerVisible { get; set; }=true;
+        public virtual bool LayerVisible { get; set; } = true;
 
         /// <summary>
         /// 图层名
@@ -75,15 +75,12 @@ namespace MapBoard.Model
         /// </summary>
         public UniqueValueRendererInfo Renderer { get; set; } = new UniqueValueRendererInfo();
 
-        /// <summary>
-        /// 对于网络服务类图层，其相关参数
-        /// </summary>
-        public Dictionary<string, string> ServiceParameters { get; } = new Dictionary<string, string>();
-        /// <summary>
-        /// 图层类型
-        /// </summary>
-        [JsonProperty]
-        public virtual string Type { get; protected set; }
+        public string SourceName { get; set; } = Guid.NewGuid().ToString("N");
+
+        protected void GenerateSourceName()
+        {
+            SourceName = Guid.NewGuid().ToString("N");
+        }
 
         /// <summary>
         /// 建立副本

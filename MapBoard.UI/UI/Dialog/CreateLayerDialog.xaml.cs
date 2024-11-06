@@ -22,29 +22,16 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 正在编辑的已有图层
         /// </summary>
-        public MapLayerInfo editLayer = null;
+        public IMapLayerInfo editLayer = null;
 
-        /// <summary>
-        /// 图层类型
-        /// </summary>
-        private readonly string layerType;
 
-        private CreateLayerDialog(MapLayerCollection layers, string layerType, MapLayerInfo layer, EsriLayerCollection esriLayers):base(layers)
+        private CreateLayerDialog(MapLayerCollection layers, IMapLayerInfo layer, EsriLayerCollection esriLayers) : base(layers)
         {
-            this.layerType = layerType;
             Fields.CollectionChanged += (s, e) => this.Notify(nameof(CanAddCreateTimeField), nameof(CanAddModifiedTimeField));
             InitializeComponent();
             if (layer != null)
             {
-                Title = layer switch
-                {
-                    ShapefileMapLayerInfo or TempMapLayerInfo => "编辑图层属性",
-                    _ => throw new ArgumentException("图层类型不正确",nameof(layer))
-                };
-                if (layer is TempMapLayerInfo)
-                {
-                    Message = "设置后，将删除所有图形";
-                }
+                Title = "编辑图层属性";
 
                 editLayer = layer;
                 LayerName = layer.Name;
@@ -70,11 +57,11 @@ namespace MapBoard.UI.Dialog
                     default:
                         throw new NotSupportedException();
                 }
-                if (layer is not ICanChangeGeometryType)
+                if (true/*layer is not ICanChangeGeometryType*/)
                 {
                     grdType.IsEnabled = false;
                 }
-                if (layer is not ICanChangeField)
+                if (true/*layer is not ICanChangeField*/)
                 {
                     dg.Columns[0].IsReadOnly = true;
                     dg.Columns[2].IsReadOnly = true;
@@ -100,12 +87,12 @@ namespace MapBoard.UI.Dialog
         /// 能否增加创建时间字段
         /// </summary>
         public bool CanAddCreateTimeField => !Fields.Any(p => p.Name == Parameters.CreateTimeFieldName);
-        
+
         /// <summary>
         /// 能否增加修改时间字段
         /// </summary>
         public bool CanAddModifiedTimeField => !Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName);
-        
+
         /// <summary>
         /// ArcGIS的图层
         /// </summary>
@@ -126,7 +113,7 @@ namespace MapBoard.UI.Dialog
         public static Task OpenCreateDialog<T>(MapLayerCollection layers) where T : MapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
-            return new CreateLayerDialog(layers, GetLayerType<T>(), null, null).ShowAsync();
+            return new CreateLayerDialog(layers, null, null).ShowAsync();
         }
 
         /// <summary>
@@ -138,35 +125,13 @@ namespace MapBoard.UI.Dialog
         /// <param name="layer"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Task OpenEditDialog<T>(MapLayerCollection layers, EsriLayerCollection esriLayers, T layer) where T : MapLayerInfo
+        public static Task OpenEditDialog<T>(MapLayerCollection layers, EsriLayerCollection esriLayers, T layer) where T : IMapLayerInfo
         {
             _ = layers ?? throw new ArgumentNullException(nameof(layers));
             _ = layer ?? throw new ArgumentNullException(nameof(layer));
-            return new CreateLayerDialog(layers, GetLayerType<T>(), layer, esriLayers).ShowAsync();
+            return new CreateLayerDialog(layers, layer, esriLayers).ShowAsync();
         }
 
-        /// <summary>
-        /// 根据类型<typeparamref name="T"/>获取<see cref="string"/>类型的图层类型名
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        /// <exception cref="NotSupportedException"></exception>
-        private static string GetLayerType<T>() where T : MapLayerInfo
-        {
-            if (typeof(T) == typeof(ShapefileMapLayerInfo))
-            {
-                return MapLayerInfo.Types.Shapefile;
-            }
-            if (typeof(T) == typeof(MgdbMapLayerInfo))
-            {
-                return MapLayerInfo.Types.MGDB;
-            }
-            else if (typeof(T) == typeof(TempMapLayerInfo))
-            {
-                return MapLayerInfo.Types.Temp;
-            }
-            throw new NotSupportedException("不支持的图层类型：" + typeof(T).Name);
-        }
 
         /// <summary>
         /// 单击增加字段按钮
@@ -231,25 +196,7 @@ namespace MapBoard.UI.Dialog
             };
             if (editLayer != null)//编辑
             {
-                switch (layerType)
-                {
-                    case MapLayerInfo.Types.Shapefile:
-                    case MapLayerInfo.Types.MGDB:
-                        //(editLayer as ShapefileMapLayerInfo).ModifyFieldsAsync(Fields.ToArray(), EsriLayers);
-                        editLayer.Fields = [.. Fields];
-                        break;
-
-                    case MapLayerInfo.Types.Temp:
-
-                        (editLayer as TempMapLayerInfo).SetGeometryType(type);
-                        editLayer.Fields = Fields.ToArray();
-                        (editLayer as TempMapLayerInfo).ReloadAsync(Layers);
-                        break;
-
-                    default:
-                        throw new NotSupportedException("不支持的图层类型：" + layerType);
-                }
-
+                editLayer.Fields = [.. Fields];
                 Hide();
             }
             else//创建
@@ -259,23 +206,7 @@ namespace MapBoard.UI.Dialog
 
                 try
                 {
-                    switch (layerType)
-                    {
-                        case MapLayerInfo.Types.Shapefile:
-                            await LayerUtility.CreateFileLayerAsync(MapLayerInfo.Types.Shapefile, type, Layers, name: LayerName, fields: fields);
-                            break;
-                            
-                        case MapLayerInfo.Types.MGDB:
-                            await LayerUtility.CreateFileLayerAsync(MapLayerInfo.Types.MGDB, type, Layers, name: LayerName, fields: fields);
-                            break;
-
-                        case MapLayerInfo.Types.Temp:
-                            await LayerUtility.CreateTempLayerAsync(Layers, LayerName, type, fields);
-                            break;
-
-                        default:
-                            throw new NotSupportedException("不支持的图层类型：" + layerType);
-                    }
+                    await LayerUtility.CreateLayerAsync(type, Layers, name: LayerName, fields: fields);
 
                     Hide();
                 }

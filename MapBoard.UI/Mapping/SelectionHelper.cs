@@ -361,7 +361,7 @@ namespace MapBoard.Mapping
 
                 if (first)//首次选择
                 {
-                    if (startEdit && layer is IEditableLayerInfo w)//直接编辑
+                    if (startEdit && layer is IMapLayerInfo w)//直接编辑
                     {
                         ClearSelection();
                         await MapView.Editor.EditAsync(w, features[0]).ConfigureAwait(false);

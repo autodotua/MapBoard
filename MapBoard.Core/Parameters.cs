@@ -56,7 +56,5 @@ namespace MapBoard
         public static int GpxSpeedSmoothWindow { get; set; } = 3;
 
         public static AppType AppType { get; set; }
-
-        public static string DefaultDataType { get; set; } = MapLayerInfo.Types.MGDB;
     }
 }

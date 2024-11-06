@@ -269,25 +269,13 @@
                                 Content="应用样式"
                                 IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
-                            <ui:SplitButton
+                            <Button
                                 x:Name="btnCreateStyle"
                                 Click="CreateMgdbLayerButton_Click"
                                 Content="新建图层"
                                 ToolTip="新建可编辑图层">
-                                <ui:SplitButton.Flyout>
-                                    <ui:MenuFlyout>
-                                        <MenuItem
-                                            Click="CreateShapefileLayerButton_Click"
-                                            Header="Shapefile图层" />
-                                        <MenuItem
-                                            Click="AddWfsLayerButton_Click"
-                                            Header="WFS图层" />
-                                        <MenuItem
-                                            Click="CreateTempLayerButton_Click"
-                                            Header="临时图层" />
-                                    </ui:MenuFlyout>
-                                </ui:SplitButton.Flyout>
-                            </ui:SplitButton>
+                          
+                            </Button>
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">

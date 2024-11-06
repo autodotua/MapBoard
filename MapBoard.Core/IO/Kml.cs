@@ -105,17 +105,17 @@ namespace MapBoard.IO
             string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
             if (points.Count > 0)
             {
-                var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, GeometryType.Point, layers, name: name + "（点）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Point, layers, name: name + "（点）");
                 await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (lines.Count > 0)
             {
-                var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, GeometryType.Polyline, layers, name: name + "（线）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Polyline, layers, name: name + "（线）");
                 await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (polygons.Count > 0)
             {
-                var layer = await LayerUtility.CreateFileLayerAsync(Parameters.DefaultDataType, GeometryType.Polygon, layers, name: name + "（面）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Polygon, layers, name: name + "（面）");
                 await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
         }

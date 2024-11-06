@@ -26,7 +26,8 @@
             MaxWidth="300"
             Margin="0,0,12,0"
             Padding="8"
-            CornerRadius="4">
+            CornerRadius="4"
+            Visibility="{Binding Groups, Converter={StaticResource CountMoreThanZeroConverter}}">
             <ui:SimpleStackPanel Orientation="Vertical">
 
                 <ItemsControl ItemsSource="{Binding Groups}">
@@ -91,11 +92,6 @@
                     Opacity="0.9"
                     Text="{Binding Group}"
                     TextAlignment="Right" />
-
-                <ui:ProgressRing
-                    Grid.Column="6"
-                    Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                    IsActive="{Binding IsDownloading}" />
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="dtNormal">

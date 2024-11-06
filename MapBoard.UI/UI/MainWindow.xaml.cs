@@ -49,7 +49,7 @@ namespace MapBoard.UI
         /// <summary>
         /// 按钮名对应的<see cref="SketchCreationMode"/>编辑模式
         /// </summary>
-        private static readonly Dictionary<string, (GeometryType geometryType,GeometryEditorTool tool)> ButtonsMode = new Dictionary<string, (GeometryType, GeometryEditorTool)>()
+        private static readonly Dictionary<string, (GeometryType geometryType, GeometryEditorTool tool)> ButtonsMode = new Dictionary<string, (GeometryType, GeometryEditorTool)>()
         {
             { "折线",(GeometryType.Polyline,null)},
             { "自由线", (GeometryType.Polyline,new FreehandTool())},
@@ -200,7 +200,7 @@ namespace MapBoard.UI
             grdDraw.Children.OfType<SplitButton>()
                    .ForEach(p => p.Visibility = Visibility.Collapsed);
             if (arcMap.Layers.Selected != null
-                && arcMap.Layers.Selected is IEditableLayerInfo
+                && arcMap.Layers.Selected is IMapLayerInfo
                && arcMap.Layers.Selected.Interaction.CanEdit)
             {
                 UIElement btn = arcMap.Layers.Selected.GeometryType switch
@@ -407,7 +407,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void ClearHistoriesButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var layer in arcMap.Layers.OfType<IEditableLayerInfo>())
+            foreach (var layer in arcMap.Layers.OfType<IMapLayerInfo>())
             {
                 layer.Histories.Clear();
             }
@@ -470,44 +470,11 @@ namespace MapBoard.UI
         #region 样式设置区事件
 
         /// <summary>
-        /// 单击新建WFS图层按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void AddWfsLayerButton_Click(object sender, RoutedEventArgs e)
-        {
-            await new AddWfsLayerDialog(arcMap.Layers).ShowAsync();
-            arcMap.Layers.Save();
-        }
-
-        /// <summary>
-        /// 单击创建临时图层按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void CreateTempLayerButton_Click(object sender, RoutedEventArgs e)
-        {
-            await CreateLayerDialog.OpenCreateDialog<TempMapLayerInfo>(arcMap.Layers);
-            arcMap.Layers.Save();
-        }
-
-        /// <summary>
         /// 单击创建图层按钮
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void CreateShapefileLayerButton_Click(object sender, RoutedEventArgs args)
-        {
-            await CreateLayerDialog.OpenCreateDialog<ShapefileMapLayerInfo>(arcMap.Layers);
-            arcMap.Layers.Save();
-        }
-        
-        /// <summary>
-        /// 单击创建图层按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private async void CreateMgdbLayerButton_Click(SplitButton sender, SplitButtonClickEventArgs args)
+        private async void CreateMgdbLayerButton_Click(object sender, RoutedEventArgs e)
         {
             await CreateLayerDialog.OpenCreateDialog<MgdbMapLayerInfo>(arcMap.Layers);
             arcMap.Layers.Save();
@@ -567,47 +534,6 @@ namespace MapBoard.UI
                  {
                      switch (type)
                      {
-                         case ExportMapType.GISToolBoxNet:
-                             try
-                             {
-                                 string ip = await CommonDialog.ShowInputDialogAsync("请输入GIS工具箱的IP地址", Config.Instance.LastFTP);
-                                 if (ip != null)
-                                 {
-                                     ip = ip.Trim();
-                                     if (ip.StartsWith("ftp://"))
-                                     {
-                                         ip = ip["ftp://".Length..];
-                                     }
-                                     ip = ip.Trim('/').Trim('\\').Replace("：", ":");
-                                     Config.Instance.LastFTP = ip;
-                                     string shpDir = "Shapefile";
-                                     using (FTPHelper ftp = new FTPHelper(ip, "", "", ""))
-                                     {
-                                         p.SetMessage("正在连接FTP");
-                                         if (!await ftp.IsDirectoryExistAsync(shpDir))
-                                         {
-                                             await ftp.CreateDirectoryAsync(shpDir);
-                                         }
-                                         ftp.GotoDirectory(shpDir, false);
-
-                                         p.SetMessage("正在准备文件");
-                                         string dir = await MobileGISToolBox.ExportMapToTempDirAsync(arcMap.Layers);
-                                         foreach (var file in Directory.EnumerateFiles(Path.Combine(dir, shpDir)))
-                                         {
-                                             p.SetMessage("正在上传：" + Path.GetFileName(file));
-                                             await ftp.UploadAsync(file);
-                                         }
-                                     }
-                                     SnakeBar.Show(this, "上传到FTP完成");
-                                 }
-                             }
-                             catch (Exception ex)
-                             {
-                                 App.Log.Error("上传失败", ex);
-                                 await CommonDialog.ShowErrorDialogAsync(ex, "上传失败");
-                             }
-                             break;
-
                          case ExportMapType.OpenLayers:
                              try
                              {
@@ -823,5 +749,6 @@ namespace MapBoard.UI
 
 
         #endregion 图层列表事件
+
     }
 }

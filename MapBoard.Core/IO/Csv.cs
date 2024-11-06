@@ -145,7 +145,7 @@ namespace MapBoard.IO
         /// <param name="layer"></param>
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
-        public static async Task<IReadOnlyList<Feature>> ImportAsync(string path, IEditableLayerInfo layer)
+        public static async Task<IReadOnlyList<Feature>> ImportAsync(string path, IMapLayerInfo layer)
         {
             string[] lines = File.ReadAllLines(path);
             List<List<MapPoint>> parts = new List<List<MapPoint>>();

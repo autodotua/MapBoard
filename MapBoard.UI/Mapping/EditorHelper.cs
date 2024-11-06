@@ -132,11 +132,11 @@ namespace MapBoard.Mapping
         /// <returns></returns>
         public async Task DrawAsync(GeometryType type, GeometryEditorTool tool)
         {
-            if (Layers.Selected is not IEditableLayerInfo)
+            if (Layers.Selected is not IMapLayerInfo)
             {
                 throw new NotSupportedException("选中的图层不支持编辑");
             }
-            var layer = Layers.Selected as IEditableLayerInfo;
+            var layer = Layers.Selected as IMapLayerInfo;
             if (Attributes != null && Config.Instance.RemainAttribute)
             {
                 var oldAttributes = Attributes;
@@ -170,7 +170,7 @@ namespace MapBoard.Mapping
         /// 编辑
         /// </summary>
         /// <returns></returns>
-        public async Task EditAsync(IEditableLayerInfo layer, Feature feature)
+        public async Task EditAsync(IMapLayerInfo layer, Feature feature)
         {
             Attributes = FeatureAttributeCollection.FromFeature(layer, feature);
             PrepareToDraw(EditMode.Edit);

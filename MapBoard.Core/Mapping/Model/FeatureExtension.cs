@@ -39,7 +39,7 @@ namespace MapBoard.Mapping.Model
         /// <param name="feature"></param>
         /// <param name="layer"></param>
         /// <returns></returns>
-        public static Feature Clone(this Feature feature, IEditableLayerInfo layer)
+        public static Feature Clone(this Feature feature, IMapLayerInfo layer)
         {
             IEnumerable<FieldInfo> fields = layer.Fields;
             return feature.Clone(layer.Layer.FeatureTable, fields.ToDictionary(p => p.Name));
