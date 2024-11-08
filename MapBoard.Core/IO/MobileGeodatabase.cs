@@ -13,6 +13,7 @@ using MapBoard.Mapping.Model;
 using System.Text.RegularExpressions;
 using FzLib;
 using FzLib.DataAnalysis;
+using System.Diagnostics;
 
 namespace MapBoard.IO
 {
@@ -53,15 +54,116 @@ namespace MapBoard.IO
             }
         }
 
-        public static async Task ImportFeatureTableAsync(string name, FeatureTable featureTable)
+        public static async Task ImportFeatureTableAsync(string name, FeatureTable featureTable, IEnumerable<FieldInfo> oldFields = null)
         {
-            TableDescription tableDescription = new TableDescription(name, featureTable.SpatialReference, featureTable.GeometryType);
-            foreach (var field in featureTable.Fields)
+            if (oldFields == null)
             {
-                tableDescription.FieldDescriptions.Add(new FieldDescription(field.Name, field.FieldType));
+                TableDescription tableDescription = new TableDescription(name, featureTable.SpatialReference, featureTable.GeometryType);
+                foreach (var field in featureTable.Fields)
+                {
+                    tableDescription.FieldDescriptions.Add(new FieldDescription(field.Name, field.FieldType));
+                }
+                var newTable = await Current.CreateTableAsync(tableDescription);
+                await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
             }
-            var newTable = await Current.CreateTableAsync(tableDescription);
-            await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
+            else
+            {
+                //在旧版本中，使用Shapefile存储空间数据。
+                //由于Shapefile不支持时间类型，所以使用的Text来存储时间。
+                //在新版本中，需要将字符串的时间类型转换为真正的时间类型。
+                TableDescription tableDescription = new TableDescription(name, featureTable.SpatialReference, featureTable.GeometryType);
+                HashSet<string> timeKeys = new HashSet<string>();
+                HashSet<string> dateKeys = new HashSet<string>();
+                HashSet<string> oldFieldKeys = featureTable.Fields.Select(p => p.Name).ToHashSet();
+                foreach (var field in oldFields)
+                {
+                    if (!oldFieldKeys.Contains(field.Name))
+                    {
+                        throw new Exception($"字段{field.Name}出现在旧的字段定义中，但在提供的要素类中不存在");
+                    }
+                    if (field.IsIdField())
+                    {
+                        continue;
+                    }
+                    tableDescription.FieldDescriptions.Add(field.ToFieldDescription());
+                    if (field.Type == FieldInfoType.DateTime)
+                    {
+                        timeKeys.Add(field.Name);
+                    }
+                    if (field.Type == FieldInfoType.Date)
+                    {
+                        dateKeys.Add(field.Name);
+                    }
+                }
+
+                var newTable = await Current.CreateTableAsync(tableDescription);
+                if (timeKeys.Count == 0)
+                {
+                    //没有时间字段，直接一次性加进去
+                    await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
+                }
+                else
+                {
+                    var oldFeatures = (await featureTable.QueryFeaturesAsync(new QueryParameters())).ToList();
+                    List<Feature> features = new List<Feature>(oldFeatures.Count);
+                    foreach (var feature in oldFeatures)
+                    {
+                        //删除ID字段
+                        foreach (var attr in feature.Attributes.ToList())
+                        {
+                            if(FieldExtension.IsIdField(attr.Key))
+                            {
+                                feature.Attributes.Remove(attr.Key);
+                            }
+                        }
+                        //string的time转DateTime
+                        foreach (var timeKey in timeKeys)
+                        {
+                            var value = feature.GetAttributeValue(timeKey);
+                            if (value is not string str)//不是字符串
+                            {
+                                Debug.WriteLine($"旧的时间字段{timeKey}不是字符串：{value}");
+                                Debug.Assert(false);
+                                continue;
+                            }
+
+                            if (string.IsNullOrEmpty(str))//字符串为空
+                            {
+                                feature.SetAttributeValue(timeKey, null);
+                                continue;
+                            }
+
+                            if (!DateTime.TryParse(str, out var timeValue))//无法转为时间
+                            {
+                                Debug.WriteLine($"时间字段{timeKey}无法转为时间：{str}");
+                                Debug.Assert(false);
+                                continue;
+                            }
+
+                            feature.SetAttributeValue(timeKey, timeValue);
+                        }
+                        //DateTime的Date转DateOnly
+                        foreach (var dateKey in dateKeys)
+                        {
+                            var value = feature.GetAttributeValue(dateKey);
+                            if(value==null)
+                            {
+                                continue;
+                            }
+                            if (value is not DateTime dt)//不是DateTimeOffset
+                            {
+                                Debug.WriteLine($"旧的时间字段{dateKey}不是{nameof(DateTime)}：{value}");
+                                Debug.Assert(false);
+                                continue;
+                            }
+
+                            feature.SetAttributeValue(dateKey, DateOnly.FromDateTime(dt));
+                        }
+                        features.Add(feature);
+                    }
+                    await newTable.AddFeaturesAsync(features);
+                }
+            }
         }
 
         public static async Task<GeodatabaseFeatureTable> CreateMgdbLayerAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)

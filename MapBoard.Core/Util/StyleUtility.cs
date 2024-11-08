@@ -193,8 +193,9 @@ namespace MapBoard.Util
                             //转换到正确的类型
                             key = fieldType switch
                             {
-                                FieldInfoType.Text or FieldInfoType.Time => key,
-                                FieldInfoType.Date => DateTime.Parse(key as string),
+                                FieldInfoType.Text => key,
+                                FieldInfoType.DateTime => DateTime.Parse(key as string),
+                                FieldInfoType.Date => DateOnly.Parse(key as string),
                                 FieldInfoType.Integer => int.Parse(key as string),
                                 FieldInfoType.Float => double.Parse(key as string),
                                 _ => throw new NotImplementedException(),

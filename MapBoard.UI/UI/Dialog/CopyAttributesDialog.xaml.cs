@@ -121,14 +121,14 @@ namespace MapBoard.UI.Dialog
                     }
                     if (SourceField.Type != TargetField.Type)
                     {
-                        if (SourceField.Type is FieldInfoType.Date or FieldInfoType.Time)
+                        if (SourceField.Type is FieldInfoType.Date or FieldInfoType.DateTime)
                         {
                             if (TargetField.Type == FieldInfoType.Integer || TargetField.Type == FieldInfoType.Float)
                             {
                                 throw new Exception("数值与日期之间不可互转");
                             }
                         }
-                        if (TargetField.Type is FieldInfoType.Date or FieldInfoType.Time)
+                        if (TargetField.Type is FieldInfoType.Date or FieldInfoType.DateTime)
                         {
                             if (SourceField.Type == FieldInfoType.Integer || SourceField.Type == FieldInfoType.Float)
                             {

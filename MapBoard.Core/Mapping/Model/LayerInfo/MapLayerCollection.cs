@@ -298,12 +298,12 @@ namespace MapBoard.Mapping.Model
             EsriLayers.RemoveAt(index);
             EsriLayers.Insert(index, layer.GetLayerForLayerList());
         }
-        public void Remove(IMapLayerInfo layer)
+        public async Task RemoveAsync(IMapLayerInfo layer)
         {
             try
             {
                 EsriLayers.Remove(layer.GetLayerForLayerList());
-                layer.DeleteAsync();
+                await layer.DeleteAsync();
                 layer.Dispose();
             }
             catch
@@ -334,14 +334,7 @@ namespace MapBoard.Mapping.Model
                 //加载图层
                 if (!layer.IsLoaded)
                 {
-                    try
-                    {
-                        await layer.LoadAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"加载图层{layer.Name}失败：{ex.Message}");
-                    }
+                    await layer.LoadAsync();
                 }
 
                 //添加ArcGIS图层到ArcGIS图层列表

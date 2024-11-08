@@ -18,6 +18,138 @@ namespace MapBoard.IO
     public static class Package
     {
         /// <summary>
+        /// 备份
+        /// </summary>
+        /// <param name="layers"></param>
+        /// <param name="maxCount"></param>
+        /// <param name="copyOnly"></param>
+        /// <returns></returns>
+        public static async Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
+        {
+            await ExportMapAsync(Path.Combine(FolderPaths.BackupPath,
+                DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"),
+                layers, copyOnly);
+
+            var files = Directory.EnumerateFiles(FolderPaths.BackupPath).ToList();
+            if (files.Count > maxCount)
+            {
+                foreach (var file in files
+                    .Select(p => new FileInfo(p))
+                    .ToList()
+                    .OrderByDescending(p => p.LastWriteTime)
+                    .Skip(maxCount)
+                    .ToList())
+                {
+                    file.Delete();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 导出图层到图层包
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="layer"></param>
+        /// <param name="layers">图层集合</param>
+        /// <param name="copyOnly">是否仅简单复制而非重建</param>
+        /// <returns></returns>
+        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
+        {
+            DirectoryInfo directory = PathUtility.GetTempDir();
+            //if (layer is IFileBasedLayer f)
+            //{
+            //    if (copyOnly)
+            //    {
+            //        await Task.Run(() =>
+            //        {
+            //            CopyLayerFiles(directory.FullName, f);
+            //        });
+            //    }
+            //    else
+            //    {
+            //        await f.SaveTo(directory.FullName);
+            //    }
+            //}
+            throw new NotImplementedException();
+
+            File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
+
+            await ZipDirAsync(directory.FullName, path);
+        }
+
+        /// <summary>
+        /// 导出所有图层到地图包
+        /// </summary>
+        /// <param name="path">目标路径</param>
+        /// <param name="layers">图层集合</param>
+        /// <param name="copyOnly">是否仅简单复制而非重建</param>
+        /// <returns></returns>
+        public static async Task ExportMapAsync(string path, MapLayerCollection layers, bool copyOnly)
+        {
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
+            DirectoryInfo directory = PathUtility.GetTempDir();
+            if (copyOnly)
+            {
+                await MobileGeodatabase.CopyToDirAsync(directory.FullName);
+            }
+            else
+            {
+                throw new NotImplementedException();
+                //await Parallel.ForEachAsync(layers.OfType<IFileBasedLayer>(), async (layer, cancel) =>
+                // {
+                //     await layer.SaveTo(directory.FullName);
+                // });
+
+                //foreach (IFileBasedLayer layer in layers)
+                //{
+                //    await layer.SaveTo(directory.FullName);
+                //}
+            }
+            layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
+
+            await ZipDirAsync(directory.FullName, path);
+        }
+
+        /// <summary>
+        /// 导入图层包
+        /// </summary>
+        /// <param name="path"></param>
+        public static async Task ImportLayerAsync(string path, MapLayerCollection layers)
+        {
+            string tempDirectoryPath = Path.Combine(FolderPaths.DataPath, "temp");
+            if (Directory.Exists(tempDirectoryPath))
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+            Directory.CreateDirectory(tempDirectoryPath);
+
+            ZipFile.ExtractToDirectory(path, tempDirectoryPath);
+
+            LayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(
+                   File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
+
+            //switch (layer.Type)
+            //{
+            //    case null:
+            //    case "":
+            //    case MapLayerInfo.Types.Shapefile:
+            //        foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
+            //        {
+            //            File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
+            //        }
+            //        break;
+            //}
+
+            //要兼容老的Shapefile和新的mgdb
+            throw new NotImplementedException();
+
+            await layers.AddAsync(layer);
+        }
+
+        /// <summary>
         /// 导入地图包
         /// </summary>
         /// <param name="path"></param>
@@ -70,7 +202,7 @@ namespace MapBoard.IO
                         var shp = Path.Combine(tempDir, $"{layer.Name}.shp");
                         ShapefileFeatureTable shpTable = new ShapefileFeatureTable(shp);
                         await shpTable.LoadAsync();
-                        await MobileGeodatabase.ImportFeatureTableAsync(layer.SourceName, shpTable);
+                        await MobileGeodatabase.ImportFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
                     }
                     else
                     {
@@ -81,111 +213,6 @@ namespace MapBoard.IO
             }
             layers.Save();
         }
-
-        /// <summary>
-        /// 导入图层包
-        /// </summary>
-        /// <param name="path"></param>
-        public static async Task ImportLayerAsync(string path, MapLayerCollection layers)
-        {
-            string tempDirectoryPath = Path.Combine(FolderPaths.DataPath, "temp");
-            if (Directory.Exists(tempDirectoryPath))
-            {
-                Directory.Delete(tempDirectoryPath, true);
-            }
-            Directory.CreateDirectory(tempDirectoryPath);
-
-            ZipFile.ExtractToDirectory(path, tempDirectoryPath);
-
-            LayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(
-                   File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
-
-            //switch (layer.Type)
-            //{
-            //    case null:
-            //    case "":
-            //    case MapLayerInfo.Types.Shapefile:
-            //        foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
-            //        {
-            //            File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-            //        }
-            //        break;
-            //}
-
-            //要兼容老的Shapefile和新的mgdb
-            throw new NotImplementedException();
-
-            await layers.AddAsync(layer);
-        }
-
-        /// <summary>
-        /// 导出所有图层到地图包
-        /// </summary>
-        /// <param name="path">目标路径</param>
-        /// <param name="layers">图层集合</param>
-        /// <param name="copyOnly">是否仅简单复制而非重建</param>
-        /// <returns></returns>
-        public static async Task ExportMapAsync(string path, MapLayerCollection layers, bool copyOnly)
-        {
-            if (!Directory.Exists(Path.GetDirectoryName(path)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-            }
-            DirectoryInfo directory = PathUtility.GetTempDir();
-            if (copyOnly)
-            {
-                await MobileGeodatabase.CopyToDirAsync(directory.FullName);
-            }
-            else
-            {
-                throw new NotImplementedException();
-                //await Parallel.ForEachAsync(layers.OfType<IFileBasedLayer>(), async (layer, cancel) =>
-                // {
-                //     await layer.SaveTo(directory.FullName);
-                // });
-
-                //foreach (IFileBasedLayer layer in layers)
-                //{
-                //    await layer.SaveTo(directory.FullName);
-                //}
-            }
-            layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
-
-            await ZipDirAsync(directory.FullName, path);
-        }
-
-        /// <summary>
-        /// 导出图层到图层包
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="layer"></param>
-        /// <param name="layers">图层集合</param>
-        /// <param name="copyOnly">是否仅简单复制而非重建</param>
-        /// <returns></returns>
-        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
-        {
-            DirectoryInfo directory = PathUtility.GetTempDir();
-            //if (layer is IFileBasedLayer f)
-            //{
-            //    if (copyOnly)
-            //    {
-            //        await Task.Run(() =>
-            //        {
-            //            CopyLayerFiles(directory.FullName, f);
-            //        });
-            //    }
-            //    else
-            //    {
-            //        await f.SaveTo(directory.FullName);
-            //    }
-            //}
-            throw new NotImplementedException();
-
-            File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
-
-            await ZipDirAsync(directory.FullName, path);
-        }
-
         /// <summary>
         /// 压缩一个目录
         /// </summary>
@@ -202,34 +229,6 @@ namespace MapBoard.IO
             {
                 ZipFile.CreateFromDirectory(dir, path);
             });
-        }
-
-        /// <summary>
-        /// 备份
-        /// </summary>
-        /// <param name="layers"></param>
-        /// <param name="maxCount"></param>
-        /// <param name="copyOnly"></param>
-        /// <returns></returns>
-        public static async Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
-        {
-            await ExportMapAsync(Path.Combine(FolderPaths.BackupPath,
-                DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"),
-                layers, copyOnly);
-
-            var files = Directory.EnumerateFiles(FolderPaths.BackupPath).ToList();
-            if (files.Count > maxCount)
-            {
-                foreach (var file in files
-                    .Select(p => new FileInfo(p))
-                    .ToList()
-                    .OrderByDescending(p => p.LastWriteTime)
-                    .Skip(maxCount)
-                    .ToList())
-                {
-                    file.Delete();
-                }
-            }
         }
     }
 }

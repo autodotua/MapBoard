@@ -191,7 +191,7 @@ namespace MapBoard.Util
         {
             return CreateLayerAsync(type, layers, template, includeFields, null, name);
         }
-   
+
         /// <summary>
         /// 删除图层
         /// </summary>
@@ -203,7 +203,7 @@ namespace MapBoard.Util
         {
             if (layers != null && layers.Contains(layer))
             {
-                layers.Remove(layer);
+                await layers.RemoveAsync(layer);
             }
         }
 

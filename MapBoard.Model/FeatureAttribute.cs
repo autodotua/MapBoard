@@ -16,16 +16,14 @@ namespace MapBoard.Model
     {
         private object attrValue;
 
-        private DateTime? dateValue;
+        private DateTime? dateTimeValue;
+        private DateOnly? dateValue;
 
         private double? floatValue;
 
-        private int? intValue;
+        private long? intValue;
 
         private string textValue;
-
-        private DateTime? timeValue;
-
         public FeatureAttribute()
         {
         }
@@ -36,14 +34,31 @@ namespace MapBoard.Model
         public static string DateFormat { get; set; } = "yyyy-MM-dd";
 
         /// <summary>
-        /// 事件类型
+        /// 日期时间类型
         /// </summary>
         public static string DateTimeFormat { get; set; } = "yyyy-MM-dd HH:mm:ss";
+
+
         /// <summary>
-        /// 日期型值
+        /// 日期时间型值
         /// </summary>
         [AlsoNotifyFor(nameof(Value))]
-        public DateTime? DateValue
+        public DateTime? DateTimeValue
+        {
+            get => dateTimeValue;
+            set
+            {
+                if (Type != FieldInfoType.DateTime)
+                {
+                    throw new NotSupportedException();
+                }
+                attrValue = value;
+                dateTimeValue = value;
+            }
+        }
+
+        [AlsoNotifyFor(nameof(Value))]
+        public DateOnly? DateValue
         {
             get => dateValue;
             set
@@ -79,7 +94,7 @@ namespace MapBoard.Model
         /// 整形值
         /// </summary>
         [AlsoNotifyFor(nameof(Value))]
-        public int? IntValue
+        public long? IntValue
         {
             get => intValue;
             set
@@ -111,25 +126,6 @@ namespace MapBoard.Model
                 textValue = value;
             }
         }
-
-        /// <summary>
-        /// 日期时间型值
-        /// </summary>
-        [AlsoNotifyFor(nameof(Value))]
-        public DateTime? TimeValue
-        {
-            get => timeValue;
-            set
-            {
-                if (Type != FieldInfoType.Time)
-                {
-                    throw new NotSupportedException();
-                }
-                attrValue = value;
-                timeValue = value;
-            }
-        }
-
         /// <summary>
         /// 属性值
         /// </summary>
@@ -143,160 +139,23 @@ namespace MapBoard.Model
                     switch (Type)
                     {
                         case FieldInfoType.Integer:
-                            if (value == null)
-                            {
-                                attrValue = null;
-                                intValue = null;
-                                break;
-                            }
-                            if (value is int)
-                            {
-                                attrValue = value;
-                                intValue = (int)value;
-                                break;
-                            }
-                            if (value is long l)
-                            {
-                                if (l <= int.MaxValue && l >= int.MinValue)
-                                {
-                                    intValue = Convert.ToInt32(l);
-                                    attrValue = intValue;
-                                    break;
-                                }
-                                throw new ArgumentOutOfRangeException("输入的值超过了范围");
-                            }
-                            if (value is double d)
-                            {
-                                if (d <= int.MaxValue && d >= int.MinValue)
-                                {
-                                    intValue = Convert.ToInt32(d);
-                                    attrValue = intValue;
-                                    break;
-                                }
-                                throw new ArgumentOutOfRangeException("输入的值超过了范围");
-                            }
-                            if (value is string str1)
-                            {
-                                if (int.TryParse(str1, out int result))
-                                {
-                                    intValue = result;
-                                    attrValue = intValue;
-                                    break;
-                                }
-                            }
-                            throw new ArgumentException("输入的值无法转换为整数");
+                            ParseInt(value);
+                            break;
+
                         case FieldInfoType.Float:
-                            if (value == null)
-                            {
-                                floatValue = null;
-                                attrValue = floatValue;
-                                break;
-                            }
-                            if (value is double)
-                            {
-                                floatValue = (double)value;
-                                attrValue = floatValue;
-                                break;
-                            }
-                            if (value is string str2)
-                            {
-                                if (double.TryParse(str2, out double result))
-                                {
-                                    floatValue = result;
-                                    attrValue = floatValue;
-                                    break;
-                                }
-                            }
-                            throw new ArgumentException("输入的值无法转换为小数");
+                            ParseFloat(value);
+                            break;
+
                         case FieldInfoType.Date:
-                            if (value == null)
-                            {
-                                dateValue = null;
-                                attrValue = dateValue;
-                                break;
-                            }
-                            if (value is DateTime dt)
-                            {
-                                dateValue = dt;
-                                attrValue = dateValue;
-                                break;
-                            }
-                            if (value is DateTimeOffset dto)
-                            {
-                                dateValue = dto.DateTime;
-                                attrValue = dateValue;
-                                break;
-                            }
-                            if (value is string str3)
-                            {
-                                DateTime result;
-                                if (DateTime.TryParse(str3, out result))
-                                {
-                                    dateValue = result;
-                                    attrValue = dateValue;
-                                    break;
-                                }
-                                if (DateTime.TryParseExact(str3, DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None, out result))
-                                {
-                                    dateValue = result;
-                                    attrValue = dateValue;
-                                    break;
-                                }
-                            }
-                            throw new ArgumentException("输入的值无法转换为日期");
-                        case FieldInfoType.Time:
-                            if (value == null)
-                            {
-                                timeValue = null;
-                                attrValue = timeValue;
-                                break;
-                            }
-                            if (value is DateTime t)
-                            {
-                                timeValue = t;
-                                attrValue = timeValue;
-                                break;
-                            }
-                            if (value is DateTimeOffset to)
-                            {
-                                timeValue = to.DateTime;
-                                attrValue = timeValue;
-                                break;
-                            }
-                            if (value is string str5)
-                            {
-                                if (string.IsNullOrEmpty(str5))
-                                {
-                                    attrValue = TimeValue = null;
-                                    break;
-                                }
-                                else if (DateTime.TryParse(str5, out DateTime result))
-                                {
-                                    timeValue = result;
-                                    attrValue = timeValue;
-                                    break;
-                                }
-                            }
-                            throw new ArgumentException("输入的值无法转换为时间");
+                            ParseDate(value);
+                            break;
+
+                        case FieldInfoType.DateTime:
+                            ParseDateTime(value);
+                            break;
+
                         case FieldInfoType.Text:
-                            if (value is string str4)
-                            {
-                                if (str4.Length > 254)
-                                {
-                                    throw new ArgumentException("输入的字符串过长");
-                                }
-                                textValue = str4;
-                                attrValue = value;
-                                break;
-                            }
-                            else if (value is null)
-                            {
-                                attrValue = textValue = null;
-                            }
-                            else
-                            {
-                                attrValue = textValue = value.ToString();
-                            }
+                            ParseText(value);
                             break;
 
                         default:
@@ -340,6 +199,7 @@ namespace MapBoard.Model
             }
             return attribute;
         }
+
         /// <summary>
         /// 获取属性值的字符串表达
         /// </summary>
@@ -355,6 +215,163 @@ namespace MapBoard.Model
                 return DateValue.Value.ToShortDateString();
             }
             return Value.ToString();
+        }
+
+        private void ParseDate(object value)
+        {
+            if (value == null)
+            {
+                dateValue = null;
+                attrValue = dateValue;
+            }
+            else if (value is DateOnly dd)
+            {
+                dateValue = dd;
+                attrValue = dateValue;
+            }
+            else if (value is DateTime dt)
+            {
+                dateValue = DateOnly.FromDateTime(dt);
+                attrValue = dateValue;
+            }
+            else if (value is DateTimeOffset dto)
+            {
+                dateValue = DateOnly.FromDateTime(dto.DateTime);
+                attrValue = dateValue;
+            }
+            else if (value is string str)
+            {
+                if (DateOnly.TryParse(str, out DateOnly result))
+                {
+                    dateValue = result;
+                    attrValue = dateValue;
+                }
+                if (DateTime.TryParse(str, out DateTime dt2))
+                {
+                    dateValue = DateOnly.FromDateTime(dt2);
+                    attrValue = dateValue;
+                }
+            }
+            else
+            {
+                throw new ArgumentException("输入的值无法转换为日期");
+            }
+        }
+
+        private void ParseDateTime(object value)
+        {
+            if (value == null)
+            {
+                dateTimeValue = null;
+                attrValue = dateTimeValue;
+            }
+            else if (value is DateTime t)
+            {
+                dateTimeValue = t;
+                attrValue = dateTimeValue;
+            }
+            else if (value is DateTimeOffset to)
+            {
+                dateTimeValue = to.DateTime;
+                attrValue = dateTimeValue;
+            }
+            else if (value is string str)
+            {
+                if (string.IsNullOrEmpty(str))
+                {
+                    attrValue = DateTimeValue = null;
+                }
+                else if (DateTime.TryParse(str, out DateTime result))
+                {
+                    dateTimeValue = result;
+                    attrValue = dateTimeValue;
+                }
+            }
+            else
+            {
+                throw new ArgumentException("输入的值无法转换为时间");
+            }
+        }
+
+        private void ParseFloat(object value)
+        {
+            if (value == null)
+            {
+                floatValue = null;
+                attrValue = floatValue;
+            }
+            else if (value is double or float)
+            {
+                floatValue = Convert.ToDouble(value);
+                attrValue = floatValue;
+            }
+            else if (value is string str)
+            {
+                if (double.TryParse(str, out double result))
+                {
+                    floatValue = result;
+                    attrValue = floatValue;
+                }
+                throw new ArgumentException("输入的值无法转换为小数");
+            }
+            else
+            {
+                throw new ArgumentException("输入的值无法转换为小数");
+            }
+        }
+
+        private void ParseInt(object value)
+        {
+            if (value == null)
+            {
+                attrValue = null;
+                intValue = null;
+            }
+            else if (value is long or int or byte or short or sbyte or ushort or uint)
+            {
+                intValue = Convert.ToInt64(value);
+                attrValue = intValue;
+            }
+
+            else if (value is double d)
+            {
+                if (d <= long.MaxValue && d >= long.MinValue)
+                {
+                    intValue = Convert.ToInt64(d);
+                    attrValue = intValue;
+                }
+                throw new ArgumentOutOfRangeException("输入的值超过了范围");
+            }
+            else if (value is string str)
+            {
+                if (long.TryParse(str, out long result))
+                {
+                    intValue = result;
+                    attrValue = intValue;
+                }
+                throw new ArgumentException("输入的值无法转换为整数");
+            }
+            else
+            {
+                throw new ArgumentException("输入的值无法转换为整数");
+            }
+        }
+
+        private void ParseText(object value)
+        {
+            if (value is string str)
+            {
+                textValue = str;
+                attrValue = value;
+            }
+            else if (value is null)
+            {
+                attrValue = textValue = null;
+            }
+            else
+            {
+                attrValue = textValue = value.ToString();
+            }
         }
     }
 }

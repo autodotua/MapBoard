@@ -164,11 +164,9 @@ namespace MapBoard.UI.Dialog
                                 {
                                     FieldInfoType.Integer => int.Parse(strValue),
                                     FieldInfoType.Float => double.Parse(strValue),
-                                    FieldInfoType.Date => DateTime.ParseExact(strValue, DateFormat, CultureInfo.InvariantCulture),
+                                    FieldInfoType.Date => DateOnly.Parse(strValue),
                                     FieldInfoType.Text => strValue,
-                                    FieldInfoType.Time => DateTime
-                                        .ParseExact(strValue, DateFormat, CultureInfo.InvariantCulture)
-                                        .ToString(Parameters.TimeFormat),
+                                    FieldInfoType.DateTime => DateTime.Parse(strValue),
                                     _ => throw new NotSupportedException(),
                                 };
                                 feature.SetAttributeValue(field.Field.Name, value);

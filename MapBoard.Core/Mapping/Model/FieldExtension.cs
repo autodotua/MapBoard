@@ -18,7 +18,7 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 创建时间字段
         /// </summary>
-        public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+        public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.DateTime);
 
         /// <summary>
         /// 默认字段
@@ -28,7 +28,7 @@ namespace MapBoard.Mapping.Model
         /// <summary>
         /// 修改时间字段
         /// </summary>
-        public static FieldInfo ModifiedTimeField => new FieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
+        public static FieldInfo ModifiedTimeField => new FieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.DateTime);
 
         /// <summary>
         /// 是否为能够作为符号系统Key的字段
@@ -72,7 +72,7 @@ namespace MapBoard.Mapping.Model
                 FieldInfoType.Float => 13,
                 FieldInfoType.Date => 9,
                 FieldInfoType.Text => 254,
-                FieldInfoType.Time => 20,
+                FieldInfoType.DateTime => 20,
                 _ => throw new ArgumentException(),
             };
         }
@@ -133,10 +133,6 @@ namespace MapBoard.Mapping.Model
                 if (oldField != null)
                 {
                     field.DisplayName = oldField.DisplayName;
-                    if (field.Type == FieldInfoType.Text && oldField.Type == FieldInfoType.Time)
-                    {
-                        field.Type = FieldInfoType.Time;
-                    }
                 }
                 yield return field;
             }
@@ -164,7 +160,7 @@ namespace MapBoard.Mapping.Model
                     break;
 
                 case FieldInfoType.Date:
-                    type = FieldType.Date;
+                    type = FieldType.DateOnly;
                     length = 9;
                     break;
 
@@ -173,8 +169,8 @@ namespace MapBoard.Mapping.Model
                     length = 254;
                     break;
 
-                case FieldInfoType.Time:
-                    type = FieldType.Text;
+                case FieldInfoType.DateTime:
+                    type = FieldType.Date;
                     //yyyy-MM-dd-HH-mm-ss
                     length = 20;
                     break;
@@ -193,11 +189,10 @@ namespace MapBoard.Mapping.Model
         public static FieldDescription ToFieldDescription(this FieldInfo field)
         {
             FieldType type = default;
-            int length = 0;
             switch (field.Type)
             {
                 case FieldInfoType.Integer:
-                    type = FieldType.Int32;
+                    type = FieldType.Int64;
                     break;
 
                 case FieldInfoType.Float:
@@ -205,14 +200,14 @@ namespace MapBoard.Mapping.Model
                     break;
 
                 case FieldInfoType.Date:
-                    type = FieldType.Date;
+                    type = FieldType.DateOnly;
                     break;
 
                 case FieldInfoType.Text:
                     type = FieldType.Text;
                     break;
 
-                case FieldInfoType.Time:
+                case FieldInfoType.DateTime:
                     type = FieldType.Date;
                     break;
 
@@ -244,10 +239,11 @@ namespace MapBoard.Mapping.Model
         {
             var type = (int)field.FieldType switch
             {
-                (int)FieldType.OID or (int)FieldType.Int16 or (int)FieldType.Int32 or 2 => FieldInfoType.Integer,
+                (int)FieldType.OID or (int)FieldType.Int16 or (int)FieldType.Int32 or (int)FieldType.Int64=> FieldInfoType.Integer,
                 (int)FieldType.Float32 or (int)FieldType.Float64 => FieldInfoType.Float,
-                (int)FieldType.Date => FieldInfoType.Date,
+                (int)FieldType.Date => FieldInfoType.DateTime,
                 (int)FieldType.Text => FieldInfoType.Text,
+                (int)FieldType.DateOnly => FieldInfoType.Date,
                 _ => throw new NotSupportedException(),
             };
             string name = field.Name;

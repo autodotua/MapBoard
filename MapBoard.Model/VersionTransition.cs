@@ -51,7 +51,7 @@ namespace MapBoard.Model
                         new FieldInfo("Info","标签",FieldInfoType.Text),
                         new FieldInfo("Key","分类",FieldInfoType.Text),
                         new FieldInfo("Date","日期",FieldInfoType.Date),
-                        new FieldInfo("CrtTime","创建时间",FieldInfoType.Time),
+                        new FieldInfo("CrtTime","创建时间",FieldInfoType.DateTime),
                     }).ToArray();
                 }
                 catch (Exception ex)

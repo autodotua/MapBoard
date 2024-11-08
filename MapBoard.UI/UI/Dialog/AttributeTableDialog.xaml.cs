@@ -129,8 +129,8 @@ namespace MapBoard.UI.Dialog
                         binding.StringFormat = Parameters.DateFormat;
                         break;
 
-                    case FieldInfoType.Time:
-                        path = nameof(field.TimeValue);
+                    case FieldInfoType.DateTime:
+                        path = nameof(field.DateTimeValue);
                         binding.StringFormat = Parameters.TimeFormat;
                         break;
 

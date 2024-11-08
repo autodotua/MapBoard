@@ -20,6 +20,6 @@ namespace MapBoard.Model
         Text,
 
         [Description("日期时间")]
-        Time
+        DateTime,
     }
 }

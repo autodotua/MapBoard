@@ -91,8 +91,8 @@ namespace MapBoard.Model
                 case FieldInfoType.Text:
                     return propertyValue is string;
 
-                case FieldInfoType.Time:
-                    return propertyValue is string;
+                case FieldInfoType.DateTime:
+                    return propertyValue is DateTime;
 
                 default:
                     throw new InvalidEnumArgumentException();

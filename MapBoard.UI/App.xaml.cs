@@ -26,6 +26,7 @@ using System.Diagnostics;
 using MapBoard.IO;
 using MapBoard.IO.Gpx;
 using MapBoard.Mapping;
+using Esri.ArcGISRuntime;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -45,6 +46,8 @@ namespace MapBoard
         {
             AppContext.SetSwitch("Switch.System.Windows.Media.EnableHardwareAccelerationInRdp", true);
             Parameters.AppType = AppType.WPF;
+            ArcGISRuntimeEnvironment.EnableTimestampOffsetSupport = true;
+
             try
             {
                 SplashWindow.CreateAndShow();

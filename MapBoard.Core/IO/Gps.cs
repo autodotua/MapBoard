@@ -44,7 +44,7 @@ namespace MapBoard.IO
                     new FieldInfo(Filed_Name,"名称",FieldInfoType.Text),
                     new FieldInfo(Filed_Path,"文件路径",FieldInfoType.Text),
                     new FieldInfo(Filed_Date,"日期",FieldInfoType.Date),
-                    new FieldInfo(Filed_Time,"时间",FieldInfoType.Time),
+                    new FieldInfo(Filed_Time,"时间",FieldInfoType.DateTime),
                     new FieldInfo(Filed_Index,"轨迹序号",FieldInfoType.Integer),
                 };
             if (type == GpxImportType.Point)
@@ -140,9 +140,9 @@ namespace MapBoard.IO
 
                 }
             }
-            if (layer.HasField(Filed_Time, FieldInfoType.Time))
+            if (layer.HasField(Filed_Time, FieldInfoType.DateTime))
             {
-                feature.SetAttributeValue(Filed_Time, time?.ToString(Parameters.TimeFormat) ?? "");
+                feature.SetAttributeValue(Filed_Time, time);
             }
             if (layer.HasField(Filed_Index, FieldInfoType.Integer))
             {
