@@ -199,16 +199,11 @@ namespace MapBoard.Util
         /// <param name="layers"></param>
         /// <param name="deleteFiles"></param>
         /// <returns></returns>
-        public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers, bool deleteFiles)
+        public static async Task DeleteLayerAsync(this MapLayerInfo layer, MapLayerCollection layers)
         {
             if (layers != null && layers.Contains(layer))
             {
                 layers.Remove(layer);
-            }
-
-            if (deleteFiles)
-            {
-                await layer.DeleteAsync();
             }
         }
 

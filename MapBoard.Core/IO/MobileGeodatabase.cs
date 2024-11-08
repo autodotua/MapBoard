@@ -19,6 +19,7 @@ namespace MapBoard.IO
     public static class MobileGeodatabase
     {
         public const string MgdbFileName = "layers.geodatabase";
+        public readonly static string MgdbFilePath = Path.Combine(FolderPaths.DataPath, MgdbFileName);
 
         public static Geodatabase Current { get; private set; }
 
@@ -63,15 +64,6 @@ namespace MapBoard.IO
             await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
         }
 
-        /// <summary>
-        /// 创建Shapefile文件
-        /// </summary>
-        /// <param name="type">几何类型</param>
-        /// <param name="name">Shapefile文件名</param>
-        /// <param name="folder">目标目录</param>
-        /// <param name="fields">字段</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
         public static async Task<GeodatabaseFeatureTable> CreateMgdbLayerAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)
         {
             //排除由ArcGIS自动创建的临时字段，判断字段合法性
@@ -94,6 +86,25 @@ namespace MapBoard.IO
             var table = await Current.CreateTableAsync(td);
             await table.LoadAsync();
             return table;
+        }
+
+        public static Task CopyToDirAsync(string directory)
+        {
+            return Task.Run(() =>
+            {
+                File.Copy(MgdbFilePath, Path.Combine(directory, MgdbFileName));
+            });
+        }
+
+        public static async Task ReplaceFromMGDBAsync(string mgdbPath)
+        {
+            Current.Close();
+            Current = null;
+            await Task.Run(() =>
+            {
+                File.Copy(mgdbPath, MgdbFilePath, true);
+            });
+            await InitializeAsync();
         }
     }
 }

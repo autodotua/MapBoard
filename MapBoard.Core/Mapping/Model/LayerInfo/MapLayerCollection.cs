@@ -145,19 +145,7 @@ namespace MapBoard.Mapping.Model
             return LayerList.Cast<MapLayerInfo>().FirstOrDefault(p => p.Layer == layer);
         }
 
-        /// <summary>
-        /// 获取加载时遇到的错误
-        /// </summary>
-        /// <returns></returns>
-        public ItemsOperationErrorCollection GetLoadErrors()
-        {
-            var c = new ItemsOperationErrorCollection();
-            foreach (var layer in LayerList.Cast<MapLayerInfo>().Where(p => p.LoadError != null))
-            {
-                c.Add(new ItemsOperationError(layer.Name, layer.LoadError));
-            }
-            return c.Count == 0 ? null : c;
-        }
+        public ItemsOperationErrorCollection LoadErrors { get; } = new ItemsOperationErrorCollection();
 
         /// <summary>
         /// 插入一个图层到最后
@@ -208,7 +196,14 @@ namespace MapBoard.Mapping.Model
                     {
                         IsBatchLoading = false;
                     }
-                    await AddAsync(layer);
+                    try
+                    {
+                        await AddAsync(layer);
+                    }
+                    catch (Exception ex)
+                    {
+                        LoadErrors.Add(new ItemsOperationError(layer.Name, ex));
+                    }
                 }
                 //如果选定了某个图层，则将其设置为选定图层
                 if (SelectedIndex >= 0
@@ -308,6 +303,7 @@ namespace MapBoard.Mapping.Model
             try
             {
                 EsriLayers.Remove(layer.GetLayerForLayerList());
+                layer.DeleteAsync();
                 layer.Dispose();
             }
             catch
@@ -344,7 +340,7 @@ namespace MapBoard.Mapping.Model
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"加载图层{layer.Name}失败：{ex.Message}");
+                        throw new Exception($"加载图层{layer.Name}失败：{ex.Message}");
                     }
                 }
 

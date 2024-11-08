@@ -86,7 +86,7 @@ namespace MapBoard.UI.Menu
                     AddToMenu<IMapLayerInfo>(menu, "属性", layer, EditLayerAsync);
 
                     menu.Items.Add(new Separator());
-                    AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "复制样式到", () => CopyStylesAsync(layer));
                     AddToMenu(menu, "导出到新图层", () => ExportAsync(layer));
@@ -333,7 +333,7 @@ namespace MapBoard.UI.Menu
             }
             foreach (MapLayerInfo layer in layers)
             {
-                await layer.DeleteLayerAsync(MapView.Layers, true);
+                await layer.DeleteLayerAsync(MapView.Layers);
             }
             MapView.Layers.Save();
         }

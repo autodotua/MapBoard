@@ -46,10 +46,6 @@ namespace MapBoard.Mapping.Model
         /// </summary>
         FeatureLayer Layer { get; }
 
-        /// <summary>
-        /// 加载失败信息
-        /// </summary>
-        Exception LoadError { get; }
 
         /// <summary>
         /// 图层包含的要素数量
@@ -172,5 +168,6 @@ namespace MapBoard.Mapping.Model
         /// <param name="source"></param>
         /// <returns></returns>
         Task UpdateFeaturesAsync(IEnumerable<UpdatedFeature> features, FeaturesChangedSource source);
+        Task DeleteAsync();
     }
 }

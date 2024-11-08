@@ -72,7 +72,7 @@ namespace MapBoard.Mapping.Model
             var oldFeatures = (await QueryFeaturesAsync(new QueryParameters())).ToList();
             (table as ShapefileFeatureTable).Close();
             //重命名
-            await LayerUtility.DeleteLayerAsync(this, null, true);
+            await LayerUtility.DeleteLayerAsync(this, null);
 
             await LayerUtility.CreateLayerAsync(GeometryType, null, this, false, newFields, Name);
 
@@ -89,6 +89,10 @@ namespace MapBoard.Mapping.Model
 
         protected override FeatureTable GetTable()
         {
+            if (!MobileGeodatabase.Current.GeodatabaseFeatureTables.Any(p => p.TableName == SourceName))
+            {
+                throw new Exception($"在MGDB中找不到要素类{SourceName}");
+            }
             return MobileGeodatabase.Current.GetGeodatabaseFeatureTable(SourceName);
         }
 

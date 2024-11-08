@@ -66,8 +66,6 @@ namespace MapBoard.Mapping.Model
         public FeatureLayer Layer => layer;
 
         [JsonIgnore]
-        public Exception LoadError { get; private set; }
-        [JsonIgnore]
         public long NumberOfFeatures
         {
             get
@@ -120,45 +118,28 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task LoadAsync()
         {
+            table = GetTable();
+            if (table == null)
+            {
+                throw new Exception("获取到的要素类为空");
+            }
+            layer = GetLayerForLoading(table);
+
             try
             {
-                //确保即使Table没有成功加载，Layer也得先建起来
-                try
-                {
-                    table = GetTable();
-                }
-                catch (Exception ex)
-                {
-                    LoadError = new Exception("创建要素表失败", ex);
-                    IsLoaded = false;
-                    return;
-                }
-                finally
-                {
-                    layer = GetLayerForLoading(table);
-                }
-                try
-                {
-                    await table.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
-                }
-                catch (TimeoutException)
-                {
-                    table.CancelLoad();
-                    throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
-                }
-                //应用属性
-                ApplyProperties();
-                //应用符号和标签
-                this.ApplyStyle();
-                IsLoaded = true;
-                this.Notify(nameof(GeometryType));
+                await table.LoadAsync().TimeoutAfter(Parameters.LoadTimeout);
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                LoadError = ex;
-                IsLoaded = false;
-                throw;
+                table.CancelLoad();
+                throw new TimeoutException("加载超时，通常是无法连接网络服务所致");
             }
+            //应用属性
+            ApplyProperties();
+            //应用符号和标签
+            this.ApplyStyle();
+            IsLoaded = true;
+            this.Notify(nameof(GeometryType));
         }
 
         public Task<Envelope> QueryExtentAsync(QueryParameters parameters)
