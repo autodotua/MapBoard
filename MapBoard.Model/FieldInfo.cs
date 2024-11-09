@@ -80,13 +80,14 @@ namespace MapBoard.Model
             switch (Type)
             {
                 case FieldInfoType.Integer:
-                    return propertyValue is int;
+                    return propertyValue is long;
 
                 case FieldInfoType.Float:
                     return propertyValue is double;
 
                 case FieldInfoType.Date:
-                    return propertyValue is DateTime || propertyValue is DateTimeOffset || propertyValue is DateOnly;
+                    return propertyValue is DateOnly;
+
                 case FieldInfoType.Text:
                     return propertyValue is string;
 

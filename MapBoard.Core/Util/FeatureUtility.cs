@@ -519,7 +519,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task DeleteAsync(IMapLayerInfo layer, Feature[] features)
+        public static async Task DeleteAsync(IMapLayerInfo layer, IEnumerable<Feature> features)
         {
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
         }
@@ -580,7 +580,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="copy"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(IMapLayerInfo layerFrom, IMapLayerInfo layerTo, Feature[] features, bool copy)
+        public static async Task<IReadOnlyList<Feature>> CopyToLayerAsync(IMapLayerInfo layerFrom, IMapLayerInfo layerTo, IEnumerable<Feature> features)
         {
             var newFeatures = new List<Feature>();
             var fields = layerTo.Fields.Select(p => p.Name).ToHashSet();
@@ -600,12 +600,6 @@ namespace MapBoard.Util
                 }
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
-            if (!copy && layerFrom is IMapLayerInfo w)
-            {
-                await DeleteAsync(w, features);
-            }
-            layerFrom.LayerVisible = false;
-            layerTo.LayerVisible = true;
             return newFeatures.AsReadOnly();
         }
 

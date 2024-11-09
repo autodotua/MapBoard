@@ -202,7 +202,7 @@ namespace MapBoard.IO
                         var shp = Path.Combine(tempDir, $"{layer.Name}.shp");
                         ShapefileFeatureTable shpTable = new ShapefileFeatureTable(shp);
                         await shpTable.LoadAsync();
-                        await MobileGeodatabase.ImportFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
+                        await MobileGeodatabase.ImportOldVersionFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
                     }
                     else
                     {

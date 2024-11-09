@@ -26,6 +26,8 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="8" />
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
@@ -101,7 +103,8 @@
         <Button
             Grid.Column="10"
             Click="CopyButton_Click"
-            Style="{StaticResource barButtonStyle}">
+            Style="{StaticResource barButtonStyle}"
+            Tag="Copy">
             <StackPanel Orientation="Horizontal">
                 <ContentControl
                     Width="16"
@@ -109,14 +112,31 @@
                 <TextBlock
                     Margin="4,0,0,0"
                     VerticalAlignment="Center">
-                    复制/移动
+                    复制到图层
+                </TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button
+            Grid.Column="12"
+            Click="CopyButton_Click"
+            Style="{StaticResource barButtonStyle}"
+            Tag="Move">
+            <StackPanel Orientation="Horizontal">
+                <ContentControl
+                    Width="16"
+                    Content="{StaticResource MoveIcon}" />
+                <TextBlock
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center">
+                    移动到图层
                 </TextBlock>
             </StackPanel>
         </Button>
 
         <Button
             x:Name="btnDelete"
-            Grid.Column="12"
+            Grid.Column="14"
             Click="DeleteButton_Click"
             IsEnabled="{Binding IsLayerEditable}"
             Style="{StaticResource barButtonStyle}">
@@ -133,7 +153,7 @@
         </Button>
 
         <Button
-            Grid.Column="14"
+            Grid.Column="16"
             Click="CancelButton_Click"
             Style="{StaticResource barButtonStyle}">
             <StackPanel Orientation="Horizontal">

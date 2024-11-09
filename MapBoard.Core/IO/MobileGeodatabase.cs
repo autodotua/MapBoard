@@ -54,7 +54,7 @@ namespace MapBoard.IO
             }
         }
 
-        public static async Task ImportFeatureTableAsync(string name, FeatureTable featureTable, IEnumerable<FieldInfo> oldFields = null)
+        public static async Task ImportOldVersionFeatureTableAsync(string name, ShapefileFeatureTable featureTable, IEnumerable<FieldInfo> oldFields)
         {
             if (oldFields == null)
             {
@@ -74,6 +74,7 @@ namespace MapBoard.IO
                 TableDescription tableDescription = new TableDescription(name, featureTable.SpatialReference, featureTable.GeometryType);
                 HashSet<string> timeKeys = new HashSet<string>();
                 HashSet<string> dateKeys = new HashSet<string>();
+                HashSet<string> intKeys = new HashSet<string>();
                 HashSet<string> oldFieldKeys = featureTable.Fields.Select(p => p.Name).ToHashSet();
                 foreach (var field in oldFields)
                 {
@@ -94,76 +95,105 @@ namespace MapBoard.IO
                     {
                         dateKeys.Add(field.Name);
                     }
+                    if (field.Type == FieldInfoType.Integer)
+                    {
+                        intKeys.Add(field.Name);
+                    }
                 }
 
                 var newTable = await Current.CreateTableAsync(tableDescription);
-                if (timeKeys.Count == 0)
+                var oldFeatures = (await featureTable.QueryFeaturesAsync(new QueryParameters())).ToList();
+                List<Feature> features = new List<Feature>(oldFeatures.Count);
+                foreach (var feature in oldFeatures)
                 {
-                    //没有时间字段，直接一次性加进去
-                    await newTable.AddFeaturesAsync(await featureTable.QueryFeaturesAsync(new QueryParameters()));
-                }
-                else
-                {
-                    var oldFeatures = (await featureTable.QueryFeaturesAsync(new QueryParameters())).ToList();
-                    List<Feature> features = new List<Feature>(oldFeatures.Count);
-                    foreach (var feature in oldFeatures)
+                    foreach (var attr in feature.Attributes.ToList())
                     {
-                        //删除ID字段
-                        foreach (var attr in feature.Attributes.ToList())
+                        // 删除ID字段
+                        if (FieldExtension.IsIdField(attr.Key))
                         {
-                            if(FieldExtension.IsIdField(attr.Key))
-                            {
-                                feature.Attributes.Remove(attr.Key);
-                            }
+                            feature.Attributes.Remove(attr.Key);
                         }
-                        //string的time转DateTime
-                        foreach (var timeKey in timeKeys)
-                        {
-                            var value = feature.GetAttributeValue(timeKey);
-                            if (value is not string str)//不是字符串
-                            {
-                                Debug.WriteLine($"旧的时间字段{timeKey}不是字符串：{value}");
-                                Debug.Assert(false);
-                                continue;
-                            }
-
-                            if (string.IsNullOrEmpty(str))//字符串为空
-                            {
-                                feature.SetAttributeValue(timeKey, null);
-                                continue;
-                            }
-
-                            if (!DateTime.TryParse(str, out var timeValue))//无法转为时间
-                            {
-                                Debug.WriteLine($"时间字段{timeKey}无法转为时间：{str}");
-                                Debug.Assert(false);
-                                continue;
-                            }
-
-                            feature.SetAttributeValue(timeKey, timeValue);
-                        }
-                        //DateTime的Date转DateOnly
-                        foreach (var dateKey in dateKeys)
-                        {
-                            var value = feature.GetAttributeValue(dateKey);
-                            if(value==null)
-                            {
-                                continue;
-                            }
-                            if (value is not DateTime dt)//不是DateTimeOffset
-                            {
-                                Debug.WriteLine($"旧的时间字段{dateKey}不是{nameof(DateTime)}：{value}");
-                                Debug.Assert(false);
-                                continue;
-                            }
-
-                            feature.SetAttributeValue(dateKey, DateOnly.FromDateTime(dt));
-                        }
-                        features.Add(feature);
                     }
-                    await newTable.AddFeaturesAsync(features);
+
+                    // 单次循环内处理 timeKeys 和 dateKeys
+                    foreach (var key in feature.Attributes.Keys.ToList())
+                    {
+                        // 处理 timeKeys 的逻辑
+
+                        if (timeKeys.Contains(key))
+                        {
+                            ProcessShpTimes(feature, key);
+                        }
+
+                        // 处理 dateKeys 的逻辑
+                        if (dateKeys.Contains(key))
+                        {
+                            ProcessShpDates(feature, key);
+                        }
+
+                        if (intKeys.Contains(key))
+                        {
+                            ProcessShpInts(feature, key);
+                        }
+                    }
+
+                    features.Add(feature);
                 }
+                await newTable.AddFeaturesAsync(features);
             }
+        }
+
+        private static void ProcessShpInts(Feature feature, string key)
+        {
+            var value = feature.GetAttributeValue(key);
+            if (value is int i)
+            {
+                feature.SetAttributeValue(key, (long)i);
+            }
+        }
+        private static void ProcessShpDates(Feature feature, string key)
+        {
+
+            var value = feature.GetAttributeValue(key);
+            if (value == null)
+            {
+                return;
+            }
+
+            if (value is not DateTime dt)
+            {
+                Debug.WriteLine($"旧的时间字段 {key} 不是 {nameof(DateTime)}：{value}");
+                Debug.Assert(false);
+                return;
+            }
+
+            feature.SetAttributeValue(key, DateOnly.FromDateTime(dt));
+        }
+
+        private static void ProcessShpTimes(Feature feature, string key)
+        {
+            var value = feature.GetAttributeValue(key);
+            if (value is not string str)
+            {
+                Debug.WriteLine($"旧的时间字段 {key} 不是字符串：{value}");
+                Debug.Assert(false);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(str))
+            {
+                feature.SetAttributeValue(key, null);
+                return;
+            }
+
+            if (!DateTime.TryParse(str, out var timeValue))
+            {
+                Debug.WriteLine($"时间字段 {key} 无法转为时间：{str}");
+                Debug.Assert(false);
+                return;
+            }
+
+            feature.SetAttributeValue(key, timeValue);
         }
 
         public static async Task<GeodatabaseFeatureTable> CreateMgdbLayerAsync(GeometryType type, string name, string folder = null, IEnumerable<FieldInfo> fields = null)

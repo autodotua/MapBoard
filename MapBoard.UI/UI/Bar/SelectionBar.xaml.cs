@@ -21,6 +21,7 @@ using FzLib.WPF;
 using MapBoard.IO;
 using System.IO;
 using MapBoard.UI.Menu;
+using Esri.ArcGISRuntime.Data;
 
 namespace MapBoard.UI.Bar
 {
@@ -125,9 +126,13 @@ namespace MapBoard.UI.Bar
                     true);
                 if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    bool copy = Layers.Selected is not IMapLayerInfo || await CommonDialog.ShowYesNoDialogAsync("是否保留原图层中选中的图形？");
+                    await FeatureUtility.CopyToLayerAsync(Layers.Selected, dialog.SelectedLayer, MapView.Selection.SelectedFeatures);
 
-                    await FeatureUtility.CopyOrMoveAsync(Layers.Selected, dialog.SelectedLayer as IMapLayerInfo, MapView.Selection.SelectedFeatures.ToArray(), copy);
+                    if ((sender as Button)?.Tag as string == "Move")
+                    {
+                        await FeatureUtility.DeleteAsync(Layers.Selected, MapView.Selection.SelectedFeatures);
+                    }
+
                     MapView.Selection.ClearSelection();
                     Layers.Selected = dialog.SelectedLayer;
                 }
