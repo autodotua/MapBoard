@@ -3,7 +3,7 @@
     public enum ExportLayerType
     {
         LayerPackge = 1,
-        LayerPackgeRebuild = 2,
+        //LayerPackgeRebuild = 2,
         GISToolBoxZip = 3,
         KML = 4,
         GeoJSON = 5,

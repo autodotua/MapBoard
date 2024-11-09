@@ -273,9 +273,7 @@
                                 x:Name="btnCreateStyle"
                                 Click="CreateMgdbLayerButton_Click"
                                 Content="新建图层"
-                                ToolTip="新建可编辑图层">
-                          
-                            </Button>
+                                ToolTip="新建可编辑图层" />
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">
@@ -352,8 +350,7 @@
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="地图包（重建）"
-                                        Tag="2"
-                                        Visibility="{Binding Config.CopyShpFileWhenExport, Converter={StaticResource Bool2VisibilityConverter}}" />
+                                        Tag="2" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="移动GIS工具箱（ZIP）"

@@ -148,11 +148,7 @@ namespace MapBoard.Util
                 switch (type)
                 {
                     case ExportLayerType.LayerPackge:
-                        await Package.ExportLayerAsync(path, layer, Config.Instance.CopyShpFileWhenExport);
-                        break;
-
-                    case ExportLayerType.LayerPackgeRebuild:
-                        await Package.ExportLayerAsync(path, layer, false);
+                        await Package.ExportLayerAsync(path, layer);
                         break;
 
                     case ExportLayerType.KML:
@@ -195,7 +191,7 @@ namespace MapBoard.Util
                 switch (type)
                 {
                     case ExportMapType.MapPackage:
-                        await Package.ExportMapAsync(path, layers, Config.Instance.CopyShpFileWhenExport);
+                        await Package.ExportMapAsync(path, layers, true);
                         break;
 
                     case ExportMapType.MapPackageRebuild:
@@ -242,11 +238,12 @@ namespace MapBoard.Util
             {
                 SaveFileDialog dialog = new SaveFileDialog()
                         .AddFilterIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
-                        .AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
+                        //.AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
                         .AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                         .AddFilterIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
                         .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
                         .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson");
+                dialog.FileName = $"地图画板图层 - {layer.Name}";
                 return dialog.GetPath(parentWindow);
             }
         }
@@ -409,7 +406,7 @@ namespace MapBoard.Util
                         {
                             try
                             {
-                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
                             }
                             catch (Exception ex)
                             {

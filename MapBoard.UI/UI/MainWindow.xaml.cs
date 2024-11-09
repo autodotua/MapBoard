@@ -282,7 +282,7 @@ namespace MapBoard.UI
             {
                 try
                 {
-                    await Package.BackupAsync(arcMap.Layers, Config.MaxBackupCount, Config.CopyShpFileWhenExport);
+                    await Package.BackupAsync(arcMap.Layers, Config.MaxBackupCount);
                 }
                 catch (Exception ex)
                 {

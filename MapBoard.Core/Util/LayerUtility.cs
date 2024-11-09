@@ -165,7 +165,7 @@ namespace MapBoard.Util
             layer.Fields = fields.ToArray();
             if (layers != null)
             {
-                await layers.AddAsync(layer);
+                await layers.AddAndLoadAsync(layer);
                 layer.LayerVisible = true;
                 layers.Selected = layer;
             }

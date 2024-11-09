@@ -217,7 +217,7 @@ namespace MapBoard.UI.Dialog
             (sender as Button).IsEnabled = false;
             try
             {
-                await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+                await Package.BackupAsync(Layers, Config.Instance.MaxBackupCount);
             }
             catch (Exception ex)
             {

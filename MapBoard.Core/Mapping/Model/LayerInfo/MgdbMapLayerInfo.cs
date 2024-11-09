@@ -5,6 +5,7 @@ using MapBoard.IO;
 using MapBoard.Model;
 using MapBoard.Util;
 using Mapster;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -44,12 +45,22 @@ namespace MapBoard.Mapping.Model
             }
         }
 
+        [JsonIgnore]
+        public GeodatabaseFeatureTable Table => table as GeodatabaseFeatureTable;
+
         public override object Clone()
         {
             var result= this.Adapt<MgdbMapLayerInfo>();
             result.IsLoaded = false;
+            result.GenerateSourceName();
             return result;
         }
+
+        public override Task DeleteAsync()
+        {
+            return (table as GeodatabaseFeatureTable).Geodatabase.DeleteTableAsync(SourceName);
+        }
+
         public override void Dispose()
         {
             table = null;
@@ -97,11 +108,6 @@ namespace MapBoard.Mapping.Model
                 throw new Exception($"在MGDB中找不到要素类{SourceName}");
             }
             return MobileGeodatabase.Current.GetGeodatabaseFeatureTable(SourceName);
-        }
-
-        public override Task DeleteAsync()
-        {
-            return (table as GeodatabaseFeatureTable).Geodatabase.DeleteTableAsync(SourceName);
         }
     }
 }

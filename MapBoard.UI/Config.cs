@@ -102,11 +102,6 @@ namespace MapBoard
         public int CatchDistance { get; set; } = 12;
 
         /// <summary>
-        /// 导出时是否仅快速复制Shapefile而非重新写入
-        /// </summary>
-        public bool CopyShpFileWhenExport { get; set; } = true;
-
-        /// <summary>
         /// 启用XYZ网络瓦片底图的缓存
         /// </summary>
         public bool EnableBasemapCache { get; set; } = true;

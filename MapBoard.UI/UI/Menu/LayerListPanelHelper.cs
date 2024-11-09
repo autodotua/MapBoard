@@ -149,13 +149,6 @@ namespace MapBoard.UI.Menu
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                         "正在导出图层包");
-                    if (Config.Instance.CopyShpFileWhenExport)
-                    {
-                        AddToMenu(menuExport, "图层包（重建）",
-                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild, MainWindow),
-                            p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
-                            "正在导出图层包");
-                    }
                     AddToMenu(menuExport, "KML打包文件",
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),

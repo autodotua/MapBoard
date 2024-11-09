@@ -248,12 +248,6 @@
                                 Click="OpenBackupFolderButton_Click"
                                 Content="打开备份目录" />
                         </ui:SimpleStackPanel>
-                        <GroupBox Header="导出">
-                            <CheckBox
-                                Content="快速导出地图/图层包"
-                                IsChecked="{Binding Config.CopyShpFileWhenExport}"
-                                ToolTip="导出为地图包或图层包时，若选择该选项，则会进行完全重建，保证导出文件的规范。否则仅进行简单的复制操作。" />
-                        </GroupBox>
                     </ui:SimpleStackPanel>
                 </GroupBox>
             </ui:SimpleStackPanel>

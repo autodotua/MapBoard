@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MapBoard.Mapping.Model;
 using System.Threading;
 using Esri.ArcGISRuntime.Data;
+using Esri.ArcGISRuntime.Geometry;
 
 namespace MapBoard.IO
 {
@@ -24,11 +25,11 @@ namespace MapBoard.IO
         /// <param name="maxCount"></param>
         /// <param name="copyOnly"></param>
         /// <returns></returns>
-        public static async Task BackupAsync(MapLayerCollection layers, int maxCount, bool copyOnly)
+        public static async Task BackupAsync(MapLayerCollection layers, int maxCount)
         {
             await ExportMapAsync(Path.Combine(FolderPaths.BackupPath,
                 DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mbmpkg"),
-                layers, copyOnly);
+                layers, true);
 
             var files = Directory.EnumerateFiles(FolderPaths.BackupPath).ToList();
             if (files.Count > maxCount)
@@ -53,26 +54,25 @@ namespace MapBoard.IO
         /// <param name="layers">图层集合</param>
         /// <param name="copyOnly">是否仅简单复制而非重建</param>
         /// <returns></returns>
-        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer, bool copyOnly)
+        public static async Task ExportLayerAsync(string path, IMapLayerInfo layer)
         {
+            if (layer is not MgdbMapLayerInfo mgdbLayer)
+            {
+                throw new NotSupportedException($"只支持{nameof(MgdbMapLayerInfo)}");
+            }
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
             DirectoryInfo directory = PathUtility.GetTempDir();
-            //if (layer is IFileBasedLayer f)
-            //{
-            //    if (copyOnly)
-            //    {
-            //        await Task.Run(() =>
-            //        {
-            //            CopyLayerFiles(directory.FullName, f);
-            //        });
-            //    }
-            //    else
-            //    {
-            //        await f.SaveTo(directory.FullName);
-            //    }
-            //}
-            throw new NotImplementedException();
 
-            File.WriteAllText(Path.Combine(directory.FullName, "style.json"), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
+
+            Geodatabase newMgdb = await Geodatabase.CreateAsync(Path.Combine(directory.FullName, MobileGeodatabase.MgdbFileName));
+            await CopyTableToMgdbRebuildAsync(mgdbLayer.Table, newMgdb);
+            newMgdb.Close();
+
+
+            File.WriteAllText(Path.Combine(directory.FullName, MapLayerCollection.LayerFileName), Newtonsoft.Json.JsonConvert.SerializeObject(layer));
 
             await ZipDirAsync(directory.FullName, path);
         }
@@ -97,16 +97,12 @@ namespace MapBoard.IO
             }
             else
             {
-                throw new NotImplementedException();
-                //await Parallel.ForEachAsync(layers.OfType<IFileBasedLayer>(), async (layer, cancel) =>
-                // {
-                //     await layer.SaveTo(directory.FullName);
-                // });
-
-                //foreach (IFileBasedLayer layer in layers)
-                //{
-                //    await layer.SaveTo(directory.FullName);
-                //}
+                Geodatabase newMgdb = await Geodatabase.CreateAsync(Path.Combine(directory.FullName, MobileGeodatabase.MgdbFileName));
+                foreach (var table in MobileGeodatabase.Current.GeodatabaseFeatureTables)
+                {
+                    await CopyTableToMgdbRebuildAsync(table, newMgdb);
+                }
+                newMgdb.Close();
             }
             layers.Save(Path.Combine(directory.FullName, MapLayerCollection.LayersFileName));
 
@@ -119,34 +115,44 @@ namespace MapBoard.IO
         /// <param name="path"></param>
         public static async Task ImportLayerAsync(string path, MapLayerCollection layers)
         {
-            string tempDirectoryPath = Path.Combine(FolderPaths.DataPath, "temp");
-            if (Directory.Exists(tempDirectoryPath))
+
+            var tempDir = PathUtility.GetTempDir().FullName;
+
+            ZipFile.ExtractToDirectory(path, tempDir);
+
+            MgdbMapLayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<MgdbMapLayerInfo>(
+                   File.ReadAllText(Path.Combine(tempDir, MapLayerCollection.LayerFileName)));
+
+            var mgdbPath = Path.Combine(tempDir, MobileGeodatabase.MgdbFileName);
+
+            if (File.Exists(mgdbPath))
             {
-                Directory.Delete(tempDirectoryPath, true);
+                var layerMgdb = await Geodatabase.OpenAsync(mgdbPath);
+                var oldTable = layerMgdb.GetGeodatabaseFeatureTable(layer.SourceName) ?? throw new Exception("图层包中的数据库找不到对应的图层表");
+                await oldTable.LoadAsync();
+                //这里后面需要考虑一下名称一致的问题，写一个函数，用来生成不重复的文件名
+                layer = layer.Clone() as MgdbMapLayerInfo;//重新生成SourceName
+                await CopyTableToMgdbRebuildAsync(oldTable, MobileGeodatabase.Current, layer.SourceName);
+                layerMgdb.Close();
             }
-            Directory.CreateDirectory(tempDirectoryPath);
+            else if (File.Exists(Path.Combine(tempDir, $"{layer.Name}.shp")))
+            {
+                var shp = Path.Combine(tempDir, $"{layer.Name}.shp");
+                ShapefileFeatureTable shpTable = new ShapefileFeatureTable(shp);
+                await shpTable.LoadAsync();
+                await PackageMigration.ImportOldVersionFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
+                shpTable.Close();
+            }
+            else
+            {
+                throw new Exception($"找不到图层{layer.Name}的可导入源（包括gdb和shp）");
+            }
 
-            ZipFile.ExtractToDirectory(path, tempDirectoryPath);
-
-            LayerInfo layer = Newtonsoft.Json.JsonConvert.DeserializeObject<LayerInfo>(
-                   File.ReadAllText(Path.Combine(tempDirectoryPath, "style.json")));
-
-            //switch (layer.Type)
-            //{
-            //    case null:
-            //    case "":
-            //    case MapLayerInfo.Types.Shapefile:
-            //        foreach (var file in Shapefile.GetExistShapefiles(tempDirectoryPath, layer.Name))
-            //        {
-            //            File.Copy(file, Path.Combine(FolderPaths.DataPath, Path.GetFileName(file)));
-            //        }
-            //        break;
-            //}
-
-            //要兼容老的Shapefile和新的mgdb
-            throw new NotImplementedException();
-
-            await layers.AddAsync(layer);
+            if (layers.Any(p => p.Name == layer.Name))
+            {
+                layer.Name = GetNoDuplicateName(layer.Name, layers.Select(p => p.Name));
+            }
+            await layers.AddAndLoadAsync(layer);
         }
 
         /// <summary>
@@ -177,20 +183,12 @@ namespace MapBoard.IO
                     throw new ArgumentException("存在重复的图层名：" + layer.Name);
                 }
             }
-            //Geodatabase mgdb = null;
-            //Dictionary<string, GeodatabaseFeatureTable> tables = null;
-            //if (File.Exists(mgdbPath))
-            //{
-            //    mgdb = await Geodatabase.OpenAsync(mgdbPath);
-            //    tables = mgdb.GeodatabaseFeatureTables.ToDictionary(p => p.TableName);
-            //}
-
             if (File.Exists(mgdbPath))
             {
                 await MobileGeodatabase.ReplaceFromMGDBAsync(mgdbPath);
                 foreach (var layer in newLayers)
                 {
-                    await layers.AddAsync(layer);
+                    await layers.AddAndLoadAsync(layer);
                 }
             }
             else
@@ -202,16 +200,46 @@ namespace MapBoard.IO
                         var shp = Path.Combine(tempDir, $"{layer.Name}.shp");
                         ShapefileFeatureTable shpTable = new ShapefileFeatureTable(shp);
                         await shpTable.LoadAsync();
-                        await MobileGeodatabase.ImportOldVersionFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
+                        await PackageMigration.ImportOldVersionFeatureTableAsync(layer.SourceName, shpTable, layer.Fields);
+                        shpTable.Close();
                     }
                     else
                     {
                         throw new Exception($"找不到图层{layer.Name}的可导入源（包括gdb和shp）");
                     }
-                    await layers.AddAsync(layer);
+                    await layers.AddAndLoadAsync(layer);
                 }
             }
             layers.Save();
+        }
+
+        private static async Task<GeodatabaseFeatureTable> CopyTableToMgdbRebuildAsync(GeodatabaseFeatureTable table, Geodatabase mgdb, string newName = null)
+        {
+            newName ??= table.TableName;
+            TableDescription td = new TableDescription(newName, table.SpatialReference, table.GeometryType);
+            foreach (var field in table.EditableAttributeFields)
+            {
+                td.FieldDescriptions.Add(new FieldDescription(field.Name, field.FieldType));
+            }
+            var newTable = await mgdb.CreateTableAsync(td);
+            var features = await table.QueryFeaturesAsync(new QueryParameters());
+            await newTable.AddFeaturesAsync(features);
+            return newTable;
+        }
+        private static string GetNoDuplicateName(string name, IEnumerable<string> existedNames)
+        {
+            var set = existedNames.ToHashSet();
+            if (!set.Contains(name))
+            {
+                return name;
+            }
+
+            int i = 2;
+            while (set.Contains($"{name} ({i})"))
+            {
+                i++;
+            }
+            return $"{name} ({i})";
         }
         /// <summary>
         /// 压缩一个目录
@@ -227,7 +255,7 @@ namespace MapBoard.IO
             }
             await Task.Run(() =>
             {
-                ZipFile.CreateFromDirectory(dir, path);
+                ZipFile.CreateFromDirectory(dir, path, CompressionLevel.Fastest, false);
             });
         }
     }

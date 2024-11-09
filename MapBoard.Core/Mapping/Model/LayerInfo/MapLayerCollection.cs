@@ -26,6 +26,8 @@ namespace MapBoard.Mapping.Model
     {
         public const string LayersFileName = "layers.json";
 
+        public const string LayerFileName = "style.json";
+
         private IMapLayerInfo selected;
 
         public MapLayerCollection()
@@ -91,7 +93,7 @@ namespace MapBoard.Mapping.Model
             //将临时变量中的图层添加到新的MapLayerCollection对象中
             foreach (var layer in tempLayers)
             {
-                await instance.AddAsync(layer);
+                await instance.AddAndLoadAsync(layer);
             }
             //如果选定了某个图层，则将其设置为选定图层
             if (instance.SelectedIndex >= 0
@@ -108,13 +110,13 @@ namespace MapBoard.Mapping.Model
         /// <param name="layer"></param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException"></exception>
-        public async Task<ILayerInfo> AddAsync(ILayerInfo layer)
+        public async Task<ILayerInfo> AddAndLoadAsync(ILayerInfo layer)
         {
             if (layer is not MapLayerInfo)
             {
                 layer = new MgdbMapLayerInfo(layer);
             }
-            await AddLayerAsync(layer as MapLayerInfo, 0);
+            await AddAndLoadLayerAsync(layer as MapLayerInfo, 0);
             (layer as MapLayerInfo).PropertyChanged += OnLayerPropertyChanged;
             LayerList.Add(layer);
             return layer;
@@ -155,7 +157,7 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public async Task InsertAsync(int index, MapLayerInfo layer)
         {
-            await AddLayerAsync(layer, Count - index);
+            await AddAndLoadLayerAsync(layer, Count - index);
             layer.PropertyChanged += OnLayerPropertyChanged;
             LayerList.Insert(index, layer);
         }
@@ -198,7 +200,7 @@ namespace MapBoard.Mapping.Model
                     }
                     try
                     {
-                        await AddAsync(layer);
+                        await AddAndLoadAsync(layer);
                     }
                     catch (Exception ex)
                     {
@@ -327,7 +329,7 @@ namespace MapBoard.Mapping.Model
         /// <param name="layer"></param>
         /// <param name="index"></param>
         /// <returns></returns>
-        private async Task AddLayerAsync(IMapLayerInfo layer, int index)
+        private async Task AddAndLoadLayerAsync(IMapLayerInfo layer, int index)
         {
             try
             {
