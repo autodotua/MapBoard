@@ -15,4 +15,5 @@
     <converter:TileDownloaderTitleConverter x:Key="TileDownloaderTitleConverter" />
     <converter:Bool2GridLengthConverter x:Key="Bool2GridLengthConverter" />
     <converter:TrackInfoConverter x:Key="TrackInfoConverter" />
+    <converter:DateOnlyConverter x:Key="DateOnlyConverter" />
 </ResourceDictionary>

@@ -45,7 +45,7 @@ namespace MapBoard.Model
                 {
                     name = "";
                 }
-                else if (value != null 
+                else if (value != null
                      && value.Length <= 10
                      && value.Length > 0
                      && Regex.IsMatch(value[0].ToString(), "[a-zA-Z]")
@@ -86,8 +86,7 @@ namespace MapBoard.Model
                     return propertyValue is double;
 
                 case FieldInfoType.Date:
-                    return propertyValue is DateTime || propertyValue is DateTimeOffset;
-
+                    return propertyValue is DateTime || propertyValue is DateTimeOffset || propertyValue is DateOnly;
                 case FieldInfoType.Text:
                     return propertyValue is string;
 

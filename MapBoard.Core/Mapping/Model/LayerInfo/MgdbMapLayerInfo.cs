@@ -36,6 +36,7 @@ namespace MapBoard.Mapping.Model
             template.Adapt(this);
             GenerateSourceName();
             Name = newName;
+            IsLoaded = false;
 
             if (!includeFields)
             {
@@ -45,7 +46,9 @@ namespace MapBoard.Mapping.Model
 
         public override object Clone()
         {
-            return this.Adapt<MgdbMapLayerInfo>();
+            var result= this.Adapt<MgdbMapLayerInfo>();
+            result.IsLoaded = false;
+            return result;
         }
         public override void Dispose()
         {

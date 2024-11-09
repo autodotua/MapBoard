@@ -60,34 +60,13 @@ namespace MapBoard.Mapping.Model
                 string key = attr.Key;
                 object value = attr.Value;
 
-                //处理Int64
-                if (value is long l)
-                {
-                    //超过范围的，直接置0
-                    if (l > int.MaxValue || l < int.MinValue)
-                    {
-                        value = 0;
-                    }
-                    else
-                    {
-                        value = Convert.ToInt32(l);
-                    }
-                }
-
                 //仅包含存在于目标图层的字段，且需要保证数据类型正确
-                if (key2Field.ContainsKey(key)
-                    && key2Field[key].IsCorrectType(value))
+                if (key2Field.TryGetValue(key, out FieldInfo fi) && fi.IsCorrectType(value)&&!fi.IsIdField())
                 {
                     dic.Add(key, value);
                 }
             }
 
-            //处理创建时间
-            if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
-                || feature.Attributes[Parameters.CreateTimeFieldName] == null)
-            {
-                dic.AddOrSetValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
-            }
             var newFeature = table.CreateFeature(dic, feature.Geometry);
             return newFeature;
         }

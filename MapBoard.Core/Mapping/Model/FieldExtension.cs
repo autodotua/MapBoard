@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.Model;
+using MapBoard.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +20,6 @@ namespace MapBoard.Mapping.Model
         /// 创建时间字段
         /// </summary>
         public static FieldInfo CreateTimeField => new FieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.DateTime);
-
-        /// <summary>
-        /// 默认字段
-        /// </summary>
-        public static FieldInfo[] DefaultFields => new[] { CreateTimeField, ModifiedTimeField };
 
         /// <summary>
         /// 修改时间字段
@@ -116,8 +112,11 @@ namespace MapBoard.Mapping.Model
         /// <returns></returns>
         public static bool IsIdField(string field)
         {
-            return field.ToLower() is "fid" or "id" or "objectid";
+            return field.Equals("fid", StringComparison.OrdinalIgnoreCase) ||
+                   field.Equals("id", StringComparison.OrdinalIgnoreCase) ||
+                   field.Equals("objectid", StringComparison.OrdinalIgnoreCase);
         }
+
         /// <summary>
         /// 将字段信息与数据源进行同步
         /// </summary>
@@ -239,7 +238,7 @@ namespace MapBoard.Mapping.Model
         {
             var type = (int)field.FieldType switch
             {
-                (int)FieldType.OID or (int)FieldType.Int16 or (int)FieldType.Int32 or (int)FieldType.Int64=> FieldInfoType.Integer,
+                (int)FieldType.OID or (int)FieldType.Int16 or (int)FieldType.Int32 or (int)FieldType.Int64 => FieldInfoType.Integer,
                 (int)FieldType.Float32 or (int)FieldType.Float64 => FieldInfoType.Float,
                 (int)FieldType.Date => FieldInfoType.DateTime,
                 (int)FieldType.Text => FieldInfoType.Text,

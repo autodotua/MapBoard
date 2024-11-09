@@ -778,5 +778,41 @@ namespace MapBoard.Util
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
         }
+
+        public static bool RemoveIdAttributes(this Feature feature)
+        {
+            bool hasRemoved = false;
+            foreach (var key in feature.Attributes.Keys.ToList())
+            {
+                if (FieldExtension.IsIdField(key))
+                {
+                    feature.Attributes.Remove(key);
+                    hasRemoved = true;
+                }
+            }
+            return hasRemoved;
+        }
+        public static void RemoveIdAttributes(this IEnumerable<Feature> features)
+        {
+            if (!features.Any())
+            {
+                return;
+            }
+            //假定每个Feature内属性一致，那么先检测第一条，如果有ID字段，才循环所有Feature
+            if (!features.First().RemoveIdAttributes())
+            {
+                return;
+            }
+            foreach (var feature in features)
+            {
+                foreach (var key in feature.Attributes.Keys.ToList())
+                {
+                    if (FieldExtension.IsIdField(key))
+                    {
+                        feature.Attributes.Remove(key);
+                    }
+                }
+            }
+        }
     }
 }

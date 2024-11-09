@@ -88,7 +88,6 @@ namespace MapBoard.Util
                 var features = await layer.GetAllFeaturesAsync();
 
                 var newLayer = await CreateLayerAsync(layer.GeometryType, layers, layer, includeFields);
-
                 await newLayer.AddFeaturesAsync(features, FeaturesChangedSource.Initialize, true);
                 layer.LayerVisible = false;
             }

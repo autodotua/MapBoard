@@ -86,14 +86,14 @@
                                                         <DataTemplate>
                                                             <DatePicker
                                                                 BorderThickness="0"
-                                                                SelectedDate="{Binding DateValue}" />
+                                                                SelectedDate="{Binding DateValue, Converter={StaticResource DateOnlyConverter}}" />
                                                         </DataTemplate>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Type}">
                                                 <DataTrigger.Value>
-                                                    <model:FieldInfoType>Time</model:FieldInfoType>
+                                                    <model:FieldInfoType>DateTime</model:FieldInfoType>
                                                 </DataTrigger.Value>
                                                 <Setter Property="ContentTemplate">
                                                     <Setter.Value>
@@ -102,7 +102,7 @@
                                                                 x:Name="txtDateTime"
                                                                 ui:TextBoxHelper.IsDeleteButtonVisible="False"
                                                                 BorderThickness="0"
-                                                                Text="{Binding TimeValue, StringFormat={StaticResource DateTimeFormat}}" />
+                                                                Text="{Binding DateTimeValue, StringFormat={StaticResource DateTimeFormat}}" />
 
                                                             <DataTemplate.Triggers>
                                                                 <DataTrigger
