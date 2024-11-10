@@ -85,7 +85,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" />
+    <!--虽然不需要AutoMapper，但在FzStandardLib中用到了，如果这边不加上，AOT会报错-->
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="CommunityToolkit.Maui" />
 		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" />
 		<PackageReference Include="Esri.ArcGISRuntime.Toolkit.Maui" />

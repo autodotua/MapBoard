@@ -30,6 +30,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using Microsoft.Win32;
 using CommonDialog = ModernWpf.FzExtension.CommonDialog.CommonDialog;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace MapBoard.UI.Dialog
 {
@@ -363,8 +364,8 @@ namespace MapBoard.UI.Dialog
             {
                 try
                 {
-                    Config.Instance.LoadFromJsonFile(path);
-                    RestartMainWindow();
+                    JsonConvert.PopulateObject(File.ReadAllText(path), Config.Instance);
+                    await CommonDialog.ShowOkDialogAsync("导入成功","导入成功，部分配置重启应用后应用");
                 }
                 catch (Exception ex)
                 {
