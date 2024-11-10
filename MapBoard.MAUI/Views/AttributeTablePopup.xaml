@@ -118,11 +118,11 @@
                                             Binding="{Binding Type}"
                                             TargetType="{x:Type ContentView}">
                                             <DataTrigger.Value>
-                                                <mm:FieldInfoType>Time</mm:FieldInfoType>
+                                                <mm:FieldInfoType>DateTime</mm:FieldInfoType>
                                             </DataTrigger.Value>
                                             <Setter Property="ContentView.Content">
                                                 <Setter.Value>
-                                                    <Entry Text="{Binding TimeValue}" />
+                                                    <Entry Text="{Binding DateTimeValue}" />
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>

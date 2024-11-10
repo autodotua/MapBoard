@@ -83,7 +83,14 @@ namespace MapBoard.IO
             }
             else
             {
-                Current = await Geodatabase.OpenAsync(gdbFile);
+                try
+                {
+                    Current = await Geodatabase.OpenAsync(gdbFile);
+                }
+                catch(Exception ex)
+                {
+
+                }
             }
         }
 

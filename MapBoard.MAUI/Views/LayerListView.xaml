@@ -62,11 +62,12 @@
                             HorizontalTextAlignment="Center"
                             Text="{Binding Name}" />
                         <ListView
-                            CachingStrategy="RetainElement"
                             ItemTapped="lvwLevel_ItemTapped"
                             ItemTemplate="{StaticResource LayerListDataTemplate}"
                             ItemsSource="{Binding Layers}"
-                            SelectionMode="None" />
+                            SelectionMode="None"
+                            SeparatorVisibility="None"
+                            VerticalScrollBarVisibility="Never" />
                     </VerticalStackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
@@ -75,11 +76,11 @@
         <ListView
             x:Name="lvwLayers"
             Grid.Row="2"
-            CachingStrategy="RetainElement"
             ItemTapped="lvwLevel_ItemTapped"
             ItemTemplate="{StaticResource LayerListDataTemplate}"
             ItemsSource="{Binding Layers}"
-            SelectionMode="None" />
+            SelectionMode="None"
+            SeparatorVisibility="None" />
 
     </Grid>
 </ContentView>

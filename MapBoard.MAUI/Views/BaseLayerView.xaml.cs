@@ -41,7 +41,7 @@ public partial class BaseLayerView : ContentView, ISidePanel
 
     public void OnPanelOpening()
     {
-        BindingContext = new BaseLayerViewViewModel();
+        BindingContext ??= new BaseLayerViewViewModel();
     }
 
     private void AddNewBaseLayerButton_Clicked(object sender, EventArgs e)

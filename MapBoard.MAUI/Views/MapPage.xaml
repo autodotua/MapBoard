@@ -27,7 +27,7 @@
                     Source="{x:Reference map}" />
             </et:Compass.IsVisible>
         </et:Compass>
-        
+
         <et:ScaleLine
             Margin="24,8"
             HorizontalOptions="Start"
