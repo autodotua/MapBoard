@@ -62,76 +62,16 @@ namespace MapBoard.Util
                     }
                     else//异类型
                     {
-                        throw new NotSupportedException();
-                        //object result = null;
-                        //try
-                        //{
-                        //    switch (fieldTarget.Type)
-                        //    {
-                        //        //小数转整数
-                        //        case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Float:
-                        //            result = Convert.ToInt64(value);
-                        //            break;
-                        //        //文本转整数
-                        //        case FieldInfoType.Integer when fieldSource.Type == FieldInfoType.Text:
-                        //            if (long.TryParse(value as string, out long i))
-                        //            {
-                        //                result = i;
-                        //            }
-                        //            else
-                        //            {
-                        //                errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为整数"));
-                        //            }
-                        //            break;
-                        //        //整数转小数
-                        //        case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Integer:
-                        //            result = Convert.ToDouble(value);
-
-                        //            break;
-                        //        //文本转小数
-                        //        case FieldInfoType.Float when fieldSource.Type == FieldInfoType.Text:
-                        //            if (double.TryParse(value as string, out double d))
-                        //            {
-                        //                result = d;
-                        //            }
-                        //            else
-                        //            {
-                        //                errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为小数"));
-                        //            }
-                        //            break;
-                        //        //文本转日期
-                        //        case FieldInfoType.Date when fieldSource.Type == FieldInfoType.Text:
-                        //            if (DateTime.TryParseExact(value as string, dateFormat, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dt))
-                        //            {
-                        //                result = dt;
-                        //            }
-                        //            else
-                        //            {
-                        //                errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", "无法转为日期"));
-                        //            }
-                        //            break;
-                        //        //文本转时间
-                        //        case FieldInfoType.DateTime when fieldSource.Type == FieldInfoType.Text:
-                        //            result = DateTime.Parse(value as string);
-                        //            break;
-                        //        //日期转文本
-                        //        case FieldInfoType.Text when fieldSource.Type == FieldInfoType.Date:
-                        //            result = ((DateTime)value).Date.ToString(dateFormat);
-                        //            break;
-                        //        //任意转文本
-                        //        case FieldInfoType.Text:
-                        //            result = value.ToString();
-                        //            break;
-
-                        //        default:
-                        //            throw new NotSupportedException($"不支持的转换类型：从{fieldSource.Type}到{fieldTarget.Type}");
-                        //    }
-                        //    feature.SetAttributeValue(fieldTarget.Name, result);
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", ex));
-                        //}
+                        object result = null;
+                        try
+                        {
+                            result = FeatureAttribute.ConvertToType(value, fieldTarget.Type);
+                            feature.SetAttributeValue(fieldTarget.Name, result);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{value}", ex));
+                        }
                     }
                 }
             });
@@ -162,7 +102,6 @@ namespace MapBoard.Util
         /// <param name="field">需要更改的字段</param>
         /// <param name="text">目标字符串</param>
         /// <param name="includeField">是否包含其它字段，字段包含在[]中</param>
-        /// <param name="dateFormat">日期格式</param>
         /// <returns></returns>
         public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IMapLayerInfo layer, IEnumerable<Feature> features, FieldInfo field, string text, bool includeField)
         {
@@ -170,7 +109,10 @@ namespace MapBoard.Util
             {
                 throw new ArgumentException("不可为“创建时间”字段赋值");
             }
-
+            //if (includeField && field.Type is not FieldInfoType.Text)
+            //{
+            //    throw new ArgumentException("仅可为文本类型进行自定义赋值");
+            //}
             Debug.Assert(features.All(p => p.FeatureTable.Layer == layer.Layer));
 
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();
@@ -191,74 +133,21 @@ namespace MapBoard.Util
                     {
                         foreach (var f in sourceFields)
                         {
-                            if (f.Type == FieldInfoType.Date)
-                            {
-                                textValue = textValue.Replace($"[{f.Name}]", feature.GetAttributeValue(f.Name)?.ToString() ?? "");
-                            }
-                        }
-                        object result = null;
-                        try
-                        {
-                            switch (field.Type)
-                            {
-                                case FieldInfoType.Integer:
-                                    if (long.TryParse(textValue, out long i))
-                                    {
-                                        result = i;
-                                    }
-                                    else
-                                    {
-                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为整数"));
-                                    }
-                                    break;
-
-                                case FieldInfoType.Float:
-                                    if (double.TryParse(textValue, out double d))
-                                    {
-                                        result = d;
-                                    }
-                                    else
-                                    {
-                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为小数"));
-                                    }
-                                    break;
-
-                                case FieldInfoType.Date:
-                                    if (DateOnly.TryParse(textValue, out DateOnly dd))
-                                    {
-                                        result = dd;
-                                    }
-                                    else
-                                    {
-                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为日期"));
-                                    }
-                                    break;
-
-                                case FieldInfoType.DateTime:
-                                    if (DateTime.TryParse(textValue, out DateTime dt))
-                                    {
-                                        result = dt;
-                                    }
-                                    else
-                                    {
-                                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", "无法转为日期时间"));
-                                    }
-                                    break;
-                                case FieldInfoType.Text:
-                                    result = textValue;
-                                    break;
-
-                                default:
-                                    throw new NotSupportedException();
-                            }
-
-                            feature.SetAttributeValue(field.Name, result);
-                        }
-                        catch (Exception ex)
-                        {
-                            errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", ex));
+                            textValue = textValue.Replace($"[{f.Name}]", feature.GetAttributeValue(f.Name)?.ToString() ?? "");
                         }
                     }
+
+                    object result = null;
+                    try
+                    {
+                        result = FeatureAttribute.ConvertToType(textValue, field.Type);
+                        feature.SetAttributeValue(field.Name, result);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add(new ItemsOperationError($"{feature.GetID()}: {oldValue}=>{result}", ex));
+                    }
+
                 }
             });
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);

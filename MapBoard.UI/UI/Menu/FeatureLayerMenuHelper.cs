@@ -129,7 +129,6 @@ namespace MapBoard.UI.Menu
 
                     case FieldAssignmentType.Const:
                         errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, false);
-
                         break;
 
                     case FieldAssignmentType.Custom:

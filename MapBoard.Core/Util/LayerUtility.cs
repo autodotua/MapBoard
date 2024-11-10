@@ -322,7 +322,7 @@ namespace MapBoard.Util
         {
             await table.LoadAsync();
             FeatureQueryResult features = await table.QueryFeaturesAsync(new QueryParameters());
-            var fieldMap = table.Fields.FromEsriFields();//从原表字段名到新字段的映射
+            var fieldMap = table.Fields.ToFieldInfos();//从原表字段名到新字段的映射
             IMapLayerInfo layer = await CreateLayerAsync(
                 table.GeometryType, layers, layerName, [.. fieldMap.Values]);
             layer.LayerVisible = false;

@@ -105,6 +105,25 @@ namespace MapBoard.IO
         }
 
         /// <summary>
+        /// 获取各类型字段的默认长度
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static int GetDefaultLength(FieldInfoType type)
+        {
+            return type switch
+            {
+                FieldInfoType.Integer => 9,
+                FieldInfoType.Float => 13,
+                FieldInfoType.Date => 9,
+                FieldInfoType.Text => 254,
+                FieldInfoType.DateTime => 20,
+                _ => throw new ArgumentException(),
+            };
+        }
+
+        /// <summary>
         /// 获取某一个无扩展名的shapefile的名称可能对应的shapefile的所有文件
         /// </summary>
         /// <param name="directory"></param>
@@ -199,7 +218,7 @@ namespace MapBoard.IO
                 }
                 var f = new DbfFieldDesc()
                 {
-                    FieldLength = field.Type.GetLength(),
+                    FieldLength = GetDefaultLength(field.Type),
                     FieldName = field.Name,
                     FieldType = fieldType,
                     DecimalCount = decimalCount
