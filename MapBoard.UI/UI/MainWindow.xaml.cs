@@ -519,15 +519,7 @@ namespace MapBoard.UI
             }
             canClosing = false;
             ExportMapType type = (ExportMapType)int.Parse((sender as FrameworkElement).Tag as string);
-            string path = null;
-            if (type is not ExportMapType.GISToolBoxNet)
-            {
-                path = IOUtility.GetExportMapPath(type, this);
-            }
-            else
-            {
-                path = "";
-            }
+            string path = IOUtility.GetExportMapPath(type, this);
             if (path != null)
             {
                 await DoAsync(async p =>

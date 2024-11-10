@@ -50,14 +50,7 @@ namespace MapBoard.Util
                 }
                 else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
                 {
-                    if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
-                    {
-                        await Package.ImportMapAsync(files[0], layers, true);
-                    }
-                    else
-                    {
-                        await Package.ImportMapAsync(files[0], layers, false);
-                    }
+                    await Package.ImportMapAsync(files[0], layers);
                 }
                 else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
                 {
@@ -163,6 +156,10 @@ namespace MapBoard.Util
                         await GeoJson.ExportWithStyleAsync(path, layer);
                         break;
 
+                    case ExportLayerType.Shapefile:
+                        await Shapefile.ExportToShapefile(path, layer);
+                        break;
+
                     default:
                         break;
                 }
@@ -239,10 +236,11 @@ namespace MapBoard.Util
                 SaveFileDialog dialog = new SaveFileDialog()
                         .AddFilterIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
                         //.AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
-                        .AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                        //.AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                         .AddFilterIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
                         .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
-                        .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson");
+                        .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson")
+                        .AddFilterIf(type == ExportLayerType.Shapefile, "Shapefile", "shp");
                 dialog.FileName = $"地图画板图层 - {layer.Name}";
                 return dialog.GetPath(parentWindow);
             }
@@ -266,7 +264,7 @@ namespace MapBoard.Util
                 SaveFileDialog dialog = new SaveFileDialog()
                 .AddFilterIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
                 .AddFilterIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
-                .AddFilterIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                //.AddFilterIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                 .AddFilterIf(type == ExportMapType.KML, "KML打包文件", "kmz")
                 .AddFilterIf(type == ExportMapType.Screenshot, "截图", "png");
                 dialog.FileName = "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss");
@@ -298,7 +296,7 @@ namespace MapBoard.Util
         {
             OpenFileDialog dialog = new OpenFileDialog()
                 .AddFilterIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
-                .AddFilterIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
+                //.AddFilterIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
                 .AddFilterIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
                 .AddFilterIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
                 .AddFilterIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
@@ -415,12 +413,12 @@ namespace MapBoard.Util
                             }
                         }
                         args.SetMessage("正在导入新的地图");
-                        await Package.ImportMapAsync(path, layers, true);
+                        await Package.ImportMapAsync(path, layers);
                         break;
 
-                    case ImportMapType.MapPackgeAppend:
-                        await Package.ImportMapAsync(path, layers, false);
-                        break;
+                    //case ImportMapType.MapPackgeAppend:
+                    //    await Package.ImportMapAsync(path, layers, false);
+                    //    break;
 
                     case ImportMapType.LayerPackge:
                         await Package.ImportLayerAsync(path, layers);

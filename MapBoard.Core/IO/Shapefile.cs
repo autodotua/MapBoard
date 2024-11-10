@@ -150,6 +150,22 @@ namespace MapBoard.IO
             await LayerUtility.ImportFromFeatureTable(Path.GetFileNameWithoutExtension(path), layers, table);
         }
 
+        public static async Task ExportToShapefile(string path, IMapLayerInfo layer)
+        {
+            string name = Path.GetFileNameWithoutExtension(path);
+            string dir = Path.GetDirectoryName(path);
+            await CreateEgisShapefileAsync(layer.GeometryType, name, dir, layer.Fields);
+            ShapefileFeatureTable shp = await ShapefileFeatureTable.OpenAsync(Path.Combine(dir, name + ".shp"));
+            var oldFeatures = await layer.QueryFeaturesAsync(new QueryParameters());
+            List<Feature> newFeatures = new List<Feature>();
+            foreach (var feature in oldFeatures)
+            {
+                newFeatures.Add(shp.CreateFeature(feature.Attributes, feature.Geometry));
+            }
+            await shp.AddFeaturesAsync(newFeatures);
+            shp.Close();
+        }
+
         /// <summary>
         /// 重新计算并更新Shapefile的空间范围
         /// </summary>

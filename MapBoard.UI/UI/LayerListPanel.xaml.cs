@@ -295,7 +295,7 @@ namespace MapBoard.UI
         /// <param name="e"></param>
         private void SelectedLayer_Changed(object sender, SelectionChangedEventArgs e)
         {
-            if (MapView.CurrentTask != BoardTask.Ready)
+            if (MapView.CurrentTask != BoardTask.Ready && e.RemovedItems.Count > 0)
             {
                 dataGrid.SelectionChanged -= SelectedLayer_Changed;
 

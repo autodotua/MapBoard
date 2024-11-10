@@ -159,12 +159,9 @@ namespace MapBoard.IO
         /// 导入地图包
         /// </summary>
         /// <param name="path"></param>
-        public static async Task ImportMapAsync(string path, MapLayerCollection layers, bool overwrite)
+        public static async Task ImportMapAsync(string path, MapLayerCollection layers)
         {
-            if (overwrite)
-            {
-                layers.Clear();
-            }
+            layers.Clear();
             var tempDir = PathUtility.GetTempDir().FullName;
             await Task.Run(() => ZipFile.ExtractToDirectory(path, tempDir));
             var configPath = Path.Combine(tempDir, MapLayerCollection.LayersFileName);

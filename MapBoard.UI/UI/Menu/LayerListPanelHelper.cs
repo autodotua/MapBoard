@@ -165,6 +165,10 @@ namespace MapBoard.UI.Menu
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.OpenLayers, MainWindow),
                         p => ExportOpenLayersLayer(layer, p),
                     "正在导出OpenLayers网络地图");
+                    AddToMenu(menuExport, "Shapefile",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.Shapefile, MainWindow),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.Shapefile),
+                    "正在导出Shapefile");
                 }
             }
             else//多选

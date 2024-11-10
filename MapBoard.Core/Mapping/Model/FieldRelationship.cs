@@ -1,4 +1,5 @@
 ﻿using Esri.ArcGISRuntime.Data;
+using FzLib;
 using MapBoard.Model;
 using System;
 using System.Collections.Frozen;
@@ -14,7 +15,16 @@ namespace MapBoard.Mapping.Model
     {
         private static Lazy<IReadOnlyDictionary<FieldType, FieldItem>> esriFieldDic = new Lazy<IReadOnlyDictionary<FieldType, FieldItem>>(() =>
         {
-            return items.ToFrozenDictionary(p => p.EsriType);
+            Dictionary<FieldType, FieldItem> dic = new Dictionary<FieldType, FieldItem>();
+            foreach (var item in items)
+            {
+                dic.Add(item.EsriType, item);
+                if (item.CompatibleEsriTypes is { Length: > 0 })
+                {
+                    item.CompatibleEsriTypes.ForEach(p => dic.Add(p, item));
+                }
+            }
+            return dic.AsReadOnly();
         });
 
         private static Lazy<IReadOnlyDictionary<FieldInfoType, FieldItem>> fieldInfoDic = new Lazy<IReadOnlyDictionary<FieldInfoType, FieldItem>>(() =>
