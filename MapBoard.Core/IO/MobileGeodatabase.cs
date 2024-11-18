@@ -69,7 +69,7 @@ namespace MapBoard.IO
         {
             if (Current != null)
             {
-                return;
+                Current.Close();
                 //throw new InvalidOperationException("已经初始化，无法再次初始化");
             }
             if (!Directory.Exists(FolderPaths.DataPath))
