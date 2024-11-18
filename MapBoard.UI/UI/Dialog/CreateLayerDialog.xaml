@@ -130,6 +130,8 @@
                 </ui:FlyoutService.Flyout>
             </Button>
         </ui:SimpleStackPanel>
-        <TextBlock Text="{Binding Message}" />
+        <TextBlock
+            Text="{Binding Message}"
+            TextWrapping="Wrap" />
     </ui:SimpleStackPanel>
 </dialog:AddLayerDialogBase>

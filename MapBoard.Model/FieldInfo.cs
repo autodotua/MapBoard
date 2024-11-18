@@ -45,7 +45,7 @@ namespace MapBoard.Model
                 {
                     name = "";
                 }
-                else if (value != null 
+                else if (value != null
                      && value.Length <= 10
                      && value.Length > 0
                      && Regex.IsMatch(value[0].ToString(), "[a-zA-Z]")
@@ -80,19 +80,19 @@ namespace MapBoard.Model
             switch (Type)
             {
                 case FieldInfoType.Integer:
-                    return propertyValue is int;
+                    return propertyValue is long;
 
                 case FieldInfoType.Float:
                     return propertyValue is double;
 
                 case FieldInfoType.Date:
-                    return propertyValue is DateTime || propertyValue is DateTimeOffset;
+                    return propertyValue is DateOnly;
 
                 case FieldInfoType.Text:
                     return propertyValue is string;
 
-                case FieldInfoType.Time:
-                    return propertyValue is string;
+                case FieldInfoType.DateTime:
+                    return propertyValue is DateTime;
 
                 default:
                     throw new InvalidEnumArgumentException();

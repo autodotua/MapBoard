@@ -24,7 +24,7 @@ namespace MapBoard.UI.Dialog
             PolygonLayers = Layers
                 .EditableLayers
                 .Where(p => p.GeometryType is Esri.ArcGISRuntime.Geometry.GeometryType.Polygon)
-                .Cast<IEditableLayerInfo>()
+                .Cast<IMapLayerInfo>()
                 .ToList();
             InitializeComponent();
         }
@@ -54,12 +54,12 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 所有多边形图层
         /// </summary>
-        public List<IEditableLayerInfo> PolygonLayers { get; }
+        public List<IMapLayerInfo> PolygonLayers { get; }
 
         /// <summary>
         /// 目标图层
         /// </summary>
-        public IEditableLayerInfo TargetLayer { get; set; }
+        public IMapLayerInfo TargetLayer { get; set; }
 
         /// <summary>
         /// 是否导出到新图层

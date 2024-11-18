@@ -24,7 +24,6 @@ using MapBoard.Mapping.Model;
 using EsriLayerCollection = Esri.ArcGISRuntime.Mapping.LayerCollection;
 using System.Diagnostics;
 using System.ComponentModel;
-using AutoMapper;
 
 namespace MapBoard.UI.Dialog
 {
@@ -150,12 +149,12 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 创建时间字段
         /// </summary>
-        public static ExportingFieldInfo CreateTimeField => new ExportingFieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.Time);
+        public static ExportingFieldInfo CreateTimeField => new ExportingFieldInfo(Parameters.CreateTimeFieldName, "创建时间", FieldInfoType.DateTime);
        
         /// <summary>
         /// 修改时间字段
         /// </summary>
-        public static ExportingFieldInfo ModifiedTimeField => new ExportingFieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.Time);
+        public static ExportingFieldInfo ModifiedTimeField => new ExportingFieldInfo(Parameters.ModifiedTimeFieldName, "修改时间", FieldInfoType.DateTime);
       
         /// <summary>
         /// 单击创建时间菜单

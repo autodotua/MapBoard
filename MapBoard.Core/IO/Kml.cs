@@ -75,47 +75,50 @@ namespace MapBoard.IO
             List<MapPoint> points = new List<MapPoint>();
             List<Polyline> lines = new List<Polyline>();
             List<Polygon> polygons = new List<Polygon>();
-            foreach (var node in GetAllKmlPlacemark(kml))
+            await Task.Run(() =>
             {
-                switch (node.GraphicType)
+                foreach (var node in GetAllKmlPlacemark(kml))
                 {
-                    case KmlGraphicType.None:
-                        break;
-                    case KmlGraphicType.Point:
-                        points.Add(node.Geometry.RemoveZAndM() as MapPoint);
-                        break;
-                    case KmlGraphicType.Polyline:
-                        lines.Add(node.Geometry.RemoveZAndM() as Polyline);
-                        break;
-                    case KmlGraphicType.Polygon:
-                        polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
-                        break;
-                    case KmlGraphicType.ExtrudedPoint:
-                        break;
-                    case KmlGraphicType.ExtrudedPolyline:
-                        break;
-                    case KmlGraphicType.ExtrudedPolygon:
-                        break;
-                    case KmlGraphicType.Model:
-                        break;
-                    case KmlGraphicType.MultiGeometry:
-                        break;
+                    switch (node.GraphicType)
+                    {
+                        case KmlGraphicType.None:
+                            break;
+                        case KmlGraphicType.Point:
+                            points.Add(node.Geometry.RemoveZAndM() as MapPoint);
+                            break;
+                        case KmlGraphicType.Polyline:
+                            lines.Add(node.Geometry.RemoveZAndM() as Polyline);
+                            break;
+                        case KmlGraphicType.Polygon:
+                            polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
+                            break;
+                        case KmlGraphicType.ExtrudedPoint:
+                            break;
+                        case KmlGraphicType.ExtrudedPolyline:
+                            break;
+                        case KmlGraphicType.ExtrudedPolygon:
+                            break;
+                        case KmlGraphicType.Model:
+                            break;
+                        case KmlGraphicType.MultiGeometry:
+                            break;
+                    }
                 }
-            }
+            });
             string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
             if (points.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, name: name + "（点）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Point, layers, name: name + "（点）");
                 await layer.AddFeaturesAsync(points.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (lines.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, layers, name: name + "（线）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Polyline, layers, name: name + "（线）");
                 await layer.AddFeaturesAsync(lines.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
             if (polygons.Count > 0)
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polygon, layers, name: name + "（面）");
+                var layer = await LayerUtility.CreateLayerAsync( GeometryType.Polygon, layers, name: name + "（面）");
                 await layer.AddFeaturesAsync(polygons.Select(p => layer.CreateFeature(null, p)), FeaturesChangedSource.Import);
             }
         }
@@ -194,7 +197,7 @@ namespace MapBoard.IO
                 foreach (var childNode in AddAll(node))
                 {
                     yield return childNode;
-                }   
+                }
             }
             IEnumerable<KmlPlacemark> AddAll(KmlNode parentNode)
             {
@@ -206,7 +209,7 @@ namespace MapBoard.IO
                             foreach (var childNode in AddAll(node))
                             {
                                 yield return childNode;
-                            } 
+                            }
                         }
                         break;
                     case KmlPlacemark placemark:

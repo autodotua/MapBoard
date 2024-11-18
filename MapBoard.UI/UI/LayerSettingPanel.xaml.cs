@@ -167,31 +167,36 @@ namespace MapBoard.UI
                     layer.Renderer.Symbols.Add(keySymbol.Key, keySymbol.Symbol);
                 }
             }
-            layer.Labels = Labels.ToArray();
+            layer.Labels = [.. Labels];
             string newName = LayerName;
             if (newName != layer.Name)
             {
-                if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
-                    || newName.Length > 240 || newName.Length < 1)
-                {
-                    await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
-                }
-                else if (File.Exists(Path.Combine(FolderPaths.DataPath, newName + ".shp")))
+                //if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+                //    || newName.Length > 240 || newName.Length < 1)
+                //{
+                //    await CommonDialog.ShowErrorDialogAsync("新文件名不合法");
+                //}
+                //else
+                if (Layers.Any(p=>p.Name==newName))
                 {
                     await CommonDialog.ShowErrorDialogAsync("该名称的文件已存在");
                 }
                 else
                 {
-                    try
-                    {
-                        await Layers.Selected.ChangeNameAsync(newName, Layers.EsriLayers);
-                    }
-                    catch (Exception ex)
-                    {
-                        App.Log.Error("重命名失败", ex);
-                        await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
-                    }
-                    Layers.Selected = layer;
+                    //try
+                    //{
+                    //    if (Layers.Selected is ShapefileMapLayerInfo s)
+                    //    {
+                    //        await s.ChangeNameAsync(newName, Layers.EsriLayers);
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    App.Log.Error("重命名失败", ex);
+                    //    await CommonDialog.ShowErrorDialogAsync(ex, "重命名失败");
+                    //}
+                    //Layers.Selected = layer;
+                    layer.Name = newName;
                 }
             }
             try
@@ -240,7 +245,7 @@ namespace MapBoard.UI
                 ?.Select(p => new SelectableObject<FieldInfo>(p, keys.Contains(p.Name)))
                 ?.ToList();
 
-            btnClasses.IsEnabled = Layers.Selected is ShapefileMapLayerInfo;
+            btnClasses.IsEnabled = Layers.Selected is IMapLayerInfo;
         }
 
         #endregion

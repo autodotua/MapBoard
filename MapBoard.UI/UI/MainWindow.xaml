@@ -269,22 +269,11 @@
                                 Content="应用样式"
                                 IsEnabled="{Binding ElementName=arcMap, Path=Layers.Selected, Converter={StaticResource NotNullConverter}}" />
                             <TextBlock Text="  " />
-                            <ui:SplitButton
+                            <Button
                                 x:Name="btnCreateStyle"
-                                Click="CreateLayerButton_Click"
+                                Click="CreateMgdbLayerButton_Click"
                                 Content="新建图层"
-                                ToolTip="新建可编辑图层">
-                                <ui:SplitButton.Flyout>
-                                    <ui:MenuFlyout>
-                                        <MenuItem
-                                            Click="AddWfsLayerButton_Click"
-                                            Header="WFS图层" />
-                                        <MenuItem
-                                            Click="CreateTempLayerButton_Click"
-                                            Header="临时图层" />
-                                    </ui:MenuFlyout>
-                                </ui:SplitButton.Flyout>
-                            </ui:SplitButton>
+                                ToolTip="新建可编辑图层" />
                         </StackPanel>
                     </ui:SimpleStackPanel>
                     <Grid Grid.Row="2">
@@ -318,10 +307,6 @@
                             ToolTip="导入地图包（覆盖当前地图）">
                             <ui:SplitButton.Flyout>
                                 <ui:MenuFlyout>
-                                    <MenuItem
-                                        Click="ImportMenu_Click"
-                                        Header="地图包（追加）"
-                                        Tag="2" />
                                     <MenuItem
                                         Click="ImportMenu_Click"
                                         Header="图层包（mblpkg）"
@@ -361,16 +346,7 @@
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="地图包（重建）"
-                                        Tag="2"
-                                        Visibility="{Binding Config.CopyShpFileWhenExport, Converter={StaticResource Bool2VisibilityConverter}}" />
-                                    <MenuItem
-                                        Click="ExportMenu_Click"
-                                        Header="移动GIS工具箱（ZIP）"
-                                        Tag="3" />
-                                    <MenuItem
-                                        Click="ExportMenu_Click"
-                                        Header="移动GIS工具箱（FTP）"
-                                        Tag="4" />
+                                        Tag="2" />
                                     <MenuItem
                                         Click="ExportMenu_Click"
                                         Header="KML打包文件"

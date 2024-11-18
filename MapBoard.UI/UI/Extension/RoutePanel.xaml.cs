@@ -163,8 +163,8 @@ namespace MapBoard.UI.Extension
                     false);
             if (await dialog.ShowAsync() == ModernWpf.Controls.ContentDialogResult.Primary && dialog.SelectedLayer != null)
             {
-                Debug.Assert(dialog.SelectedLayer is IEditableLayerInfo);
-                var layer = dialog.SelectedLayer as IEditableLayerInfo;
+                Debug.Assert(dialog.SelectedLayer is IMapLayerInfo);
+                var layer = dialog.SelectedLayer as IMapLayerInfo;
                 var route = SelectedRoute;
                 List<Feature> newFeatures = new List<Feature>();
                 Debug.Assert(SelectedRoute != null);

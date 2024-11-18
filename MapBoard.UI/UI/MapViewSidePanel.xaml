@@ -375,13 +375,13 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                        <CheckBox
+                        <!--<CheckBox
                             Grid.Row="2"
                             Grid.Column="2"
                             Margin="0,0,-48,0"
                             VerticalAlignment="Bottom"
                             Content="更新"
-                            IsChecked="{Binding DataSourceOn}" />
+                            IsChecked="{Binding DataSourceOn}" />-->
                     </Grid>
                 </Grid>
             </Border>

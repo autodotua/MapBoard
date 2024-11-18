@@ -123,7 +123,7 @@ public partial class TrackView : ContentView, ISidePanel
         {
             MainPage.Current.ClosePanel<TrackView>();
 
-            var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Polyline, MainMapView.Current.Layers, Path.GetFileNameWithoutExtension(path));
+            var layer = await LayerUtility.CreateLayerAsync(GeometryType.Polyline, MainMapView.Current.Layers, Path.GetFileNameWithoutExtension(path));
             layer.Renderer.DefaultSymbol = new Model.SymbolInfo()
             {
                 OutlineWidth = 6,

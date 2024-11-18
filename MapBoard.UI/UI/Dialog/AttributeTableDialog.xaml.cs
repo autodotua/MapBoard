@@ -32,7 +32,7 @@ namespace MapBoard.UI.Dialog
         /// 编辑过的要素属性
         /// </summary>
         private HashSet<FeatureAttributeCollection> editedAttributes = new HashSet<FeatureAttributeCollection>();
-        
+
         /// <summary>
         /// 从要素ID到属性的映射
         /// </summary>
@@ -105,10 +105,7 @@ namespace MapBoard.UI.Dialog
             {
                 throw new Exception("没有任何要素");
             }
-            if (Layer is ShapefileMapLayerInfo s)
-            {
-                s.FeaturesChanged += Layer_FeaturesChanged;
-            }
+            Layer.FeaturesChanged += Layer_FeaturesChanged;
             //将属性加入DataGrid中
             var fields = Layer.Fields.ToList();
             int column = 0;
@@ -132,8 +129,8 @@ namespace MapBoard.UI.Dialog
                         binding.StringFormat = Parameters.DateFormat;
                         break;
 
-                    case FieldInfoType.Time:
-                        path = nameof(field.TimeValue);
+                    case FieldInfoType.DateTime:
+                        path = nameof(field.DateTimeValue);
                         binding.StringFormat = Parameters.TimeFormat;
                         break;
 
@@ -305,8 +302,6 @@ namespace MapBoard.UI.Dialog
         /// <param name="e"></param>
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(Layer is ShapefileMapLayerInfo);
-
             btnSave.IsEnabled = false;
             List<UpdatedFeature> features = new List<UpdatedFeature>();
             foreach (var attr in editedAttributes.Where(p => feature2Attributes.ContainsKey(p.Feature.GetID())))
@@ -315,7 +310,7 @@ namespace MapBoard.UI.Dialog
                 attr.SaveToFeature();
                 features.Add(new UpdatedFeature(attr.Feature, attr.Feature.Geometry, oldAttrs));
             }
-            await (Layer as ShapefileMapLayerInfo).UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
+            await Layer.UpdateFeaturesAsync(features, FeaturesChangedSource.Edit);
 
             editedAttributes.Clear();
             this.Notify(nameof(EditedFeaturesCount));

@@ -50,14 +50,7 @@ namespace MapBoard.Util
                 }
                 else if (files.Count(p => p.EndsWith(".mbmpkg")) == files.Length && files.Length == 1)
                 {
-                    if (await CommonDialog.ShowYesNoDialogAsync("是否覆盖当前所有样式？") == true)
-                    {
-                        await Package.ImportMapAsync(files[0], layers, true);
-                    }
-                    else
-                    {
-                        await Package.ImportMapAsync(files[0], layers, false);
-                    }
+                    await Package.ImportMapAsync(files[0], layers);
                 }
                 else if (files.Count(p => p.EndsWith(".mblpkg")) == files.Length)
                 {
@@ -69,7 +62,7 @@ namespace MapBoard.Util
                         }
                     }
                 }
-                else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IEditableLayerInfo w2)
+                else if (files.Count(p => p.EndsWith(".csv")) == files.Length && layers.Selected is IMapLayerInfo w2)
                 {
                     if (await CommonDialog.ShowYesNoDialogAsync("是否导入CSV文件？") == true)
                     {
@@ -148,22 +141,7 @@ namespace MapBoard.Util
                 switch (type)
                 {
                     case ExportLayerType.LayerPackge:
-                        await Package.ExportLayerAsync(path, layer, Config.Instance.CopyShpFileWhenExport);
-                        break;
-
-                    case ExportLayerType.LayerPackgeRebuild:
-                        await Package.ExportLayerAsync(path, layer, false);
-                        break;
-
-                    case ExportLayerType.GISToolBoxZip:
-                        if (layer is ShapefileMapLayerInfo s)
-                        {
-                            await MobileGISToolBox.ExportLayerAsync(path, s);
-                        }
-                        else
-                        {
-                            throw new NotSupportedException("非Shapefile图层不支持导出为GIS工具箱压缩包");
-                        }
+                        await Package.ExportLayerAsync(path, layer);
                         break;
 
                     case ExportLayerType.KML:
@@ -176,6 +154,10 @@ namespace MapBoard.Util
 
                     case ExportLayerType.GeoJSONWithStyle:
                         await GeoJson.ExportWithStyleAsync(path, layer);
+                        break;
+
+                    case ExportLayerType.Shapefile:
+                        await Shapefile.ExportToShapefile(path, layer);
                         break;
 
                     default:
@@ -206,16 +188,13 @@ namespace MapBoard.Util
                 switch (type)
                 {
                     case ExportMapType.MapPackage:
-                        await Package.ExportMapAsync(path, layers, Config.Instance.CopyShpFileWhenExport);
+                        await Package.ExportMapAsync(path, layers, true);
                         break;
 
                     case ExportMapType.MapPackageRebuild:
                         await Package.ExportMapAsync(path, layers, false);
                         break;
 
-                    case ExportMapType.GISToolBoxZip:
-                        await MobileGISToolBox.ExportMapAsync(path, layers);
-                        break;
 
                     case ExportMapType.KML:
                         await Kml.ExportAsync(path, layers.Cast<MapLayerInfo>());
@@ -256,11 +235,13 @@ namespace MapBoard.Util
             {
                 SaveFileDialog dialog = new SaveFileDialog()
                         .AddFilterIf(type == ExportLayerType.LayerPackge, "地图画板图层包", "mblpkg")
-                        .AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
-                        .AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                        //.AddFilterIf(type == ExportLayerType.LayerPackgeRebuild, "图层包", "mblpkg")
+                        //.AddFilterIf(type == ExportLayerType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                         .AddFilterIf(type == ExportLayerType.KML, "KML打包文件", "kmz")
                         .AddFilterIf(type == ExportLayerType.GeoJSON, "GeoJSON文件", "geojson")
-                        .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson");
+                        .AddFilterIf(type == ExportLayerType.GeoJSONWithStyle, "带样式GeoJSON文件", "geojson")
+                        .AddFilterIf(type == ExportLayerType.Shapefile, "Shapefile", "shp");
+                dialog.FileName = $"地图画板图层 - {layer.Name}";
                 return dialog.GetPath(parentWindow);
             }
         }
@@ -283,7 +264,7 @@ namespace MapBoard.Util
                 SaveFileDialog dialog = new SaveFileDialog()
                 .AddFilterIf(type == ExportMapType.MapPackage, "地图画板地图包", "mbmpkg")
                 .AddFilterIf(type == ExportMapType.MapPackageRebuild, "地图画板地图包", "mbmpkg")
-                .AddFilterIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
+                //.AddFilterIf(type == ExportMapType.GISToolBoxZip, "GIS工具箱图层包", "zip")
                 .AddFilterIf(type == ExportMapType.KML, "KML打包文件", "kmz")
                 .AddFilterIf(type == ExportMapType.Screenshot, "截图", "png");
                 dialog.FileName = "地图画板 - " + DateTime.Now.ToString("yyyyMMdd-HHmmss");
@@ -315,7 +296,7 @@ namespace MapBoard.Util
         {
             OpenFileDialog dialog = new OpenFileDialog()
                 .AddFilterIf(type == ImportMapType.MapPackageOverwrite, "地图画板地图包", "mbmpkg")
-                .AddFilterIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
+                //.AddFilterIf(type == ImportMapType.MapPackgeAppend, "地图画板地图包", "mbmpkg")
                 .AddFilterIf(type == ImportMapType.LayerPackge, "mblpkg地图画板图层包", "mblpkg")
                 .AddFilterIf(type == ImportMapType.Gpx, "GPS轨迹文件", "gpx")
                 .AddFilterIf(type == ImportMapType.Shapefile, "Shapefile", "shp")
@@ -364,7 +345,7 @@ namespace MapBoard.Util
         /// <param name="mapView"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static async Task ImportFeatureAsync(Window owner, string path, IEditableLayerInfo layer, MainMapView mapView, ImportLayerType type)
+        public static async Task ImportFeatureAsync(Window owner, string path, IMapLayerInfo layer, MainMapView mapView, ImportLayerType type)
         {
             Debug.Assert(path != null);
 
@@ -423,7 +404,7 @@ namespace MapBoard.Util
                         {
                             try
                             {
-                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount, Config.Instance.CopyShpFileWhenExport);
+                                await Package.BackupAsync(layers, Config.Instance.MaxBackupCount);
                             }
                             catch (Exception ex)
                             {
@@ -432,12 +413,12 @@ namespace MapBoard.Util
                             }
                         }
                         args.SetMessage("正在导入新的地图");
-                        await Package.ImportMapAsync(path, layers, true);
+                        await Package.ImportMapAsync(path, layers);
                         break;
 
-                    case ImportMapType.MapPackgeAppend:
-                        await Package.ImportMapAsync(path, layers, false);
-                        break;
+                    //case ImportMapType.MapPackgeAppend:
+                    //    await Package.ImportMapAsync(path, layers, false);
+                    //    break;
 
                     case ImportMapType.LayerPackge:
                         await Package.ImportLayerAsync(path, layers);
@@ -604,7 +585,7 @@ namespace MapBoard.Util
                         new SelectDialogItem("导入到新图层（点）","生成所有文件的轨迹点"),
                 };
             if (layer != null
-                && layer is IEditableLayerInfo
+                && layer is IMapLayerInfo
                 && layer.GeometryType is GeometryType.Point or GeometryType.Polyline)
             {
                 items.Add(new SelectDialogItem("导入到当前图层", "将轨迹导入到当前图层"));
@@ -627,7 +608,7 @@ namespace MapBoard.Util
                     await Gps.ImportAllToNewLayerAsync(files, Gps.GpxImportType.Point, layers, Config.Instance.BasemapCoordinateSystem);
                     break;
                 case 3:
-                    await Gps.ImportMultipleToLayerAsync(files, layer as IEditableLayerInfo, Config.Instance.BasemapCoordinateSystem);
+                    await Gps.ImportMultipleToLayerAsync(files, layer as IMapLayerInfo, Config.Instance.BasemapCoordinateSystem);
                     break;
 
             }

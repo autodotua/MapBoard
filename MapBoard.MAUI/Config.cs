@@ -37,13 +37,21 @@ namespace MapBoard
             {
                 if (instance == null)
                 {
-                    instance = new Config();
                     try
                     {
-                        instance.TryLoadFromJsonFile(path);
+                        if (File.Exists(path))
+                        {
+                            var json = File.ReadAllText(path);
+                            instance = JsonConvert.DeserializeObject<Config>(json);
+                        }
+                        else
+                        {
+                            instance = new Config();
+                        }
                     }
                     catch (Exception ex)
                     {
+                        instance = new Config();
                     }
                 }
                 return instance;

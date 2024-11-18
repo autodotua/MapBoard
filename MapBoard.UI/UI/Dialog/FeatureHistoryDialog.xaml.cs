@@ -21,7 +21,7 @@ namespace MapBoard.UI.Dialog
     /// </summary>
     public partial class FeatureHistoryDialog : LayerDialogBase
     {
-        private FeatureHistoryDialog(Window owner, IEditableLayerInfo layer, MainMapView arcMap) : base(owner, layer, arcMap)
+        private FeatureHistoryDialog(Window owner, IMapLayerInfo layer, MainMapView arcMap) : base(owner, layer, arcMap)
         {
             InitializeComponent();
             Title = "操作历史记录 - " + layer.Name;
@@ -36,7 +36,7 @@ namespace MapBoard.UI.Dialog
         /// <param name="layer"></param>
         /// <param name="mapView"></param>
         /// <returns></returns>
-        public static FeatureHistoryDialog Get(Window owner, IEditableLayerInfo layer, MainMapView mapView)
+        public static FeatureHistoryDialog Get(Window owner, IMapLayerInfo layer, MainMapView mapView)
         {
             return GetInstance(layer, () => new FeatureHistoryDialog(owner, layer, mapView));
         }
@@ -71,7 +71,7 @@ namespace MapBoard.UI.Dialog
             IsEnabled = false;
             Owner.IsEnabled = false;
             FeaturesChangedEventArgs current = (sender as Button).DataContext as FeaturesChangedEventArgs;
-            var layer = Layer as IEditableLayerInfo;
+            var layer = Layer as IMapLayerInfo;
             Debug.Assert(current != null);
             Debug.Assert(layer != null);
             int index = layer.Histories.IndexOf(current);
@@ -142,7 +142,7 @@ namespace MapBoard.UI.Dialog
         {
             FeaturesChangedEventArgs current = (sender as Button).DataContext as FeaturesChangedEventArgs;
 
-            var layer = Layer as IEditableLayerInfo;
+            var layer = Layer as IMapLayerInfo;
             Debug.Assert(current != null);
             Debug.Assert(layer != null);
             int index = layer.Histories.IndexOf(current);

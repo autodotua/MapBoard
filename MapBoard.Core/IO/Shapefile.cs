@@ -20,8 +20,8 @@ namespace MapBoard.IO
         /// <summary>
         /// shapefile的可能的文件扩展名
         /// </summary>
-        public static readonly string[] ShapefileExtensions = new string[]
-        {
+        public static readonly string[] ShapefileExtensions =
+        [
             ".shp",
             ".shx",
             ".dbf",
@@ -31,7 +31,7 @@ namespace MapBoard.IO
             ".cpg",
             ".sbn",
             ".sbx",
-        };
+        ];
 
         /// <summary>
         /// 将图层克隆并保存到新的目录中的shapefile
@@ -39,7 +39,7 @@ namespace MapBoard.IO
         /// <param name="directory"></param>
         /// <param name="layer"></param>
         /// <returns></returns>
-        public static async Task CloneFeatureToNewShpAsync(string directory, ShapefileMapLayerInfo layer)
+        public static async Task CloneFeatureToNewShpAsync(string directory, IMapLayerInfo layer)
         {
             var table = await CreateShapefileAsync(layer.GeometryType, layer.Name, directory, layer.Fields);
             List<Feature> newFeatures = new List<Feature>();
@@ -105,6 +105,25 @@ namespace MapBoard.IO
         }
 
         /// <summary>
+        /// 获取各类型字段的默认长度
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static int GetDefaultLength(FieldInfoType type)
+        {
+            return type switch
+            {
+                FieldInfoType.Integer => 9,
+                FieldInfoType.Float => 13,
+                FieldInfoType.Date => 9,
+                FieldInfoType.Text => 254,
+                FieldInfoType.DateTime => 20,
+                _ => throw new ArgumentException(),
+            };
+        }
+
+        /// <summary>
         /// 获取某一个无扩展名的shapefile的名称可能对应的shapefile的所有文件
         /// </summary>
         /// <param name="directory"></param>
@@ -129,6 +148,22 @@ namespace MapBoard.IO
         {
             ShapefileFeatureTable table = new ShapefileFeatureTable(path);
             await LayerUtility.ImportFromFeatureTable(Path.GetFileNameWithoutExtension(path), layers, table);
+        }
+
+        public static async Task ExportToShapefile(string path, IMapLayerInfo layer)
+        {
+            string name = Path.GetFileNameWithoutExtension(path);
+            string dir = Path.GetDirectoryName(path);
+            await CreateEgisShapefileAsync(layer.GeometryType, name, dir, layer.Fields);
+            ShapefileFeatureTable shp = await ShapefileFeatureTable.OpenAsync(Path.Combine(dir, name + ".shp"));
+            var oldFeatures = await layer.QueryFeaturesAsync(new QueryParameters());
+            List<Feature> newFeatures = new List<Feature>();
+            foreach (var feature in oldFeatures)
+            {
+                newFeatures.Add(shp.CreateFeature(feature.Attributes, feature.Geometry));
+            }
+            await shp.AddFeaturesAsync(newFeatures);
+            shp.Close();
         }
 
         /// <summary>
@@ -193,13 +228,13 @@ namespace MapBoard.IO
                         break;
 
                     case FieldInfoType.Text:
-                    case FieldInfoType.Time:
+                    case FieldInfoType.DateTime:
                         fieldType = DbfFieldType.Character;
                         break;
                 }
                 var f = new DbfFieldDesc()
                 {
-                    FieldLength = field.Type.GetLength(),
+                    FieldLength = GetDefaultLength(field.Type),
                     FieldName = field.Name,
                     FieldType = fieldType,
                     DecimalCount = decimalCount

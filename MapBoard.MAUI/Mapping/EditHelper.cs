@@ -120,7 +120,7 @@ namespace MapBoard.Mapping
             {
                 throw new Exception("正在编辑，无法绘制");
             }
-            editingFeature = (layer as ShapefileMapLayerInfo).CreateFeature();
+            editingFeature = layer.CreateFeature();
             InitializeEditor(EditorStatus.Creating);
             Editor.Start(layer.GeometryType);
             if (MapView.SelectedFeature != null)

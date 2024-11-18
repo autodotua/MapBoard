@@ -35,7 +35,7 @@ namespace MapBoard.UI.Dialog
     {
         public MapLayerInfo editLayer = null;
 
-        public ImportTableDialog(MapLayerCollection layers, DataTable table, string defaultName):base(layers)
+        public ImportTableDialog(MapLayerCollection layers, DataTable table, string defaultName) : base(layers)
         {
             LayerName = defaultName;
 
@@ -72,7 +72,7 @@ namespace MapBoard.UI.Dialog
         /// <summary>
         /// 时间格式
         /// </summary>
-        public string TimeFormat { get; set; } = Parameters.TimeFormat    ;
+        public string TimeFormat { get; set; } = Parameters.TimeFormat;
 
         /// <summary>
         /// 检查字段是否合法
@@ -131,7 +131,7 @@ namespace MapBoard.UI.Dialog
                 .Select(p => p.Field).ToList();
             try
             {
-                var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, Layers, name: LayerName, fields: fields);
+                var layer = await LayerUtility.CreateLayerAsync(GeometryType.Point, Layers, name: LayerName, fields: fields);
                 int failedRowCount = 0;
                 List<Feature> features = new List<Feature>();
                 await Task.Run(() =>
@@ -164,11 +164,9 @@ namespace MapBoard.UI.Dialog
                                 {
                                     FieldInfoType.Integer => int.Parse(strValue),
                                     FieldInfoType.Float => double.Parse(strValue),
-                                    FieldInfoType.Date => DateTime.ParseExact(strValue, DateFormat, CultureInfo.InvariantCulture),
+                                    FieldInfoType.Date => DateOnly.Parse(strValue),
                                     FieldInfoType.Text => strValue,
-                                    FieldInfoType.Time => DateTime
-                                        .ParseExact(strValue, DateFormat, CultureInfo.InvariantCulture)
-                                        .ToString(Parameters.TimeFormat),
+                                    FieldInfoType.DateTime => DateTime.Parse(strValue),
                                     _ => throw new NotSupportedException(),
                                 };
                                 feature.SetAttributeValue(field.Field.Name, value);
@@ -230,7 +228,7 @@ namespace MapBoard.UI.Dialog
                     ColumnIndex = ++index
                 };
                 field.Field.Name = new string(column.ColumnName.Take(10).ToArray());//取前10个字符为字段名
-                if(field.Field.Name.Length==0)
+                if (field.Field.Name.Length == 0)
                 {
                     field.Field.Name = $"Field{index}";
                 }

@@ -56,23 +56,22 @@ namespace MapBoard.UI.Menu
             MapLayerInfo[] layers = list.SelectedItems.Cast<MapLayerInfo>().ToArray();
             if (list.SelectedItems.Count == 1)//单选
             {
-                menu.Items.Add(new MenuItem()
-                {
-                    IsEnabled = false,
-                    Header = new TextBlock()
-                    {
-                        Text = MapLayerInfo.Types.GetDescription(layer.Type),
-                        FontSize = 14,
-                        FontWeight = FontWeights.Bold,
-                        Foreground = App.Current.FindResource("SystemControlForegroundBaseHighBrush") as System.Windows.Media.Brush,
-                        TextAlignment = TextAlignment.Center,
-                        Margin = new Thickness(0, 0, 0, 24)
-                    }
-                });
+                //menu.Items.Add(new MenuItem()
+                //{
+                //    IsEnabled = false,
+                //    Header = new TextBlock()
+                //    {
+                //        Text = MapLayerInfo.Types.GetDescription(layer.Type),
+                //        FontSize = 14,
+                //        FontWeight = FontWeights.Bold,
+                //        Foreground = App.Current.FindResource("SystemControlForegroundBaseHighBrush") as System.Windows.Media.Brush,
+                //        TextAlignment = TextAlignment.Center,
+                //        Margin = new Thickness(0, 0, 0, 24)
+                //    }
+                //});
                 if (!layer.IsLoaded)
                 {
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
-                    AddToMenu<WfsMapLayerInfo>(menu, "设置图层", layer, SetWfsLayerAsync);
                     AddToMenu(menu, "重新加载", () => ReloadLayerAsync(layer));
                 }
                 else
@@ -84,15 +83,10 @@ namespace MapBoard.UI.Menu
                     AddToMenu(menu, "属性表", () => ShowAttributeTableAsync(layer));
                     AddToMenu(menu, "删除", () => DeleteLayersAsync(layers));
 
-                    AddToMenu<IServerBasedLayer>(menu, "下载全部图形", layer, PopulateAllAsync);
-                    AddToMenu<ShapefileMapLayerInfo>(menu, "重新计算范围", layer, UpdateShapefileExtentAsync);
-                    AddToMenu<ShapefileMapLayerInfo>(menu, "属性", layer, SetShapefileLayerAsync);
-                    AddToMenu<WfsMapLayerInfo>(menu, "属性", layer, SetWfsLayerAsync);
-                    AddToMenu<TempMapLayerInfo>(menu, "属性", layer, SetTempLayerAsync);
-                    AddToMenu<TempMapLayerInfo>(menu, "重置", layer, ResetTempLayerAsync);
+                    AddToMenu<IMapLayerInfo>(menu, "属性", layer, EditLayerAsync);
 
                     menu.Items.Add(new Separator());
-                    AddToMenu(menu, layer is IFileBasedLayer ? "建立副本" : "建立持久副本", () => CreateCopyAsync(layer));
+                    AddToMenu(menu, "建立副本", () => CreateCopyAsync(layer));
                     AddToMenu(menu, "复制图形到", () => CopyFeaturesAsync(layer));
                     AddToMenu(menu, "复制样式到", () => CopyStylesAsync(layer));
                     AddToMenu(menu, "导出到新图层", () => ExportAsync(layer));
@@ -102,7 +96,7 @@ namespace MapBoard.UI.Menu
 
                     if (layer.CanEdit)
                     {
-                        AddToMenu<IEditableLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
+                        AddToMenu<IMapLayerInfo>(menu, "操作历史记录", layer, OpenHistoryDialog);
                         if (layer.NumberOfFeatures > 0)
                         {
                             MenuItem subMenu = new MenuItem() { Header = "地理分析（正在加载）" };
@@ -129,7 +123,7 @@ namespace MapBoard.UI.Menu
                     AddToMenu<IMapLayerInfo>(menu, "筛选显示图形", layer, SetDefinitionExpression, !string.IsNullOrEmpty(layer.DefinitionExpression));
                     menu.Items.Add(new Separator());
 
-                    if (layer is IEditableLayerInfo e && layer.CanEdit)
+                    if (layer is IMapLayerInfo e && layer.CanEdit)
                     {
                         var menuImport = new MenuItem() { Header = "导入" };
                         menu.Items.Add(menuImport);
@@ -155,20 +149,6 @@ namespace MapBoard.UI.Menu
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackge, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackge),
                         "正在导出图层包");
-                    if (Config.Instance.CopyShpFileWhenExport)
-                    {
-                        AddToMenu(menuExport, "图层包（重建）",
-                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.LayerPackgeRebuild, MainWindow),
-                            p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.LayerPackgeRebuild),
-                            "正在导出图层包");
-                    }
-                    if (layer is ShapefileMapLayerInfo)
-                    {
-                        AddToMenu(menuExport, "移动GIS工具箱图层包",
-                            () => IOUtility.GetExportLayerPath(layer, ExportLayerType.GISToolBoxZip, MainWindow),
-                            p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.GISToolBoxZip),
-                            "正在导出移动GIS工具箱图层包");
-                    }
                     AddToMenu(menuExport, "KML打包文件",
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.KML, MainWindow),
                         p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.KML),
@@ -185,6 +165,10 @@ namespace MapBoard.UI.Menu
                         () => IOUtility.GetExportLayerPath(layer, ExportLayerType.OpenLayers, MainWindow),
                         p => ExportOpenLayersLayer(layer, p),
                     "正在导出OpenLayers网络地图");
+                    AddToMenu(menuExport, "Shapefile",
+                        () => IOUtility.GetExportLayerPath(layer, ExportLayerType.Shapefile, MainWindow),
+                        p => IOUtility.ExportLayerAsync(MainWindow, p, layer, MapView.Layers, ExportLayerType.Shapefile),
+                    "正在导出Shapefile");
                 }
             }
             else//多选
@@ -291,7 +275,7 @@ namespace MapBoard.UI.Menu
                 , true);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as ShapefileMapLayerInfo);
+                await LayerUtility.CopyAllFeaturesAsync(layer, dialog.SelectedLayer as IMapLayerInfo);
             }
         }
 
@@ -346,7 +330,7 @@ namespace MapBoard.UI.Menu
             }
             foreach (MapLayerInfo layer in layers)
             {
-                await layer.DeleteLayerAsync(MapView.Layers, true);
+                await layer.DeleteLayerAsync(MapView.Layers);
             }
             MapView.Layers.Save();
         }
@@ -388,26 +372,11 @@ namespace MapBoard.UI.Menu
         /// </summary>
         /// <param name="layer"></param>
         /// <returns></returns>
-        private async Task OpenHistoryDialog(IEditableLayerInfo layer)
+        private async Task OpenHistoryDialog(IMapLayerInfo layer)
         {
             await Task.Yield();
             var dialog = FeatureHistoryDialog.Get(MainWindow, layer, MapView);
             dialog.BringToFront();
-        }
-
-        /// <summary>
-        /// 为网络服务图层下载全部内容
-        /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
-        private Task PopulateAllAsync(IServerBasedLayer s)
-        {
-            return s.PopulateAllFromServiceAsync();
-        }
-
-        private Task UpdateShapefileExtentAsync(ShapefileMapLayerInfo l)
-        {
-            return l.UpdateExtent(MapView.Map.OperationalLayers);
         }
 
         /// <summary>
@@ -447,18 +416,6 @@ namespace MapBoard.UI.Menu
             }, "正在重新加载图层");
         }
 
-        /// <summary>
-        /// 重置临时图层
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        private async Task ResetTempLayerAsync(TempMapLayerInfo layer)
-        {
-            if (await CommonDialog.ShowYesNoDialogAsync("确认重置？", "该操作将会删除所有图形"))
-            {
-                await layer.ReloadAsync(MapView.Layers);
-            }
-        }
 
         /// <summary>
         /// 设置显示内容，定义表达式
@@ -477,32 +434,10 @@ namespace MapBoard.UI.Menu
         /// </summary>
         /// <param name="layer"></param>
         /// <returns></returns>
-        private async Task SetShapefileLayerAsync(ShapefileMapLayerInfo layer)
+        private async Task EditLayerAsync(IMapLayerInfo layer)
         {
             MapView.Selection.ClearSelection();
             await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
-        }
-
-        /// <summary>
-        /// 设置临时图层属性
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        private async Task SetTempLayerAsync(TempMapLayerInfo layer)
-        {
-            MapView.Selection.ClearSelection();
-            await CreateLayerDialog.OpenEditDialog(MapView.Layers, MapView.Map.OperationalLayers, layer);
-        }
-
-        /// <summary>
-        /// 设置WFS图层属性
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        private async Task SetWfsLayerAsync(WfsMapLayerInfo layer)
-        {
-            AddWfsLayerDialog dialog = new AddWfsLayerDialog(MapView.Layers, layer);
-            await dialog.ShowAsync();
         }
 
         /// <summary>

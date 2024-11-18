@@ -33,7 +33,7 @@ namespace MapBoard.UI.Menu
         /// <summary>
         /// 可编辑图层
         /// </summary>
-        private readonly IEditableLayerInfo editableLayer;
+        private readonly IMapLayerInfo editableLayer;
 
         /// <summary>
         /// 选择的要素集合
@@ -54,7 +54,7 @@ namespace MapBoard.UI.Menu
         {
             this.mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
-            editableLayer = layer as IEditableLayerInfo;
+            editableLayer = layer as IMapLayerInfo;
             this.features = features ?? throw new ArgumentNullException(nameof(features));
             this.mapView = mapView ?? throw new ArgumentNullException(nameof(mapView));
         }
@@ -124,16 +124,15 @@ namespace MapBoard.UI.Menu
                 switch (dialog.Type)
                 {
                     case FieldAssignmentType.Field:
-                        errors = await AttributeUtility.CopyAttributesAsync(editableLayer, features, dialog.SourceField, dialog.TargetField, dialog.DateFormat);
+                        errors = await AttributeUtility.CopyAttributesAsync(editableLayer, features, dialog.SourceField, dialog.TargetField);
                         break;
 
                     case FieldAssignmentType.Const:
-                        errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, false, dialog.DateFormat);
-
+                        errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, false);
                         break;
 
                     case FieldAssignmentType.Custom:
-                        errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, true, dialog.DateFormat);
+                        errors = await AttributeUtility.SetAttributesAsync(editableLayer, features, dialog.TargetField, dialog.Text, true);
                         break;
 
                     default:

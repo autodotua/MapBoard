@@ -46,7 +46,7 @@ namespace MapBoard.IO
         /// <param name="imagePath"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public static async Task<string> GetDisplayableImage(string imagePath, int maxLength)
+        public static async Task<string> GetDisplayableImage(string imagePath, uint maxLength)
         {
             string tempPath = Path.GetTempFileName() + ".jpg";
             await Task.Run(() =>
@@ -71,10 +71,9 @@ namespace MapBoard.IO
             {
                 new FieldInfo(NameField,"名称",FieldInfoType.Text),
                 new FieldInfo(ImagePathField,"路径",FieldInfoType.Text),
-                new FieldInfo(DateField,"拍摄日期",FieldInfoType.Date),
-                new FieldInfo(TimeField,"拍摄时间",FieldInfoType.Time),
+                new FieldInfo(TimeField,"拍摄时间",FieldInfoType.DateTime),
             };
-            var layer = await LayerUtility.CreateShapefileLayerAsync(GeometryType.Point, layers, fields: fields);
+            var layer = await LayerUtility.CreateLayerAsync( GeometryType.Point, layers, fields: fields);
             ConcurrentBag<Feature> features = new ConcurrentBag<Feature>();
             await Task.Run(() =>
             {

@@ -8,8 +8,6 @@ namespace MapBoard.Mapping.Model
     /// </summary>
     public class EmptyMapLayerInfo : MapLayerInfo
     {
-        public override string Type => "Empty";
-
         protected override FeatureTable GetTable()
         {
             return null;
@@ -24,7 +22,7 @@ namespace MapBoard.Mapping.Model
             return new EmptyMapLayerInfo();
         }
 
-        public override Task ChangeNameAsync(string newName, Esri.ArcGISRuntime.Mapping.LayerCollection layers)
+        public override Task DeleteAsync()
         {
             return Task.CompletedTask;
         }

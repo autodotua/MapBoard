@@ -34,7 +34,7 @@ namespace MapBoard.Model
         /// <summary>
         /// 图层数量
         /// </summary>
-        public int Count => LayerList.Count;
+        public int Count => LayerList?.Count ?? 0;
 
         /// <summary>
         /// 地图边界位置

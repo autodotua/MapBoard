@@ -73,7 +73,7 @@ public partial class LayerListView : ContentView, ISidePanel
                 case 1:
                     if (await MainPage.Current.DisplayAlert("移除图层", "是否移除选择的图层？", "确定", "取消"))
                     {
-                        MainMapView.Current.Layers.Remove(layer);
+                        await MainMapView.Current.Layers.RemoveAsync(layer);
                     }
                     MainMapView.Current.Layers.Save();
                     break;

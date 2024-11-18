@@ -27,7 +27,7 @@
                     Source="{x:Reference map}" />
             </et:Compass.IsVisible>
         </et:Compass>
-        
+
         <et:ScaleLine
             Margin="24,8"
             HorizontalOptions="Start"
@@ -55,41 +55,52 @@
                 <Style
                     BasedOn="{StaticResource DefaultImageButtonStyle}"
                     TargetType="{x:Type ImageButton}">
+                    <Setter Property="Padding" Value="4" />
+                </Style>
+
+                <!--  通过Border包裹，解决ImageButton的Padding、CornerRadius的问题  -->
+                <!--  问题表现为，在关闭应用界面（此时没有真正退出）后重新进入，按钮大小变小、圆角丢失  -->
+                <!--  现在使用Border包裹后，大小和圆角可以保证不变，但仍存在问题  -->
+                <!--  https://github.com/dotnet/maui/issues/23854#issuecomment-2253668442  -->
+                <!--  https://github.com/dotnet/maui/issues/20822  -->
+                <!--  https://github.com/dotnet/maui/issues/11874  -->
+                <Style TargetType="{x:Type Border}">
                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Gray200}, Dark={DynamicResource Gray400}}" />
                     <Setter Property="WidthRequest" Value="42" />
-                    <Setter Property="Padding" Value="4" />
                     <Setter Property="HeightRequest" Value="42" />
+                    <Setter Property="StrokeThickness" Value="0" />
+                    <Setter Property="StrokeShape">
+                        <Setter.Value>
+                            <RoundRectangle CornerRadius="4" />
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow Opacity="0.8" />
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </VerticalStackLayout.Resources>
-            <ImageButton
-                x:Name="btnZoomIn"
-                Clicked="ZoomInButton_Click"
-                CornerRadius="4"
-                Source="btn_zoom_in.png">
-                <ImageButton.Shadow>
-                    <Shadow Opacity="0.8" />
-                </ImageButton.Shadow>
-            </ImageButton>
-            <ImageButton
-                x:Name="btnZoomOut"
-                Clicked="ZoomOutButton_Click"
-                CornerRadius="4"
-                Source="btn_zoom_out.png">
-                <ImageButton.Shadow>
-                    <Shadow Opacity="0.8" />
-                </ImageButton.Shadow>
-            </ImageButton>
+            <Border>
+                <ImageButton
+                    x:Name="btnZoomIn"
+                    Clicked="ZoomInButton_Click"
+                    Source="btn_zoom_in.png" />
+            </Border>
 
-            <ImageButton
-                x:Name="btnLocate"
-                Margin="0,60,0,0"
-                Clicked="LocationButton_Click"
-                CornerRadius="4"
-                Source="btn_location.png">
-                <ImageButton.Shadow>
-                    <Shadow Opacity="0.8" />
-                </ImageButton.Shadow>
-            </ImageButton>
+            <Border>
+                <ImageButton
+                    x:Name="btnZoomOut"
+                    Clicked="ZoomOutButton_Click"
+                    Source="btn_zoom_out.png" />
+            </Border>
+
+            <Border Margin="0,60,0,0">
+                <ImageButton
+                    x:Name="btnLocate"
+                    Clicked="LocationButton_Click"
+                    Source="btn_location.png" />
+            </Border>
         </VerticalStackLayout>
     </Grid>
 </ContentView>

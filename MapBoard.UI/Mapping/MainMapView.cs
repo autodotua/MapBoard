@@ -48,11 +48,6 @@ namespace MapBoard.Mapping
         private bool canRotate = true;
 
         /// <summary>
-        /// WFS图层的取消Token
-        /// </summary>
-        private CancellationTokenSource ctsWfs = null;
-
-        /// <summary>
         /// 鼠标中键按下时起始位置
         /// </summary>
         private Point startPosition = default;
@@ -74,7 +69,6 @@ namespace MapBoard.Mapping
             {
                 IsRotateEnabled = true
             };
-            NavigationCompleted += MainMapView_NavigationCompleted;
             SetLocationDisplay();
             Config.Instance.PropertyChanged += Config_PropertyChanged;
         }
@@ -173,7 +167,7 @@ namespace MapBoard.Mapping
                     GeometryEditor.DeleteSelectedElement();
                     break;
 
-                case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IEditableLayerInfo w:
+                case Key.Delete when CurrentTask == BoardTask.Select && Layers.Selected is IMapLayerInfo w:
                     await (this.GetWindow() as MainWindow).DoAsync(async () =>
                    {
                        await FeatureUtility.DeleteAsync(w, Selection.SelectedFeatures.ToArray());
@@ -202,7 +196,7 @@ namespace MapBoard.Mapping
                             && Layers.Selected?.CanEdit == true:
                             var feature = Selection.SelectedFeatures.Single();
                             Selection.ClearSelection();
-                            Editor.EditAsync(Layers.Selected as IEditableLayerInfo, feature);
+                            Editor.EditAsync(Layers.Selected as IMapLayerInfo, feature);
                             break;
                     }
                     break;
@@ -299,58 +293,6 @@ namespace MapBoard.Mapping
             }
         }
 
-        /// <summary>
-        /// 地图“导航”完成
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void MainMapView_NavigationCompleted(object sender, EventArgs e)
-        {
-            //加载WFS时，旧的结果会被抹掉，导致选中的图形会被取消选择。所以需要在非选择状态下进行。
-            if (Layers.Any(p => p is IServerBasedLayer
-            && !(p as IServerBasedLayer).AutoPopulateAll
-            && !(p as IServerBasedLayer).HasPopulateAll)
-                && CurrentTask == BoardTask.Ready)
-            {
-                Envelope currentExtent = VisibleArea.Extent;
-
-                // Create a query based on the current visible extent.
-                QueryParameters visibleExtentQuery = new QueryParameters
-                {
-                    Geometry = currentExtent,
-                    SpatialRelationship = SpatialRelationship.Intersects
-                };
-                if (ctsWfs != null)
-                {
-                    ctsWfs.Cancel();
-                }
-                ctsWfs = new CancellationTokenSource();
-                try
-                {
-                    List<Task> tasks = new();
-                    foreach (IServerBasedLayer layer in Layers
-                        .OfType<IServerBasedLayer>()
-                        .Where(p => p.IsLoaded))
-                    {
-                        tasks.Add(layer.PopulateFromServiceAsync(visibleExtentQuery, false, cancellationToken: ctsWfs.Token));
-                    }
-                    await Task.WhenAll(tasks);
-                    ctsWfs = null;
-                }
-                catch (TaskCanceledException ex)
-                {
-                    App.Log.Error(ex);
-                }
-                catch (HttpRequestException ex)
-                {
-                    App.Log.Error(ex);
-                }
-                catch (Exception ex)
-                {
-                    App.Log.Error(ex);
-                }
-            }
-        }
 
         private void Selection_CollectionChanged(object sender, EventArgs e)
         {

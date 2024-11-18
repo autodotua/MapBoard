@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Alerts;
+using Esri.ArcGISRuntime;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using MapBoard.IO;
@@ -12,6 +13,7 @@ namespace MapBoard
         public App()
         {
             Parameters.AppType = AppType.MAUI;
+            ArcGISRuntimeEnvironment.EnableTimestampOffsetSupport = true;
 
             MauiExceptions.UnhandledException += MauiExceptions_UnhandledException;
 

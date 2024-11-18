@@ -26,7 +26,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<Feature> UnionAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task<Feature> UnionAsync(IMapLayerInfo layer, Feature[] features)
         {
             Geometry geometry = null;
             await Task.Run(() =>
@@ -46,7 +46,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> SeparateAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> SeparateAsync(IMapLayerInfo layer, Feature[] features)
         {
             List<Feature> deleted = new List<Feature>();
             List<Feature> added = new List<Feature>();
@@ -83,7 +83,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<Feature> AutoLinkAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task<Feature> AutoLinkAsync(IMapLayerInfo layer, Feature[] features)
         {
             List<MapPoint> points = new List<MapPoint>();
             if (features.Length <= 1)
@@ -164,7 +164,7 @@ namespace MapBoard.Util
         /// <param name="headToHead">是否头和头相连</param>
         /// <param name="reverse">是否反转（尾连头/尾连尾）</param>
         /// <returns></returns>
-        public static async Task<Feature> LinkAsync(IEditableLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
+        public static async Task<Feature> LinkAsync(IMapLayerInfo layer, Feature[] features, bool headToHead, bool reverse)
         {
             List<MapPoint> points = null;
             if (features.Length <= 1)
@@ -232,7 +232,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task ReverseAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task ReverseAsync(IMapLayerInfo layer, Feature[] features)
         {
             List<UpdatedFeature> updatedFeatures = new List<UpdatedFeature>();
             await Task.Run(() =>
@@ -266,7 +266,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task DensifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task DensifyAsync(IMapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
             await Task.Run(() =>
@@ -288,7 +288,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task VerticalDistanceSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task VerticalDistanceSimplifyAsync(IMapLayerInfo layer, Feature[] features, double max)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -320,7 +320,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task GeneralizeSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task GeneralizeSimplifyAsync(IMapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
@@ -343,7 +343,7 @@ namespace MapBoard.Util
         /// <param name="feature"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        private static Task<UpdatedFeature> SimplyBaseAsync(IEditableLayerInfo layer, Feature feature,
+        private static Task<UpdatedFeature> SimplyBaseAsync(IMapLayerInfo layer, Feature feature,
             Func<ReadOnlyPart, IEnumerable<MapPoint>> func)
         {
             Debug.Assert(layer.GeometryType == GeometryType.Polygon || layer.GeometryType == GeometryType.Polyline); ;
@@ -409,7 +409,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        public static async Task DouglasPeuckerSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double max)
+        public static async Task DouglasPeuckerSimplifyAsync(IMapLayerInfo layer, Feature[] features, double max)
         {
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
 
@@ -462,7 +462,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static async Task IntervalTakePointsSimplifyAsync(IEditableLayerInfo layer, Feature[] features, double interval)
+        public static async Task IntervalTakePointsSimplifyAsync(IMapLayerInfo layer, Feature[] features, double interval)
         {
             Dictionary<Feature, Geometry> oldGeometries = new Dictionary<Feature, Geometry>();
             List<UpdatedFeature> newFeatures = new List<UpdatedFeature>();
@@ -501,7 +501,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task<IReadOnlyList<Feature>> CreateCopyAsync(IMapLayerInfo layer, Feature[] features)
         {
             List<Feature> newFeatures = new List<Feature>();
             foreach (var feature in features)
@@ -519,7 +519,7 @@ namespace MapBoard.Util
         /// <param name="layer"></param>
         /// <param name="features"></param>
         /// <returns></returns>
-        public static async Task DeleteAsync(IEditableLayerInfo layer, Feature[] features)
+        public static async Task DeleteAsync(IMapLayerInfo layer, IEnumerable<Feature> features)
         {
             await layer.DeleteFeaturesAsync(features, FeatureOperation);
         }
@@ -531,7 +531,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="clipLine"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CutAsync(IEditableLayerInfo layer, Feature[] features, Polyline clipLine)
+        public static async Task<IReadOnlyList<Feature>> CutAsync(IMapLayerInfo layer, Feature[] features, Polyline clipLine)
         {
             List<Feature> added = new List<Feature>();
             await Task.Run(() =>
@@ -580,7 +580,7 @@ namespace MapBoard.Util
         /// <param name="features"></param>
         /// <param name="copy"></param>
         /// <returns></returns>
-        public static async Task<IReadOnlyList<Feature>> CopyOrMoveAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, bool copy)
+        public static async Task<IReadOnlyList<Feature>> CopyToLayerAsync(IMapLayerInfo layerFrom, IMapLayerInfo layerTo, IEnumerable<Feature> features)
         {
             var newFeatures = new List<Feature>();
             var fields = layerTo.Fields.Select(p => p.Name).ToHashSet();
@@ -600,12 +600,6 @@ namespace MapBoard.Util
                 }
             });
             await layerTo.AddFeaturesAsync(newFeatures, FeatureOperation);
-            if (!copy && layerFrom is IEditableLayerInfo w)
-            {
-                await DeleteAsync(w, features);
-            }
-            layerFrom.LayerVisible = false;
-            layerTo.LayerVisible = true;
             return newFeatures.AsReadOnly();
         }
 
@@ -641,7 +635,7 @@ namespace MapBoard.Util
         /// 将图形建立缓冲区后放入一个多边形图层
         /// </summary>
         /// <returns></returns>
-        public static async Task SimpleBufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double meters)
+        public static async Task SimpleBufferToLayerAsync(IMapLayerInfo layerFrom, IMapLayerInfo layerTo, Feature[] features, double meters)
         {
             List<Feature> newFeatures = new List<Feature>();
             await Task.Run(() =>
@@ -661,7 +655,7 @@ namespace MapBoard.Util
         /// 将图形建立缓冲区后放入一个多边形图层
         /// </summary>
         /// <returns></returns>
-        public static async Task BufferToLayerAsync(IMapLayerInfo layerFrom, IEditableLayerInfo layerTo, Feature[] features, double[] meters, bool union)
+        public static async Task BufferToLayerAsync(IMapLayerInfo layerFrom, IMapLayerInfo layerTo, Feature[] features, double[] meters, bool union)
         {
             List<Feature> newFeatures = new List<Feature>();
             Debug.Assert(Enumerable.Range(0, meters.Length - 1).All(i => meters[i] < meters[i + 1]));
@@ -705,7 +699,7 @@ namespace MapBoard.Util
         /// <param name="level">平滑等级，0最拟合，1一般，2最平滑</param>
         /// <param name="minSmoothAngle">最小需要平滑的角度。若某三个节点组成的角小于该角度，那么会对中间点左右两侧分别进行平滑然后拼接</param>
         /// <returns></returns>
-        public static async Task<IEnumerable<Feature>> Smooth(IEditableLayerInfo layer, Feature[] features, int pointsPerSegment, int level, bool deleteOldFeature = false, double minSmoothAngle = 45)
+        public static async Task<IEnumerable<Feature>> Smooth(IMapLayerInfo layer, Feature[] features, int pointsPerSegment, int level, bool deleteOldFeature = false, double minSmoothAngle = 45)
         {
             if (level < 0 || level > 2)
             {
@@ -763,7 +757,7 @@ namespace MapBoard.Util
         /// <param name="source"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static async Task CoordinateTransformateAsync(this IEditableLayerInfo layer, Feature[] features, CoordinateSystem source, CoordinateSystem target)
+        public static async Task CoordinateTransformateAsync(this IMapLayerInfo layer, Feature[] features, CoordinateSystem source, CoordinateSystem target)
         {
             if (source == target)
             {
@@ -777,6 +771,42 @@ namespace MapBoard.Util
                 feature.Geometry = CoordinateTransformation.Transformate(feature.Geometry, source, target);
             }
             await layer.UpdateFeaturesAsync(newFeatures, FeatureOperation);
+        }
+
+        public static bool RemoveIdAttributes(this Feature feature)
+        {
+            bool hasRemoved = false;
+            foreach (var key in feature.Attributes.Keys.ToList())
+            {
+                if (FieldExtension.IsIdField(key))
+                {
+                    feature.Attributes.Remove(key);
+                    hasRemoved = true;
+                }
+            }
+            return hasRemoved;
+        }
+        public static void RemoveIdAttributes(this IEnumerable<Feature> features)
+        {
+            if (!features.Any())
+            {
+                return;
+            }
+            //假定每个Feature内属性一致，那么先检测第一条，如果有ID字段，才循环所有Feature
+            if (!features.First().RemoveIdAttributes())
+            {
+                return;
+            }
+            foreach (var feature in features)
+            {
+                foreach (var key in feature.Attributes.Keys.ToList())
+                {
+                    if (FieldExtension.IsIdField(key))
+                    {
+                        feature.Attributes.Remove(key);
+                    }
+                }
+            }
         }
     }
 }

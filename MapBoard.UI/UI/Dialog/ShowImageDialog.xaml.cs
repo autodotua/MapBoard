@@ -123,7 +123,7 @@ namespace MapBoard.UI.Dialog
                     {
                         PresentationSource source = PresentationSource.FromVisual(this);
                         convertedImagePath = await Photo.GetDisplayableImage(imagePath,
-                           (int)Math.Max(ActualHeight * source.CompositionTarget.TransformToDevice.M22,
+                           (uint)Math.Max(ActualHeight * source.CompositionTarget.TransformToDevice.M22,
                            ActualWidth * source.CompositionTarget.TransformToDevice.M11));
                         convertedImages.Add(imagePath, convertedImagePath);
                     }
