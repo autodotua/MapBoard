@@ -75,33 +75,36 @@ namespace MapBoard.IO
             List<MapPoint> points = new List<MapPoint>();
             List<Polyline> lines = new List<Polyline>();
             List<Polygon> polygons = new List<Polygon>();
-            foreach (var node in GetAllKmlPlacemark(kml))
+            await Task.Run(() =>
             {
-                switch (node.GraphicType)
+                foreach (var node in GetAllKmlPlacemark(kml))
                 {
-                    case KmlGraphicType.None:
-                        break;
-                    case KmlGraphicType.Point:
-                        points.Add(node.Geometry.RemoveZAndM() as MapPoint);
-                        break;
-                    case KmlGraphicType.Polyline:
-                        lines.Add(node.Geometry.RemoveZAndM() as Polyline);
-                        break;
-                    case KmlGraphicType.Polygon:
-                        polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
-                        break;
-                    case KmlGraphicType.ExtrudedPoint:
-                        break;
-                    case KmlGraphicType.ExtrudedPolyline:
-                        break;
-                    case KmlGraphicType.ExtrudedPolygon:
-                        break;
-                    case KmlGraphicType.Model:
-                        break;
-                    case KmlGraphicType.MultiGeometry:
-                        break;
+                    switch (node.GraphicType)
+                    {
+                        case KmlGraphicType.None:
+                            break;
+                        case KmlGraphicType.Point:
+                            points.Add(node.Geometry.RemoveZAndM() as MapPoint);
+                            break;
+                        case KmlGraphicType.Polyline:
+                            lines.Add(node.Geometry.RemoveZAndM() as Polyline);
+                            break;
+                        case KmlGraphicType.Polygon:
+                            polygons.Add(node.Geometry.RemoveZAndM() as Polygon);
+                            break;
+                        case KmlGraphicType.ExtrudedPoint:
+                            break;
+                        case KmlGraphicType.ExtrudedPolyline:
+                            break;
+                        case KmlGraphicType.ExtrudedPolygon:
+                            break;
+                        case KmlGraphicType.Model:
+                            break;
+                        case KmlGraphicType.MultiGeometry:
+                            break;
+                    }
                 }
-            }
+            });
             string name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
             if (points.Count > 0)
             {
