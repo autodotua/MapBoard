@@ -61,9 +61,9 @@ namespace MapBoard.Mapping.Model
                 object value = attr.Value;
 
                 //仅包含存在于目标图层的字段，且需要保证数据类型正确
-                if (key2Field.TryGetValue(key, out FieldInfo fi) && fi.IsCorrectType(value)&&!fi.IsIdField())
+                if (key2Field.TryGetValue(key, out FieldInfo fi) && fi.IsCompatibleType(value, out object newValue) && !fi.IsIdField())
                 {
-                    dic.Add(key, value);
+                    dic.Add(key, newValue);
                 }
             }
 
