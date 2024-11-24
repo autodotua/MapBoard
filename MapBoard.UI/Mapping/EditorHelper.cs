@@ -146,7 +146,7 @@ namespace MapBoard.Mapping
                     .Where(p => p.Name is not (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName)))
                 {
                     if (Attributes.Attributes.FirstOrDefault(p => p.Name == attribute.Name) is FeatureAttribute newAttr
-                        && newAttr.IsCompatibleType(attribute.Value,out object newValue))
+                        && newAttr.IsCompatibleType(attribute.Value, out object newValue))
                     {
                         newAttr.Value = newValue;
                     }
@@ -403,7 +403,7 @@ namespace MapBoard.Mapping
             foreach (var geometry in results
                         .Where(p => p.LayerContent.IsVisible)//图层可见
                         .Where(p => p.LayerContent is FeatureLayer)//需要矢量图层
-                        .Select(p => new { Layer = Layers.FindLayer(p.LayerContent), Elements = p.GeoElements })
+                        .Select(p => new { Layer = Layers.Find(p.LayerContent), Elements = p.GeoElements })
                         .Where(p => p.Layer?.Interaction?.CanCatch ?? false)//图层可捕捉
                         .SelectMany(p => p.Elements)
                         .Where(p => !excludeSelf || editingFeature == null || (p as Feature).GetID() != editingFeature.GetID())//直接捕捉配置下，排除正在编辑的图形
@@ -457,9 +457,9 @@ namespace MapBoard.Mapping
                 if (ss.Source is FeatureLayer fl)
                 {
                     var l = Layers.Find(fl);
-                    if (l != null && l.Interaction.CanCatch)
+                    if (l != null)
                     {
-                        ss.IsEnabled = true;
+                        ss.IsEnabled = l.Interaction.CanCatch;
                     }
                 }
             }
@@ -643,7 +643,7 @@ namespace MapBoard.Mapping
 
         private void StartDraw(GeometryType type, GeometryEditorTool tool = null)
         {
-            InitializeSnapping(); 
+            InitializeSnapping();
             GeometryEditor.Start(type);
             GeometryEditor.Tool = tool ?? new VertexTool();
         }

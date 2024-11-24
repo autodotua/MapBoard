@@ -253,26 +253,6 @@ namespace MapBoard.Util
         }
 
         /// <summary>
-        /// 根据Esri图层，寻找MapBoard图层
-        /// </summary>
-        /// <param name="layers"></param>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public static MapLayerInfo FindLayer(this MapLayerCollection layers, ILayerContent layer)
-        {
-            if (layer is FeatureLayer l)
-            {
-                return layers.Find(l);
-            }
-            else if (layer is FeatureCollectionLayer cl)
-            {
-                return layers.Find(cl.Layers[0]);
-            }
-            throw new Exception("找不到指定的图层");
-        }
-
-        /// <summary>
         /// 获取所有要素
         /// </summary>
         /// <param name="layer"></param>
