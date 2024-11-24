@@ -213,6 +213,10 @@ namespace MapBoard.Util
             {
                 throw new Exception("存在重复的字段名");
             }
+            if(layers.Any(p=>p.Name==name))
+            {
+                throw new Exception("存在重复的图层名");
+            }
             var layer = await CreateLayerAsync(oldLayer.GeometryType, layers, oldLayer, false, fieldList, name);
             Dictionary<string, string> oldName2newName = new Dictionary<string, string>();
             foreach (var field in fields)

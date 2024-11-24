@@ -24,7 +24,7 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static async Task<ItemsOperationErrorCollection> CopyAttributesAsync(IMapLayerInfo layer, IEnumerable<Feature> features, FieldInfo fieldSource, FieldInfo fieldTarget)
         {
-            if (fieldTarget.Name.Equals(FieldExtension.CreateTimeField.Name))
+            if (fieldTarget.Name.Equals(Parameters.CreateTimeFieldName))
             {
                 throw new ArgumentException("不可为“创建时间”字段赋值");
             }
@@ -95,14 +95,10 @@ namespace MapBoard.Util
         /// <returns></returns>
         public static async Task<ItemsOperationErrorCollection> SetAttributesAsync(IMapLayerInfo layer, IEnumerable<Feature> features, FieldInfo field, string text, bool includeField)
         {
-            if (field.Name.Equals(FieldExtension.CreateTimeField.Name))
+            if (field.Name.Equals(Parameters.CreateTimeFieldName))
             {
                 throw new ArgumentException("不可为“创建时间”字段赋值");
             }
-            //if (includeField && field.Type is not FieldInfoType.Text)
-            //{
-            //    throw new ArgumentException("仅可为文本类型进行自定义赋值");
-            //}
             Debug.Assert(features.All(p => p.FeatureTable.Layer == layer.Layer));
 
             ItemsOperationErrorCollection errors = new ItemsOperationErrorCollection();

@@ -280,7 +280,7 @@ namespace MapBoard.Mapping.Model
             Feature newFeature = rebuildFeature ? feature.Clone(this) : feature;
             AddCreateTimeAttributeIfExistField(newFeature);
             await table.AddFeatureAsync(newFeature);
-            NotifyFeaturesChanged(new[] { feature }, null, null, source);
+            NotifyFeaturesChanged([feature], null, null, source);
         }
 
         /// <summary>
@@ -425,12 +425,11 @@ namespace MapBoard.Mapping.Model
         private void AddCreateTimeAttributeIfExistField(Feature feature)
         {
             if (table.Fields.Any(p => p.Name == Parameters.CreateTimeFieldName)
-                && table.Fields.First(p => p.Name == Parameters.CreateTimeFieldName).FieldType == FieldType.Text)
+                && table.Fields.First(p => p.Name == Parameters.CreateTimeFieldName).FieldType == FieldType.Date)
             {
-                if (!feature.Attributes.ContainsKey(Parameters.CreateTimeFieldName)
-                        || feature.Attributes[Parameters.CreateTimeFieldName] == null)
+                if (!feature.Attributes.TryGetValue(Parameters.CreateTimeFieldName, out object value) || value == null)
                 {
-                    feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                    feature.SetAttributeValue(Parameters.CreateTimeFieldName, DateTime.Now);
                 }
             }
         }
@@ -442,9 +441,9 @@ namespace MapBoard.Mapping.Model
         private void AddModifiedTimeAttributeIfExistField(Feature feature)
         {
             if (table.Fields.Any(p => p.Name == Parameters.ModifiedTimeFieldName)
-                && table.Fields.First(p => p.Name == Parameters.ModifiedTimeFieldName).FieldType == FieldType.Text)
+                && table.Fields.First(p => p.Name == Parameters.ModifiedTimeFieldName).FieldType == FieldType.Date)
             {
-                feature.SetAttributeValue(Parameters.ModifiedTimeFieldName, DateTime.Now.ToString(Parameters.TimeFormat));
+                feature.SetAttributeValue(Parameters.ModifiedTimeFieldName, DateTime.Now);
             }
         }
 

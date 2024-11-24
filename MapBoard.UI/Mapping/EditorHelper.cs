@@ -18,6 +18,7 @@ using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI.Controls;
 using FzLib.WPF.Dialog;
 using Esri.ArcGISRuntime.UI.Editing;
+using MapBoard.Model;
 
 namespace MapBoard.Mapping
 {
@@ -144,9 +145,10 @@ namespace MapBoard.Mapping
                 foreach (var attribute in oldAttributes.Attributes
                     .Where(p => p.Name is not (Parameters.CreateTimeFieldName or Parameters.ModifiedTimeFieldName)))
                 {
-                    if (Attributes.Attributes.Any(p => p.Name == attribute.Name))
+                    if (Attributes.Attributes.FirstOrDefault(p => p.Name == attribute.Name) is FeatureAttribute newAttr
+                        && newAttr.IsCompatibleType(attribute.Value,out object newValue))
                     {
-                        Attributes.Attributes.FirstOrDefault(p => p.Name == attribute.Name).Value = attribute.Value;
+                        newAttr.Value = newValue;
                     }
                 }
             }
