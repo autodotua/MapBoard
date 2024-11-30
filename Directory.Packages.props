@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageVersion Include="FluentFTP" Version="52.0.0" />
     <PackageVersion Include="Mapster" Version="7.4.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.10" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
